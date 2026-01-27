@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.numeric.DecimalConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -40,7 +40,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14f);
 		assertTrue(result.isSuccess());
@@ -50,7 +50,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14f));
 		assertTrue(result.isSuccess());
@@ -59,7 +59,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyWithValidConstrainedValue() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<String> result = codec.encodeKey(3.14f);
 		assertTrue(result.isSuccess());
@@ -68,7 +68,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyWithValidConstrainedValue() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<Float> result = codec.decodeKey("3.14");
 		assertTrue(result.isSuccess());
@@ -77,13 +77,13 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		assertTrue(codec.toString().contains("Constrained"));
 	}
 	
 	@Test
 	void toStringWithoutConstraints() {
-		Codec<Float> codec = new FloatCodec();
+		Codec<Float> codec = Codecs.FLOAT;
 		assertFalse(codec.toString().contains("Constrained"));
 		assertEquals("FloatCodec", codec.toString());
 	}
@@ -91,7 +91,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.equalTo(3.14f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14f);
 		assertTrue(result.isSuccess());
@@ -100,7 +100,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.equalTo(3.14f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14f));
 		assertTrue(result.isSuccess());
@@ -108,7 +108,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.equalTo(3.14f);
 		
 		Result<String> result = codec.encodeKey(3.14f);
 		assertTrue(result.isSuccess());
@@ -116,7 +116,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.equalTo(3.14f);
 		
 		Result<Float> result = codec.decodeKey("3.14");
 		assertTrue(result.isSuccess());
@@ -125,7 +125,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.equalTo(3.14f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42.0f);
 		assertTrue(result.isError());
@@ -134,7 +134,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.equalTo(3.14f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42.0f));
 		assertTrue(result.isError());
@@ -142,7 +142,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.equalTo(3.14f);
 		
 		Result<String> result = codec.encodeKey(42.0f);
 		assertTrue(result.isError());
@@ -150,7 +150,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.equalTo(3.14f);
 		
 		Result<Float> result = codec.decodeKey("42.0");
 		assertTrue(result.isError());
@@ -159,7 +159,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.notEqualTo(3.14f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42.0f);
 		assertTrue(result.isSuccess());
@@ -168,7 +168,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.notEqualTo(3.14f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42.0f));
 		assertTrue(result.isSuccess());
@@ -176,7 +176,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.notEqualTo(3.14f);
 		
 		Result<String> result = codec.encodeKey(42.0f);
 		assertTrue(result.isSuccess());
@@ -184,7 +184,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.notEqualTo(3.14f);
 		
 		Result<Float> result = codec.decodeKey("42.0");
 		assertTrue(result.isSuccess());
@@ -193,7 +193,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.notEqualTo(3.14f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14f);
 		assertTrue(result.isError());
@@ -202,7 +202,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.notEqualTo(3.14f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14f));
 		assertTrue(result.isError());
@@ -210,7 +210,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.notEqualTo(3.14f);
 		
 		Result<String> result = codec.encodeKey(3.14f);
 		assertTrue(result.isError());
@@ -218,7 +218,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotEqualTo(3.14f));
+		Codec<Float> codec = Codecs.FLOAT.notEqualTo(3.14f);
 		
 		Result<Float> result = codec.decodeKey("3.14");
 		assertTrue(result.isError());
@@ -227,7 +227,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withIn(Set.of(3.14f, 42.0f, 100.5f)));
+		Codec<Float> codec = Codecs.FLOAT.in(Set.of(3.14f, 42.0f, 100.5f));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42.0f);
 		assertTrue(result.isSuccess());
@@ -236,7 +236,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withIn(Set.of(3.14f, 42.0f, 100.5f)));
+		Codec<Float> codec = Codecs.FLOAT.in(Set.of(3.14f, 42.0f, 100.5f));
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42.0f));
 		assertTrue(result.isSuccess());
@@ -244,7 +244,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withIn(Set.of(3.14f, 42.0f, 100.5f)));
+		Codec<Float> codec = Codecs.FLOAT.in(Set.of(3.14f, 42.0f, 100.5f));
 		
 		Result<String> result = codec.encodeKey(42.0f);
 		assertTrue(result.isSuccess());
@@ -252,7 +252,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withIn(Set.of(3.14f, 42.0f, 100.5f)));
+		Codec<Float> codec = Codecs.FLOAT.in(Set.of(3.14f, 42.0f, 100.5f));
 		
 		Result<Float> result = codec.decodeKey("42.0");
 		assertTrue(result.isSuccess());
@@ -261,7 +261,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.in(Set.of(3.14f, 42.0f));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 100.5f);
 		assertTrue(result.isError());
@@ -270,7 +270,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.in(Set.of(3.14f, 42.0f));
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100.5f));
 		assertTrue(result.isError());
@@ -278,7 +278,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.in(Set.of(3.14f, 42.0f));
 		
 		Result<String> result = codec.encodeKey(100.5f);
 		assertTrue(result.isError());
@@ -286,7 +286,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.in(Set.of(3.14f, 42.0f));
 		
 		Result<Float> result = codec.decodeKey("100.5");
 		assertTrue(result.isError());
@@ -295,7 +295,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.notIn(Set.of(3.14f, 42.0f));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 100.5f);
 		assertTrue(result.isSuccess());
@@ -304,7 +304,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.notIn(Set.of(3.14f, 42.0f));
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100.5f));
 		assertTrue(result.isSuccess());
@@ -312,7 +312,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.notIn(Set.of(3.14f, 42.0f));
 		
 		Result<String> result = codec.encodeKey(100.5f);
 		assertTrue(result.isSuccess());
@@ -320,7 +320,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.notIn(Set.of(3.14f, 42.0f));
 		
 		Result<Float> result = codec.decodeKey("100.5");
 		assertTrue(result.isSuccess());
@@ -329,7 +329,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.notIn(Set.of(3.14f, 42.0f));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14f);
 		assertTrue(result.isError());
@@ -338,7 +338,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.notIn(Set.of(3.14f, 42.0f));
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14f));
 		assertTrue(result.isError());
@@ -346,7 +346,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.notIn(Set.of(3.14f, 42.0f));
 		
 		Result<String> result = codec.encodeKey(3.14f);
 		assertTrue(result.isError());
@@ -354,7 +354,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withNotIn(Set.of(3.14f, 42.0f)));
+		Codec<Float> codec = Codecs.FLOAT.notIn(Set.of(3.14f, 42.0f));
 		
 		Result<Float> result = codec.decodeKey("3.14");
 		assertTrue(result.isError());
@@ -363,7 +363,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThan(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThan(10.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42.0f);
 		assertTrue(result.isSuccess());
@@ -372,7 +372,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThan(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThan(10.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42.0f));
 		assertTrue(result.isSuccess());
@@ -380,7 +380,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThan(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThan(10.0f);
 		
 		Result<String> result = codec.encodeKey(42.0f);
 		assertTrue(result.isSuccess());
@@ -388,7 +388,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThan(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThan(10.0f);
 		
 		Result<Float> result = codec.decodeKey("42.0");
 		assertTrue(result.isSuccess());
@@ -397,7 +397,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThan(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThan(10.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 10.0f);
 		assertTrue(result.isError());
@@ -406,7 +406,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThan(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThan(10.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(5.0f));
 		assertTrue(result.isError());
@@ -414,7 +414,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThan(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThan(10.0f);
 		
 		Result<String> result = codec.encodeKey(10.0f);
 		assertTrue(result.isError());
@@ -422,7 +422,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThan(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThan(10.0f);
 		
 		Result<Float> result = codec.decodeKey("5.0");
 		assertTrue(result.isError());
@@ -431,7 +431,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThanOrEqual(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThanOrEqual(10.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 10.0f);
 		assertTrue(result.isSuccess());
@@ -440,7 +440,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThanOrEqual(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThanOrEqual(10.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42.0f));
 		assertTrue(result.isSuccess());
@@ -448,7 +448,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThanOrEqual(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThanOrEqual(10.0f);
 		
 		Result<String> result = codec.encodeKey(10.0f);
 		assertTrue(result.isSuccess());
@@ -456,7 +456,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThanOrEqual(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThanOrEqual(10.0f);
 		
 		Result<Float> result = codec.decodeKey("42.0");
 		assertTrue(result.isSuccess());
@@ -465,7 +465,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThanOrEqual(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThanOrEqual(10.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 9.99f);
 		assertTrue(result.isError());
@@ -474,7 +474,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThanOrEqual(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThanOrEqual(10.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(5.0f));
 		assertTrue(result.isError());
@@ -482,7 +482,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThanOrEqual(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThanOrEqual(10.0f);
 		
 		Result<String> result = codec.encodeKey(9.99f);
 		assertTrue(result.isError());
@@ -490,7 +490,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withGreaterThanOrEqual(10.0f));
+		Codec<Float> codec = Codecs.FLOAT.greaterThanOrEqual(10.0f);
 		
 		Result<Float> result = codec.decodeKey("5.0");
 		assertTrue(result.isError());
@@ -499,7 +499,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThan(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThan(100.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42.0f);
 		assertTrue(result.isSuccess());
@@ -508,7 +508,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThan(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThan(100.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42.0f));
 		assertTrue(result.isSuccess());
@@ -516,7 +516,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyLessThanConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThan(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThan(100.0f);
 		
 		Result<String> result = codec.encodeKey(42.0f);
 		assertTrue(result.isSuccess());
@@ -524,7 +524,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyLessThanConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThan(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThan(100.0f);
 		
 		Result<Float> result = codec.decodeKey("42.0");
 		assertTrue(result.isSuccess());
@@ -533,7 +533,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThan(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThan(100.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 100.0f);
 		assertTrue(result.isError());
@@ -542,7 +542,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThan(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThan(100.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(150.0f));
 		assertTrue(result.isError());
@@ -550,7 +550,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyLessThanConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThan(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThan(100.0f);
 		
 		Result<String> result = codec.encodeKey(100.0f);
 		assertTrue(result.isError());
@@ -558,7 +558,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyLessThanConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThan(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThan(100.0f);
 		
 		Result<Float> result = codec.decodeKey("150.0");
 		assertTrue(result.isError());
@@ -567,7 +567,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThanOrEqual(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThanOrEqual(100.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 100.0f);
 		assertTrue(result.isSuccess());
@@ -576,7 +576,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThanOrEqual(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThanOrEqual(100.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42.0f));
 		assertTrue(result.isSuccess());
@@ -584,7 +584,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThanOrEqual(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThanOrEqual(100.0f);
 		
 		Result<String> result = codec.encodeKey(100.0f);
 		assertTrue(result.isSuccess());
@@ -592,7 +592,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThanOrEqual(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThanOrEqual(100.0f);
 		
 		Result<Float> result = codec.decodeKey("42.0");
 		assertTrue(result.isSuccess());
@@ -601,7 +601,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThanOrEqual(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThanOrEqual(100.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 100.01f);
 		assertTrue(result.isError());
@@ -610,7 +610,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThanOrEqual(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThanOrEqual(100.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(150.0f));
 		assertTrue(result.isError());
@@ -618,7 +618,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThanOrEqual(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThanOrEqual(100.0f);
 		
 		Result<String> result = codec.encodeKey(100.01f);
 		assertTrue(result.isError());
@@ -626,7 +626,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withLessThanOrEqual(100.0f));
+		Codec<Float> codec = Codecs.FLOAT.lessThanOrEqual(100.0f);
 		
 		Result<Float> result = codec.decodeKey("150.0");
 		assertTrue(result.isError());
@@ -635,7 +635,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetween(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.between(10.0f, 100.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42.0f);
 		assertTrue(result.isSuccess());
@@ -644,7 +644,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetween(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.between(10.0f, 100.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(50.0f));
 		assertTrue(result.isSuccess());
@@ -652,7 +652,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyBetweenConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetween(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.between(10.0f, 100.0f);
 		
 		Result<String> result = codec.encodeKey(42.0f);
 		assertTrue(result.isSuccess());
@@ -660,7 +660,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyBetweenConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetween(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.between(10.0f, 100.0f);
 		
 		Result<Float> result = codec.decodeKey("50.0");
 		assertTrue(result.isSuccess());
@@ -669,7 +669,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetween(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.between(10.0f, 100.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 10.0f);
 		assertTrue(result.isError());
@@ -678,7 +678,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetween(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.between(10.0f, 100.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100.0f));
 		assertTrue(result.isError());
@@ -686,7 +686,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyBetweenConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetween(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.between(10.0f, 100.0f);
 		
 		Result<String> result = codec.encodeKey(5.0f);
 		assertTrue(result.isError());
@@ -694,7 +694,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyBetweenConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetween(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.between(10.0f, 100.0f);
 		
 		Result<Float> result = codec.decodeKey("150.0");
 		assertTrue(result.isError());
@@ -703,7 +703,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetweenOrEqual(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.betweenOrEqual(10.0f, 100.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 10.0f);
 		assertTrue(result.isSuccess());
@@ -712,7 +712,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetweenOrEqual(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.betweenOrEqual(10.0f, 100.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100.0f));
 		assertTrue(result.isSuccess());
@@ -720,7 +720,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetweenOrEqual(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.betweenOrEqual(10.0f, 100.0f);
 		
 		Result<String> result = codec.encodeKey(50.0f);
 		assertTrue(result.isSuccess());
@@ -728,7 +728,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetweenOrEqual(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.betweenOrEqual(10.0f, 100.0f);
 		
 		Result<Float> result = codec.decodeKey("100.0");
 		assertTrue(result.isSuccess());
@@ -737,7 +737,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetweenOrEqual(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.betweenOrEqual(10.0f, 100.0f);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 9.99f);
 		assertTrue(result.isError());
@@ -746,7 +746,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetweenOrEqual(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.betweenOrEqual(10.0f, 100.0f);
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100.01f));
 		assertTrue(result.isError());
@@ -754,7 +754,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetweenOrEqual(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.betweenOrEqual(10.0f, 100.0f);
 		
 		Result<String> result = codec.encodeKey(5.0f);
 		assertTrue(result.isError());
@@ -762,7 +762,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withBetweenOrEqual(10.0f, 100.0f));
+		Codec<Float> codec = Codecs.FLOAT.betweenOrEqual(10.0f, 100.0f);
 		
 		Result<Float> result = codec.decodeKey("150.0");
 		assertTrue(result.isError());
@@ -771,7 +771,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14f);
 		assertTrue(result.isSuccess());
@@ -780,7 +780,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42.0f));
 		assertTrue(result.isSuccess());
@@ -788,7 +788,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyPositiveConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<String> result = codec.encodeKey(0.001f);
 		assertTrue(result.isSuccess());
@@ -796,7 +796,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyPositiveConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<Float> result = codec.decodeKey("42.0");
 		assertTrue(result.isSuccess());
@@ -805,7 +805,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.0f);
 		assertTrue(result.isError());
@@ -814,7 +814,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-3.14f));
 		assertTrue(result.isError());
@@ -822,7 +822,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyPositiveConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<String> result = codec.encodeKey(-1.0f);
 		assertTrue(result.isError());
@@ -830,7 +830,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyPositiveConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPositive);
+		Codec<Float> codec = Codecs.FLOAT.positive();
 		
 		Result<Float> result = codec.decodeKey("0.0");
 		assertTrue(result.isError());
@@ -839,7 +839,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonPositive);
+		Codec<Float> codec = Codecs.FLOAT.nonPositive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.0f);
 		assertTrue(result.isSuccess());
@@ -848,7 +848,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonPositive);
+		Codec<Float> codec = Codecs.FLOAT.nonPositive();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-3.14f));
 		assertTrue(result.isSuccess());
@@ -856,7 +856,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNonPositiveConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonPositive);
+		Codec<Float> codec = Codecs.FLOAT.nonPositive();
 		
 		Result<String> result = codec.encodeKey(-42.0f);
 		assertTrue(result.isSuccess());
@@ -864,7 +864,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNonPositiveConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonPositive);
+		Codec<Float> codec = Codecs.FLOAT.nonPositive();
 		
 		Result<Float> result = codec.decodeKey("0.0");
 		assertTrue(result.isSuccess());
@@ -873,7 +873,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonPositive);
+		Codec<Float> codec = Codecs.FLOAT.nonPositive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.001f);
 		assertTrue(result.isError());
@@ -882,7 +882,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonPositive);
+		Codec<Float> codec = Codecs.FLOAT.nonPositive();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14f));
 		assertTrue(result.isError());
@@ -890,7 +890,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNonPositiveConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonPositive);
+		Codec<Float> codec = Codecs.FLOAT.nonPositive();
 		
 		Result<String> result = codec.encodeKey(42.0f);
 		assertTrue(result.isError());
@@ -898,7 +898,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNonPositiveConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonPositive);
+		Codec<Float> codec = Codecs.FLOAT.nonPositive();
 		
 		Result<Float> result = codec.decodeKey("1.0");
 		assertTrue(result.isError());
@@ -907,7 +907,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNegative);
+		Codec<Float> codec = Codecs.FLOAT.negative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), -3.14f);
 		assertTrue(result.isSuccess());
@@ -916,7 +916,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNegative);
+		Codec<Float> codec = Codecs.FLOAT.negative();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-42.0f));
 		assertTrue(result.isSuccess());
@@ -924,7 +924,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNegativeConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNegative);
+		Codec<Float> codec = Codecs.FLOAT.negative();
 		
 		Result<String> result = codec.encodeKey(-0.001f);
 		assertTrue(result.isSuccess());
@@ -932,7 +932,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNegativeConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNegative);
+		Codec<Float> codec = Codecs.FLOAT.negative();
 		
 		Result<Float> result = codec.decodeKey("-42.0");
 		assertTrue(result.isSuccess());
@@ -941,7 +941,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNegative);
+		Codec<Float> codec = Codecs.FLOAT.negative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.0f);
 		assertTrue(result.isError());
@@ -950,7 +950,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNegative);
+		Codec<Float> codec = Codecs.FLOAT.negative();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14f));
 		assertTrue(result.isError());
@@ -958,7 +958,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNegativeConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNegative);
+		Codec<Float> codec = Codecs.FLOAT.negative();
 		
 		Result<String> result = codec.encodeKey(1.0f);
 		assertTrue(result.isError());
@@ -966,7 +966,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNegativeConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNegative);
+		Codec<Float> codec = Codecs.FLOAT.negative();
 		
 		Result<Float> result = codec.decodeKey("0.0");
 		assertTrue(result.isError());
@@ -975,7 +975,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonNegative);
+		Codec<Float> codec = Codecs.FLOAT.nonNegative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.0f);
 		assertTrue(result.isSuccess());
@@ -984,7 +984,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonNegative);
+		Codec<Float> codec = Codecs.FLOAT.nonNegative();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14f));
 		assertTrue(result.isSuccess());
@@ -992,7 +992,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNonNegativeConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonNegative);
+		Codec<Float> codec = Codecs.FLOAT.nonNegative();
 		
 		Result<String> result = codec.encodeKey(42.0f);
 		assertTrue(result.isSuccess());
@@ -1000,7 +1000,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNonNegativeConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonNegative);
+		Codec<Float> codec = Codecs.FLOAT.nonNegative();
 		
 		Result<Float> result = codec.decodeKey("0.0");
 		assertTrue(result.isSuccess());
@@ -1009,7 +1009,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonNegative);
+		Codec<Float> codec = Codecs.FLOAT.nonNegative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), -0.001f);
 		assertTrue(result.isError());
@@ -1018,7 +1018,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonNegative);
+		Codec<Float> codec = Codecs.FLOAT.nonNegative();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-3.14f));
 		assertTrue(result.isError());
@@ -1026,7 +1026,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNonNegativeConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonNegative);
+		Codec<Float> codec = Codecs.FLOAT.nonNegative();
 		
 		Result<String> result = codec.encodeKey(-42.0f);
 		assertTrue(result.isError());
@@ -1034,7 +1034,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNonNegativeConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonNegative);
+		Codec<Float> codec = Codecs.FLOAT.nonNegative();
 		
 		Result<Float> result = codec.decodeKey("-1.0");
 		assertTrue(result.isError());
@@ -1043,7 +1043,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withZero);
+		Codec<Float> codec = Codecs.FLOAT.zero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.0f);
 		assertTrue(result.isSuccess());
@@ -1052,7 +1052,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withZero);
+		Codec<Float> codec = Codecs.FLOAT.zero();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0.0f));
 		assertTrue(result.isSuccess());
@@ -1060,7 +1060,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyZeroConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withZero);
+		Codec<Float> codec = Codecs.FLOAT.zero();
 		
 		Result<String> result = codec.encodeKey(0.0f);
 		assertTrue(result.isSuccess());
@@ -1068,7 +1068,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyZeroConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withZero);
+		Codec<Float> codec = Codecs.FLOAT.zero();
 		
 		Result<Float> result = codec.decodeKey("0.0");
 		assertTrue(result.isSuccess());
@@ -1077,7 +1077,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withZero);
+		Codec<Float> codec = Codecs.FLOAT.zero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.001f);
 		assertTrue(result.isError());
@@ -1086,7 +1086,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withZero);
+		Codec<Float> codec = Codecs.FLOAT.zero();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14f));
 		assertTrue(result.isError());
@@ -1094,7 +1094,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyZeroConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withZero);
+		Codec<Float> codec = Codecs.FLOAT.zero();
 		
 		Result<String> result = codec.encodeKey(-1.0f);
 		assertTrue(result.isError());
@@ -1102,7 +1102,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyZeroConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withZero);
+		Codec<Float> codec = Codecs.FLOAT.zero();
 		
 		Result<Float> result = codec.decodeKey("42.0");
 		assertTrue(result.isError());
@@ -1111,7 +1111,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonZero);
+		Codec<Float> codec = Codecs.FLOAT.nonZero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14f);
 		assertTrue(result.isSuccess());
@@ -1120,7 +1120,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonZero);
+		Codec<Float> codec = Codecs.FLOAT.nonZero();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-42.0f));
 		assertTrue(result.isSuccess());
@@ -1128,7 +1128,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNonZeroConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonZero);
+		Codec<Float> codec = Codecs.FLOAT.nonZero();
 		
 		Result<String> result = codec.encodeKey(0.001f);
 		assertTrue(result.isSuccess());
@@ -1136,7 +1136,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNonZeroConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonZero);
+		Codec<Float> codec = Codecs.FLOAT.nonZero();
 		
 		Result<Float> result = codec.decodeKey("-0.001");
 		assertTrue(result.isSuccess());
@@ -1145,7 +1145,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonZero);
+		Codec<Float> codec = Codecs.FLOAT.nonZero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.0f);
 		assertTrue(result.isError());
@@ -1154,7 +1154,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonZero);
+		Codec<Float> codec = Codecs.FLOAT.nonZero();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0.0f));
 		assertTrue(result.isError());
@@ -1162,7 +1162,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNonZeroConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonZero);
+		Codec<Float> codec = Codecs.FLOAT.nonZero();
 		
 		Result<String> result = codec.encodeKey(0.0f);
 		assertTrue(result.isError());
@@ -1170,7 +1170,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNonZeroConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNonZero);
+		Codec<Float> codec = Codecs.FLOAT.nonZero();
 		
 		Result<Float> result = codec.decodeKey("0.0");
 		assertTrue(result.isError());
@@ -1179,7 +1179,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartPercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPercentage);
+		Codec<Float> codec = Codecs.FLOAT.percentage();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 50.0f);
 		assertTrue(result.isSuccess());
@@ -1188,7 +1188,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartPercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPercentage);
+		Codec<Float> codec = Codecs.FLOAT.percentage();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0.0f));
 		assertTrue(result.isSuccess());
@@ -1196,7 +1196,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyPercentageConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPercentage);
+		Codec<Float> codec = Codecs.FLOAT.percentage();
 		
 		Result<String> result = codec.encodeKey(100.0f);
 		assertTrue(result.isSuccess());
@@ -1204,7 +1204,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyPercentageConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPercentage);
+		Codec<Float> codec = Codecs.FLOAT.percentage();
 		
 		Result<Float> result = codec.decodeKey("75.5");
 		assertTrue(result.isSuccess());
@@ -1213,7 +1213,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartPercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPercentage);
+		Codec<Float> codec = Codecs.FLOAT.percentage();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), -1.0f);
 		assertTrue(result.isError());
@@ -1222,7 +1222,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartPercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPercentage);
+		Codec<Float> codec = Codecs.FLOAT.percentage();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100.01f));
 		assertTrue(result.isError());
@@ -1230,7 +1230,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyPercentageConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPercentage);
+		Codec<Float> codec = Codecs.FLOAT.percentage();
 		
 		Result<String> result = codec.encodeKey(150.0f);
 		assertTrue(result.isError());
@@ -1238,7 +1238,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyPercentageConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withPercentage);
+		Codec<Float> codec = Codecs.FLOAT.percentage();
 		
 		Result<Float> result = codec.decodeKey("-0.1");
 		assertTrue(result.isError());
@@ -1247,7 +1247,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartFiniteConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withFinite);
+		Codec<Float> codec = Codecs.FLOAT.finite();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14f);
 		assertTrue(result.isSuccess());
@@ -1256,7 +1256,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartFiniteConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withFinite);
+		Codec<Float> codec = Codecs.FLOAT.finite();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Float.MAX_VALUE));
 		assertTrue(result.isSuccess());
@@ -1264,7 +1264,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyFiniteConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withFinite);
+		Codec<Float> codec = Codecs.FLOAT.finite();
 		
 		Result<String> result = codec.encodeKey(Float.MIN_VALUE);
 		assertTrue(result.isSuccess());
@@ -1272,7 +1272,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyFiniteConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withFinite);
+		Codec<Float> codec = Codecs.FLOAT.finite();
 		
 		Result<Float> result = codec.decodeKey("42.0");
 		assertTrue(result.isSuccess());
@@ -1281,7 +1281,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartFiniteConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withFinite);
+		Codec<Float> codec = Codecs.FLOAT.finite();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Float.POSITIVE_INFINITY);
 		assertTrue(result.isError());
@@ -1290,7 +1290,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartFiniteConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withFinite);
+		Codec<Float> codec = Codecs.FLOAT.finite();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Float.NEGATIVE_INFINITY));
 		assertTrue(result.isError());
@@ -1298,7 +1298,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyFiniteConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withFinite);
+		Codec<Float> codec = Codecs.FLOAT.finite();
 		
 		Result<String> result = codec.encodeKey(Float.NaN);
 		assertTrue(result.isError());
@@ -1306,7 +1306,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyFiniteConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withFinite);
+		Codec<Float> codec = Codecs.FLOAT.finite();
 		
 		Result<Float> result = codec.decodeKey("Infinity");
 		assertTrue(result.isError());
@@ -1315,7 +1315,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNotNaNConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNotNaN);
+		Codec<Float> codec = Codecs.FLOAT.notNaN();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14f);
 		assertTrue(result.isSuccess());
@@ -1324,7 +1324,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNotNaNConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNotNaN);
+		Codec<Float> codec = Codecs.FLOAT.notNaN();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Float.POSITIVE_INFINITY));
 		assertTrue(result.isSuccess());
@@ -1332,7 +1332,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNotNaNConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNotNaN);
+		Codec<Float> codec = Codecs.FLOAT.notNaN();
 		
 		Result<String> result = codec.encodeKey(Float.NEGATIVE_INFINITY);
 		assertTrue(result.isSuccess());
@@ -1340,7 +1340,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNotNaNConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNotNaN);
+		Codec<Float> codec = Codecs.FLOAT.notNaN();
 		
 		Result<Float> result = codec.decodeKey("42.0");
 		assertTrue(result.isSuccess());
@@ -1349,7 +1349,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNotNaNConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNotNaN);
+		Codec<Float> codec = Codecs.FLOAT.notNaN();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Float.NaN);
 		assertTrue(result.isError());
@@ -1358,7 +1358,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNotNaNConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNotNaN);
+		Codec<Float> codec = Codecs.FLOAT.notNaN();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Float.NaN));
 		assertTrue(result.isError());
@@ -1366,7 +1366,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNotNaNConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNotNaN);
+		Codec<Float> codec = Codecs.FLOAT.notNaN();
 		
 		Result<String> result = codec.encodeKey(Float.NaN);
 		assertTrue(result.isError());
@@ -1374,7 +1374,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNotNaNConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNotNaN);
+		Codec<Float> codec = Codecs.FLOAT.notNaN();
 		
 		Result<Float> result = codec.decodeKey("NaN");
 		assertTrue(result.isError());
@@ -1383,7 +1383,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartIntegralConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withIntegral);
+		Codec<Float> codec = Codecs.FLOAT.integral();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42.0f);
 		assertTrue(result.isSuccess());
@@ -1392,7 +1392,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartIntegralConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withIntegral);
+		Codec<Float> codec = Codecs.FLOAT.integral();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100.0f));
 		assertTrue(result.isSuccess());
@@ -1400,7 +1400,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyIntegralConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withIntegral);
+		Codec<Float> codec = Codecs.FLOAT.integral();
 		
 		Result<String> result = codec.encodeKey(-5.0f);
 		assertTrue(result.isSuccess());
@@ -1408,7 +1408,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyIntegralConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withIntegral);
+		Codec<Float> codec = Codecs.FLOAT.integral();
 		
 		Result<Float> result = codec.decodeKey("0.0");
 		assertTrue(result.isSuccess());
@@ -1417,7 +1417,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartIntegralConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withIntegral);
+		Codec<Float> codec = Codecs.FLOAT.integral();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14f);
 		assertTrue(result.isError());
@@ -1426,7 +1426,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartIntegralConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withIntegral);
+		Codec<Float> codec = Codecs.FLOAT.integral();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0.5f));
 		assertTrue(result.isError());
@@ -1434,7 +1434,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyIntegralConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withIntegral);
+		Codec<Float> codec = Codecs.FLOAT.integral();
 		
 		Result<String> result = codec.encodeKey(2.718f);
 		assertTrue(result.isError());
@@ -1442,7 +1442,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyIntegralConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withIntegral);
+		Codec<Float> codec = Codecs.FLOAT.integral();
 		
 		Result<Float> result = codec.decodeKey("1.5");
 		assertTrue(result.isError());
@@ -1451,7 +1451,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNormalizedConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNormalized);
+		Codec<Float> codec = Codecs.FLOAT.normalized();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.5f);
 		assertTrue(result.isSuccess());
@@ -1460,7 +1460,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNormalizedConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNormalized);
+		Codec<Float> codec = Codecs.FLOAT.normalized();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0.0f));
 		assertTrue(result.isSuccess());
@@ -1468,7 +1468,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNormalizedConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNormalized);
+		Codec<Float> codec = Codecs.FLOAT.normalized();
 		
 		Result<String> result = codec.encodeKey(1.0f);
 		assertTrue(result.isSuccess());
@@ -1476,7 +1476,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNormalizedConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNormalized);
+		Codec<Float> codec = Codecs.FLOAT.normalized();
 		
 		Result<Float> result = codec.decodeKey("0.75");
 		assertTrue(result.isSuccess());
@@ -1485,7 +1485,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartNormalizedConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNormalized);
+		Codec<Float> codec = Codecs.FLOAT.normalized();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), -0.1f);
 		assertTrue(result.isError());
@@ -1494,7 +1494,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartNormalizedConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNormalized);
+		Codec<Float> codec = Codecs.FLOAT.normalized();
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(1.1f));
 		assertTrue(result.isError());
@@ -1502,7 +1502,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyNormalizedConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNormalized);
+		Codec<Float> codec = Codecs.FLOAT.normalized();
 		
 		Result<String> result = codec.encodeKey(2.0f);
 		assertTrue(result.isError());
@@ -1510,7 +1510,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyNormalizedConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(DecimalConstraintConfig::withNormalized);
+		Codec<Float> codec = Codecs.FLOAT.normalized();
 		
 		Result<Float> result = codec.decodeKey("-0.5");
 		assertTrue(result.isError());
@@ -1519,7 +1519,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withCustom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even")));
+		Codec<Float> codec = Codecs.FLOAT.custom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even"));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 4.0f);
 		assertTrue(result.isSuccess());
@@ -1528,7 +1528,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withCustom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even")));
+		Codec<Float> codec = Codecs.FLOAT.custom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even"));
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(10.0f));
 		assertTrue(result.isSuccess());
@@ -1536,7 +1536,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withCustom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even")));
+		Codec<Float> codec = Codecs.FLOAT.custom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even"));
 		
 		Result<String> result = codec.encodeKey(6.0f);
 		assertTrue(result.isSuccess());
@@ -1544,7 +1544,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withCustom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even")));
+		Codec<Float> codec = Codecs.FLOAT.custom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even"));
 		
 		Result<Float> result = codec.decodeKey("8.0");
 		assertTrue(result.isSuccess());
@@ -1553,7 +1553,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withCustom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even")));
+		Codec<Float> codec = Codecs.FLOAT.custom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even"));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.0f);
 		assertTrue(result.isError());
@@ -1562,7 +1562,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withCustom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even")));
+		Codec<Float> codec = Codecs.FLOAT.custom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even"));
 		
 		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(5.0f));
 		assertTrue(result.isError());
@@ -1570,7 +1570,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withCustom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even")));
+		Codec<Float> codec = Codecs.FLOAT.custom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even"));
 		
 		Result<String> result = codec.encodeKey(7.0f);
 		assertTrue(result.isError());
@@ -1578,7 +1578,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config.withCustom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even")));
+		Codec<Float> codec = Codecs.FLOAT.custom(value -> value % 2.0f == 0.0f ? Result.success() : Result.error("Value must be even"));
 		
 		Result<Float> result = codec.decodeKey("9.0");
 		assertTrue(result.isError());
@@ -1587,7 +1587,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config
+		Codec<Float> codec = Codecs.FLOAT.apply(config -> config
 			.withPositive()
 			.withFinite()
 			.withLessThan(100.0f));
@@ -1599,7 +1599,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config
+		Codec<Float> codec = Codecs.FLOAT.apply(config -> config
 			.withPositive()
 			.withFinite()
 			.withLessThan(100.0f));
@@ -1610,7 +1610,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyCombinedConstraintsSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config
+		Codec<Float> codec = Codecs.FLOAT.apply(config -> config
 			.withNonNegative()
 			.withNormalized());
 		
@@ -1620,7 +1620,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyCombinedConstraintsSuccess() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config
+		Codec<Float> codec = Codecs.FLOAT.apply(config -> config
 			.withNonNegative()
 			.withNormalized());
 		
@@ -1631,7 +1631,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsPositiveViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config
+		Codec<Float> codec = Codecs.FLOAT.apply(config -> config
 			.withPositive()
 			.withLessThan(100.0f));
 		
@@ -1642,7 +1642,7 @@ class ConstrainedFloatCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsFiniteViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Float> codec = new FloatCodec().apply(config -> config
+		Codec<Float> codec = Codecs.FLOAT.apply(config -> config
 			.withPositive()
 			.withFinite());
 		
@@ -1652,7 +1652,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void encodeKeyCombinedConstraintsRangeViolation() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config
+		Codec<Float> codec = Codecs.FLOAT.apply(config -> config
 			.withPositive()
 			.withLessThan(100.0f));
 		
@@ -1662,7 +1662,7 @@ class ConstrainedFloatCodecTest {
 	
 	@Test
 	void decodeKeyCombinedConstraintsMultipleViolations() {
-		Codec<Float> codec = new FloatCodec().apply(config -> config
+		Codec<Float> codec = Codecs.FLOAT.apply(config -> config
 			.withPositive()
 			.withFinite()
 			.withLessThan(100.0f));

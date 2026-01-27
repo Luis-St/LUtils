@@ -19,8 +19,7 @@
 package net.luis.utils.io.codec.types.temporal;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.temporal.PeriodConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -43,7 +42,7 @@ class ConstrainedPeriodCodecTest {
 	void encodeStartWithValidGreaterThanConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period threshold = Period.ofMonths(6);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withGreaterThan(threshold));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withGreaterThan(threshold));
 		Period value = Period.ofYears(1);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -54,7 +53,7 @@ class ConstrainedPeriodCodecTest {
 	void encodeStartWithValidLessThanConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period threshold = Period.ofYears(2);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withLessThan(threshold));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withLessThan(threshold));
 		Period value = Period.ofMonths(6);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -66,7 +65,7 @@ class ConstrainedPeriodCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period min = Period.ofMonths(1);
 		Period max = Period.ofYears(2);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withBetween(min, max));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withBetween(min, max));
 		Period value = Period.ofMonths(6);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -77,7 +76,7 @@ class ConstrainedPeriodCodecTest {
 	void encodeStartWithValidEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period target = Period.of(1, 2, 15);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withEqualTo(target));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withEqualTo(target));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), target);
 		assertTrue(result.isSuccess());
@@ -88,7 +87,7 @@ class ConstrainedPeriodCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period value1 = Period.ofMonths(1);
 		Period value2 = Period.ofMonths(3);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withIn(Set.of(value1, value2)));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withIn(Set.of(value1, value2)));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value1);
 		assertTrue(result.isSuccess());
@@ -99,7 +98,7 @@ class ConstrainedPeriodCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period excluded = Period.ofMonths(1);
 		Period value = Period.ofMonths(3);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withNotEqualTo(excluded));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
@@ -111,7 +110,7 @@ class ConstrainedPeriodCodecTest {
 		Period excluded1 = Period.ofMonths(1);
 		Period excluded2 = Period.ofMonths(3);
 		Period value = Period.ofMonths(6);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
@@ -120,7 +119,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartWithValidPositiveConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(PeriodConstraintConfig::withPositive);
+		Codec<Period> codec = Codecs.PERIOD.positive();
 		Period value = Period.ofMonths(1);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -130,7 +129,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartWithValidNonNegativeConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(PeriodConstraintConfig::withNonNegative);
+		Codec<Period> codec = Codecs.PERIOD.nonNegative();
 		Period value = Period.ZERO;
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -140,7 +139,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartWithValidNonZeroConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(PeriodConstraintConfig::withNonZero);
+		Codec<Period> codec = Codecs.PERIOD.nonZero();
 		Period value = Period.ofDays(1);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -150,7 +149,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartWithValidZeroConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(PeriodConstraintConfig::withZero);
+		Codec<Period> codec = Codecs.PERIOD.zero();
 		Period value = Period.ZERO;
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -160,9 +159,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartWithValidDayConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withDay(
-			NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(10)
-		));
+		Codec<Period> codec = Codecs.PERIOD.day(builder -> builder.greaterThanOrEqual(10));
 		Period value = Period.ofDays(15);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -172,9 +169,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartWithValidMonthConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withMonth(
-			NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 6)
-		));
+		Codec<Period> codec = Codecs.PERIOD.month(builder -> builder.betweenOrEqual(1, 6));
 		Period value = Period.ofMonths(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -184,9 +179,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartWithValidYearConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withYear(
-			NumericConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(5)
-		));
+		Codec<Period> codec = Codecs.PERIOD.year(builder -> builder.lessThanOrEqual(5));
 		Period value = Period.ofYears(2);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -197,7 +190,7 @@ class ConstrainedPeriodCodecTest {
 	void decodeStartWithValidConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period threshold = Period.ofMonths(1);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withGreaterThan(threshold));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withGreaterThan(threshold));
 		
 		Result<Period> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("1y"));
 		assertTrue(result.isSuccess());
@@ -206,7 +199,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartWithCustomConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withCustom(value -> {
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withCustom(value -> {
 			if (value.getDays() % 7 == 0) {
 				return Result.success(null);
 			}
@@ -222,7 +215,7 @@ class ConstrainedPeriodCodecTest {
 	void encodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period threshold = Period.ofYears(1);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withGreaterThan(threshold));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withGreaterThan(threshold));
 		Period value = Period.ofMonths(6);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -233,7 +226,7 @@ class ConstrainedPeriodCodecTest {
 	void encodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period threshold = Period.ofMonths(6);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withLessThan(threshold));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withLessThan(threshold));
 		Period value = Period.ofYears(1);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -245,7 +238,7 @@ class ConstrainedPeriodCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period min = Period.ofMonths(6);
 		Period max = Period.ofYears(2);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withBetween(min, max));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withBetween(min, max));
 		Period value = Period.ofMonths(1);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -257,7 +250,7 @@ class ConstrainedPeriodCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period min = Period.ofMonths(1);
 		Period max = Period.ofYears(1);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withBetween(min, max));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withBetween(min, max));
 		Period value = Period.ofYears(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -268,7 +261,7 @@ class ConstrainedPeriodCodecTest {
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period target = Period.ofMonths(3);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withEqualTo(target));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withEqualTo(target));
 		Period differentValue = Period.ofMonths(6);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), differentValue);
@@ -280,7 +273,7 @@ class ConstrainedPeriodCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period value1 = Period.ofMonths(1);
 		Period value2 = Period.ofMonths(3);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withIn(Set.of(value1, value2)));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withIn(Set.of(value1, value2)));
 		Period notInSet = Period.ofMonths(6);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notInSet);
@@ -291,7 +284,7 @@ class ConstrainedPeriodCodecTest {
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period excluded = Period.ofMonths(3);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withNotEqualTo(excluded));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
 		assertTrue(result.isError());
@@ -302,7 +295,7 @@ class ConstrainedPeriodCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period excluded1 = Period.ofMonths(1);
 		Period excluded2 = Period.ofMonths(3);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded1);
 		assertTrue(result.isError());
@@ -311,7 +304,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(PeriodConstraintConfig::withPositive);
+		Codec<Period> codec = Codecs.PERIOD.positive();
 		Period value = Period.ZERO;
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -321,7 +314,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(PeriodConstraintConfig::withNonNegative);
+		Codec<Period> codec = Codecs.PERIOD.nonNegative();
 		Period value = Period.ofDays(-1);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -331,7 +324,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(PeriodConstraintConfig::withNonZero);
+		Codec<Period> codec = Codecs.PERIOD.nonZero();
 		Period value = Period.ZERO;
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -341,7 +334,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(PeriodConstraintConfig::withZero);
+		Codec<Period> codec = Codecs.PERIOD.zero();
 		Period value = Period.ofDays(1);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -351,9 +344,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartDayConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withDay(
-			NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(20)
-		));
+		Codec<Period> codec = Codecs.PERIOD.day(builder -> builder.greaterThanOrEqual(20));
 		Period value = Period.ofDays(10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -363,9 +354,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartMonthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withMonth(
-			NumericConstraintConfig.UNCONSTRAINED.withLessThan(3)
-		));
+		Codec<Period> codec = Codecs.PERIOD.month(builder -> builder.lessThan(3));
 		Period value = Period.ofMonths(6);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -375,9 +364,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartYearConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withYear(
-			NumericConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(2)
-		));
+		Codec<Period> codec = Codecs.PERIOD.year(builder -> builder.lessThanOrEqual(2));
 		Period value = Period.ofYears(5);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -388,7 +375,7 @@ class ConstrainedPeriodCodecTest {
 	void decodeStartConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Period threshold = Period.ofYears(2);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withGreaterThan(threshold));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withGreaterThan(threshold));
 		
 		Result<Period> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("6m"));
 		assertTrue(result.isError());
@@ -397,7 +384,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withCustom(value -> {
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withCustom(value -> {
 			if (value.getDays() % 7 == 0) {
 				return Result.success(null);
 			}
@@ -412,7 +399,7 @@ class ConstrainedPeriodCodecTest {
 	@Test
 	void toStringWithConstraints() {
 		Period threshold = Period.ofMonths(1);
-		Codec<Period> codec = new PeriodCodec().apply(config -> config.withGreaterThan(threshold));
+		Codec<Period> codec = Codecs.PERIOD.apply(config -> config.withGreaterThan(threshold));
 		
 		String toString = codec.toString();
 		assertTrue(toString.contains("Constrained"));
@@ -420,7 +407,7 @@ class ConstrainedPeriodCodecTest {
 	
 	@Test
 	void toStringWithoutConstraints() {
-		Codec<Period> codec = new PeriodCodec();
+		Codec<Period> codec = Codecs.PERIOD;
 		
 		assertEquals("PeriodCodec", codec.toString());
 	}

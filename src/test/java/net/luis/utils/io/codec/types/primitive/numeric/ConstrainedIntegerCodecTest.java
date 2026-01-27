@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.numeric.IntegerConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -40,7 +40,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(result.isSuccess());
@@ -50,7 +50,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
@@ -59,7 +59,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyWithValidConstrainedValue() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<String> result = codec.encodeKey(42);
 		assertTrue(result.isSuccess());
@@ -68,7 +68,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyWithValidConstrainedValue() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<Integer> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -77,20 +77,20 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		assertTrue(codec.toString().contains("Constrained"));
 	}
 	
 	@Test
 	void toStringWithoutConstraints() {
-		Codec<Integer> codec = new IntegerCodec();
+		Codec<Integer> codec = Codecs.INTEGER;
 		assertEquals("IntegerCodec", codec.toString());
 	}
 	
 	@Test
 	void encodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.equalTo(42);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(result.isSuccess());
@@ -99,7 +99,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.equalTo(42);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
@@ -107,7 +107,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.equalTo(42);
 		
 		Result<String> result = codec.encodeKey(42);
 		assertTrue(result.isSuccess());
@@ -115,7 +115,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.equalTo(42);
 		
 		Result<Integer> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -124,7 +124,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.equalTo(42);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 100);
 		assertTrue(result.isError());
@@ -133,7 +133,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.equalTo(42);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100));
 		assertTrue(result.isError());
@@ -141,7 +141,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.equalTo(42);
 		
 		Result<String> result = codec.encodeKey(100);
 		assertTrue(result.isError());
@@ -149,7 +149,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.equalTo(42);
 		
 		Result<Integer> result = codec.decodeKey("100");
 		assertTrue(result.isError());
@@ -158,7 +158,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.notEqualTo(42);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 100);
 		assertTrue(result.isSuccess());
@@ -167,7 +167,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.notEqualTo(42);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100));
 		assertTrue(result.isSuccess());
@@ -175,7 +175,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.notEqualTo(42);
 		
 		Result<String> result = codec.encodeKey(100);
 		assertTrue(result.isSuccess());
@@ -183,7 +183,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.notEqualTo(42);
 		
 		Result<Integer> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -192,7 +192,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.notEqualTo(42);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(result.isError());
@@ -201,7 +201,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.notEqualTo(42);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
 		assertTrue(result.isError());
@@ -209,7 +209,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.notEqualTo(42);
 		
 		Result<String> result = codec.encodeKey(42);
 		assertTrue(result.isError());
@@ -217,7 +217,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotEqualTo(42));
+		Codec<Integer> codec = Codecs.INTEGER.notEqualTo(42);
 		
 		Result<Integer> result = codec.decodeKey("42");
 		assertTrue(result.isError());
@@ -226,7 +226,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.in(Set.of(10, 20, 30));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 20);
 		assertTrue(result.isSuccess());
@@ -235,7 +235,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.in(Set.of(10, 20, 30));
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(20));
 		assertTrue(result.isSuccess());
@@ -243,7 +243,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.in(Set.of(10, 20, 30));
 		
 		Result<String> result = codec.encodeKey(20);
 		assertTrue(result.isSuccess());
@@ -251,7 +251,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.in(Set.of(10, 20, 30));
 		
 		Result<Integer> result = codec.decodeKey("20");
 		assertTrue(result.isSuccess());
@@ -260,7 +260,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.in(Set.of(10, 20, 30));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(result.isError());
@@ -269,7 +269,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.in(Set.of(10, 20, 30));
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
 		assertTrue(result.isError());
@@ -277,7 +277,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.in(Set.of(10, 20, 30));
 		
 		Result<String> result = codec.encodeKey(42);
 		assertTrue(result.isError());
@@ -285,7 +285,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.in(Set.of(10, 20, 30));
 		
 		Result<Integer> result = codec.decodeKey("42");
 		assertTrue(result.isError());
@@ -294,7 +294,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.notIn(Set.of(10, 20, 30));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(result.isSuccess());
@@ -303,7 +303,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.notIn(Set.of(10, 20, 30));
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
@@ -311,7 +311,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.notIn(Set.of(10, 20, 30));
 		
 		Result<String> result = codec.encodeKey(42);
 		assertTrue(result.isSuccess());
@@ -319,7 +319,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.notIn(Set.of(10, 20, 30));
 		
 		Result<Integer> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -328,7 +328,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.notIn(Set.of(10, 20, 30));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 20);
 		assertTrue(result.isError());
@@ -337,7 +337,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.notIn(Set.of(10, 20, 30));
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(20));
 		assertTrue(result.isError());
@@ -345,7 +345,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.notIn(Set.of(10, 20, 30));
 		
 		Result<String> result = codec.encodeKey(20);
 		assertTrue(result.isError());
@@ -353,7 +353,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withNotIn(Set.of(10, 20, 30)));
+		Codec<Integer> codec = Codecs.INTEGER.notIn(Set.of(10, 20, 30));
 		
 		Result<Integer> result = codec.decodeKey("20");
 		assertTrue(result.isError());
@@ -362,7 +362,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThan(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThan(10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 15);
 		assertTrue(result.isSuccess());
@@ -371,7 +371,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThan(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThan(10);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(15));
 		assertTrue(result.isSuccess());
@@ -379,7 +379,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThan(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThan(10);
 		
 		Result<String> result = codec.encodeKey(15);
 		assertTrue(result.isSuccess());
@@ -387,7 +387,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThan(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThan(10);
 		
 		Result<Integer> result = codec.decodeKey("15");
 		assertTrue(result.isSuccess());
@@ -396,7 +396,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThan(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThan(10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 10);
 		assertTrue(result.isError());
@@ -405,7 +405,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThan(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThan(10);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(10));
 		assertTrue(result.isError());
@@ -413,7 +413,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThan(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThan(10);
 		
 		Result<String> result = codec.encodeKey(10);
 		assertTrue(result.isError());
@@ -421,7 +421,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThan(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThan(10);
 		
 		Result<Integer> result = codec.decodeKey("10");
 		assertTrue(result.isError());
@@ -430,7 +430,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThanOrEqual(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThanOrEqual(10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 10);
 		assertTrue(result.isSuccess());
@@ -439,7 +439,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThanOrEqual(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThanOrEqual(10);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(10));
 		assertTrue(result.isSuccess());
@@ -447,7 +447,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThanOrEqual(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThanOrEqual(10);
 		
 		Result<String> result = codec.encodeKey(10);
 		assertTrue(result.isSuccess());
@@ -455,7 +455,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThanOrEqual(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThanOrEqual(10);
 		
 		Result<Integer> result = codec.decodeKey("10");
 		assertTrue(result.isSuccess());
@@ -464,7 +464,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThanOrEqual(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThanOrEqual(10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 9);
 		assertTrue(result.isError());
@@ -473,7 +473,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThanOrEqual(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThanOrEqual(10);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(9));
 		assertTrue(result.isError());
@@ -481,7 +481,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThanOrEqual(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThanOrEqual(10);
 		
 		Result<String> result = codec.encodeKey(9);
 		assertTrue(result.isError());
@@ -489,7 +489,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withGreaterThanOrEqual(10));
+		Codec<Integer> codec = Codecs.INTEGER.greaterThanOrEqual(10);
 		
 		Result<Integer> result = codec.decodeKey("9");
 		assertTrue(result.isError());
@@ -498,7 +498,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThan(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThan(100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 50);
 		assertTrue(result.isSuccess());
@@ -507,7 +507,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThan(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThan(100);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(50));
 		assertTrue(result.isSuccess());
@@ -515,7 +515,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyLessThanConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThan(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThan(100);
 		
 		Result<String> result = codec.encodeKey(50);
 		assertTrue(result.isSuccess());
@@ -523,7 +523,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyLessThanConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThan(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThan(100);
 		
 		Result<Integer> result = codec.decodeKey("50");
 		assertTrue(result.isSuccess());
@@ -532,7 +532,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThan(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThan(100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 100);
 		assertTrue(result.isError());
@@ -541,7 +541,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThan(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThan(100);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100));
 		assertTrue(result.isError());
@@ -549,7 +549,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyLessThanConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThan(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThan(100);
 		
 		Result<String> result = codec.encodeKey(100);
 		assertTrue(result.isError());
@@ -557,7 +557,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyLessThanConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThan(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThan(100);
 		
 		Result<Integer> result = codec.decodeKey("100");
 		assertTrue(result.isError());
@@ -566,7 +566,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThanOrEqual(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThanOrEqual(100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 100);
 		assertTrue(result.isSuccess());
@@ -575,7 +575,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThanOrEqual(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThanOrEqual(100);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100));
 		assertTrue(result.isSuccess());
@@ -583,7 +583,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThanOrEqual(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThanOrEqual(100);
 		
 		Result<String> result = codec.encodeKey(100);
 		assertTrue(result.isSuccess());
@@ -591,7 +591,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThanOrEqual(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThanOrEqual(100);
 		
 		Result<Integer> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -600,7 +600,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThanOrEqual(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThanOrEqual(100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 101);
 		assertTrue(result.isError());
@@ -609,7 +609,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThanOrEqual(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThanOrEqual(100);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(101));
 		assertTrue(result.isError());
@@ -617,7 +617,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThanOrEqual(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThanOrEqual(100);
 		
 		Result<String> result = codec.encodeKey(101);
 		assertTrue(result.isError());
@@ -625,7 +625,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withLessThanOrEqual(100));
+		Codec<Integer> codec = Codecs.INTEGER.lessThanOrEqual(100);
 		
 		Result<Integer> result = codec.decodeKey("101");
 		assertTrue(result.isError());
@@ -634,7 +634,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetween(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.between(10, 100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 50);
 		assertTrue(result.isSuccess());
@@ -643,7 +643,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetween(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.between(10, 100);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(50));
 		assertTrue(result.isSuccess());
@@ -651,7 +651,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyBetweenConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetween(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.between(10, 100);
 		
 		Result<String> result = codec.encodeKey(50);
 		assertTrue(result.isSuccess());
@@ -659,7 +659,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyBetweenConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetween(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.between(10, 100);
 		
 		Result<Integer> result = codec.decodeKey("50");
 		assertTrue(result.isSuccess());
@@ -668,7 +668,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetween(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.between(10, 100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 10);
 		assertTrue(result.isError());
@@ -677,7 +677,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetween(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.between(10, 100);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100));
 		assertTrue(result.isError());
@@ -685,7 +685,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyBetweenConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetween(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.between(10, 100);
 		
 		Result<String> result = codec.encodeKey(5);
 		assertTrue(result.isError());
@@ -693,7 +693,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyBetweenConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetween(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.between(10, 100);
 		
 		Result<Integer> result = codec.decodeKey("150");
 		assertTrue(result.isError());
@@ -702,7 +702,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetweenOrEqual(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.betweenOrEqual(10, 100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 10);
 		assertTrue(result.isSuccess());
@@ -711,7 +711,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetweenOrEqual(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.betweenOrEqual(10, 100);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(100));
 		assertTrue(result.isSuccess());
@@ -719,7 +719,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetweenOrEqual(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.betweenOrEqual(10, 100);
 		
 		Result<String> result = codec.encodeKey(50);
 		assertTrue(result.isSuccess());
@@ -727,7 +727,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetweenOrEqual(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.betweenOrEqual(10, 100);
 		
 		Result<Integer> result = codec.decodeKey("10");
 		assertTrue(result.isSuccess());
@@ -736,7 +736,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetweenOrEqual(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.betweenOrEqual(10, 100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 9);
 		assertTrue(result.isError());
@@ -745,7 +745,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetweenOrEqual(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.betweenOrEqual(10, 100);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(101));
 		assertTrue(result.isError());
@@ -753,7 +753,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetweenOrEqual(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.betweenOrEqual(10, 100);
 		
 		Result<String> result = codec.encodeKey(5);
 		assertTrue(result.isError());
@@ -761,7 +761,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withBetweenOrEqual(10, 100));
+		Codec<Integer> codec = Codecs.INTEGER.betweenOrEqual(10, 100);
 		
 		Result<Integer> result = codec.decodeKey("150");
 		assertTrue(result.isError());
@@ -770,7 +770,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 1);
 		assertTrue(result.isSuccess());
@@ -779,7 +779,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(1));
 		assertTrue(result.isSuccess());
@@ -787,7 +787,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyPositiveConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<String> result = codec.encodeKey(1);
 		assertTrue(result.isSuccess());
@@ -795,7 +795,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyPositiveConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<Integer> result = codec.decodeKey("1");
 		assertTrue(result.isSuccess());
@@ -804,7 +804,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0);
 		assertTrue(result.isError());
@@ -813,7 +813,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-1));
 		assertTrue(result.isError());
@@ -821,7 +821,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyPositiveConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<String> result = codec.encodeKey(0);
 		assertTrue(result.isError());
@@ -829,7 +829,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyPositiveConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Integer> codec = Codecs.INTEGER.positive();
 		
 		Result<Integer> result = codec.decodeKey("-1");
 		assertTrue(result.isError());
@@ -838,7 +838,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Integer> codec = Codecs.INTEGER.nonPositive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0);
 		assertTrue(result.isSuccess());
@@ -847,7 +847,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Integer> codec = Codecs.INTEGER.nonPositive();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-1));
 		assertTrue(result.isSuccess());
@@ -855,7 +855,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNonPositiveConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Integer> codec = Codecs.INTEGER.nonPositive();
 		
 		Result<String> result = codec.encodeKey(-5);
 		assertTrue(result.isSuccess());
@@ -863,7 +863,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNonPositiveConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Integer> codec = Codecs.INTEGER.nonPositive();
 		
 		Result<Integer> result = codec.decodeKey("0");
 		assertTrue(result.isSuccess());
@@ -872,7 +872,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Integer> codec = Codecs.INTEGER.nonPositive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 1);
 		assertTrue(result.isError());
@@ -881,7 +881,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Integer> codec = Codecs.INTEGER.nonPositive();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(5));
 		assertTrue(result.isError());
@@ -889,7 +889,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNonPositiveConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Integer> codec = Codecs.INTEGER.nonPositive();
 		
 		Result<String> result = codec.encodeKey(1);
 		assertTrue(result.isError());
@@ -897,7 +897,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNonPositiveConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Integer> codec = Codecs.INTEGER.nonPositive();
 		
 		Result<Integer> result = codec.decodeKey("10");
 		assertTrue(result.isError());
@@ -906,7 +906,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Integer> codec = Codecs.INTEGER.negative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), -1);
 		assertTrue(result.isSuccess());
@@ -915,7 +915,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Integer> codec = Codecs.INTEGER.negative();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-10));
 		assertTrue(result.isSuccess());
@@ -923,7 +923,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNegativeConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Integer> codec = Codecs.INTEGER.negative();
 		
 		Result<String> result = codec.encodeKey(-5);
 		assertTrue(result.isSuccess());
@@ -931,7 +931,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNegativeConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Integer> codec = Codecs.INTEGER.negative();
 		
 		Result<Integer> result = codec.decodeKey("-100");
 		assertTrue(result.isSuccess());
@@ -940,7 +940,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Integer> codec = Codecs.INTEGER.negative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0);
 		assertTrue(result.isError());
@@ -949,7 +949,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Integer> codec = Codecs.INTEGER.negative();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(1));
 		assertTrue(result.isError());
@@ -957,7 +957,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNegativeConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Integer> codec = Codecs.INTEGER.negative();
 		
 		Result<String> result = codec.encodeKey(0);
 		assertTrue(result.isError());
@@ -965,7 +965,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNegativeConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Integer> codec = Codecs.INTEGER.negative();
 		
 		Result<Integer> result = codec.decodeKey("5");
 		assertTrue(result.isError());
@@ -974,7 +974,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Integer> codec = Codecs.INTEGER.nonNegative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0);
 		assertTrue(result.isSuccess());
@@ -983,7 +983,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Integer> codec = Codecs.INTEGER.nonNegative();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(10));
 		assertTrue(result.isSuccess());
@@ -991,7 +991,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNonNegativeConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Integer> codec = Codecs.INTEGER.nonNegative();
 		
 		Result<String> result = codec.encodeKey(5);
 		assertTrue(result.isSuccess());
@@ -999,7 +999,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNonNegativeConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Integer> codec = Codecs.INTEGER.nonNegative();
 		
 		Result<Integer> result = codec.decodeKey("0");
 		assertTrue(result.isSuccess());
@@ -1008,7 +1008,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Integer> codec = Codecs.INTEGER.nonNegative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), -1);
 		assertTrue(result.isError());
@@ -1017,7 +1017,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Integer> codec = Codecs.INTEGER.nonNegative();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-5));
 		assertTrue(result.isError());
@@ -1025,7 +1025,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNonNegativeConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Integer> codec = Codecs.INTEGER.nonNegative();
 		
 		Result<String> result = codec.encodeKey(-1);
 		assertTrue(result.isError());
@@ -1033,7 +1033,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNonNegativeConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Integer> codec = Codecs.INTEGER.nonNegative();
 		
 		Result<Integer> result = codec.decodeKey("-10");
 		assertTrue(result.isError());
@@ -1042,7 +1042,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Integer> codec = Codecs.INTEGER.zero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0);
 		assertTrue(result.isSuccess());
@@ -1051,7 +1051,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Integer> codec = Codecs.INTEGER.zero();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0));
 		assertTrue(result.isSuccess());
@@ -1059,7 +1059,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyZeroConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Integer> codec = Codecs.INTEGER.zero();
 		
 		Result<String> result = codec.encodeKey(0);
 		assertTrue(result.isSuccess());
@@ -1067,7 +1067,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyZeroConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Integer> codec = Codecs.INTEGER.zero();
 		
 		Result<Integer> result = codec.decodeKey("0");
 		assertTrue(result.isSuccess());
@@ -1076,7 +1076,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Integer> codec = Codecs.INTEGER.zero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 1);
 		assertTrue(result.isError());
@@ -1085,7 +1085,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Integer> codec = Codecs.INTEGER.zero();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-1));
 		assertTrue(result.isError());
@@ -1093,7 +1093,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyZeroConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Integer> codec = Codecs.INTEGER.zero();
 		
 		Result<String> result = codec.encodeKey(5);
 		assertTrue(result.isError());
@@ -1101,7 +1101,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyZeroConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Integer> codec = Codecs.INTEGER.zero();
 		
 		Result<Integer> result = codec.decodeKey("10");
 		assertTrue(result.isError());
@@ -1110,7 +1110,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Integer> codec = Codecs.INTEGER.nonZero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 1);
 		assertTrue(result.isSuccess());
@@ -1119,7 +1119,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Integer> codec = Codecs.INTEGER.nonZero();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-1));
 		assertTrue(result.isSuccess());
@@ -1127,7 +1127,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNonZeroConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Integer> codec = Codecs.INTEGER.nonZero();
 		
 		Result<String> result = codec.encodeKey(-5);
 		assertTrue(result.isSuccess());
@@ -1135,7 +1135,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNonZeroConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Integer> codec = Codecs.INTEGER.nonZero();
 		
 		Result<Integer> result = codec.decodeKey("10");
 		assertTrue(result.isSuccess());
@@ -1144,7 +1144,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Integer> codec = Codecs.INTEGER.nonZero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0);
 		assertTrue(result.isError());
@@ -1153,7 +1153,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Integer> codec = Codecs.INTEGER.nonZero();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0));
 		assertTrue(result.isError());
@@ -1161,7 +1161,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyNonZeroConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Integer> codec = Codecs.INTEGER.nonZero();
 		
 		Result<String> result = codec.encodeKey(0);
 		assertTrue(result.isError());
@@ -1169,7 +1169,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyNonZeroConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Integer> codec = Codecs.INTEGER.nonZero();
 		
 		Result<Integer> result = codec.decodeKey("0");
 		assertTrue(result.isError());
@@ -1178,7 +1178,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartPercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Integer> codec = Codecs.INTEGER.percentage();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 50);
 		assertTrue(result.isSuccess());
@@ -1187,7 +1187,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartPercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Integer> codec = Codecs.INTEGER.percentage();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0));
 		assertTrue(result.isSuccess());
@@ -1195,7 +1195,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyPercentageConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Integer> codec = Codecs.INTEGER.percentage();
 		
 		Result<String> result = codec.encodeKey(100);
 		assertTrue(result.isSuccess());
@@ -1203,7 +1203,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyPercentageConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Integer> codec = Codecs.INTEGER.percentage();
 		
 		Result<Integer> result = codec.decodeKey("75");
 		assertTrue(result.isSuccess());
@@ -1212,7 +1212,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartPercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Integer> codec = Codecs.INTEGER.percentage();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 101);
 		assertTrue(result.isError());
@@ -1221,7 +1221,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartPercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Integer> codec = Codecs.INTEGER.percentage();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-1));
 		assertTrue(result.isError());
@@ -1229,7 +1229,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyPercentageConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Integer> codec = Codecs.INTEGER.percentage();
 		
 		Result<String> result = codec.encodeKey(150);
 		assertTrue(result.isError());
@@ -1237,7 +1237,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyPercentageConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Integer> codec = Codecs.INTEGER.percentage();
 		
 		Result<Integer> result = codec.decodeKey("-10");
 		assertTrue(result.isError());
@@ -1246,7 +1246,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartEvenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Integer> codec = Codecs.INTEGER.even();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(result.isSuccess());
@@ -1255,7 +1255,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartEvenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Integer> codec = Codecs.INTEGER.even();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0));
 		assertTrue(result.isSuccess());
@@ -1263,7 +1263,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyEvenConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Integer> codec = Codecs.INTEGER.even();
 		
 		Result<String> result = codec.encodeKey(-4);
 		assertTrue(result.isSuccess());
@@ -1271,7 +1271,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyEvenConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Integer> codec = Codecs.INTEGER.even();
 		
 		Result<Integer> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -1280,7 +1280,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartEvenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Integer> codec = Codecs.INTEGER.even();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 41);
 		assertTrue(result.isError());
@@ -1289,7 +1289,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartEvenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Integer> codec = Codecs.INTEGER.even();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(1));
 		assertTrue(result.isError());
@@ -1297,7 +1297,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyEvenConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Integer> codec = Codecs.INTEGER.even();
 		
 		Result<String> result = codec.encodeKey(-3);
 		assertTrue(result.isError());
@@ -1305,7 +1305,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyEvenConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Integer> codec = Codecs.INTEGER.even();
 		
 		Result<Integer> result = codec.decodeKey("99");
 		assertTrue(result.isError());
@@ -1314,7 +1314,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartOddConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Integer> codec = Codecs.INTEGER.odd();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 41);
 		assertTrue(result.isSuccess());
@@ -1323,7 +1323,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartOddConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Integer> codec = Codecs.INTEGER.odd();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(1));
 		assertTrue(result.isSuccess());
@@ -1331,7 +1331,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyOddConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Integer> codec = Codecs.INTEGER.odd();
 		
 		Result<String> result = codec.encodeKey(-3);
 		assertTrue(result.isSuccess());
@@ -1339,7 +1339,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyOddConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Integer> codec = Codecs.INTEGER.odd();
 		
 		Result<Integer> result = codec.decodeKey("99");
 		assertTrue(result.isSuccess());
@@ -1348,7 +1348,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartOddConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Integer> codec = Codecs.INTEGER.odd();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(result.isError());
@@ -1357,7 +1357,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartOddConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Integer> codec = Codecs.INTEGER.odd();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0));
 		assertTrue(result.isError());
@@ -1365,7 +1365,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyOddConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Integer> codec = Codecs.INTEGER.odd();
 		
 		Result<String> result = codec.encodeKey(-4);
 		assertTrue(result.isError());
@@ -1373,7 +1373,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyOddConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Integer> codec = Codecs.INTEGER.odd();
 		
 		Result<Integer> result = codec.decodeKey("100");
 		assertTrue(result.isError());
@@ -1382,7 +1382,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartDivisibleByConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Integer> codec = Codecs.INTEGER.divisibleBy(5);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 25);
 		assertTrue(result.isSuccess());
@@ -1391,7 +1391,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartDivisibleByConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Integer> codec = Codecs.INTEGER.divisibleBy(5);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0));
 		assertTrue(result.isSuccess());
@@ -1399,7 +1399,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyDivisibleByConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Integer> codec = Codecs.INTEGER.divisibleBy(5);
 		
 		Result<String> result = codec.encodeKey(-10);
 		assertTrue(result.isSuccess());
@@ -1407,7 +1407,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyDivisibleByConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Integer> codec = Codecs.INTEGER.divisibleBy(5);
 		
 		Result<Integer> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -1416,7 +1416,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartDivisibleByConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Integer> codec = Codecs.INTEGER.divisibleBy(5);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 23);
 		assertTrue(result.isError());
@@ -1425,7 +1425,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartDivisibleByConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Integer> codec = Codecs.INTEGER.divisibleBy(5);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(7));
 		assertTrue(result.isError());
@@ -1433,7 +1433,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyDivisibleByConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Integer> codec = Codecs.INTEGER.divisibleBy(5);
 		
 		Result<String> result = codec.encodeKey(-11);
 		assertTrue(result.isError());
@@ -1441,7 +1441,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyDivisibleByConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Integer> codec = Codecs.INTEGER.divisibleBy(5);
 		
 		Result<Integer> result = codec.decodeKey("101");
 		assertTrue(result.isError());
@@ -1450,7 +1450,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartPowerOfConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withPowerOf(3));
+		Codec<Integer> codec = Codecs.INTEGER.powerOf(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 27);
 		assertTrue(result.isSuccess());
@@ -1459,7 +1459,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartPowerOfConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withPowerOf(3));
+		Codec<Integer> codec = Codecs.INTEGER.powerOf(3);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(1));
 		assertTrue(result.isSuccess());
@@ -1467,7 +1467,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withPowerOf(3));
+		Codec<Integer> codec = Codecs.INTEGER.powerOf(3);
 		
 		Result<String> result = codec.encodeKey(9);
 		assertTrue(result.isSuccess());
@@ -1475,7 +1475,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withPowerOf(3));
+		Codec<Integer> codec = Codecs.INTEGER.powerOf(3);
 		
 		Result<Integer> result = codec.decodeKey("81");
 		assertTrue(result.isSuccess());
@@ -1484,7 +1484,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartPowerOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withPowerOf(3));
+		Codec<Integer> codec = Codecs.INTEGER.powerOf(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 10);
 		assertTrue(result.isError());
@@ -1493,7 +1493,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartPowerOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withPowerOf(3));
+		Codec<Integer> codec = Codecs.INTEGER.powerOf(3);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(15));
 		assertTrue(result.isError());
@@ -1501,7 +1501,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withPowerOf(3));
+		Codec<Integer> codec = Codecs.INTEGER.powerOf(3);
 		
 		Result<String> result = codec.encodeKey(5);
 		assertTrue(result.isError());
@@ -1509,7 +1509,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withPowerOf(3));
+		Codec<Integer> codec = Codecs.INTEGER.powerOf(3);
 		
 		Result<Integer> result = codec.decodeKey("50");
 		assertTrue(result.isError());
@@ -1518,7 +1518,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartPowerOfTwoConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Integer> codec = Codecs.INTEGER.powerOfTwo();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 16);
 		assertTrue(result.isSuccess());
@@ -1527,7 +1527,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartPowerOfTwoConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Integer> codec = Codecs.INTEGER.powerOfTwo();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(1));
 		assertTrue(result.isSuccess());
@@ -1535,7 +1535,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfTwoConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Integer> codec = Codecs.INTEGER.powerOfTwo();
 		
 		Result<String> result = codec.encodeKey(64);
 		assertTrue(result.isSuccess());
@@ -1543,7 +1543,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfTwoConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Integer> codec = Codecs.INTEGER.powerOfTwo();
 		
 		Result<Integer> result = codec.decodeKey("256");
 		assertTrue(result.isSuccess());
@@ -1552,7 +1552,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartPowerOfTwoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Integer> codec = Codecs.INTEGER.powerOfTwo();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 15);
 		assertTrue(result.isError());
@@ -1561,7 +1561,7 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartPowerOfTwoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Integer> codec = Codecs.INTEGER.powerOfTwo();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3));
 		assertTrue(result.isError());
@@ -1569,7 +1569,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfTwoConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Integer> codec = Codecs.INTEGER.powerOfTwo();
 		
 		Result<String> result = codec.encodeKey(63);
 		assertTrue(result.isError());
@@ -1577,7 +1577,7 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfTwoConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Integer> codec = Codecs.INTEGER.powerOfTwo();
 		
 		Result<Integer> result = codec.decodeKey("100");
 		assertTrue(result.isError());
@@ -1586,12 +1586,12 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withCustom(value -> {
+		Codec<Integer> codec = Codecs.INTEGER.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 21);
 		assertTrue(result.isSuccess());
@@ -1600,12 +1600,12 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withCustom(value -> {
+		Codec<Integer> codec = Codecs.INTEGER.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(49));
 		assertTrue(result.isSuccess());
@@ -1613,12 +1613,12 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withCustom(value -> {
+		Codec<Integer> codec = Codecs.INTEGER.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<String> result = codec.encodeKey(14);
 		assertTrue(result.isSuccess());
@@ -1626,12 +1626,12 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintSuccess() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withCustom(value -> {
+		Codec<Integer> codec = Codecs.INTEGER.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<Integer> result = codec.decodeKey("0");
 		assertTrue(result.isSuccess());
@@ -1640,12 +1640,12 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withCustom(value -> {
+		Codec<Integer> codec = Codecs.INTEGER.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 20);
 		assertTrue(result.isError());
@@ -1654,12 +1654,12 @@ class ConstrainedIntegerCodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withCustom(value -> {
+		Codec<Integer> codec = Codecs.INTEGER.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(50));
 		assertTrue(result.isError());
@@ -1667,12 +1667,12 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withCustom(value -> {
+		Codec<Integer> codec = Codecs.INTEGER.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<String> result = codec.encodeKey(15);
 		assertTrue(result.isError());
@@ -1680,12 +1680,12 @@ class ConstrainedIntegerCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintViolation() {
-		Codec<Integer> codec = new IntegerCodec().apply(config -> config.withCustom(value -> {
+		Codec<Integer> codec = Codecs.INTEGER.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<Integer> result = codec.decodeKey("1");
 		assertTrue(result.isError());

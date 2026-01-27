@@ -19,8 +19,7 @@
 package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.*;
-import net.luis.utils.io.codec.constraint.config.io.FilePathConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -45,7 +44,7 @@ class ConstrainedPathCodecTest {
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Path expected = Path.of("home", "user", "file.txt");
-		Codec<Path> codec = new PathCodec().apply(config -> config.withEqualTo(expected));
+		Codec<Path> codec = Codecs.PATH.equalTo(expected);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), expected);
 		assertTrue(result.isSuccess());
@@ -56,7 +55,7 @@ class ConstrainedPathCodecTest {
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Path expected = Path.of("/home/user/file.txt");
-		Codec<Path> codec = new PathCodec().apply(config -> config.withEqualTo(expected));
+		Codec<Path> codec = Codecs.PATH.equalTo(expected);
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/home/user/file.txt"));
 		assertTrue(result.isSuccess());
@@ -66,7 +65,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void toStringWithConstraints() {
 		Path expected = Path.of("/home/user/file.txt");
-		Codec<Path> codec = new PathCodec().apply(config -> config.withEqualTo(expected));
+		Codec<Path> codec = Codecs.PATH.equalTo(expected);
 		assertTrue(codec.toString().contains("Constrained"));
 	}
 	
@@ -74,7 +73,7 @@ class ConstrainedPathCodecTest {
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Path expected = Path.of("/home/user/file.txt");
-		Codec<Path> codec = new PathCodec().apply(config -> config.withEqualTo(expected));
+		Codec<Path> codec = Codecs.PATH.equalTo(expected);
 		Path different = Path.of("/tmp/other.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), different);
@@ -85,7 +84,7 @@ class ConstrainedPathCodecTest {
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Path expected = Path.of("/home/user/file.txt");
-		Codec<Path> codec = new PathCodec().apply(config -> config.withEqualTo(expected));
+		Codec<Path> codec = Codecs.PATH.equalTo(expected);
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/tmp/other.txt"));
 		assertTrue(result.isError());
@@ -95,7 +94,7 @@ class ConstrainedPathCodecTest {
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Path excluded = Path.of("/home/user/file.txt");
-		Codec<Path> codec = new PathCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<Path> codec = Codecs.PATH.notEqualTo(excluded);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
 		assertTrue(result.isError());
@@ -105,7 +104,7 @@ class ConstrainedPathCodecTest {
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Path excluded = Path.of("/home/user/file.txt");
-		Codec<Path> codec = new PathCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<Path> codec = Codecs.PATH.notEqualTo(excluded);
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/home/user/file.txt"));
 		assertTrue(result.isError());
@@ -115,7 +114,7 @@ class ConstrainedPathCodecTest {
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<Path> allowed = List.of(Path.of("/home/user/file1.txt"), Path.of("/home/user/file2.txt"));
-		Codec<Path> codec = new PathCodec().apply(config -> config.withIn(allowed));
+		Codec<Path> codec = Codecs.PATH.in(allowed);
 		Path notAllowed = Path.of("/tmp/other.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notAllowed);
@@ -126,7 +125,7 @@ class ConstrainedPathCodecTest {
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<Path> allowed = List.of(Path.of("/home/user/file1.txt"), Path.of("/home/user/file2.txt"));
-		Codec<Path> codec = new PathCodec().apply(config -> config.withIn(allowed));
+		Codec<Path> codec = Codecs.PATH.in(allowed);
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/tmp/other.txt"));
 		assertTrue(result.isError());
@@ -136,7 +135,7 @@ class ConstrainedPathCodecTest {
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<Path> excluded = List.of(Path.of("/home/user/file1.txt"), Path.of("/home/user/file2.txt"));
-		Codec<Path> codec = new PathCodec().apply(config -> config.withNotIn(excluded));
+		Codec<Path> codec = Codecs.PATH.notIn(excluded);
 		Path excludedValue = Path.of("/home/user/file1.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excludedValue);
@@ -147,7 +146,7 @@ class ConstrainedPathCodecTest {
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<Path> excluded = List.of(Path.of("/home/user/file1.txt"), Path.of("/home/user/file2.txt"));
-		Codec<Path> codec = new PathCodec().apply(config -> config.withNotIn(excluded));
+		Codec<Path> codec = Codecs.PATH.notIn(excluded);
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/home/user/file1.txt"));
 		assertTrue(result.isError());
@@ -156,7 +155,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withLength(LengthConstraintConfig.UNCONSTRAINED.withMaxLength(10)));
+		Codec<Path> codec = Codecs.PATH.length(builder -> builder.maxLength(10));
 		Path longPath = Path.of("/home/user/very/long/path/to/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), longPath);
@@ -166,7 +165,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withLength(LengthConstraintConfig.UNCONSTRAINED.withMaxLength(10)));
+		Codec<Path> codec = Codecs.PATH.length(builder -> builder.maxLength(10));
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/home/user/very/long/path/to/file.txt"));
 		assertTrue(result.isError());
@@ -175,7 +174,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartLengthSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withLength(LengthConstraintConfig.UNCONSTRAINED.withMaxLength(50)));
+		Codec<Path> codec = Codecs.PATH.length(builder -> builder.maxLength(50));
 		Path shortPath = Path.of("/home/user/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), shortPath);
@@ -185,7 +184,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartDepthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withDepth(DepthConstraintConfig.UNCONSTRAINED.withMaxDepth(2)));
+		Codec<Path> codec = Codecs.PATH.depth(builder -> builder.maxDepth(2));
 		Path deepPath = Path.of("home/user/documents/files/data.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), deepPath);
@@ -195,7 +194,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartDepthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withDepth(DepthConstraintConfig.UNCONSTRAINED.withMaxDepth(2)));
+		Codec<Path> codec = Codecs.PATH.depth(builder -> builder.maxDepth(2));
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("home/user/documents/files/data.txt"));
 		assertTrue(result.isError());
@@ -204,7 +203,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartDepthSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withDepth(DepthConstraintConfig.UNCONSTRAINED.withMaxDepth(3)));
+		Codec<Path> codec = Codecs.PATH.depth(builder -> builder.maxDepth(3));
 		Path shallowPath = Path.of("home/user/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), shallowPath);
@@ -214,7 +213,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartAbsoluteConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withAbsolute);
+		Codec<Path> codec = Codecs.PATH.absolute();
 		Path relativePath = Path.of("home/user/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), relativePath);
@@ -224,7 +223,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartAbsoluteConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withAbsolute);
+		Codec<Path> codec = Codecs.PATH.absolute();
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("home/user/file.txt"));
 		assertTrue(result.isError());
@@ -233,7 +232,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartAbsoluteSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withAbsolute);
+		Codec<Path> codec = Codecs.PATH.absolute();
 		Path absolutePath = Path.of("").toAbsolutePath().resolve("file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), absolutePath);
@@ -243,7 +242,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartRelativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withRelative);
+		Codec<Path> codec = Codecs.PATH.relative();
 		Path absolutePath = Path.of("").toAbsolutePath().resolve("file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), absolutePath);
@@ -253,7 +252,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartRelativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withRelative);
+		Codec<Path> codec = Codecs.PATH.relative();
 		String absolutePathString = Path.of("").toAbsolutePath().resolve("file.txt").toString();
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(absolutePathString));
@@ -263,7 +262,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartRelativeSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withRelative);
+		Codec<Path> codec = Codecs.PATH.relative();
 		Path relativePath = Path.of("home/user/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), relativePath);
@@ -273,7 +272,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartNormalizedConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withNormalized);
+		Codec<Path> codec = Codecs.PATH.normalized();
 		Path nonNormalizedPath = Path.of("/home/user/../user/./file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), nonNormalizedPath);
@@ -283,7 +282,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartNormalizedConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withNormalized);
+		Codec<Path> codec = Codecs.PATH.normalized();
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/home/user/../user/./file.txt"));
 		assertTrue(result.isError());
@@ -292,7 +291,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartNormalizedSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withNormalized);
+		Codec<Path> codec = Codecs.PATH.normalized();
 		Path normalizedPath = Path.of("/home/user/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), normalizedPath);
@@ -302,7 +301,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartPathStringConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withPath(StringConstraintConfig.UNCONSTRAINED.withStartsWith("/home")));
+		Codec<Path> codec = Codecs.PATH.path(builder -> builder.startsWith("/home"));
 		Path path = Path.of("/tmp/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
@@ -312,7 +311,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartPathStringConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withPath(StringConstraintConfig.UNCONSTRAINED.withStartsWith("/home")));
+		Codec<Path> codec = Codecs.PATH.path(builder -> builder.startsWith("/home"));
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/tmp/file.txt"));
 		assertTrue(result.isError());
@@ -321,7 +320,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartFileNameConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withFile(StringConstraintConfig.UNCONSTRAINED.withEndsWith(".txt")));
+		Codec<Path> codec = Codecs.PATH.file(builder -> builder.endsWith(".txt"));
 		Path path = Path.of("/home/user/file.json");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
@@ -331,7 +330,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartFileNameConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withFile(StringConstraintConfig.UNCONSTRAINED.withEndsWith(".txt")));
+		Codec<Path> codec = Codecs.PATH.file(builder -> builder.endsWith(".txt"));
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/home/user/file.json"));
 		assertTrue(result.isError());
@@ -340,7 +339,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartFileNameSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withFile(StringConstraintConfig.UNCONSTRAINED.withEndsWith(".txt")));
+		Codec<Path> codec = Codecs.PATH.file(builder -> builder.endsWith(".txt"));
 		Path path = Path.of("/home/user/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
@@ -350,7 +349,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartExtensionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withExtension(StringConstraintConfig.UNCONSTRAINED.withEqualTo("txt")));
+		Codec<Path> codec = Codecs.PATH.extension(builder -> builder.equalTo("txt"));
 		Path path = Path.of("/home/user/file.json");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
@@ -360,7 +359,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartExtensionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withExtension(StringConstraintConfig.UNCONSTRAINED.withEqualTo("txt")));
+		Codec<Path> codec = Codecs.PATH.extension(builder -> builder.equalTo("txt"));
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/home/user/file.json"));
 		assertTrue(result.isError());
@@ -369,7 +368,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartExtensionSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withExtension(StringConstraintConfig.UNCONSTRAINED.withEqualTo("txt")));
+		Codec<Path> codec = Codecs.PATH.extension(builder -> builder.equalTo("txt"));
 		Path path = Path.of("/home/user/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
@@ -379,7 +378,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartWithoutExtensionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withWithoutExtension);
+		Codec<Path> codec = Codecs.PATH.withoutExtension();
 		Path pathWithExtension = Path.of("/home/user/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), pathWithExtension);
@@ -389,7 +388,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartWithoutExtensionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withWithoutExtension);
+		Codec<Path> codec = Codecs.PATH.withoutExtension();
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/home/user/file.txt"));
 		assertTrue(result.isError());
@@ -398,7 +397,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartWithoutExtensionSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withWithoutExtension);
+		Codec<Path> codec = Codecs.PATH.withoutExtension();
 		Path pathWithoutExtension = Path.of("/home/user/file");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), pathWithoutExtension);
@@ -408,7 +407,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartDescendantOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withDescendantOf(Set.of("/home/user")));
+		Codec<Path> codec = Codecs.PATH.descendantOf(Set.of("/home/user"));
 		Path path = Path.of("/tmp/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
@@ -418,7 +417,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartDescendantOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withDescendantOf(Set.of("/home/user")));
+		Codec<Path> codec = Codecs.PATH.descendantOf(Set.of("/home/user"));
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/tmp/file.txt"));
 		assertTrue(result.isError());
@@ -427,7 +426,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartDescendantOfSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withDescendantOf(Set.of("/home/user")));
+		Codec<Path> codec = Codecs.PATH.descendantOf(Set.of("/home/user"));
 		Path path = Path.of("/home/user/documents/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
@@ -437,7 +436,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartAncestorOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withAncestorOf(Set.of("/home/user/documents/file.txt")));
+		Codec<Path> codec = Codecs.PATH.ancestorOf(Set.of("/home/user/documents/file.txt"));
 		Path path = Path.of("/tmp");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
@@ -447,7 +446,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartAncestorOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withAncestorOf(Set.of("/home/user/documents/file.txt")));
+		Codec<Path> codec = Codecs.PATH.ancestorOf(Set.of("/home/user/documents/file.txt"));
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/tmp"));
 		assertTrue(result.isError());
@@ -456,7 +455,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartAncestorOfSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withAncestorOf(Set.of("/home/user/documents/file.txt")));
+		Codec<Path> codec = Codecs.PATH.ancestorOf(Set.of("/home/user/documents/file.txt"));
 		Path path = Path.of("/home/user");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
@@ -466,7 +465,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withCustom(value -> Result.error("Custom validation failed")));
+		Codec<Path> codec = Codecs.PATH.custom(value -> Result.error("Custom validation failed"));
 		Path path = Path.of("/home/user/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
@@ -476,7 +475,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withCustom(value -> Result.error("Custom validation failed")));
+		Codec<Path> codec = Codecs.PATH.custom(value -> Result.error("Custom validation failed"));
 		
 		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/home/user/file.txt"));
 		assertTrue(result.isError());
@@ -485,7 +484,7 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Path> codec = new PathCodec().apply(config -> config.withCustom(value -> Result.success()));
+		Codec<Path> codec = Codecs.PATH.custom(value -> Result.success());
 		Path path = Path.of("/home/user/file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);

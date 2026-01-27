@@ -19,9 +19,7 @@
 package net.luis.utils.io.codec.types;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.UUIDConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.constraint.util.UUIDVariant;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
@@ -52,7 +50,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isSuccess());
@@ -62,7 +60,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isSuccess());
@@ -71,7 +69,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyWithValidConstrainedValue() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isSuccess());
@@ -80,7 +78,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyWithValidConstrainedValue() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isSuccess());
@@ -89,14 +87,14 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		assertTrue(codec.toString().contains("Constrained"));
 	}
 	
 	@Test
 	void encodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.equalTo(UUID_1);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isSuccess());
@@ -105,7 +103,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.equalTo(UUID_1);
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isSuccess());
@@ -113,7 +111,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.equalTo(UUID_1);
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isSuccess());
@@ -121,7 +119,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.equalTo(UUID_1);
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isSuccess());
@@ -130,7 +128,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.equalTo(UUID_1);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_2);
 		assertTrue(result.isError());
@@ -139,7 +137,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.equalTo(UUID_1);
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_2.toString()));
 		assertTrue(result.isError());
@@ -147,7 +145,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.equalTo(UUID_1);
 		
 		Result<String> result = codec.encodeKey(UUID_2);
 		assertTrue(result.isError());
@@ -155,7 +153,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.equalTo(UUID_1);
 		
 		Result<UUID> result = codec.decodeKey(UUID_2.toString());
 		assertTrue(result.isError());
@@ -164,7 +162,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.notEqualTo(UUID_1);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_2);
 		assertTrue(result.isSuccess());
@@ -173,7 +171,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.notEqualTo(UUID_1);
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_2.toString()));
 		assertTrue(result.isSuccess());
@@ -181,7 +179,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.notEqualTo(UUID_1);
 		
 		Result<String> result = codec.encodeKey(UUID_2);
 		assertTrue(result.isSuccess());
@@ -189,7 +187,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.notEqualTo(UUID_1);
 		
 		Result<UUID> result = codec.decodeKey(UUID_2.toString());
 		assertTrue(result.isSuccess());
@@ -198,7 +196,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.notEqualTo(UUID_1);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isError());
@@ -207,7 +205,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.notEqualTo(UUID_1);
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isError());
@@ -215,7 +213,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.notEqualTo(UUID_1);
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isError());
@@ -223,7 +221,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotEqualTo(UUID_1));
+		Codec<UUID> codec = Codecs.UUID.notEqualTo(UUID_1);
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isError());
@@ -232,7 +230,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withIn(Set.of(UUID_1, UUID_2, UUID_3)));
+		Codec<UUID> codec = Codecs.UUID.in(Set.of(UUID_1, UUID_2, UUID_3));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_2);
 		assertTrue(result.isSuccess());
@@ -241,7 +239,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withIn(Set.of(UUID_1, UUID_2, UUID_3)));
+		Codec<UUID> codec = Codecs.UUID.in(Set.of(UUID_1, UUID_2, UUID_3));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_2.toString()));
 		assertTrue(result.isSuccess());
@@ -249,7 +247,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withIn(Set.of(UUID_1, UUID_2, UUID_3)));
+		Codec<UUID> codec = Codecs.UUID.in(Set.of(UUID_1, UUID_2, UUID_3));
 		
 		Result<String> result = codec.encodeKey(UUID_2);
 		assertTrue(result.isSuccess());
@@ -257,7 +255,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withIn(Set.of(UUID_1, UUID_2, UUID_3)));
+		Codec<UUID> codec = Codecs.UUID.in(Set.of(UUID_1, UUID_2, UUID_3));
 		
 		Result<UUID> result = codec.decodeKey(UUID_2.toString());
 		assertTrue(result.isSuccess());
@@ -266,7 +264,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.in(Set.of(UUID_1, UUID_2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_3);
 		assertTrue(result.isError());
@@ -275,7 +273,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.in(Set.of(UUID_1, UUID_2));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_3.toString()));
 		assertTrue(result.isError());
@@ -283,7 +281,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.in(Set.of(UUID_1, UUID_2));
 		
 		Result<String> result = codec.encodeKey(UUID_3);
 		assertTrue(result.isError());
@@ -291,7 +289,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.in(Set.of(UUID_1, UUID_2));
 		
 		Result<UUID> result = codec.decodeKey(UUID_3.toString());
 		assertTrue(result.isError());
@@ -300,7 +298,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.notIn(Set.of(UUID_1, UUID_2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_3);
 		assertTrue(result.isSuccess());
@@ -309,7 +307,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.notIn(Set.of(UUID_1, UUID_2));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_3.toString()));
 		assertTrue(result.isSuccess());
@@ -317,7 +315,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.notIn(Set.of(UUID_1, UUID_2));
 		
 		Result<String> result = codec.encodeKey(UUID_3);
 		assertTrue(result.isSuccess());
@@ -325,7 +323,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.notIn(Set.of(UUID_1, UUID_2));
 		
 		Result<UUID> result = codec.decodeKey(UUID_3.toString());
 		assertTrue(result.isSuccess());
@@ -334,7 +332,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.notIn(Set.of(UUID_1, UUID_2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isError());
@@ -343,7 +341,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.notIn(Set.of(UUID_1, UUID_2));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isError());
@@ -351,7 +349,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.notIn(Set.of(UUID_1, UUID_2));
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isError());
@@ -359,7 +357,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withNotIn(Set.of(UUID_1, UUID_2)));
+		Codec<UUID> codec = Codecs.UUID.notIn(Set.of(UUID_1, UUID_2));
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isError());
@@ -368,7 +366,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartVersionConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4)));
+		Codec<UUID> codec = Codecs.UUID.version(4);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isSuccess());
@@ -377,7 +375,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartVersionConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4)));
+		Codec<UUID> codec = Codecs.UUID.version(4);
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isSuccess());
@@ -385,7 +383,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyVersionConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4)));
+		Codec<UUID> codec = Codecs.UUID.version(4);
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isSuccess());
@@ -393,7 +391,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyVersionConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4)));
+		Codec<UUID> codec = Codecs.UUID.version(4);
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isSuccess());
@@ -402,7 +400,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartVersionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4)));
+		Codec<UUID> codec = Codecs.UUID.version(4);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_2);
 		assertTrue(result.isError());
@@ -411,7 +409,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartVersionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4)));
+		Codec<UUID> codec = Codecs.UUID.version(4);
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_2.toString()));
 		assertTrue(result.isError());
@@ -419,7 +417,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyVersionConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4)));
+		Codec<UUID> codec = Codecs.UUID.version(4);
 		
 		Result<String> result = codec.encodeKey(UUID_2);
 		assertTrue(result.isError());
@@ -427,7 +425,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyVersionConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4)));
+		Codec<UUID> codec = Codecs.UUID.version(4);
 		
 		Result<UUID> result = codec.decodeKey(UUID_2.toString());
 		assertTrue(result.isError());
@@ -436,7 +434,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartVersionRangeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 5)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.betweenOrEqual(1, 5));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isSuccess());
@@ -445,7 +443,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartVersionRangeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 5)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.betweenOrEqual(1, 5));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_2.toString()));
 		assertTrue(result.isSuccess());
@@ -453,7 +451,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyVersionRangeConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 5)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.betweenOrEqual(1, 5));
 		
 		Result<String> result = codec.encodeKey(UUID_3);
 		assertTrue(result.isSuccess());
@@ -461,7 +459,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyVersionRangeConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 5)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.betweenOrEqual(1, 5));
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isSuccess());
@@ -470,7 +468,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartVersionRangeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 5)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.betweenOrEqual(1, 5));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), NIL_UUID);
 		assertTrue(result.isError());
@@ -479,7 +477,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartVersionRangeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 5)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.betweenOrEqual(1, 5));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(NIL_UUID.toString()));
 		assertTrue(result.isError());
@@ -487,7 +485,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyVersionRangeConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 5)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.betweenOrEqual(1, 5));
 		
 		Result<String> result = codec.encodeKey(NIL_UUID);
 		assertTrue(result.isError());
@@ -495,7 +493,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyVersionRangeConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 5)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.betweenOrEqual(1, 5));
 		
 		Result<UUID> result = codec.decodeKey(NIL_UUID.toString());
 		assertTrue(result.isError());
@@ -504,7 +502,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartVariantConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.equalTo(UUIDVariant.RFC_4122));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isSuccess());
@@ -513,7 +511,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartVariantConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.equalTo(UUIDVariant.RFC_4122));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isSuccess());
@@ -521,7 +519,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyVariantConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.equalTo(UUIDVariant.RFC_4122));
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isSuccess());
@@ -529,7 +527,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyVariantConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.equalTo(UUIDVariant.RFC_4122));
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isSuccess());
@@ -538,7 +536,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartVariantConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.equalTo(UUIDVariant.RFC_4122));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), NIL_UUID);
 		assertTrue(result.isError());
@@ -547,7 +545,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartVariantConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.equalTo(UUIDVariant.RFC_4122));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(NIL_UUID.toString()));
 		assertTrue(result.isError());
@@ -555,7 +553,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyVariantConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.equalTo(UUIDVariant.RFC_4122));
 		
 		Result<String> result = codec.encodeKey(NIL_UUID);
 		assertTrue(result.isError());
@@ -563,7 +561,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyVariantConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.equalTo(UUIDVariant.RFC_4122));
 		
 		Result<UUID> result = codec.decodeKey(NIL_UUID.toString());
 		assertTrue(result.isError());
@@ -572,7 +570,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartNilConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNil);
+		Codec<UUID> codec = Codecs.UUID.nil();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), NIL_UUID);
 		assertTrue(result.isSuccess());
@@ -581,7 +579,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartNilConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNil);
+		Codec<UUID> codec = Codecs.UUID.nil();
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(NIL_UUID.toString()));
 		assertTrue(result.isSuccess());
@@ -589,7 +587,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyNilConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNil);
+		Codec<UUID> codec = Codecs.UUID.nil();
 		
 		Result<String> result = codec.encodeKey(NIL_UUID);
 		assertTrue(result.isSuccess());
@@ -597,7 +595,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyNilConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNil);
+		Codec<UUID> codec = Codecs.UUID.nil();
 		
 		Result<UUID> result = codec.decodeKey(NIL_UUID.toString());
 		assertTrue(result.isSuccess());
@@ -606,7 +604,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartNilConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNil);
+		Codec<UUID> codec = Codecs.UUID.nil();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isError());
@@ -615,7 +613,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartNilConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNil);
+		Codec<UUID> codec = Codecs.UUID.nil();
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isError());
@@ -623,7 +621,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyNilConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNil);
+		Codec<UUID> codec = Codecs.UUID.nil();
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isError());
@@ -631,7 +629,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyNilConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNil);
+		Codec<UUID> codec = Codecs.UUID.nil();
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isError());
@@ -640,7 +638,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartNotNilConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isSuccess());
@@ -649,7 +647,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartNotNilConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isSuccess());
@@ -657,7 +655,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyNotNilConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isSuccess());
@@ -665,7 +663,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyNotNilConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isSuccess());
@@ -674,7 +672,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartNotNilConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), NIL_UUID);
 		assertTrue(result.isError());
@@ -683,7 +681,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartNotNilConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(NIL_UUID.toString()));
 		assertTrue(result.isError());
@@ -691,7 +689,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyNotNilConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<String> result = codec.encodeKey(NIL_UUID);
 		assertTrue(result.isError());
@@ -699,7 +697,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyNotNilConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withNotNil);
+		Codec<UUID> codec = Codecs.UUID.notNil();
 		
 		Result<UUID> result = codec.decodeKey(NIL_UUID.toString());
 		assertTrue(result.isError());
@@ -708,7 +706,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartMaxConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withMax);
+		Codec<UUID> codec = Codecs.UUID.max();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), MAX_UUID);
 		assertTrue(result.isSuccess());
@@ -717,7 +715,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartMaxConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withMax);
+		Codec<UUID> codec = Codecs.UUID.max();
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(MAX_UUID.toString()));
 		assertTrue(result.isSuccess());
@@ -725,7 +723,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyMaxConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withMax);
+		Codec<UUID> codec = Codecs.UUID.max();
 		
 		Result<String> result = codec.encodeKey(MAX_UUID);
 		assertTrue(result.isSuccess());
@@ -733,7 +731,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyMaxConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withMax);
+		Codec<UUID> codec = Codecs.UUID.max();
 		
 		Result<UUID> result = codec.decodeKey(MAX_UUID.toString());
 		assertTrue(result.isSuccess());
@@ -742,7 +740,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartMaxConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withMax);
+		Codec<UUID> codec = Codecs.UUID.max();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isError());
@@ -751,7 +749,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartMaxConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withMax);
+		Codec<UUID> codec = Codecs.UUID.max();
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isError());
@@ -759,7 +757,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyMaxConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withMax);
+		Codec<UUID> codec = Codecs.UUID.max();
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isError());
@@ -767,7 +765,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyMaxConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(UUIDConstraintConfig::withMax);
+		Codec<UUID> codec = Codecs.UUID.max();
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isError());
@@ -776,10 +774,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config
-			.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4))
-			.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122))
-			.withNotNil());
+		Codec<UUID> codec = Codecs.UUID.version(4).variant(builder -> builder.equalTo(UUIDVariant.RFC_4122)).notNil();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isSuccess());
@@ -788,10 +783,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config
-			.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4))
-			.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122))
-			.withNotNil());
+		Codec<UUID> codec = Codecs.UUID.version(4).variant(builder -> builder.equalTo(UUIDVariant.RFC_4122)).notNil();
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isSuccess());
@@ -799,10 +791,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyCombinedConstraintsSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config
-			.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4))
-			.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122))
-			.withNotNil());
+		Codec<UUID> codec = Codecs.UUID.version(4).variant(builder -> builder.equalTo(UUIDVariant.RFC_4122)).notNil();
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isSuccess());
@@ -810,10 +799,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyCombinedConstraintsSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config
-			.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4))
-			.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122))
-			.withNotNil());
+		Codec<UUID> codec = Codecs.UUID.version(4).variant(builder -> builder.equalTo(UUIDVariant.RFC_4122)).notNil();
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isSuccess());
@@ -822,9 +808,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsVersionViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config
-			.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4))
-			.withNotNil());
+		Codec<UUID> codec = Codecs.UUID.version(4).notNil();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_2);
 		assertTrue(result.isError());
@@ -833,9 +817,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsNilViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config
-			.withVersion(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 5))
-			.withNotNil());
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.betweenOrEqual(0, 5)).notNil();
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(NIL_UUID.toString()));
 		assertTrue(result.isError());
@@ -843,8 +825,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyCombinedConstraintsVariantViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config
-			.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.equalTo(UUIDVariant.RFC_4122));
 		
 		Result<String> result = codec.encodeKey(NIL_UUID);
 		assertTrue(result.isError());
@@ -852,10 +833,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyCombinedConstraintsMultipleViolations() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config
-			.withVersion(NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4))
-			.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122))
-			.withNotNil());
+		Codec<UUID> codec = Codecs.UUID.version(4).variant(builder -> builder.equalTo(UUIDVariant.RFC_4122)).notNil();
 		
 		Result<UUID> result = codec.decodeKey(NIL_UUID.toString());
 		assertTrue(result.isError());
@@ -864,7 +842,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartVersionNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withNotEqualTo(1)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.notEqualTo(1));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isSuccess());
@@ -873,7 +851,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartVersionNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withNotEqualTo(1)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.notEqualTo(1));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isSuccess());
@@ -881,7 +859,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyVersionNotEqualToConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withNotEqualTo(1)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.notEqualTo(1));
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isSuccess());
@@ -889,7 +867,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyVersionNotEqualToConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withNotEqualTo(1)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.notEqualTo(1));
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isSuccess());
@@ -898,7 +876,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartVersionNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withNotEqualTo(1)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.notEqualTo(1));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_2);
 		assertTrue(result.isError());
@@ -907,7 +885,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartVersionNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withNotEqualTo(1)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.notEqualTo(1));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_2.toString()));
 		assertTrue(result.isError());
@@ -915,7 +893,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyVersionNotEqualToConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withNotEqualTo(1)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.notEqualTo(1));
 		
 		Result<String> result = codec.encodeKey(UUID_2);
 		assertTrue(result.isError());
@@ -923,7 +901,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyVersionNotEqualToConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVersion(NumericConstraintConfig.UNCONSTRAINED.withNotEqualTo(1)));
+		Codec<UUID> codec = Codecs.UUID.version(builder -> builder.notEqualTo(1));
 		
 		Result<UUID> result = codec.decodeKey(UUID_2.toString());
 		assertTrue(result.isError());
@@ -932,7 +910,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartVariantNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withNotEqualTo(UUIDVariant.NFC)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.notEqualTo(UUIDVariant.NFC));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), UUID_1);
 		assertTrue(result.isSuccess());
@@ -941,7 +919,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartVariantNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withNotEqualTo(UUIDVariant.NFC)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.notEqualTo(UUIDVariant.NFC));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(UUID_1.toString()));
 		assertTrue(result.isSuccess());
@@ -949,7 +927,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyVariantNotEqualToConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withNotEqualTo(UUIDVariant.NFC)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.notEqualTo(UUIDVariant.NFC));
 		
 		Result<String> result = codec.encodeKey(UUID_1);
 		assertTrue(result.isSuccess());
@@ -957,7 +935,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyVariantNotEqualToConstraintSuccess() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withNotEqualTo(UUIDVariant.NFC)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.notEqualTo(UUIDVariant.NFC));
 		
 		Result<UUID> result = codec.decodeKey(UUID_1.toString());
 		assertTrue(result.isSuccess());
@@ -966,7 +944,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void encodeStartVariantNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withNotEqualTo(UUIDVariant.NFC)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.notEqualTo(UUIDVariant.NFC));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), NIL_UUID);
 		assertTrue(result.isError());
@@ -975,7 +953,7 @@ class ConstrainedUUIDCodecTest {
 	@Test
 	void decodeStartVariantNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withNotEqualTo(UUIDVariant.NFC)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.notEqualTo(UUIDVariant.NFC));
 		
 		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(NIL_UUID.toString()));
 		assertTrue(result.isError());
@@ -983,7 +961,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void encodeKeyVariantNotEqualToConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withNotEqualTo(UUIDVariant.NFC)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.notEqualTo(UUIDVariant.NFC));
 		
 		Result<String> result = codec.encodeKey(NIL_UUID);
 		assertTrue(result.isError());
@@ -991,7 +969,7 @@ class ConstrainedUUIDCodecTest {
 	
 	@Test
 	void decodeKeyVariantNotEqualToConstraintViolation() {
-		Codec<UUID> codec = new UUIDCodec().apply(config -> config.withVariant(EnumConstraintConfig.<UUIDVariant>unconstrained().withNotEqualTo(UUIDVariant.NFC)));
+		Codec<UUID> codec = Codecs.UUID.variant(builder -> builder.notEqualTo(UUIDVariant.NFC));
 		
 		Result<UUID> result = codec.decodeKey(NIL_UUID.toString());
 		assertTrue(result.isError());

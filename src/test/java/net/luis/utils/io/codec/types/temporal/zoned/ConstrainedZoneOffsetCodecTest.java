@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.types.temporal.zoned;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
@@ -42,7 +42,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withPositive);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.positive();
 		ZoneOffset validValue = ZoneOffset.of("+02:00");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), validValue);
@@ -51,7 +51,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void encodeKeyWithValidConstrainedValue() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withPositive);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.positive();
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("+02:00"));
 		assertTrue(result.isSuccess());
@@ -60,7 +60,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withPositive);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.positive();
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+02:00"));
 		assertTrue(result.isSuccess());
@@ -68,7 +68,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void decodeKeyWithValidConstrainedValue() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withZero);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.zero();
 		
 		Result<ZoneOffset> result = codec.decodeKey("Z");
 		assertTrue(result.isSuccess());
@@ -76,7 +76,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withPositive);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.positive();
 		assertTrue(codec.toString().contains("Constrained"));
 	}
 	
@@ -84,7 +84,7 @@ class ConstrainedZoneOffsetCodecTest {
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ZoneOffset expected = ZoneOffset.of("+02:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withEqualTo(expected));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.equalTo(expected);
 		ZoneOffset differentValue = ZoneOffset.of("+05:00");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), differentValue);
@@ -95,7 +95,7 @@ class ConstrainedZoneOffsetCodecTest {
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ZoneOffset expected = ZoneOffset.of("+02:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withEqualTo(expected));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.equalTo(expected);
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+05:00"));
 		assertTrue(result.isError());
@@ -104,7 +104,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void encodeKeyEqualToConstraintValid() {
 		ZoneOffset expected = ZoneOffset.of("+02:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withEqualTo(expected));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.equalTo(expected);
 		
 		Result<String> result = codec.encodeKey(expected);
 		assertTrue(result.isSuccess());
@@ -113,7 +113,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void decodeKeyEqualToConstraintValid() {
 		ZoneOffset expected = ZoneOffset.of("+02:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withEqualTo(expected));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.equalTo(expected);
 		
 		Result<ZoneOffset> result = codec.decodeKey("+02:00");
 		assertTrue(result.isSuccess());
@@ -123,7 +123,7 @@ class ConstrainedZoneOffsetCodecTest {
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ZoneOffset excluded = ZoneOffset.of("+02:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.notEqualTo(excluded);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
 		assertTrue(result.isError());
@@ -133,7 +133,7 @@ class ConstrainedZoneOffsetCodecTest {
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ZoneOffset excluded = ZoneOffset.of("+02:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.notEqualTo(excluded);
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+02:00"));
 		assertTrue(result.isError());
@@ -142,7 +142,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void encodeKeyNotEqualToConstraintValid() {
 		ZoneOffset excluded = ZoneOffset.of("+02:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.notEqualTo(excluded);
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("+05:00"));
 		assertTrue(result.isSuccess());
@@ -151,7 +151,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void decodeKeyNotEqualToConstraintValid() {
 		ZoneOffset excluded = ZoneOffset.of("+02:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.notEqualTo(excluded);
 		
 		Result<ZoneOffset> result = codec.decodeKey("+05:00");
 		assertTrue(result.isSuccess());
@@ -164,7 +164,7 @@ class ConstrainedZoneOffsetCodecTest {
 			ZoneOffset.of("+01:00"),
 			ZoneOffset.of("+02:00")
 		);
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withIn(allowed));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.in(allowed);
 		ZoneOffset notAllowed = ZoneOffset.of("+05:00");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notAllowed);
@@ -178,7 +178,7 @@ class ConstrainedZoneOffsetCodecTest {
 			ZoneOffset.of("+01:00"),
 			ZoneOffset.of("+02:00")
 		);
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withIn(allowed));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.in(allowed);
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+05:00"));
 		assertTrue(result.isError());
@@ -190,7 +190,7 @@ class ConstrainedZoneOffsetCodecTest {
 			ZoneOffset.of("+01:00"),
 			ZoneOffset.of("+02:00")
 		);
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withIn(allowed));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.in(allowed);
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("+02:00"));
 		assertTrue(result.isSuccess());
@@ -202,7 +202,7 @@ class ConstrainedZoneOffsetCodecTest {
 			ZoneOffset.of("+01:00"),
 			ZoneOffset.of("+02:00")
 		);
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withIn(allowed));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.in(allowed);
 		
 		Result<ZoneOffset> result = codec.decodeKey("+02:00");
 		assertTrue(result.isSuccess());
@@ -215,7 +215,7 @@ class ConstrainedZoneOffsetCodecTest {
 			ZoneOffset.of("+01:00"),
 			ZoneOffset.of("+02:00")
 		);
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withNotIn(excluded));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.notIn(excluded);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), ZoneOffset.of("+02:00"));
 		assertTrue(result.isError());
@@ -228,7 +228,7 @@ class ConstrainedZoneOffsetCodecTest {
 			ZoneOffset.of("+01:00"),
 			ZoneOffset.of("+02:00")
 		);
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withNotIn(excluded));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.notIn(excluded);
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+02:00"));
 		assertTrue(result.isError());
@@ -240,7 +240,7 @@ class ConstrainedZoneOffsetCodecTest {
 			ZoneOffset.of("+01:00"),
 			ZoneOffset.of("+02:00")
 		);
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withNotIn(excluded));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.notIn(excluded);
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("+05:00"));
 		assertTrue(result.isSuccess());
@@ -252,7 +252,7 @@ class ConstrainedZoneOffsetCodecTest {
 			ZoneOffset.of("+01:00"),
 			ZoneOffset.of("+02:00")
 		);
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withNotIn(excluded));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.notIn(excluded);
 		
 		Result<ZoneOffset> result = codec.decodeKey("+05:00");
 		assertTrue(result.isSuccess());
@@ -261,7 +261,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void encodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withGreaterThan(ZoneOffset.of("+02:00")));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.greaterThan(ZoneOffset.of("+02:00"));
 		ZoneOffset smallerOffset = ZoneOffset.of("-01:00");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), smallerOffset);
@@ -271,7 +271,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void decodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withGreaterThan(ZoneOffset.of("+02:00")));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.greaterThan(ZoneOffset.of("+02:00"));
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-01:00"));
 		assertTrue(result.isError());
@@ -279,7 +279,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withGreaterThan(ZoneOffset.of("+02:00")));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.greaterThan(ZoneOffset.of("+02:00"));
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("+05:00"));
 		assertTrue(result.isSuccess());
@@ -287,7 +287,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withGreaterThan(ZoneOffset.of("+02:00")));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.greaterThan(ZoneOffset.of("+02:00"));
 		
 		Result<ZoneOffset> result = codec.decodeKey("+05:00");
 		assertTrue(result.isSuccess());
@@ -296,7 +296,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void encodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withLessThan(ZoneOffset.of("+02:00")));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.lessThan(ZoneOffset.of("+02:00"));
 		ZoneOffset largerOffset = ZoneOffset.of("+05:00");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), largerOffset);
@@ -306,7 +306,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void decodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withLessThan(ZoneOffset.of("+02:00")));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.lessThan(ZoneOffset.of("+02:00"));
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+05:00"));
 		assertTrue(result.isError());
@@ -314,7 +314,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void encodeKeyLessThanConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withLessThan(ZoneOffset.of("+02:00")));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.lessThan(ZoneOffset.of("+02:00"));
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("+01:00"));
 		assertTrue(result.isSuccess());
@@ -322,7 +322,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void decodeKeyLessThanConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withLessThan(ZoneOffset.of("+02:00")));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.lessThan(ZoneOffset.of("+02:00"));
 		
 		Result<ZoneOffset> result = codec.decodeKey("+01:00");
 		assertTrue(result.isSuccess());
@@ -333,7 +333,7 @@ class ConstrainedZoneOffsetCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ZoneOffset min = ZoneOffset.of("-05:00");
 		ZoneOffset max = ZoneOffset.of("+05:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withBetween(min, max));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.between(min, max);
 		ZoneOffset tooLow = ZoneOffset.of("-08:00");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), tooLow);
@@ -345,7 +345,7 @@ class ConstrainedZoneOffsetCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ZoneOffset min = ZoneOffset.of("-05:00");
 		ZoneOffset max = ZoneOffset.of("+05:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withBetween(min, max));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.between(min, max);
 		ZoneOffset tooHigh = ZoneOffset.of("+08:00");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), tooHigh);
@@ -357,7 +357,7 @@ class ConstrainedZoneOffsetCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ZoneOffset min = ZoneOffset.of("-05:00");
 		ZoneOffset max = ZoneOffset.of("+05:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withBetween(min, max));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.between(min, max);
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-08:00"));
 		assertTrue(result.isError());
@@ -367,7 +367,7 @@ class ConstrainedZoneOffsetCodecTest {
 	void encodeKeyBetweenConstraintValid() {
 		ZoneOffset min = ZoneOffset.of("-05:00");
 		ZoneOffset max = ZoneOffset.of("+05:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withBetween(min, max));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.between(min, max);
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("+02:00"));
 		assertTrue(result.isSuccess());
@@ -377,7 +377,7 @@ class ConstrainedZoneOffsetCodecTest {
 	void decodeKeyBetweenConstraintValid() {
 		ZoneOffset min = ZoneOffset.of("-05:00");
 		ZoneOffset max = ZoneOffset.of("+05:00");
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withBetween(min, max));
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.between(min, max);
 		
 		Result<ZoneOffset> result = codec.decodeKey("+02:00");
 		assertTrue(result.isSuccess());
@@ -386,7 +386,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void encodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withPositive);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.positive();
 		ZoneOffset negativeOffset = ZoneOffset.of("-05:00");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), negativeOffset);
@@ -396,7 +396,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void decodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withPositive);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.positive();
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-05:00"));
 		assertTrue(result.isError());
@@ -404,7 +404,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void encodeKeyPositiveConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withPositive);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.positive();
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("+02:00"));
 		assertTrue(result.isSuccess());
@@ -412,7 +412,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void decodeKeyPositiveConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withPositive);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.positive();
 		
 		Result<ZoneOffset> result = codec.decodeKey("+02:00");
 		assertTrue(result.isSuccess());
@@ -421,7 +421,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void encodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withNegative);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.negative();
 		ZoneOffset positiveOffset = ZoneOffset.of("+05:00");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), positiveOffset);
@@ -431,7 +431,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void decodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withNegative);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.negative();
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+05:00"));
 		assertTrue(result.isError());
@@ -439,7 +439,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void encodeKeyNegativeConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withNegative);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.negative();
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("-05:00"));
 		assertTrue(result.isSuccess());
@@ -447,7 +447,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void decodeKeyNegativeConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withNegative);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.negative();
 		
 		Result<ZoneOffset> result = codec.decodeKey("-05:00");
 		assertTrue(result.isSuccess());
@@ -456,7 +456,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void encodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withZero);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.zero();
 		ZoneOffset nonZeroOffset = ZoneOffset.of("+05:00");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), nonZeroOffset);
@@ -466,7 +466,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void decodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withZero);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.zero();
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+05:00"));
 		assertTrue(result.isError());
@@ -474,7 +474,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void encodeKeyZeroConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withZero);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.zero();
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.UTC);
 		assertTrue(result.isSuccess());
@@ -482,7 +482,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void decodeKeyZeroConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withZero);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.zero();
 		
 		Result<ZoneOffset> result = codec.decodeKey("Z");
 		assertTrue(result.isSuccess());
@@ -491,7 +491,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withNonZero);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.nonZero();
 		ZoneOffset zeroOffset = ZoneOffset.UTC;
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), zeroOffset);
@@ -501,7 +501,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void decodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withNonZero);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.nonZero();
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("Z"));
 		assertTrue(result.isError());
@@ -509,7 +509,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void encodeKeyNonZeroConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withNonZero);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.nonZero();
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("+02:00"));
 		assertTrue(result.isSuccess());
@@ -517,7 +517,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void decodeKeyNonZeroConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(ZoneOffsetConstraintConfig::withNonZero);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.nonZero();
 		
 		Result<ZoneOffset> result = codec.decodeKey("+02:00");
 		assertTrue(result.isSuccess());
@@ -526,9 +526,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void encodeStartHourConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config ->
-			config.withHour(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-5, 5))
-		);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.hour(builder -> builder.betweenOrEqual(-5, 5));
 		ZoneOffset outsideRange = ZoneOffset.of("+08:00");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), outsideRange);
@@ -538,9 +536,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void decodeStartHourConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config ->
-			config.withHour(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-5, 5))
-		);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.hour(builder -> builder.betweenOrEqual(-5, 5));
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+08:00"));
 		assertTrue(result.isError());
@@ -548,9 +544,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void encodeKeyHourConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config ->
-			config.withHour(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-5, 5))
-		);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.hour(builder -> builder.betweenOrEqual(-5, 5));
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("+02:00"));
 		assertTrue(result.isSuccess());
@@ -558,9 +552,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void decodeKeyHourConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config ->
-			config.withHour(NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-5, 5))
-		);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.hour(builder -> builder.betweenOrEqual(-5, 5));
 		
 		Result<ZoneOffset> result = codec.decodeKey("+02:00");
 		assertTrue(result.isSuccess());
@@ -569,9 +561,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config ->
-			config.withCustom(value -> value.getTotalSeconds() % 3600 == 0 ? Result.success(null) : Result.error("Offset must be on the hour (no minutes)"))
-		);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.custom(value -> value.getTotalSeconds() % 3600 == 0 ? Result.success(null) : Result.error("Offset must be on the hour (no minutes)"));
 		ZoneOffset halfHourOffset = ZoneOffset.of("+05:30");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), halfHourOffset);
@@ -581,9 +571,7 @@ class ConstrainedZoneOffsetCodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config ->
-			config.withCustom(value -> value.getTotalSeconds() % 3600 == 0 ? Result.success(null) : Result.error("Offset must be on the hour (no minutes)"))
-		);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.custom(value -> value.getTotalSeconds() % 3600 == 0 ? Result.success(null) : Result.error("Offset must be on the hour (no minutes)"));
 		
 		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+05:30"));
 		assertTrue(result.isError());
@@ -591,9 +579,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config ->
-			config.withCustom(value -> value.getTotalSeconds() % 3600 == 0 ? Result.success(null) : Result.error("Offset must be on the hour (no minutes)"))
-		);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.custom(value -> value.getTotalSeconds() % 3600 == 0 ? Result.success(null) : Result.error("Offset must be on the hour (no minutes)"));
 		
 		Result<String> result = codec.encodeKey(ZoneOffset.of("+02:00"));
 		assertTrue(result.isSuccess());
@@ -601,9 +587,7 @@ class ConstrainedZoneOffsetCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintValid() {
-		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config ->
-			config.withCustom(value -> value.getTotalSeconds() % 3600 == 0 ? Result.success(null) : Result.error("Offset must be on the hour (no minutes)"))
-		);
+		Codec<ZoneOffset> codec = Codecs.ZONE_OFFSET.custom(value -> value.getTotalSeconds() % 3600 == 0 ? Result.success(null) : Result.error("Offset must be on the hour (no minutes)"));
 		
 		Result<ZoneOffset> result = codec.decodeKey("+02:00");
 		assertTrue(result.isSuccess());

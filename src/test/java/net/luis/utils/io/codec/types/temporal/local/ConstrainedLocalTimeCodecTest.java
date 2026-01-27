@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -42,7 +42,7 @@ class ConstrainedLocalTimeCodecTest {
 	void encodeStartWithValidAfterConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime threshold = LocalTime.of(8, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withAfter(threshold));
 		LocalTime value = LocalTime.of(12, 30);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -54,7 +54,7 @@ class ConstrainedLocalTimeCodecTest {
 	void encodeStartWithValidBeforeConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime threshold = LocalTime.of(18, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withBefore(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withBefore(threshold));
 		LocalTime value = LocalTime.of(12, 30);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -66,7 +66,7 @@ class ConstrainedLocalTimeCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime after = LocalTime.of(8, 0);
 		LocalTime before = LocalTime.of(18, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withBetween(after, before));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withBetween(after, before));
 		LocalTime value = LocalTime.of(12, 30);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -77,7 +77,7 @@ class ConstrainedLocalTimeCodecTest {
 	void encodeStartWithValidEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime target = LocalTime.of(12, 30, 45);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withEqualTo(target));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withEqualTo(target));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), target);
 		assertTrue(result.isSuccess());
@@ -88,7 +88,7 @@ class ConstrainedLocalTimeCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime value1 = LocalTime.of(9, 0);
 		LocalTime value2 = LocalTime.of(12, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withIn(Set.of(value1, value2)));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withIn(Set.of(value1, value2)));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value1);
 		assertTrue(result.isSuccess());
@@ -99,7 +99,7 @@ class ConstrainedLocalTimeCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime excluded = LocalTime.of(12, 0);
 		LocalTime value = LocalTime.of(14, 30);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withNotEqualTo(excluded));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
@@ -111,7 +111,7 @@ class ConstrainedLocalTimeCodecTest {
 		LocalTime excluded1 = LocalTime.of(9, 0);
 		LocalTime excluded2 = LocalTime.of(12, 0);
 		LocalTime value = LocalTime.of(15, 30);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
@@ -121,7 +121,7 @@ class ConstrainedLocalTimeCodecTest {
 	void encodeStartWithValidAfterOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime threshold = LocalTime.of(12, 30);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withAfterOrEqual(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withAfterOrEqual(threshold));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
 		assertTrue(result.isSuccess());
@@ -131,7 +131,7 @@ class ConstrainedLocalTimeCodecTest {
 	void encodeStartWithValidBeforeOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime threshold = LocalTime.of(12, 30);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withBeforeOrEqual(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withBeforeOrEqual(threshold));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
 		assertTrue(result.isSuccess());
@@ -140,11 +140,9 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void encodeStartWithValidHourConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withHour(
-			NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17)
-		));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.hour(builder -> builder.betweenOrEqual(9, 17));
 		LocalTime value = LocalTime.of(12, 30);
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
@@ -152,11 +150,9 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void encodeStartWithValidMinuteConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withMinute(
-			NumericConstraintConfig.UNCONSTRAINED.withIn(Set.of(0, 15, 30, 45))
-		));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.minute(builder -> builder.in(Set.of(0, 15, 30, 45)));
 		LocalTime value = LocalTime.of(12, 30);
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
@@ -164,11 +160,9 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void encodeStartWithValidSecondConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withSecond(
-			NumericConstraintConfig.UNCONSTRAINED.withEqualTo(0)
-		));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.second(builder -> builder.equalTo(0));
 		LocalTime value = LocalTime.of(12, 30, 0);
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
@@ -176,7 +170,7 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void encodeKeyWithValidConstraint() {
 		LocalTime threshold = LocalTime.of(8, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withAfter(threshold));
 		LocalTime value = LocalTime.of(12, 30);
 		
 		Result<String> result = codec.encodeKey(value);
@@ -188,7 +182,7 @@ class ConstrainedLocalTimeCodecTest {
 	void decodeStartWithValidConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime threshold = LocalTime.of(8, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withAfter(threshold));
 		
 		Result<LocalTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("12:30"));
 		assertTrue(result.isSuccess());
@@ -198,7 +192,7 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void decodeKeyWithValidConstraint() {
 		LocalTime threshold = LocalTime.of(8, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withAfter(threshold));
 		
 		Result<LocalTime> result = codec.decodeKey("12:30");
 		assertTrue(result.isSuccess());
@@ -208,7 +202,7 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void encodeStartWithCustomConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withCustom(value -> {
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withCustom(value -> {
 			if (value.getMinute() % 15 == 0) {
 				return Result.success(null);
 			}
@@ -224,7 +218,7 @@ class ConstrainedLocalTimeCodecTest {
 	void encodeStartAfterConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime threshold = LocalTime.of(12, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withAfter(threshold));
 		LocalTime valueBefore = LocalTime.of(10, 30);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueBefore);
@@ -235,7 +229,7 @@ class ConstrainedLocalTimeCodecTest {
 	void encodeStartBeforeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime threshold = LocalTime.of(12, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withBefore(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withBefore(threshold));
 		LocalTime valueAfter = LocalTime.of(14, 30);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueAfter);
@@ -247,7 +241,7 @@ class ConstrainedLocalTimeCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime after = LocalTime.of(9, 0);
 		LocalTime before = LocalTime.of(17, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withBetween(after, before));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withBetween(after, before));
 		LocalTime valueTooEarly = LocalTime.of(7, 30);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooEarly);
@@ -259,7 +253,7 @@ class ConstrainedLocalTimeCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime after = LocalTime.of(9, 0);
 		LocalTime before = LocalTime.of(17, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withBetween(after, before));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withBetween(after, before));
 		LocalTime valueTooLate = LocalTime.of(20, 30);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooLate);
@@ -270,7 +264,7 @@ class ConstrainedLocalTimeCodecTest {
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime target = LocalTime.of(12, 30);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withEqualTo(target));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withEqualTo(target));
 		LocalTime differentValue = LocalTime.of(14, 45);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), differentValue);
@@ -282,7 +276,7 @@ class ConstrainedLocalTimeCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime value1 = LocalTime.of(9, 0);
 		LocalTime value2 = LocalTime.of(12, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withIn(Set.of(value1, value2)));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withIn(Set.of(value1, value2)));
 		LocalTime notInSet = LocalTime.of(15, 30);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notInSet);
@@ -293,7 +287,7 @@ class ConstrainedLocalTimeCodecTest {
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime excluded = LocalTime.of(12, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withNotEqualTo(excluded));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
 		assertTrue(result.isError());
@@ -304,7 +298,7 @@ class ConstrainedLocalTimeCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime excluded1 = LocalTime.of(9, 0);
 		LocalTime excluded2 = LocalTime.of(12, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded1);
 		assertTrue(result.isError());
@@ -313,11 +307,9 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void encodeStartHourConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withHour(
-			NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17)
-		));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.hour(builder -> builder.betweenOrEqual(9, 17));
 		LocalTime value = LocalTime.of(20, 30);
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isError());
 	}
@@ -325,11 +317,9 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void encodeStartMinuteConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withMinute(
-			NumericConstraintConfig.UNCONSTRAINED.withIn(Set.of(0, 15, 30, 45))
-		));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.minute(builder -> builder.in(Set.of(0, 15, 30, 45)));
 		LocalTime value = LocalTime.of(12, 25);
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isError());
 	}
@@ -337,11 +327,9 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void encodeStartSecondConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withSecond(
-			NumericConstraintConfig.UNCONSTRAINED.withEqualTo(0)
-		));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.second(builder -> builder.equalTo(0));
 		LocalTime value = LocalTime.of(12, 30, 45);
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isError());
 	}
@@ -349,7 +337,7 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void encodeKeyConstraintViolation() {
 		LocalTime threshold = LocalTime.of(12, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withAfter(threshold));
 		LocalTime valueBefore = LocalTime.of(10, 30);
 		
 		Result<String> result = codec.encodeKey(valueBefore);
@@ -360,7 +348,7 @@ class ConstrainedLocalTimeCodecTest {
 	void decodeStartConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalTime threshold = LocalTime.of(12, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withAfter(threshold));
 		
 		Result<LocalTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10:30"));
 		assertTrue(result.isError());
@@ -369,7 +357,7 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void decodeKeyConstraintViolation() {
 		LocalTime threshold = LocalTime.of(12, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withAfter(threshold));
 		
 		Result<LocalTime> result = codec.decodeKey("10:30");
 		assertTrue(result.isError());
@@ -378,7 +366,7 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withCustom(value -> {
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withCustom(value -> {
 			if (value.getMinute() % 15 == 0) {
 				return Result.success(null);
 			}
@@ -393,7 +381,7 @@ class ConstrainedLocalTimeCodecTest {
 	@Test
 	void toStringWithConstraints() {
 		LocalTime threshold = LocalTime.of(8, 0);
-		Codec<LocalTime> codec = new LocalTimeCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME.apply(config -> config.withAfter(threshold));
 		
 		String toString = codec.toString();
 		assertTrue(toString.contains("Constrained"));
@@ -401,7 +389,7 @@ class ConstrainedLocalTimeCodecTest {
 	
 	@Test
 	void toStringWithoutConstraints() {
-		Codec<LocalTime> codec = new LocalTimeCodec();
+		Codec<LocalTime> codec = Codecs.LOCAL_TIME;
 		
 		assertEquals("LocalTimeCodec", codec.toString());
 	}

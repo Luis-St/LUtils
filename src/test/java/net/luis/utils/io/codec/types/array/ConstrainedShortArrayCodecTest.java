@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.result.Result;
@@ -38,7 +39,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMinLength(1));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.minLength(1));
 		short[] validArray = new short[] { (short) 1, (short) 2, (short) 3 };
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), validArray);
@@ -50,7 +51,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMinLength(1));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.minLength(1));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -63,7 +64,7 @@ class ConstrainedShortArrayCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMinLength(1));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.minLength(1));
 		String str = codec.toString();
 		assertTrue(str.contains("Constrained"));
 	}
@@ -71,7 +72,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withEqualTo(new short[] { (short) 1, (short) 2, (short) 3 }));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.equalTo(new short[] { (short) 1, (short) 2, (short) 3 });
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2, (short) 3 });
 		assertTrue(result.isSuccess());
@@ -80,7 +81,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withEqualTo(new short[] { (short) 1, (short) 2, (short) 3 }));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.equalTo(new short[] { (short) 1, (short) 2, (short) 3 });
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 4, (short) 5 });
 		assertTrue(result.isError());
@@ -89,7 +90,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withEqualTo(new short[] { (short) 1, (short) 2, (short) 3 }));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.equalTo(new short[] { (short) 1, (short) 2, (short) 3 });
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -103,7 +104,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withEqualTo(new short[] { (short) 1, (short) 2, (short) 3 }));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.equalTo(new short[] { (short) 1, (short) 2, (short) 3 });
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(4));
@@ -116,7 +117,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withNotEqualTo(new short[] { (short) 1, (short) 2, (short) 3 }));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.notEqualTo(new short[] { (short) 1, (short) 2, (short) 3 });
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 4, (short) 5, (short) 6 });
 		assertTrue(result.isSuccess());
@@ -125,7 +126,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withNotEqualTo(new short[] { (short) 1, (short) 2, (short) 3 }));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.notEqualTo(new short[] { (short) 1, (short) 2, (short) 3 });
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2, (short) 3 });
 		assertTrue(result.isError());
@@ -134,7 +135,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withNotEqualTo(new short[] { (short) 1, (short) 2, (short) 3 }));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.notEqualTo(new short[] { (short) 1, (short) 2, (short) 3 });
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(4));
@@ -147,7 +148,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withNotEqualTo(new short[] { (short) 1, (short) 2, (short) 3 }));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.notEqualTo(new short[] { (short) 1, (short) 2, (short) 3 });
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -161,7 +162,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 })));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.in(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 }));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2 });
 		assertTrue(result.isSuccess());
@@ -170,7 +171,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 })));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.in(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 }));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 5, (short) 6 });
 		assertTrue(result.isError());
@@ -179,7 +180,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 })));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.in(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 }));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(3));
@@ -192,7 +193,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 })));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.in(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 }));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(7));
@@ -205,7 +206,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withNotIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 })));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.notIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 }));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 5, (short) 6 });
 		assertTrue(result.isSuccess());
@@ -214,7 +215,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withNotIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 })));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.notIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 }));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2 });
 		assertTrue(result.isError());
@@ -223,7 +224,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withNotIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 })));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.notIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 }));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(7));
@@ -236,7 +237,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withNotIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 })));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.notIn(List.of(new short[] { (short) 1, (short) 2 }, new short[] { (short) 3, (short) 4 }));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(3));
@@ -249,7 +250,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartMinLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMinLength(2));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.minLength(2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2, (short) 3 });
 		assertTrue(result.isSuccess());
@@ -258,7 +259,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartMinLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMinLength(3));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.minLength(3));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2 });
 		assertTrue(result.isError());
@@ -267,7 +268,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartMinLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMinLength(2));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.minLength(2));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -280,7 +281,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartMinLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMinLength(3));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.minLength(3));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -293,7 +294,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartMaxLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMaxLength(5));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.maxLength(5));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2, (short) 3 });
 		assertTrue(result.isSuccess());
@@ -302,7 +303,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartMaxLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMaxLength(2));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.maxLength(2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2, (short) 3 });
 		assertTrue(result.isError());
@@ -311,7 +312,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartMaxLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMaxLength(5));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.maxLength(5));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -324,7 +325,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartMaxLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMaxLength(2));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.maxLength(2));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -338,7 +339,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartExactLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withExactLength(3));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.exactLength(3));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2, (short) 3 });
 		assertTrue(result.isSuccess());
@@ -347,7 +348,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartExactLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withExactLength(3));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.exactLength(3));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2 });
 		assertTrue(result.isError());
@@ -356,7 +357,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartExactLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withExactLength(2));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.exactLength(2));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -369,7 +370,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartExactLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withExactLength(3));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.exactLength(3));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -382,7 +383,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartLengthBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withLengthBetween(2, 4));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.lengthBetween(2, 4));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2, (short) 3 });
 		assertTrue(result.isSuccess());
@@ -391,7 +392,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartLengthBetweenConstraintViolationTooSmall() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withLengthBetween(3, 5));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.lengthBetween(3, 5));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2 });
 		assertTrue(result.isError());
@@ -400,7 +401,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartLengthBetweenConstraintViolationTooLarge() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withLengthBetween(1, 2));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.lengthBetween(1, 2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2, (short) 3 });
 		assertTrue(result.isError());
@@ -409,7 +410,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartLengthBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withLengthBetween(1, 3));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.lengthBetween(1, 3));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -422,7 +423,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartLengthBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withLengthBetween(3, 5));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.lengthBetween(3, 5));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -435,14 +436,14 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withCustom(arr -> {
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.custom(arr -> {
 			for (short s : arr) {
 				if (s <= 0) {
 					return Result.error("All elements must be positive");
 				}
 			}
 			return Result.success(null);
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2, (short) 3 });
 		assertTrue(result.isSuccess());
@@ -451,14 +452,14 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withCustom(arr -> {
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.custom(arr -> {
 			for (short s : arr) {
 				if (s <= 0) {
 					return Result.error("All elements must be positive");
 				}
 			}
 			return Result.success(null);
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) -2, (short) 3 });
 		assertTrue(result.isError());
@@ -467,14 +468,14 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withCustom(arr -> {
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.custom(arr -> {
 			for (short s : arr) {
 				if (s <= 0) {
 					return Result.error("All elements must be positive");
 				}
 			}
 			return Result.success(null);
-		}));
+		});
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -487,14 +488,14 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withCustom(arr -> {
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.custom(arr -> {
 			for (short s : arr) {
 				if (s <= 0) {
 					return Result.error("All elements must be positive");
 				}
 			}
 			return Result.success(null);
-		}));
+		});
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -507,7 +508,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMinLength(2).withMaxLength(4));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.minLength(2).maxLength(4));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1, (short) 2, (short) 3 });
 		assertTrue(result.isSuccess());
@@ -516,7 +517,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMinLength(2).withMaxLength(4));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.minLength(2).maxLength(4));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new short[] { (short) 1 });
 		assertTrue(result.isError());
@@ -525,7 +526,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMinLength(1).withMaxLength(3));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.minLength(1).maxLength(3));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -538,7 +539,7 @@ class ConstrainedShortArrayCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<short[]> codec = new ShortArrayCodec().apply(config -> config.withMinLength(3).withMaxLength(5));
+		Codec<short[]> codec = Codecs.SHORT_ARRAY.length(builder -> builder.minLength(3).maxLength(5));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));

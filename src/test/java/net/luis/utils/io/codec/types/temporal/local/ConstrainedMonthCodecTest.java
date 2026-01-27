@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -41,7 +42,7 @@ class ConstrainedMonthCodecTest {
 	@Test
 	void encodeStartWithValidEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withEqualTo(Month.JUNE));
+		Codec<Month> codec = Codecs.MONTH.equalTo(Month.JUNE);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
 		assertTrue(result.isSuccess());
@@ -52,7 +53,7 @@ class ConstrainedMonthCodecTest {
 	void encodeStartWithValidInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> summerMonths = Set.of(Month.JUNE, Month.JULY, Month.AUGUST);
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withIn(summerMonths));
+		Codec<Month> codec = Codecs.MONTH.in(summerMonths);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
 		assertTrue(result.isSuccess());
@@ -67,7 +68,7 @@ class ConstrainedMonthCodecTest {
 	@Test
 	void encodeStartWithValidNotEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withNotEqualTo(Month.JANUARY));
+		Codec<Month> codec = Codecs.MONTH.notEqualTo(Month.JANUARY);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
 		assertTrue(result.isSuccess());
@@ -77,7 +78,7 @@ class ConstrainedMonthCodecTest {
 	void encodeStartWithValidNotInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> winterMonths = Set.of(Month.DECEMBER, Month.JANUARY, Month.FEBRUARY);
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withNotIn(winterMonths));
+		Codec<Month> codec = Codecs.MONTH.notIn(winterMonths);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
 		assertTrue(result.isSuccess());
@@ -90,7 +91,7 @@ class ConstrainedMonthCodecTest {
 	void decodeStartWithValidConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> summerMonths = Set.of(Month.JUNE, Month.JULY, Month.AUGUST);
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withIn(summerMonths));
+		Codec<Month> codec = Codecs.MONTH.in(summerMonths);
 		
 		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("JUNE"));
 		assertTrue(result.isSuccess());
@@ -100,12 +101,12 @@ class ConstrainedMonthCodecTest {
 	@Test
 	void encodeStartWithCustomConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withCustom(value -> {
+		Codec<Month> codec = Codecs.MONTH.custom(value -> {
 			if (value.getValue() >= 4 && value.getValue() <= 9) {
 				return Result.success(null);
 			}
 			return Result.error("Month must be in warm season (April to September)");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
 		assertTrue(result.isSuccess());
@@ -115,7 +116,7 @@ class ConstrainedMonthCodecTest {
 	void encodeStartWithAllMonthsInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> allMonths = Set.of(Month.values());
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withIn(allMonths));
+		Codec<Month> codec = Codecs.MONTH.in(allMonths);
 		
 		for (Month month : Month.values()) {
 			Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), month);
@@ -127,7 +128,7 @@ class ConstrainedMonthCodecTest {
 	void encodeStartWithFirstQuarterConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> firstQuarter = Set.of(Month.JANUARY, Month.FEBRUARY, Month.MARCH);
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withIn(firstQuarter));
+		Codec<Month> codec = Codecs.MONTH.in(firstQuarter);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
 		assertTrue(result.isSuccess());
@@ -139,7 +140,7 @@ class ConstrainedMonthCodecTest {
 	@Test
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withEqualTo(Month.JUNE));
+		Codec<Month> codec = Codecs.MONTH.equalTo(Month.JUNE);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
 		assertTrue(result.isError());
@@ -149,7 +150,7 @@ class ConstrainedMonthCodecTest {
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> summerMonths = Set.of(Month.JUNE, Month.JULY, Month.AUGUST);
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withIn(summerMonths));
+		Codec<Month> codec = Codecs.MONTH.in(summerMonths);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
 		assertTrue(result.isError());
@@ -161,7 +162,7 @@ class ConstrainedMonthCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withNotEqualTo(Month.JANUARY));
+		Codec<Month> codec = Codecs.MONTH.notEqualTo(Month.JANUARY);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
 		assertTrue(result.isError());
@@ -171,7 +172,7 @@ class ConstrainedMonthCodecTest {
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> winterMonths = Set.of(Month.DECEMBER, Month.JANUARY, Month.FEBRUARY);
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withNotIn(winterMonths));
+		Codec<Month> codec = Codecs.MONTH.notIn(winterMonths);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
 		assertTrue(result.isError());
@@ -184,7 +185,7 @@ class ConstrainedMonthCodecTest {
 	void decodeStartConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> summerMonths = Set.of(Month.JUNE, Month.JULY, Month.AUGUST);
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withIn(summerMonths));
+		Codec<Month> codec = Codecs.MONTH.in(summerMonths);
 		
 		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("JANUARY"));
 		assertTrue(result.isError());
@@ -193,12 +194,12 @@ class ConstrainedMonthCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withCustom(value -> {
+		Codec<Month> codec = Codecs.MONTH.custom(value -> {
 			if (value.getValue() >= 4 && value.getValue() <= 9) {
 				return Result.success(null);
 			}
 			return Result.error("Month must be in warm season (April to September)");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
 		assertTrue(result.isError());
@@ -208,7 +209,7 @@ class ConstrainedMonthCodecTest {
 	void encodeStartFirstQuarterConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> firstQuarter = Set.of(Month.JANUARY, Month.FEBRUARY, Month.MARCH);
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withIn(firstQuarter));
+		Codec<Month> codec = Codecs.MONTH.in(firstQuarter);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
 		assertTrue(result.isError());
@@ -219,7 +220,7 @@ class ConstrainedMonthCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<Month> codec = new MonthCodec().apply(config -> config.withEqualTo(Month.JUNE));
+		Codec<Month> codec = Codecs.MONTH.equalTo(Month.JUNE);
 		
 		String toString = codec.toString();
 		assertTrue(toString.contains("Constrained"));
@@ -227,7 +228,7 @@ class ConstrainedMonthCodecTest {
 	
 	@Test
 	void toStringWithoutConstraints() {
-		Codec<Month> codec = new MonthCodec();
+		Codec<Month> codec = Codecs.MONTH;
 		
 		assertEquals("MonthCodec", codec.toString());
 	}

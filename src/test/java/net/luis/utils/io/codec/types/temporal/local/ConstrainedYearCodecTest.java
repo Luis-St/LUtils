@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -41,7 +42,7 @@ class ConstrainedYearCodecTest {
 	void encodeStartWithValidAfterConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2020);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withAfter(threshold));
+		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		Year value = Year.of(2023);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -53,7 +54,7 @@ class ConstrainedYearCodecTest {
 	void encodeStartWithValidBeforeConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2025);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withBefore(threshold));
+		Codec<Year> codec = Codecs.YEAR.before(threshold);
 		Year value = Year.of(2023);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -65,7 +66,7 @@ class ConstrainedYearCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year after = Year.of(2020);
 		Year before = Year.of(2025);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withBetween(after, before));
+		Codec<Year> codec = Codecs.YEAR.between(after, before);
 		Year value = Year.of(2023);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -76,7 +77,7 @@ class ConstrainedYearCodecTest {
 	void encodeStartWithValidEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year target = Year.of(2023);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withEqualTo(target));
+		Codec<Year> codec = Codecs.YEAR.equalTo(target);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), target);
 		assertTrue(result.isSuccess());
@@ -87,7 +88,7 @@ class ConstrainedYearCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year value1 = Year.of(2023);
 		Year value2 = Year.of(2024);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withIn(Set.of(value1, value2)));
+		Codec<Year> codec = Codecs.YEAR.in(Set.of(value1, value2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value1);
 		assertTrue(result.isSuccess());
@@ -98,7 +99,7 @@ class ConstrainedYearCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year excluded = Year.of(2023);
 		Year value = Year.of(2024);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<Year> codec = Codecs.YEAR.notEqualTo(excluded);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
@@ -110,7 +111,7 @@ class ConstrainedYearCodecTest {
 		Year excluded1 = Year.of(2023);
 		Year excluded2 = Year.of(2024);
 		Year value = Year.of(2025);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
+		Codec<Year> codec = Codecs.YEAR.notIn(Set.of(excluded1, excluded2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
@@ -120,7 +121,7 @@ class ConstrainedYearCodecTest {
 	void encodeStartWithValidAfterOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2023);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withAfterOrEqual(threshold));
+		Codec<Year> codec = Codecs.YEAR.afterOrEqual(threshold);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
 		assertTrue(result.isSuccess());
@@ -130,7 +131,7 @@ class ConstrainedYearCodecTest {
 	void encodeStartWithValidBeforeOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2023);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withBeforeOrEqual(threshold));
+		Codec<Year> codec = Codecs.YEAR.beforeOrEqual(threshold);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
 		assertTrue(result.isSuccess());
@@ -141,7 +142,7 @@ class ConstrainedYearCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year min = Year.of(2020);
 		Year max = Year.of(2023);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withBetweenOrEqual(min, max));
+		Codec<Year> codec = Codecs.YEAR.betweenOrEqual(min, max);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), min);
 		assertTrue(result.isSuccess());
@@ -153,7 +154,7 @@ class ConstrainedYearCodecTest {
 	@Test
 	void encodeKeyWithValidConstraint() {
 		Year threshold = Year.of(2020);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withAfter(threshold));
+		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		Year value = Year.of(2023);
 		
 		Result<String> result = codec.encodeKey(value);
@@ -165,7 +166,7 @@ class ConstrainedYearCodecTest {
 	void decodeStartWithValidConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2020);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withAfter(threshold));
+		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		
 		Result<Year> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(2023));
 		assertTrue(result.isSuccess());
@@ -175,7 +176,7 @@ class ConstrainedYearCodecTest {
 	@Test
 	void decodeKeyWithValidConstraint() {
 		Year threshold = Year.of(2020);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withAfter(threshold));
+		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		
 		Result<Year> result = codec.decodeKey("2023");
 		assertTrue(result.isSuccess());
@@ -185,12 +186,12 @@ class ConstrainedYearCodecTest {
 	@Test
 	void encodeStartWithCustomConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Year> codec = new YearCodec().apply(config -> config.withCustom(value -> {
+		Codec<Year> codec = Codecs.YEAR.custom(value -> {
 			if (value.getValue() % 4 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Year must be divisible by 4 (leap year candidates)");
-		}));
+		});
 		Year value = Year.of(2024);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -201,7 +202,7 @@ class ConstrainedYearCodecTest {
 	void encodeStartAfterConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2020);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withAfter(threshold));
+		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		Year valueBefore = Year.of(2019);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueBefore);
@@ -212,7 +213,7 @@ class ConstrainedYearCodecTest {
 	void encodeStartBeforeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2020);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withBefore(threshold));
+		Codec<Year> codec = Codecs.YEAR.before(threshold);
 		Year valueAfter = Year.of(2023);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueAfter);
@@ -224,7 +225,7 @@ class ConstrainedYearCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year after = Year.of(2020);
 		Year before = Year.of(2025);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withBetween(after, before));
+		Codec<Year> codec = Codecs.YEAR.between(after, before);
 		Year valueTooEarly = Year.of(2019);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooEarly);
@@ -236,7 +237,7 @@ class ConstrainedYearCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year after = Year.of(2020);
 		Year before = Year.of(2025);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withBetween(after, before));
+		Codec<Year> codec = Codecs.YEAR.between(after, before);
 		Year valueTooLate = Year.of(2026);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooLate);
@@ -247,7 +248,7 @@ class ConstrainedYearCodecTest {
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year target = Year.of(2023);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withEqualTo(target));
+		Codec<Year> codec = Codecs.YEAR.equalTo(target);
 		Year differentValue = Year.of(2024);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), differentValue);
@@ -259,7 +260,7 @@ class ConstrainedYearCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year value1 = Year.of(2023);
 		Year value2 = Year.of(2024);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withIn(Set.of(value1, value2)));
+		Codec<Year> codec = Codecs.YEAR.in(Set.of(value1, value2));
 		Year notInSet = Year.of(2025);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notInSet);
@@ -270,7 +271,7 @@ class ConstrainedYearCodecTest {
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year excluded = Year.of(2023);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<Year> codec = Codecs.YEAR.notEqualTo(excluded);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
 		assertTrue(result.isError());
@@ -281,7 +282,7 @@ class ConstrainedYearCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year excluded1 = Year.of(2023);
 		Year excluded2 = Year.of(2024);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
+		Codec<Year> codec = Codecs.YEAR.notIn(Set.of(excluded1, excluded2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded1);
 		assertTrue(result.isError());
@@ -290,7 +291,7 @@ class ConstrainedYearCodecTest {
 	@Test
 	void encodeKeyConstraintViolation() {
 		Year threshold = Year.of(2020);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withAfter(threshold));
+		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		Year valueBefore = Year.of(2019);
 		
 		Result<String> result = codec.encodeKey(valueBefore);
@@ -301,7 +302,7 @@ class ConstrainedYearCodecTest {
 	void decodeStartConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2020);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withAfter(threshold));
+		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		
 		Result<Year> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(2019));
 		assertTrue(result.isError());
@@ -310,7 +311,7 @@ class ConstrainedYearCodecTest {
 	@Test
 	void decodeKeyConstraintViolation() {
 		Year threshold = Year.of(2020);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withAfter(threshold));
+		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		
 		Result<Year> result = codec.decodeKey("2019");
 		assertTrue(result.isError());
@@ -319,12 +320,12 @@ class ConstrainedYearCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Year> codec = new YearCodec().apply(config -> config.withCustom(value -> {
+		Codec<Year> codec = Codecs.YEAR.custom(value -> {
 			if (value.getValue() % 4 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Year must be divisible by 4 (leap year candidates)");
-		}));
+		});
 		Year value = Year.of(2023);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -334,7 +335,7 @@ class ConstrainedYearCodecTest {
 	@Test
 	void toStringWithConstraints() {
 		Year threshold = Year.of(2020);
-		Codec<Year> codec = new YearCodec().apply(config -> config.withAfter(threshold));
+		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		
 		String toString = codec.toString();
 		assertTrue(toString.contains("Constrained"));
@@ -342,7 +343,7 @@ class ConstrainedYearCodecTest {
 	
 	@Test
 	void toStringWithoutConstraints() {
-		Codec<Year> codec = new YearCodec();
+		Codec<Year> codec = Codecs.YEAR;
 		
 		assertEquals("YearCodec", codec.toString());
 	}

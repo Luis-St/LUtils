@@ -19,8 +19,7 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -43,7 +42,7 @@ class ConstrainedLocalDateCodecTest {
 	void encodeStartWithValidAfterConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		LocalDate value = LocalDate.of(2023, 6, 15);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -55,7 +54,7 @@ class ConstrainedLocalDateCodecTest {
 	void encodeStartWithValidBeforeConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2025, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withBefore(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.before(threshold);
 		LocalDate value = LocalDate.of(2023, 6, 15);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -67,7 +66,7 @@ class ConstrainedLocalDateCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate after = LocalDate.of(2020, 1, 1);
 		LocalDate before = LocalDate.of(2025, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withBetween(after, before));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.between(after, before);
 		LocalDate value = LocalDate.of(2023, 6, 15);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -78,7 +77,7 @@ class ConstrainedLocalDateCodecTest {
 	void encodeStartWithValidEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate target = LocalDate.of(2023, 6, 15);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withEqualTo(target));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.equalTo(target);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), target);
 		assertTrue(result.isSuccess());
@@ -89,7 +88,7 @@ class ConstrainedLocalDateCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate value1 = LocalDate.of(2023, 6, 15);
 		LocalDate value2 = LocalDate.of(2023, 7, 20);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withIn(Set.of(value1, value2)));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.in(Set.of(value1, value2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value1);
 		assertTrue(result.isSuccess());
@@ -100,7 +99,7 @@ class ConstrainedLocalDateCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate excluded = LocalDate.of(2023, 6, 15);
 		LocalDate value = LocalDate.of(2023, 7, 20);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.notEqualTo(excluded);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
@@ -112,7 +111,7 @@ class ConstrainedLocalDateCodecTest {
 		LocalDate excluded1 = LocalDate.of(2023, 6, 15);
 		LocalDate excluded2 = LocalDate.of(2023, 7, 20);
 		LocalDate value = LocalDate.of(2023, 8, 25);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.notIn(Set.of(excluded1, excluded2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
@@ -122,7 +121,7 @@ class ConstrainedLocalDateCodecTest {
 	void encodeStartWithValidAfterOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2023, 6, 15);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withAfterOrEqual(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.afterOrEqual(threshold);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
 		assertTrue(result.isSuccess());
@@ -132,7 +131,7 @@ class ConstrainedLocalDateCodecTest {
 	void encodeStartWithValidBeforeOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2023, 6, 15);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withBeforeOrEqual(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.beforeOrEqual(threshold);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
 		assertTrue(result.isSuccess());
@@ -141,11 +140,9 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeStartWithValidDayOfWeekConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withDayOfWeek(
-			EnumConstraintConfig.<DayOfWeek>unconstrained().withIn(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY))
-		));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.dayOfWeek(builder -> builder.in(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY)));
 		LocalDate value = LocalDate.of(2023, 6, 16); // Friday
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
@@ -153,11 +150,9 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeStartWithValidDayOfMonthConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withDayOfMonth(
-			NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 15)
-		));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.dayOfMonth(builder -> builder.betweenOrEqual(1, 15));
 		LocalDate value = LocalDate.of(2023, 6, 10);
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
@@ -165,11 +160,9 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeStartWithValidMonthConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withMonth(
-			EnumConstraintConfig.<Month>unconstrained().withIn(Set.of(Month.JUNE, Month.JULY, Month.AUGUST))
-		));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.month(builder -> builder.in(Set.of(Month.JUNE, Month.JULY, Month.AUGUST)));
 		LocalDate value = LocalDate.of(2023, 6, 15);
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
@@ -177,11 +170,9 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeStartWithValidYearConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withYear(
-			NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(2020)
-		));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.year(builder -> builder.greaterThanOrEqual(2020));
 		LocalDate value = LocalDate.of(2023, 6, 15);
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
@@ -189,7 +180,7 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeKeyWithValidConstraint() {
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		LocalDate value = LocalDate.of(2023, 6, 15);
 		
 		Result<String> result = codec.encodeKey(value);
@@ -201,7 +192,7 @@ class ConstrainedLocalDateCodecTest {
 	void decodeStartWithValidConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		
 		Result<LocalDate> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15"));
 		assertTrue(result.isSuccess());
@@ -211,7 +202,7 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void decodeKeyWithValidConstraint() {
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		
 		Result<LocalDate> result = codec.decodeKey("2023-06-15");
 		assertTrue(result.isSuccess());
@@ -221,12 +212,12 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeStartWithCustomConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withCustom(value -> {
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.custom(value -> {
 			if (value.getDayOfMonth() % 5 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Day of month must be divisible by 5");
-		}));
+		});
 		LocalDate value = LocalDate.of(2023, 6, 15);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -237,7 +228,7 @@ class ConstrainedLocalDateCodecTest {
 	void encodeStartAfterConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		LocalDate valueBefore = LocalDate.of(2019, 6, 15);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueBefore);
@@ -248,7 +239,7 @@ class ConstrainedLocalDateCodecTest {
 	void encodeStartBeforeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withBefore(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.before(threshold);
 		LocalDate valueAfter = LocalDate.of(2023, 6, 15);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueAfter);
@@ -260,7 +251,7 @@ class ConstrainedLocalDateCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate after = LocalDate.of(2020, 1, 1);
 		LocalDate before = LocalDate.of(2025, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withBetween(after, before));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.between(after, before);
 		LocalDate valueTooEarly = LocalDate.of(2019, 6, 15);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooEarly);
@@ -272,7 +263,7 @@ class ConstrainedLocalDateCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate after = LocalDate.of(2020, 1, 1);
 		LocalDate before = LocalDate.of(2025, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withBetween(after, before));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.between(after, before);
 		LocalDate valueTooLate = LocalDate.of(2026, 6, 15);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooLate);
@@ -283,7 +274,7 @@ class ConstrainedLocalDateCodecTest {
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate target = LocalDate.of(2023, 6, 15);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withEqualTo(target));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.equalTo(target);
 		LocalDate differentValue = LocalDate.of(2023, 7, 20);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), differentValue);
@@ -295,7 +286,7 @@ class ConstrainedLocalDateCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate value1 = LocalDate.of(2023, 6, 15);
 		LocalDate value2 = LocalDate.of(2023, 7, 20);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withIn(Set.of(value1, value2)));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.in(Set.of(value1, value2));
 		LocalDate notInSet = LocalDate.of(2023, 8, 25);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notInSet);
@@ -306,7 +297,7 @@ class ConstrainedLocalDateCodecTest {
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate excluded = LocalDate.of(2023, 6, 15);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.notEqualTo(excluded);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
 		assertTrue(result.isError());
@@ -317,7 +308,7 @@ class ConstrainedLocalDateCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate excluded1 = LocalDate.of(2023, 6, 15);
 		LocalDate excluded2 = LocalDate.of(2023, 7, 20);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.notIn(Set.of(excluded1, excluded2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded1);
 		assertTrue(result.isError());
@@ -326,11 +317,9 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeStartDayOfWeekConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withDayOfWeek(
-			EnumConstraintConfig.<DayOfWeek>unconstrained().withIn(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY))
-		));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.dayOfWeek(builder -> builder.in(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY)));
 		LocalDate value = LocalDate.of(2023, 6, 17); // Saturday
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isError());
 	}
@@ -338,11 +327,9 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeStartDayOfMonthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withDayOfMonth(
-			NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 15)
-		));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.dayOfMonth(builder -> builder.betweenOrEqual(1, 15));
 		LocalDate value = LocalDate.of(2023, 6, 20);
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isError());
 	}
@@ -350,11 +337,9 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeStartMonthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withMonth(
-			EnumConstraintConfig.<Month>unconstrained().withIn(Set.of(Month.JUNE, Month.JULY, Month.AUGUST))
-		));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.month(builder -> builder.in(Set.of(Month.JUNE, Month.JULY, Month.AUGUST)));
 		LocalDate value = LocalDate.of(2023, 1, 15); // January
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isError());
 	}
@@ -362,11 +347,9 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeStartYearConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withYear(
-			NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(2020)
-		));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.year(builder -> builder.greaterThanOrEqual(2020));
 		LocalDate value = LocalDate.of(2015, 6, 15);
-		
+
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isError());
 	}
@@ -374,7 +357,7 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeKeyConstraintViolation() {
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		LocalDate valueBefore = LocalDate.of(2019, 6, 15);
 		
 		Result<String> result = codec.encodeKey(valueBefore);
@@ -385,7 +368,7 @@ class ConstrainedLocalDateCodecTest {
 	void decodeStartConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		
 		Result<LocalDate> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2019-06-15"));
 		assertTrue(result.isError());
@@ -394,7 +377,7 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void decodeKeyConstraintViolation() {
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		
 		Result<LocalDate> result = codec.decodeKey("2019-06-15");
 		assertTrue(result.isError());
@@ -403,12 +386,12 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withCustom(value -> {
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.custom(value -> {
 			if (value.getDayOfMonth() % 5 == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Day of month must be divisible by 5");
-		}));
+		});
 		LocalDate value = LocalDate.of(2023, 6, 17);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
@@ -418,7 +401,7 @@ class ConstrainedLocalDateCodecTest {
 	@Test
 	void toStringWithConstraints() {
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
-		Codec<LocalDate> codec = new LocalDateCodec().apply(config -> config.withAfter(threshold));
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		
 		String toString = codec.toString();
 		assertTrue(toString.contains("Constrained"));
@@ -426,7 +409,7 @@ class ConstrainedLocalDateCodecTest {
 	
 	@Test
 	void toStringWithoutConstraints() {
-		Codec<LocalDate> codec = new LocalDateCodec();
+		Codec<LocalDate> codec = Codecs.LOCAL_DATE;
 		
 		assertEquals("LocalDateCodec", codec.toString());
 	}

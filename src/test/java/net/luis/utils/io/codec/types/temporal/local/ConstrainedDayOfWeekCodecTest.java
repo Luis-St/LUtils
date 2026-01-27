@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -41,7 +42,7 @@ class ConstrainedDayOfWeekCodecTest {
 	@Test
 	void encodeStartWithValidEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withEqualTo(DayOfWeek.MONDAY));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.equalTo(DayOfWeek.MONDAY);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.MONDAY);
 		assertTrue(result.isSuccess());
@@ -52,7 +53,7 @@ class ConstrainedDayOfWeekCodecTest {
 	void encodeStartWithValidInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY);
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withIn(weekdays));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.in(weekdays);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.MONDAY);
 		assertTrue(result.isSuccess());
@@ -64,7 +65,7 @@ class ConstrainedDayOfWeekCodecTest {
 	@Test
 	void encodeStartWithValidNotEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withNotEqualTo(DayOfWeek.SUNDAY));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.notEqualTo(DayOfWeek.SUNDAY);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.MONDAY);
 		assertTrue(result.isSuccess());
@@ -74,7 +75,7 @@ class ConstrainedDayOfWeekCodecTest {
 	void encodeStartWithValidNotInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<DayOfWeek> weekend = Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withNotIn(weekend));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.notIn(weekend);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.MONDAY);
 		assertTrue(result.isSuccess());
@@ -87,7 +88,7 @@ class ConstrainedDayOfWeekCodecTest {
 	void encodeStartWithWeekendConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<DayOfWeek> weekend = Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withIn(weekend));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.in(weekend);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.SATURDAY);
 		assertTrue(result.isSuccess());
@@ -100,7 +101,7 @@ class ConstrainedDayOfWeekCodecTest {
 	void decodeStartWithValidConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY);
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withIn(weekdays));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.in(weekdays);
 		
 		Result<DayOfWeek> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("MONDAY"));
 		assertTrue(result.isSuccess());
@@ -110,12 +111,12 @@ class ConstrainedDayOfWeekCodecTest {
 	@Test
 	void encodeStartWithCustomConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withCustom(value -> {
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.custom(value -> {
 			if (value.getValue() <= 5) {
 				return Result.success(null);
 			}
 			return Result.error("Day must be a weekday");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.FRIDAY);
 		assertTrue(result.isSuccess());
@@ -125,7 +126,7 @@ class ConstrainedDayOfWeekCodecTest {
 	void encodeStartWithAllDaysInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<DayOfWeek> allDays = Set.of(DayOfWeek.values());
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withIn(allDays));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.in(allDays);
 		
 		for (DayOfWeek day : DayOfWeek.values()) {
 			Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), day);
@@ -137,7 +138,7 @@ class ConstrainedDayOfWeekCodecTest {
 	void encodeStartWithMidWeekConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<DayOfWeek> midWeek = Set.of(DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY);
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withIn(midWeek));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.in(midWeek);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.WEDNESDAY);
 		assertTrue(result.isSuccess());
@@ -146,7 +147,7 @@ class ConstrainedDayOfWeekCodecTest {
 	@Test
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withEqualTo(DayOfWeek.MONDAY));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.equalTo(DayOfWeek.MONDAY);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.FRIDAY);
 		assertTrue(result.isError());
@@ -156,7 +157,7 @@ class ConstrainedDayOfWeekCodecTest {
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY);
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withIn(weekdays));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.in(weekdays);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.SATURDAY);
 		assertTrue(result.isError());
@@ -168,7 +169,7 @@ class ConstrainedDayOfWeekCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withNotEqualTo(DayOfWeek.SUNDAY));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.notEqualTo(DayOfWeek.SUNDAY);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.SUNDAY);
 		assertTrue(result.isError());
@@ -178,7 +179,7 @@ class ConstrainedDayOfWeekCodecTest {
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<DayOfWeek> weekend = Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withNotIn(weekend));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.notIn(weekend);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.SATURDAY);
 		assertTrue(result.isError());
@@ -191,7 +192,7 @@ class ConstrainedDayOfWeekCodecTest {
 	void encodeStartWeekendConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<DayOfWeek> weekend = Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withIn(weekend));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.in(weekend);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.MONDAY);
 		assertTrue(result.isError());
@@ -204,7 +205,7 @@ class ConstrainedDayOfWeekCodecTest {
 	void decodeStartConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY);
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withIn(weekdays));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.in(weekdays);
 		
 		Result<DayOfWeek> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("SATURDAY"));
 		assertTrue(result.isError());
@@ -213,12 +214,12 @@ class ConstrainedDayOfWeekCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withCustom(value -> {
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.custom(value -> {
 			if (value.getValue() <= 5) {
 				return Result.success(null);
 			}
 			return Result.error("Day must be a weekday");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.SATURDAY);
 		assertTrue(result.isError());
@@ -228,7 +229,7 @@ class ConstrainedDayOfWeekCodecTest {
 	void encodeStartMidWeekConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<DayOfWeek> midWeek = Set.of(DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY);
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withIn(midWeek));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.in(midWeek);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), DayOfWeek.MONDAY);
 		assertTrue(result.isError());
@@ -239,7 +240,7 @@ class ConstrainedDayOfWeekCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<DayOfWeek> codec = new DayOfWeekCodec().apply(config -> config.withEqualTo(DayOfWeek.MONDAY));
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK.equalTo(DayOfWeek.MONDAY);
 		
 		String toString = codec.toString();
 		assertTrue(toString.contains("Constrained"));
@@ -247,7 +248,7 @@ class ConstrainedDayOfWeekCodecTest {
 	
 	@Test
 	void toStringWithoutConstraints() {
-		Codec<DayOfWeek> codec = new DayOfWeekCodec();
+		Codec<DayOfWeek> codec = Codecs.DAY_OF_WEEK;
 		
 		assertEquals("DayOfWeekCodec", codec.toString());
 	}

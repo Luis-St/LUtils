@@ -40,7 +40,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMinLength(1));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.minLength(1));
 		Integer[] validArray = new Integer[] { 1, 2, 3 };
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), validArray);
@@ -56,7 +56,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMinLength(1));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.minLength(1));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -69,7 +69,7 @@ class ConstrainedArrayCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMinLength(1));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.minLength(1));
 		String str = codec.toString();
 		assertTrue(str.contains("Constrained"));
 	}
@@ -77,7 +77,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withEqualTo(new Integer[] { 1, 2, 3 }));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).equalTo(new Integer[] { 1, 2, 3 });
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2, 3 });
 		assertTrue(result.isSuccess());
@@ -86,7 +86,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withEqualTo(new Integer[] { 1, 2, 3 }));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).equalTo(new Integer[] { 1, 2, 3 });
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 4, 5 });
 		assertTrue(result.isError());
@@ -95,7 +95,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withEqualTo(new Integer[] { 1, 2, 3 }));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).equalTo(new Integer[] { 1, 2, 3 });
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -109,7 +109,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withEqualTo(new Integer[] { 1, 2, 3 }));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).equalTo(new Integer[] { 1, 2, 3 });
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(4));
@@ -122,7 +122,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withNotEqualTo(new Integer[] { 1, 2, 3 }));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).notEqualTo(new Integer[] { 1, 2, 3 });
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 4, 5, 6 });
 		assertTrue(result.isSuccess());
@@ -131,7 +131,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withNotEqualTo(new Integer[] { 1, 2, 3 }));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).notEqualTo(new Integer[] { 1, 2, 3 });
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2, 3 });
 		assertTrue(result.isError());
@@ -140,7 +140,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withNotEqualTo(new Integer[] { 1, 2, 3 }));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).notEqualTo(new Integer[] { 1, 2, 3 });
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(4));
@@ -153,7 +153,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withNotEqualTo(new Integer[] { 1, 2, 3 }));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).notEqualTo(new Integer[] { 1, 2, 3 });
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -167,7 +167,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 })));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).in(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 }));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2 });
 		assertTrue(result.isSuccess());
@@ -176,7 +176,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 })));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).in(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 }));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 5, 6 });
 		assertTrue(result.isError());
@@ -185,7 +185,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 })));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).in(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 }));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(3));
@@ -198,7 +198,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 })));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).in(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 }));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(7));
@@ -211,7 +211,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withNotIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 })));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).notIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 }));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 5, 6 });
 		assertTrue(result.isSuccess());
@@ -220,7 +220,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withNotIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 })));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).notIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 }));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2 });
 		assertTrue(result.isError());
@@ -229,7 +229,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withNotIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 })));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).notIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 }));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(7));
@@ -242,7 +242,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withNotIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 })));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).notIn(List.of(new Integer[] { 1, 2 }, new Integer[] { 3, 4 }));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(3));
@@ -255,7 +255,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartMinLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMinLength(2));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.minLength(2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2, 3 });
 		assertTrue(result.isSuccess());
@@ -264,7 +264,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartMinLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMinLength(3));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.minLength(3));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2 });
 		assertTrue(result.isError());
@@ -273,7 +273,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartMinLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMinLength(2));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.minLength(2));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -286,7 +286,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartMinLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMinLength(3));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.minLength(3));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -299,7 +299,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartMaxLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMaxLength(5));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.maxLength(5));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2, 3 });
 		assertTrue(result.isSuccess());
@@ -308,7 +308,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartMaxLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMaxLength(2));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.maxLength(2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2, 3 });
 		assertTrue(result.isError());
@@ -317,7 +317,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartMaxLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMaxLength(5));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.maxLength(5));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -330,7 +330,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartMaxLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMaxLength(2));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.maxLength(2));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -344,7 +344,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartExactLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withExactLength(3));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.exactLength(3));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2, 3 });
 		assertTrue(result.isSuccess());
@@ -353,7 +353,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartExactLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withExactLength(3));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.exactLength(3));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2 });
 		assertTrue(result.isError());
@@ -362,7 +362,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartExactLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withExactLength(2));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.exactLength(2));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -375,7 +375,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartExactLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withExactLength(3));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.exactLength(3));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -388,7 +388,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartLengthBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withLengthBetween(2, 4));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.lengthBetween(2, 4));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2, 3 });
 		assertTrue(result.isSuccess());
@@ -397,7 +397,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartLengthBetweenConstraintViolationTooSmall() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withLengthBetween(3, 5));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.lengthBetween(3, 5));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2 });
 		assertTrue(result.isError());
@@ -406,7 +406,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartLengthBetweenConstraintViolationTooLarge() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withLengthBetween(1, 2));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.lengthBetween(1, 2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2, 3 });
 		assertTrue(result.isError());
@@ -415,7 +415,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartLengthBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withLengthBetween(1, 3));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.lengthBetween(1, 3));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -428,7 +428,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartLengthBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withLengthBetween(3, 5));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.lengthBetween(3, 5));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -441,12 +441,12 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withCustom(arr -> {
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).custom(arr -> {
 			if (Arrays.stream(arr).allMatch(i -> i > 0)) {
 				return Result.success(null);
 			}
 			return Result.error("All elements must be positive");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2, 3 });
 		assertTrue(result.isSuccess());
@@ -455,12 +455,12 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withCustom(arr -> {
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).custom(arr -> {
 			if (Arrays.stream(arr).allMatch(i -> i > 0)) {
 				return Result.success(null);
 			}
 			return Result.error("All elements must be positive");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, -2, 3 });
 		assertTrue(result.isError());
@@ -469,12 +469,12 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withCustom(arr -> {
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).custom(arr -> {
 			if (Arrays.stream(arr).allMatch(i -> i > 0)) {
 				return Result.success(null);
 			}
 			return Result.error("All elements must be positive");
-		}));
+		});
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -487,12 +487,12 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withCustom(arr -> {
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).custom(arr -> {
 			if (Arrays.stream(arr).allMatch(i -> i > 0)) {
 				return Result.success(null);
 			}
 			return Result.error("All elements must be positive");
-		}));
+		});
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -505,7 +505,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMinLength(2).withMaxLength(4));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.minLength(2).maxLength(4));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1, 2, 3 });
 		assertTrue(result.isSuccess());
@@ -514,7 +514,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMinLength(2).withMaxLength(4));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.minLength(2).maxLength(4));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new Integer[] { 1 });
 		assertTrue(result.isError());
@@ -523,7 +523,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMinLength(1).withMaxLength(3));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.minLength(1).maxLength(3));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -536,7 +536,7 @@ class ConstrainedArrayCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).apply(config -> config.withMinLength(3).withMaxLength(5));
+		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER).length(builder -> builder.minLength(3).maxLength(5));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));

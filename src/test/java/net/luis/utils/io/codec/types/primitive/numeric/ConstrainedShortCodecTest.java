@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.numeric.IntegerConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -40,7 +40,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 100);
 		assertTrue(result.isSuccess());
@@ -50,7 +50,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isSuccess());
@@ -59,7 +59,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyWithValidConstrainedValue() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<String> result = codec.encodeKey((short) 100);
 		assertTrue(result.isSuccess());
@@ -68,7 +68,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyWithValidConstrainedValue() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<Short> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -77,13 +77,13 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		assertTrue(codec.toString().contains("Constrained"));
 	}
 	
 	@Test
 	void toStringWithoutConstraints() {
-		Codec<Short> codec = new ShortCodec();
+		Codec<Short> codec = Codecs.SHORT;
 		assertFalse(codec.toString().contains("Constrained"));
 		assertEquals("ShortCodec", codec.toString());
 	}
@@ -91,7 +91,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.equalTo((short) 42);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 42);
 		assertTrue(result.isSuccess());
@@ -100,7 +100,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.equalTo((short) 42);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 42));
 		assertTrue(result.isSuccess());
@@ -108,7 +108,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.equalTo((short) 42);
 		
 		Result<String> result = codec.encodeKey((short) 42);
 		assertTrue(result.isSuccess());
@@ -116,7 +116,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.equalTo((short) 42);
 		
 		Result<Short> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -125,7 +125,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.equalTo((short) 42);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 100);
 		assertTrue(result.isError());
@@ -134,7 +134,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.equalTo((short) 42);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isError());
@@ -142,7 +142,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.equalTo((short) 42);
 		
 		Result<String> result = codec.encodeKey((short) 100);
 		assertTrue(result.isError());
@@ -150,7 +150,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.equalTo((short) 42);
 		
 		Result<Short> result = codec.decodeKey("100");
 		assertTrue(result.isError());
@@ -159,7 +159,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.notEqualTo((short) 42);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 100);
 		assertTrue(result.isSuccess());
@@ -168,7 +168,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.notEqualTo((short) 42);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isSuccess());
@@ -176,7 +176,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.notEqualTo((short) 42);
 		
 		Result<String> result = codec.encodeKey((short) 100);
 		assertTrue(result.isSuccess());
@@ -184,7 +184,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.notEqualTo((short) 42);
 		
 		Result<Short> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -193,7 +193,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.notEqualTo((short) 42);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 42);
 		assertTrue(result.isError());
@@ -202,7 +202,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.notEqualTo((short) 42);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 42));
 		assertTrue(result.isError());
@@ -210,7 +210,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.notEqualTo((short) 42);
 		
 		Result<String> result = codec.encodeKey((short) 42);
 		assertTrue(result.isError());
@@ -218,7 +218,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotEqualTo((short) 42));
+		Codec<Short> codec = Codecs.SHORT.notEqualTo((short) 42);
 		
 		Result<Short> result = codec.decodeKey("42");
 		assertTrue(result.isError());
@@ -227,7 +227,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.in(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 20);
 		assertTrue(result.isSuccess());
@@ -236,7 +236,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.in(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 20));
 		assertTrue(result.isSuccess());
@@ -244,7 +244,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.in(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<String> result = codec.encodeKey((short) 20);
 		assertTrue(result.isSuccess());
@@ -252,7 +252,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.in(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<Short> result = codec.decodeKey("20");
 		assertTrue(result.isSuccess());
@@ -261,7 +261,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.in(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 50);
 		assertTrue(result.isError());
@@ -270,7 +270,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.in(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 50));
 		assertTrue(result.isError());
@@ -278,7 +278,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.in(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<String> result = codec.encodeKey((short) 50);
 		assertTrue(result.isError());
@@ -286,7 +286,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.in(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<Short> result = codec.decodeKey("50");
 		assertTrue(result.isError());
@@ -295,7 +295,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.notIn(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 50);
 		assertTrue(result.isSuccess());
@@ -304,7 +304,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.notIn(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 50));
 		assertTrue(result.isSuccess());
@@ -312,7 +312,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.notIn(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<String> result = codec.encodeKey((short) 50);
 		assertTrue(result.isSuccess());
@@ -320,7 +320,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.notIn(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<Short> result = codec.decodeKey("50");
 		assertTrue(result.isSuccess());
@@ -329,7 +329,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.notIn(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 20);
 		assertTrue(result.isError());
@@ -338,7 +338,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.notIn(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 20));
 		assertTrue(result.isError());
@@ -346,7 +346,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.notIn(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<String> result = codec.encodeKey((short) 20);
 		assertTrue(result.isError());
@@ -354,7 +354,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withNotIn(Set.of((short) 10, (short) 20, (short) 30)));
+		Codec<Short> codec = Codecs.SHORT.notIn(Set.of((short) 10, (short) 20, (short) 30));
 		
 		Result<Short> result = codec.decodeKey("20");
 		assertTrue(result.isError());
@@ -363,7 +363,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThan((short) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 100);
 		assertTrue(result.isSuccess());
@@ -372,7 +372,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThan((short) 50);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isSuccess());
@@ -380,7 +380,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThan((short) 50);
 		
 		Result<String> result = codec.encodeKey((short) 100);
 		assertTrue(result.isSuccess());
@@ -388,7 +388,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThan((short) 50);
 		
 		Result<Short> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -397,7 +397,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThan((short) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 50);
 		assertTrue(result.isError());
@@ -406,7 +406,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThan((short) 50);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 50));
 		assertTrue(result.isError());
@@ -414,7 +414,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThan((short) 50);
 		
 		Result<String> result = codec.encodeKey((short) 50);
 		assertTrue(result.isError());
@@ -422,7 +422,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThan((short) 50);
 		
 		Result<Short> result = codec.decodeKey("50");
 		assertTrue(result.isError());
@@ -431,7 +431,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThanOrEqual((short) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 50);
 		assertTrue(result.isSuccess());
@@ -440,7 +440,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThanOrEqual((short) 50);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isSuccess());
@@ -448,7 +448,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThanOrEqual((short) 50);
 		
 		Result<String> result = codec.encodeKey((short) 50);
 		assertTrue(result.isSuccess());
@@ -456,7 +456,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThanOrEqual((short) 50);
 		
 		Result<Short> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -465,7 +465,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThanOrEqual((short) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 49);
 		assertTrue(result.isError());
@@ -474,7 +474,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThanOrEqual((short) 50);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 49));
 		assertTrue(result.isError());
@@ -482,7 +482,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThanOrEqual((short) 50);
 		
 		Result<String> result = codec.encodeKey((short) 49);
 		assertTrue(result.isError());
@@ -490,7 +490,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withGreaterThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.greaterThanOrEqual((short) 50);
 		
 		Result<Short> result = codec.decodeKey("49");
 		assertTrue(result.isError());
@@ -499,7 +499,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThan((short) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 25);
 		assertTrue(result.isSuccess());
@@ -508,7 +508,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThan((short) 50);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 25));
 		assertTrue(result.isSuccess());
@@ -516,7 +516,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyLessThanConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThan((short) 50);
 		
 		Result<String> result = codec.encodeKey((short) 25);
 		assertTrue(result.isSuccess());
@@ -524,7 +524,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyLessThanConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThan((short) 50);
 		
 		Result<Short> result = codec.decodeKey("25");
 		assertTrue(result.isSuccess());
@@ -533,7 +533,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThan((short) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 50);
 		assertTrue(result.isError());
@@ -542,7 +542,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThan((short) 50);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 50));
 		assertTrue(result.isError());
@@ -550,7 +550,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyLessThanConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThan((short) 50);
 		
 		Result<String> result = codec.encodeKey((short) 50);
 		assertTrue(result.isError());
@@ -558,7 +558,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyLessThanConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThan((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThan((short) 50);
 		
 		Result<Short> result = codec.decodeKey("50");
 		assertTrue(result.isError());
@@ -567,7 +567,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThanOrEqual((short) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 50);
 		assertTrue(result.isSuccess());
@@ -576,7 +576,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThanOrEqual((short) 50);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 25));
 		assertTrue(result.isSuccess());
@@ -584,7 +584,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThanOrEqual((short) 50);
 		
 		Result<String> result = codec.encodeKey((short) 50);
 		assertTrue(result.isSuccess());
@@ -592,7 +592,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThanOrEqual((short) 50);
 		
 		Result<Short> result = codec.decodeKey("25");
 		assertTrue(result.isSuccess());
@@ -601,7 +601,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThanOrEqual((short) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 51);
 		assertTrue(result.isError());
@@ -610,7 +610,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThanOrEqual((short) 50);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 51));
 		assertTrue(result.isError());
@@ -618,7 +618,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThanOrEqual((short) 50);
 		
 		Result<String> result = codec.encodeKey((short) 51);
 		assertTrue(result.isError());
@@ -626,7 +626,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withLessThanOrEqual((short) 50));
+		Codec<Short> codec = Codecs.SHORT.lessThanOrEqual((short) 50);
 		
 		Result<Short> result = codec.decodeKey("51");
 		assertTrue(result.isError());
@@ -635,7 +635,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetween((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.between((short) 10, (short) 100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 50);
 		assertTrue(result.isSuccess());
@@ -644,7 +644,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetween((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.between((short) 10, (short) 100);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 50));
 		assertTrue(result.isSuccess());
@@ -652,7 +652,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyBetweenConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetween((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.between((short) 10, (short) 100);
 		
 		Result<String> result = codec.encodeKey((short) 50);
 		assertTrue(result.isSuccess());
@@ -660,7 +660,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyBetweenConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetween((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.between((short) 10, (short) 100);
 		
 		Result<Short> result = codec.decodeKey("50");
 		assertTrue(result.isSuccess());
@@ -669,7 +669,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetween((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.between((short) 10, (short) 100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 10);
 		assertTrue(result.isError());
@@ -678,7 +678,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetween((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.between((short) 10, (short) 100);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isError());
@@ -686,7 +686,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyBetweenConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetween((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.between((short) 10, (short) 100);
 		
 		Result<String> result = codec.encodeKey((short) 5);
 		assertTrue(result.isError());
@@ -694,7 +694,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyBetweenConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetween((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.between((short) 10, (short) 100);
 		
 		Result<Short> result = codec.decodeKey("150");
 		assertTrue(result.isError());
@@ -703,7 +703,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetweenOrEqual((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.betweenOrEqual((short) 10, (short) 100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 10);
 		assertTrue(result.isSuccess());
@@ -712,7 +712,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetweenOrEqual((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.betweenOrEqual((short) 10, (short) 100);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isSuccess());
@@ -720,7 +720,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetweenOrEqual((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.betweenOrEqual((short) 10, (short) 100);
 		
 		Result<String> result = codec.encodeKey((short) 50);
 		assertTrue(result.isSuccess());
@@ -728,7 +728,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetweenOrEqual((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.betweenOrEqual((short) 10, (short) 100);
 		
 		Result<Short> result = codec.decodeKey("75");
 		assertTrue(result.isSuccess());
@@ -737,7 +737,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetweenOrEqual((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.betweenOrEqual((short) 10, (short) 100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 9);
 		assertTrue(result.isError());
@@ -746,7 +746,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetweenOrEqual((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.betweenOrEqual((short) 10, (short) 100);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 101));
 		assertTrue(result.isError());
@@ -754,7 +754,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetweenOrEqual((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.betweenOrEqual((short) 10, (short) 100);
 		
 		Result<String> result = codec.encodeKey((short) 5);
 		assertTrue(result.isError());
@@ -762,7 +762,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withBetweenOrEqual((short) 10, (short) 100));
+		Codec<Short> codec = Codecs.SHORT.betweenOrEqual((short) 10, (short) 100);
 		
 		Result<Short> result = codec.decodeKey("150");
 		assertTrue(result.isError());
@@ -771,7 +771,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 42);
 		assertTrue(result.isSuccess());
@@ -780,7 +780,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isSuccess());
@@ -788,7 +788,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyPositiveConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<String> result = codec.encodeKey((short) 1);
 		assertTrue(result.isSuccess());
@@ -796,7 +796,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyPositiveConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<Short> result = codec.decodeKey("500");
 		assertTrue(result.isSuccess());
@@ -805,7 +805,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 0);
 		assertTrue(result.isError());
@@ -814,7 +814,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) -10));
 		assertTrue(result.isError());
@@ -822,7 +822,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyPositiveConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<String> result = codec.encodeKey((short) -5);
 		assertTrue(result.isError());
@@ -830,7 +830,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyPositiveConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Short> codec = Codecs.SHORT.positive();
 		
 		Result<Short> result = codec.decodeKey("0");
 		assertTrue(result.isError());
@@ -839,7 +839,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Short> codec = Codecs.SHORT.nonPositive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 0);
 		assertTrue(result.isSuccess());
@@ -848,7 +848,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Short> codec = Codecs.SHORT.nonPositive();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) -50));
 		assertTrue(result.isSuccess());
@@ -856,7 +856,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNonPositiveConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Short> codec = Codecs.SHORT.nonPositive();
 		
 		Result<String> result = codec.encodeKey((short) -100);
 		assertTrue(result.isSuccess());
@@ -864,7 +864,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNonPositiveConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Short> codec = Codecs.SHORT.nonPositive();
 		
 		Result<Short> result = codec.decodeKey("0");
 		assertTrue(result.isSuccess());
@@ -873,7 +873,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Short> codec = Codecs.SHORT.nonPositive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 1);
 		assertTrue(result.isError());
@@ -882,7 +882,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Short> codec = Codecs.SHORT.nonPositive();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isError());
@@ -890,7 +890,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNonPositiveConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Short> codec = Codecs.SHORT.nonPositive();
 		
 		Result<String> result = codec.encodeKey((short) 50);
 		assertTrue(result.isError());
@@ -898,7 +898,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNonPositiveConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Short> codec = Codecs.SHORT.nonPositive();
 		
 		Result<Short> result = codec.decodeKey("10");
 		assertTrue(result.isError());
@@ -907,7 +907,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Short> codec = Codecs.SHORT.negative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) -42);
 		assertTrue(result.isSuccess());
@@ -916,7 +916,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Short> codec = Codecs.SHORT.negative();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) -100));
 		assertTrue(result.isSuccess());
@@ -924,7 +924,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNegativeConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Short> codec = Codecs.SHORT.negative();
 		
 		Result<String> result = codec.encodeKey((short) -1);
 		assertTrue(result.isSuccess());
@@ -932,7 +932,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNegativeConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Short> codec = Codecs.SHORT.negative();
 		
 		Result<Short> result = codec.decodeKey("-500");
 		assertTrue(result.isSuccess());
@@ -941,7 +941,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Short> codec = Codecs.SHORT.negative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 0);
 		assertTrue(result.isError());
@@ -950,7 +950,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Short> codec = Codecs.SHORT.negative();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 10));
 		assertTrue(result.isError());
@@ -958,7 +958,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNegativeConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Short> codec = Codecs.SHORT.negative();
 		
 		Result<String> result = codec.encodeKey((short) 5);
 		assertTrue(result.isError());
@@ -966,7 +966,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNegativeConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Short> codec = Codecs.SHORT.negative();
 		
 		Result<Short> result = codec.decodeKey("0");
 		assertTrue(result.isError());
@@ -975,7 +975,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Short> codec = Codecs.SHORT.nonNegative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 0);
 		assertTrue(result.isSuccess());
@@ -984,7 +984,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Short> codec = Codecs.SHORT.nonNegative();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 50));
 		assertTrue(result.isSuccess());
@@ -992,7 +992,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNonNegativeConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Short> codec = Codecs.SHORT.nonNegative();
 		
 		Result<String> result = codec.encodeKey((short) 100);
 		assertTrue(result.isSuccess());
@@ -1000,7 +1000,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNonNegativeConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Short> codec = Codecs.SHORT.nonNegative();
 		
 		Result<Short> result = codec.decodeKey("0");
 		assertTrue(result.isSuccess());
@@ -1009,7 +1009,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Short> codec = Codecs.SHORT.nonNegative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) -1);
 		assertTrue(result.isError());
@@ -1018,7 +1018,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Short> codec = Codecs.SHORT.nonNegative();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) -100));
 		assertTrue(result.isError());
@@ -1026,7 +1026,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNonNegativeConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Short> codec = Codecs.SHORT.nonNegative();
 		
 		Result<String> result = codec.encodeKey((short) -50);
 		assertTrue(result.isError());
@@ -1034,7 +1034,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNonNegativeConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Short> codec = Codecs.SHORT.nonNegative();
 		
 		Result<Short> result = codec.decodeKey("-10");
 		assertTrue(result.isError());
@@ -1043,7 +1043,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Short> codec = Codecs.SHORT.zero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 0);
 		assertTrue(result.isSuccess());
@@ -1052,7 +1052,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Short> codec = Codecs.SHORT.zero();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 0));
 		assertTrue(result.isSuccess());
@@ -1060,7 +1060,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyZeroConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Short> codec = Codecs.SHORT.zero();
 		
 		Result<String> result = codec.encodeKey((short) 0);
 		assertTrue(result.isSuccess());
@@ -1068,7 +1068,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyZeroConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Short> codec = Codecs.SHORT.zero();
 		
 		Result<Short> result = codec.decodeKey("0");
 		assertTrue(result.isSuccess());
@@ -1077,7 +1077,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Short> codec = Codecs.SHORT.zero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 1);
 		assertTrue(result.isError());
@@ -1086,7 +1086,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Short> codec = Codecs.SHORT.zero();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) -1));
 		assertTrue(result.isError());
@@ -1094,7 +1094,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyZeroConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Short> codec = Codecs.SHORT.zero();
 		
 		Result<String> result = codec.encodeKey((short) 100);
 		assertTrue(result.isError());
@@ -1102,7 +1102,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyZeroConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Short> codec = Codecs.SHORT.zero();
 		
 		Result<Short> result = codec.decodeKey("-50");
 		assertTrue(result.isError());
@@ -1111,7 +1111,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Short> codec = Codecs.SHORT.nonZero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 42);
 		assertTrue(result.isSuccess());
@@ -1120,7 +1120,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Short> codec = Codecs.SHORT.nonZero();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) -100));
 		assertTrue(result.isSuccess());
@@ -1128,7 +1128,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNonZeroConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Short> codec = Codecs.SHORT.nonZero();
 		
 		Result<String> result = codec.encodeKey((short) 1);
 		assertTrue(result.isSuccess());
@@ -1136,7 +1136,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNonZeroConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Short> codec = Codecs.SHORT.nonZero();
 		
 		Result<Short> result = codec.decodeKey("-1");
 		assertTrue(result.isSuccess());
@@ -1145,7 +1145,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Short> codec = Codecs.SHORT.nonZero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 0);
 		assertTrue(result.isError());
@@ -1154,7 +1154,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Short> codec = Codecs.SHORT.nonZero();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 0));
 		assertTrue(result.isError());
@@ -1162,7 +1162,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyNonZeroConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Short> codec = Codecs.SHORT.nonZero();
 		
 		Result<String> result = codec.encodeKey((short) 0);
 		assertTrue(result.isError());
@@ -1170,7 +1170,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyNonZeroConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Short> codec = Codecs.SHORT.nonZero();
 		
 		Result<Short> result = codec.decodeKey("0");
 		assertTrue(result.isError());
@@ -1179,7 +1179,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartPercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Short> codec = Codecs.SHORT.percentage();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 50);
 		assertTrue(result.isSuccess());
@@ -1188,7 +1188,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartPercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Short> codec = Codecs.SHORT.percentage();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 0));
 		assertTrue(result.isSuccess());
@@ -1196,7 +1196,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyPercentageConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Short> codec = Codecs.SHORT.percentage();
 		
 		Result<String> result = codec.encodeKey((short) 100);
 		assertTrue(result.isSuccess());
@@ -1204,7 +1204,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyPercentageConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Short> codec = Codecs.SHORT.percentage();
 		
 		Result<Short> result = codec.decodeKey("75");
 		assertTrue(result.isSuccess());
@@ -1213,7 +1213,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartPercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Short> codec = Codecs.SHORT.percentage();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) -1);
 		assertTrue(result.isError());
@@ -1222,7 +1222,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartPercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Short> codec = Codecs.SHORT.percentage();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 101));
 		assertTrue(result.isError());
@@ -1230,7 +1230,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyPercentageConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Short> codec = Codecs.SHORT.percentage();
 		
 		Result<String> result = codec.encodeKey((short) 150);
 		assertTrue(result.isError());
@@ -1238,7 +1238,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyPercentageConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Short> codec = Codecs.SHORT.percentage();
 		
 		Result<Short> result = codec.decodeKey("-10");
 		assertTrue(result.isError());
@@ -1247,7 +1247,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartEvenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Short> codec = Codecs.SHORT.even();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 42);
 		assertTrue(result.isSuccess());
@@ -1256,7 +1256,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartEvenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Short> codec = Codecs.SHORT.even();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isSuccess());
@@ -1264,7 +1264,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyEvenConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Short> codec = Codecs.SHORT.even();
 		
 		Result<String> result = codec.encodeKey((short) 0);
 		assertTrue(result.isSuccess());
@@ -1272,7 +1272,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyEvenConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Short> codec = Codecs.SHORT.even();
 		
 		Result<Short> result = codec.decodeKey("-50");
 		assertTrue(result.isSuccess());
@@ -1281,7 +1281,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartEvenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Short> codec = Codecs.SHORT.even();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 41);
 		assertTrue(result.isError());
@@ -1290,7 +1290,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartEvenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Short> codec = Codecs.SHORT.even();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 99));
 		assertTrue(result.isError());
@@ -1298,7 +1298,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyEvenConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Short> codec = Codecs.SHORT.even();
 		
 		Result<String> result = codec.encodeKey((short) 1);
 		assertTrue(result.isError());
@@ -1306,7 +1306,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyEvenConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Short> codec = Codecs.SHORT.even();
 		
 		Result<Short> result = codec.decodeKey("-51");
 		assertTrue(result.isError());
@@ -1315,7 +1315,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartOddConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Short> codec = Codecs.SHORT.odd();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 41);
 		assertTrue(result.isSuccess());
@@ -1324,7 +1324,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartOddConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Short> codec = Codecs.SHORT.odd();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 99));
 		assertTrue(result.isSuccess());
@@ -1332,7 +1332,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyOddConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Short> codec = Codecs.SHORT.odd();
 		
 		Result<String> result = codec.encodeKey((short) 1);
 		assertTrue(result.isSuccess());
@@ -1340,7 +1340,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyOddConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Short> codec = Codecs.SHORT.odd();
 		
 		Result<Short> result = codec.decodeKey("-51");
 		assertTrue(result.isSuccess());
@@ -1349,7 +1349,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartOddConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Short> codec = Codecs.SHORT.odd();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 42);
 		assertTrue(result.isError());
@@ -1358,7 +1358,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartOddConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Short> codec = Codecs.SHORT.odd();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isError());
@@ -1366,7 +1366,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyOddConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Short> codec = Codecs.SHORT.odd();
 		
 		Result<String> result = codec.encodeKey((short) 0);
 		assertTrue(result.isError());
@@ -1374,7 +1374,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyOddConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Short> codec = Codecs.SHORT.odd();
 		
 		Result<Short> result = codec.decodeKey("-50");
 		assertTrue(result.isError());
@@ -1383,7 +1383,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartDivisibleByConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Short> codec = Codecs.SHORT.divisibleBy(5);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 100);
 		assertTrue(result.isSuccess());
@@ -1392,7 +1392,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartDivisibleByConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Short> codec = Codecs.SHORT.divisibleBy(5);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 50));
 		assertTrue(result.isSuccess());
@@ -1400,7 +1400,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyDivisibleByConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Short> codec = Codecs.SHORT.divisibleBy(5);
 		
 		Result<String> result = codec.encodeKey((short) 0);
 		assertTrue(result.isSuccess());
@@ -1408,7 +1408,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyDivisibleByConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Short> codec = Codecs.SHORT.divisibleBy(5);
 		
 		Result<Short> result = codec.decodeKey("-25");
 		assertTrue(result.isSuccess());
@@ -1417,7 +1417,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartDivisibleByConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Short> codec = Codecs.SHORT.divisibleBy(5);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 42);
 		assertTrue(result.isError());
@@ -1426,7 +1426,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartDivisibleByConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Short> codec = Codecs.SHORT.divisibleBy(5);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 51));
 		assertTrue(result.isError());
@@ -1434,7 +1434,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyDivisibleByConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Short> codec = Codecs.SHORT.divisibleBy(5);
 		
 		Result<String> result = codec.encodeKey((short) 7);
 		assertTrue(result.isError());
@@ -1442,7 +1442,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyDivisibleByConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Short> codec = Codecs.SHORT.divisibleBy(5);
 		
 		Result<Short> result = codec.decodeKey("-26");
 		assertTrue(result.isError());
@@ -1451,7 +1451,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartPowerOfConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withPowerOf(3));
+		Codec<Short> codec = Codecs.SHORT.powerOf(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 27);
 		assertTrue(result.isSuccess());
@@ -1460,7 +1460,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartPowerOfConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withPowerOf(3));
+		Codec<Short> codec = Codecs.SHORT.powerOf(3);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 81));
 		assertTrue(result.isSuccess());
@@ -1468,7 +1468,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withPowerOf(3));
+		Codec<Short> codec = Codecs.SHORT.powerOf(3);
 		
 		Result<String> result = codec.encodeKey((short) 1);
 		assertTrue(result.isSuccess());
@@ -1476,7 +1476,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withPowerOf(3));
+		Codec<Short> codec = Codecs.SHORT.powerOf(3);
 		
 		Result<Short> result = codec.decodeKey("9");
 		assertTrue(result.isSuccess());
@@ -1485,7 +1485,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartPowerOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withPowerOf(3));
+		Codec<Short> codec = Codecs.SHORT.powerOf(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 42);
 		assertTrue(result.isError());
@@ -1494,7 +1494,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartPowerOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withPowerOf(3));
+		Codec<Short> codec = Codecs.SHORT.powerOf(3);
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isError());
@@ -1502,7 +1502,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withPowerOf(3));
+		Codec<Short> codec = Codecs.SHORT.powerOf(3);
 		
 		Result<String> result = codec.encodeKey((short) 10);
 		assertTrue(result.isError());
@@ -1510,7 +1510,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withPowerOf(3));
+		Codec<Short> codec = Codecs.SHORT.powerOf(3);
 		
 		Result<Short> result = codec.decodeKey("50");
 		assertTrue(result.isError());
@@ -1519,7 +1519,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartPowerOfTwoConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Short> codec = Codecs.SHORT.powerOfTwo();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 64);
 		assertTrue(result.isSuccess());
@@ -1528,7 +1528,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartPowerOfTwoConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Short> codec = Codecs.SHORT.powerOfTwo();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 128));
 		assertTrue(result.isSuccess());
@@ -1536,7 +1536,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfTwoConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Short> codec = Codecs.SHORT.powerOfTwo();
 		
 		Result<String> result = codec.encodeKey((short) 1);
 		assertTrue(result.isSuccess());
@@ -1544,7 +1544,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfTwoConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Short> codec = Codecs.SHORT.powerOfTwo();
 		
 		Result<Short> result = codec.decodeKey("256");
 		assertTrue(result.isSuccess());
@@ -1553,7 +1553,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartPowerOfTwoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Short> codec = Codecs.SHORT.powerOfTwo();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 42);
 		assertTrue(result.isError());
@@ -1562,7 +1562,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartPowerOfTwoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Short> codec = Codecs.SHORT.powerOfTwo();
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 100));
 		assertTrue(result.isError());
@@ -1570,7 +1570,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfTwoConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Short> codec = Codecs.SHORT.powerOfTwo();
 		
 		Result<String> result = codec.encodeKey((short) 3);
 		assertTrue(result.isError());
@@ -1578,7 +1578,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfTwoConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Short> codec = Codecs.SHORT.powerOfTwo();
 		
 		Result<Short> result = codec.decodeKey("50");
 		assertTrue(result.isError());
@@ -1587,7 +1587,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withCustom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7")));
+		Codec<Short> codec = Codecs.SHORT.custom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7"));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 49);
 		assertTrue(result.isSuccess());
@@ -1596,7 +1596,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withCustom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7")));
+		Codec<Short> codec = Codecs.SHORT.custom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7"));
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 14));
 		assertTrue(result.isSuccess());
@@ -1604,7 +1604,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withCustom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7")));
+		Codec<Short> codec = Codecs.SHORT.custom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7"));
 		
 		Result<String> result = codec.encodeKey((short) 21);
 		assertTrue(result.isSuccess());
@@ -1612,7 +1612,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintSuccess() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withCustom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7")));
+		Codec<Short> codec = Codecs.SHORT.custom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7"));
 		
 		Result<Short> result = codec.decodeKey("7");
 		assertTrue(result.isSuccess());
@@ -1621,7 +1621,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withCustom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7")));
+		Codec<Short> codec = Codecs.SHORT.custom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7"));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (short) 42);
 		assertTrue(result.isSuccess());
@@ -1630,7 +1630,7 @@ class ConstrainedShortCodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withCustom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7")));
+		Codec<Short> codec = Codecs.SHORT.custom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7"));
 		
 		Result<Short> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((short) 50));
 		assertTrue(result.isError());
@@ -1638,7 +1638,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withCustom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7")));
+		Codec<Short> codec = Codecs.SHORT.custom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7"));
 		
 		Result<String> result = codec.encodeKey((short) 10);
 		assertTrue(result.isError());
@@ -1646,7 +1646,7 @@ class ConstrainedShortCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintViolation() {
-		Codec<Short> codec = new ShortCodec().apply(config -> config.withCustom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7")));
+		Codec<Short> codec = Codecs.SHORT.custom(value -> value % 7 == 0 ? Result.success() : Result.error("Value must be divisible by 7"));
 		
 		Result<Short> result = codec.decodeKey("100");
 		assertTrue(result.isError());

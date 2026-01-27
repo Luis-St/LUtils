@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
@@ -47,7 +47,7 @@ class ConstrainedIpAddressCodecTest {
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		IpAddress<?> expected = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withEqualTo(expected));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.equalTo(expected);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), expected);
 		assertTrue(result.isSuccess());
@@ -57,7 +57,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeKeyWithValidConstrainedValue() {
 		IpAddress<?> expected = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withEqualTo(expected));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.equalTo(expected);
 		
 		Result<String> result = codec.encodeKey(expected);
 		assertTrue(result.isSuccess());
@@ -68,7 +68,7 @@ class ConstrainedIpAddressCodecTest {
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		IpAddress<?> expected = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withEqualTo(expected));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.equalTo(expected);
 		
 		Result<IpAddress<?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
 		assertTrue(result.isSuccess());
@@ -78,7 +78,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void decodeKeyWithValidConstrainedValue() {
 		IpAddress<?> expected = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withEqualTo(expected));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.equalTo(expected);
 		
 		Result<IpAddress<?>> result = codec.decodeKey("192.168.1.1");
 		assertTrue(result.isSuccess());
@@ -88,7 +88,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void toStringWithConstraints() {
 		IpAddress<?> expected = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withEqualTo(expected));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.equalTo(expected);
 		assertTrue(codec.toString().contains("Constrained"));
 	}
 	
@@ -96,7 +96,7 @@ class ConstrainedIpAddressCodecTest {
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		IpAddress<?> expected = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withEqualTo(expected));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.equalTo(expected);
 		IpAddress<?> different = IpAddresses.parseIpv4("10.0.0.1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), different);
@@ -106,7 +106,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeKeyEqualToConstraintViolation() {
 		IpAddress<?> expected = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withEqualTo(expected));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.equalTo(expected);
 		IpAddress<?> different = IpAddresses.parseIpv4("10.0.0.1");
 		
 		Result<String> result = codec.encodeKey(different);
@@ -117,7 +117,7 @@ class ConstrainedIpAddressCodecTest {
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		IpAddress<?> expected = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withEqualTo(expected));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.equalTo(expected);
 		
 		Result<IpAddress<?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10.0.0.1"));
 		assertTrue(result.isError());
@@ -126,7 +126,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void decodeKeyEqualToConstraintViolation() {
 		IpAddress<?> expected = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withEqualTo(expected));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.equalTo(expected);
 		
 		Result<IpAddress<?>> result = codec.decodeKey("10.0.0.1");
 		assertTrue(result.isError());
@@ -136,7 +136,7 @@ class ConstrainedIpAddressCodecTest {
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		IpAddress<?> excluded = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notEqualTo(excluded);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
 		assertTrue(result.isError());
@@ -145,7 +145,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeKeyNotEqualToConstraintViolation() {
 		IpAddress<?> excluded = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notEqualTo(excluded);
 		
 		Result<String> result = codec.encodeKey(excluded);
 		assertTrue(result.isError());
@@ -155,7 +155,7 @@ class ConstrainedIpAddressCodecTest {
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		IpAddress<?> excluded = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notEqualTo(excluded);
 		
 		Result<IpAddress<?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
 		assertTrue(result.isError());
@@ -164,7 +164,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void decodeKeyNotEqualToConstraintViolation() {
 		IpAddress<?> excluded = IpAddresses.parseIpv4("192.168.1.1");
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notEqualTo(excluded);
 		
 		Result<IpAddress<?>> result = codec.decodeKey("192.168.1.1");
 		assertTrue(result.isError());
@@ -174,7 +174,7 @@ class ConstrainedIpAddressCodecTest {
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<IpAddress<?>> allowed = List.of(IpAddresses.parseIpv4("192.168.1.1"), IpAddresses.parseIpv4("192.168.1.2"));
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIn(allowed));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.in(allowed);
 		IpAddress<?> notAllowed = IpAddresses.parseIpv4("10.0.0.1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notAllowed);
@@ -184,7 +184,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeKeyInConstraintViolation() {
 		List<IpAddress<?>> allowed = List.of(IpAddresses.parseIpv4("192.168.1.1"), IpAddresses.parseIpv4("192.168.1.2"));
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIn(allowed));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.in(allowed);
 		IpAddress<?> notAllowed = IpAddresses.parseIpv4("10.0.0.1");
 		
 		Result<String> result = codec.encodeKey(notAllowed);
@@ -195,7 +195,7 @@ class ConstrainedIpAddressCodecTest {
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<IpAddress<?>> allowed = List.of(IpAddresses.parseIpv4("192.168.1.1"), IpAddresses.parseIpv4("192.168.1.2"));
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIn(allowed));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.in(allowed);
 		
 		Result<IpAddress<?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10.0.0.1"));
 		assertTrue(result.isError());
@@ -204,7 +204,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void decodeKeyInConstraintViolation() {
 		List<IpAddress<?>> allowed = List.of(IpAddresses.parseIpv4("192.168.1.1"), IpAddresses.parseIpv4("192.168.1.2"));
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIn(allowed));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.in(allowed);
 		
 		Result<IpAddress<?>> result = codec.decodeKey("10.0.0.1");
 		assertTrue(result.isError());
@@ -214,7 +214,7 @@ class ConstrainedIpAddressCodecTest {
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<IpAddress<?>> excluded = List.of(IpAddresses.parseIpv4("192.168.1.1"), IpAddresses.parseIpv4("192.168.1.2"));
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotIn(excluded));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notIn(excluded);
 		IpAddress<?> excludedValue = IpAddresses.parseIpv4("192.168.1.1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excludedValue);
@@ -224,7 +224,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeKeyNotInConstraintViolation() {
 		List<IpAddress<?>> excluded = List.of(IpAddresses.parseIpv4("192.168.1.1"), IpAddresses.parseIpv4("192.168.1.2"));
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotIn(excluded));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notIn(excluded);
 		IpAddress<?> excludedValue = IpAddresses.parseIpv4("192.168.1.1");
 		
 		Result<String> result = codec.encodeKey(excludedValue);
@@ -235,7 +235,7 @@ class ConstrainedIpAddressCodecTest {
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<IpAddress<?>> excluded = List.of(IpAddresses.parseIpv4("192.168.1.1"), IpAddresses.parseIpv4("192.168.1.2"));
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotIn(excluded));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notIn(excluded);
 		
 		Result<IpAddress<?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
 		assertTrue(result.isError());
@@ -244,7 +244,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void decodeKeyNotInConstraintViolation() {
 		List<IpAddress<?>> excluded = List.of(IpAddresses.parseIpv4("192.168.1.1"), IpAddresses.parseIpv4("192.168.1.2"));
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotIn(excluded));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notIn(excluded);
 		
 		Result<IpAddress<?>> result = codec.decodeKey("192.168.1.1");
 		assertTrue(result.isError());
@@ -253,7 +253,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeStartIpVersionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIpVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4)));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.ipVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4));
 		IpAddress<?> ipv6Address = IpAddresses.parseIpv6("::1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), ipv6Address);
@@ -262,7 +262,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void encodeKeyIpVersionConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIpVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4)));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.ipVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4));
 		IpAddress<?> ipv6Address = IpAddresses.parseIpv6("::1");
 		
 		Result<String> result = codec.encodeKey(ipv6Address);
@@ -272,7 +272,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void decodeStartIpVersionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIpVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4)));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.ipVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4));
 		
 		Result<IpAddress<?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("::1"));
 		assertTrue(result.isError());
@@ -280,7 +280,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void decodeKeyIpVersionConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIpVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4)));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.ipVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4));
 		
 		Result<IpAddress<?>> result = codec.decodeKey("::1");
 		assertTrue(result.isError());
@@ -289,7 +289,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeStartIpVersionIPv6Success() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIpVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6)));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.ipVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6));
 		IpAddress<?> ipv6Address = IpAddresses.parseIpv6("2001:db8::1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), ipv6Address);
@@ -299,7 +299,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeStartIpTypeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIpType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK)));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.ipType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK));
 		IpAddress<?> privateAddress = IpAddresses.parseIpv4("192.168.1.1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), privateAddress);
@@ -308,7 +308,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void encodeKeyIpTypeConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIpType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK)));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.ipType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK));
 		IpAddress<?> privateAddress = IpAddresses.parseIpv4("192.168.1.1");
 		
 		Result<String> result = codec.encodeKey(privateAddress);
@@ -318,7 +318,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void decodeStartIpTypeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIpType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK)));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.ipType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK));
 		
 		Result<IpAddress<?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
 		assertTrue(result.isError());
@@ -326,7 +326,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void decodeKeyIpTypeConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIpType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK)));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.ipType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK));
 		
 		Result<IpAddress<?>> result = codec.decodeKey("192.168.1.1");
 		assertTrue(result.isError());
@@ -335,7 +335,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeStartIpTypeLoopbackSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withIpType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK)));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.ipType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK));
 		IpAddress<?> loopbackAddress = IpAddresses.parseIpv4("127.0.0.1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), loopbackAddress);
@@ -345,7 +345,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeStartInAnySubnetConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withInAnySubnet(Set.of("10.0.0.0/8")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.inAnySubnet(Set.of("10.0.0.0/8"));
 		IpAddress<?> outsideSubnet = IpAddresses.parseIpv4("192.168.1.1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), outsideSubnet);
@@ -354,7 +354,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void encodeKeyInAnySubnetConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withInAnySubnet(Set.of("10.0.0.0/8")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.inAnySubnet(Set.of("10.0.0.0/8"));
 		IpAddress<?> outsideSubnet = IpAddresses.parseIpv4("192.168.1.1");
 		
 		Result<String> result = codec.encodeKey(outsideSubnet);
@@ -364,7 +364,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void decodeStartInAnySubnetConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withInAnySubnet(Set.of("10.0.0.0/8")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.inAnySubnet(Set.of("10.0.0.0/8"));
 		
 		Result<IpAddress<?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
 		assertTrue(result.isError());
@@ -372,7 +372,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void decodeKeyInAnySubnetConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withInAnySubnet(Set.of("10.0.0.0/8")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.inAnySubnet(Set.of("10.0.0.0/8"));
 		
 		Result<IpAddress<?>> result = codec.decodeKey("192.168.1.1");
 		assertTrue(result.isError());
@@ -381,7 +381,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeStartInAnySubnetSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withInAnySubnet(Set.of("10.0.0.0/8")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.inAnySubnet(Set.of("10.0.0.0/8"));
 		IpAddress<?> inSubnet = IpAddresses.parseIpv4("10.1.2.3");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), inSubnet);
@@ -391,7 +391,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeStartNotInAnySubnetConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotInAnySubnet(Set.of("10.0.0.0/8")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notInAnySubnet(Set.of("10.0.0.0/8"));
 		IpAddress<?> inSubnet = IpAddresses.parseIpv4("10.1.2.3");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), inSubnet);
@@ -400,7 +400,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void encodeKeyNotInAnySubnetConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotInAnySubnet(Set.of("10.0.0.0/8")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notInAnySubnet(Set.of("10.0.0.0/8"));
 		IpAddress<?> inSubnet = IpAddresses.parseIpv4("10.1.2.3");
 		
 		Result<String> result = codec.encodeKey(inSubnet);
@@ -410,7 +410,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void decodeStartNotInAnySubnetConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotInAnySubnet(Set.of("10.0.0.0/8")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notInAnySubnet(Set.of("10.0.0.0/8"));
 		
 		Result<IpAddress<?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10.1.2.3"));
 		assertTrue(result.isError());
@@ -418,7 +418,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void decodeKeyNotInAnySubnetConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withNotInAnySubnet(Set.of("10.0.0.0/8")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.notInAnySubnet(Set.of("10.0.0.0/8"));
 		
 		Result<IpAddress<?>> result = codec.decodeKey("10.1.2.3");
 		assertTrue(result.isError());
@@ -427,7 +427,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeStartStringConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withStringConstraint(StringConstraintConfig.UNCONSTRAINED.withStartsWith("10.")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.string(builder -> builder.startsWith("10."));
 		IpAddress<?> address = IpAddresses.parseIpv4("192.168.1.1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
@@ -436,7 +436,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void encodeKeyStringConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withStringConstraint(StringConstraintConfig.UNCONSTRAINED.withStartsWith("10.")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.string(builder -> builder.startsWith("10."));
 		IpAddress<?> address = IpAddresses.parseIpv4("192.168.1.1");
 		
 		Result<String> result = codec.encodeKey(address);
@@ -446,7 +446,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void decodeStartStringConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withStringConstraint(StringConstraintConfig.UNCONSTRAINED.withStartsWith("10.")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.string(builder -> builder.startsWith("10."));
 		
 		Result<IpAddress<?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
 		assertTrue(result.isError());
@@ -454,7 +454,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void decodeKeyStringConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withStringConstraint(StringConstraintConfig.UNCONSTRAINED.withStartsWith("10.")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.string(builder -> builder.startsWith("10."));
 		
 		Result<IpAddress<?>> result = codec.decodeKey("192.168.1.1");
 		assertTrue(result.isError());
@@ -463,7 +463,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withCustom(value -> Result.error("Custom validation failed")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.custom(value -> Result.error("Custom validation failed"));
 		IpAddress<?> address = IpAddresses.parseIpv4("192.168.1.1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
@@ -472,7 +472,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withCustom(value -> Result.error("Custom validation failed")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.custom(value -> Result.error("Custom validation failed"));
 		IpAddress<?> address = IpAddresses.parseIpv4("192.168.1.1");
 		
 		Result<String> result = codec.encodeKey(address);
@@ -482,7 +482,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withCustom(value -> Result.error("Custom validation failed")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.custom(value -> Result.error("Custom validation failed"));
 		
 		Result<IpAddress<?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
 		assertTrue(result.isError());
@@ -490,7 +490,7 @@ class ConstrainedIpAddressCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintViolation() {
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withCustom(value -> Result.error("Custom validation failed")));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.custom(value -> Result.error("Custom validation failed"));
 		
 		Result<IpAddress<?>> result = codec.decodeKey("192.168.1.1");
 		assertTrue(result.isError());
@@ -499,7 +499,7 @@ class ConstrainedIpAddressCodecTest {
 	@Test
 	void encodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<IpAddress<?>> codec = new IpAddressCodec().apply(config -> config.withCustom(value -> Result.success()));
+		Codec<IpAddress<?>> codec = Codecs.IP_ADDRESS.custom(value -> Result.success());
 		IpAddress<?> address = IpAddresses.parseIpv4("192.168.1.1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);

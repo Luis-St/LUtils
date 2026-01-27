@@ -40,7 +40,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMinSize(1));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(1));
 		Map<String, Integer> validMap = Map.of("a", 1, "b", 2);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), validMap);
@@ -50,7 +50,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMinSize(1));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(1));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -63,7 +63,7 @@ class ConstrainedMapCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMinSize(1));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(1));
 		String str = codec.toString();
 		assertTrue(str.contains("Constrained"));
 	}
@@ -71,7 +71,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withEqualTo(Map.of("a", 1, "b", 2)));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).equalTo(Map.of("a", 1, "b", 2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2));
 		assertTrue(result.isSuccess());
@@ -80,7 +80,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withEqualTo(Map.of("a", 1, "b", 2)));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).equalTo(Map.of("a", 1, "b", 2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("c", 3));
 		assertTrue(result.isError());
@@ -89,7 +89,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withEqualTo(Map.of("a", 1, "b", 2)));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).equalTo(Map.of("a", 1, "b", 2));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -102,7 +102,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withEqualTo(Map.of("a", 1, "b", 2)));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).equalTo(Map.of("a", 1, "b", 2));
 		
 		JsonObject json = new JsonObject();
 		json.add("c", new JsonPrimitive(3));
@@ -114,7 +114,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withNotEqualTo(Map.of("a", 1, "b", 2)));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).notEqualTo(Map.of("a", 1, "b", 2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("c", 3, "d", 4));
 		assertTrue(result.isSuccess());
@@ -123,7 +123,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withNotEqualTo(Map.of("a", 1, "b", 2)));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).notEqualTo(Map.of("a", 1, "b", 2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2));
 		assertTrue(result.isError());
@@ -132,7 +132,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withNotEqualTo(Map.of("a", 1, "b", 2)));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).notEqualTo(Map.of("a", 1, "b", 2));
 		
 		JsonObject json = new JsonObject();
 		json.add("c", new JsonPrimitive(3));
@@ -144,7 +144,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withNotEqualTo(Map.of("a", 1, "b", 2)));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).notEqualTo(Map.of("a", 1, "b", 2));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -157,7 +157,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withIn(List.of(Map.of("a", 1), Map.of("b", 2))));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).in(List.of(Map.of("a", 1), Map.of("b", 2)));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1));
 		assertTrue(result.isSuccess());
@@ -166,7 +166,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withIn(List.of(Map.of("a", 1), Map.of("b", 2))));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).in(List.of(Map.of("a", 1), Map.of("b", 2)));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("c", 3));
 		assertTrue(result.isError());
@@ -175,7 +175,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withIn(List.of(Map.of("a", 1), Map.of("b", 2))));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).in(List.of(Map.of("a", 1), Map.of("b", 2)));
 		
 		JsonObject json = new JsonObject();
 		json.add("b", new JsonPrimitive(2));
@@ -187,7 +187,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withIn(List.of(Map.of("a", 1), Map.of("b", 2))));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).in(List.of(Map.of("a", 1), Map.of("b", 2)));
 		
 		JsonObject json = new JsonObject();
 		json.add("c", new JsonPrimitive(3));
@@ -199,7 +199,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withNotIn(List.of(Map.of("a", 1), Map.of("b", 2))));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).notIn(List.of(Map.of("a", 1), Map.of("b", 2)));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("c", 3));
 		assertTrue(result.isSuccess());
@@ -208,7 +208,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withNotIn(List.of(Map.of("a", 1), Map.of("b", 2))));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).notIn(List.of(Map.of("a", 1), Map.of("b", 2)));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1));
 		assertTrue(result.isError());
@@ -217,7 +217,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withNotIn(List.of(Map.of("a", 1), Map.of("b", 2))));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).notIn(List.of(Map.of("a", 1), Map.of("b", 2)));
 		
 		JsonObject json = new JsonObject();
 		json.add("c", new JsonPrimitive(3));
@@ -229,7 +229,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withNotIn(List.of(Map.of("a", 1), Map.of("b", 2))));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).notIn(List.of(Map.of("a", 1), Map.of("b", 2)));
 		
 		JsonObject json = new JsonObject();
 		json.add("b", new JsonPrimitive(2));
@@ -241,7 +241,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartMinSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMinSize(2));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3));
 		assertTrue(result.isSuccess());
@@ -250,7 +250,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartMinSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMinSize(3));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(3));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2));
 		assertTrue(result.isError());
@@ -259,7 +259,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartMinSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMinSize(2));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(2));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -272,7 +272,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartMinSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMinSize(3));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(3));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -285,7 +285,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartMaxSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMaxSize(5));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.maxSize(5));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3));
 		assertTrue(result.isSuccess());
@@ -294,7 +294,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartMaxSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMaxSize(2));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.maxSize(2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3));
 		assertTrue(result.isError());
@@ -303,7 +303,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartMaxSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMaxSize(5));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.maxSize(5));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -316,7 +316,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartMaxSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMaxSize(2));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.maxSize(2));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -330,7 +330,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartExactSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withExactSize(3));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.exactSize(3));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3));
 		assertTrue(result.isSuccess());
@@ -339,7 +339,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartExactSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withExactSize(3));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.exactSize(3));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2));
 		assertTrue(result.isError());
@@ -348,7 +348,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartExactSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withExactSize(2));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.exactSize(2));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -361,7 +361,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartExactSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withExactSize(3));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.exactSize(3));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -374,7 +374,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartSizeBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withSizeBetween(2, 4));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.sizeBetween(2, 4));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3));
 		assertTrue(result.isSuccess());
@@ -383,7 +383,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartSizeBetweenConstraintViolationTooSmall() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withSizeBetween(3, 5));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.sizeBetween(3, 5));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2));
 		assertTrue(result.isError());
@@ -392,7 +392,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartSizeBetweenConstraintViolationTooLarge() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withSizeBetween(1, 2));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.sizeBetween(1, 2));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3));
 		assertTrue(result.isError());
@@ -401,7 +401,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartSizeBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withSizeBetween(1, 3));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.sizeBetween(1, 3));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -414,7 +414,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartSizeBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withSizeBetween(3, 5));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.sizeBetween(3, 5));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -427,7 +427,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartRequiredKeyConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withRequiredKey("a"));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).requiredKey("a");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2));
 		assertTrue(result.isSuccess());
@@ -436,7 +436,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartRequiredKeyConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withRequiredKey("a"));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).requiredKey("a");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("b", 2, "c", 3));
 		assertTrue(result.isError());
@@ -445,7 +445,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartRequiredKeyConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withRequiredKey("a"));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).requiredKey("a");
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -458,7 +458,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartRequiredKeyConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withRequiredKey("a"));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).requiredKey("a");
 		
 		JsonObject json = new JsonObject();
 		json.add("b", new JsonPrimitive(2));
@@ -471,7 +471,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartRequiredKeysConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withRequiredKeys(List.of("a", "b")));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).requiredKeys(List.of("a", "b"));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3));
 		assertTrue(result.isSuccess());
@@ -480,7 +480,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartRequiredKeysConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withRequiredKeys(List.of("a", "b")));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).requiredKeys(List.of("a", "b"));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "c", 3));
 		assertTrue(result.isError());
@@ -489,7 +489,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartForbiddenKeyConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withForbiddenKey("x"));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).forbiddenKey("x");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2));
 		assertTrue(result.isSuccess());
@@ -498,7 +498,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartForbiddenKeyConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withForbiddenKey("a"));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).forbiddenKey("a");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2));
 		assertTrue(result.isError());
@@ -507,7 +507,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartForbiddenKeyConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withForbiddenKey("x"));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).forbiddenKey("x");
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -520,7 +520,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartForbiddenKeyConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withForbiddenKey("a"));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).forbiddenKey("a");
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -533,7 +533,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartForbiddenKeysConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withForbiddenKeys(List.of("x", "y")));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).forbiddenKeys(List.of("x", "y"));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2));
 		assertTrue(result.isSuccess());
@@ -542,7 +542,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartForbiddenKeysConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withForbiddenKeys(List.of("a", "b")));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).forbiddenKeys(List.of("a", "b"));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "c", 3));
 		assertTrue(result.isError());
@@ -551,7 +551,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartAllowedKeyConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withAllowedKeys(List.of("a", "b", "c")));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).allowedKeys(List.of("a", "b", "c"));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2));
 		assertTrue(result.isSuccess());
@@ -560,7 +560,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartAllowedKeyConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withAllowedKeys(List.of("a", "b")));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).allowedKeys(List.of("a", "b"));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "x", 2));
 		assertTrue(result.isError());
@@ -569,7 +569,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartAllowedKeyConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withAllowedKeys(List.of("a", "b", "c")));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).allowedKeys(List.of("a", "b", "c"));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -582,7 +582,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartAllowedKeyConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withAllowedKeys(List.of("a", "b")));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).allowedKeys(List.of("a", "b"));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -595,7 +595,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartUniqueValuesConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(MapConstraintConfig::withUniqueValues);
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).uniqueValues();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3));
 		assertTrue(result.isSuccess());
@@ -604,7 +604,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartUniqueValuesConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(MapConstraintConfig::withUniqueValues);
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).uniqueValues();
 		
 		Map<String, Integer> map = new HashMap<>();
 		map.put("a", 1);
@@ -617,7 +617,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartUniqueValuesConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(MapConstraintConfig::withUniqueValues);
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).uniqueValues();
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -630,7 +630,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartUniqueValuesConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(MapConstraintConfig::withUniqueValues);
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).uniqueValues();
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -643,12 +643,12 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withCustom(map -> {
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).custom(map -> {
 			if (map.values().stream().allMatch(v -> v > 0)) {
 				return Result.success(null);
 			}
 			return Result.error("All values must be positive");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2));
 		assertTrue(result.isSuccess());
@@ -657,12 +657,12 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withCustom(map -> {
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).custom(map -> {
 			if (map.values().stream().allMatch(v -> v > 0)) {
 				return Result.success(null);
 			}
 			return Result.error("All values must be positive");
-		}));
+		});
 		
 		Map<String, Integer> map = new HashMap<>();
 		map.put("a", 1);
@@ -675,12 +675,12 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withCustom(map -> {
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).custom(map -> {
 			if (map.values().stream().allMatch(v -> v > 0)) {
 				return Result.success(null);
 			}
 			return Result.error("All values must be positive");
-		}));
+		});
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -693,12 +693,12 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withCustom(map -> {
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).custom(map -> {
 			if (map.values().stream().allMatch(v -> v > 0)) {
 				return Result.success(null);
 			}
 			return Result.error("All values must be positive");
-		}));
+		});
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -711,7 +711,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMinSize(2).withMaxSize(4).withRequiredKey("a"));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(2).maxSize(4)).requiredKey("a");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3));
 		assertTrue(result.isSuccess());
@@ -720,7 +720,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMinSize(2).withMaxSize(4).withRequiredKey("a"));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(2).maxSize(4)).requiredKey("a");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of("b", 2, "c", 3));
 		assertTrue(result.isError());
@@ -729,7 +729,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMinSize(1).withMaxSize(3).withForbiddenKey("x"));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(1).maxSize(3)).forbiddenKey("x");
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));
@@ -742,7 +742,7 @@ class ConstrainedMapCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).apply(config -> config.withMinSize(3).withMaxSize(5));
+		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(3).maxSize(5));
 		
 		JsonObject json = new JsonObject();
 		json.add("a", new JsonPrimitive(1));

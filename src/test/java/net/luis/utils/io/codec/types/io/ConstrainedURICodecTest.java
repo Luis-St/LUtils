@@ -19,9 +19,7 @@
 package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.io.PortConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.io.URIConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -44,7 +42,7 @@ class ConstrainedURICodecTest {
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		URI expected = URI.create("https://example.com/path");
-		Codec<URI> codec = new URICodec().apply(config -> config.withEqualTo(expected));
+		Codec<URI> codec = Codecs.URI.equalTo(expected);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), expected);
 		assertTrue(result.isSuccess());
@@ -55,7 +53,7 @@ class ConstrainedURICodecTest {
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		URI expected = URI.create("https://example.com/path");
-		Codec<URI> codec = new URICodec().apply(config -> config.withEqualTo(expected));
+		Codec<URI> codec = Codecs.URI.equalTo(expected);
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com/path"));
 		assertTrue(result.isSuccess());
@@ -65,7 +63,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void toStringWithConstraints() {
 		URI expected = URI.create("https://example.com/path");
-		Codec<URI> codec = new URICodec().apply(config -> config.withEqualTo(expected));
+		Codec<URI> codec = Codecs.URI.equalTo(expected);
 		assertTrue(codec.toString().contains("Constrained"));
 	}
 	
@@ -73,7 +71,7 @@ class ConstrainedURICodecTest {
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		URI expected = URI.create("https://example.com/path");
-		Codec<URI> codec = new URICodec().apply(config -> config.withEqualTo(expected));
+		Codec<URI> codec = Codecs.URI.equalTo(expected);
 		URI different = URI.create("https://other.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), different);
@@ -84,7 +82,7 @@ class ConstrainedURICodecTest {
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		URI expected = URI.create("https://example.com/path");
-		Codec<URI> codec = new URICodec().apply(config -> config.withEqualTo(expected));
+		Codec<URI> codec = Codecs.URI.equalTo(expected);
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://other.com/path"));
 		assertTrue(result.isError());
@@ -94,7 +92,7 @@ class ConstrainedURICodecTest {
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		URI excluded = URI.create("https://example.com/path");
-		Codec<URI> codec = new URICodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<URI> codec = Codecs.URI.notEqualTo(excluded);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
 		assertTrue(result.isError());
@@ -104,7 +102,7 @@ class ConstrainedURICodecTest {
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		URI excluded = URI.create("https://example.com/path");
-		Codec<URI> codec = new URICodec().apply(config -> config.withNotEqualTo(excluded));
+		Codec<URI> codec = Codecs.URI.notEqualTo(excluded);
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com/path"));
 		assertTrue(result.isError());
@@ -114,7 +112,7 @@ class ConstrainedURICodecTest {
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<URI> allowed = List.of(URI.create("https://example.com/path1"), URI.create("https://example.com/path2"));
-		Codec<URI> codec = new URICodec().apply(config -> config.withIn(allowed));
+		Codec<URI> codec = Codecs.URI.in(allowed);
 		URI notAllowed = URI.create("https://other.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notAllowed);
@@ -125,7 +123,7 @@ class ConstrainedURICodecTest {
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<URI> allowed = List.of(URI.create("https://example.com/path1"), URI.create("https://example.com/path2"));
-		Codec<URI> codec = new URICodec().apply(config -> config.withIn(allowed));
+		Codec<URI> codec = Codecs.URI.in(allowed);
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://other.com/path"));
 		assertTrue(result.isError());
@@ -135,7 +133,7 @@ class ConstrainedURICodecTest {
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<URI> excluded = List.of(URI.create("https://example.com/path1"), URI.create("https://example.com/path2"));
-		Codec<URI> codec = new URICodec().apply(config -> config.withNotIn(excluded));
+		Codec<URI> codec = Codecs.URI.notIn(excluded);
 		URI excludedValue = URI.create("https://example.com/path1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excludedValue);
@@ -146,7 +144,7 @@ class ConstrainedURICodecTest {
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<URI> excluded = List.of(URI.create("https://example.com/path1"), URI.create("https://example.com/path2"));
-		Codec<URI> codec = new URICodec().apply(config -> config.withNotIn(excluded));
+		Codec<URI> codec = Codecs.URI.notIn(excluded);
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com/path1"));
 		assertTrue(result.isError());
@@ -155,7 +153,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartSchemeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withScheme(StringConstraintConfig.UNCONSTRAINED.withEqualTo("https")));
+		Codec<URI> codec = Codecs.URI.scheme(builder -> builder.equalTo("https"));
 		URI httpUri = URI.create("http://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), httpUri);
@@ -165,7 +163,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartSchemeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withScheme(StringConstraintConfig.UNCONSTRAINED.withEqualTo("https")));
+		Codec<URI> codec = Codecs.URI.scheme(builder -> builder.equalTo("https"));
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("http://example.com/path"));
 		assertTrue(result.isError());
@@ -174,7 +172,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartSchemeSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withScheme(StringConstraintConfig.UNCONSTRAINED.withEqualTo("https")));
+		Codec<URI> codec = Codecs.URI.scheme(builder -> builder.equalTo("https"));
 		URI httpsUri = URI.create("https://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), httpsUri);
@@ -184,7 +182,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartPortConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withPort(PortConstraintConfig.UNCONSTRAINED.withEqualTo(443)));
+		Codec<URI> codec = Codecs.URI.port(builder -> builder.equalTo(443));
 		URI wrongPort = URI.create("https://example.com:8080/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), wrongPort);
@@ -194,7 +192,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartPortConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withPort(PortConstraintConfig.UNCONSTRAINED.withEqualTo(443)));
+		Codec<URI> codec = Codecs.URI.port(builder -> builder.equalTo(443));
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com:8080/path"));
 		assertTrue(result.isError());
@@ -203,7 +201,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartPortSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withPort(PortConstraintConfig.UNCONSTRAINED.withEqualTo(443)));
+		Codec<URI> codec = Codecs.URI.port(builder -> builder.equalTo(443));
 		URI correctPort = URI.create("https://example.com:443/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), correctPort);
@@ -213,7 +211,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartWithoutPortConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutPort);
+		Codec<URI> codec = Codecs.URI.withoutPort();
 		URI withPort = URI.create("https://example.com:8080/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), withPort);
@@ -223,7 +221,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartWithoutPortConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutPort);
+		Codec<URI> codec = Codecs.URI.withoutPort();
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com:8080/path"));
 		assertTrue(result.isError());
@@ -232,7 +230,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartWithoutPortSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutPort);
+		Codec<URI> codec = Codecs.URI.withoutPort();
 		URI withoutPort = URI.create("https://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), withoutPort);
@@ -242,7 +240,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartFragmentConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withFragment(StringConstraintConfig.UNCONSTRAINED.withEqualTo("section1")));
+		Codec<URI> codec = Codecs.URI.fragment(builder -> builder.equalTo("section1"));
 		URI wrongFragment = URI.create("https://example.com/path#section2");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), wrongFragment);
@@ -252,7 +250,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartFragmentConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withFragment(StringConstraintConfig.UNCONSTRAINED.withEqualTo("section1")));
+		Codec<URI> codec = Codecs.URI.fragment(builder -> builder.equalTo("section1"));
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com/path#section2"));
 		assertTrue(result.isError());
@@ -261,7 +259,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartFragmentSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withFragment(StringConstraintConfig.UNCONSTRAINED.withEqualTo("section1")));
+		Codec<URI> codec = Codecs.URI.fragment(builder -> builder.equalTo("section1"));
 		URI correctFragment = URI.create("https://example.com/path#section1");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), correctFragment);
@@ -271,7 +269,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartWithoutFragmentConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutFragment);
+		Codec<URI> codec = Codecs.URI.withoutFragment();
 		URI withFragment = URI.create("https://example.com/path#section");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), withFragment);
@@ -281,7 +279,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartWithoutFragmentConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutFragment);
+		Codec<URI> codec = Codecs.URI.withoutFragment();
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com/path#section"));
 		assertTrue(result.isError());
@@ -290,7 +288,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartWithoutFragmentSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutFragment);
+		Codec<URI> codec = Codecs.URI.withoutFragment();
 		URI withoutFragment = URI.create("https://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), withoutFragment);
@@ -300,7 +298,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartAbsoluteConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withAbsolute);
+		Codec<URI> codec = Codecs.URI.absolute();
 		URI relativeUri = URI.create("/path/to/resource");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), relativeUri);
@@ -310,7 +308,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartAbsoluteConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withAbsolute);
+		Codec<URI> codec = Codecs.URI.absolute();
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/path/to/resource"));
 		assertTrue(result.isError());
@@ -319,7 +317,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartAbsoluteSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withAbsolute);
+		Codec<URI> codec = Codecs.URI.absolute();
 		URI absoluteUri = URI.create("https://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), absoluteUri);
@@ -329,7 +327,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartRelativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withRelative);
+		Codec<URI> codec = Codecs.URI.relative();
 		URI absoluteUri = URI.create("https://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), absoluteUri);
@@ -339,7 +337,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartRelativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withRelative);
+		Codec<URI> codec = Codecs.URI.relative();
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com/path"));
 		assertTrue(result.isError());
@@ -348,7 +346,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartRelativeSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withRelative);
+		Codec<URI> codec = Codecs.URI.relative();
 		URI relativeUri = URI.create("/path/to/resource");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), relativeUri);
@@ -358,7 +356,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartOpaqueConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withOpaque);
+		Codec<URI> codec = Codecs.URI.opaque();
 		URI hierarchicalUri = URI.create("https://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), hierarchicalUri);
@@ -368,7 +366,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartOpaqueConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withOpaque);
+		Codec<URI> codec = Codecs.URI.opaque();
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com/path"));
 		assertTrue(result.isError());
@@ -377,7 +375,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartOpaqueSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withOpaque);
+		Codec<URI> codec = Codecs.URI.opaque();
 		URI opaqueUri = URI.create("mailto:user@example.com");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), opaqueUri);
@@ -387,7 +385,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartHierarchicalConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withHierarchical);
+		Codec<URI> codec = Codecs.URI.hierarchical();
 		URI opaqueUri = URI.create("mailto:user@example.com");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), opaqueUri);
@@ -397,7 +395,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartHierarchicalConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withHierarchical);
+		Codec<URI> codec = Codecs.URI.hierarchical();
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("mailto:user@example.com"));
 		assertTrue(result.isError());
@@ -406,7 +404,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartHierarchicalSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withHierarchical);
+		Codec<URI> codec = Codecs.URI.hierarchical();
 		URI hierarchicalUri = URI.create("https://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), hierarchicalUri);
@@ -416,7 +414,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartWithoutQueryConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutQuery);
+		Codec<URI> codec = Codecs.URI.withoutQuery();
 		URI withQuery = URI.create("https://example.com/path?query=value");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), withQuery);
@@ -426,7 +424,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartWithoutQueryConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutQuery);
+		Codec<URI> codec = Codecs.URI.withoutQuery();
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com/path?query=value"));
 		assertTrue(result.isError());
@@ -435,7 +433,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartWithoutQuerySuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutQuery);
+		Codec<URI> codec = Codecs.URI.withoutQuery();
 		URI withoutQuery = URI.create("https://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), withoutQuery);
@@ -445,7 +443,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartWithoutUserInfoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutUserInfo);
+		Codec<URI> codec = Codecs.URI.withoutUserInfo();
 		URI withUserInfo = URI.create("https://user:password@example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), withUserInfo);
@@ -455,7 +453,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartWithoutUserInfoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutUserInfo);
+		Codec<URI> codec = Codecs.URI.withoutUserInfo();
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://user:password@example.com/path"));
 		assertTrue(result.isError());
@@ -464,7 +462,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartWithoutUserInfoSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(URIConstraintConfig::withWithoutUserInfo);
+		Codec<URI> codec = Codecs.URI.withoutUserInfo();
 		URI withoutUserInfo = URI.create("https://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), withoutUserInfo);
@@ -474,8 +472,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartUserInfoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config ->
-			config.withUserInfo(StringConstraintConfig.UNCONSTRAINED.withEqualTo("admin")));
+		Codec<URI> codec = Codecs.URI.userInfo(builder -> builder.equalTo("admin"));
 		URI wrongUserInfo = URI.create("https://user@example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), wrongUserInfo);
@@ -485,7 +482,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartUserInfoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withUserInfo(StringConstraintConfig.UNCONSTRAINED.withEqualTo("admin")));
+		Codec<URI> codec = Codecs.URI.userInfo(builder -> builder.equalTo("admin"));
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://user@example.com/path"));
 		assertTrue(result.isError());
@@ -494,7 +491,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartUserInfoSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withUserInfo(StringConstraintConfig.UNCONSTRAINED.withEqualTo("admin")));
+		Codec<URI> codec = Codecs.URI.userInfo(builder -> builder.equalTo("admin"));
 		URI correctUserInfo = URI.create("https://admin@example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), correctUserInfo);
@@ -504,7 +501,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withCustom(value -> Result.error("Custom validation failed")));
+		Codec<URI> codec = Codecs.URI.custom(value -> Result.error("Custom validation failed"));
 		URI uri = URI.create("https://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), uri);
@@ -514,7 +511,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withCustom(value -> Result.error("Custom validation failed")));
+		Codec<URI> codec = Codecs.URI.custom(value -> Result.error("Custom validation failed"));
 		
 		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com/path"));
 		assertTrue(result.isError());
@@ -523,7 +520,7 @@ class ConstrainedURICodecTest {
 	@Test
 	void encodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<URI> codec = new URICodec().apply(config -> config.withCustom(value -> Result.success()));
+		Codec<URI> codec = Codecs.URI.custom(value -> Result.success());
 		URI uri = URI.create("https://example.com/path");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), uri);

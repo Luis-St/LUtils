@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.numeric.IntegerConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -40,7 +40,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 42);
 		assertTrue(result.isSuccess());
@@ -50,7 +50,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 42));
 		assertTrue(result.isSuccess());
@@ -59,7 +59,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyWithValidConstrainedValue() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<String> result = codec.encodeKey((byte) 42);
 		assertTrue(result.isSuccess());
@@ -68,7 +68,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyWithValidConstrainedValue() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<Byte> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -77,13 +77,13 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		assertTrue(codec.toString().contains("Constrained"));
 	}
 	
 	@Test
 	void toStringWithoutConstraints() {
-		Codec<Byte> codec = new ByteCodec();
+		Codec<Byte> codec = Codecs.BYTE;
 		assertFalse(codec.toString().contains("Constrained"));
 		assertEquals("ByteCodec", codec.toString());
 	}
@@ -91,7 +91,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.equalTo((byte) 10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 10);
 		assertTrue(result.isSuccess());
@@ -100,7 +100,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.equalTo((byte) 10);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 10));
 		assertTrue(result.isSuccess());
@@ -108,7 +108,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.equalTo((byte) 10);
 		
 		Result<String> result = codec.encodeKey((byte) 10);
 		assertTrue(result.isSuccess());
@@ -116,7 +116,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.equalTo((byte) 10);
 		
 		Result<Byte> result = codec.decodeKey("10");
 		assertTrue(result.isSuccess());
@@ -125,7 +125,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.equalTo((byte) 10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 20);
 		assertTrue(result.isError());
@@ -134,7 +134,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.equalTo((byte) 10);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 20));
 		assertTrue(result.isError());
@@ -142,7 +142,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.equalTo((byte) 10);
 		
 		Result<String> result = codec.encodeKey((byte) 20);
 		assertTrue(result.isError());
@@ -150,7 +150,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.equalTo((byte) 10);
 		
 		Result<Byte> result = codec.decodeKey("20");
 		assertTrue(result.isError());
@@ -159,7 +159,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.notEqualTo((byte) 10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 20);
 		assertTrue(result.isSuccess());
@@ -168,7 +168,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.notEqualTo((byte) 10);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 20));
 		assertTrue(result.isSuccess());
@@ -176,7 +176,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.notEqualTo((byte) 10);
 		
 		Result<String> result = codec.encodeKey((byte) 20);
 		assertTrue(result.isSuccess());
@@ -184,7 +184,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.notEqualTo((byte) 10);
 		
 		Result<Byte> result = codec.decodeKey("20");
 		assertTrue(result.isSuccess());
@@ -193,7 +193,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.notEqualTo((byte) 10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 10);
 		assertTrue(result.isError());
@@ -202,7 +202,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.notEqualTo((byte) 10);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 10));
 		assertTrue(result.isError());
@@ -210,7 +210,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.notEqualTo((byte) 10);
 		
 		Result<String> result = codec.encodeKey((byte) 10);
 		assertTrue(result.isError());
@@ -218,7 +218,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotEqualTo((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.notEqualTo((byte) 10);
 		
 		Result<Byte> result = codec.decodeKey("10");
 		assertTrue(result.isError());
@@ -227,7 +227,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withIn(Set.of((byte) 10, (byte) 20, (byte) 30)));
+		Codec<Byte> codec = Codecs.BYTE.in(Set.of((byte) 10, (byte) 20, (byte) 30));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 20);
 		assertTrue(result.isSuccess());
@@ -236,7 +236,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withIn(Set.of((byte) 10, (byte) 20, (byte) 30)));
+		Codec<Byte> codec = Codecs.BYTE.in(Set.of((byte) 10, (byte) 20, (byte) 30));
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 20));
 		assertTrue(result.isSuccess());
@@ -244,7 +244,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withIn(Set.of((byte) 10, (byte) 20, (byte) 30)));
+		Codec<Byte> codec = Codecs.BYTE.in(Set.of((byte) 10, (byte) 20, (byte) 30));
 		
 		Result<String> result = codec.encodeKey((byte) 20);
 		assertTrue(result.isSuccess());
@@ -252,7 +252,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withIn(Set.of((byte) 10, (byte) 20, (byte) 30)));
+		Codec<Byte> codec = Codecs.BYTE.in(Set.of((byte) 10, (byte) 20, (byte) 30));
 		
 		Result<Byte> result = codec.decodeKey("20");
 		assertTrue(result.isSuccess());
@@ -261,7 +261,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.in(Set.of((byte) 10, (byte) 20));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 30);
 		assertTrue(result.isError());
@@ -270,7 +270,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.in(Set.of((byte) 10, (byte) 20));
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 30));
 		assertTrue(result.isError());
@@ -278,7 +278,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.in(Set.of((byte) 10, (byte) 20));
 		
 		Result<String> result = codec.encodeKey((byte) 30);
 		assertTrue(result.isError());
@@ -286,7 +286,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.in(Set.of((byte) 10, (byte) 20));
 		
 		Result<Byte> result = codec.decodeKey("30");
 		assertTrue(result.isError());
@@ -295,7 +295,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.notIn(Set.of((byte) 10, (byte) 20));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 30);
 		assertTrue(result.isSuccess());
@@ -304,7 +304,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.notIn(Set.of((byte) 10, (byte) 20));
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 30));
 		assertTrue(result.isSuccess());
@@ -312,7 +312,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.notIn(Set.of((byte) 10, (byte) 20));
 		
 		Result<String> result = codec.encodeKey((byte) 30);
 		assertTrue(result.isSuccess());
@@ -320,7 +320,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.notIn(Set.of((byte) 10, (byte) 20));
 		
 		Result<Byte> result = codec.decodeKey("30");
 		assertTrue(result.isSuccess());
@@ -329,7 +329,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.notIn(Set.of((byte) 10, (byte) 20));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 10);
 		assertTrue(result.isError());
@@ -338,7 +338,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.notIn(Set.of((byte) 10, (byte) 20));
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 10));
 		assertTrue(result.isError());
@@ -346,7 +346,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.notIn(Set.of((byte) 10, (byte) 20));
 		
 		Result<String> result = codec.encodeKey((byte) 10);
 		assertTrue(result.isError());
@@ -354,7 +354,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withNotIn(Set.of((byte) 10, (byte) 20)));
+		Codec<Byte> codec = Codecs.BYTE.notIn(Set.of((byte) 10, (byte) 20));
 		
 		Result<Byte> result = codec.decodeKey("10");
 		assertTrue(result.isError());
@@ -363,7 +363,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThan((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThan((byte) 10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 20);
 		assertTrue(result.isSuccess());
@@ -372,7 +372,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThan((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThan((byte) 10);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 20));
 		assertTrue(result.isSuccess());
@@ -380,7 +380,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThan((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThan((byte) 10);
 		
 		Result<String> result = codec.encodeKey((byte) 20);
 		assertTrue(result.isSuccess());
@@ -388,7 +388,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThan((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThan((byte) 10);
 		
 		Result<Byte> result = codec.decodeKey("20");
 		assertTrue(result.isSuccess());
@@ -397,7 +397,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThan((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThan((byte) 10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 10);
 		assertTrue(result.isError());
@@ -406,7 +406,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThan((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThan((byte) 10);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 10));
 		assertTrue(result.isError());
@@ -414,7 +414,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThan((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThan((byte) 10);
 		
 		Result<String> result = codec.encodeKey((byte) 10);
 		assertTrue(result.isError());
@@ -422,7 +422,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThan((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThan((byte) 10);
 		
 		Result<Byte> result = codec.decodeKey("10");
 		assertTrue(result.isError());
@@ -431,7 +431,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThanOrEqual((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThanOrEqual((byte) 10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 10);
 		assertTrue(result.isSuccess());
@@ -440,7 +440,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThanOrEqual((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThanOrEqual((byte) 10);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 10));
 		assertTrue(result.isSuccess());
@@ -448,7 +448,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThanOrEqual((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThanOrEqual((byte) 10);
 		
 		Result<String> result = codec.encodeKey((byte) 10);
 		assertTrue(result.isSuccess());
@@ -456,7 +456,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThanOrEqual((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThanOrEqual((byte) 10);
 		
 		Result<Byte> result = codec.decodeKey("10");
 		assertTrue(result.isSuccess());
@@ -465,7 +465,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThanOrEqual((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThanOrEqual((byte) 10);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 5);
 		assertTrue(result.isError());
@@ -474,7 +474,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThanOrEqual((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThanOrEqual((byte) 10);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 5));
 		assertTrue(result.isError());
@@ -482,7 +482,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThanOrEqual((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThanOrEqual((byte) 10);
 		
 		Result<String> result = codec.encodeKey((byte) 5);
 		assertTrue(result.isError());
@@ -490,7 +490,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withGreaterThanOrEqual((byte) 10));
+		Codec<Byte> codec = Codecs.BYTE.greaterThanOrEqual((byte) 10);
 		
 		Result<Byte> result = codec.decodeKey("5");
 		assertTrue(result.isError());
@@ -499,7 +499,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThan((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThan((byte) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 30);
 		assertTrue(result.isSuccess());
@@ -508,7 +508,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThan((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThan((byte) 50);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 30));
 		assertTrue(result.isSuccess());
@@ -516,7 +516,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyLessThanConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThan((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThan((byte) 50);
 		
 		Result<String> result = codec.encodeKey((byte) 30);
 		assertTrue(result.isSuccess());
@@ -524,7 +524,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyLessThanConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThan((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThan((byte) 50);
 		
 		Result<Byte> result = codec.decodeKey("30");
 		assertTrue(result.isSuccess());
@@ -533,7 +533,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThan((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThan((byte) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 50);
 		assertTrue(result.isError());
@@ -542,7 +542,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThan((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThan((byte) 50);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 50));
 		assertTrue(result.isError());
@@ -550,7 +550,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyLessThanConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThan((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThan((byte) 50);
 		
 		Result<String> result = codec.encodeKey((byte) 50);
 		assertTrue(result.isError());
@@ -558,7 +558,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyLessThanConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThan((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThan((byte) 50);
 		
 		Result<Byte> result = codec.decodeKey("50");
 		assertTrue(result.isError());
@@ -567,7 +567,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThanOrEqual((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThanOrEqual((byte) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 50);
 		assertTrue(result.isSuccess());
@@ -576,7 +576,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThanOrEqual((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThanOrEqual((byte) 50);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 50));
 		assertTrue(result.isSuccess());
@@ -584,7 +584,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThanOrEqual((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThanOrEqual((byte) 50);
 		
 		Result<String> result = codec.encodeKey((byte) 50);
 		assertTrue(result.isSuccess());
@@ -592,7 +592,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThanOrEqual((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThanOrEqual((byte) 50);
 		
 		Result<Byte> result = codec.decodeKey("50");
 		assertTrue(result.isSuccess());
@@ -601,7 +601,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThanOrEqual((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThanOrEqual((byte) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 60);
 		assertTrue(result.isError());
@@ -610,7 +610,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThanOrEqual((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThanOrEqual((byte) 50);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 60));
 		assertTrue(result.isError());
@@ -618,7 +618,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThanOrEqual((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThanOrEqual((byte) 50);
 		
 		Result<String> result = codec.encodeKey((byte) 60);
 		assertTrue(result.isError());
@@ -626,7 +626,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withLessThanOrEqual((byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.lessThanOrEqual((byte) 50);
 		
 		Result<Byte> result = codec.decodeKey("60");
 		assertTrue(result.isError());
@@ -635,7 +635,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetween((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.between((byte) 10, (byte) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 30);
 		assertTrue(result.isSuccess());
@@ -644,7 +644,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetween((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.between((byte) 10, (byte) 50);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 30));
 		assertTrue(result.isSuccess());
@@ -652,7 +652,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyBetweenConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetween((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.between((byte) 10, (byte) 50);
 		
 		Result<String> result = codec.encodeKey((byte) 30);
 		assertTrue(result.isSuccess());
@@ -660,7 +660,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyBetweenConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetween((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.between((byte) 10, (byte) 50);
 		
 		Result<Byte> result = codec.decodeKey("30");
 		assertTrue(result.isSuccess());
@@ -669,7 +669,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetween((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.between((byte) 10, (byte) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 10);
 		assertTrue(result.isError());
@@ -678,7 +678,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetween((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.between((byte) 10, (byte) 50);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 50));
 		assertTrue(result.isError());
@@ -686,7 +686,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyBetweenConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetween((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.between((byte) 10, (byte) 50);
 		
 		Result<String> result = codec.encodeKey((byte) 10);
 		assertTrue(result.isError());
@@ -694,7 +694,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyBetweenConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetween((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.between((byte) 10, (byte) 50);
 		
 		Result<Byte> result = codec.decodeKey("50");
 		assertTrue(result.isError());
@@ -703,7 +703,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetweenOrEqual((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.betweenOrEqual((byte) 10, (byte) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 10);
 		assertTrue(result.isSuccess());
@@ -712,7 +712,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetweenOrEqual((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.betweenOrEqual((byte) 10, (byte) 50);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 50));
 		assertTrue(result.isSuccess());
@@ -720,7 +720,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetweenOrEqual((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.betweenOrEqual((byte) 10, (byte) 50);
 		
 		Result<String> result = codec.encodeKey((byte) 30);
 		assertTrue(result.isSuccess());
@@ -728,7 +728,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetweenOrEqual((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.betweenOrEqual((byte) 10, (byte) 50);
 		
 		Result<Byte> result = codec.decodeKey("30");
 		assertTrue(result.isSuccess());
@@ -737,7 +737,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetweenOrEqual((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.betweenOrEqual((byte) 10, (byte) 50);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 5);
 		assertTrue(result.isError());
@@ -746,7 +746,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetweenOrEqual((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.betweenOrEqual((byte) 10, (byte) 50);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 60));
 		assertTrue(result.isError());
@@ -754,7 +754,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetweenOrEqual((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.betweenOrEqual((byte) 10, (byte) 50);
 		
 		Result<String> result = codec.encodeKey((byte) 5);
 		assertTrue(result.isError());
@@ -762,7 +762,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withBetweenOrEqual((byte) 10, (byte) 50));
+		Codec<Byte> codec = Codecs.BYTE.betweenOrEqual((byte) 10, (byte) 50);
 		
 		Result<Byte> result = codec.decodeKey("60");
 		assertTrue(result.isError());
@@ -771,7 +771,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 42);
 		assertTrue(result.isSuccess());
@@ -780,7 +780,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 42));
 		assertTrue(result.isSuccess());
@@ -788,7 +788,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyPositiveConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<String> result = codec.encodeKey((byte) 42);
 		assertTrue(result.isSuccess());
@@ -796,7 +796,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyPositiveConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<Byte> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -805,7 +805,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 0);
 		assertTrue(result.isError());
@@ -814,7 +814,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) -5));
 		assertTrue(result.isError());
@@ -822,7 +822,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyPositiveConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<String> result = codec.encodeKey((byte) 0);
 		assertTrue(result.isError());
@@ -830,7 +830,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyPositiveConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPositive);
+		Codec<Byte> codec = Codecs.BYTE.positive();
 		
 		Result<Byte> result = codec.decodeKey("-5");
 		assertTrue(result.isError());
@@ -839,7 +839,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Byte> codec = Codecs.BYTE.nonPositive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 0);
 		assertTrue(result.isSuccess());
@@ -848,7 +848,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Byte> codec = Codecs.BYTE.nonPositive();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) -10));
 		assertTrue(result.isSuccess());
@@ -856,7 +856,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNonPositiveConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Byte> codec = Codecs.BYTE.nonPositive();
 		
 		Result<String> result = codec.encodeKey((byte) 0);
 		assertTrue(result.isSuccess());
@@ -864,7 +864,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNonPositiveConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Byte> codec = Codecs.BYTE.nonPositive();
 		
 		Result<Byte> result = codec.decodeKey("-10");
 		assertTrue(result.isSuccess());
@@ -873,7 +873,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Byte> codec = Codecs.BYTE.nonPositive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 5);
 		assertTrue(result.isError());
@@ -882,7 +882,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Byte> codec = Codecs.BYTE.nonPositive();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 5));
 		assertTrue(result.isError());
@@ -890,7 +890,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNonPositiveConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Byte> codec = Codecs.BYTE.nonPositive();
 		
 		Result<String> result = codec.encodeKey((byte) 5);
 		assertTrue(result.isError());
@@ -898,7 +898,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNonPositiveConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonPositive);
+		Codec<Byte> codec = Codecs.BYTE.nonPositive();
 		
 		Result<Byte> result = codec.decodeKey("5");
 		assertTrue(result.isError());
@@ -907,7 +907,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Byte> codec = Codecs.BYTE.negative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) -10);
 		assertTrue(result.isSuccess());
@@ -916,7 +916,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Byte> codec = Codecs.BYTE.negative();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) -10));
 		assertTrue(result.isSuccess());
@@ -924,7 +924,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNegativeConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Byte> codec = Codecs.BYTE.negative();
 		
 		Result<String> result = codec.encodeKey((byte) -10);
 		assertTrue(result.isSuccess());
@@ -932,7 +932,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNegativeConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Byte> codec = Codecs.BYTE.negative();
 		
 		Result<Byte> result = codec.decodeKey("-10");
 		assertTrue(result.isSuccess());
@@ -941,7 +941,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Byte> codec = Codecs.BYTE.negative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 0);
 		assertTrue(result.isError());
@@ -950,7 +950,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Byte> codec = Codecs.BYTE.negative();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 5));
 		assertTrue(result.isError());
@@ -958,7 +958,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNegativeConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Byte> codec = Codecs.BYTE.negative();
 		
 		Result<String> result = codec.encodeKey((byte) 0);
 		assertTrue(result.isError());
@@ -966,7 +966,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNegativeConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNegative);
+		Codec<Byte> codec = Codecs.BYTE.negative();
 		
 		Result<Byte> result = codec.decodeKey("5");
 		assertTrue(result.isError());
@@ -975,7 +975,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Byte> codec = Codecs.BYTE.nonNegative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 0);
 		assertTrue(result.isSuccess());
@@ -984,7 +984,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Byte> codec = Codecs.BYTE.nonNegative();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 10));
 		assertTrue(result.isSuccess());
@@ -992,7 +992,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNonNegativeConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Byte> codec = Codecs.BYTE.nonNegative();
 		
 		Result<String> result = codec.encodeKey((byte) 0);
 		assertTrue(result.isSuccess());
@@ -1000,7 +1000,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNonNegativeConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Byte> codec = Codecs.BYTE.nonNegative();
 		
 		Result<Byte> result = codec.decodeKey("10");
 		assertTrue(result.isSuccess());
@@ -1009,7 +1009,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Byte> codec = Codecs.BYTE.nonNegative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) -5);
 		assertTrue(result.isError());
@@ -1018,7 +1018,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Byte> codec = Codecs.BYTE.nonNegative();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) -5));
 		assertTrue(result.isError());
@@ -1026,7 +1026,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNonNegativeConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Byte> codec = Codecs.BYTE.nonNegative();
 		
 		Result<String> result = codec.encodeKey((byte) -5);
 		assertTrue(result.isError());
@@ -1034,7 +1034,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNonNegativeConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonNegative);
+		Codec<Byte> codec = Codecs.BYTE.nonNegative();
 		
 		Result<Byte> result = codec.decodeKey("-5");
 		assertTrue(result.isError());
@@ -1043,7 +1043,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Byte> codec = Codecs.BYTE.zero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 0);
 		assertTrue(result.isSuccess());
@@ -1052,7 +1052,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Byte> codec = Codecs.BYTE.zero();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 0));
 		assertTrue(result.isSuccess());
@@ -1060,7 +1060,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyZeroConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Byte> codec = Codecs.BYTE.zero();
 		
 		Result<String> result = codec.encodeKey((byte) 0);
 		assertTrue(result.isSuccess());
@@ -1068,7 +1068,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyZeroConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Byte> codec = Codecs.BYTE.zero();
 		
 		Result<Byte> result = codec.decodeKey("0");
 		assertTrue(result.isSuccess());
@@ -1077,7 +1077,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Byte> codec = Codecs.BYTE.zero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 5);
 		assertTrue(result.isError());
@@ -1086,7 +1086,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Byte> codec = Codecs.BYTE.zero();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) -5));
 		assertTrue(result.isError());
@@ -1094,7 +1094,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyZeroConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Byte> codec = Codecs.BYTE.zero();
 		
 		Result<String> result = codec.encodeKey((byte) 5);
 		assertTrue(result.isError());
@@ -1102,7 +1102,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyZeroConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withZero);
+		Codec<Byte> codec = Codecs.BYTE.zero();
 		
 		Result<Byte> result = codec.decodeKey("-5");
 		assertTrue(result.isError());
@@ -1111,7 +1111,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Byte> codec = Codecs.BYTE.nonZero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 42);
 		assertTrue(result.isSuccess());
@@ -1120,7 +1120,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Byte> codec = Codecs.BYTE.nonZero();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) -10));
 		assertTrue(result.isSuccess());
@@ -1128,7 +1128,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNonZeroConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Byte> codec = Codecs.BYTE.nonZero();
 		
 		Result<String> result = codec.encodeKey((byte) 42);
 		assertTrue(result.isSuccess());
@@ -1136,7 +1136,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNonZeroConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Byte> codec = Codecs.BYTE.nonZero();
 		
 		Result<Byte> result = codec.decodeKey("-10");
 		assertTrue(result.isSuccess());
@@ -1145,7 +1145,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Byte> codec = Codecs.BYTE.nonZero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 0);
 		assertTrue(result.isError());
@@ -1154,7 +1154,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Byte> codec = Codecs.BYTE.nonZero();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 0));
 		assertTrue(result.isError());
@@ -1162,7 +1162,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyNonZeroConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Byte> codec = Codecs.BYTE.nonZero();
 		
 		Result<String> result = codec.encodeKey((byte) 0);
 		assertTrue(result.isError());
@@ -1170,7 +1170,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyNonZeroConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withNonZero);
+		Codec<Byte> codec = Codecs.BYTE.nonZero();
 		
 		Result<Byte> result = codec.decodeKey("0");
 		assertTrue(result.isError());
@@ -1179,7 +1179,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartPercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Byte> codec = Codecs.BYTE.percentage();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 50);
 		assertTrue(result.isSuccess());
@@ -1188,7 +1188,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartPercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Byte> codec = Codecs.BYTE.percentage();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 100));
 		assertTrue(result.isSuccess());
@@ -1196,7 +1196,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyPercentageConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Byte> codec = Codecs.BYTE.percentage();
 		
 		Result<String> result = codec.encodeKey((byte) 0);
 		assertTrue(result.isSuccess());
@@ -1204,7 +1204,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyPercentageConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Byte> codec = Codecs.BYTE.percentage();
 		
 		Result<Byte> result = codec.decodeKey("75");
 		assertTrue(result.isSuccess());
@@ -1213,7 +1213,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartPercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Byte> codec = Codecs.BYTE.percentage();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 101);
 		assertTrue(result.isError());
@@ -1222,7 +1222,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartPercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Byte> codec = Codecs.BYTE.percentage();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) -1));
 		assertTrue(result.isError());
@@ -1230,7 +1230,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyPercentageConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Byte> codec = Codecs.BYTE.percentage();
 		
 		Result<String> result = codec.encodeKey((byte) 101);
 		assertTrue(result.isError());
@@ -1238,7 +1238,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyPercentageConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPercentage);
+		Codec<Byte> codec = Codecs.BYTE.percentage();
 		
 		Result<Byte> result = codec.decodeKey("-1");
 		assertTrue(result.isError());
@@ -1247,7 +1247,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartEvenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Byte> codec = Codecs.BYTE.even();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 42);
 		assertTrue(result.isSuccess());
@@ -1256,7 +1256,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartEvenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Byte> codec = Codecs.BYTE.even();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 0));
 		assertTrue(result.isSuccess());
@@ -1264,7 +1264,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyEvenConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Byte> codec = Codecs.BYTE.even();
 		
 		Result<String> result = codec.encodeKey((byte) -10);
 		assertTrue(result.isSuccess());
@@ -1272,7 +1272,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyEvenConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Byte> codec = Codecs.BYTE.even();
 		
 		Result<Byte> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -1281,7 +1281,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartEvenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Byte> codec = Codecs.BYTE.even();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 41);
 		assertTrue(result.isError());
@@ -1290,7 +1290,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartEvenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Byte> codec = Codecs.BYTE.even();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 3));
 		assertTrue(result.isError());
@@ -1298,7 +1298,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyEvenConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Byte> codec = Codecs.BYTE.even();
 		
 		Result<String> result = codec.encodeKey((byte) 41);
 		assertTrue(result.isError());
@@ -1306,7 +1306,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyEvenConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withEven);
+		Codec<Byte> codec = Codecs.BYTE.even();
 		
 		Result<Byte> result = codec.decodeKey("3");
 		assertTrue(result.isError());
@@ -1315,7 +1315,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartOddConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Byte> codec = Codecs.BYTE.odd();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 41);
 		assertTrue(result.isSuccess());
@@ -1324,7 +1324,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartOddConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Byte> codec = Codecs.BYTE.odd();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 3));
 		assertTrue(result.isSuccess());
@@ -1332,7 +1332,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyOddConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Byte> codec = Codecs.BYTE.odd();
 		
 		Result<String> result = codec.encodeKey((byte) -11);
 		assertTrue(result.isSuccess());
@@ -1340,7 +1340,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyOddConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Byte> codec = Codecs.BYTE.odd();
 		
 		Result<Byte> result = codec.decodeKey("99");
 		assertTrue(result.isSuccess());
@@ -1349,7 +1349,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartOddConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Byte> codec = Codecs.BYTE.odd();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 42);
 		assertTrue(result.isError());
@@ -1358,7 +1358,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartOddConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Byte> codec = Codecs.BYTE.odd();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 0));
 		assertTrue(result.isError());
@@ -1366,7 +1366,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyOddConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Byte> codec = Codecs.BYTE.odd();
 		
 		Result<String> result = codec.encodeKey((byte) 42);
 		assertTrue(result.isError());
@@ -1374,7 +1374,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyOddConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withOdd);
+		Codec<Byte> codec = Codecs.BYTE.odd();
 		
 		Result<Byte> result = codec.decodeKey("0");
 		assertTrue(result.isError());
@@ -1383,7 +1383,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartDivisibleByConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Byte> codec = Codecs.BYTE.divisibleBy(5);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 25);
 		assertTrue(result.isSuccess());
@@ -1392,7 +1392,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartDivisibleByConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Byte> codec = Codecs.BYTE.divisibleBy(5);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 50));
 		assertTrue(result.isSuccess());
@@ -1400,7 +1400,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyDivisibleByConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Byte> codec = Codecs.BYTE.divisibleBy(5);
 		
 		Result<String> result = codec.encodeKey((byte) 0);
 		assertTrue(result.isSuccess());
@@ -1408,7 +1408,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyDivisibleByConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Byte> codec = Codecs.BYTE.divisibleBy(5);
 		
 		Result<Byte> result = codec.decodeKey("-15");
 		assertTrue(result.isSuccess());
@@ -1417,7 +1417,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartDivisibleByConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Byte> codec = Codecs.BYTE.divisibleBy(5);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 23);
 		assertTrue(result.isError());
@@ -1426,7 +1426,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartDivisibleByConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Byte> codec = Codecs.BYTE.divisibleBy(5);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 17));
 		assertTrue(result.isError());
@@ -1434,7 +1434,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyDivisibleByConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Byte> codec = Codecs.BYTE.divisibleBy(5);
 		
 		Result<String> result = codec.encodeKey((byte) 23);
 		assertTrue(result.isError());
@@ -1442,7 +1442,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyDivisibleByConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withDivisibleBy(5));
+		Codec<Byte> codec = Codecs.BYTE.divisibleBy(5);
 		
 		Result<Byte> result = codec.decodeKey("17");
 		assertTrue(result.isError());
@@ -1451,7 +1451,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartPowerOfConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withPowerOf(3));
+		Codec<Byte> codec = Codecs.BYTE.powerOf(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 27);
 		assertTrue(result.isSuccess());
@@ -1460,7 +1460,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartPowerOfConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withPowerOf(3));
+		Codec<Byte> codec = Codecs.BYTE.powerOf(3);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 9));
 		assertTrue(result.isSuccess());
@@ -1468,7 +1468,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withPowerOf(3));
+		Codec<Byte> codec = Codecs.BYTE.powerOf(3);
 		
 		Result<String> result = codec.encodeKey((byte) 81);
 		assertTrue(result.isSuccess());
@@ -1476,7 +1476,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withPowerOf(3));
+		Codec<Byte> codec = Codecs.BYTE.powerOf(3);
 		
 		Result<Byte> result = codec.decodeKey("1");
 		assertTrue(result.isSuccess());
@@ -1485,7 +1485,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartPowerOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withPowerOf(3));
+		Codec<Byte> codec = Codecs.BYTE.powerOf(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 10);
 		assertTrue(result.isError());
@@ -1494,7 +1494,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartPowerOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withPowerOf(3));
+		Codec<Byte> codec = Codecs.BYTE.powerOf(3);
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 15));
 		assertTrue(result.isError());
@@ -1502,7 +1502,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withPowerOf(3));
+		Codec<Byte> codec = Codecs.BYTE.powerOf(3);
 		
 		Result<String> result = codec.encodeKey((byte) 10);
 		assertTrue(result.isError());
@@ -1510,7 +1510,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withPowerOf(3));
+		Codec<Byte> codec = Codecs.BYTE.powerOf(3);
 		
 		Result<Byte> result = codec.decodeKey("15");
 		assertTrue(result.isError());
@@ -1519,7 +1519,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartPowerOfTwoConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Byte> codec = Codecs.BYTE.powerOfTwo();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 64);
 		assertTrue(result.isSuccess());
@@ -1528,7 +1528,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartPowerOfTwoConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Byte> codec = Codecs.BYTE.powerOfTwo();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 32));
 		assertTrue(result.isSuccess());
@@ -1536,7 +1536,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfTwoConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Byte> codec = Codecs.BYTE.powerOfTwo();
 		
 		Result<String> result = codec.encodeKey((byte) 16);
 		assertTrue(result.isSuccess());
@@ -1544,7 +1544,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfTwoConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Byte> codec = Codecs.BYTE.powerOfTwo();
 		
 		Result<Byte> result = codec.decodeKey("1");
 		assertTrue(result.isSuccess());
@@ -1553,7 +1553,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartPowerOfTwoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Byte> codec = Codecs.BYTE.powerOfTwo();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 50);
 		assertTrue(result.isError());
@@ -1562,7 +1562,7 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartPowerOfTwoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Byte> codec = Codecs.BYTE.powerOfTwo();
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 100));
 		assertTrue(result.isError());
@@ -1570,7 +1570,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyPowerOfTwoConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Byte> codec = Codecs.BYTE.powerOfTwo();
 		
 		Result<String> result = codec.encodeKey((byte) 50);
 		assertTrue(result.isError());
@@ -1578,7 +1578,7 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyPowerOfTwoConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(IntegerConstraintConfig::withPowerOfTwo);
+		Codec<Byte> codec = Codecs.BYTE.powerOfTwo();
 		
 		Result<Byte> result = codec.decodeKey("100");
 		assertTrue(result.isError());
@@ -1587,12 +1587,12 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withCustom(value -> {
+		Codec<Byte> codec = Codecs.BYTE.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success();
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 21);
 		assertTrue(result.isSuccess());
@@ -1601,12 +1601,12 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withCustom(value -> {
+		Codec<Byte> codec = Codecs.BYTE.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success();
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 49));
 		assertTrue(result.isSuccess());
@@ -1614,12 +1614,12 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withCustom(value -> {
+		Codec<Byte> codec = Codecs.BYTE.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success();
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<String> result = codec.encodeKey((byte) 14);
 		assertTrue(result.isSuccess());
@@ -1627,12 +1627,12 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintSuccess() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withCustom(value -> {
+		Codec<Byte> codec = Codecs.BYTE.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success();
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<Byte> result = codec.decodeKey("0");
 		assertTrue(result.isSuccess());
@@ -1641,12 +1641,12 @@ class ConstrainedByteCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withCustom(value -> {
+		Codec<Byte> codec = Codecs.BYTE.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success();
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 22);
 		assertTrue(result.isError());
@@ -1655,12 +1655,12 @@ class ConstrainedByteCodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withCustom(value -> {
+		Codec<Byte> codec = Codecs.BYTE.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success();
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 50));
 		assertTrue(result.isError());
@@ -1668,12 +1668,12 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withCustom(value -> {
+		Codec<Byte> codec = Codecs.BYTE.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success();
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<String> result = codec.encodeKey((byte) 22);
 		assertTrue(result.isError());
@@ -1681,12 +1681,12 @@ class ConstrainedByteCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintViolation() {
-		Codec<Byte> codec = new ByteCodec().apply(config -> config.withCustom(value -> {
+		Codec<Byte> codec = Codecs.BYTE.custom(value -> {
 			if (value % 7 == 0) {
 				return Result.success();
 			}
 			return Result.error("Value must be divisible by 7");
-		}));
+		});
 		
 		Result<Byte> result = codec.decodeKey("50");
 		assertTrue(result.isError());

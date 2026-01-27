@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.config.numeric.BigDecimalConstraintConfig;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -49,7 +49,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isSuccess());
@@ -59,7 +59,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isSuccess());
@@ -68,7 +68,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyWithValidConstrainedValue() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<String> result = codec.encodeKey(VALUE_PI);
 		assertTrue(result.isSuccess());
@@ -77,7 +77,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyWithValidConstrainedValue() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<BigDecimal> result = codec.decodeKey("3.14159");
 		assertTrue(result.isSuccess());
@@ -86,13 +86,13 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void toStringWithConstraints() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		assertTrue(codec.toString().contains("Constrained"));
 	}
 	
 	@Test
 	void toStringWithoutConstraints() {
-		Codec<BigDecimal> codec = new BigDecimalCodec();
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL;
 		assertFalse(codec.toString().contains("Constrained"));
 		assertEquals("BigDecimalCodec", codec.toString());
 	}
@@ -100,7 +100,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.equalTo(VALUE_PI);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isSuccess());
@@ -109,7 +109,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.equalTo(VALUE_PI);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isSuccess());
@@ -117,7 +117,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.equalTo(VALUE_PI);
 		
 		Result<String> result = codec.encodeKey(VALUE_PI);
 		assertTrue(result.isSuccess());
@@ -125,7 +125,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.equalTo(VALUE_PI);
 		
 		Result<BigDecimal> result = codec.decodeKey("3.14159");
 		assertTrue(result.isSuccess());
@@ -134,7 +134,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.equalTo(VALUE_PI);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_E);
 		assertTrue(result.isError());
@@ -143,7 +143,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.equalTo(VALUE_PI);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2.71828"));
 		assertTrue(result.isError());
@@ -151,7 +151,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyEqualToConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.equalTo(VALUE_PI);
 		
 		Result<String> result = codec.encodeKey(VALUE_E);
 		assertTrue(result.isError());
@@ -159,7 +159,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyEqualToConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.equalTo(VALUE_PI);
 		
 		Result<BigDecimal> result = codec.decodeKey("2.71828");
 		assertTrue(result.isError());
@@ -168,7 +168,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notEqualTo(VALUE_PI);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_E);
 		assertTrue(result.isSuccess());
@@ -177,7 +177,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notEqualTo(VALUE_PI);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2.71828"));
 		assertTrue(result.isSuccess());
@@ -185,7 +185,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notEqualTo(VALUE_PI);
 		
 		Result<String> result = codec.encodeKey(VALUE_E);
 		assertTrue(result.isSuccess());
@@ -193,7 +193,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notEqualTo(VALUE_PI);
 		
 		Result<BigDecimal> result = codec.decodeKey("2.71828");
 		assertTrue(result.isSuccess());
@@ -202,7 +202,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notEqualTo(VALUE_PI);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isError());
@@ -211,7 +211,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notEqualTo(VALUE_PI);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isError());
@@ -219,7 +219,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNotEqualToConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notEqualTo(VALUE_PI);
 		
 		Result<String> result = codec.encodeKey(VALUE_PI);
 		assertTrue(result.isError());
@@ -227,7 +227,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNotEqualToConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotEqualTo(VALUE_PI));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notEqualTo(VALUE_PI);
 		
 		Result<BigDecimal> result = codec.decodeKey("3.14159");
 		assertTrue(result.isError());
@@ -236,7 +236,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withIn(Set.of(VALUE_PI, VALUE_E, VALUE_42)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.in(Set.of(VALUE_PI, VALUE_E, VALUE_42));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_E);
 		assertTrue(result.isSuccess());
@@ -245,7 +245,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withIn(Set.of(VALUE_PI, VALUE_E, VALUE_42)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.in(Set.of(VALUE_PI, VALUE_E, VALUE_42));
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2.71828"));
 		assertTrue(result.isSuccess());
@@ -253,7 +253,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withIn(Set.of(VALUE_PI, VALUE_E, VALUE_42)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.in(Set.of(VALUE_PI, VALUE_E, VALUE_42));
 		
 		Result<String> result = codec.encodeKey(VALUE_E);
 		assertTrue(result.isSuccess());
@@ -261,7 +261,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withIn(Set.of(VALUE_PI, VALUE_E, VALUE_42)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.in(Set.of(VALUE_PI, VALUE_E, VALUE_42));
 		
 		Result<BigDecimal> result = codec.decodeKey("2.71828");
 		assertTrue(result.isSuccess());
@@ -270,7 +270,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.in(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_42);
 		assertTrue(result.isError());
@@ -279,7 +279,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.in(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
 		assertTrue(result.isError());
@@ -287,7 +287,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyInConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.in(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isError());
@@ -295,7 +295,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyInConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.in(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isError());
@@ -304,7 +304,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notIn(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_42);
 		assertTrue(result.isSuccess());
@@ -313,7 +313,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notIn(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
 		assertTrue(result.isSuccess());
@@ -321,7 +321,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notIn(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isSuccess());
@@ -329,7 +329,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notIn(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -338,7 +338,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notIn(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isError());
@@ -347,7 +347,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notIn(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isError());
@@ -355,7 +355,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNotInConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notIn(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<String> result = codec.encodeKey(VALUE_PI);
 		assertTrue(result.isError());
@@ -363,7 +363,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNotInConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withNotIn(Set.of(VALUE_PI, VALUE_E)));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.notIn(Set.of(VALUE_PI, VALUE_E));
 		
 		Result<BigDecimal> result = codec.decodeKey("3.14159");
 		assertTrue(result.isError());
@@ -372,7 +372,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThan(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThan(BigDecimal.TEN);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_42);
 		assertTrue(result.isSuccess());
@@ -381,7 +381,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThan(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThan(BigDecimal.TEN);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
 		assertTrue(result.isSuccess());
@@ -389,7 +389,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThan(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThan(BigDecimal.TEN);
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isSuccess());
@@ -397,7 +397,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThan(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThan(BigDecimal.TEN);
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -406,7 +406,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThan(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThan(BigDecimal.TEN);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigDecimal.TEN);
 		assertTrue(result.isError());
@@ -415,7 +415,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThan(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThan(BigDecimal.TEN);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10"));
 		assertTrue(result.isError());
@@ -423,7 +423,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThan(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThan(BigDecimal.TEN);
 		
 		Result<String> result = codec.encodeKey(BigDecimal.TEN);
 		assertTrue(result.isError());
@@ -431,7 +431,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThan(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThan(BigDecimal.TEN);
 		
 		Result<BigDecimal> result = codec.decodeKey("10");
 		assertTrue(result.isError());
@@ -440,7 +440,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThanOrEqual(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThanOrEqual(BigDecimal.TEN);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigDecimal.TEN);
 		assertTrue(result.isSuccess());
@@ -449,7 +449,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThanOrEqual(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThanOrEqual(BigDecimal.TEN);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10"));
 		assertTrue(result.isSuccess());
@@ -457,7 +457,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThanOrEqual(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThanOrEqual(BigDecimal.TEN);
 		
 		Result<String> result = codec.encodeKey(BigDecimal.TEN);
 		assertTrue(result.isSuccess());
@@ -465,7 +465,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThanOrEqual(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThanOrEqual(BigDecimal.TEN);
 		
 		Result<BigDecimal> result = codec.decodeKey("10");
 		assertTrue(result.isSuccess());
@@ -474,7 +474,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThanOrEqual(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThanOrEqual(BigDecimal.TEN);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("9.99"));
 		assertTrue(result.isError());
@@ -483,7 +483,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThanOrEqual(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThanOrEqual(BigDecimal.TEN);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("9.99"));
 		assertTrue(result.isError());
@@ -491,7 +491,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThanOrEqual(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThanOrEqual(BigDecimal.TEN);
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("9.99"));
 		assertTrue(result.isError());
@@ -499,7 +499,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withGreaterThanOrEqual(BigDecimal.TEN));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.greaterThanOrEqual(BigDecimal.TEN);
 		
 		Result<BigDecimal> result = codec.decodeKey("9.99");
 		assertTrue(result.isError());
@@ -508,7 +508,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThan(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThan(VALUE_100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_42);
 		assertTrue(result.isSuccess());
@@ -517,7 +517,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThan(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThan(VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
 		assertTrue(result.isSuccess());
@@ -525,7 +525,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyLessThanConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThan(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThan(VALUE_100);
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isSuccess());
@@ -533,7 +533,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyLessThanConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThan(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThan(VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -542,7 +542,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThan(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThan(VALUE_100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_100);
 		assertTrue(result.isError());
@@ -551,7 +551,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThan(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThan(VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
 		assertTrue(result.isError());
@@ -559,7 +559,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyLessThanConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThan(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThan(VALUE_100);
 		
 		Result<String> result = codec.encodeKey(VALUE_100);
 		assertTrue(result.isError());
@@ -567,7 +567,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyLessThanConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThan(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThan(VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeKey("100");
 		assertTrue(result.isError());
@@ -576,7 +576,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThanOrEqual(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThanOrEqual(VALUE_100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_100);
 		assertTrue(result.isSuccess());
@@ -585,7 +585,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThanOrEqual(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThanOrEqual(VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
 		assertTrue(result.isSuccess());
@@ -593,7 +593,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThanOrEqual(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThanOrEqual(VALUE_100);
 		
 		Result<String> result = codec.encodeKey(VALUE_100);
 		assertTrue(result.isSuccess());
@@ -601,7 +601,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThanOrEqual(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThanOrEqual(VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -610,7 +610,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThanOrEqual(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThanOrEqual(VALUE_100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("100.01"));
 		assertTrue(result.isError());
@@ -619,7 +619,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThanOrEqual(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThanOrEqual(VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100.01"));
 		assertTrue(result.isError());
@@ -627,7 +627,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThanOrEqual(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThanOrEqual(VALUE_100);
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("100.01"));
 		assertTrue(result.isError());
@@ -635,7 +635,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withLessThanOrEqual(VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.lessThanOrEqual(VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeKey("100.01");
 		assertTrue(result.isError());
@@ -644,7 +644,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetween(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.between(BigDecimal.ZERO, VALUE_100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_42);
 		assertTrue(result.isSuccess());
@@ -653,7 +653,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetween(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.between(BigDecimal.ZERO, VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
 		assertTrue(result.isSuccess());
@@ -661,7 +661,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyBetweenConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetween(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.between(BigDecimal.ZERO, VALUE_100);
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isSuccess());
@@ -669,7 +669,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyBetweenConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetween(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.between(BigDecimal.ZERO, VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -678,7 +678,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetween(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.between(BigDecimal.ZERO, VALUE_100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigDecimal.ZERO);
 		assertTrue(result.isError());
@@ -687,7 +687,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetween(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.between(BigDecimal.ZERO, VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
 		assertTrue(result.isError());
@@ -695,7 +695,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyBetweenConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetween(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.between(BigDecimal.ZERO, VALUE_100);
 		
 		Result<String> result = codec.encodeKey(VALUE_100);
 		assertTrue(result.isError());
@@ -703,7 +703,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyBetweenConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetween(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.between(BigDecimal.ZERO, VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeKey("100");
 		assertTrue(result.isError());
@@ -712,7 +712,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetweenOrEqual(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.betweenOrEqual(BigDecimal.ZERO, VALUE_100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigDecimal.ZERO);
 		assertTrue(result.isSuccess());
@@ -721,7 +721,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetweenOrEqual(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.betweenOrEqual(BigDecimal.ZERO, VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
 		assertTrue(result.isSuccess());
@@ -729,7 +729,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetweenOrEqual(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.betweenOrEqual(BigDecimal.ZERO, VALUE_100);
 		
 		Result<String> result = codec.encodeKey(VALUE_100);
 		assertTrue(result.isSuccess());
@@ -737,7 +737,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetweenOrEqual(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.betweenOrEqual(BigDecimal.ZERO, VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeKey("0");
 		assertTrue(result.isSuccess());
@@ -746,7 +746,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetweenOrEqual(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.betweenOrEqual(BigDecimal.ZERO, VALUE_100);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_NEGATIVE);
 		assertTrue(result.isError());
@@ -755,7 +755,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetweenOrEqual(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.betweenOrEqual(BigDecimal.ZERO, VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-5.5"));
 		assertTrue(result.isError());
@@ -763,7 +763,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetweenOrEqual(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.betweenOrEqual(BigDecimal.ZERO, VALUE_100);
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("100.01"));
 		assertTrue(result.isError());
@@ -771,7 +771,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withBetweenOrEqual(BigDecimal.ZERO, VALUE_100));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.betweenOrEqual(BigDecimal.ZERO, VALUE_100);
 		
 		Result<BigDecimal> result = codec.decodeKey("100.01");
 		assertTrue(result.isError());
@@ -780,7 +780,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isSuccess());
@@ -789,7 +789,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isSuccess());
@@ -797,7 +797,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyPositiveConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<String> result = codec.encodeKey(VALUE_PI);
 		assertTrue(result.isSuccess());
@@ -805,7 +805,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyPositiveConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<BigDecimal> result = codec.decodeKey("3.14159");
 		assertTrue(result.isSuccess());
@@ -814,7 +814,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigDecimal.ZERO);
 		assertTrue(result.isError());
@@ -823,7 +823,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
 		assertTrue(result.isError());
@@ -831,7 +831,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyPositiveConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<String> result = codec.encodeKey(VALUE_NEGATIVE);
 		assertTrue(result.isError());
@@ -839,7 +839,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyPositiveConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.positive();
 		
 		Result<BigDecimal> result = codec.decodeKey("-5.5");
 		assertTrue(result.isError());
@@ -848,7 +848,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonPositive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_NEGATIVE);
 		assertTrue(result.isSuccess());
@@ -857,7 +857,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonPositive();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
 		assertTrue(result.isSuccess());
@@ -865,7 +865,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNonPositiveConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonPositive();
 		
 		Result<String> result = codec.encodeKey(BigDecimal.ZERO);
 		assertTrue(result.isSuccess());
@@ -873,7 +873,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNonPositiveConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonPositive();
 		
 		Result<BigDecimal> result = codec.decodeKey("-5.5");
 		assertTrue(result.isSuccess());
@@ -882,7 +882,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonPositive();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isError());
@@ -891,7 +891,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonPositive();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isError());
@@ -899,7 +899,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNonPositiveConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonPositive();
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isError());
@@ -907,7 +907,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNonPositiveConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonPositive);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonPositive();
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isError());
@@ -916,7 +916,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.negative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_NEGATIVE);
 		assertTrue(result.isSuccess());
@@ -925,7 +925,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.negative();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-5.5"));
 		assertTrue(result.isSuccess());
@@ -933,7 +933,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNegativeConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.negative();
 		
 		Result<String> result = codec.encodeKey(VALUE_NEGATIVE);
 		assertTrue(result.isSuccess());
@@ -941,7 +941,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNegativeConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.negative();
 		
 		Result<BigDecimal> result = codec.decodeKey("-5.5");
 		assertTrue(result.isSuccess());
@@ -950,7 +950,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.negative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigDecimal.ZERO);
 		assertTrue(result.isError());
@@ -959,7 +959,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.negative();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
 		assertTrue(result.isError());
@@ -967,7 +967,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNegativeConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.negative();
 		
 		Result<String> result = codec.encodeKey(VALUE_PI);
 		assertTrue(result.isError());
@@ -975,7 +975,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNegativeConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.negative();
 		
 		Result<BigDecimal> result = codec.decodeKey("3.14159");
 		assertTrue(result.isError());
@@ -984,7 +984,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonNegative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigDecimal.ZERO);
 		assertTrue(result.isSuccess());
@@ -993,7 +993,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonNegative();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isSuccess());
@@ -1001,7 +1001,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNonNegativeConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonNegative();
 		
 		Result<String> result = codec.encodeKey(VALUE_PI);
 		assertTrue(result.isSuccess());
@@ -1009,7 +1009,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNonNegativeConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonNegative();
 		
 		Result<BigDecimal> result = codec.decodeKey("0");
 		assertTrue(result.isSuccess());
@@ -1018,7 +1018,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonNegative();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_NEGATIVE);
 		assertTrue(result.isError());
@@ -1027,7 +1027,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonNegative();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-5.5"));
 		assertTrue(result.isError());
@@ -1035,7 +1035,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNonNegativeConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonNegative();
 		
 		Result<String> result = codec.encodeKey(VALUE_NEGATIVE);
 		assertTrue(result.isError());
@@ -1043,7 +1043,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNonNegativeConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonNegative);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonNegative();
 		
 		Result<BigDecimal> result = codec.decodeKey("-5.5");
 		assertTrue(result.isError());
@@ -1052,7 +1052,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.zero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigDecimal.ZERO);
 		assertTrue(result.isSuccess());
@@ -1061,7 +1061,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.zero();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
 		assertTrue(result.isSuccess());
@@ -1069,7 +1069,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyZeroConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.zero();
 		
 		Result<String> result = codec.encodeKey(BigDecimal.ZERO);
 		assertTrue(result.isSuccess());
@@ -1077,7 +1077,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyZeroConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.zero();
 		
 		Result<BigDecimal> result = codec.decodeKey("0.00");
 		assertTrue(result.isSuccess());
@@ -1086,7 +1086,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.zero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isError());
@@ -1095,7 +1095,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.zero();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isError());
@@ -1103,7 +1103,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyZeroConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.zero();
 		
 		Result<String> result = codec.encodeKey(VALUE_PI);
 		assertTrue(result.isError());
@@ -1111,7 +1111,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyZeroConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.zero();
 		
 		Result<BigDecimal> result = codec.decodeKey("3.14159");
 		assertTrue(result.isError());
@@ -1120,7 +1120,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonZero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isSuccess());
@@ -1129,7 +1129,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonZero();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isSuccess());
@@ -1137,7 +1137,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNonZeroConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonZero();
 		
 		Result<String> result = codec.encodeKey(VALUE_NEGATIVE);
 		assertTrue(result.isSuccess());
@@ -1145,7 +1145,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNonZeroConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonZero();
 		
 		Result<BigDecimal> result = codec.decodeKey("-5.5");
 		assertTrue(result.isSuccess());
@@ -1154,7 +1154,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonZero();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigDecimal.ZERO);
 		assertTrue(result.isError());
@@ -1163,7 +1163,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonZero();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
 		assertTrue(result.isError());
@@ -1171,7 +1171,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNonZeroConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonZero();
 		
 		Result<String> result = codec.encodeKey(BigDecimal.ZERO);
 		assertTrue(result.isError());
@@ -1179,7 +1179,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNonZeroConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNonZero);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.nonZero();
 		
 		Result<BigDecimal> result = codec.decodeKey("0.00");
 		assertTrue(result.isError());
@@ -1188,7 +1188,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartPercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPercentage);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.percentage();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("50"));
 		assertTrue(result.isSuccess());
@@ -1197,7 +1197,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartPercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPercentage);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.percentage();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
 		assertTrue(result.isSuccess());
@@ -1205,7 +1205,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyPercentageConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPercentage);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.percentage();
 		
 		Result<String> result = codec.encodeKey(BigDecimal.ZERO);
 		assertTrue(result.isSuccess());
@@ -1213,7 +1213,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyPercentageConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPercentage);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.percentage();
 		
 		Result<BigDecimal> result = codec.decodeKey("75.5");
 		assertTrue(result.isSuccess());
@@ -1222,7 +1222,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartPercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPercentage);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.percentage();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("100.01"));
 		assertTrue(result.isError());
@@ -1231,7 +1231,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartPercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPercentage);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.percentage();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-1"));
 		assertTrue(result.isError());
@@ -1239,7 +1239,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyPercentageConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPercentage);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.percentage();
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("150"));
 		assertTrue(result.isError());
@@ -1247,7 +1247,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyPercentageConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withPercentage);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.percentage();
 		
 		Result<BigDecimal> result = codec.decodeKey("-0.01");
 		assertTrue(result.isError());
@@ -1256,7 +1256,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartIntegralConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withIntegral);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.integral();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_42);
 		assertTrue(result.isSuccess());
@@ -1265,7 +1265,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartIntegralConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withIntegral);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.integral();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
 		assertTrue(result.isSuccess());
@@ -1273,7 +1273,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyIntegralConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withIntegral);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.integral();
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("100.00"));
 		assertTrue(result.isSuccess());
@@ -1281,7 +1281,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyIntegralConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withIntegral);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.integral();
 		
 		Result<BigDecimal> result = codec.decodeKey("-100");
 		assertTrue(result.isSuccess());
@@ -1290,7 +1290,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartIntegralConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withIntegral);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.integral();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isError());
@@ -1299,7 +1299,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartIntegralConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withIntegral);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.integral();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isError());
@@ -1307,7 +1307,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyIntegralConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withIntegral);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.integral();
 		
 		Result<String> result = codec.encodeKey(VALUE_HALF);
 		assertTrue(result.isError());
@@ -1315,7 +1315,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyIntegralConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withIntegral);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.integral();
 		
 		Result<BigDecimal> result = codec.decodeKey("0.5");
 		assertTrue(result.isError());
@@ -1324,7 +1324,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNormalizedConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNormalized);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.normalized();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_HALF);
 		assertTrue(result.isSuccess());
@@ -1333,7 +1333,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNormalizedConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNormalized);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.normalized();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
 		assertTrue(result.isSuccess());
@@ -1341,7 +1341,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNormalizedConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNormalized);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.normalized();
 		
 		Result<String> result = codec.encodeKey(BigDecimal.ONE);
 		assertTrue(result.isSuccess());
@@ -1349,7 +1349,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNormalizedConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNormalized);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.normalized();
 		
 		Result<BigDecimal> result = codec.decodeKey("0.75");
 		assertTrue(result.isSuccess());
@@ -1358,7 +1358,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartNormalizedConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNormalized);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.normalized();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("1.01"));
 		assertTrue(result.isError());
@@ -1367,7 +1367,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartNormalizedConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNormalized);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.normalized();
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-0.01"));
 		assertTrue(result.isError());
@@ -1375,7 +1375,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyNormalizedConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNormalized);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.normalized();
 		
 		Result<String> result = codec.encodeKey(VALUE_PI);
 		assertTrue(result.isError());
@@ -1383,7 +1383,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyNormalizedConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(BigDecimalConstraintConfig::withNormalized);
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.normalized();
 		
 		Result<BigDecimal> result = codec.decodeKey("2.0");
 		assertTrue(result.isError());
@@ -1392,7 +1392,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartScaleConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scale(2);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("3.14"));
 		assertTrue(result.isSuccess());
@@ -1401,7 +1401,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartScaleConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scale(2);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14"));
 		assertTrue(result.isSuccess());
@@ -1409,7 +1409,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyScaleConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scale(2);
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("99.99"));
 		assertTrue(result.isSuccess());
@@ -1417,7 +1417,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyScaleConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scale(2);
 		
 		Result<BigDecimal> result = codec.decodeKey("99.99");
 		assertTrue(result.isSuccess());
@@ -1426,7 +1426,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartScaleConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scale(2);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isError());
@@ -1435,7 +1435,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartScaleConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scale(2);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isError());
@@ -1443,7 +1443,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyScaleConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scale(2);
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("3.1"));
 		assertTrue(result.isError());
@@ -1451,7 +1451,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyScaleConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scale(2);
 		
 		Result<BigDecimal> result = codec.decodeKey("3.1");
 		assertTrue(result.isError());
@@ -1460,7 +1460,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartMinScaleConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minScale(2);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isSuccess());
@@ -1469,7 +1469,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartMinScaleConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minScale(2);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isSuccess());
@@ -1477,7 +1477,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyMinScaleConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minScale(2);
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("3.14"));
 		assertTrue(result.isSuccess());
@@ -1485,7 +1485,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyMinScaleConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minScale(2);
 		
 		Result<BigDecimal> result = codec.decodeKey("3.14");
 		assertTrue(result.isSuccess());
@@ -1494,7 +1494,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartMinScaleConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minScale(2);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("3.1"));
 		assertTrue(result.isError());
@@ -1503,7 +1503,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartMinScaleConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minScale(2);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.1"));
 		assertTrue(result.isError());
@@ -1511,7 +1511,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyMinScaleConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minScale(2);
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isError());
@@ -1519,7 +1519,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyMinScaleConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minScale(2);
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isError());
@@ -1528,7 +1528,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartMaxScaleConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxScale(2);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("3.14"));
 		assertTrue(result.isSuccess());
@@ -1537,7 +1537,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartMaxScaleConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxScale(2);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.1"));
 		assertTrue(result.isSuccess());
@@ -1545,7 +1545,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyMaxScaleConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxScale(2);
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isSuccess());
@@ -1553,7 +1553,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyMaxScaleConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxScale(2);
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -1562,7 +1562,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartMaxScaleConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxScale(2);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isError());
@@ -1571,7 +1571,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartMaxScaleConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxScale(2);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isError());
@@ -1579,7 +1579,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyMaxScaleConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxScale(2);
 		
 		Result<String> result = codec.encodeKey(VALUE_SMALL);
 		assertTrue(result.isError());
@@ -1587,7 +1587,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyMaxScaleConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxScale(2));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxScale(2);
 		
 		Result<BigDecimal> result = codec.decodeKey("0.001");
 		assertTrue(result.isError());
@@ -1596,7 +1596,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartScaleBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScaleBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scaleBetween(2, 4);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("3.14"));
 		assertTrue(result.isSuccess());
@@ -1605,7 +1605,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartScaleBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScaleBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scaleBetween(2, 4);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.1415"));
 		assertTrue(result.isSuccess());
@@ -1613,7 +1613,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyScaleBetweenConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScaleBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scaleBetween(2, 4);
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("3.141"));
 		assertTrue(result.isSuccess());
@@ -1621,7 +1621,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyScaleBetweenConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScaleBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scaleBetween(2, 4);
 		
 		Result<BigDecimal> result = codec.decodeKey("3.141");
 		assertTrue(result.isSuccess());
@@ -1630,7 +1630,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartScaleBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScaleBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scaleBetween(2, 4);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("3.1"));
 		assertTrue(result.isError());
@@ -1639,7 +1639,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartScaleBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScaleBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scaleBetween(2, 4);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isError());
@@ -1647,7 +1647,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyScaleBetweenConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScaleBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scaleBetween(2, 4);
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isError());
@@ -1655,7 +1655,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyScaleBetweenConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withScaleBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.scaleBetween(2, 4);
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isError());
@@ -1664,7 +1664,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartPrecisionConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precision(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("3.14"));
 		assertTrue(result.isSuccess());
@@ -1673,7 +1673,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartPrecisionConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precision(3);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14"));
 		assertTrue(result.isSuccess());
@@ -1681,7 +1681,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyPrecisionConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precision(3);
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("100"));
 		assertTrue(result.isSuccess());
@@ -1689,7 +1689,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyPrecisionConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precision(3);
 		
 		Result<BigDecimal> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -1698,7 +1698,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartPrecisionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precision(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isError());
@@ -1707,7 +1707,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartPrecisionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precision(3);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isError());
@@ -1715,7 +1715,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyPrecisionConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precision(3);
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isError());
@@ -1723,7 +1723,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyPrecisionConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precision(3);
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isError());
@@ -1732,7 +1732,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartMinPrecisionConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minPrecision(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isSuccess());
@@ -1741,7 +1741,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartMinPrecisionConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minPrecision(3);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isSuccess());
@@ -1749,7 +1749,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyMinPrecisionConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minPrecision(3);
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("100"));
 		assertTrue(result.isSuccess());
@@ -1757,7 +1757,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyMinPrecisionConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minPrecision(3);
 		
 		Result<BigDecimal> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -1766,7 +1766,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartMinPrecisionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minPrecision(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_42);
 		assertTrue(result.isError());
@@ -1775,7 +1775,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartMinPrecisionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minPrecision(3);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
 		assertTrue(result.isError());
@@ -1783,7 +1783,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyMinPrecisionConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minPrecision(3);
 		
 		Result<String> result = codec.encodeKey(BigDecimal.ONE);
 		assertTrue(result.isError());
@@ -1791,7 +1791,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyMinPrecisionConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMinPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.minPrecision(3);
 		
 		Result<BigDecimal> result = codec.decodeKey("1");
 		assertTrue(result.isError());
@@ -1800,7 +1800,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartMaxPrecisionConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxPrecision(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("3.14"));
 		assertTrue(result.isSuccess());
@@ -1809,7 +1809,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartMaxPrecisionConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxPrecision(3);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.1"));
 		assertTrue(result.isSuccess());
@@ -1817,7 +1817,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyMaxPrecisionConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxPrecision(3);
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isSuccess());
@@ -1825,7 +1825,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyMaxPrecisionConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxPrecision(3);
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -1834,7 +1834,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartMaxPrecisionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxPrecision(3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_PI);
 		assertTrue(result.isError());
@@ -1843,7 +1843,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartMaxPrecisionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxPrecision(3);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isError());
@@ -1851,7 +1851,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyMaxPrecisionConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxPrecision(3);
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("1000"));
 		assertTrue(result.isError());
@@ -1859,7 +1859,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyMaxPrecisionConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withMaxPrecision(3));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.maxPrecision(3);
 		
 		Result<BigDecimal> result = codec.decodeKey("1000");
 		assertTrue(result.isError());
@@ -1868,7 +1868,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartPrecisionBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecisionBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precisionBetween(2, 4);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("3.14"));
 		assertTrue(result.isSuccess());
@@ -1877,7 +1877,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartPrecisionBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecisionBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precisionBetween(2, 4);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.141"));
 		assertTrue(result.isSuccess());
@@ -1885,7 +1885,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyPrecisionBetweenConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecisionBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precisionBetween(2, 4);
 		
 		Result<String> result = codec.encodeKey(VALUE_42);
 		assertTrue(result.isSuccess());
@@ -1893,7 +1893,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyPrecisionBetweenConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecisionBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precisionBetween(2, 4);
 		
 		Result<BigDecimal> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
@@ -1902,7 +1902,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartPrecisionBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecisionBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precisionBetween(2, 4);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigDecimal.ONE);
 		assertTrue(result.isError());
@@ -1911,7 +1911,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartPrecisionBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecisionBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precisionBetween(2, 4);
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("3.14159"));
 		assertTrue(result.isError());
@@ -1919,7 +1919,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyPrecisionBetweenConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecisionBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precisionBetween(2, 4);
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("10000"));
 		assertTrue(result.isError());
@@ -1927,7 +1927,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyPrecisionBetweenConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withPrecisionBetween(2, 4));
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.precisionBetween(2, 4);
 		
 		Result<BigDecimal> result = codec.decodeKey("1");
 		assertTrue(result.isError());
@@ -1936,12 +1936,12 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withCustom(value -> {
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.custom(value -> {
 			if (value.remainder(BigDecimal.valueOf(2)).compareTo(BigDecimal.ZERO) == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be even");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), VALUE_42);
 		assertTrue(result.isSuccess());
@@ -1950,12 +1950,12 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withCustom(value -> {
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.custom(value -> {
 			if (value.remainder(BigDecimal.valueOf(2)).compareTo(BigDecimal.ZERO) == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be even");
-		}));
+		});
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
 		assertTrue(result.isSuccess());
@@ -1963,12 +1963,12 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withCustom(value -> {
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.custom(value -> {
 			if (value.remainder(BigDecimal.valueOf(2)).compareTo(BigDecimal.ZERO) == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be even");
-		}));
+		});
 		
 		Result<String> result = codec.encodeKey(VALUE_100);
 		assertTrue(result.isSuccess());
@@ -1976,12 +1976,12 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withCustom(value -> {
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.custom(value -> {
 			if (value.remainder(BigDecimal.valueOf(2)).compareTo(BigDecimal.ZERO) == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be even");
-		}));
+		});
 		
 		Result<BigDecimal> result = codec.decodeKey("100");
 		assertTrue(result.isSuccess());
@@ -1990,12 +1990,12 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withCustom(value -> {
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.custom(value -> {
 			if (value.remainder(BigDecimal.valueOf(2)).compareTo(BigDecimal.ZERO) == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be even");
-		}));
+		});
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new BigDecimal("41"));
 		assertTrue(result.isError());
@@ -2004,12 +2004,12 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withCustom(value -> {
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.custom(value -> {
 			if (value.remainder(BigDecimal.valueOf(2)).compareTo(BigDecimal.ZERO) == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be even");
-		}));
+		});
 		
 		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("41"));
 		assertTrue(result.isError());
@@ -2017,12 +2017,12 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyCustomConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withCustom(value -> {
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.custom(value -> {
 			if (value.remainder(BigDecimal.valueOf(2)).compareTo(BigDecimal.ZERO) == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be even");
-		}));
+		});
 		
 		Result<String> result = codec.encodeKey(new BigDecimal("99"));
 		assertTrue(result.isError());
@@ -2030,12 +2030,12 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyCustomConstraintViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config.withCustom(value -> {
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.custom(value -> {
 			if (value.remainder(BigDecimal.valueOf(2)).compareTo(BigDecimal.ZERO) == 0) {
 				return Result.success(null);
 			}
 			return Result.error("Value must be even");
-		}));
+		});
 		
 		Result<BigDecimal> result = codec.decodeKey("99");
 		assertTrue(result.isError());
@@ -2044,7 +2044,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.apply(config -> config
 			.withPositive()
 			.withLessThanOrEqual(VALUE_100)
 			.withMaxScale(2));
@@ -2056,7 +2056,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.apply(config -> config
 			.withPositive()
 			.withLessThanOrEqual(VALUE_100)
 			.withMaxScale(2));
@@ -2067,7 +2067,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyCombinedConstraintsSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.apply(config -> config
 			.withPositive()
 			.withLessThanOrEqual(VALUE_100)
 			.withMaxScale(2));
@@ -2078,7 +2078,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyCombinedConstraintsSuccess() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.apply(config -> config
 			.withPositive()
 			.withLessThanOrEqual(VALUE_100)
 			.withMaxScale(2));
@@ -2090,7 +2090,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void encodeStartCombinedConstraintsPositiveViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.apply(config -> config
 			.withPositive()
 			.withLessThanOrEqual(VALUE_100)
 			.withMaxScale(2));
@@ -2102,7 +2102,7 @@ class ConstrainedBigDecimalCodecTest {
 	@Test
 	void decodeStartCombinedConstraintsRangeViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.apply(config -> config
 			.withPositive()
 			.withLessThanOrEqual(VALUE_100)
 			.withMaxScale(2));
@@ -2113,7 +2113,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void encodeKeyCombinedConstraintsScaleViolation() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.apply(config -> config
 			.withPositive()
 			.withLessThanOrEqual(VALUE_100)
 			.withMaxScale(2));
@@ -2124,7 +2124,7 @@ class ConstrainedBigDecimalCodecTest {
 	
 	@Test
 	void decodeKeyCombinedConstraintsMultipleViolations() {
-		Codec<BigDecimal> codec = new BigDecimalCodec().apply(config -> config
+		Codec<BigDecimal> codec = Codecs.BIG_DECIMAL.apply(config -> config
 			.withPositive()
 			.withLessThanOrEqual(VALUE_100)
 			.withMaxScale(2));
