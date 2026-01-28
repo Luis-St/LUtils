@@ -112,7 +112,7 @@ class XmlTypeProviderTest {
 		assertTrue(emptyMap.isXmlContainer());
 		assertEquals("map:generated", emptyMap.getName());
 		
-		Result<XmlElement> nullMap = XmlTypeProvider.INSTANCE.createMap((Map<String, XmlElement>) null);
+		Result<XmlElement> nullMap = XmlTypeProvider.INSTANCE.createMap(null);
 		assertTrue(nullMap.isError());
 		assertTrue(nullMap.errorOrThrow().startsWith("Value 'null'"));
 		
