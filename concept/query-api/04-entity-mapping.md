@@ -294,7 +294,13 @@ public class MoneyConverter implements TypeConverter<Money, BigDecimal> {
 }
 
 // Register converter
-TypeConverters.register(new MoneyConverter());
+QueryConfig config = QueryConfig.builder()
+    .addTypeConverter(new MoneyConverter())
+    .build();
+
+List<Tuple2<UUID, String>> results = UserTable.TABLE
+	.select(UserTable.ID, UserTable.EMAIL)
+	.fetch(config);
 ```
 
 ## Enum Mapping
@@ -333,34 +339,3 @@ public class StatusCodeConverter implements TypeConverter<UserStatus, String> {
     }
 }
 ```
-
-## Join Result Mapping
-
-When joining tables, results can be mapped to tuples or combined entities:
-
-```java
-// Map to tuple of entities
-List<Tuple2<User, Address>> results = UserTable.TABLE
-    .innerJoin(AddressTable.TABLE).on(UserTable.ADDRESS)
-    .select()
-    .fetch();
-
-// Each tuple contains independently mapped entities
-Tuple2<User, Address> result = results.get(0);
-User user = result.first();
-Address address = result.second();
-
-// Or map with relationship populated
-List<User> users = UserTable.TABLE
-    .leftJoin(AddressTable.TABLE).on(UserTable.ADDRESS)
-    .selectEntity(UserTable.TABLE)
-    .withLoaded(UserTable.ADDRESS)  // Populates user.address()
-    .fetch();
-```
-
-## Open Questions
-
-- **Immutable vs mutable entities**: Should entities always be immutable records, or support mutable classes too?
-- **Lombok integration**: Should there be Lombok annotations support for entity generation?
-- **Null handling strategy**: Should nullable fields use `@Nullable`, `Optional<T>`, or both options?
-- **Embedded types**: How should embedded/composite types be handled (e.g., Address embedded in User)?

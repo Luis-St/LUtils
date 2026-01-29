@@ -76,7 +76,7 @@ public interface Transaction extends AutoCloseable {
      * Sets a timeout for this transaction in seconds.
      * If the transaction exceeds this time, it will be rolled back.
      */
-    Transaction timeout(int seconds);
+    Transaction timeout(Duration duration);
 
     /**
      * Close is called automatically by try-with-resources.
@@ -114,12 +114,6 @@ public final class Database {
      * Commits on success, rolls back on exception.
      */
     public static void inTransaction(Consumer<Transaction> action) { ... }
-
-    /**
-     * Executes the given action without an explicit transaction.
-     * Each statement runs in its own auto-commit transaction.
-     */
-    public static <T> T withAutoCommit(Supplier<T> action) { ... }
 }
 ```
 
@@ -235,11 +229,11 @@ try (Transaction tx = Database.beginTransaction().readOnly()) {
 ## Transaction Timeout
 
 ```java
-try (Transaction tx = Database.beginTransaction().timeout(30)) {
+try(Transaction tx = Database.beginTransaction().timeout(Duration.ofSeconds(30))){
     // Long-running operations
     // If total time exceeds 30 seconds, TransactionTimeoutException is thrown
-    processLargeDataset();
-    tx.commit();
+	processLargeDataset();
+	tx.commit();
 }
 ```
 
