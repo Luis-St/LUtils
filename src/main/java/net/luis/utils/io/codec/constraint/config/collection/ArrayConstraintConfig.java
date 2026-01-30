@@ -102,6 +102,7 @@ public record ArrayConstraintConfig<T>(
 	 *
 	 * @param value The exact array that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull ArrayConstraintConfig<T> withEqualTo(T @NonNull [] value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -113,6 +114,7 @@ public record ArrayConstraintConfig<T>(
 	 *
 	 * @param value The array that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull ArrayConstraintConfig<T> withNotEqualTo(T @NonNull [] value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -124,6 +126,7 @@ public record ArrayConstraintConfig<T>(
 	 *
 	 * @param values The collection of arrays that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull ArrayConstraintConfig<T> withIn(@NonNull Collection<T[]> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -140,6 +143,7 @@ public record ArrayConstraintConfig<T>(
 	 *
 	 * @param values The collection of arrays that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull ArrayConstraintConfig<T> withNotIn(@NonNull Collection<T[]> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -216,6 +220,7 @@ public record ArrayConstraintConfig<T>(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull ArrayConstraintConfig<T> withCustom(@NonNull Constraint<T[]> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");

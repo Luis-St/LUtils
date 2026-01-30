@@ -92,6 +92,10 @@ public class EnumConstraintBuilder<T extends Enum<T>> implements BaseConstraint<
 		return this;
 	}
 	
+	/**
+	 * Builds and returns the enum constraint configuration.<br>
+	 * @return The built constraint configuration
+	 */
 	public @NonNull EnumConstraintConfig<T> build() {
 		return this.config;
 	}

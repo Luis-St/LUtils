@@ -169,6 +169,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param value The exact map that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withEqualTo(@NonNull Map<K, V> value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -180,6 +181,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param value The map that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withNotEqualTo(@NonNull Map<K, V> value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -191,6 +193,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param values The collection of maps that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withIn(@NonNull Collection<Map<K, V>> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -208,6 +211,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param values The collection of maps that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withNotIn(@NonNull Collection<Map<K, V>> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -285,6 +289,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param key The key that must be present in the map
 	 * @return A new config with the required key constraint applied
+	 * @throws NullPointerException If the key is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withRequiredKey(@NonNull K key) {
 		Objects.requireNonNull(key, "Key for 'required key' constraint must not be null");
@@ -299,6 +304,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param keys The keys that must be present in the map
 	 * @return A new config with the required keys constraint applied
+	 * @throws NullPointerException If the keys collection is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withRequiredKeys(@NonNull Collection<K> keys) {
 		Objects.requireNonNull(keys, "Keys for 'required keys' constraint must not be null");
@@ -313,6 +319,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param key The key that must not be present in the map
 	 * @return A new config with the forbidden key constraint applied
+	 * @throws NullPointerException If the key is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withForbiddenKey(@NonNull K key) {
 		Objects.requireNonNull(key, "Key for 'forbidden key' constraint must not be null");
@@ -327,6 +334,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param keys The keys that must not be present in the map
 	 * @return A new config with the forbidden keys constraint applied
+	 * @throws NullPointerException If the keys collection is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withForbiddenKeys(@NonNull Collection<K> keys) {
 		Objects.requireNonNull(keys, "Keys for 'forbidden keys' constraint must not be null");
@@ -341,6 +349,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param key The only key that is allowed in the map
 	 * @return A new config with the allowed key constraint applied
+	 * @throws NullPointerException If the key is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withAllowedKey(@NonNull K key) {
 		Objects.requireNonNull(key, "Key for 'allowed key' constraint must not be null");
@@ -355,6 +364,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param keys The collection of keys that are allowed in the map
 	 * @return A new config with the allowed keys constraint applied
+	 * @throws NullPointerException If the keys collection is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withAllowedKeys(@NonNull Collection<K> keys) {
 		Objects.requireNonNull(keys, "Keys for 'allowed keys' constraint must not be null");
@@ -396,6 +406,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withCustom(@NonNull Constraint<Map<K, V>> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");

@@ -325,12 +325,12 @@ public final class ConstraintMatchers {
 	 * Validates sign constraints for numeric values.<br>
 	 * <p>
 	 *     The boolean values in the optional fields have the following meanings:
-	 *     <ul>
-	 *         <li>positive: false = must be positive, true = must be non-positive</li>
-	 *         <li>negative: false = must be negative, true = must be non-negative</li>
-	 *         <li>zero: false = must be zero, true = must be non-zero</li>
-	 *     </ul>
 	 * </p>
+	 * <ul>
+	 *     <li>positive: false = must be positive, true = must be non-positive</li>
+	 *     <li>negative: false = must be negative, true = must be non-negative</li>
+	 *     <li>zero: false = must be zero, true = must be non-zero</li>
+	 * </ul>
 	 *
 	 * @param value The numeric value to validate
 	 * @param positive The positive/non-positive constraint

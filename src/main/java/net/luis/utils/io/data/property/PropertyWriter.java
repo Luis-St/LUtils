@@ -94,9 +94,12 @@ public class PropertyWriter implements AutoCloseable {
 	 * Each property is written on its own line.<br>
 	 *
 	 * @param propertyObject The property object to write
+	 * @throws NullPointerException If the property object is null
 	 * @throws IOException If an I/O error occurs
 	 */
 	private void writeSimple(@NonNull PropertyObject propertyObject) throws IOException {
+		Objects.requireNonNull(propertyObject, "Property object must not be null");
+		
 		boolean first = true;
 		for (Map.Entry<String, PropertyElement> entry : propertyObject.entrySet()) {
 			if (!first) {
@@ -117,9 +120,13 @@ public class PropertyWriter implements AutoCloseable {
 	 *
 	 * @param key The property key
 	 * @param value The property value
+	 * @throws NullPointerException If the key or value is null
 	 * @throws IOException If an I/O error occurs
 	 */
 	private void writeProperty(@NonNull String key, @NonNull PropertyElement value) throws IOException {
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
+		
 		String alignment = " ".repeat(this.config.alignment());
 		String valueString = this.formatValue(value);
 		
@@ -137,8 +144,11 @@ public class PropertyWriter implements AutoCloseable {
 	 *
 	 * @param element The property element to format
 	 * @return The formatted string representation
+	 * @throws NullPointerException If the property element is null
 	 */
 	private @NonNull String formatValue(@NonNull PropertyElement element) {
+		Objects.requireNonNull(element, "Property element must not be null");
+		
 		if (element.isPropertyNull()) {
 			return switch (this.config.nullStyle()) {
 				case EMPTY -> "";
@@ -160,8 +170,11 @@ public class PropertyWriter implements AutoCloseable {
 	 *
 	 * @param array The property array to format
 	 * @return The formatted string representation
+	 * @throws NullPointerException If the property array is null
 	 */
 	private @NonNull String formatArray(@NonNull PropertyArray array) {
+		Objects.requireNonNull(array, "Property array must not be null");
+		
 		StringBuilder builder = new StringBuilder();
 		builder.append(this.config.arrayOpenChar());
 		
@@ -187,8 +200,10 @@ public class PropertyWriter implements AutoCloseable {
 	 *
 	 * @param propertyObject The property object to write
 	 * @throws IOException If an I/O error occurs
+	 * @throws NullPointerException If the property object is null
 	 */
 	private void writeWithCompaction(@NonNull PropertyObject propertyObject) throws IOException {
+		Objects.requireNonNull(propertyObject, "Property object must not be null");
 		List<CompactedEntry> entries = this.compactEntries(propertyObject);
 		
 		boolean first = true;
@@ -208,8 +223,10 @@ public class PropertyWriter implements AutoCloseable {
 	 *
 	 * @param propertyObject The property object to analyze
 	 * @return A list of compacted entries
+	 * @throws NullPointerException If the property object is null
 	 */
 	private @NonNull List<CompactedEntry> compactEntries(@NonNull PropertyObject propertyObject) {
+		Objects.requireNonNull(propertyObject, "Property object must not be null");
 		List<CompactedEntry> result = Lists.newArrayList();
 		Set<String> processedKeys = new HashSet<>();
 		
@@ -253,8 +270,10 @@ public class PropertyWriter implements AutoCloseable {
 	 *
 	 * @param propertyObject The property object to analyze
 	 * @return A map of prefix -> suffix -> variant -> value
+	 * @throws NullPointerException If the property object is null
 	 */
 	private @NonNull Map<String, Map<String, Map<String, PropertyElement>>> findCompactionGroups(@NonNull PropertyObject propertyObject) {
+		Objects.requireNonNull(propertyObject, "Property object must not be null");
 		Map<String, Map<String, Map<String, PropertyElement>>> groups = Maps.newLinkedHashMap();
 		
 		for (Map.Entry<String, PropertyElement> entry : propertyObject.entrySet()) {
@@ -284,11 +303,14 @@ public class PropertyWriter implements AutoCloseable {
 	 *
 	 * @param variants The map of variant -> value
 	 * @return True if all values are equal, false otherwise
+	 * @throws NullPointerException If the variants map is null
 	 */
 	private boolean canCompact(@NonNull Map<String, PropertyElement> variants) {
+		Objects.requireNonNull(variants, "Variants map must not be null");
 		if (variants.isEmpty()) {
 			return false;
 		}
+		
 		PropertyElement first = variants.values().iterator().next();
 		for (PropertyElement value : variants.values()) {
 			if (!Objects.equals(first, value)) {
@@ -309,8 +331,11 @@ public class PropertyWriter implements AutoCloseable {
 	 * @param variants The set of variant names
 	 * @param suffix The key suffix
 	 * @return The compacted key
+	 * @throws NullPointerException If the prefix, variants set, or suffix is null
 	 */
 	private @NonNull String buildCompactedKey(@NonNull String prefix, @NonNull Set<String> variants, @NonNull String suffix) {
+		Objects.requireNonNull(prefix, "Prefix must not be null");
+		Objects.requireNonNull(variants, "Variants set must not be null");
 		String variantPart = "[" + variants.stream().sorted().collect(Collectors.joining("|")) + "]";
 		
 		StringBuilder builder = new StringBuilder();
@@ -331,12 +356,17 @@ public class PropertyWriter implements AutoCloseable {
 	 * @param variant The variant name
 	 * @param suffix The key suffix
 	 * @return The full key
+	 * @throws NullPointerException If the prefix, variant, or suffix is null
 	 */
 	private @NonNull String buildFullKey(@NonNull String prefix, @NonNull String variant, @NonNull String suffix) {
+		Objects.requireNonNull(prefix, "Prefix must not be null");
+		Objects.requireNonNull(variant, "Variant must not be null");
+		Objects.requireNonNull(suffix, "Suffix must not be null");
 		StringBuilder builder = new StringBuilder();
 		if (!prefix.isEmpty()) {
 			builder.append(prefix).append(".");
 		}
+		
 		builder.append(variant);
 		if (!suffix.isEmpty()) {
 			builder.append(".").append(suffix);
@@ -455,8 +485,23 @@ public class PropertyWriter implements AutoCloseable {
 	/**
 	 * Represents a compacted entry with a potentially compacted key and value.<br>
 	 *
+	 * @author Luis-St
+	 *
 	 * @param key The property key (may be compacted)
 	 * @param value The property value
 	 */
-	private record CompactedEntry(@NonNull String key, @NonNull PropertyElement value) {}
+	private record CompactedEntry(@NonNull String key, @NonNull PropertyElement value) {
+		
+		/**
+		 * Constructs a new compacted entry.<br>
+		 *
+		 * @param key The property key
+		 * @param value The property value
+		 * @throws NullPointerException If the key or value is null
+		 */
+		private CompactedEntry {
+			Objects.requireNonNull(key, "Key must not be null");
+			Objects.requireNonNull(value, "Value must not be null");
+		}
+	}
 }

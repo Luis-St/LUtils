@@ -93,6 +93,7 @@ public record HostConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact host value that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withEqualTo(@NonNull String value) {
@@ -104,6 +105,7 @@ public record HostConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The host value that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotEqualTo(@NonNull String value) {
@@ -115,6 +117,7 @@ public record HostConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of host values that are allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withIn(@NonNull Collection<String> values) {
@@ -126,6 +129,7 @@ public record HostConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of host values that are not allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotIn(@NonNull Collection<String> values) {
@@ -140,6 +144,7 @@ public record HostConstraintConfig(
 	 * </p>
 	 *
 	 * @param config The IP address constraint config
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withIp(@NonNull IpConstraintConfig config) {
@@ -154,6 +159,7 @@ public record HostConstraintConfig(
 	 * </p>
 	 *
 	 * @param config The domain name constraint config
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withDomain(@NonNull DomainConstraintConfig config) {
@@ -165,6 +171,7 @@ public record HostConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withCustom(@NonNull Constraint<String> constraint) {

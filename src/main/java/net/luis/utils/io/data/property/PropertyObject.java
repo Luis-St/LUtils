@@ -67,11 +67,14 @@ public class PropertyObject implements PropertyElement {
 	 * @param key The key to check
 	 * @param group The group prefix to check against
 	 * @return True if the key belongs to the group, false otherwise
+	 * @throws NullPointerException If the key is null
 	 */
 	private static boolean isKeyInGroup(@NonNull String key, @Nullable String group) {
+		Objects.requireNonNull(key, "Key must not be null");
 		if (StringUtils.isEmpty(group)) {
 			return true;
 		}
+		
 		String prefix = group.endsWith(".") ? group : group + ".";
 		return key.startsWith(prefix);
 	}
@@ -82,11 +85,14 @@ public class PropertyObject implements PropertyElement {
 	 * @param key The key to process
 	 * @param group The group prefix to remove
 	 * @return The key with the group prefix removed
+	 * @throws NullPointerException If the key is null
 	 */
 	private static @NonNull String removeGroupPrefix(@NonNull String key, @Nullable String group) {
+		Objects.requireNonNull(key, "Key must not be null");
 		if (StringUtils.isEmpty(group)) {
 			return key;
 		}
+		
 		String prefix = group.endsWith(".") ? group : group + ".";
 		if (key.startsWith(prefix)) {
 			return key.substring(prefix.length());
@@ -96,6 +102,10 @@ public class PropertyObject implements PropertyElement {
 	
 	/**
 	 * Converts a property element to a plain Java value for the nested map.<br>
+	 * Handles property null, property values, property arrays, and property objects.<br>
+	 *
+	 * @param element The property element to convert
+	 * @return The converted plain Java value
 	 */
 	private static @Nullable Object elementToValue(@Nullable PropertyElement element) {
 		if (element == null || element.isPropertyNull()) {
@@ -137,9 +147,18 @@ public class PropertyObject implements PropertyElement {
 	
 	/**
 	 * Helper method to recursively flatten a nested map.<br>
+	 *
+	 * @param prefix The current key prefix
+	 * @param map The current map to process
+	 * @param result The result property object to populate
+	 * @throws NullPointerException If any of the parameters are null
 	 */
 	@SuppressWarnings("unchecked")
 	private static void flattenMap(@NonNull String prefix, @NonNull Map<String, Object> map, @NonNull PropertyObject result) {
+		Objects.requireNonNull(prefix, "Prefix must not be null");
+		Objects.requireNonNull(map, "Map must not be null");
+		Objects.requireNonNull(result, "Result property object must not be null");
+		
 		for (Map.Entry<String, Object> entry : map.entrySet()) {
 			String key = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
 			Object value = entry.getValue();
@@ -160,33 +179,43 @@ public class PropertyObject implements PropertyElement {
 	
 	/**
 	 * Converts a plain Java value to a property element.<br>
+	 * Handles null, Boolean, Number, String, Map, and List types.<br>
+	 *
+	 * @param value The plain Java value to convert
+	 * @return The converted property element
 	 */
 	@SuppressWarnings("unchecked")
 	private static @NonNull PropertyElement valueToElement(@Nullable Object value) {
-		if (value == null) {
-			return PropertyNull.INSTANCE;
-		} else if (value instanceof Boolean bool) {
-			return new PropertyValue(bool);
-		} else if (value instanceof Number number) {
-			return new PropertyValue(number);
-		} else if (value instanceof String string) {
-			return new PropertyValue(string);
-		} else if (value instanceof Map) {
-			return fromNestedMap((Map<String, Object>) value);
-		} else if (value instanceof List) {
-			PropertyArray array = new PropertyArray();
-			for (Object item : (List<?>) value) {
-				array.add(valueToElement(item));
+		return switch (value) {
+			case null -> PropertyNull.INSTANCE;
+			case Boolean bool -> new PropertyValue(bool);
+			case Number number -> new PropertyValue(number);
+			case String string -> new PropertyValue(string);
+			case Map<?, ?> map -> fromNestedMap((Map<String, Object>) value);
+			case List<?> list -> {
+				PropertyArray array = new PropertyArray();
+				for (Object item : list) {
+					array.add(valueToElement(item));
+				}
+				yield array;
 			}
-			return array;
-		}
-		return new PropertyValue(value.toString());
+			default -> new PropertyValue(value.toString());
+		};
 	}
 	
 	/**
 	 * Helper method to recursively flatten property elements.<br>
+	 *
+	 * @param prefix The current key prefix
+	 * @param object The current property object to process
+	 * @param result The result property object to populate
+	 * @throws NullPointerException If any of the parameters are null
 	 */
 	private static void flattenElement(@NonNull String prefix, @NonNull PropertyObject object, @NonNull PropertyObject result) {
+		Objects.requireNonNull(prefix, "Prefix must not be null");
+		Objects.requireNonNull(object, "Property object must not be null");
+		Objects.requireNonNull(result, "Result property object must not be null");
+		
 		for (Map.Entry<String, PropertyElement> entry : object.elements.entrySet()) {
 			String key = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
 			PropertyElement value = entry.getValue();
@@ -201,8 +230,18 @@ public class PropertyObject implements PropertyElement {
 	
 	/**
 	 * Helper method to insert a value into a nested property structure.<br>
+	 *
+	 * @param current The current property object to insert into
+	 * @param keyParts The parts of the key split by '.'
+	 * @param index The current index in the key parts
+	 * @param value The value to insert
+	 * @throws NullPointerException If any of the parameters are null
 	 */
 	private static void insertNested(@NonNull PropertyObject current, String @NonNull [] keyParts, int index, @NonNull PropertyElement value) {
+		Objects.requireNonNull(current, "Current property object must not be null");
+		Objects.requireNonNull(keyParts, "Key parts must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
+		
 		if (index == keyParts.length - 1) {
 			current.add(keyParts[index], value);
 		} else {

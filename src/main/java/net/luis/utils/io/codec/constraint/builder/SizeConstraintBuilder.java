@@ -126,7 +126,6 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
-	 *
 	 * @return The built size constraint config
 	 */
 	public @NonNull SizeConstraintConfig build() {

@@ -106,8 +106,11 @@ public class YamlMapping implements YamlElement {
 	 *
 	 * @param string The string to escape
 	 * @return The escaped string
+	 * @throws NullPointerException If the given string is null
 	 */
 	private static @NonNull String escapeString(@NonNull String string) {
+		Objects.requireNonNull(string, "String must not be null");
+		
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < string.length(); i++) {
 			char c = string.charAt(i);
@@ -524,14 +527,18 @@ public class YamlMapping implements YamlElement {
 	 *
 	 * @param config The yaml config to use
 	 * @return The flow style string representation
+	 * @throws NullPointerException If the given config is null
 	 */
 	private @NonNull String toFlowString(@NonNull YamlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
+		
 		StringBuilder builder = new StringBuilder("{");
 		List<Map.Entry<String, YamlElement>> entries = List.copyOf(this.elements.entrySet());
 		for (int i = 0; i < entries.size(); i++) {
 			if (i > 0) {
 				builder.append(", ");
 			}
+			
 			Map.Entry<String, YamlElement> entry = entries.get(i);
 			builder.append(formatKey(entry.getKey())).append(": ");
 			builder.append(entry.getValue().toString(config));
@@ -544,8 +551,11 @@ public class YamlMapping implements YamlElement {
 	 *
 	 * @param config The yaml config to use
 	 * @return The block style string representation
+	 * @throws NullPointerException If the given config is null
 	 */
 	private @NonNull String toBlockString(@NonNull YamlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
+		
 		StringBuilder builder = new StringBuilder();
 		List<Map.Entry<String, YamlElement>> entries = List.copyOf(this.elements.entrySet());
 		for (int i = 0; i < entries.size(); i++) {
@@ -558,16 +568,12 @@ public class YamlMapping implements YamlElement {
 			YamlElement value = entry.getValue();
 			String valueStr = value.toString(config);
 			
-			// Handle different value types for proper formatting
 			if (value instanceof YamlMapping || value instanceof YamlSequence) {
 				if (!valueStr.isEmpty() && !valueStr.startsWith("{") && !valueStr.startsWith("[")) {
-					// Block style nested structure
 					builder.append(System.lineSeparator());
-					// Indent the nested structure
 					valueStr = config.indent() + valueStr.replace(System.lineSeparator(), System.lineSeparator() + config.indent());
 					builder.append(valueStr);
 				} else {
-					// Empty or flow style
 					builder.append(" ").append(valueStr);
 				}
 			} else {

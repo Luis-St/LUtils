@@ -72,8 +72,10 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	 *
 	 * @param key The key to check
 	 * @return True if the key is a valid bare key, false otherwise
+	 * @throws NullPointerException If the given key is null
 	 */
 	private static boolean isBareKey(@NonNull String key) {
+		Objects.requireNonNull(key, "Key must not be null");
 		if (key.isEmpty()) {
 			return false;
 		}
@@ -92,8 +94,10 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	 *
 	 * @param key The key to format
 	 * @return The formatted key
+	 * @throws NullPointerException If the given key is null
 	 */
 	private static @NonNull String formatKey(@NonNull String key) {
+		Objects.requireNonNull(key, "Key must not be null");
 		if (isBareKey(key)) {
 			return key;
 		}
@@ -105,8 +109,11 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	 *
 	 * @param str The string to escape
 	 * @return The escaped string
+	 * @throws NullPointerException If the given string is null
 	 */
 	private static @NonNull String escapeString(@NonNull String str) {
+		Objects.requireNonNull(str, "String must not be null");
+		
 		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < str.length(); i++) {
 			char c = str.charAt(i);
@@ -737,8 +744,10 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	 *
 	 * @param config The TOML config
 	 * @return The inline table string
+	 * @throws NullPointerException If the given config is null
 	 */
 	private @NonNull String toInlineString(@NonNull TomlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder();
 		builder.append("{");
 		
@@ -763,8 +772,10 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	 *
 	 * @param config The TOML config
 	 * @return The block table string
+	 * @throws NullPointerException If the given config is null
 	 */
 	private @NonNull String toBlockString(@NonNull TomlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder();
 		
 		for (Map.Entry<String, TomlElement> entry : this.elements.entrySet()) {

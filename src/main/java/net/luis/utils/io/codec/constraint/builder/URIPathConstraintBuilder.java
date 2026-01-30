@@ -190,7 +190,6 @@ public class URIPathConstraintBuilder implements URIPathConstraint<URIPathConstr
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
-	 *
 	 * @return The built URI path constraint config
 	 */
 	public @NonNull URIPathConstraintConfig build() {

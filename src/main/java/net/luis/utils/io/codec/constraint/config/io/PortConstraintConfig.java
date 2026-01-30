@@ -138,6 +138,7 @@ public record PortConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of port values that are allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withIn(@NonNull Collection<Integer> values) {
@@ -149,6 +150,7 @@ public record PortConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of port values that are not allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withNotIn(@NonNull Collection<Integer> values) {
@@ -182,6 +184,7 @@ public record PortConstraintConfig(
 	 * Creates a new config with the specified port type constraint.<br>
 	 *
 	 * @param config The enum constraint config for port type validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withType(@NonNull EnumConstraintConfig<PortRange> config) {
@@ -193,6 +196,7 @@ public record PortConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {

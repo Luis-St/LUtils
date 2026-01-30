@@ -59,8 +59,11 @@ public class YamlAlias implements YamlElement {
 	 *
 	 * @param name The name to check
 	 * @return True if the name is valid, false otherwise
+	 * @throws NullPointerException If the name is null
 	 */
 	private static boolean isValidAnchorName(@NonNull String name) {
+		Objects.requireNonNull(name, "Name must not be null");
+		
 		for (int i = 0; i < name.length(); i++) {
 			char c = name.charAt(i);
 			if (!Character.isLetterOrDigit(c) && c != '_' && c != '-') {

@@ -123,6 +123,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact zone offset that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withEqualTo(@NonNull ZoneOffset value) {
@@ -134,6 +135,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The zone offset that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNotEqualTo(@NonNull ZoneOffset value) {
@@ -145,6 +147,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of ZoneOffsets that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withIn(@NonNull Collection<ZoneOffset> values) {
@@ -156,6 +159,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of ZoneOffsets that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNotIn(@NonNull Collection<ZoneOffset> values) {
@@ -167,6 +171,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified greater-than constraint (exclusive).<br>
 	 *
 	 * @param value The threshold zone offset (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withGreaterThan(@NonNull ZoneOffset value) {
@@ -178,6 +183,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified greater-than-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold zone offset (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withGreaterThanOrEqual(@NonNull ZoneOffset value) {
@@ -189,6 +195,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified less-than constraint (exclusive).<br>
 	 *
 	 * @param value The threshold zone offset (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withLessThan(@NonNull ZoneOffset value) {
@@ -200,6 +207,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified less-than-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold zone offset (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withLessThanOrEqual(@NonNull ZoneOffset value) {
@@ -212,6 +220,7 @@ public record ZoneOffsetConstraintConfig(
 	 *
 	 * @param min The minimum zone offset (exclusive)
 	 * @param max The maximum zone offset (exclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withBetween(@NonNull ZoneOffset min, @NonNull ZoneOffset max) {
@@ -225,6 +234,7 @@ public record ZoneOffsetConstraintConfig(
 	 *
 	 * @param min The minimum zone offset (inclusive)
 	 * @param max The maximum zone offset (inclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withBetweenOrEqual(@NonNull ZoneOffset min, @NonNull ZoneOffset max) {
@@ -303,6 +313,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified hour constraint.<br>
 	 *
 	 * @param hourConfig The numeric field constraint config for hour validation
+	 * @throws NullPointerException If the hourConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withHour(@NonNull NumericConstraintConfig hourConfig) {
@@ -314,6 +325,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withCustom(@NonNull Constraint<ZoneOffset> constraint) {

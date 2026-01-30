@@ -80,8 +80,10 @@ public class YamlScalar implements YamlElement {
 	 *
 	 * @param string The string
 	 * @return The parsed value or the string if it could not be parsed
+	 * @throws NullPointerException If the string is null
 	 */
 	private static @NonNull Object tryParse(@NonNull String string) {
+		Objects.requireNonNull(string, "String must not be null");
 		if ("true".equalsIgnoreCase(string) || "false".equalsIgnoreCase(string)) {
 			return Boolean.parseBoolean(string);
 		}
@@ -113,8 +115,10 @@ public class YamlScalar implements YamlElement {
 	 *
 	 * @param value The string value to check
 	 * @return True if the string needs to be quoted, false otherwise
+	 * @throws NullPointerException If the value is null
 	 */
 	private static boolean needsQuoting(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
 		if (value.isEmpty()) {
 			return true;
 		}
@@ -147,8 +151,11 @@ public class YamlScalar implements YamlElement {
 	 *
 	 * @param string The string to escape
 	 * @return The escaped string
+	 * @throws NullPointerException If the string is null
 	 */
 	private static @NonNull String escapeString(@NonNull String string) {
+		Objects.requireNonNull(string, "String must not be null");
+		
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < string.length(); i++) {
 			char c = string.charAt(i);

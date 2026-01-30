@@ -157,6 +157,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The exact value that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withEqualTo(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -168,6 +169,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The value that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withNotEqualTo(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -179,6 +181,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param values The collection of values that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withIn(@NonNull Collection<T> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -190,6 +193,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param values The collection of values that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withNotIn(@NonNull Collection<T> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -201,6 +205,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withGreaterThan(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'greater than' constraint must not be null");
@@ -212,6 +217,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withGreaterThanOrEqual(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'greater than or equal' constraint must not be null");
@@ -223,6 +229,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withLessThan(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'less than' constraint must not be null");
@@ -234,6 +241,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withLessThanOrEqual(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'less than or equal' constraint must not be null");
@@ -246,6 +254,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @param min The minimum value (exclusive)
 	 * @param max The maximum value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the min or max value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withBetween(@NonNull T min, @NonNull T max) {
 		Objects.requireNonNull(min, "Min value for 'between' constraint must not be null");
@@ -259,6 +268,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @param min The minimum value (inclusive)
 	 * @param max The maximum value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the min or max value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withBetweenOrEqual(@NonNull T min, @NonNull T max) {
 		Objects.requireNonNull(min, "Min value for 'between or equal' constraint must not be null");
@@ -381,6 +391,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");

@@ -184,6 +184,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact uri that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withEqualTo(@NonNull URI value) {
@@ -195,6 +196,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The uri that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withNotEqualTo(@NonNull URI value) {
@@ -206,6 +208,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of URIs that are allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withIn(@NonNull Collection<URI> values) {
@@ -217,6 +220,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of URIs that are not allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withNotIn(@NonNull Collection<URI> values) {
@@ -228,6 +232,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified scheme constraint.<br>
 	 *
 	 * @param config The string constraint config for scheme validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withScheme(@NonNull StringConstraintConfig config) {
@@ -239,6 +244,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified host constraint.<br>
 	 *
 	 * @param config The host constraint config for host validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withHost(@NonNull HostConstraintConfig config) {
@@ -259,6 +265,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified user info constraint.<br>
 	 *
 	 * @param config The string constraint config for user info validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withUserInfo(@NonNull StringConstraintConfig config) {
@@ -279,6 +286,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified port constraint.<br>
 	 *
 	 * @param config The port constraint config for port validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withPort(@NonNull PortConstraintConfig config) {
@@ -299,6 +307,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified path constraint.<br>
 	 *
 	 * @param config The URI path constraint config for path validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withPath(@NonNull URIPathConstraintConfig config) {
@@ -319,6 +328,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified query constraint.<br>
 	 *
 	 * @param config The query constraint config for query validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withQuery(@NonNull QueryConstraintConfig config) {
@@ -339,6 +349,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified fragment constraint.<br>
 	 *
 	 * @param config The string constraint config for fragment validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withFragment(@NonNull StringConstraintConfig config) {
@@ -386,6 +397,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withCustom(@NonNull Constraint<URI> constraint) {

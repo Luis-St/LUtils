@@ -353,8 +353,10 @@ public class TomlReader implements AutoCloseable {
 	 * Parses a key-value pair and adds it to the table.<br>
 	 *
 	 * @param table The table to add the key-value to
+	 * @throws NullPointerException If the table is null
 	 */
 	private void parseKeyValue(@NonNull TomlTable table) {
+		Objects.requireNonNull(table, "Table must not be null");
 		List<String> keyPath = new ArrayList<>();
 		keyPath.add(this.parseKey());
 		
@@ -848,8 +850,10 @@ public class TomlReader implements AutoCloseable {
 	 *
 	 * @param value The value string
 	 * @return The parsed date/time, or null if not a date/time
+	 * @throws NullPointerException If the value is null
 	 */
 	private @Nullable TomlValue tryParseDateTime(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
 		try {
 			if (OFFSET_DATETIME_PATTERN.matcher(value).matches()) {
 				String normalized = value.replace(' ', 'T');
@@ -877,8 +881,10 @@ public class TomlReader implements AutoCloseable {
 	 *
 	 * @param value The value string
 	 * @return The parsed number value
+	 * @throws NullPointerException If the value is null
 	 */
 	private @NonNull TomlValue parseNumber(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
 		String cleanValue = value.replace("_", "");
 		
 		try {
@@ -905,8 +911,11 @@ public class TomlReader implements AutoCloseable {
 	 * @param root The root table
 	 * @param path The table path (e.g., "server.database")
 	 * @return The table at the path
+	 * @throws NullPointerException If the root or path is null
 	 */
 	private @NonNull TomlTable getOrCreateTable(@NonNull TomlTable root, @NonNull String path) {
+		Objects.requireNonNull(root, "Root table must not be null");
+		Objects.requireNonNull(path, "Table path must not be null");
 		String[] parts = path.split("\\.");
 		TomlTable current = root;
 		
@@ -933,8 +942,11 @@ public class TomlReader implements AutoCloseable {
 	 * @param root The root table
 	 * @param path The table path (e.g., "products")
 	 * @return A new table added to the array
+	 * @throws NullPointerException If the root or path is null
 	 */
 	private @NonNull TomlTable getOrCreateArrayOfTables(@NonNull TomlTable root, @NonNull String path) {
+		Objects.requireNonNull(root, "Root table must not be null");
+		Objects.requireNonNull(path, "Table path must not be null");
 		String[] parts = path.split("\\.");
 		TomlTable current = root;
 		

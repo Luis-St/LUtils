@@ -126,7 +126,6 @@ public class LengthConstraintBuilder implements LengthConstraint<Integer, Length
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
-	 *
 	 * @return The built length constraint config
 	 */
 	public @NonNull LengthConstraintConfig build() {

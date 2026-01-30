@@ -133,6 +133,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact period that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withEqualTo(@NonNull Period value) {
@@ -144,6 +145,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The period that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withNotEqualTo(@NonNull Period value) {
@@ -155,6 +157,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of Periods that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withIn(@NonNull Collection<Period> values) {
@@ -166,6 +169,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of Periods that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withNotIn(@NonNull Collection<Period> values) {
@@ -177,6 +181,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified greater-than constraint (exclusive).<br>
 	 *
 	 * @param value The threshold period (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withGreaterThan(@NonNull Period value) {
@@ -188,6 +193,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified greater-than-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold period (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withGreaterThanOrEqual(@NonNull Period value) {
@@ -199,6 +205,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified less-than constraint (exclusive).<br>
 	 *
 	 * @param value The threshold period (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withLessThan(@NonNull Period value) {
@@ -210,6 +217,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified less-than-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold period (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withLessThanOrEqual(@NonNull Period value) {
@@ -222,6 +230,7 @@ public record PeriodConstraintConfig(
 	 *
 	 * @param min The minimum period (exclusive)
 	 * @param max The maximum period (exclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withBetween(@NonNull Period min, @NonNull Period max) {
@@ -235,6 +244,7 @@ public record PeriodConstraintConfig(
 	 *
 	 * @param min The minimum period (inclusive)
 	 * @param max The maximum period (inclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withBetweenOrEqual(@NonNull Period min, @NonNull Period max) {
@@ -301,6 +311,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified day constraint.<br>
 	 *
 	 * @param dayConfig The numeric field constraint config for day validation
+	 * @throws NullPointerException If the dayConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withDay(@NonNull NumericConstraintConfig dayConfig) {
@@ -312,6 +323,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified month constraint.<br>
 	 *
 	 * @param monthConfig The numeric field constraint config for month validation
+	 * @throws NullPointerException If the monthConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withMonth(@NonNull NumericConstraintConfig monthConfig) {
@@ -323,6 +335,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified year constraint.<br>
 	 *
 	 * @param yearConfig The numeric field constraint config for year validation
+	 * @throws NullPointerException If the yearConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withYear(@NonNull NumericConstraintConfig yearConfig) {
@@ -334,6 +347,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withCustom(@NonNull Constraint<Period> constraint) {

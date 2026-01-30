@@ -192,6 +192,7 @@ public record CharacterConstraintConfig(
 	 *
 	 * @param values The collection of characters that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull CharacterConstraintConfig withIn(@NonNull Collection<Character> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -203,6 +204,7 @@ public record CharacterConstraintConfig(
 	 *
 	 * @param values The collection of characters that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull CharacterConstraintConfig withNotIn(@NonNull Collection<Character> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -381,6 +383,7 @@ public record CharacterConstraintConfig(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull CharacterConstraintConfig withCustom(@NonNull Constraint<Character> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");

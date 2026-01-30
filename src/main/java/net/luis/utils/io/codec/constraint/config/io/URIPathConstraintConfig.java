@@ -151,6 +151,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact path that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withEqualTo(@NonNull String value) {
@@ -162,6 +163,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The path that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withNotEqualTo(@NonNull String value) {
@@ -173,6 +175,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of paths that are allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withIn(@NonNull Collection<String> values) {
@@ -184,6 +187,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of paths that are not allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withNotIn(@NonNull Collection<String> values) {
@@ -195,6 +199,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified length constraint configuration.<br>
 	 *
 	 * @param config The length constraint configuration
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withLength(@NonNull LengthConstraintConfig config) {
@@ -206,6 +211,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified depth constraint configuration.<br>
 	 *
 	 * @param config The depth constraint configuration
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withDepth(@NonNull DepthConstraintConfig config) {
@@ -244,6 +250,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified path string constraint.<br>
 	 *
 	 * @param config The string constraint config for path validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withPath(@NonNull StringConstraintConfig config) {
@@ -255,6 +262,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified segment constraint.<br>
 	 *
 	 * @param config The string constraint config for segment validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withSegment(@NonNull StringConstraintConfig config) {
@@ -266,6 +274,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified file name constraint.<br>
 	 *
 	 * @param config The string constraint config for file name validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withFile(@NonNull StringConstraintConfig config) {
@@ -286,6 +295,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified extension constraint.<br>
 	 *
 	 * @param config The string constraint config for extension validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withExtension(@NonNull StringConstraintConfig config) {
@@ -297,6 +307,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified ancestor-of constraint.<br>
 	 *
 	 * @param paths The collection of paths that constrained paths must be ancestors of
+	 * @throws NullPointerException If the paths collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withAncestorOf(@NonNull Collection<String> paths) {
@@ -308,6 +319,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified descendant-of constraint.<br>
 	 *
 	 * @param paths The collection of paths that constrained paths must be descendants of
+	 * @throws NullPointerException If the paths collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withDescendantOf(@NonNull Collection<String> paths) {
@@ -319,6 +331,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withCustom(@NonNull Constraint<String> constraint) {

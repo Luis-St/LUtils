@@ -451,15 +451,32 @@ public final class TomlBuilder {
 	/**
 	 * Represents the current builder context.<br>
 	 *
+	 * @author Luis-St
+	 *
 	 * @param name The table name
 	 * @param table The table being built
 	 */
-	private record BuilderContext(@NonNull String name, @NonNull TomlTable table) {}
+	private record BuilderContext(@NonNull String name, @NonNull TomlTable table) {
+		
+		/**
+		 * Constructs a new builder context.<br>
+		 *
+		 * @param name The table name
+		 * @param table The table being built
+		 * @throws NullPointerException If the name or table are null
+		 */
+		private BuilderContext {
+			Objects.requireNonNull(name, "Table name must not be null");
+			Objects.requireNonNull(table, "Table must not be null");
+		}
+	}
 	
 	//region Array builder
 	
 	/**
 	 * A builder for constructing TOML arrays.<br>
+	 *
+	 * @author Luis-St
 	 */
 	public static final class ArrayBuilder {
 		
@@ -612,6 +629,8 @@ public final class TomlBuilder {
 	
 	/**
 	 * A builder for constructing inline TOML tables.<br>
+	 *
+	 * @author Luis-St
 	 */
 	public static final class InlineTableBuilder {
 		

@@ -114,7 +114,6 @@ public class PortConstraintBuilder implements PortConstraint<Integer, PortConstr
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
-	 *
 	 * @return The built port constraint config
 	 */
 	public @NonNull PortConstraintConfig build() {

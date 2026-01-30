@@ -159,6 +159,8 @@ public record IniConfig(
 	
 	/**
 	 * Represents how null values should be serialized.<br>
+	 *
+	 * @author Luis-St
 	 */
 	public enum NullStyle {
 		/**

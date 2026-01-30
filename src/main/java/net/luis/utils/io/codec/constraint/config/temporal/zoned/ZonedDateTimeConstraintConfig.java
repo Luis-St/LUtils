@@ -176,6 +176,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact zoned date time that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withEqualTo(@NonNull ZonedDateTime value) {
@@ -187,6 +188,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The zoned date time that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withNotEqualTo(@NonNull ZonedDateTime value) {
@@ -198,6 +200,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of ZonedDateTimes that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withIn(@NonNull Collection<ZonedDateTime> values) {
@@ -209,6 +212,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of ZonedDateTimes that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withNotIn(@NonNull Collection<ZonedDateTime> values) {
@@ -220,6 +224,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
 	 * @param value The threshold zoned date time (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withAfter(@NonNull ZonedDateTime value) {
@@ -231,6 +236,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold zoned date time (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withAfterOrEqual(@NonNull ZonedDateTime value) {
@@ -242,6 +248,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
 	 * @param value The threshold zoned date time (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBefore(@NonNull ZonedDateTime value) {
@@ -253,6 +260,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold zoned date time (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBeforeOrEqual(@NonNull ZonedDateTime value) {
@@ -265,6 +273,7 @@ public record ZonedDateTimeConstraintConfig(
 	 *
 	 * @param after The minimum zoned date time (exclusive)
 	 * @param before The maximum zoned date time (exclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBetween(@NonNull ZonedDateTime after, @NonNull ZonedDateTime before) {
@@ -278,6 +287,7 @@ public record ZonedDateTimeConstraintConfig(
 	 *
 	 * @param after The minimum zoned date time (inclusive)
 	 * @param before The maximum zoned date time (inclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBetweenOrEqual(@NonNull ZonedDateTime after, @NonNull ZonedDateTime before) {
@@ -290,6 +300,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified within-last constraint.<br>
 	 *
 	 * @param duration The duration backwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
@@ -301,6 +312,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified within-next constraint.<br>
 	 *
 	 * @param duration The duration forwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
@@ -312,6 +324,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified day of week constraint.<br>
 	 *
 	 * @param config The enum constraint config for day of week validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withDayOfWeek(@NonNull EnumConstraintConfig<DayOfWeek> config) {
@@ -323,6 +336,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified day of month constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for day of month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withDayOfMonth(@NonNull NumericConstraintConfig config) {
@@ -334,6 +348,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified day of year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for day of year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withDayOfYear(@NonNull NumericConstraintConfig config) {
@@ -345,6 +360,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified week of month constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for week of month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWeekOfMonth(@NonNull NumericConstraintConfig config) {
@@ -356,6 +372,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified week of year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for week of year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWeekOfYear(@NonNull NumericConstraintConfig config) {
@@ -367,6 +384,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified month constraint.<br>
 	 *
 	 * @param config The enum constraint config for month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withMonth(@NonNull EnumConstraintConfig<Month> config) {
@@ -378,6 +396,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withYear(@NonNull NumericConstraintConfig config) {
@@ -389,6 +408,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified hour constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for hour validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withHour(@NonNull NumericConstraintConfig config) {
@@ -400,6 +420,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified minute constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for minute validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withMinute(@NonNull NumericConstraintConfig config) {
@@ -411,6 +432,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified second constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for second validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withSecond(@NonNull NumericConstraintConfig config) {
@@ -422,6 +444,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified millisecond constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for millisecond validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withMillisecond(@NonNull NumericConstraintConfig config) {
@@ -433,6 +456,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified nanosecond constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for nanosecond validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withNanosecond(@NonNull NumericConstraintConfig config) {
@@ -444,6 +468,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified zone constraint.<br>
 	 *
 	 * @param config The zone ID constraint config for zone validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withZone(@NonNull ZoneIdConstraintConfig config) {
@@ -455,6 +480,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withCustom(@NonNull Constraint<ZonedDateTime> constraint) {

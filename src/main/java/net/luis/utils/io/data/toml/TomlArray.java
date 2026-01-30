@@ -515,8 +515,10 @@ public class TomlArray implements TomlElement, Iterable<TomlElement> {
 	 *
 	 * @param config The TOML config
 	 * @return The inline array string
+	 * @throws NullPointerException If the config is null
 	 */
 	private @NonNull String toInlineString(@NonNull TomlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder();
 		builder.append("[");
 		
@@ -538,8 +540,10 @@ public class TomlArray implements TomlElement, Iterable<TomlElement> {
 	 *
 	 * @param config The TOML config
 	 * @return The block array string
+	 * @throws NullPointerException If the config is null
 	 */
 	private @NonNull String toBlockString(@NonNull TomlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder();
 		builder.append("[");
 		

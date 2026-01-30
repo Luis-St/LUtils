@@ -97,9 +97,12 @@ public class TomlWriter implements AutoCloseable {
 	 *
 	 * @param table The table to write
 	 * @param path The current table path (empty for root)
+	 * @throws NullPointerException If the table or path is null
 	 * @throws IOException If an I/O error occurs
 	 */
 	private void writeTable(@NonNull TomlTable table, @NonNull String path) throws IOException {
+		Objects.requireNonNull(table, "TOML table must not be null");
+		Objects.requireNonNull(path, "Table path must not be null");
 		List<Map.Entry<String, TomlElement>> simpleEntries = new ArrayList<>();
 		List<Map.Entry<String, TomlElement>> nestedTables = new ArrayList<>();
 		List<Map.Entry<String, TomlElement>> arrayOfTables = new ArrayList<>();
@@ -167,9 +170,13 @@ public class TomlWriter implements AutoCloseable {
 	 *
 	 * @param key The key
 	 * @param value The value
+	 * @throws NullPointerException If the key or value is null
 	 * @throws IOException If an I/O error occurs
 	 */
 	private void writeKeyValue(@NonNull String key, @NonNull TomlElement value) throws IOException {
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
+		
 		this.writer.write(this.formatKey(key));
 		this.writer.write(" = ");
 		this.writer.write(value.toString(this.config));
@@ -370,8 +377,10 @@ public class TomlWriter implements AutoCloseable {
 	 *
 	 * @param key The key to check
 	 * @return True if the key is a valid bare key, false otherwise
+	 * @throws NullPointerException If the key is null
 	 */
 	private boolean isBareKey(@NonNull String key) {
+		Objects.requireNonNull(key, "Key must not be null");
 		if (key.isEmpty()) {
 			return false;
 		}
@@ -390,8 +399,11 @@ public class TomlWriter implements AutoCloseable {
 	 *
 	 * @param key The key to format
 	 * @return The formatted key
+	 * @throws NullPointerException If the key is null
 	 */
 	private @NonNull String formatKey(@NonNull String key) {
+		Objects.requireNonNull(key, "Key must not be null");
+		
 		if (this.isBareKey(key)) {
 			return key;
 		}
@@ -403,8 +415,11 @@ public class TomlWriter implements AutoCloseable {
 	 *
 	 * @param str The string to escape
 	 * @return The escaped string
+	 * @throws NullPointerException If the string is null
 	 */
 	private @NonNull String escapeString(@NonNull String str) {
+		Objects.requireNonNull(str, "String must not be null");
+		
 		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < str.length(); i++) {
 			char c = str.charAt(i);

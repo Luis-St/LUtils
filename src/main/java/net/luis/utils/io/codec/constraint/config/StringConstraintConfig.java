@@ -228,6 +228,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param value The exact string value that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull StringConstraintConfig withEqualTo(@NonNull String value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -239,6 +240,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param value The string value that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull StringConstraintConfig withNotEqualTo(@NonNull String value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -250,6 +252,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param values The collection of string values that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull StringConstraintConfig withIn(@NonNull Collection<String> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -261,6 +264,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param values The collection of string values that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull StringConstraintConfig withNotIn(@NonNull Collection<String> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -272,6 +276,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param value The string value to compare against (case-insensitive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull StringConstraintConfig withEqualToIgnoreCase(@NonNull String value) {
 		Objects.requireNonNull(value, "Value for 'equal to ignore case' constraint must not be null");
@@ -283,6 +288,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param value The string value that should be excluded (case-insensitive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull StringConstraintConfig withNotEqualToIgnoreCase(@NonNull String value) {
 		Objects.requireNonNull(value, "Value for 'not equal to ignore case' constraint must not be null");
@@ -294,6 +300,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param values The collection of string values that are allowed (case-insensitive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull StringConstraintConfig withInIgnoreCase(@NonNull Collection<String> values) {
 		Objects.requireNonNull(values, "Values for 'in ignore case' constraint must not be null");
@@ -305,6 +312,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param values The collection of string values that are not allowed (case-insensitive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull StringConstraintConfig withNotInIgnoreCase(@NonNull Collection<String> values) {
 		Objects.requireNonNull(values, "Values for 'not in ignore case' constraint must not be null");
@@ -331,6 +339,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param prefix The prefix that strings must start with
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the prefix is null
 	 */
 	public @NonNull StringConstraintConfig withStartsWith(@NonNull String prefix) {
 		Objects.requireNonNull(prefix, "Prefix for 'starts with' constraint must not be null");
@@ -342,6 +351,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param prefix The prefix that strings must not start with
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the prefix is null
 	 */
 	public @NonNull StringConstraintConfig withNotStartsWith(@NonNull String prefix) {
 		Objects.requireNonNull(prefix, "Prefix for 'not starts with' constraint must not be null");
@@ -353,6 +363,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param prefixes The collection of prefixes, one of which strings must start with
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the prefixes collection is null
 	 */
 	public @NonNull StringConstraintConfig withStartsWithAny(@NonNull Collection<String> prefixes) {
 		Objects.requireNonNull(prefixes, "Prefixes for 'starts with any' constraint must not be null");
@@ -364,6 +375,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param prefixes The collection of prefixes that strings must not start with
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the prefixes collection is null
 	 */
 	public @NonNull StringConstraintConfig withStartsWithNone(@NonNull Collection<String> prefixes) {
 		Objects.requireNonNull(prefixes, "Prefixes for 'starts with none' constraint must not be null");
@@ -375,6 +387,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param substring The substring that strings must contain
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the substring is null
 	 */
 	public @NonNull StringConstraintConfig withContains(@NonNull String substring) {
 		Objects.requireNonNull(substring, "Substring for 'contains' constraint must not be null");
@@ -386,6 +399,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param substring The substring that strings must not contain
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the substring is null
 	 */
 	public @NonNull StringConstraintConfig withNotContains(@NonNull String substring) {
 		Objects.requireNonNull(substring, "Substring for 'not contains' constraint must not be null");
@@ -397,6 +411,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param substrings The collection of substrings, one of which strings must contain
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the substrings collection is null
 	 */
 	public @NonNull StringConstraintConfig withContainsAny(@NonNull Collection<String> substrings) {
 		Objects.requireNonNull(substrings, "Substrings for 'contains any' constraint must not be null");
@@ -408,6 +423,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param substrings The collection of substrings that strings must not contain
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the substrings collection is null
 	 */
 	public @NonNull StringConstraintConfig withContainsNone(@NonNull Collection<String> substrings) {
 		Objects.requireNonNull(substrings, "Substrings for 'contains none' constraint must not be null");
@@ -419,6 +435,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param substrings The collection of substrings that strings must all contain
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the substrings collection is null
 	 */
 	public @NonNull StringConstraintConfig withContainsAll(@NonNull Collection<String> substrings) {
 		Objects.requireNonNull(substrings, "Substrings for 'contains all' constraint must not be null");
@@ -430,6 +447,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param substrings The collection of substrings that strings must exclusively contain
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the substrings collection is null
 	 */
 	public @NonNull StringConstraintConfig withContainsOnly(@NonNull Collection<String> substrings) {
 		Objects.requireNonNull(substrings, "Substrings for 'contains only' constraint must not be null");
@@ -441,6 +459,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param suffix The suffix that strings must end with
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the suffix is null
 	 */
 	public @NonNull StringConstraintConfig withEndsWith(@NonNull String suffix) {
 		Objects.requireNonNull(suffix, "Suffix for 'ends with' constraint must not be null");
@@ -452,6 +471,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param suffix The suffix that strings must not end with
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the suffix is null
 	 */
 	public @NonNull StringConstraintConfig withNotEndsWith(@NonNull String suffix) {
 		Objects.requireNonNull(suffix, "Suffix for 'not ends with' constraint must not be null");
@@ -463,6 +483,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param suffixes The collection of suffixes, one of which strings must end with
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the suffixes collection is null
 	 */
 	public @NonNull StringConstraintConfig withEndsWithAny(@NonNull Collection<String> suffixes) {
 		Objects.requireNonNull(suffixes, "Suffixes for 'ends with any' constraint must not be null");
@@ -474,6 +495,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param suffixes The collection of suffixes that strings must not end with
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the suffixes collection is null
 	 */
 	public @NonNull StringConstraintConfig withEndsWithNone(@NonNull Collection<String> suffixes) {
 		Objects.requireNonNull(suffixes, "Suffixes for 'ends with none' constraint must not be null");
@@ -485,6 +507,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param regex The regular expression that strings must match
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the regex is null
 	 */
 	public @NonNull StringConstraintConfig withMatches(@NonNull String regex) {
 		Objects.requireNonNull(regex, "Regex for 'matches' constraint must not be null");
@@ -496,6 +519,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param pattern The compiled pattern that strings must match
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the pattern is null
 	 */
 	public @NonNull StringConstraintConfig withMatches(@NonNull Pattern pattern) {
 		Objects.requireNonNull(pattern, "Pattern for 'matches' constraint must not be null");
@@ -507,6 +531,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param regex The regular expression that strings must not match
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the regex is null
 	 */
 	public @NonNull StringConstraintConfig withNotMatches(@NonNull String regex) {
 		Objects.requireNonNull(regex, "Regex for 'not matches' constraint must not be null");
@@ -518,6 +543,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param pattern The compiled pattern that strings must not match
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the pattern is null
 	 */
 	public @NonNull StringConstraintConfig withNotMatches(@NonNull Pattern pattern) {
 		Objects.requireNonNull(pattern, "Pattern for 'not matches' constraint must not be null");
@@ -619,6 +645,7 @@ public record StringConstraintConfig(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull StringConstraintConfig withCustom(@NonNull Constraint<String> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");

@@ -78,11 +78,14 @@ public class PropertyValue implements PropertyElement {
 	 *
 	 * @param string The string
 	 * @return The parsed value or the string if it could not be parsed
+	 * @throws NullPointerException If the string is null
 	 */
 	private static @NonNull Object tryParse(@NonNull String string) {
+		Objects.requireNonNull(string, "String must not be null");
 		if ("true".equalsIgnoreCase(string) || "false".equalsIgnoreCase(string)) {
 			return Boolean.parseBoolean(string);
 		}
+		
 		StringReader reader = new StringReader(string);
 		try {
 			Number number = reader.readNumber();
@@ -268,6 +271,7 @@ public class PropertyValue implements PropertyElement {
 		return this;
 	}
 	
+	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -291,4 +295,5 @@ public class PropertyValue implements PropertyElement {
 		Objects.requireNonNull(config, "Config must not be null");
 		return String.valueOf(this.value);
 	}
+	//endregion
 }

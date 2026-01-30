@@ -823,7 +823,9 @@ public final class JsonBuilder {
 	//endregion
 	
 	/**
-	 * Enumeration of builder contexts to track whether we're building an object or array.
+	 * Enumeration of builder contexts to track whether we're building an object or array.<br>
+	 *
+	 * @author Luis-St
 	 */
 	private enum BuilderContext {
 		/**
@@ -838,6 +840,8 @@ public final class JsonBuilder {
 	
 	/**
 	 * Internal class to track nesting state.<br>
+	 *
+	 * @author Luis-St
 	 *
 	 * @param type The type of context (object or array)
 	 * @param element The json element associated with this context

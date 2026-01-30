@@ -119,6 +119,7 @@ public record InstantConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact Instant that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withEqualTo(@NonNull Instant value) {
@@ -130,6 +131,7 @@ public record InstantConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The Instant that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withNotEqualTo(@NonNull Instant value) {
@@ -141,6 +143,7 @@ public record InstantConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of Instants that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withIn(@NonNull Collection<Instant> values) {
@@ -152,6 +155,7 @@ public record InstantConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of Instants that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withNotIn(@NonNull Collection<Instant> values) {
@@ -163,6 +167,7 @@ public record InstantConstraintConfig(
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
 	 * @param value The threshold Instant (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withAfter(@NonNull Instant value) {
@@ -174,6 +179,7 @@ public record InstantConstraintConfig(
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold Instant (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withAfterOrEqual(@NonNull Instant value) {
@@ -185,6 +191,7 @@ public record InstantConstraintConfig(
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
 	 * @param value The threshold Instant (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withBefore(@NonNull Instant value) {
@@ -196,6 +203,7 @@ public record InstantConstraintConfig(
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold Instant (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withBeforeOrEqual(@NonNull Instant value) {
@@ -208,6 +216,7 @@ public record InstantConstraintConfig(
 	 *
 	 * @param after The minimum Instant (exclusive)
 	 * @param before The maximum Instant (exclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withBetween(@NonNull Instant after, @NonNull Instant before) {
@@ -221,6 +230,7 @@ public record InstantConstraintConfig(
 	 *
 	 * @param after The minimum Instant (inclusive)
 	 * @param before The maximum Instant (inclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withBetweenOrEqual(@NonNull Instant after, @NonNull Instant before) {
@@ -233,6 +243,7 @@ public record InstantConstraintConfig(
 	 * Creates a new config with the specified within-last constraint.<br>
 	 *
 	 * @param duration The duration backwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withWithinLast(@NonNull Duration duration) {
@@ -244,6 +255,7 @@ public record InstantConstraintConfig(
 	 * Creates a new config with the specified within-next constraint.<br>
 	 *
 	 * @param duration The duration forwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withWithinNext(@NonNull Duration duration) {
@@ -255,6 +267,7 @@ public record InstantConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull InstantConstraintConfig withCustom(@NonNull Constraint<Instant> constraint) {

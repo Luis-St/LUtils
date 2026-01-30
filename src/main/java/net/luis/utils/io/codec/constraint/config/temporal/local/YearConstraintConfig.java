@@ -100,6 +100,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact year that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withEqualTo(@NonNull Year value) {
@@ -111,6 +112,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The year that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withNotEqualTo(@NonNull Year value) {
@@ -122,6 +124,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of Years that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withIn(@NonNull Collection<Year> values) {
@@ -133,6 +136,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of Years that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withNotIn(@NonNull Collection<Year> values) {
@@ -144,6 +148,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
 	 * @param value The threshold year (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withAfter(@NonNull Year value) {
@@ -155,6 +160,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold year (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withAfterOrEqual(@NonNull Year value) {
@@ -166,6 +172,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
 	 * @param value The threshold year (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBefore(@NonNull Year value) {
@@ -177,6 +184,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold year (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBeforeOrEqual(@NonNull Year value) {
@@ -189,6 +197,7 @@ public record YearConstraintConfig(
 	 *
 	 * @param min The minimum year (exclusive)
 	 * @param max The maximum year (exclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBetween(@NonNull Year min, @NonNull Year max) {
@@ -202,6 +211,7 @@ public record YearConstraintConfig(
 	 *
 	 * @param min The minimum year (inclusive)
 	 * @param max The maximum year (inclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBetweenOrEqual(@NonNull Year min, @NonNull Year max) {
@@ -214,6 +224,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withCustom(@NonNull Constraint<Year> constraint) {

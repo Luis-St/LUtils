@@ -135,6 +135,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact offset time that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withEqualTo(@NonNull OffsetTime value) {
@@ -146,6 +147,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The offset time that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withNotEqualTo(@NonNull OffsetTime value) {
@@ -157,6 +159,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of OffsetTimes that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withIn(@NonNull Collection<OffsetTime> values) {
@@ -168,6 +171,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of OffsetTimes that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withNotIn(@NonNull Collection<OffsetTime> values) {
@@ -179,6 +183,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
 	 * @param value The threshold offset time (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withAfter(@NonNull OffsetTime value) {
@@ -190,6 +195,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold offset time (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withAfterOrEqual(@NonNull OffsetTime value) {
@@ -201,6 +207,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
 	 * @param value The threshold offset time (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withBefore(@NonNull OffsetTime value) {
@@ -212,6 +219,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold offset time (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withBeforeOrEqual(@NonNull OffsetTime value) {
@@ -224,6 +232,7 @@ public record OffsetTimeConstraintConfig(
 	 *
 	 * @param after The minimum offset time (exclusive)
 	 * @param before The maximum offset time (exclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withBetween(@NonNull OffsetTime after, @NonNull OffsetTime before) {
@@ -237,6 +246,7 @@ public record OffsetTimeConstraintConfig(
 	 *
 	 * @param after The minimum offset time (inclusive)
 	 * @param before The maximum offset time (inclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withBetweenOrEqual(@NonNull OffsetTime after, @NonNull OffsetTime before) {
@@ -249,6 +259,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified within-last constraint.<br>
 	 *
 	 * @param duration The duration backwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
@@ -260,6 +271,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified within-next constraint.<br>
 	 *
 	 * @param duration The duration forwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
@@ -271,6 +283,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified hour constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for hour validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withHour(@NonNull NumericConstraintConfig config) {
@@ -282,6 +295,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified minute constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for minute validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withMinute(@NonNull NumericConstraintConfig config) {
@@ -293,6 +307,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified second constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for second validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withSecond(@NonNull NumericConstraintConfig config) {
@@ -304,6 +319,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified millisecond constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for millisecond validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withMillisecond(@NonNull NumericConstraintConfig config) {
@@ -315,6 +331,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified nanosecond constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for nanosecond validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withNanosecond(@NonNull NumericConstraintConfig config) {
@@ -326,6 +343,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified offset constraint.<br>
 	 *
 	 * @param config The zone offset constraint config for offset validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withOffset(@NonNull ZoneOffsetConstraintConfig config) {
@@ -337,6 +355,7 @@ public record OffsetTimeConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withCustom(@NonNull Constraint<OffsetTime> constraint) {

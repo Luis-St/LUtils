@@ -405,8 +405,23 @@ public final class IniBuilder {
 	/**
 	 * Represents the current builder context.<br>
 	 *
+	 * @author Luis-St
+	 *
 	 * @param name The section name
 	 * @param section The section being built
 	 */
-	private record BuilderContext(@NonNull String name, @NonNull IniSection section) {}
+	private record BuilderContext(@NonNull String name, @NonNull IniSection section) {
+		
+		/**
+		 * Constructs a new builder context.<br>
+		 *
+		 * @param name The section name
+		 * @param section The section being built
+		 * @throws NullPointerException If name or section is null
+		 */
+		private BuilderContext {
+			Objects.requireNonNull(name, "Section name must not be null");
+			Objects.requireNonNull(section, "Section must not be null");
+		}
+	}
 }

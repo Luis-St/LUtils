@@ -175,6 +175,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The exact value that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withEqualTo(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -186,6 +187,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The value that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withNotEqualTo(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -197,6 +199,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param values The collection of values that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withIn(@NonNull Collection<BigDecimal> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -208,6 +211,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param values The collection of values that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withNotIn(@NonNull Collection<BigDecimal> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -219,6 +223,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The threshold value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withGreaterThan(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'greater than' constraint must not be null");
@@ -230,6 +235,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The threshold value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withGreaterThanOrEqual(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'greater than or equal' constraint must not be null");
@@ -241,6 +247,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The threshold value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withLessThan(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'less than' constraint must not be null");
@@ -252,6 +259,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The threshold value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withLessThanOrEqual(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'less than or equal' constraint must not be null");
@@ -264,6 +272,7 @@ public record BigDecimalConstraintConfig(
 	 * @param min The minimum value (exclusive)
 	 * @param max The maximum value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the min or max value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withBetween(@NonNull BigDecimal min, @NonNull BigDecimal max) {
 		Objects.requireNonNull(min, "Min value for 'between' constraint must not be null");
@@ -277,6 +286,7 @@ public record BigDecimalConstraintConfig(
 	 * @param min The minimum value (inclusive)
 	 * @param max The maximum value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the min or max value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withBetweenOrEqual(@NonNull BigDecimal min, @NonNull BigDecimal max) {
 		Objects.requireNonNull(min, "Min value for 'between or equal' constraint must not be null");
@@ -452,6 +462,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withCustom(@NonNull Constraint<BigDecimal> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");

@@ -34,12 +34,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This class is a singleton and should be accessed through the {@link #INSTANCE} constant.<br>
  * <p>
  *     The INI format has the following limitations:
- *     <ul>
- *         <li>No native list support - list operations will return errors</li>
- *         <li>Single level nesting only - values must be primitives or null</li>
- *         <li>Maps are represented as {@link IniSection IniSections}</li>
- *     </ul>
  * </p>
+ * <ul>
+ *     <li>No native list support - list operations will return errors</li>
+ *     <li>Single level nesting only - values must be primitives or null</li>
+ *     <li>Maps are represented as {@link IniSection IniSections}</li>
+ * </ul>
  *
  * @author Luis-St
  */

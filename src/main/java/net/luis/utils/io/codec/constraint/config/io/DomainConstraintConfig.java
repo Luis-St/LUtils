@@ -165,6 +165,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact value that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withEqualTo(@NonNull String value) {
@@ -176,6 +177,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The value that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withNotEqualTo(@NonNull String value) {
@@ -187,6 +189,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of values that are allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withIn(@NonNull Collection<String> values) {
@@ -198,6 +201,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of values that are not allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withNotIn(@NonNull Collection<String> values) {
@@ -269,6 +273,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified prefix constraint.<br>
 	 *
 	 * @param prefix The prefix that values must start with
+	 * @throws NullPointerException If the prefix is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withStartsWith(@NonNull String prefix) {
@@ -280,6 +285,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified negative prefix constraint.<br>
 	 *
 	 * @param prefix The prefix that values must not start with
+	 * @throws NullPointerException If the prefix is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withNotStartsWith(@NonNull String prefix) {
@@ -291,6 +297,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified multi-prefix constraint.<br>
 	 *
 	 * @param prefixes The collection of prefixes, one of which values must start with
+	 * @throws NullPointerException If the prefixes collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withStartsWithAny(@NonNull Collection<String> prefixes) {
@@ -302,6 +309,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified negative multi-prefix constraint.<br>
 	 *
 	 * @param prefixes The collection of prefixes that values must not start with
+	 * @throws NullPointerException If the prefixes collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withStartsWithNone(@NonNull Collection<String> prefixes) {
@@ -313,6 +321,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified containment constraint.<br>
 	 *
 	 * @param substring The substring that values must contain
+	 * @throws NullPointerException If the substring is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withContains(@NonNull String substring) {
@@ -324,6 +333,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified negative containment constraint.<br>
 	 *
 	 * @param substring The substring that values must not contain
+	 * @throws NullPointerException If the substring is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withNotContains(@NonNull String substring) {
@@ -335,6 +345,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified multi-containment constraint.<br>
 	 *
 	 * @param substrings The collection of substrings, one of which values must contain
+	 * @throws NullPointerException If the substrings collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withContainsAny(@NonNull Collection<String> substrings) {
@@ -346,6 +357,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified negative multi-containment constraint.<br>
 	 *
 	 * @param substrings The collection of substrings that values must not contain
+	 * @throws NullPointerException If the substrings collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withContainsNone(@NonNull Collection<String> substrings) {
@@ -357,6 +369,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified all-containment constraint.<br>
 	 *
 	 * @param substrings The collection of substrings that values must all contain
+	 * @throws NullPointerException If the substrings collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withContainsAll(@NonNull Collection<String> substrings) {
@@ -368,6 +381,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified only-containment constraint.<br>
 	 *
 	 * @param substrings The collection of substrings that values must exclusively contain
+	 * @throws NullPointerException If the substrings collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withContainsOnly(@NonNull Collection<String> substrings) {
@@ -379,6 +393,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified suffix constraint.<br>
 	 *
 	 * @param suffix The suffix that values must end with
+	 * @throws NullPointerException If the suffix is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withEndsWith(@NonNull String suffix) {
@@ -390,6 +405,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified negative suffix constraint.<br>
 	 *
 	 * @param suffix The suffix that values must not end with
+	 * @throws NullPointerException If the suffix is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withNotEndsWith(@NonNull String suffix) {
@@ -401,6 +417,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified multi-suffix constraint.<br>
 	 *
 	 * @param suffixes The collection of suffixes, one of which values must end with
+	 * @throws NullPointerException If the suffixes collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withEndsWithAny(@NonNull Collection<String> suffixes) {
@@ -412,6 +429,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified negative multi-suffix constraint.<br>
 	 *
 	 * @param suffixes The collection of suffixes that values must not end with
+	 * @throws NullPointerException If the suffixes collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withEndsWithNone(@NonNull Collection<String> suffixes) {
@@ -423,6 +441,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified regex constraint.<br>
 	 *
 	 * @param regex The regex pattern that values must match
+	 * @throws NullPointerException If the regex is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withMatches(@NonNull String regex) {
@@ -434,6 +453,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified pattern constraint.<br>
 	 *
 	 * @param pattern The compiled pattern that values must match
+	 * @throws NullPointerException If the pattern is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withMatches(@NonNull Pattern pattern) {
@@ -445,6 +465,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified negative regex constraint.<br>
 	 *
 	 * @param regex The regex pattern that values must not match
+	 * @throws NullPointerException If the regex is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withNotMatches(@NonNull String regex) {
@@ -456,6 +477,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified negative pattern constraint.<br>
 	 *
 	 * @param pattern The compiled pattern that values must not match
+	 * @throws NullPointerException If the pattern is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withNotMatches(@NonNull Pattern pattern) {
@@ -485,6 +507,7 @@ public record DomainConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withCustom(@NonNull Constraint<String> constraint) {

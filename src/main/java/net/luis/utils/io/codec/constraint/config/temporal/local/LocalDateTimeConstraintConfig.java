@@ -160,6 +160,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact local date time that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withEqualTo(@NonNull LocalDateTime value) {
@@ -171,6 +172,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The local date time that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withNotEqualTo(@NonNull LocalDateTime value) {
@@ -182,6 +184,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of LocalDateTimes that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withIn(@NonNull Collection<LocalDateTime> values) {
@@ -193,6 +196,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of LocalDateTimes that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withNotIn(@NonNull Collection<LocalDateTime> values) {
@@ -204,6 +208,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
 	 * @param value The threshold local date time (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withAfter(@NonNull LocalDateTime value) {
@@ -215,6 +220,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold local date time (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withAfterOrEqual(@NonNull LocalDateTime value) {
@@ -226,6 +232,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
 	 * @param value The threshold local date time (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBefore(@NonNull LocalDateTime value) {
@@ -237,6 +244,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold local date time (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBeforeOrEqual(@NonNull LocalDateTime value) {
@@ -249,6 +257,7 @@ public record LocalDateTimeConstraintConfig(
 	 *
 	 * @param after The minimum local date time (exclusive)
 	 * @param before The maximum local date time (exclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBetween(@NonNull LocalDateTime after, @NonNull LocalDateTime before) {
@@ -262,6 +271,7 @@ public record LocalDateTimeConstraintConfig(
 	 *
 	 * @param after The minimum local date time (inclusive)
 	 * @param before The maximum local date time (inclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBetweenOrEqual(@NonNull LocalDateTime after, @NonNull LocalDateTime before) {
@@ -274,6 +284,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified within-last constraint.<br>
 	 *
 	 * @param duration The duration backwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
@@ -285,6 +296,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified within-next constraint.<br>
 	 *
 	 * @param duration The duration forwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
@@ -296,6 +308,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified day of week constraint.<br>
 	 *
 	 * @param config The enum constraint config for day of week validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withDayOfWeek(@NonNull EnumConstraintConfig<DayOfWeek> config) {
@@ -307,6 +320,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified day of month constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for day of month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withDayOfMonth(@NonNull NumericConstraintConfig config) {
@@ -318,6 +332,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified day of year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for day of year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withDayOfYear(@NonNull NumericConstraintConfig config) {
@@ -329,6 +344,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified week of month constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for week of month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withWeekOfMonth(@NonNull NumericConstraintConfig config) {
@@ -340,6 +356,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified week of year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for week of year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withWeekOfYear(@NonNull NumericConstraintConfig config) {
@@ -351,6 +368,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified month constraint.<br>
 	 *
 	 * @param config The enum constraint config for month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withMonth(@NonNull EnumConstraintConfig<Month> config) {
@@ -362,6 +380,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withYear(@NonNull NumericConstraintConfig config) {
@@ -373,6 +392,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified hour constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for hour validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withHour(@NonNull NumericConstraintConfig config) {
@@ -384,6 +404,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified minute constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for minute validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withMinute(@NonNull NumericConstraintConfig config) {
@@ -395,6 +416,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified second constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for second validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withSecond(@NonNull NumericConstraintConfig config) {
@@ -406,6 +428,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified millisecond constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for millisecond validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withMillisecond(@NonNull NumericConstraintConfig config) {
@@ -417,6 +440,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified nanosecond constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for nanosecond validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withNanosecond(@NonNull NumericConstraintConfig config) {
@@ -428,6 +452,7 @@ public record LocalDateTimeConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withCustom(@NonNull Constraint<LocalDateTime> constraint) {

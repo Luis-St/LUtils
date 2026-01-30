@@ -94,6 +94,8 @@ public record YamlConfig(
 	
 	/**
 	 * The style to use for null values when writing yaml.<br>
+	 *
+	 * @author Luis-St
 	 */
 	public enum NullStyle {
 		/**

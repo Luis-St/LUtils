@@ -128,6 +128,7 @@ public record ZoneIdConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact zone id that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withEqualTo(@NonNull ZoneId value) {
@@ -139,6 +140,7 @@ public record ZoneIdConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The zone id that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withNotEqualTo(@NonNull ZoneId value) {
@@ -150,6 +152,7 @@ public record ZoneIdConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of ZoneIds that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withIn(@NonNull Collection<ZoneId> values) {
@@ -161,6 +164,7 @@ public record ZoneIdConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of ZoneIds that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withNotIn(@NonNull Collection<ZoneId> values) {
@@ -235,6 +239,7 @@ public record ZoneIdConstraintConfig(
 	 * Creates a new config with the specified region constraint.<br>
 	 *
 	 * @param regionConfig The string constraint config for region validation
+	 * @throws NullPointerException If the regionConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withRegion(@NonNull StringConstraintConfig regionConfig) {
@@ -246,6 +251,7 @@ public record ZoneIdConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withCustom(@NonNull Constraint<ZoneId> constraint) {

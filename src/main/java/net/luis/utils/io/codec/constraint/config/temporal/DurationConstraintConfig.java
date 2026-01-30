@@ -159,6 +159,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact Duration that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withEqualTo(@NonNull Duration value) {
@@ -170,6 +171,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The Duration that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withNotEqualTo(@NonNull Duration value) {
@@ -181,6 +183,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of Durations that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withIn(@NonNull Collection<Duration> values) {
@@ -192,6 +195,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of Durations that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withNotIn(@NonNull Collection<Duration> values) {
@@ -203,6 +207,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified greater-than constraint (exclusive).<br>
 	 *
 	 * @param value The threshold Duration (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withGreaterThan(@NonNull Duration value) {
@@ -214,6 +219,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified greater-than-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold Duration (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withGreaterThanOrEqual(@NonNull Duration value) {
@@ -225,6 +231,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified less-than constraint (exclusive).<br>
 	 *
 	 * @param value The threshold Duration (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withLessThan(@NonNull Duration value) {
@@ -236,6 +243,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified less-than-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold Duration (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withLessThanOrEqual(@NonNull Duration value) {
@@ -248,6 +256,7 @@ public record DurationConstraintConfig(
 	 *
 	 * @param min The minimum Duration (exclusive)
 	 * @param max The maximum Duration (exclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withBetween(@NonNull Duration min, @NonNull Duration max) {
@@ -261,6 +270,7 @@ public record DurationConstraintConfig(
 	 *
 	 * @param min The minimum Duration (inclusive)
 	 * @param max The maximum Duration (inclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withBetweenOrEqual(@NonNull Duration min, @NonNull Duration max) {
@@ -327,6 +337,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified within-last constraint.<br>
 	 *
 	 * @param duration The duration backwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withWithinLast(@NonNull Duration duration) {
@@ -338,6 +349,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified within-next constraint.<br>
 	 *
 	 * @param duration The duration forwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withWithinNext(@NonNull Duration duration) {
@@ -349,6 +361,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified hour constraint.<br>
 	 *
 	 * @param hourConfig The numeric field constraint config for hour validation
+	 * @throws NullPointerException If the hourConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withHour(@NonNull NumericConstraintConfig hourConfig) {
@@ -360,6 +373,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified minute constraint.<br>
 	 *
 	 * @param minuteConfig The numeric field constraint config for minute validation
+	 * @throws NullPointerException If the minuteConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withMinute(@NonNull NumericConstraintConfig minuteConfig) {
@@ -371,6 +385,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified second constraint.<br>
 	 *
 	 * @param secondConfig The numeric field constraint config for second validation
+	 * @throws NullPointerException If the secondConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withSecond(@NonNull NumericConstraintConfig secondConfig) {
@@ -382,6 +397,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified millisecond constraint.<br>
 	 *
 	 * @param millisecondConfig The numeric field constraint config for millisecond validation
+	 * @throws NullPointerException If the millisecondConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withMillisecond(@NonNull NumericConstraintConfig millisecondConfig) {
@@ -393,6 +409,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified nanosecond constraint.<br>
 	 *
 	 * @param nanosecondConfig The numeric field constraint config for nanosecond validation
+	 * @throws NullPointerException If the nanosecondConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withNanosecond(@NonNull NumericConstraintConfig nanosecondConfig) {
@@ -404,6 +421,7 @@ public record DurationConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withCustom(@NonNull Constraint<Duration> constraint) {

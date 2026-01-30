@@ -77,8 +77,12 @@ public final class YamlBuilder {
 	 *
 	 * @param initialContext The initial context type
 	 * @param initialElement The initial yaml element
+	 * @throws NullPointerException If initial context or initial element is null
 	 */
 	private YamlBuilder(@NonNull BuilderContext initialContext, @NonNull YamlElement initialElement) {
+		Objects.requireNonNull(initialContext, "Initial context must not be null");
+		Objects.requireNonNull(initialElement, "Initial element must not be null");
+		
 		this.root = initialElement;
 		this.contextStack.push(new ContextFrame(initialContext, initialElement));
 	}
@@ -118,7 +122,6 @@ public final class YamlBuilder {
 	
 	/**
 	 * Ensures the current context is a mapping context.
-	 *
 	 * @throws IllegalStateException If the current context is not a mapping
 	 */
 	private void ensureMappingContext() {
@@ -131,7 +134,6 @@ public final class YamlBuilder {
 	
 	/**
 	 * Ensures the current context is a sequence context.
-	 *
 	 * @throws IllegalStateException If the current context is not a sequence
 	 */
 	private void ensureSequenceContext() {
@@ -848,6 +850,8 @@ public final class YamlBuilder {
 	
 	/**
 	 * Internal class to track nesting state.<br>
+	 *
+	 * @author Luis-St
 	 *
 	 * @param type The type of context (mapping or sequence)
 	 * @param element The yaml element associated with this context

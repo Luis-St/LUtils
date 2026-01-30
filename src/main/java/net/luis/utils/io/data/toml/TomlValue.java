@@ -127,8 +127,10 @@ public class TomlValue implements TomlElement {
 	 *
 	 * @param str The string to check
 	 * @return True if the string needs quoting, false otherwise
+	 * @throws NullPointerException If the string is null
 	 */
 	private static boolean needsQuoting(@NonNull String str) {
+		Objects.requireNonNull(str, "String must not be null");
 		if (str.isEmpty()) {
 			return true;
 		}
@@ -147,8 +149,11 @@ public class TomlValue implements TomlElement {
 	 *
 	 * @param str The string to escape
 	 * @return The escaped string
+	 * @throws NullPointerException If the string is null
 	 */
 	private static @NonNull String escapeString(@NonNull String str) {
+		Objects.requireNonNull(str, "String must not be null");
+		
 		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < str.length(); i++) {
 			char c = str.charAt(i);
@@ -396,8 +401,11 @@ public class TomlValue implements TomlElement {
 	 *
 	 * @param config The TOML config
 	 * @return The formatted date/time string
+	 * @throws NullPointerException If the config is null
+	 * @throws IllegalStateException If this is not a date/time value
 	 */
 	private @NonNull String formatDateTime(@NonNull TomlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
 		if (this.isLocalDate()) {
 			return this.getAsLocalDate().toString();
 		} else if (this.isLocalTime()) {

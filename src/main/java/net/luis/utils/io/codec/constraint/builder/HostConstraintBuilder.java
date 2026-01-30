@@ -110,7 +110,6 @@ public class HostConstraintBuilder implements HostConstraint<String, HostConstra
 	
 	/**
 	 * Builds and returns the host constraint configuration.<br>
-	 *
 	 * @return The built constraint configuration
 	 */
 	public @NonNull HostConstraintConfig build() {

@@ -186,7 +186,6 @@ public class ZoneOffsetConstraintBuilder implements ZoneOffsetConstraint<ZoneOff
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
-	 *
 	 * @return The built zone offset constraint config
 	 */
 	public @NonNull ZoneOffsetConstraintConfig build() {

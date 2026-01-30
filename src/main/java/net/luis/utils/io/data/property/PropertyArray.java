@@ -526,6 +526,7 @@ public class PropertyArray implements PropertyElement, Iterable<PropertyElement>
 		return this.getAsPropertyValue(index).getAsDouble();
 	}
 	
+	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -562,4 +563,5 @@ public class PropertyArray implements PropertyElement, Iterable<PropertyElement>
 		builder.append(config.arrayCloseChar());
 		return builder.toString();
 	}
+	//endregion
 }

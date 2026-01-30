@@ -82,6 +82,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 *
 	 * @param value The exact enum value that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull EnumConstraintConfig<T> withEqualTo(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -93,6 +94,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 *
 	 * @param value The enum value that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull EnumConstraintConfig<T> withNotEqualTo(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -104,6 +106,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 *
 	 * @param values The collection of enum values that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull EnumConstraintConfig<T> withIn(@NonNull Collection<T> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -115,6 +118,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 *
 	 * @param values The collection of enum values that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull EnumConstraintConfig<T> withNotIn(@NonNull Collection<T> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -126,6 +130,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull EnumConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");

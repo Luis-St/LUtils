@@ -100,6 +100,7 @@ public record SetConstraintConfig<T>(
 	 *
 	 * @param value The exact set that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull SetConstraintConfig<T> withEqualTo(@NonNull Set<T> value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -111,6 +112,7 @@ public record SetConstraintConfig<T>(
 	 *
 	 * @param value The set that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull SetConstraintConfig<T> withNotEqualTo(@NonNull Set<T> value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -122,6 +124,7 @@ public record SetConstraintConfig<T>(
 	 *
 	 * @param values The collection of sets that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull SetConstraintConfig<T> withIn(@NonNull Collection<Set<T>> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -138,6 +141,7 @@ public record SetConstraintConfig<T>(
 	 *
 	 * @param values The collection of sets that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull SetConstraintConfig<T> withNotIn(@NonNull Collection<Set<T>> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -214,6 +218,7 @@ public record SetConstraintConfig<T>(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull SetConstraintConfig<T> withCustom(@NonNull Constraint<Set<T>> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");

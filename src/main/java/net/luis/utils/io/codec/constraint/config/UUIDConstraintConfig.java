@@ -122,6 +122,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param value The exact uuid that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull UUIDConstraintConfig withEqualTo(@NonNull UUID value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -133,6 +134,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param value The uuid that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull UUIDConstraintConfig withNotEqualTo(@NonNull UUID value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -144,6 +146,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param values The collection of UUIDs that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull UUIDConstraintConfig withIn(@NonNull Collection<UUID> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -155,6 +158,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param values The collection of UUIDs that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull UUIDConstraintConfig withNotIn(@NonNull Collection<UUID> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -166,6 +170,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param config The numeric field constraint config for version validation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the config is null
 	 */
 	public @NonNull UUIDConstraintConfig withVersion(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'version' constraint must not be null");
@@ -177,6 +182,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param config The enum constraint config for variant validation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the config is null
 	 */
 	public @NonNull UUIDConstraintConfig withVariant(@NonNull EnumConstraintConfig<UUIDVariant> config) {
 		Objects.requireNonNull(config, "Config for 'variant' constraint must not be null");
@@ -224,6 +230,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull UUIDConstraintConfig withCustom(@NonNull Constraint<UUID> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");

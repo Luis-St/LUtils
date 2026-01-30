@@ -213,6 +213,8 @@ public record PropertyConfig(
 	
 	/**
 	 * Represents how null values should be serialized.<br>
+	 *
+	 * @author Luis-St
 	 */
 	public enum NullStyle {
 		/**

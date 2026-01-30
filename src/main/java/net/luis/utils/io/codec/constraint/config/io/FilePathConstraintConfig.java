@@ -179,6 +179,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact path that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withEqualTo(@NonNull Path value) {
@@ -190,6 +191,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The path that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withNotEqualTo(@NonNull Path value) {
@@ -201,6 +203,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of paths that are allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withIn(@NonNull Collection<Path> values) {
@@ -212,6 +215,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of paths that are not allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withNotIn(@NonNull Collection<Path> values) {
@@ -223,6 +227,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified length constraint configuration.<br>
 	 *
 	 * @param config The length constraint configuration
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withLength(@NonNull LengthConstraintConfig config) {
@@ -234,6 +239,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified depth constraint configuration.<br>
 	 *
 	 * @param config The depth constraint configuration
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withDepth(@NonNull DepthConstraintConfig config) {
@@ -281,6 +287,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified path string constraint.<br>
 	 *
 	 * @param config The string constraint config for path validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withPath(@NonNull StringConstraintConfig config) {
@@ -292,6 +299,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified root constraint.<br>
 	 *
 	 * @param config The string constraint config for root component validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withRoot(@NonNull StringConstraintConfig config) {
@@ -303,6 +311,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified parent constraint.<br>
 	 *
 	 * @param config The string constraint config for parent directory validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withParent(@NonNull StringConstraintConfig config) {
@@ -314,6 +323,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified segment constraint.<br>
 	 *
 	 * @param config The string constraint config for segment validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withSegment(@NonNull StringConstraintConfig config) {
@@ -325,6 +335,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified file name constraint.<br>
 	 *
 	 * @param config The string constraint config for file name validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withFile(@NonNull StringConstraintConfig config) {
@@ -345,6 +356,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified extension constraint.<br>
 	 *
 	 * @param config The string constraint config for extension validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withExtension(@NonNull StringConstraintConfig config) {
@@ -356,6 +368,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified ancestor-of constraint.<br>
 	 *
 	 * @param paths The collection of paths that constrained paths must be ancestors of
+	 * @throws NullPointerException If the paths collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withAncestorOf(@NonNull Collection<String> paths) {
@@ -367,6 +380,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified descendant-of constraint.<br>
 	 *
 	 * @param paths The collection of paths that constrained paths must be descendants of
+	 * @throws NullPointerException If the paths collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withDescendantOf(@NonNull Collection<String> paths) {
@@ -378,6 +392,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified platform validity constraint.<br>
 	 *
 	 * @param platform The platform to validate against
+	 * @throws NullPointerException If the platform is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withValidFor(@NonNull Platform platform) {
@@ -398,6 +413,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified separator platform constraint.<br>
 	 *
 	 * @param platform The platform whose separator should be used
+	 * @throws NullPointerException If the platform is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withSeparator(@NonNull Platform platform) {
@@ -409,6 +425,7 @@ public record FilePathConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull FilePathConstraintConfig withCustom(@NonNull Constraint<Path> constraint) {

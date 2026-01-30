@@ -209,7 +209,6 @@ public class QueryConstraintBuilder implements QueryConstraint<QueryConstraintBu
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
-	 *
 	 * @return The built query constraint config
 	 */
 	public @NonNull QueryConstraintConfig build() {

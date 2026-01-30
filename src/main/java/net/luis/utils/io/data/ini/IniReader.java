@@ -146,8 +146,10 @@ public class IniReader implements AutoCloseable {
 	 *
 	 * @param line The line to check
 	 * @return True if the line is a comment, false otherwise
+	 * @throws NullPointerException If the line is null
 	 */
 	private boolean isComment(@NonNull String line) {
+		Objects.requireNonNull(line, "Line must not be null");
 		if (line.isEmpty()) {
 			return false;
 		}
@@ -163,8 +165,12 @@ public class IniReader implements AutoCloseable {
 	 * @param document The document to add the section to
 	 * @return The parsed or existing section
 	 * @throws IniSyntaxException If the section header is invalid
+	 * @throws NullPointerException If the line or the document is null
 	 */
 	private @Nullable IniSection parseSection(@NonNull String line, @NonNull IniDocument document) {
+		Objects.requireNonNull(line, "Line must not be null");
+		Objects.requireNonNull(document, "Document must not be null");
+		
 		int closeBracket = line.indexOf(']');
 		if (closeBracket == -1) {
 			throw new IniSyntaxException("Missing closing bracket ']' for section at line " + this.lineNumber);
@@ -202,8 +208,12 @@ public class IniReader implements AutoCloseable {
 	 * @param document The document for global properties
 	 * @param currentSection The current section, or null for global properties
 	 * @throws IniSyntaxException If the key-value pair is invalid
+	 * @throws NullPointerException If the line or the document is null
 	 */
-	private void parseKeyValue(@NonNull String line, @NonNull IniDocument document, IniSection currentSection) {
+	private void parseKeyValue(@NonNull String line, @NonNull IniDocument document, @Nullable IniSection currentSection) {
+		Objects.requireNonNull(line, "Line must not be null");
+		Objects.requireNonNull(document, "Document must not be null");
+		
 		int separatorIndex = line.indexOf(this.config.separator());
 		if (separatorIndex == -1) {
 			if (this.config.strict()) {
@@ -240,8 +250,10 @@ public class IniReader implements AutoCloseable {
 	 *
 	 * @param value The value string
 	 * @return The value without inline comments
+	 * @throws NullPointerException If the value is null
 	 */
 	private @NonNull String removeInlineComment(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
 		boolean inQuotes = false;
 		char quoteChar = 0;
 		
@@ -266,27 +278,29 @@ public class IniReader implements AutoCloseable {
 	/**
 	 * Parses a value string and returns the appropriate ini element.<br>
 	 *
-	 * @param valueStr The value string
+	 * @param value The value string
 	 * @return The parsed ini element
+	 * @throws NullPointerException If the value is null
 	 */
-	private @NonNull IniElement parseValue(@NonNull String valueStr) {
-		if (valueStr.isEmpty()) {
+	private @NonNull IniElement parseValue(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		if (value.isEmpty()) {
 			return IniNull.INSTANCE;
 		}
 		
-		if ((valueStr.startsWith("\"") && valueStr.endsWith("\"")) ||
-			(valueStr.startsWith("'") && valueStr.endsWith("'"))) {
-			String unquoted = valueStr.substring(1, valueStr.length() - 1);
+		if ((value.startsWith("\"") && value.endsWith("\"")) ||
+			(value.startsWith("'") && value.endsWith("'"))) {
+			String unquoted = value.substring(1, value.length() - 1);
 			return new IniValue(this.processEscapes(unquoted));
 		}
 		
 		if (this.config.parseTypedValues()) {
-			if ("true".equalsIgnoreCase(valueStr) || "false".equalsIgnoreCase(valueStr)) {
-				return new IniValue(Boolean.parseBoolean(valueStr));
+			if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
+				return new IniValue(Boolean.parseBoolean(value));
 			}
 			
 			try {
-				StringReader reader = new StringReader(valueStr);
+				StringReader reader = new StringReader(value);
 				Number number = reader.readNumber();
 				reader.skipWhitespaces();
 				if (!reader.canRead()) {
@@ -294,7 +308,7 @@ public class IniReader implements AutoCloseable {
 				}
 			} catch (Exception _) {}
 		}
-		return new IniValue(valueStr);
+		return new IniValue(value);
 	}
 	
 	/**
@@ -302,8 +316,10 @@ public class IniReader implements AutoCloseable {
 	 *
 	 * @param value The value to process
 	 * @return The processed value
+	 * @throws NullPointerException If the value is null
 	 */
 	private @NonNull String processEscapes(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
 		StringBuilder result = new StringBuilder();
 		boolean escape = false;
 		
@@ -344,8 +360,13 @@ public class IniReader implements AutoCloseable {
 	 * @param section The section, or null for global properties
 	 * @param key The property key
 	 * @param value The property value
+	 * @throws NullPointerException If the document, key, or value is null
 	 */
-	private void addProperty(@NonNull IniDocument document, IniSection section, @NonNull String key, @NonNull IniElement value) {
+	private void addProperty(@NonNull IniDocument document, @Nullable IniSection section, @NonNull String key, @NonNull IniElement value) {
+		Objects.requireNonNull(document, "Document must not be null");
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
+		
 		if (section != null) {
 			section.add(key, value);
 		} else {
