@@ -378,29 +378,64 @@ List<Row2<UserStatus, Long>> results = UserTable.TABLE
 
 ## JOIN Operations
 
-### Using FullJoined Entities
+Joins are pre-generated based on YAML relationship definitions. Each relationship generates type-safe join methods - no manual `ON` conditions needed.
+
+### Generated Join Methods
+
+For each relationship defined in YAML, join methods are generated:
 
 ```java
-// Inner join - returns FullJoined entity with loaded relationships
-List<UserFullJoined> usersWithAddress = UserTable.TABLE
-    .innerJoin(AddressTable.TABLE)
-    .on(UserTable.ADDRESS_ID.equalTo(AddressTable.ID))
-    .selectAs(UserFullJoined.class)
+// From User entity with: addressId (many-to-one -> Address)
+//                        orders (one-to-many -> Order, mappedBy: customerId)
+
+// Many-to-one joins (generated on the owning side)
+UserTable.TABLE.joinAddress()        // INNER JOIN addresses ON users.address_id = addresses.id
+UserTable.TABLE.leftJoinAddress()    // LEFT JOIN addresses ON users.address_id = addresses.id
+
+// One-to-many joins (generated on the inverse side)
+UserTable.TABLE.joinOrders()         // INNER JOIN orders ON users.id = orders.customer_id
+UserTable.TABLE.leftJoinOrders()     // LEFT JOIN orders ON users.id = orders.customer_id
+```
+
+### Basic Join Usage
+
+```java
+// Inner join - returns Row2 by default
+List<Row2<User, Address>> results = UserTable.TABLE
+    .joinAddress()
+    .select()
     .fetch();
 
 // Access joined data
+for (Row2<User, Address> row : results) {
+    User user = row.first();
+    Address address = row.second();
+}
+
+// Left join - second element is Optional
+List<Row2<User, Optional<Address>>> results = UserTable.TABLE
+    .leftJoinAddress()
+    .select()
+    .fetch();
+```
+
+### Mapping to Joined Entities
+
+```java
+// Map to FullJoined entity using selectAs()
+List<UserFullJoined> usersWithAddress = UserTable.TABLE
+    .joinAddress()
+    .selectAs(UserFullJoined.class)
+    .fetch();
+
+// Access loaded relationships
 for (UserFullJoined user : usersWithAddress) {
     Address address = user.address();  // Already loaded
 }
-```
 
-### Using PartialJoined Entities
-
-```java
-// Left join - returns PartialJoined entity with SqlForeignKey wrappers
+// Map to PartialJoined entity
 List<UserPartialJoined> users = UserTable.TABLE
-    .leftJoin(AddressTable.TABLE)
-    .on(UserTable.ADDRESS_ID)
+    .leftJoinAddress()
     .selectAs(UserPartialJoined.class)
     .fetch();
 
@@ -413,36 +448,81 @@ for (UserPartialJoined user : users) {
 }
 ```
 
-### Row-Based Joins
+### Chained Joins (Multi-Level)
 
 ```java
-// Inner join - returns Row2
-List<Row2<User, Address>> results = UserTable.TABLE
-    .innerJoin(AddressTable.TABLE)
-    .on(UserTable.ADDRESS_ID.equalTo(AddressTable.ID))
-    .select()
-    .fetch();
-
-// Left join - second element is Optional
-List<Row2<User, Optional<Address>>> results = UserTable.TABLE
-    .leftJoin(AddressTable.TABLE)
-    .on(UserTable.ADDRESS_ID)
-    .select()
-    .fetch();
-
-// Using relationship shorthand
-List<Row2<User, Address>> results = UserTable.TABLE
-    .innerJoin(AddressTable.TABLE)
-    .on(UserTable.ADDRESS_ID)  // Uses defined relationship
-    .select()
-    .fetch();
-
-// Multiple joins
+// User -> Orders -> Product (chained joins)
 List<Row3<User, Order, Product>> results = UserTable.TABLE
-    .innerJoin(OrderTable.TABLE).on(UserTable.ID.equalTo(OrderTable.CUSTOMER_ID))
-    .innerJoin(ProductTable.TABLE).on(OrderTable.PRODUCT_ID.equalTo(ProductTable.ID))
+    .joinOrders()              // User -> Order via orders relationship
+    .joinProduct()             // Order -> Product via productId relationship
     .select()
     .where(UserTable.STATUS.equalTo(UserStatus.ACTIVE))
+    .fetch();
+
+// With FullJoined entity mapping
+List<UserFullJoined> results = UserTable.TABLE
+    .joinOrders()
+    .joinOrderItems()
+    .selectAs(UserFullJoined.class)
+    .fetch();
+```
+
+### Self-Referencing Joins
+
+```java
+// Employee -> Manager (self-reference via managerId)
+List<Row2<Employee, Optional<Employee>>> withManagers = EmployeeTable.TABLE
+    .leftJoinManager()    // Generated from managerId relationship
+    .select()
+    .fetch();
+
+// Employee -> Direct Reports (inverse one-to-many)
+List<EmployeeFullJoined> managers = EmployeeTable.TABLE
+    .joinDirectReports()  // Generated from directReports relationship
+    .selectAs(EmployeeFullJoined.class)
+    .fetch();
+```
+
+### Join with Conditions
+
+```java
+// Filter after join
+List<UserFullJoined> activeUsersWithAddress = UserTable.TABLE
+    .joinAddress()
+    .select()
+    .where(UserTable.STATUS.equalTo(UserStatus.ACTIVE))
+    .where(AddressTable.COUNTRY.equalTo("US"))
+    .fetch();
+
+// Order and limit
+List<UserFullJoined> recentUsers = UserTable.TABLE
+    .joinAddress()
+    .select()
+    .orderBy(UserTable.CREATED_AT.desc())
+    .limit(10)
+    .fetch();
+```
+
+### Many-to-Many via Join Table
+
+```java
+// Post -> Tags via PostTag join table
+// PostTag has: postId (-> Post), tagId (-> Tag)
+
+// Get all tags for a post
+List<Tag> tags = PostTagTable.TABLE
+    .joinTag()
+    .select()
+    .where(PostTagTable.POST_ID.equalTo(postId))
+    .map(row -> row.second())  // Extract Tag from Row2<PostTag, Tag>
+    .fetch();
+
+// Get all posts for a tag
+List<Post> posts = PostTagTable.TABLE
+    .joinPost()
+    .select()
+    .where(PostTagTable.TAG_ID.equalTo(tagId))
+    .map(row -> row.second())
     .fetch();
 ```
 

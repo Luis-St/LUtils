@@ -465,12 +465,21 @@ indexes:
 **Usage:**
 
 ```java
-// Get all tags for a post
+// Get all tags for a post using pre-generated join method
 List<Tag> tags = PostTagTable.TABLE
-    .innerJoin(TagTable.TABLE).on(PostTagTable.TAG_ID.equalTo(TagTable.ID))
-    .select(TagTable.ALL_COLUMNS)
+    .joinTag()  // Generated from tagId -> Tag relationship
+    .select()
     .where(PostTagTable.POST_ID.equalTo(postId))
-    .fetchAs(Tag.class);
+    .map(row -> row.second())  // Extract Tag from Row2<PostTag, Tag>
+    .fetch();
+
+// Get all posts for a tag
+List<Post> posts = PostTagTable.TABLE
+    .joinPost()  // Generated from postId -> Post relationship
+    .select()
+    .where(PostTagTable.TAG_ID.equalTo(tagId))
+    .map(row -> row.second())
+    .fetch();
 
 // Add tag to post
 PostTagTable.TABLE.insert(PostTag.builder()

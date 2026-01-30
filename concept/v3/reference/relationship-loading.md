@@ -158,9 +158,9 @@ for (Order order : orders) {
 Best for: When you always need the related data loaded:
 
 ```java
-// Query with JOIN, map to FullJoined
+// Query with JOIN, map to FullJoined using selectAs()
 List<OrderFullJoined> orders = OrderTable.TABLE
-    .innerJoin(UserTable.TABLE).on(OrderTable.CUSTOMER_ID.equalTo(UserTable.ID))
+    .joinCustomer()  // Generated from customerId relationship
     .selectAs(OrderFullJoined.class)
     .where(OrderTable.STATUS.equalTo(OrderStatus.PENDING))
     .fetch();
@@ -177,9 +177,9 @@ for (OrderFullJoined order : orders) {
 Best for: When you need FK always available, with optional loaded entity:
 
 ```java
-// Query with LEFT JOIN, map to PartialJoined
+// Query with LEFT JOIN, map to PartialJoined using selectAs()
 List<OrderPartialJoined> orders = OrderTable.TABLE
-    .leftJoin(UserTable.TABLE).on(OrderTable.CUSTOMER_ID)
+    .leftJoinCustomer()  // Generated from customerId relationship
     .selectAs(OrderPartialJoined.class)
     .where(OrderTable.STATUS.equalTo(OrderStatus.PENDING))
     .fetch();
@@ -204,10 +204,9 @@ for (OrderPartialJoined order : orders) {
 Returns separate objects in Row types:
 
 ```java
-// Inner join - returns Row2
+// Inner join - select() returns Row2 by default
 List<Row2<Order, User>> results = OrderTable.TABLE
-    .innerJoin(UserTable.TABLE)
-    .on(OrderTable.CUSTOMER_ID.equalTo(UserTable.ID))
+    .joinCustomer()
     .select()
     .fetch();
 
@@ -219,8 +218,7 @@ for (Row2<Order, User> row : results) {
 
 // Left join - second element is Optional
 List<Row2<Order, Optional<User>>> results = OrderTable.TABLE
-    .leftJoin(UserTable.TABLE)
-    .on(OrderTable.CUSTOMER_ID)
+    .leftJoinCustomer()
     .select()
     .fetch();
 
@@ -295,18 +293,18 @@ List<UserFullJoined> usersWithOrders = users.stream()
 ## Multi-Level Joins
 
 ```java
-// User -> Order -> OrderItem (3-level join)
+// User -> Order -> OrderItem (3-level join using chained join methods)
 List<Row3<User, Order, OrderItem>> results = UserTable.TABLE
-    .innerJoin(OrderTable.TABLE).on(UserTable.ID.equalTo(OrderTable.CUSTOMER_ID))
-    .innerJoin(OrderItemTable.TABLE).on(OrderTable.ID.equalTo(OrderItemTable.ORDER_ID))
+    .joinOrders()        // User -> Order via orders relationship
+    .joinOrderItems()    // Order -> OrderItem via orderItems relationship
     .select()
     .where(UserTable.STATUS.equalTo(UserStatus.ACTIVE))
     .fetch();
 
 // With column selection
 List<Row3<String, String, BigDecimal>> results = UserTable.TABLE
-    .innerJoin(OrderTable.TABLE).on(UserTable.ID.equalTo(OrderTable.CUSTOMER_ID))
-    .innerJoin(OrderItemTable.TABLE).on(OrderTable.ID.equalTo(OrderItemTable.ORDER_ID))
+    .joinOrders()
+    .joinOrderItems()
     .select(UserTable.NAME, OrderTable.ORDER_NUMBER, OrderItemTable.PRICE)
     .fetch();
 ```
@@ -325,9 +323,9 @@ for (Order order : orders) {
         .fetchOne();
 }
 
-// GOOD: 1 query with JOIN using FullJoined
+// GOOD: 1 query with JOIN using pre-generated join method
 List<OrderFullJoined> orders = OrderTable.TABLE
-    .innerJoin(UserTable.TABLE).on(OrderTable.CUSTOMER_ID)
+    .joinCustomer()
     .selectAs(OrderFullJoined.class)
     .fetch();
 
@@ -379,11 +377,16 @@ public record EmployeeFullJoined(
     Employee manager     // Loaded manager
 ) {}
 
-// Load with hierarchy
+// Load with hierarchy using pre-generated join method
 List<Row2<Employee, Optional<Employee>>> withManagers = EmployeeTable.TABLE
-    .leftJoin(EmployeeTable.TABLE.as("manager"))
-    .on(EmployeeTable.MANAGER_ID)
+    .leftJoinManager()   // Generated from managerId -> Employee relationship
     .select()
+    .fetch();
+
+// Load managers with their direct reports
+List<EmployeeFullJoined> managersWithReports = EmployeeTable.TABLE
+    .joinDirectReports()  // Generated from directReports one-to-many relationship
+    .selectAs(EmployeeFullJoined.class)
     .fetch();
 
 // Recursive CTE for full hierarchy
@@ -392,7 +395,7 @@ List<Employee> hierarchy = SqlCte.withRecursive("emp_tree",
     EmployeeTable.TABLE.select().where(EmployeeTable.MANAGER_ID.isNull()),
     // Recursive case: employees under those
     (cte) -> EmployeeTable.TABLE
-        .innerJoin(cte).on(EmployeeTable.MANAGER_ID.equalTo(cte.column(EmployeeTable.ID)))
+        .joinCte(cte, EmployeeTable.MANAGER_ID)  // Join with CTE
         .select()
 )
 .select()

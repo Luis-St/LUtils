@@ -520,7 +520,110 @@ public final class UserTable {
     public static final List<SqlColumn<User, ?>> ALL_COLUMNS = List.of(
         ID, EMAIL, NAME, STATUS, CREATED_AT, ADDRESS_ID
     );
+
+    // ============================================
+    // GENERATED JOIN METHODS
+    // ============================================
+
+    // Many-to-one join methods (from addressId -> Address relationship)
+
+    /**
+     * Inner join with Address via addressId relationship.<br>
+     * Generates: INNER JOIN addresses ON users.address_id = addresses.id
+     */
+    public static SqlJoinBuilder<User, Address> joinAddress() {
+        return TABLE.join(AddressTable.TABLE, ADDRESS_ID, AddressTable.ID, SqlJoinType.INNER);
+    }
+
+    /**
+     * Left join with Address via addressId relationship.<br>
+     * Generates: LEFT JOIN addresses ON users.address_id = addresses.id
+     */
+    public static SqlJoinBuilder<User, Address> leftJoinAddress() {
+        return TABLE.join(AddressTable.TABLE, ADDRESS_ID, AddressTable.ID, SqlJoinType.LEFT);
+    }
+
+    // One-to-many join methods (from orders relationship, mappedBy: customerId)
+
+    /**
+     * Inner join with Order via orders relationship (inverse of Order.customerId).<br>
+     * Generates: INNER JOIN orders ON users.id = orders.customer_id
+     */
+    public static SqlJoinBuilder<User, Order> joinOrders() {
+        return TABLE.join(OrderTable.TABLE, ID, OrderTable.CUSTOMER_ID, SqlJoinType.INNER);
+    }
+
+    /**
+     * Left join with Order via orders relationship.<br>
+     * Generates: LEFT JOIN orders ON users.id = orders.customer_id
+     */
+    public static SqlJoinBuilder<User, Order> leftJoinOrders() {
+        return TABLE.join(OrderTable.TABLE, ID, OrderTable.CUSTOMER_ID, SqlJoinType.LEFT);
+    }
 }
+```
+
+## SqlJoinBuilder Interface
+
+The join builder provides type-safe chaining for multi-level joins:
+
+```java
+/**
+ * Builder for join operations with type-safe chaining.<br>
+ *
+ * @param <TFrom> The source entity type
+ * @param <TTo> The joined entity type
+ */
+public interface SqlJoinBuilder<TFrom, TTo> {
+
+    /**
+     * Select all columns, returning Row2 (or Row3, Row4... for chained joins).<br>
+     */
+    SqlSelectBuilder<Row2<TFrom, TTo>> select();
+
+    /**
+     * Select and map to a joined entity variant (FullJoined or PartialJoined).<br>
+     */
+    <TResult> SqlSelectBuilder<TResult> selectAs(Class<TResult> entityClass);
+
+    /**
+     * Select specific columns.<br>
+     */
+    <T1, T2> SqlSelectBuilder<Row2<T1, T2>> select(SqlColumn<?, T1> col1, SqlColumn<?, T2> col2);
+
+    // Additional select overloads for Row3, Row4, etc.
+
+    /**
+     * Chain another join (for multi-level joins).<br>
+     * Available join methods are generated based on TTo's relationships.
+     */
+    // Chained join methods are generated based on TTo entity's relationships
+}
+```
+
+### Join Builder Chaining Example
+
+```java
+// UserTable.joinOrders() returns SqlJoinBuilder<User, Order>
+// which has access to Order's relationships for chaining
+
+List<Row3<User, Order, OrderItem>> results = UserTable.TABLE
+    .joinOrders()           // Returns builder with Order's join methods available
+    .joinOrderItems()       // Chain Order -> OrderItem join
+    .select()
+    .fetch();
+
+// Map to entity using selectAs()
+List<UserFullJoined> results = UserTable.TABLE
+    .joinOrders()
+    .joinOrderItems()
+    .selectAs(UserFullJoined.class)
+    .fetch();
+
+// The chain is type-safe:
+// - joinOrders() makes Order's relationships available
+// - joinOrderItems() is only available after joining Order
+// - Cannot call joinAddress() here (User's relationship, not Order's)
 ```
 
 ## Generated Row Types
