@@ -173,7 +173,7 @@ public final class JsonBuilder {
 	/**
 	 * Adds a string value with the specified key to the current object.<br>
 	 * If the value is null, it will be converted to json null.<br>
-	 *<
+	 *
 	 * @param key The key for the value
 	 * @param value The string value to add
 	 * @return This builder for method chaining
@@ -251,7 +251,7 @@ public final class JsonBuilder {
 	}
 	
 	/**
-	 * Adds a long value with the specified key to the current object.<
+	 * Adds a long value with the specified key to the current object.<br>
 	 *
 	 * @param key The key for the value
 	 * @param value The long value to add

@@ -57,7 +57,7 @@ final class YamlHelper {
 	
 	/**
 	 * Checks if the given character is a special character in yaml.<br>
-	 * Special characters are: {@code # & * ! | > ' " % @ ` { [ - ?}<br>
+	 * Special characters are: <code># &amp; * ! | > ' " % @ ` { [ - ?</code>.<br>
 	 *
 	 * @param c The character to check
 	 * @return True if the character is a special character, false otherwise
