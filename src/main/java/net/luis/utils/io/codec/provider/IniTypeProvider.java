@@ -183,7 +183,7 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 		}
 		
 		IniValue value = type.getAsIniValue();
-		if (!value.isBoolean()) {
+		if (!value.isIniBoolean()) {
 			return Result.error("Ini element '" + type + "' is not an ini boolean");
 		}
 		return Result.success(value.getAsBoolean());
@@ -200,7 +200,7 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 		}
 		
 		IniValue value = type.getAsIniValue();
-		if (!value.isNumber()) {
+		if (!value.isIniNumber()) {
 			return Result.error("Ini element '" + type + "' is not an ini byte");
 		}
 		return Result.success(value.getAsByte());
@@ -217,7 +217,7 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 		}
 		
 		IniValue value = type.getAsIniValue();
-		if (!value.isNumber()) {
+		if (!value.isIniNumber()) {
 			return Result.error("Ini element '" + type + "' is not an ini short");
 		}
 		return Result.success(value.getAsShort());
@@ -234,7 +234,7 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 		}
 		
 		IniValue value = type.getAsIniValue();
-		if (!value.isNumber()) {
+		if (!value.isIniNumber()) {
 			return Result.error("Ini element '" + type + "' is not an ini integer");
 		}
 		return Result.success(value.getAsInteger());
@@ -251,7 +251,7 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 		}
 		
 		IniValue value = type.getAsIniValue();
-		if (!value.isNumber()) {
+		if (!value.isIniNumber()) {
 			return Result.error("Ini element '" + type + "' is not an ini long");
 		}
 		return Result.success(value.getAsLong());
@@ -268,7 +268,7 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 		}
 		
 		IniValue value = type.getAsIniValue();
-		if (value.isString()) {
+		if (value.isIniString()) {
 			return Result.error("Ini element '" + type + "' is an ini string, not an ini float");
 		}
 		return Result.success(value.getAsFloat());
@@ -285,7 +285,7 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 		}
 		
 		IniValue value = type.getAsIniValue();
-		if (!value.isNumber()) {
+		if (!value.isIniNumber()) {
 			return Result.error("Ini element '" + type + "' is not an ini double");
 		}
 		return Result.success(value.getAsDouble());
@@ -302,7 +302,7 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 		}
 		
 		IniValue value = type.getAsIniValue();
-		if (!value.isString()) {
+		if (!value.isIniString()) {
 			return Result.error("Ini element '" + type + "' is not an ini string");
 		}
 		return Result.success(value.getAsString());

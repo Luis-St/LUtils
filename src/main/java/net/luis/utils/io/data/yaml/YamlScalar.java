@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.data.yaml;
 
+import net.luis.utils.io.data.DataHelper;
 import net.luis.utils.io.data.yaml.exception.YamlTypeException;
-import net.luis.utils.io.reader.StringReader;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -97,17 +97,7 @@ public class YamlScalar implements YamlElement {
 			return Double.NaN;
 		}
 		
-		StringReader reader = new StringReader(string);
-		try {
-			Number number = reader.readNumber();
-			reader.skipWhitespaces();
-			if (reader.canRead()) {
-				return string;
-			}
-			return number;
-		} catch (Exception e) {
-			return string;
-		}
+		return DataHelper.tryParseNumber(string);
 	}
 	
 	/**
@@ -129,10 +119,7 @@ public class YamlScalar implements YamlElement {
 		}
 		
 		char first = value.charAt(0);
-		if (
-			first == '#' || first == '&' || first == '*' || first == '!' || first == '|' || first == '>' || first == '\'' || first == '"' ||
-				first == '%' || first == '@' || first == '`' || first == '{' || first == '[' || first == '-' || first == '?' || first == ':'
-		) {
+		if (YamlHelper.isYamlSpecialCharacter(first) || first == ':') {
 			return true;
 		}
 		
@@ -147,31 +134,6 @@ public class YamlScalar implements YamlElement {
 	//endregion
 	
 	/**
-	 * Escapes special characters in a string for YAML double-quoted output.<br>
-	 *
-	 * @param string The string to escape
-	 * @return The escaped string
-	 * @throws NullPointerException If the string is null
-	 */
-	private static @NonNull String escapeString(@NonNull String string) {
-		Objects.requireNonNull(string, "String must not be null");
-		
-		StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < string.length(); i++) {
-			char c = string.charAt(i);
-			switch (c) {
-				case '"' -> builder.append("\\\"");
-				case '\\' -> builder.append("\\\\");
-				case '\n' -> builder.append("\\n");
-				case '\r' -> builder.append("\\r");
-				case '\t' -> builder.append("\\t");
-				default -> builder.append(c);
-			}
-		}
-		return builder.toString();
-	}
-	
-	/**
 	 * Returns the name of the type of this yaml scalar in a human-readable format.<br>
 	 * Used for debugging and error messages.<br>
 	 *
@@ -179,206 +141,144 @@ public class YamlScalar implements YamlElement {
 	 * @throws IllegalStateException If the type of this yaml scalar is unknown
 	 */
 	private @NonNull String getName() {
-		if (this.isBoolean()) {
+		if (this.isYamlBoolean()) {
 			return "yaml boolean";
-		} else if (this.isNumber()) {
+		} else if (this.isYamlNumber()) {
 			return "yaml number";
-		} else if (this.isString()) {
+		} else if (this.isYamlString()) {
 			return "yaml string";
 		}
 		throw new IllegalStateException("Unknown yaml scalar type");
 	}
 	
-	/**
-	 * Checks if this yaml scalar is a boolean.<br>
-	 * @return True if this yaml scalar is a boolean, false otherwise
-	 */
-	public boolean isBoolean() {
+	@Override
+	public boolean isYamlBoolean() {
 		return this.value instanceof Boolean;
 	}
 	
-	/**
-	 * Checks if this yaml scalar is a number.<br>
-	 * @return True if this yaml scalar is a number, false otherwise
-	 */
-	public boolean isNumber() {
+	@Override
+	public boolean isYamlNumber() {
 		return this.value instanceof Number;
 	}
 	
-	/**
-	 * Checks if this yaml scalar is a byte.<br>
-	 * @return True if this yaml scalar is a byte, false otherwise
-	 */
-	public boolean isByte() {
+	@Override
+	public boolean isYamlByte() {
 		return this.value instanceof Byte;
 	}
 	
-	/**
-	 * Checks if this yaml scalar is a short.<br>
-	 * @return True if this yaml scalar is a short, false otherwise
-	 */
-	public boolean isShort() {
+	@Override
+	public boolean isYamlShort() {
 		return this.value instanceof Short;
 	}
 	
-	/**
-	 * Checks if this yaml scalar is an integer.<br>
-	 * @return True if this yaml scalar is an integer, false otherwise
-	 */
-	public boolean isInteger() {
+	@Override
+	public boolean isYamlInteger() {
 		return this.value instanceof Integer;
 	}
 	
-	/**
-	 * Checks if this yaml scalar is a long.<br>
-	 * @return True if this yaml scalar is a long, false otherwise
-	 */
-	public boolean isLong() {
+	@Override
+	public boolean isYamlLong() {
 		return this.value instanceof Long;
 	}
 	
-	/**
-	 * Checks if this yaml scalar is a float.<br>
-	 * @return True if this yaml scalar is a float, false otherwise
-	 */
-	public boolean isFloat() {
+	@Override
+	public boolean isYamlFloat() {
 		return this.value instanceof Float;
 	}
 	
-	/**
-	 * Checks if this yaml scalar is a double.<br>
-	 * @return True if this yaml scalar is a double, false otherwise
-	 */
-	public boolean isDouble() {
+	@Override
+	public boolean isYamlDouble() {
 		return this.value instanceof Double;
 	}
 	
-	/**
-	 * Checks if this yaml scalar is a string.<br>
-	 * @return True if this yaml scalar is a string, false otherwise
-	 */
-	public boolean isString() {
+	@Override
+	public boolean isYamlString() {
 		return this.value instanceof String;
 	}
 	
-	/**
-	 * Converts this yaml scalar to a boolean.<br>
-	 * @return This yaml scalar as a boolean
-	 * @throws YamlTypeException If this yaml scalar is not a boolean
-	 */
+	@Override
 	public boolean getAsBoolean() {
-		if (this.isBoolean()) {
+		if (this.isYamlBoolean()) {
 			return (boolean) this.value;
 		}
 		throw new YamlTypeException("Expected a yaml boolean, but found: " + this.getName());
 	}
 	
-	/**
-	 * Converts this yaml scalar to a number.<br>
-	 * @return This yaml scalar as a number
-	 * @throws YamlTypeException If this yaml scalar is not a number
-	 */
+	@Override
 	public @NonNull Number getAsNumber() {
-		if (this.isNumber()) {
+		if (this.isYamlNumber()) {
 			return (Number) this.value;
 		}
 		throw new YamlTypeException("Expected a yaml number, but found: " + this.getName());
 	}
 	
-	/**
-	 * Converts this yaml scalar to a byte.<br>
-	 * @return This yaml scalar as a byte
-	 * @throws YamlTypeException If this yaml scalar is not a number
-	 */
+	@Override
 	public byte getAsByte() {
-		if (this.isByte()) {
+		if (this.isYamlByte()) {
 			return (byte) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isYamlNumber()) {
 			return this.getAsNumber().byteValue();
 		}
 		throw new YamlTypeException("Expected a yaml byte, but found: " + this.getName());
 	}
 	
-	/**
-	 * Converts this yaml scalar to a short.<br>
-	 * @return This yaml scalar as a short
-	 * @throws YamlTypeException If this yaml scalar is not a number
-	 */
+	@Override
 	public short getAsShort() {
-		if (this.isShort()) {
+		if (this.isYamlShort()) {
 			return (short) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isYamlNumber()) {
 			return this.getAsNumber().shortValue();
 		}
 		throw new YamlTypeException("Expected a yaml short, but found: " + this.getName());
 	}
 	
-	/**
-	 * Converts this yaml scalar to an integer.<br>
-	 * @return This yaml scalar as an integer
-	 * @throws YamlTypeException If this yaml scalar is not a number
-	 */
+	@Override
 	public int getAsInteger() {
-		if (this.isInteger()) {
+		if (this.isYamlInteger()) {
 			return (int) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isYamlNumber()) {
 			return this.getAsNumber().intValue();
 		}
 		throw new YamlTypeException("Expected a yaml integer, but found: " + this.getName());
 	}
 	
-	/**
-	 * Converts this yaml scalar to a long.<br>
-	 * @return This yaml scalar as a long
-	 * @throws YamlTypeException If this yaml scalar is not a number
-	 */
+	@Override
 	public long getAsLong() {
-		if (this.isLong()) {
+		if (this.isYamlLong()) {
 			return (long) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isYamlNumber()) {
 			return this.getAsNumber().longValue();
 		}
 		throw new YamlTypeException("Expected a yaml long, but found: " + this.getName());
 	}
 	
-	/**
-	 * Converts this yaml scalar to a float.<br>
-	 * @return This yaml scalar as a float
-	 * @throws YamlTypeException If this yaml scalar is not a number
-	 */
+	@Override
 	public float getAsFloat() {
-		if (this.isFloat()) {
+		if (this.isYamlFloat()) {
 			return (float) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isYamlNumber()) {
 			return this.getAsNumber().floatValue();
 		}
 		throw new YamlTypeException("Expected a yaml float, but found: " + this.getName());
 	}
 	
-	/**
-	 * Converts this yaml scalar to a double.<br>
-	 * @return This yaml scalar as a double
-	 * @throws YamlTypeException If this yaml scalar is not a number
-	 */
+	@Override
 	public double getAsDouble() {
-		if (this.isDouble()) {
+		if (this.isYamlDouble()) {
 			return (double) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isYamlNumber()) {
 			return this.getAsNumber().doubleValue();
 		}
 		throw new YamlTypeException("Expected a yaml double, but found: " + this.getName());
 	}
 	
-	/**
-	 * Converts this yaml scalar to a string.<br>
-	 * @return This yaml scalar as a string
-	 */
+	@Override
 	public @NonNull String getAsString() {
-		if (this.isString()) {
+		if (this.isYamlString()) {
 			return (String) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isYamlNumber()) {
 			return this.getAsNumber().toString();
-		} else if (this.isBoolean()) {
+		} else if (this.isYamlBoolean()) {
 			return String.valueOf(this.getAsBoolean());
 		}
 		throw new YamlTypeException("Expected a yaml string, but found: " + this.getName());
@@ -391,7 +291,7 @@ public class YamlScalar implements YamlElement {
 	 * @return A yaml scalar with the parsed value or this yaml scalar if the parsing fails
 	 */
 	public @NonNull YamlScalar getAsParsedYamlScalar() {
-		if (this.isString()) {
+		if (this.isYamlString()) {
 			Object parsed = tryParse(this.getAsString());
 			
 			return switch (parsed) {
@@ -429,8 +329,7 @@ public class YamlScalar implements YamlElement {
 		
 		if (this.value instanceof String string) {
 			if (needsQuoting(string)) {
-				// Use double quotes and escape special characters
-				return "\"" + escapeString(string) + "\"";
+				return "\"" + YamlHelper.escapeString(string) + "\"";
 			}
 			return string;
 		} else if (this.value instanceof Double d) {

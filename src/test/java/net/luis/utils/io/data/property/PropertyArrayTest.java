@@ -376,14 +376,14 @@ class PropertyArrayTest {
 	void primitiveTypeChecks() {
 		PropertyArray array = new PropertyArray();
 		
-		assertFalse(array.isBoolean());
-		assertFalse(array.isNumber());
-		assertFalse(array.isByte());
-		assertFalse(array.isShort());
-		assertFalse(array.isInteger());
-		assertFalse(array.isLong());
-		assertFalse(array.isFloat());
-		assertFalse(array.isDouble());
-		assertFalse(array.isString());
+		assertFalse(array.isPropertyBoolean());
+		assertFalse(array.isPropertyNumber());
+		assertFalse(array.isPropertyByte());
+		assertFalse(array.isPropertyShort());
+		assertFalse(array.isPropertyInteger());
+		assertFalse(array.isPropertyLong());
+		assertFalse(array.isPropertyFloat());
+		assertFalse(array.isPropertyDouble());
+		assertFalse(array.isPropertyString());
 	}
 }

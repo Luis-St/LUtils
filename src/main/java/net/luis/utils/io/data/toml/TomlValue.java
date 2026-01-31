@@ -120,64 +120,6 @@ public class TomlValue implements TomlElement {
 		this.value = Objects.requireNonNull(value, "Value must not be null");
 	}
 	
-	//region String helper methods
-	
-	/**
-	 * Checks if the given string needs to be quoted in TOML output.<br>
-	 *
-	 * @param str The string to check
-	 * @return True if the string needs quoting, false otherwise
-	 * @throws NullPointerException If the string is null
-	 */
-	private static boolean needsQuoting(@NonNull String str) {
-		Objects.requireNonNull(str, "String must not be null");
-		if (str.isEmpty()) {
-			return true;
-		}
-		
-		for (int i = 0; i < str.length(); i++) {
-			char c = str.charAt(i);
-			if (c < 0x20 || c == '"' || c == '\\') {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * Escapes special characters in a string for TOML output.<br>
-	 *
-	 * @param str The string to escape
-	 * @return The escaped string
-	 * @throws NullPointerException If the string is null
-	 */
-	private static @NonNull String escapeString(@NonNull String str) {
-		Objects.requireNonNull(str, "String must not be null");
-		
-		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < str.length(); i++) {
-			char c = str.charAt(i);
-			switch (c) {
-				case '"' -> result.append("\\\"");
-				case '\\' -> result.append("\\\\");
-				case '\b' -> result.append("\\b");
-				case '\f' -> result.append("\\f");
-				case '\n' -> result.append("\\n");
-				case '\r' -> result.append("\\r");
-				case '\t' -> result.append("\\t");
-				default -> {
-					if (c < 0x20) {
-						result.append(String.format("\\u%04X", (int) c));
-					} else {
-						result.append(c);
-					}
-				}
-			}
-		}
-		return result.toString();
-	}
-	//endregion
-	
 	/**
 	 * Returns the name of the type of this TOML value in a human-readable format.<br>
 	 * Used for debugging and error messages.<br>
@@ -186,214 +128,214 @@ public class TomlValue implements TomlElement {
 	 * @throws IllegalStateException If the type of this TOML value is unknown
 	 */
 	private @NonNull String getName() {
-		if (this.isBoolean()) {
+		if (this.isTomlBoolean()) {
 			return "toml boolean";
-		} else if (this.isNumber()) {
+		} else if (this.isTomlNumber()) {
 			return "toml number";
-		} else if (this.isString()) {
+		} else if (this.isTomlString()) {
 			return "toml string";
-		} else if (this.isLocalDate()) {
+		} else if (this.isTomlLocalDate()) {
 			return "toml local date";
-		} else if (this.isLocalTime()) {
+		} else if (this.isTomlLocalTime()) {
 			return "toml local time";
-		} else if (this.isLocalDateTime()) {
+		} else if (this.isTomlLocalDateTime()) {
 			return "toml local date-time";
-		} else if (this.isOffsetDateTime()) {
+		} else if (this.isTomlOffsetDateTime()) {
 			return "toml offset date-time";
 		}
 		throw new IllegalStateException("Unknown TOML value type");
 	}
 	
 	@Override
-	public boolean isBoolean() {
+	public boolean isTomlBoolean() {
 		return this.value instanceof Boolean;
 	}
 	
 	@Override
 	public boolean getAsBoolean() {
-		if (this.isBoolean()) {
+		if (this.isTomlBoolean()) {
 			return (boolean) this.value;
 		}
 		throw new TomlTypeException("Expected a TOML boolean, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isNumber() {
+	public boolean isTomlNumber() {
 		return this.value instanceof Number;
 	}
 	
 	@Override
 	public @NonNull Number getAsNumber() {
-		if (this.isNumber()) {
+		if (this.isTomlNumber()) {
 			return (Number) this.value;
 		}
 		throw new TomlTypeException("Expected a TOML number, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isByte() {
+	public boolean isTomlByte() {
 		return this.value instanceof Byte;
 	}
 	
 	@Override
 	public byte getAsByte() {
-		if (this.isByte()) {
+		if (this.isTomlByte()) {
 			return (byte) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().byteValue();
 		}
 		throw new TomlTypeException("Expected a TOML byte, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isShort() {
+	public boolean isTomlShort() {
 		return this.value instanceof Short;
 	}
 	
 	@Override
 	public short getAsShort() {
-		if (this.isShort()) {
+		if (this.isTomlShort()) {
 			return (short) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().shortValue();
 		}
 		throw new TomlTypeException("Expected a TOML short, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isInteger() {
+	public boolean isTomlInteger() {
 		return this.value instanceof Integer;
 	}
 	
 	@Override
 	public int getAsInteger() {
-		if (this.isInteger()) {
+		if (this.isTomlInteger()) {
 			return (int) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().intValue();
 		}
 		throw new TomlTypeException("Expected a TOML integer, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isLong() {
+	public boolean isTomlLong() {
 		return this.value instanceof Long;
 	}
 	
 	@Override
 	public long getAsLong() {
-		if (this.isLong()) {
+		if (this.isTomlLong()) {
 			return (long) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().longValue();
 		}
 		throw new TomlTypeException("Expected a TOML long, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isFloat() {
+	public boolean isTomlFloat() {
 		return this.value instanceof Float;
 	}
 	
 	@Override
 	public float getAsFloat() {
-		if (this.isFloat()) {
+		if (this.isTomlFloat()) {
 			return (float) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().floatValue();
 		}
 		throw new TomlTypeException("Expected a TOML float, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isDouble() {
+	public boolean isTomlDouble() {
 		return this.value instanceof Double;
 	}
 	
 	@Override
 	public double getAsDouble() {
-		if (this.isDouble()) {
+		if (this.isTomlDouble()) {
 			return (double) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().doubleValue();
 		}
 		throw new TomlTypeException("Expected a TOML double, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isString() {
+	public boolean isTomlString() {
 		return this.value instanceof String;
 	}
 	
 	@Override
 	public @NonNull String getAsString() {
-		if (this.isString()) {
+		if (this.isTomlString()) {
 			return (String) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().toString();
-		} else if (this.isBoolean()) {
+		} else if (this.isTomlBoolean()) {
 			return String.valueOf(this.getAsBoolean());
-		} else if (this.isDateTime()) {
+		} else if (this.isTomlDateTime()) {
 			return this.formatDateTime(TomlConfig.DEFAULT);
 		}
 		throw new TomlTypeException("Expected a TOML string, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isLocalDate() {
+	public boolean isTomlLocalDate() {
 		return this.value instanceof LocalDate;
 	}
 	
 	@Override
 	public @NonNull LocalDate getAsLocalDate() {
-		if (this.isLocalDate()) {
+		if (this.isTomlLocalDate()) {
 			return (LocalDate) this.value;
 		}
 		throw new TomlTypeException("Expected a TOML local date, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isLocalTime() {
+	public boolean isTomlLocalTime() {
 		return this.value instanceof LocalTime;
 	}
 	
 	@Override
 	public @NonNull LocalTime getAsLocalTime() {
-		if (this.isLocalTime()) {
+		if (this.isTomlLocalTime()) {
 			return (LocalTime) this.value;
 		}
 		throw new TomlTypeException("Expected a TOML local time, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isLocalDateTime() {
+	public boolean isTomlLocalDateTime() {
 		return this.value instanceof LocalDateTime;
 	}
 	
 	@Override
 	public @NonNull LocalDateTime getAsLocalDateTime() {
-		if (this.isLocalDateTime()) {
+		if (this.isTomlLocalDateTime()) {
 			return (LocalDateTime) this.value;
 		}
 		throw new TomlTypeException("Expected a TOML local date-time, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isOffsetDateTime() {
+	public boolean isTomlOffsetDateTime() {
 		return this.value instanceof OffsetDateTime;
 	}
 	
 	@Override
 	public @NonNull OffsetDateTime getAsOffsetDateTime() {
-		if (this.isOffsetDateTime()) {
+		if (this.isTomlOffsetDateTime()) {
 			return (OffsetDateTime) this.value;
 		}
 		throw new TomlTypeException("Expected a TOML offset date-time, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isDateTime() {
-		return this.isLocalDate() || this.isLocalTime() || this.isLocalDateTime() || this.isOffsetDateTime();
+	public boolean isTomlDateTime() {
+		return this.isTomlLocalDate() || this.isTomlLocalTime() || this.isTomlLocalDateTime() || this.isTomlOffsetDateTime();
 	}
 	
 	/**
@@ -406,18 +348,18 @@ public class TomlValue implements TomlElement {
 	 */
 	private @NonNull String formatDateTime(@NonNull TomlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
-		if (this.isLocalDate()) {
+		if (this.isTomlLocalDate()) {
 			return this.getAsLocalDate().toString();
-		} else if (this.isLocalTime()) {
+		} else if (this.isTomlLocalTime()) {
 			return this.getAsLocalTime().toString();
-		} else if (this.isLocalDateTime()) {
+		} else if (this.isTomlLocalDateTime()) {
 			LocalDateTime dt = this.getAsLocalDateTime();
 			
 			return switch (config.dateTimeStyle()) {
 				case RFC_3339, ISO_8601 -> dt.toString();
 				case SPACE_SEPARATED -> dt.toLocalDate() + " " + dt.toLocalTime();
 			};
-		} else if (this.isOffsetDateTime()) {
+		} else if (this.isTomlOffsetDateTime()) {
 			OffsetDateTime dt = this.getAsOffsetDateTime();
 			
 			return switch (config.dateTimeStyle()) {
@@ -452,10 +394,11 @@ public class TomlValue implements TomlElement {
 	public @NonNull String toString(@NonNull TomlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		
-		if (this.isBoolean()) {
+		if (this.isTomlBoolean()) {
 			return this.getAsBoolean() ? "true" : "false";
-		} else if (this.isNumber()) {
+		} else if (this.isTomlNumber()) {
 			Number num = this.getAsNumber();
+			
 			if (num instanceof Double d) {
 				if (d.isInfinite()) {
 					return d > 0 ? "inf" : "-inf";
@@ -470,13 +413,14 @@ public class TomlValue implements TomlElement {
 				}
 			}
 			return num.toString();
-		} else if (this.isString()) {
+		} else if (this.isTomlString()) {
 			String str = (String) this.value;
+			
 			if (config.useMultiLineStrings() && str.length() > config.multiLineStringThreshold() && str.contains("\n")) {
 				return "\"\"\"" + str + "\"\"\"";
 			}
-			return "\"" + escapeString(str) + "\"";
-		} else if (this.isDateTime()) {
+			return "\"" + TomlHelper.escapeString(str) + "\"";
+		} else if (this.isTomlDateTime()) {
 			return this.formatDateTime(config);
 		}
 		

@@ -132,6 +132,7 @@ public record IniConfig(
 	 */
 	public void ensureKeyMatches(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		if (key.isBlank()) {
 			throw new IniSyntaxException("Ini key must not be empty");
 		}
@@ -149,6 +150,7 @@ public record IniConfig(
 	 */
 	public void ensureSectionMatches(@NonNull String sectionName) {
 		Objects.requireNonNull(sectionName, "Section name must not be null");
+		
 		if (sectionName.isBlank()) {
 			throw new IniSyntaxException("Ini section name must not be empty");
 		}

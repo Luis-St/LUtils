@@ -23,7 +23,6 @@ import net.luis.utils.io.data.ini.exception.IniSyntaxException;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -81,7 +80,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniEmptyInput() throws IOException {
+	void readIniEmptyInput() {
 		try (IniReader reader = new IniReader("")) {
 			IniDocument document = reader.readIni();
 			assertTrue(document.isEmpty());
@@ -91,7 +90,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniSingleGlobalProperty() throws IOException {
+	void readIniSingleGlobalProperty() {
 		try (IniReader reader = new IniReader("key = value")) {
 			IniDocument document = reader.readIni();
 			assertTrue(document.hasGlobalProperties());
@@ -101,7 +100,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniMultipleGlobalProperties() throws IOException {
+	void readIniMultipleGlobalProperties() {
 		String ini = """
 			key1 = value1
 			key2 = value2
@@ -118,7 +117,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniSingleSection() throws IOException {
+	void readIniSingleSection() {
 		String ini = """
 			[section]
 			key = value
@@ -137,7 +136,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniMultipleSections() throws IOException {
+	void readIniMultipleSections() {
 		String ini = """
 			[section1]
 			key1 = value1
@@ -159,7 +158,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniGlobalsAndSections() throws IOException {
+	void readIniGlobalsAndSections() {
 		String ini = """
 			globalKey = globalValue
 			
@@ -177,7 +176,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniCommentsIgnored() throws IOException {
+	void readIniCommentsIgnored() {
 		String ini = """
 			; This is a comment
 			# This is also a comment
@@ -198,7 +197,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniEmptyLinesIgnored() throws IOException {
+	void readIniEmptyLinesIgnored() {
 		String ini = """
 			
 			key1 = value1
@@ -218,7 +217,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniQuotedStringValues() throws IOException {
+	void readIniQuotedStringValues() {
 		String ini = """
 			key1 = "quoted value"
 			key2 = 'single quoted'
@@ -234,7 +233,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniEscapeSequences() throws IOException {
+	void readIniEscapeSequences() {
 		String ini = """
 			key1 = "line1\\nline2"
 			key2 = "tab\\there"
@@ -250,7 +249,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniEmptyValue() throws IOException {
+	void readIniEmptyValue() {
 		String ini = "key =";
 		
 		try (IniReader reader = new IniReader(ini)) {
@@ -260,7 +259,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniTypedValuesBoolean() throws IOException {
+	void readIniTypedValuesBoolean() {
 		String ini = """
 			trueKey = true
 			falseKey = false
@@ -278,7 +277,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniTypedValuesNumbers() throws IOException {
+	void readIniTypedValuesNumbers() {
 		String ini = """
 			intKey = 42
 			negativeKey = -17
@@ -296,7 +295,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniInlineComments() throws IOException {
+	void readIniInlineComments() {
 		String ini = """
 			key1 = value1 ; this is a comment
 			key2 = value2 # another comment
@@ -310,7 +309,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniInlineCommentInQuotedStringPreserved() throws IOException {
+	void readIniInlineCommentInQuotedStringPreserved() {
 		String ini = """
 			key = "value ; not a comment"
 			""";
@@ -327,8 +326,6 @@ class IniReaderTest {
 		
 		try (IniReader reader = new IniReader(ini, STRICT_CONFIG)) {
 			assertThrows(IniSyntaxException.class, reader::readIni);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
@@ -338,8 +335,6 @@ class IniReaderTest {
 		
 		try (IniReader reader = new IniReader(ini, STRICT_CONFIG)) {
 			assertThrows(IniSyntaxException.class, reader::readIni);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
@@ -355,8 +350,6 @@ class IniReaderTest {
 		
 		try (IniReader reader = new IniReader(ini, STRICT_CONFIG)) {
 			assertThrows(IniSyntaxException.class, reader::readIni);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
@@ -369,13 +362,11 @@ class IniReaderTest {
 		
 		try (IniReader reader = new IniReader(ini, STRICT_CONFIG)) {
 			assertThrows(IniSyntaxException.class, reader::readIni);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
 	@Test
-	void readIniNonStrictModeDuplicateSectionAllowed() throws IOException {
+	void readIniNonStrictModeDuplicateSectionAllowed() {
 		String ini = """
 			[section]
 			key1 = value1
@@ -394,7 +385,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniNonStrictModeDuplicateKeyAllowed() throws IOException {
+	void readIniNonStrictModeDuplicateKeyAllowed() {
 		String ini = """
 			key = value1
 			key = value2
@@ -412,8 +403,6 @@ class IniReaderTest {
 		
 		try (IniReader reader = new IniReader(ini, STRICT_CONFIG)) {
 			assertThrows(IniSyntaxException.class, reader::readIni);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
@@ -423,8 +412,6 @@ class IniReaderTest {
 		
 		try (IniReader reader = new IniReader(ini, STRICT_CONFIG)) {
 			assertThrows(IniSyntaxException.class, reader::readIni);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
@@ -434,13 +421,11 @@ class IniReaderTest {
 		
 		try (IniReader reader = new IniReader(ini, STRICT_CONFIG)) {
 			assertThrows(IniSyntaxException.class, reader::readIni);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
 	@Test
-	void readIniNonStrictModeMissingSeparator() throws IOException {
+	void readIniNonStrictModeMissingSeparator() {
 		String ini = "keyWithoutValue";
 		
 		try (IniReader reader = new IniReader(ini, NON_STRICT_CONFIG)) {
@@ -455,13 +440,11 @@ class IniReaderTest {
 		
 		try (IniReader reader = new IniReader(ini, STRICT_CONFIG)) {
 			assertThrows(IniSyntaxException.class, reader::readIni);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
 	@Test
-	void readIniWithInputProvider() throws IOException {
+	void readIniWithInputProvider() {
 		String ini = """
 			[section]
 			key = value
@@ -476,7 +459,7 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void readIniWhitespaceTrimming() throws IOException {
+	void readIniWhitespaceTrimming() {
 		String ini = """
 			  key1  =  value1
 			[  section  ]
@@ -492,14 +475,14 @@ class IniReaderTest {
 	}
 	
 	@Test
-	void closeResource() throws IOException {
+	void closeResource() {
 		IniReader reader = new IniReader("key = value");
 		reader.readIni();
 		assertDoesNotThrow(reader::close);
 	}
 	
 	@Test
-	void readIniComplexDocument() throws IOException {
+	void readIniComplexDocument() {
 		String ini = """
 			; Application Configuration
 			appName = MyApplication

@@ -35,22 +35,22 @@ import java.util.function.BiConsumer;
  * @author Luis-St
  */
 public class IniDocument implements IniElement {
-
+	
 	/**
 	 * Global properties that appear before any section.<br>
 	 */
 	private final Map<String, IniElement> globalProperties = Maps.newLinkedHashMap();
-
+	
 	/**
 	 * Named sections in this document.<br>
 	 */
 	private final Map<String, IniSection> sections = Maps.newLinkedHashMap();
-
+	
 	/**
 	 * Constructs an empty ini document.<br>
 	 */
 	public IniDocument() {}
-
+	
 	/**
 	 * Returns the number of global properties in this document.<br>
 	 * @return The number of global properties
@@ -58,7 +58,7 @@ public class IniDocument implements IniElement {
 	public int globalSize() {
 		return this.globalProperties.size();
 	}
-
+	
 	/**
 	 * Checks if this document has any global properties.<br>
 	 * @return True if this document has global properties, false otherwise
@@ -66,7 +66,7 @@ public class IniDocument implements IniElement {
 	public boolean hasGlobalProperties() {
 		return !this.globalProperties.isEmpty();
 	}
-
+	
 	/**
 	 * Checks if this document contains a global property with the given key.<br>
 	 *
@@ -76,7 +76,7 @@ public class IniDocument implements IniElement {
 	public boolean containsGlobalKey(@Nullable String key) {
 		return this.globalProperties.containsKey(key);
 	}
-
+	
 	/**
 	 * Returns the set of global property keys.<br>
 	 * @return The global property keys
@@ -84,7 +84,7 @@ public class IniDocument implements IniElement {
 	public @NonNull Set<String> globalKeySet() {
 		return this.globalProperties.keySet();
 	}
-
+	
 	/**
 	 * Returns the collection of global property values.<br>
 	 * @return The global property values
@@ -92,7 +92,7 @@ public class IniDocument implements IniElement {
 	public @NonNull @Unmodifiable Collection<IniElement> globalElements() {
 		return Collections.unmodifiableCollection(this.globalProperties.values());
 	}
-
+	
 	/**
 	 * Returns the set of global property entries.<br>
 	 * @return The global property entries
@@ -100,7 +100,7 @@ public class IniDocument implements IniElement {
 	public @NonNull Set<Map.Entry<String, IniElement>> globalEntrySet() {
 		return this.globalProperties.entrySet();
 	}
-
+	
 	/**
 	 * Iterates over global properties and applies the given action.<br>
 	 *
@@ -110,7 +110,7 @@ public class IniDocument implements IniElement {
 	public void forEachGlobal(@NonNull BiConsumer<? super String, ? super IniElement> action) {
 		this.globalProperties.forEach(Objects.requireNonNull(action, "Action must not be null"));
 	}
-
+	
 	/**
 	 * Adds a global property to this document.<br>
 	 * If the element is null, it will be replaced with ini null.<br>
@@ -124,7 +124,7 @@ public class IniDocument implements IniElement {
 		Objects.requireNonNull(key, "Global property key must not be null");
 		return this.globalProperties.put(key, element == null ? IniNull.INSTANCE : element);
 	}
-
+	
 	/**
 	 * Adds a global string property to this document.<br>
 	 *
@@ -136,7 +136,7 @@ public class IniDocument implements IniElement {
 	public @Nullable IniElement addGlobal(@NonNull String key, @Nullable String value) {
 		return this.addGlobal(key, value == null ? null : new IniValue(value));
 	}
-
+	
 	/**
 	 * Adds a global boolean property to this document.<br>
 	 *
@@ -148,7 +148,7 @@ public class IniDocument implements IniElement {
 	public @Nullable IniElement addGlobal(@NonNull String key, boolean value) {
 		return this.addGlobal(key, new IniValue(value));
 	}
-
+	
 	/**
 	 * Adds a global number property to this document.<br>
 	 *
@@ -160,7 +160,7 @@ public class IniDocument implements IniElement {
 	public @Nullable IniElement addGlobal(@NonNull String key, @Nullable Number value) {
 		return this.addGlobal(key, value == null ? null : new IniValue(value));
 	}
-
+	
 	/**
 	 * Removes a global property from this document.<br>
 	 *
@@ -170,14 +170,14 @@ public class IniDocument implements IniElement {
 	public @Nullable IniElement removeGlobal(@Nullable String key) {
 		return this.globalProperties.remove(key);
 	}
-
+	
 	/**
 	 * Removes all global properties from this document.<br>
 	 */
 	public void clearGlobal() {
 		this.globalProperties.clear();
 	}
-
+	
 	/**
 	 * Gets a global property from this document.<br>
 	 *
@@ -189,7 +189,7 @@ public class IniDocument implements IniElement {
 		Objects.requireNonNull(key, "Global property key must not be null");
 		return this.globalProperties.get(key);
 	}
-
+	
 	/**
 	 * Gets a global property as an ini value.<br>
 	 *
@@ -212,7 +212,7 @@ public class IniDocument implements IniElement {
 		
 		return element.getAsIniValue();
 	}
-
+	
 	/**
 	 * Gets a global property as a string.<br>
 	 *
@@ -225,7 +225,7 @@ public class IniDocument implements IniElement {
 	public @NonNull String getGlobalAsString(@NonNull String key) {
 		return this.getGlobalIniValue(key).getAsString();
 	}
-
+	
 	/**
 	 * Gets a global property as a boolean.<br>
 	 *
@@ -238,7 +238,7 @@ public class IniDocument implements IniElement {
 	public boolean getGlobalAsBoolean(@NonNull String key) {
 		return this.getGlobalIniValue(key).getAsBoolean();
 	}
-
+	
 	/**
 	 * Gets a global property as a number.<br>
 	 *
@@ -251,7 +251,7 @@ public class IniDocument implements IniElement {
 	public @NonNull Number getGlobalAsNumber(@NonNull String key) {
 		return this.getGlobalIniValue(key).getAsNumber();
 	}
-
+	
 	/**
 	 * Gets a global property as an integer.<br>
 	 *
@@ -264,7 +264,7 @@ public class IniDocument implements IniElement {
 	public int getGlobalAsInteger(@NonNull String key) {
 		return this.getGlobalIniValue(key).getAsInteger();
 	}
-
+	
 	/**
 	 * Gets a global property as a long.<br>
 	 *
@@ -277,7 +277,7 @@ public class IniDocument implements IniElement {
 	public long getGlobalAsLong(@NonNull String key) {
 		return this.getGlobalIniValue(key).getAsLong();
 	}
-
+	
 	/**
 	 * Gets a global property as a double.<br>
 	 *
@@ -290,7 +290,7 @@ public class IniDocument implements IniElement {
 	public double getGlobalAsDouble(@NonNull String key) {
 		return this.getGlobalIniValue(key).getAsDouble();
 	}
-
+	
 	/**
 	 * Returns the number of sections in this document.<br>
 	 * @return The number of sections
@@ -298,7 +298,7 @@ public class IniDocument implements IniElement {
 	public int sectionCount() {
 		return this.sections.size();
 	}
-
+	
 	/**
 	 * Checks if this document has any sections.<br>
 	 * @return True if this document has sections, false otherwise
@@ -306,7 +306,7 @@ public class IniDocument implements IniElement {
 	public boolean hasSections() {
 		return !this.sections.isEmpty();
 	}
-
+	
 	/**
 	 * Checks if this document contains a section with the given name.<br>
 	 *
@@ -316,7 +316,7 @@ public class IniDocument implements IniElement {
 	public boolean containsSection(@Nullable String name) {
 		return this.sections.containsKey(name);
 	}
-
+	
 	/**
 	 * Returns the set of section names.<br>
 	 * @return The section names
@@ -324,7 +324,7 @@ public class IniDocument implements IniElement {
 	public @NonNull Set<String> sectionNames() {
 		return this.sections.keySet();
 	}
-
+	
 	/**
 	 * Returns the collection of sections.<br>
 	 * @return The sections
@@ -332,7 +332,7 @@ public class IniDocument implements IniElement {
 	public @NonNull @Unmodifiable Collection<IniSection> sections() {
 		return Collections.unmodifiableCollection(this.sections.values());
 	}
-
+	
 	/**
 	 * Iterates over sections and applies the given action.<br>
 	 *
@@ -342,7 +342,7 @@ public class IniDocument implements IniElement {
 	public void forEachSection(@NonNull BiConsumer<? super String, ? super IniSection> action) {
 		this.sections.forEach(Objects.requireNonNull(action, "Action must not be null"));
 	}
-
+	
 	/**
 	 * Adds a section to this document.<br>
 	 * If a section with the same name exists, it will be replaced.<br>
@@ -355,7 +355,7 @@ public class IniDocument implements IniElement {
 		Objects.requireNonNull(section, "Section must not be null");
 		return this.sections.put(section.getName(), section);
 	}
-
+	
 	/**
 	 * Creates and adds an empty section with the given name.<br>
 	 *
@@ -371,7 +371,7 @@ public class IniDocument implements IniElement {
 		this.sections.put(name, section);
 		return section;
 	}
-
+	
 	/**
 	 * Gets or creates a section with the given name.<br>
 	 *
@@ -384,7 +384,7 @@ public class IniDocument implements IniElement {
 		Objects.requireNonNull(name, "Section name must not be null");
 		return this.sections.computeIfAbsent(name, IniSection::new);
 	}
-
+	
 	/**
 	 * Removes a section from this document.<br>
 	 *
@@ -394,14 +394,14 @@ public class IniDocument implements IniElement {
 	public @Nullable IniSection removeSection(@Nullable String name) {
 		return this.sections.remove(name);
 	}
-
+	
 	/**
 	 * Removes all sections from this document.<br>
 	 */
 	public void clearSections() {
 		this.sections.clear();
 	}
-
+	
 	/**
 	 * Gets a section from this document.<br>
 	 *
@@ -413,7 +413,7 @@ public class IniDocument implements IniElement {
 		Objects.requireNonNull(name, "Section name must not be null");
 		return this.sections.get(name);
 	}
-
+	
 	/**
 	 * Gets a section from this document, throwing if not found.<br>
 	 *
@@ -431,7 +431,7 @@ public class IniDocument implements IniElement {
 		}
 		return section;
 	}
-
+	
 	/**
 	 * Checks if this document is empty (no global properties and no sections).<br>
 	 * @return True if this document is empty, false otherwise
@@ -439,7 +439,7 @@ public class IniDocument implements IniElement {
 	public boolean isEmpty() {
 		return this.globalProperties.isEmpty() && this.sections.isEmpty();
 	}
-
+	
 	/**
 	 * Removes all global properties and sections from this document.<br>
 	 */
@@ -453,44 +453,44 @@ public class IniDocument implements IniElement {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof IniDocument that)) return false;
-
+		
 		return this.globalProperties.equals(that.globalProperties) && this.sections.equals(that.sections);
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.globalProperties, this.sections);
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.toString(IniConfig.DEFAULT);
 	}
-
+	
 	@Override
 	public @NonNull String toString(@NonNull IniConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder();
 		String alignment = " ".repeat(config.alignment());
-
+		
 		boolean first = true;
 		for (Map.Entry<String, IniElement> entry : this.globalProperties.entrySet()) {
 			IniElement value = entry.getValue();
-
+			
 			if (value.isIniNull() && config.nullStyle() == IniConfig.NullStyle.SKIP) {
 				continue;
 			}
-
+			
 			if (!first) {
 				builder.append(System.lineSeparator());
 			}
 			first = false;
-
+			
 			builder.append(entry.getKey());
 			builder.append(alignment).append(config.separator()).append(alignment);
 			builder.append(value.toString(config));
 		}
-
+		
 		for (IniSection section : this.sections.values()) {
 			if (!first || !builder.isEmpty()) {
 				builder.append(System.lineSeparator());
@@ -499,7 +499,7 @@ public class IniDocument implements IniElement {
 				}
 			}
 			first = false;
-
+			
 			builder.append(section.toString(config));
 		}
 		return builder.toString();

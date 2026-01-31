@@ -68,7 +68,7 @@ public class YamlMapping implements YamlElement {
 	 */
 	private static @NonNull String formatKey(@NonNull String key) {
 		if (key.isEmpty() || needsQuoting(key)) {
-			return "\"" + escapeString(key) + "\"";
+			return "\"" + YamlHelper.escapeString(key) + "\"";
 		}
 		return key;
 	}
@@ -83,15 +83,12 @@ public class YamlMapping implements YamlElement {
 		if (key.isEmpty()) {
 			return true;
 		}
-		// Check for characters that require quoting
+		
 		char first = key.charAt(0);
-		if (first == '#' || first == '&' || first == '*' || first == '!' ||
-			first == '|' || first == '>' || first == '\'' || first == '"' ||
-			first == '%' || first == '@' || first == '`' || first == '{' ||
-			first == '[' || first == '-' || first == '?' || Character.isDigit(first)) {
+		if (YamlHelper.isYamlSpecialCharacter(first) || Character.isDigit(first)) {
 			return true;
 		}
-		// Check for special characters within the key
+		
 		for (int i = 0; i < key.length(); i++) {
 			char c = key.charAt(i);
 			if (c == ':' || c == '#' || c == ' ' || c == '\n' || c == '\r' || c == '\t') {
@@ -99,31 +96,6 @@ public class YamlMapping implements YamlElement {
 			}
 		}
 		return false;
-	}
-	
-	/**
-	 * Escapes special characters in a string for YAML double-quoted output.<br>
-	 *
-	 * @param string The string to escape
-	 * @return The escaped string
-	 * @throws NullPointerException If the given string is null
-	 */
-	private static @NonNull String escapeString(@NonNull String string) {
-		Objects.requireNonNull(string, "String must not be null");
-		
-		StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < string.length(); i++) {
-			char c = string.charAt(i);
-			switch (c) {
-				case '"' -> builder.append("\\\"");
-				case '\\' -> builder.append("\\\\");
-				case '\n' -> builder.append("\\n");
-				case '\r' -> builder.append("\\r");
-				case '\t' -> builder.append("\\t");
-				default -> builder.append(c);
-			}
-		}
-		return builder.toString();
 	}
 	//endregion
 	

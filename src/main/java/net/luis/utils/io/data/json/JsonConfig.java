@@ -53,16 +53,27 @@ public record JsonConfig(
 	
 	/**
 	 * The default json configuration.<br>
-	 * Strict: true<br>
-	 * Pretty print: true<br>
-	 * Indent: "\t"<br>
-	 * Simplify arrays: true<br>
-	 * Max array simplification size: 10<br>
-	 * Simplify objects: true<br>
-	 * Max object simplification size: 1<br>
-	 * Charset: UTF-8<br>
+	 * <ul>
+	 *     <li>Strict: true</li>
+	 *     <li>Pretty print: true</li>
+	 *     <li>Indent: "\t"</li>
+	 *     <li>Simplify arrays: true</li>
+	 *     <li>Max array simplification size: 10</li>
+	 *     <li>Simplify objects: true</li>
+	 *     <li>Max object simplification size: 1</li>
+	 *     <li>Charset: UTF-8</li>
+	 * </ul>
 	 */
-	public static final JsonConfig DEFAULT = new JsonConfig(true, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8);
+	public static final JsonConfig DEFAULT = new JsonConfig(
+		true,
+		true,
+		"\t",
+		true,
+		10,
+		true,
+		1,
+		StandardCharsets.UTF_8
+	);
 	
 	/**
 	 * Constructs a new json configuration.<br>

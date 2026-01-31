@@ -48,14 +48,23 @@ public record XmlConfig(
 	
 	/**
 	 * The default xml configuration.<br>
-	 * Strict: true<br>
-	 * Pretty print: true<br>
-	 * Indent: "\t"<br>
-	 * Allow attributes: true<br>
-	 * Simplify values: true<br>
-	 * Charset: UTF-8<br>
+	 * <ul>
+	 *     <li>Strict: true</li>
+	 *     <li>Pretty print: true</li>
+	 *     <li>Indent: "\t"</li>
+	 *     <li>Allow attributes: true</li>
+	 *     <li>Simplify values: true</li>
+	 *     <li>Charset: UTF-8</li>
+	 * </ul>
 	 */
-	public static final XmlConfig DEFAULT = new XmlConfig(true, true, "\t", true, true, StandardCharsets.UTF_8);
+	public static final XmlConfig DEFAULT = new XmlConfig(
+		true,
+		true,
+		"\t",
+		true,
+		true,
+		StandardCharsets.UTF_8
+	);
 	
 	/**
 	 * Constructs a new xml configuration.<br>

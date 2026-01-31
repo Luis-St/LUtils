@@ -56,6 +56,18 @@ public class PropertyArray implements PropertyElement, Iterable<PropertyElement>
 	}
 	
 	/**
+	 * Checks if the given index is valid for this property array.<br>
+	 *
+	 * @param index The index to check
+	 * @throws PropertyArrayIndexOutOfBoundsException If the index is out of bounds
+	 */
+	private void checkIndex(int index) {
+		if (index < 0 || index >= this.elements.size()) {
+			throw new PropertyArrayIndexOutOfBoundsException(index, this.elements.size());
+		}
+	}
+	
+	/**
 	 * Returns the number of elements in this property array.<br>
 	 * @return The size of this property array
 	 */
@@ -307,18 +319,6 @@ public class PropertyArray implements PropertyElement, Iterable<PropertyElement>
 	 */
 	public void clear() {
 		this.elements.clear();
-	}
-	
-	/**
-	 * Checks if the given index is valid for this property array.<br>
-	 *
-	 * @param index The index to check
-	 * @throws PropertyArrayIndexOutOfBoundsException If the index is out of bounds
-	 */
-	private void checkIndex(int index) {
-		if (index < 0 || index >= this.elements.size()) {
-			throw new PropertyArrayIndexOutOfBoundsException(index, this.elements.size());
-		}
 	}
 	
 	/**

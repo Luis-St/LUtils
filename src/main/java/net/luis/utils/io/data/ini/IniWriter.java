@@ -188,9 +188,7 @@ public class IniWriter implements AutoCloseable {
 				this.writer.newLine();
 			}
 			
-			this.writer.write("[");
-			this.writer.write(sectionName);
-			this.writer.write("]");
+			this.writer.write("[" + sectionName + "]");
 			this.writer.newLine();
 			this.writer.flush();
 		} catch (IOException e) {

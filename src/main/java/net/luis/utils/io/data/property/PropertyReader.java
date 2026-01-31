@@ -22,15 +22,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.property.exception.PropertySyntaxException;
-import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.reader.StringScope;
+import net.luis.utils.io.reader.*;
 import net.luis.utils.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.io.*;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -106,7 +105,33 @@ public class PropertyReader implements AutoCloseable {
 	/**
 	 * The internal io reader to read the properties.<br>
 	 */
-	private final BufferedReader reader;
+	private final StringReader reader;
+	/**
+	 * The current line number for error messages.<br>
+	 */
+	private int lineNumber;
+	
+	/**
+	 * Constructs a new property reader with the given string and the default configuration.<br>
+	 *
+	 * @param string The string to read from
+	 * @throws NullPointerException If the string is null
+	 */
+	public PropertyReader(@NonNull String string) {
+		this(string, PropertyConfig.DEFAULT);
+	}
+	
+	/**
+	 * Constructs a new property reader with the given string and configuration.<br>
+	 *
+	 * @param string The string to read from
+	 * @param config The configuration for this reader
+	 * @throws NullPointerException If the string or the configuration is null
+	 */
+	public PropertyReader(@NonNull String string, @NonNull PropertyConfig config) {
+		this.config = Objects.requireNonNull(config, "Property config must not be null");
+		this.reader = new StringReader(Objects.requireNonNull(string, "String must not be null"));
+	}
 	
 	/**
 	 * Constructs a new property reader with the given input and the default configuration.<br>
@@ -127,7 +152,7 @@ public class PropertyReader implements AutoCloseable {
 	 */
 	public PropertyReader(@NonNull InputProvider input, @NonNull PropertyConfig config) {
 		this.config = Objects.requireNonNull(config, "Property config must not be null");
-		this.reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
+		this.reader = new StringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
 	
 	/**
@@ -155,6 +180,7 @@ public class PropertyReader implements AutoCloseable {
 	 */
 	private static @NonNull List<String> splitArrayElements(@NonNull String content, char separator) {
 		Objects.requireNonNull(content, "Content must not be null");
+		
 		List<String> elements = Lists.newArrayList();
 		StringBuilder current = new StringBuilder();
 		int depth = 0;
@@ -189,7 +215,6 @@ public class PropertyReader implements AutoCloseable {
 		if (!current.isEmpty()) {
 			elements.add(current.toString());
 		}
-		
 		return elements;
 	}
 	
@@ -201,32 +226,26 @@ public class PropertyReader implements AutoCloseable {
 	 */
 	public @NonNull PropertyObject readProperties() {
 		PropertyObject properties = new PropertyObject();
-		while (true) {
-			String line;
-			try {
-				line = this.reader.readLine();
-			} catch (Exception e) {
-				throw new PropertySyntaxException("Unable to read line from input", e);
-			}
-			if (line == null) {
-				break;
-			}
+		while (this.reader.canRead()) {
+			String line = this.reader.readLine(false);
+			this.lineNumber++;
+			
 			List<ParsedProperty> parsedProperties = this.parseLine(line);
 			if (parsedProperties.isEmpty()) {
 				continue;
 			}
 			for (ParsedProperty prop : parsedProperties) {
 				if (prop.isArrayAppend()) {
-					// Multi-line array syntax: key[] = value
 					String baseKey = prop.key();
 					PropertyArray array = this.arrayCache.computeIfAbsent(baseKey, k -> new PropertyArray());
+					
 					array.add(prop.element());
 					properties.add(baseKey, array);
 				} else {
 					properties.add(prop.key(), prop.element());
 				}
-				// Cache string values for variable resolution
-				if (prop.element() instanceof PropertyValue value && value.isString()) {
+				
+				if (prop.element() instanceof PropertyValue value && value.isPropertyString()) {
 					this.propertyCache.put(prop.key(), value.getAsString());
 				}
 			}
@@ -249,13 +268,15 @@ public class PropertyReader implements AutoCloseable {
 		if (line.isBlank() || this.config.commentCharacters().contains(line.charAt(0))) {
 			return List.of();
 		}
+		
 		char separator = this.config.separator();
 		if (!StringUtils.containsNotEscaped(line, separator)) {
-			throw new PropertySyntaxException("No separator (" + separator + ") found in line: " + line);
+			throw new PropertySyntaxException("No separator (" + separator + ") found at line " + this.lineNumber + ": " + line);
 		}
+		
 		String[] parts = StringUtils.splitNotEscaped(line, separator);
 		if (parts.length == 0) {
-			throw new PropertySyntaxException("Unable to split line at separator (" + separator + "): " + line);
+			throw new PropertySyntaxException("Unable to split line at separator (" + separator + ") at line " + this.lineNumber + ": " + line);
 		}
 		return this.parseProperty(parts[0], this.getValuePart(parts));
 	}
@@ -295,6 +316,7 @@ public class PropertyReader implements AutoCloseable {
 	private @NonNull @Unmodifiable List<ParsedProperty> parseProperty(@NonNull String rawKey, @NonNull String rawValue) {
 		Objects.requireNonNull(rawKey, "Key must not be null");
 		Objects.requireNonNull(rawValue, "Value must not be null");
+		
 		int alignment = this.getWhitespaceAlignmentCount(rawKey);
 		String key = this.removeAlignment(rawKey, alignment, true);
 		String value = this.removeAlignment(rawValue, alignment, false);
@@ -305,18 +327,21 @@ public class PropertyReader implements AutoCloseable {
 		}
 		
 		if (this.isAdvancedKey(key) && !this.config.advancedParsing()) {
-			throw new PropertySyntaxException("Advanced key '" + key + "' is not allowed: '" + rawKey + "'");
+			throw new PropertySyntaxException("Advanced key '" + key + "' is not allowed at line " + this.lineNumber + ": '" + rawKey + "'");
 		}
+		
 		if (this.config.advancedParsing()) {
 			List<ParsedProperty> properties = Lists.newArrayList();
 			for (String resolvedKey : this.resolveAdvancedKeys(key)) {
 				this.config.ensureKeyMatches(resolvedKey);
 				this.config.ensureValueMatches(value);
+				
 				PropertyElement element = this.parseValue(value);
 				properties.add(new ParsedProperty(resolvedKey, element, isArrayAppend));
 			}
 			return properties;
 		}
+		
 		this.config.ensureKeyMatches(key);
 		this.config.ensureValueMatches(value);
 		PropertyElement element = this.parseValue(value);
@@ -348,7 +373,6 @@ public class PropertyReader implements AutoCloseable {
 		}
 		
 		PropertyValue propValue = new PropertyValue(value);
-		
 		if (this.config.parseTypedValues()) {
 			return propValue.getAsParsedPropertyValue();
 		}
@@ -374,10 +398,12 @@ public class PropertyReader implements AutoCloseable {
 		List<String> elements = splitArrayElements(content, this.config.arraySeparator());
 		for (String element : elements) {
 			String trimmed = element.strip();
+			
 			if (trimmed.isEmpty()) {
 				array.add(PropertyNull.INSTANCE);
 			} else {
 				PropertyValue value = new PropertyValue(trimmed);
+				
 				if (this.config.parseTypedValues()) {
 					array.add(value.getAsParsedPropertyValue());
 				} else {
@@ -435,6 +461,7 @@ public class PropertyReader implements AutoCloseable {
 		if (0 >= alignment) {
 			return str;
 		}
+		
 		if (isKey) {
 			return str.substring(0, str.length() - alignment);
 		}
@@ -475,6 +502,7 @@ public class PropertyReader implements AutoCloseable {
 			if (partReader.peek() == '$') {
 				partReader.skip(); // skip $
 				position += partReader.getIndex();
+				
 				String variable = readScopeExclude(partReader, StringScope.CURLY_BRACKETS);
 				if (variable.isEmpty()) {
 					throw new PropertySyntaxException("Variable key part '${" + variable + "}' at position " + position + " must not be empty: '" + key + "'");
@@ -484,6 +512,7 @@ public class PropertyReader implements AutoCloseable {
 				resolvedKeys = this.extendResolvedKeys(resolvedKeys, this.resolveVariableKeyPart(key, variable));
 			} else if (partReader.peek() == '[') {
 				position += partReader.getIndex();
+				
 				String compacted = readScopeExclude(partReader, StringScope.SQUARE_BRACKETS);
 				if (compacted.isEmpty()) {
 					throw new PropertySyntaxException("Compacted key part '[" + compacted + "]' at position " + position + " must not be empty: '" + key + "'");
@@ -644,8 +673,8 @@ public class PropertyReader implements AutoCloseable {
 	}
 	
 	@Override
-	public void close() throws IOException {
-		this.reader.close();
+	public void close() {
+		this.reader.readRemaining();
 	}
 	
 	/**

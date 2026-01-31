@@ -168,7 +168,7 @@ public final class TomlTypeProvider implements TypeProvider<TomlElement> {
 		}
 		
 		TomlValue value = type.getAsTomlValue();
-		if (!value.isBoolean()) {
+		if (!value.isTomlBoolean()) {
 			return Result.error("Toml element '" + type + "' is not a toml boolean");
 		}
 		return Result.success(value.getAsBoolean());
@@ -185,7 +185,7 @@ public final class TomlTypeProvider implements TypeProvider<TomlElement> {
 		}
 		
 		TomlValue value = type.getAsTomlValue();
-		if (!value.isNumber()) {
+		if (!value.isTomlNumber()) {
 			return Result.error("Toml element '" + type + "' is not a toml byte");
 		}
 		return Result.success(value.getAsByte());
@@ -202,7 +202,7 @@ public final class TomlTypeProvider implements TypeProvider<TomlElement> {
 		}
 		
 		TomlValue value = type.getAsTomlValue();
-		if (!value.isNumber()) {
+		if (!value.isTomlNumber()) {
 			return Result.error("Toml element '" + type + "' is not a toml short");
 		}
 		return Result.success(value.getAsShort());
@@ -219,7 +219,7 @@ public final class TomlTypeProvider implements TypeProvider<TomlElement> {
 		}
 		
 		TomlValue value = type.getAsTomlValue();
-		if (!value.isNumber()) {
+		if (!value.isTomlNumber()) {
 			return Result.error("Toml element '" + type + "' is not a toml integer");
 		}
 		return Result.success(value.getAsInteger());
@@ -236,7 +236,7 @@ public final class TomlTypeProvider implements TypeProvider<TomlElement> {
 		}
 		
 		TomlValue value = type.getAsTomlValue();
-		if (!value.isNumber()) {
+		if (!value.isTomlNumber()) {
 			return Result.error("Toml element '" + type + "' is not a toml long");
 		}
 		return Result.success(value.getAsLong());
@@ -253,7 +253,7 @@ public final class TomlTypeProvider implements TypeProvider<TomlElement> {
 		}
 		
 		TomlValue value = type.getAsTomlValue();
-		if (!value.isNumber()) {
+		if (!value.isTomlNumber()) {
 			return Result.error("Toml element '" + type + "' is a toml string, not a toml float");
 		}
 		return Result.success(value.getAsFloat());
@@ -270,7 +270,7 @@ public final class TomlTypeProvider implements TypeProvider<TomlElement> {
 		}
 		
 		TomlValue value = type.getAsTomlValue();
-		if (!value.isNumber()) {
+		if (!value.isTomlNumber()) {
 			return Result.error("Toml element '" + type + "' is not a toml double");
 		}
 		return Result.success(value.getAsDouble());
@@ -287,7 +287,7 @@ public final class TomlTypeProvider implements TypeProvider<TomlElement> {
 		}
 		
 		TomlValue value = type.getAsTomlValue();
-		if (!value.isString()) {
+		if (!value.isTomlString()) {
 			return Result.error("Toml element '" + type + "' is not a toml string");
 		}
 		return Result.success(value.getAsString());

@@ -217,35 +217,35 @@ class PropertyValueTest {
 	@Test
 	void typeCheckMethods() {
 		PropertyValue boolValue = new PropertyValue(true);
-		assertTrue(boolValue.isBoolean());
-		assertFalse(boolValue.isNumber());
-		assertFalse(boolValue.isString());
+		assertTrue(boolValue.isPropertyBoolean());
+		assertFalse(boolValue.isPropertyNumber());
+		assertFalse(boolValue.isPropertyString());
 		
 		PropertyValue intValue = new PropertyValue(42);
-		assertFalse(intValue.isBoolean());
-		assertTrue(intValue.isNumber());
-		assertTrue(intValue.isInteger());
-		assertFalse(intValue.isString());
+		assertFalse(intValue.isPropertyBoolean());
+		assertTrue(intValue.isPropertyNumber());
+		assertTrue(intValue.isPropertyInteger());
+		assertFalse(intValue.isPropertyString());
 		
 		PropertyValue stringValue = new PropertyValue("test");
-		assertFalse(stringValue.isBoolean());
-		assertFalse(stringValue.isNumber());
-		assertTrue(stringValue.isString());
+		assertFalse(stringValue.isPropertyBoolean());
+		assertFalse(stringValue.isPropertyNumber());
+		assertTrue(stringValue.isPropertyString());
 		
 		PropertyValue byteValue = new PropertyValue((byte) 1);
-		assertTrue(byteValue.isByte());
+		assertTrue(byteValue.isPropertyByte());
 		
 		PropertyValue shortValue = new PropertyValue((short) 2);
-		assertTrue(shortValue.isShort());
+		assertTrue(shortValue.isPropertyShort());
 		
 		PropertyValue longValue = new PropertyValue(3L);
-		assertTrue(longValue.isLong());
+		assertTrue(longValue.isPropertyLong());
 		
 		PropertyValue floatValue = new PropertyValue(4.5f);
-		assertTrue(floatValue.isFloat());
+		assertTrue(floatValue.isPropertyFloat());
 		
 		PropertyValue doubleValue = new PropertyValue(5.5);
-		assertTrue(doubleValue.isDouble());
+		assertTrue(doubleValue.isPropertyDouble());
 	}
 	
 	@Test

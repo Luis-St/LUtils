@@ -326,7 +326,7 @@ public final class PropertyBuilder {
 	
 	/**
 	 * Adds a string value to the current array.<br>
-	 * If the value is null, it will be converted to PropertyNull.
+	 * If the value is null, it will be converted to PropertyNull.<br>
 	 *
 	 * @param value The string value to add
 	 * @return This builder for method chaining

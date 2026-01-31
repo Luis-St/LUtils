@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.data.ini;
 
+import net.luis.utils.io.data.DataHelper;
 import net.luis.utils.io.data.ini.exception.IniTypeException;
-import net.luis.utils.io.reader.StringReader;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -74,32 +74,6 @@ public class IniValue implements IniElement {
 	}
 	
 	/**
-	 * Tries to parse the given string to a boolean or number.<br>
-	 *
-	 * @param string The string
-	 * @return The parsed value or the string if it could not be parsed
-	 * @throws NullPointerException If the string is null
-	 */
-	private static @NonNull Object tryParse(@NonNull String string) {
-		Objects.requireNonNull(string, "String must not be null");
-		if ("true".equalsIgnoreCase(string) || "false".equalsIgnoreCase(string)) {
-			return Boolean.parseBoolean(string);
-		}
-		
-		StringReader reader = new StringReader(string);
-		try {
-			Number number = reader.readNumber();
-			reader.skipWhitespaces();
-			if (reader.canRead()) {
-				return string;
-			}
-			return number;
-		} catch (Exception e) {
-			return string;
-		}
-	}
-	
-	/**
 	 * Returns the name of the type of this ini value in a human-readable format.<br>
 	 * Used for debugging and error messages.<br>
 	 *
@@ -107,144 +81,144 @@ public class IniValue implements IniElement {
 	 * @throws IllegalStateException If the type of this ini value is unknown
 	 */
 	private @NonNull String getName() {
-		if (this.isBoolean()) {
+		if (this.isIniBoolean()) {
 			return "Ini boolean";
-		} else if (this.isNumber()) {
+		} else if (this.isIniNumber()) {
 			return "Ini number";
-		} else if (this.isString()) {
+		} else if (this.isIniString()) {
 			return "Ini string";
 		}
 		throw new IllegalStateException("Unknown ini value type");
 	}
 	
 	@Override
-	public boolean isBoolean() {
+	public boolean isIniBoolean() {
 		return this.value instanceof Boolean;
 	}
 	
 	@Override
 	public boolean getAsBoolean() {
-		if (this.isBoolean()) {
+		if (this.isIniBoolean()) {
 			return (boolean) this.value;
 		}
 		throw new IniTypeException("Expected an ini boolean, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isNumber() {
+	public boolean isIniNumber() {
 		return this.value instanceof Number;
 	}
 	
 	@Override
 	public @NonNull Number getAsNumber() {
-		if (this.isNumber()) {
+		if (this.isIniNumber()) {
 			return (Number) this.value;
 		}
 		throw new IniTypeException("Expected an ini number, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isByte() {
+	public boolean isIniByte() {
 		return this.value instanceof Byte;
 	}
 	
 	@Override
 	public byte getAsByte() {
-		if (this.isByte()) {
+		if (this.isIniByte()) {
 			return (byte) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isIniNumber()) {
 			return this.getAsNumber().byteValue();
 		}
 		throw new IniTypeException("Expected an ini byte, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isShort() {
+	public boolean isIniShort() {
 		return this.value instanceof Short;
 	}
 	
 	@Override
 	public short getAsShort() {
-		if (this.isShort()) {
+		if (this.isIniShort()) {
 			return (short) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isIniNumber()) {
 			return this.getAsNumber().shortValue();
 		}
 		throw new IniTypeException("Expected an ini short, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isInteger() {
+	public boolean isIniInteger() {
 		return this.value instanceof Integer;
 	}
 	
 	@Override
 	public int getAsInteger() {
-		if (this.isInteger()) {
+		if (this.isIniInteger()) {
 			return (int) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isIniNumber()) {
 			return this.getAsNumber().intValue();
 		}
 		throw new IniTypeException("Expected an ini integer, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isLong() {
+	public boolean isIniLong() {
 		return this.value instanceof Long;
 	}
 	
 	@Override
 	public long getAsLong() {
-		if (this.isLong()) {
+		if (this.isIniLong()) {
 			return (long) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isIniNumber()) {
 			return this.getAsNumber().longValue();
 		}
 		throw new IniTypeException("Expected an ini long, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isFloat() {
+	public boolean isIniFloat() {
 		return this.value instanceof Float;
 	}
 	
 	@Override
 	public float getAsFloat() {
-		if (this.isFloat()) {
+		if (this.isIniFloat()) {
 			return (float) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isIniNumber()) {
 			return this.getAsNumber().floatValue();
 		}
 		throw new IniTypeException("Expected an ini float, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isDouble() {
+	public boolean isIniDouble() {
 		return this.value instanceof Double;
 	}
 	
 	@Override
 	public double getAsDouble() {
-		if (this.isDouble()) {
+		if (this.isIniDouble()) {
 			return (double) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isIniNumber()) {
 			return this.getAsNumber().doubleValue();
 		}
 		throw new IniTypeException("Expected an ini double, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isString() {
+	public boolean isIniString() {
 		return this.value instanceof String;
 	}
 	
 	@Override
 	public @NonNull String getAsString() {
-		if (this.isString()) {
+		if (this.isIniString()) {
 			return (String) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isIniNumber()) {
 			return this.getAsNumber().toString();
-		} else if (this.isBoolean()) {
+		} else if (this.isIniBoolean()) {
 			return String.valueOf(this.getAsBoolean());
 		}
 		throw new IniTypeException("Expected an ini string, but found: " + this.getName());
@@ -258,8 +232,8 @@ public class IniValue implements IniElement {
 	 * @return An ini value with the parsed value or this ini value if the parsing fails
 	 */
 	public @NonNull IniValue getAsParsedIniValue() {
-		if (this.isString()) {
-			Object parsed = tryParse(this.getAsString());
+		if (this.isIniString()) {
+			Object parsed = DataHelper.tryParse(this.getAsString());
 			
 			return switch (parsed) {
 				case Boolean bool -> new IniValue(bool);

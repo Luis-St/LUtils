@@ -24,14 +24,15 @@ import net.luis.utils.io.reader.StringReader;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.io.*;
+import java.io.InputStreamReader;
 import java.util.Objects;
 
 /**
  * Represents a reader for ini files.<br>
  * This reader reads the ini content from a defined input and returns it as an ini document.<br>
  * <p>
- * ini format supports:
+ *     Ini format supports:
+ * </p>
  * <ul>
  *     <li>Global properties (before any section)</li>
  *     <li>Sections denoted by [section_name]</li>
@@ -52,7 +53,7 @@ public class IniReader implements AutoCloseable {
 	/**
 	 * The internal io reader to read the ini content.<br>
 	 */
-	private final BufferedReader reader;
+	private final StringReader reader;
 	
 	/**
 	 * The current line number for error messages.<br>
@@ -78,7 +79,7 @@ public class IniReader implements AutoCloseable {
 	 */
 	public IniReader(@NonNull String string, @NonNull IniConfig config) {
 		this.config = Objects.requireNonNull(config, "Ini config must not be null");
-		this.reader = new BufferedReader(new java.io.StringReader(Objects.requireNonNull(string, "String must not be null")));
+		this.reader = new StringReader(Objects.requireNonNull(string, "String must not be null"));
 	}
 	
 	/**
@@ -100,7 +101,7 @@ public class IniReader implements AutoCloseable {
 	 */
 	public IniReader(@NonNull InputProvider input, @NonNull IniConfig config) {
 		this.config = Objects.requireNonNull(config, "Ini config must not be null");
-		this.reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
+		this.reader = new StringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
 	
 	/**
@@ -108,37 +109,32 @@ public class IniReader implements AutoCloseable {
 	 *
 	 * @return The parsed ini document
 	 * @throws IniSyntaxException If the ini content has syntax errors
-	 * @throws UncheckedIOException If an I/O error occurs
 	 */
 	public @NonNull IniDocument readIni() {
-		try {
-			IniDocument document = new IniDocument();
-			IniSection currentSection = null;
-			String line;
+		IniDocument document = new IniDocument();
+		IniSection currentSection = null;
+		
+		while (this.reader.canRead()) {
+			String line = this.reader.readLine(false);
+			this.lineNumber++;
+			String trimmedLine = line.trim();
 			
-			while ((line = this.reader.readLine()) != null) {
-				this.lineNumber++;
-				String trimmedLine = line.trim();
-				
-				if (trimmedLine.isEmpty()) {
-					continue;
-				}
-				
-				if (this.isComment(trimmedLine)) {
-					continue;
-				}
-				
-				if (trimmedLine.startsWith("[")) {
-					currentSection = this.parseSection(trimmedLine, document);
-					continue;
-				}
-				
-				this.parseKeyValue(trimmedLine, document, currentSection);
+			if (trimmedLine.isEmpty()) {
+				continue;
 			}
-			return document;
-		} catch (IOException e) {
-			throw new UncheckedIOException("Failed to read ini content", e);
+			
+			if (this.isComment(trimmedLine)) {
+				continue;
+			}
+			
+			if (trimmedLine.startsWith("[")) {
+				currentSection = this.parseSection(trimmedLine, document);
+				continue;
+			}
+			
+			this.parseKeyValue(trimmedLine, document, currentSection);
 		}
+		return document;
 	}
 	
 	/**
@@ -288,8 +284,7 @@ public class IniReader implements AutoCloseable {
 			return IniNull.INSTANCE;
 		}
 		
-		if ((value.startsWith("\"") && value.endsWith("\"")) ||
-			(value.startsWith("'") && value.endsWith("'"))) {
+		if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
 			String unquoted = value.substring(1, value.length() - 1);
 			return new IniValue(this.processEscapes(unquoted));
 		}
@@ -303,6 +298,7 @@ public class IniReader implements AutoCloseable {
 				StringReader reader = new StringReader(value);
 				Number number = reader.readNumber();
 				reader.skipWhitespaces();
+				
 				if (!reader.canRead()) {
 					return new IniValue(number);
 				}
@@ -339,6 +335,7 @@ public class IniReader implements AutoCloseable {
 						result.append(c);
 					}
 				}
+				
 				escape = false;
 			} else if (c == '\\') {
 				escape = true;
@@ -375,7 +372,7 @@ public class IniReader implements AutoCloseable {
 	}
 	
 	@Override
-	public void close() throws IOException {
-		this.reader.close();
+	public void close() {
+		this.reader.readRemaining();
 	}
 }

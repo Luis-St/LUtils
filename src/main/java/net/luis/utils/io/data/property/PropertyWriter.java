@@ -67,6 +67,154 @@ public class PropertyWriter implements AutoCloseable {
 		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(output, "Output must not be null").getStream(), config.charset()));
 	}
 	
+	//region Static helper methods
+	
+	/**
+	 * Analyzes property entries and creates compacted entries where possible.<br>
+	 *
+	 * @param propertyObject The property object to analyze
+	 * @param minGroupSize The minimum group size required for compaction
+	 * @return A list of compacted entries
+	 * @throws NullPointerException If the property object is null
+	 */
+	private static @NonNull List<CompactedEntry> compactEntries(@NonNull PropertyObject propertyObject, int minGroupSize) {
+		Objects.requireNonNull(propertyObject, "Property object must not be null");
+		List<CompactedEntry> result = Lists.newArrayList();
+		Set<String> processedKeys = new HashSet<>();
+		
+		Map<String, Map<String, Map<String, PropertyElement>>> compactionGroups = findCompactionGroups(propertyObject);
+		
+		for (Map.Entry<String, Map<String, Map<String, PropertyElement>>> prefixEntry : compactionGroups.entrySet()) {
+			String prefix = prefixEntry.getKey();
+			Map<String, Map<String, PropertyElement>> suffixGroups = prefixEntry.getValue();
+			
+			for (Map.Entry<String, Map<String, PropertyElement>> suffixEntry : suffixGroups.entrySet()) {
+				String suffix = suffixEntry.getKey();
+				Map<String, PropertyElement> variants = suffixEntry.getValue();
+				
+				if (variants.size() >= minGroupSize) {
+					if (canCompact(variants)) {
+						String compactedKey = buildCompactedKey(prefix, variants.keySet(), suffix);
+						PropertyElement commonValue = variants.values().iterator().next();
+						result.add(new CompactedEntry(compactedKey, commonValue));
+						
+						for (String variant : variants.keySet()) {
+							String fullKey = buildFullKey(prefix, variant, suffix);
+							processedKeys.add(fullKey);
+						}
+					}
+				}
+			}
+		}
+		
+		for (Map.Entry<String, PropertyElement> entry : propertyObject.entrySet()) {
+			if (!processedKeys.contains(entry.getKey())) {
+				result.add(new CompactedEntry(entry.getKey(), entry.getValue()));
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * Finds groups of keys that can potentially be compacted.<br>
+	 * Groups are organized by prefix, suffix, and variants.<br>
+	 *
+	 * @param propertyObject The property object to analyze
+	 * @return A map of prefix -> suffix -> variant -> value
+	 * @throws NullPointerException If the property object is null
+	 */
+	private static @NonNull Map<String, Map<String, Map<String, PropertyElement>>> findCompactionGroups(@NonNull PropertyObject propertyObject) {
+		Objects.requireNonNull(propertyObject, "Property object must not be null");
+		Map<String, Map<String, Map<String, PropertyElement>>> groups = Maps.newLinkedHashMap();
+		
+		for (Map.Entry<String, PropertyElement> entry : propertyObject.entrySet()) {
+			String key = entry.getKey();
+			String[] parts = key.split("\\.");
+			
+			if (parts.length >= 2) {
+				for (int variantIndex = 0; variantIndex < parts.length; variantIndex++) {
+					String prefix = String.join(".", Arrays.copyOfRange(parts, 0, variantIndex));
+					String variant = parts[variantIndex];
+					String suffix = String.join(".", Arrays.copyOfRange(parts, variantIndex + 1, parts.length));
+					
+					groups.computeIfAbsent(prefix, _ -> Maps.newLinkedHashMap()).computeIfAbsent(suffix, _ -> Maps.newLinkedHashMap()).put(variant, entry.getValue());
+				}
+			}
+		}
+		
+		return groups;
+	}
+	
+	/**
+	 * Checks if all values in the variant map are equal and can be compacted.<br>
+	 *
+	 * @param variants The map of variant -> value
+	 * @return True if all values are equal, false otherwise
+	 * @throws NullPointerException If the variants map is null
+	 */
+	private static boolean canCompact(@NonNull Map<String, PropertyElement> variants) {
+		Objects.requireNonNull(variants, "Variants map must not be null");
+		if (variants.isEmpty()) {
+			return false;
+		}
+		
+		PropertyElement first = variants.values().iterator().next();
+		for (PropertyElement value : variants.values()) {
+			if (!Objects.equals(first, value)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * Builds a compacted key from prefix, variants, and suffix.<br>
+	 * <p>
+	 *     Example: prefix="app", variants=["dev", "prod"], suffix="url"
+	 *     Result: "app.[dev|prod].url"
+	 * </p>
+	 *
+	 * @param prefix The key prefix
+	 * @param variants The set of variant names
+	 * @param suffix The key suffix
+	 * @return The compacted key
+	 * @throws NullPointerException If the prefix, variants set, or suffix is null
+	 */
+	private static @NonNull String buildCompactedKey(@NonNull String prefix, @NonNull Set<String> variants, @NonNull String suffix) {
+		Objects.requireNonNull(prefix, "Prefix must not be null");
+		Objects.requireNonNull(variants, "Variants set must not be null");
+		String variantPart = "[" + variants.stream().sorted().collect(Collectors.joining("|")) + "]";
+		
+		return buildFullKey(prefix, variantPart, suffix);
+	}
+	
+	/**
+	 * Builds a full key from prefix, variant, and suffix.<br>
+	 *
+	 * @param prefix The key prefix
+	 * @param variant The variant name
+	 * @param suffix The key suffix
+	 * @return The full key
+	 * @throws NullPointerException If the prefix, variant, or suffix is null
+	 */
+	private static @NonNull String buildFullKey(@NonNull String prefix, @NonNull String variant, @NonNull String suffix) {
+		Objects.requireNonNull(prefix, "Prefix must not be null");
+		Objects.requireNonNull(variant, "Variant must not be null");
+		Objects.requireNonNull(suffix, "Suffix must not be null");
+		
+		StringBuilder builder = new StringBuilder();
+		if (!prefix.isEmpty()) {
+			builder.append(prefix).append(".");
+		}
+		
+		builder.append(variant);
+		if (!suffix.isEmpty()) {
+			builder.append(".").append(suffix);
+		}
+		return builder.toString();
+	}
+	//endregion
+	
 	/**
 	 * Writes the given property object to the underlying output.<br>
 	 * Uses the configured output format options including optional key compaction.<br>
@@ -77,15 +225,44 @@ public class PropertyWriter implements AutoCloseable {
 	 */
 	public void write(@NonNull PropertyObject propertyObject) {
 		Objects.requireNonNull(propertyObject, "Property object must not be null");
+		
 		try {
 			if (this.config.enableWriteCompaction()) {
 				this.writeWithCompaction(propertyObject);
 			} else {
 				this.writeSimple(propertyObject);
 			}
+			
 			this.writer.flush();
 		} catch (IOException e) {
 			throw new UncheckedIOException("An I/O error occurred while writing the property object", e);
+		}
+	}
+	
+	/**
+	 * Writes the property object with key compaction enabled.<br>
+	 * Groups keys with common prefixes and writes them using compacted syntax.<br>
+	 * <p>
+	 *     Example: app.dev.url, app.prod.url becomes app.[dev|prod].url
+	 * </p>
+	 *
+	 * @param propertyObject The property object to write
+	 * @throws IOException If an I/O error occurs
+	 * @throws NullPointerException If the property object is null
+	 */
+	private void writeWithCompaction(@NonNull PropertyObject propertyObject) throws IOException {
+		Objects.requireNonNull(propertyObject, "Property object must not be null");
+		List<CompactedEntry> entries = compactEntries(propertyObject, this.config.minCompactionGroupSize());
+		
+		boolean first = true;
+		for (CompactedEntry entry : entries) {
+			if (!first) {
+				this.writer.newLine();
+			}
+			first = false;
+			
+			this.config.ensureKeyMatches(entry.key());
+			this.writeProperty(entry.key(), entry.value());
 		}
 	}
 	
@@ -112,6 +289,102 @@ public class PropertyWriter implements AutoCloseable {
 			
 			this.config.ensureKeyMatches(key);
 			this.writeProperty(key, value);
+		}
+	}
+	
+	/**
+	 * Writes a single property with the given key and string value.<br>
+	 *
+	 * @param key The property key
+	 * @param value The property value
+	 * @throws NullPointerException If the key or value is null
+	 * @throws UncheckedIOException If an I/O error occurs
+	 */
+	public void writeSingleProperty(@NonNull String key, @NonNull String value) {
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
+		this.writeSingleProperty(key, new PropertyValue(value));
+	}
+	
+	/**
+	 * Writes a single property with the given key and boolean value.<br>
+	 *
+	 * @param key The property key
+	 * @param value The property value
+	 * @throws NullPointerException If the key is null
+	 * @throws UncheckedIOException If an I/O error occurs
+	 */
+	public void writeSingleProperty(@NonNull String key, boolean value) {
+		Objects.requireNonNull(key, "Key must not be null");
+		this.writeSingleProperty(key, new PropertyValue(value));
+	}
+	
+	/**
+	 * Writes a single property with the given key and number value.<br>
+	 *
+	 * @param key The property key
+	 * @param value The property value
+	 * @throws NullPointerException If the key or value is null
+	 * @throws UncheckedIOException If an I/O error occurs
+	 */
+	public void writeSingleProperty(@NonNull String key, @NonNull Number value) {
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
+		this.writeSingleProperty(key, new PropertyValue(value));
+	}
+	
+	/**
+	 * Writes a single property with the given key and element value.<br>
+	 *
+	 * @param key The property key
+	 * @param value The property element value
+	 * @throws NullPointerException If the key or value is null
+	 * @throws UncheckedIOException If an I/O error occurs
+	 */
+	public void writeSingleProperty(@NonNull String key, @NonNull PropertyElement value) {
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		try {
+			this.config.ensureKeyMatches(key);
+			this.writeProperty(key, value);
+			this.writer.newLine();
+			this.writer.flush();
+		} catch (IOException e) {
+			throw new UncheckedIOException("An I/O error occurred while writing the property", e);
+		}
+	}
+	
+	/**
+	 * Writes a multi-line array property.<br>
+	 * Each array element is written on its own line with the key[] = value syntax.<br>
+	 *
+	 * @param key The property key
+	 * @param array The property array to write
+	 * @throws NullPointerException If the key or array is null
+	 * @throws UncheckedIOException If an I/O error occurs
+	 */
+	public void writeMultiLineArray(@NonNull String key, @NonNull PropertyArray array) {
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(array, "Array must not be null");
+		try {
+			String arrayKey = key + "[]";
+			
+			this.config.ensureKeyMatches(arrayKey);
+			
+			boolean first = true;
+			for (PropertyElement element : array) {
+				if (!first) {
+					this.writer.newLine();
+				}
+				first = false;
+				
+				this.writeProperty(arrayKey, element);
+			}
+			
+			this.writer.flush();
+		} catch (IOException e) {
+			throw new UncheckedIOException("An I/O error occurred while writing the multi-line array", e);
 		}
 	}
 	
@@ -191,292 +464,6 @@ public class PropertyWriter implements AutoCloseable {
 		return builder.toString();
 	}
 	
-	/**
-	 * Writes the property object with key compaction enabled.<br>
-	 * Groups keys with common prefixes and writes them using compacted syntax.<br>
-	 * <p>
-	 *     Example: app.dev.url, app.prod.url becomes app.[dev|prod].url
-	 * </p>
-	 *
-	 * @param propertyObject The property object to write
-	 * @throws IOException If an I/O error occurs
-	 * @throws NullPointerException If the property object is null
-	 */
-	private void writeWithCompaction(@NonNull PropertyObject propertyObject) throws IOException {
-		Objects.requireNonNull(propertyObject, "Property object must not be null");
-		List<CompactedEntry> entries = this.compactEntries(propertyObject);
-		
-		boolean first = true;
-		for (CompactedEntry entry : entries) {
-			if (!first) {
-				this.writer.newLine();
-			}
-			first = false;
-			
-			this.config.ensureKeyMatches(entry.key());
-			this.writeProperty(entry.key(), entry.value());
-		}
-	}
-	
-	/**
-	 * Analyzes property entries and creates compacted entries where possible.<br>
-	 *
-	 * @param propertyObject The property object to analyze
-	 * @return A list of compacted entries
-	 * @throws NullPointerException If the property object is null
-	 */
-	private @NonNull List<CompactedEntry> compactEntries(@NonNull PropertyObject propertyObject) {
-		Objects.requireNonNull(propertyObject, "Property object must not be null");
-		List<CompactedEntry> result = Lists.newArrayList();
-		Set<String> processedKeys = new HashSet<>();
-		
-		Map<String, Map<String, Map<String, PropertyElement>>> compactionGroups = this.findCompactionGroups(propertyObject);
-		
-		for (Map.Entry<String, Map<String, Map<String, PropertyElement>>> prefixEntry : compactionGroups.entrySet()) {
-			String prefix = prefixEntry.getKey();
-			Map<String, Map<String, PropertyElement>> suffixGroups = prefixEntry.getValue();
-			
-			for (Map.Entry<String, Map<String, PropertyElement>> suffixEntry : suffixGroups.entrySet()) {
-				String suffix = suffixEntry.getKey();
-				Map<String, PropertyElement> variants = suffixEntry.getValue();
-				
-				if (variants.size() >= this.config.minCompactionGroupSize()) {
-					if (this.canCompact(variants)) {
-						String compactedKey = this.buildCompactedKey(prefix, variants.keySet(), suffix);
-						PropertyElement commonValue = variants.values().iterator().next();
-						result.add(new CompactedEntry(compactedKey, commonValue));
-						
-						for (String variant : variants.keySet()) {
-							String fullKey = this.buildFullKey(prefix, variant, suffix);
-							processedKeys.add(fullKey);
-						}
-					}
-				}
-			}
-		}
-		
-		for (Map.Entry<String, PropertyElement> entry : propertyObject.entrySet()) {
-			if (!processedKeys.contains(entry.getKey())) {
-				result.add(new CompactedEntry(entry.getKey(), entry.getValue()));
-			}
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * Finds groups of keys that can potentially be compacted.<br>
-	 * Groups are organized by prefix, suffix, and variants.<br>
-	 *
-	 * @param propertyObject The property object to analyze
-	 * @return A map of prefix -> suffix -> variant -> value
-	 * @throws NullPointerException If the property object is null
-	 */
-	private @NonNull Map<String, Map<String, Map<String, PropertyElement>>> findCompactionGroups(@NonNull PropertyObject propertyObject) {
-		Objects.requireNonNull(propertyObject, "Property object must not be null");
-		Map<String, Map<String, Map<String, PropertyElement>>> groups = Maps.newLinkedHashMap();
-		
-		for (Map.Entry<String, PropertyElement> entry : propertyObject.entrySet()) {
-			String key = entry.getKey();
-			String[] parts = key.split("\\.");
-			
-			if (parts.length >= 2) {
-				for (int variantIndex = 0; variantIndex < parts.length; variantIndex++) {
-					String prefix = String.join(".", Arrays.copyOfRange(parts, 0, variantIndex));
-					String variant = parts[variantIndex];
-					String suffix = String.join(".", Arrays.copyOfRange(parts, variantIndex + 1, parts.length));
-					
-					String groupKey = prefix + "|" + suffix;
-					
-					groups.computeIfAbsent(prefix, k -> Maps.newLinkedHashMap())
-						.computeIfAbsent(suffix, k -> Maps.newLinkedHashMap())
-						.put(variant, entry.getValue());
-				}
-			}
-		}
-		
-		return groups;
-	}
-	
-	/**
-	 * Checks if all values in the variant map are equal and can be compacted.<br>
-	 *
-	 * @param variants The map of variant -> value
-	 * @return True if all values are equal, false otherwise
-	 * @throws NullPointerException If the variants map is null
-	 */
-	private boolean canCompact(@NonNull Map<String, PropertyElement> variants) {
-		Objects.requireNonNull(variants, "Variants map must not be null");
-		if (variants.isEmpty()) {
-			return false;
-		}
-		
-		PropertyElement first = variants.values().iterator().next();
-		for (PropertyElement value : variants.values()) {
-			if (!Objects.equals(first, value)) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	/**
-	 * Builds a compacted key from prefix, variants, and suffix.<br>
-	 * <p>
-	 *     Example: prefix="app", variants=["dev", "prod"], suffix="url"
-	 *     Result: "app.[dev|prod].url"
-	 * </p>
-	 *
-	 * @param prefix The key prefix
-	 * @param variants The set of variant names
-	 * @param suffix The key suffix
-	 * @return The compacted key
-	 * @throws NullPointerException If the prefix, variants set, or suffix is null
-	 */
-	private @NonNull String buildCompactedKey(@NonNull String prefix, @NonNull Set<String> variants, @NonNull String suffix) {
-		Objects.requireNonNull(prefix, "Prefix must not be null");
-		Objects.requireNonNull(variants, "Variants set must not be null");
-		String variantPart = "[" + variants.stream().sorted().collect(Collectors.joining("|")) + "]";
-		
-		StringBuilder builder = new StringBuilder();
-		if (!prefix.isEmpty()) {
-			builder.append(prefix).append(".");
-		}
-		builder.append(variantPart);
-		if (!suffix.isEmpty()) {
-			builder.append(".").append(suffix);
-		}
-		return builder.toString();
-	}
-	
-	/**
-	 * Builds a full key from prefix, variant, and suffix.<br>
-	 *
-	 * @param prefix The key prefix
-	 * @param variant The variant name
-	 * @param suffix The key suffix
-	 * @return The full key
-	 * @throws NullPointerException If the prefix, variant, or suffix is null
-	 */
-	private @NonNull String buildFullKey(@NonNull String prefix, @NonNull String variant, @NonNull String suffix) {
-		Objects.requireNonNull(prefix, "Prefix must not be null");
-		Objects.requireNonNull(variant, "Variant must not be null");
-		Objects.requireNonNull(suffix, "Suffix must not be null");
-		StringBuilder builder = new StringBuilder();
-		if (!prefix.isEmpty()) {
-			builder.append(prefix).append(".");
-		}
-		
-		builder.append(variant);
-		if (!suffix.isEmpty()) {
-			builder.append(".").append(suffix);
-		}
-		return builder.toString();
-	}
-	
-	/**
-	 * Writes a single property with the given key and string value.<br>
-	 *
-	 * @param key The property key
-	 * @param value The property value
-	 * @throws NullPointerException If the key or value is null
-	 * @throws UncheckedIOException If an I/O error occurs
-	 */
-	public void writeSingleProperty(@NonNull String key, @NonNull String value) {
-		Objects.requireNonNull(key, "Key must not be null");
-		Objects.requireNonNull(value, "Value must not be null");
-		this.writeSingleProperty(key, new PropertyValue(value));
-	}
-	
-	/**
-	 * Writes a single property with the given key and boolean value.<br>
-	 *
-	 * @param key The property key
-	 * @param value The property value
-	 * @throws NullPointerException If the key is null
-	 * @throws UncheckedIOException If an I/O error occurs
-	 */
-	public void writeSingleProperty(@NonNull String key, boolean value) {
-		Objects.requireNonNull(key, "Key must not be null");
-		this.writeSingleProperty(key, new PropertyValue(value));
-	}
-	
-	/**
-	 * Writes a single property with the given key and number value.<br>
-	 *
-	 * @param key The property key
-	 * @param value The property value
-	 * @throws NullPointerException If the key or value is null
-	 * @throws UncheckedIOException If an I/O error occurs
-	 */
-	public void writeSingleProperty(@NonNull String key, @NonNull Number value) {
-		Objects.requireNonNull(key, "Key must not be null");
-		Objects.requireNonNull(value, "Value must not be null");
-		this.writeSingleProperty(key, new PropertyValue(value));
-	}
-	
-	/**
-	 * Writes a single property with the given key and element value.<br>
-	 *
-	 * @param key The property key
-	 * @param value The property element value
-	 * @throws NullPointerException If the key or value is null
-	 * @throws UncheckedIOException If an I/O error occurs
-	 */
-	public void writeSingleProperty(@NonNull String key, @NonNull PropertyElement value) {
-		Objects.requireNonNull(key, "Key must not be null");
-		Objects.requireNonNull(value, "Value must not be null");
-		try {
-			this.config.ensureKeyMatches(key);
-			this.writeProperty(key, value);
-			this.writer.newLine();
-			this.writer.flush();
-		} catch (IOException e) {
-			throw new UncheckedIOException("An I/O error occurred while writing the property", e);
-		}
-	}
-	
-	/**
-	 * Writes a multi-line array property.<br>
-	 * Each array element is written on its own line with the key[] = value syntax.<br>
-	 *
-	 * @param key The property key
-	 * @param array The property array to write
-	 * @throws NullPointerException If the key or array is null
-	 * @throws UncheckedIOException If an I/O error occurs
-	 */
-	public void writeMultiLineArray(@NonNull String key, @NonNull PropertyArray array) {
-		Objects.requireNonNull(key, "Key must not be null");
-		Objects.requireNonNull(array, "Array must not be null");
-		try {
-			String alignment = " ".repeat(this.config.alignment());
-			String arrayKey = key + "[]";
-			
-			this.config.ensureKeyMatches(arrayKey);
-			
-			boolean first = true;
-			for (PropertyElement element : array) {
-				if (!first) {
-					this.writer.newLine();
-				}
-				first = false;
-				
-				String valueString = this.formatValue(element);
-				this.config.ensureValueMatches(valueString);
-				
-				this.writer.write(arrayKey);
-				this.writer.write(alignment);
-				this.writer.write(this.config.separator());
-				this.writer.write(alignment);
-				this.writer.write(valueString);
-			}
-			
-			this.writer.flush();
-		} catch (IOException e) {
-			throw new UncheckedIOException("An I/O error occurred while writing the multi-line array", e);
-		}
-	}
-	
 	@Override
 	public void close() throws IOException {
 		this.writer.close();
@@ -487,7 +474,7 @@ public class PropertyWriter implements AutoCloseable {
 	 *
 	 * @author Luis-St
 	 *
-	 * @param key The property key (may be compacted)
+	 * @param key The property key (maybe compacted)
 	 * @param value The property value
 	 */
 	private record CompactedEntry(@NonNull String key, @NonNull PropertyElement value) {

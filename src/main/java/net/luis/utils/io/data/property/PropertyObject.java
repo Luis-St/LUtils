@@ -61,6 +61,24 @@ public class PropertyObject implements PropertyElement {
 	}
 	
 	/**
+	 * Creates a property object from a nested Map structure.<br>
+	 * Flattens to dot-notation keys.<br>
+	 *
+	 * @param map The nested map to convert
+	 * @return A new PropertyObject with flattened keys
+	 * @throws NullPointerException If the map is null
+	 */
+	public static @NonNull PropertyObject fromNestedMap(@NonNull Map<String, Object> map) {
+		Objects.requireNonNull(map, "Map must not be null");
+		
+		PropertyObject result = new PropertyObject();
+		flattenMap("", map, result);
+		return result;
+	}
+	
+	//region Static helper methods
+	
+	/**
 	 * Checks if the given key belongs to the specified group (prefix).<br>
 	 * Uses dot-notation: "app.database" is part of group "app".<br>
 	 *
@@ -111,9 +129,9 @@ public class PropertyObject implements PropertyElement {
 		if (element == null || element.isPropertyNull()) {
 			return null;
 		} else if (element instanceof PropertyValue value) {
-			if (value.isBoolean()) {
+			if (value.isPropertyBoolean()) {
 				return value.getAsBoolean();
-			} else if (value.isNumber()) {
+			} else if (value.isPropertyNumber()) {
 				return value.getAsNumber();
 			} else {
 				return value.getAsString();
@@ -128,21 +146,6 @@ public class PropertyObject implements PropertyElement {
 			return object.toNestedMap();
 		}
 		return element.toString();
-	}
-	
-	/**
-	 * Creates a PropertyObject from a nested Map structure.<br>
-	 * Flattens to dot-notation keys.<br>
-	 *
-	 * @param map The nested map to convert
-	 * @return A new PropertyObject with flattened keys
-	 * @throws NullPointerException If the map is null
-	 */
-	public static @NonNull PropertyObject fromNestedMap(@NonNull Map<String, Object> map) {
-		Objects.requireNonNull(map, "Map must not be null");
-		PropertyObject result = new PropertyObject();
-		flattenMap("", map, result);
-		return result;
 	}
 	
 	/**
@@ -191,7 +194,7 @@ public class PropertyObject implements PropertyElement {
 			case Boolean bool -> new PropertyValue(bool);
 			case Number number -> new PropertyValue(number);
 			case String string -> new PropertyValue(string);
-			case Map<?, ?> map -> fromNestedMap((Map<String, Object>) value);
+			case Map<?, ?> _ -> fromNestedMap((Map<String, Object>) value);
 			case List<?> list -> {
 				PropertyArray array = new PropertyArray();
 				for (Object item : list) {
@@ -247,6 +250,7 @@ public class PropertyObject implements PropertyElement {
 		} else {
 			PropertyElement existing = current.get(keyParts[index]);
 			PropertyObject nested;
+			
 			if (existing instanceof PropertyObject obj) {
 				nested = obj;
 			} else {
@@ -256,6 +260,7 @@ public class PropertyObject implements PropertyElement {
 			insertNested(nested, keyParts, index + 1, value);
 		}
 	}
+	//endregion
 	
 	/**
 	 * Returns the number of elements in this property object.<br>
@@ -568,7 +573,6 @@ public class PropertyObject implements PropertyElement {
 		if (element instanceof PropertyObject object) {
 			return object;
 		}
-		
 		return element.getAsPropertyObject();
 	}
 	
@@ -591,7 +595,6 @@ public class PropertyObject implements PropertyElement {
 		if (element instanceof PropertyArray array) {
 			return array;
 		}
-		
 		return element.getAsPropertyArray();
 	}
 	
@@ -760,6 +763,7 @@ public class PropertyObject implements PropertyElement {
 	 */
 	public boolean hasGroup(@NonNull String group) {
 		Objects.requireNonNull(group, "Group must not be null");
+		
 		for (String key : this.elements.keySet()) {
 			if (isKeyInGroup(key, group)) {
 				return true;
@@ -783,6 +787,7 @@ public class PropertyObject implements PropertyElement {
 		PropertyObject result = new PropertyObject();
 		for (Map.Entry<String, PropertyElement> entry : this.elements.entrySet()) {
 			String key = entry.getKey();
+			
 			if (isKeyInGroup(key, prefix)) {
 				String newKey = removeGroupPrefix(key, prefix);
 				result.add(newKey, entry.getValue());
@@ -794,7 +799,8 @@ public class PropertyObject implements PropertyElement {
 	/**
 	 * Returns all direct child group names at the current level.<br>
 	 * <p>
-	 *     Example: on {"app.db.host": "x", "app.db.port": 1, "app.cache.enabled": true}
+	 *     Example:<br>
+	 *     on {"app.db.host": "x", "app.db.port": 1, "app.cache.enabled": true}<br>
 	 *     getChildGroups("app") returns ["db", "cache"]
 	 * </p>
 	 *
@@ -809,6 +815,7 @@ public class PropertyObject implements PropertyElement {
 			if (!key.startsWith(normalizedPrefix)) {
 				continue;
 			}
+			
 			String remainder = key.substring(normalizedPrefix.length());
 			int dotIndex = remainder.indexOf('.');
 			if (dotIndex > 0) {
@@ -830,11 +837,13 @@ public class PropertyObject implements PropertyElement {
 	@SuppressWarnings("unchecked")
 	public @NonNull Map<String, Object> toNestedMap() {
 		Map<String, Object> result = Maps.newLinkedHashMap();
+		
 		for (Map.Entry<String, PropertyElement> entry : this.elements.entrySet()) {
 			String[] keyParts = entry.getKey().split("\\.");
 			Map<String, Object> currentMap = result;
+			
 			for (int i = 0; i < keyParts.length - 1; i++) {
-				currentMap = (Map<String, Object>) currentMap.computeIfAbsent(keyParts[i], k -> Maps.newLinkedHashMap());
+				currentMap = (Map<String, Object>) currentMap.computeIfAbsent(keyParts[i], _ -> Maps.newLinkedHashMap());
 			}
 			currentMap.put(keyParts[keyParts.length - 1], elementToValue(entry.getValue()));
 		}

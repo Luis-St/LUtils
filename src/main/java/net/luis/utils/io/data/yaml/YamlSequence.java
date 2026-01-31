@@ -49,6 +49,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	
 	/**
 	 * Constructs a yaml sequence with the given list of yaml elements.<br>
+	 *
 	 * @param elements The list of yaml elements to add
 	 * @throws NullPointerException If the list of yaml elements is null
 	 */

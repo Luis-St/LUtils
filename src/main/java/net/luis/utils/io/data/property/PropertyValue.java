@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.data.property;
 
+import net.luis.utils.io.data.DataHelper;
 import net.luis.utils.io.data.property.exception.PropertyTypeException;
-import net.luis.utils.io.reader.StringReader;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -74,32 +74,6 @@ public class PropertyValue implements PropertyElement {
 	}
 	
 	/**
-	 * Tries to parse the given string to a boolean or number.<br>
-	 *
-	 * @param string The string
-	 * @return The parsed value or the string if it could not be parsed
-	 * @throws NullPointerException If the string is null
-	 */
-	private static @NonNull Object tryParse(@NonNull String string) {
-		Objects.requireNonNull(string, "String must not be null");
-		if ("true".equalsIgnoreCase(string) || "false".equalsIgnoreCase(string)) {
-			return Boolean.parseBoolean(string);
-		}
-		
-		StringReader reader = new StringReader(string);
-		try {
-			Number number = reader.readNumber();
-			reader.skipWhitespaces();
-			if (reader.canRead()) {
-				return string;
-			}
-			return number;
-		} catch (Exception e) {
-			return string;
-		}
-	}
-	
-	/**
 	 * Returns the name of the type of this property value in a human-readable format.<br>
 	 * Used for debugging and error messages.<br>
 	 *
@@ -107,159 +81,158 @@ public class PropertyValue implements PropertyElement {
 	 * @throws IllegalStateException If the type of this property value is unknown
 	 */
 	private @NonNull String getName() {
-		if (this.isBoolean()) {
+		if (this.isPropertyBoolean()) {
 			return "property boolean";
-		} else if (this.isNumber()) {
+		} else if (this.isPropertyNumber()) {
 			return "property number";
-		} else if (this.isString()) {
+		} else if (this.isPropertyString()) {
 			return "property string";
 		}
 		throw new IllegalStateException("Unknown property value type");
 	}
 	
 	@Override
-	public boolean isBoolean() {
+	public boolean isPropertyBoolean() {
 		return this.value instanceof Boolean;
 	}
 	
 	@Override
 	public boolean getAsBoolean() {
-		if (this.isBoolean()) {
+		if (this.isPropertyBoolean()) {
 			return (boolean) this.value;
 		}
 		throw new PropertyTypeException("Expected a property boolean, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isNumber() {
+	public boolean isPropertyNumber() {
 		return this.value instanceof Number;
 	}
 	
 	@Override
 	public @NonNull Number getAsNumber() {
-		if (this.isNumber()) {
+		if (this.isPropertyNumber()) {
 			return (Number) this.value;
 		}
 		throw new PropertyTypeException("Expected a property number, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isByte() {
+	public boolean isPropertyByte() {
 		return this.value instanceof Byte;
 	}
 	
 	@Override
 	public byte getAsByte() {
-		if (this.isByte()) {
+		if (this.isPropertyByte()) {
 			return (byte) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isPropertyNumber()) {
 			return this.getAsNumber().byteValue();
 		}
 		throw new PropertyTypeException("Expected a property byte, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isShort() {
+	public boolean isPropertyShort() {
 		return this.value instanceof Short;
 	}
 	
 	@Override
 	public short getAsShort() {
-		if (this.isShort()) {
+		if (this.isPropertyShort()) {
 			return (short) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isPropertyNumber()) {
 			return this.getAsNumber().shortValue();
 		}
 		throw new PropertyTypeException("Expected a property short, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isInteger() {
+	public boolean isPropertyInteger() {
 		return this.value instanceof Integer;
 	}
 	
 	@Override
 	public int getAsInteger() {
-		if (this.isInteger()) {
+		if (this.isPropertyInteger()) {
 			return (int) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isPropertyNumber()) {
 			return this.getAsNumber().intValue();
 		}
 		throw new PropertyTypeException("Expected a property integer, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isLong() {
+	public boolean isPropertyLong() {
 		return this.value instanceof Long;
 	}
 	
 	@Override
 	public long getAsLong() {
-		if (this.isLong()) {
+		if (this.isPropertyLong()) {
 			return (long) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isPropertyNumber()) {
 			return this.getAsNumber().longValue();
 		}
 		throw new PropertyTypeException("Expected a property long, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isFloat() {
+	public boolean isPropertyFloat() {
 		return this.value instanceof Float;
 	}
 	
 	@Override
 	public float getAsFloat() {
-		if (this.isFloat()) {
+		if (this.isPropertyFloat()) {
 			return (float) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isPropertyNumber()) {
 			return this.getAsNumber().floatValue();
 		}
 		throw new PropertyTypeException("Expected a property float, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isDouble() {
+	public boolean isPropertyDouble() {
 		return this.value instanceof Double;
 	}
 	
 	@Override
 	public double getAsDouble() {
-		if (this.isDouble()) {
+		if (this.isPropertyDouble()) {
 			return (double) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isPropertyNumber()) {
 			return this.getAsNumber().doubleValue();
 		}
 		throw new PropertyTypeException("Expected a property double, but found: " + this.getName());
 	}
 	
 	@Override
-	public boolean isString() {
+	public boolean isPropertyString() {
 		return this.value instanceof String;
 	}
 	
 	@Override
 	public @NonNull String getAsString() {
-		if (this.isString()) {
+		if (this.isPropertyString()) {
 			return (String) this.value;
-		} else if (this.isNumber()) {
+		} else if (this.isPropertyNumber()) {
 			return this.getAsNumber().toString();
-		} else if (this.isBoolean()) {
+		} else if (this.isPropertyBoolean()) {
 			return String.valueOf(this.getAsBoolean());
 		}
 		throw new PropertyTypeException("Expected a property string, but found: " + this.getName());
 	}
 	
 	/**
-	 * If this property value is a string, tries to parse it to a boolean or number
-	 * and returns a new property value with the parsed value.<br>
+	 * If this property value is a string, tries to parse it to a boolean or number and returns a new property value with the parsed value.<br>
 	 * If the parsing fails, returns this property value.<br>
 	 *
 	 * @return A property value with the parsed value or this property value if the parsing fails
 	 */
 	public @NonNull PropertyValue getAsParsedPropertyValue() {
-		if (this.isString()) {
-			Object parsed = tryParse(this.getAsString());
+		if (this.isPropertyString()) {
+			Object parsed = DataHelper.tryParse(this.getAsString());
 			
 			return switch (parsed) {
 				case Boolean bool -> new PropertyValue(bool);

@@ -98,11 +98,11 @@ public class YamlReader implements AutoCloseable {
 	 * @throws NullPointerException If the input or configuration is null
 	 */
 	public YamlReader(@NonNull InputProvider input, @NonNull YamlConfig config) {
-		this.config = Objects.requireNonNull(config, "Yaml config must not be null");
-		StringReader tempReader = new StringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
-		String content = tempReader.readRemaining();
-		this.reader = new StringReader(content);
-		this.splitLines(content);
+		Objects.requireNonNull(config, "Yaml config must not be null");
+		Objects.requireNonNull(input, "Input must not be null");
+		
+		StringReader reader = new StringReader(new InputStreamReader(input.getStream(), config.charset()));
+		this(reader.readRemaining(), config);
 	}
 	
 	/**
@@ -200,6 +200,54 @@ public class YamlReader implements AutoCloseable {
 	}
 	
 	/**
+	 * Extracts and resolves an anchor from a value string.<br>
+	 *
+	 * @param value The value string starting with '*'
+	 * @return The resolved yaml element or alias
+	 * @throws NullPointerException If the value is null
+	 * @throws YamlSyntaxException If the anchor is invalid or undefined
+	 */
+	private @NonNull YamlElement extractAndResolveAnchor(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		if (!value.startsWith("*")) {
+			throw new YamlSyntaxException("Value does not start with an anchor: '" + value + "'");
+		}
+		
+		String aliasName = this.extractAnchorName(value.substring(1));
+		if (this.config.resolveAnchors()) {
+			YamlElement resolved = this.anchors.get(aliasName);
+			if (resolved == null) {
+				throw new YamlSyntaxException("Undefined anchor: '" + aliasName + "'");
+			}
+			return resolved;
+		}
+		return new YamlAlias(aliasName);
+	}
+	
+	/**
+	 * Reads the next element at the given indentation level.<br>
+	 *
+	 * @param currentIndent The current indentation level
+	 * @return The parsed yaml element
+	 */
+	private @NonNull YamlElement readNextElement(int currentIndent) {
+		this.skipEmptyLinesAndComments();
+		
+		if (this.lineIndex < this.lines.size()) {
+			String nextLine = this.lines.get(this.lineIndex);
+			int nextIndent = this.getIndent(nextLine);
+			
+			if (nextIndent > currentIndent) {
+				return this.readElement(nextIndent);
+			} else {
+				return YamlNull.INSTANCE;
+			}
+		} else {
+			return YamlNull.INSTANCE;
+		}
+	}
+	
+	/**
 	 * Reads a yaml element at the given indentation level.<br>
 	 *
 	 * @param expectedIndent The expected minimum indentation level
@@ -223,16 +271,7 @@ public class YamlReader implements AutoCloseable {
 		
 		if (trimmed.startsWith("*")) {
 			this.lineIndex++;
-			String anchorName = this.extractAnchorName(trimmed.substring(1));
-			YamlAlias alias = new YamlAlias(anchorName);
-			if (this.config.resolveAnchors()) {
-				YamlElement resolved = this.anchors.get(anchorName);
-				if (resolved == null) {
-					throw new YamlSyntaxException("Undefined anchor: '" + anchorName + "'");
-				}
-				return resolved;
-			}
-			return alias;
+			return this.extractAndResolveAnchor(trimmed);
 		}
 		
 		String anchorName = null;
@@ -250,7 +289,6 @@ public class YamlReader implements AutoCloseable {
 			} else {
 				anchorName = this.extractAnchorName(trimmed.substring(1, spaceIndex));
 				trimmed = trimmed.substring(spaceIndex + 1).trim();
-				line = " ".repeat(this.getIndent(line)) + trimmed;
 			}
 		}
 		
@@ -354,6 +392,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param baseIndent The base indentation level
 	 * @return The parsed yaml mapping
 	 */
+	@SuppressWarnings("DuplicatedCode")
 	private @NonNull YamlMapping readBlockMapping(int baseIndent) {
 		YamlMapping mapping = new YamlMapping();
 		int mappingIndent = -1;
@@ -418,18 +457,7 @@ public class YamlReader implements AutoCloseable {
 			
 			YamlElement value;
 			if (valueStr.isEmpty()) {
-				this.skipEmptyLinesAndComments();
-				if (this.lineIndex < this.lines.size()) {
-					String nextLine = this.lines.get(this.lineIndex);
-					int nextIndent = this.getIndent(nextLine);
-					if (nextIndent > mappingIndent) {
-						value = this.readElement(nextIndent);
-					} else {
-						value = YamlNull.INSTANCE;
-					}
-				} else {
-					value = YamlNull.INSTANCE;
-				}
+				value = this.readNextElement(mappingIndent);
 			} else {
 				value = this.parseInlineValue(valueStr, mappingIndent);
 			}
@@ -455,8 +483,7 @@ public class YamlReader implements AutoCloseable {
 			throw new YamlSyntaxException("Empty key is not allowed");
 		}
 		
-		if ((key.startsWith("\"") && key.endsWith("\"")) ||
-			(key.startsWith("'") && key.endsWith("'"))) {
+		if ((key.startsWith("\"") && key.endsWith("\"")) || (key.startsWith("'") && key.endsWith("'"))) {
 			return key.substring(1, key.length() - 1);
 		}
 		return key;
@@ -470,6 +497,7 @@ public class YamlReader implements AutoCloseable {
 	 * @return The parsed yaml element
 	 * @throws YamlSyntaxException If the value is invalid
 	 */
+	@SuppressWarnings("DuplicatedCode")
 	private @NonNull YamlElement parseInlineValue(@NonNull String string, int currentIndent) {
 		Objects.requireNonNull(string, "Value string must not be null");
 		string = this.removeTrailingComment(string);
@@ -484,15 +512,7 @@ public class YamlReader implements AutoCloseable {
 		}
 		
 		if (string.startsWith("*")) {
-			String aliasName = this.extractAnchorName(string.substring(1));
-			if (this.config.resolveAnchors()) {
-				YamlElement resolved = this.anchors.get(aliasName);
-				if (resolved == null) {
-					throw new YamlSyntaxException("Undefined anchor: '" + aliasName + "'");
-				}
-				return resolved;
-			}
-			return new YamlAlias(aliasName);
+			return this.extractAndResolveAnchor(string);
 		}
 		
 		if (string.startsWith("{")) {
@@ -570,6 +590,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param baseIndent The base indentation level
 	 * @return The parsed yaml sequence
 	 */
+	@SuppressWarnings("DuplicatedCode")
 	private @NonNull YamlSequence readBlockSequence(int baseIndent) {
 		YamlSequence sequence = new YamlSequence();
 		int sequenceIndent = -1;
@@ -653,6 +674,7 @@ public class YamlReader implements AutoCloseable {
 	 * @return The parsed mapping
 	 * @throws NullPointerException If the first pair is null
 	 */
+	@SuppressWarnings("DuplicatedCode")
 	private @NonNull YamlElement readNestedMappingInSequence(int expectedIndent, @NonNull String firstPair) {
 		Objects.requireNonNull(firstPair, "First pair must not be null");
 		YamlMapping mapping = new YamlMapping();
@@ -719,18 +741,7 @@ public class YamlReader implements AutoCloseable {
 			this.lineIndex++;
 			
 			if (valueStr.isEmpty()) {
-				this.skipEmptyLinesAndComments();
-				if (this.lineIndex < this.lines.size()) {
-					String nextLine = this.lines.get(this.lineIndex);
-					int nextIndent = this.getIndent(nextLine);
-					if (nextIndent > currentIndent) {
-						value = this.readElement(nextIndent);
-					} else {
-						value = YamlNull.INSTANCE;
-					}
-				} else {
-					value = YamlNull.INSTANCE;
-				}
+				value = this.readNextElement(currentIndent);
 			} else {
 				value = this.parseInlineValue(valueStr, currentIndent);
 			}
@@ -741,7 +752,6 @@ public class YamlReader implements AutoCloseable {
 	
 	/**
 	 * Reads a flow-style mapping from the current line position.<br>
-	 *
 	 * @return The parsed yaml mapping
 	 */
 	private @NonNull YamlMapping readFlowMapping() {
@@ -817,7 +827,6 @@ public class YamlReader implements AutoCloseable {
 	
 	/**
 	 * Reads a flow-style sequence from the current line position.<br>
-	 *
 	 * @return The parsed yaml sequence
 	 */
 	private @NonNull YamlSequence readFlowSequence() {
@@ -943,31 +952,21 @@ public class YamlReader implements AutoCloseable {
 	/**
 	 * Parses a value in flow context.<br>
 	 *
-	 * @param valueStr The value string
+	 * @param value The value string
 	 * @return The parsed yaml element
 	 */
-	private @NonNull YamlElement parseFlowValue(@NonNull String valueStr) {
-		valueStr = valueStr.trim();
-		
-		if (valueStr.startsWith("*")) {
-			String aliasName = this.extractAnchorName(valueStr.substring(1));
-			if (this.config.resolveAnchors()) {
-				YamlElement resolved = this.anchors.get(aliasName);
-				if (resolved == null) {
-					throw new YamlSyntaxException("Undefined anchor: '" + aliasName + "'");
-				}
-				return resolved;
-			}
-			return new YamlAlias(aliasName);
+	private @NonNull YamlElement parseFlowValue(@NonNull String value) {
+		String trimmed = value.trim();
+		if (trimmed.startsWith("*")) {
+			return this.extractAndResolveAnchor(trimmed);
 		}
-		
-		if (valueStr.startsWith("{")) {
-			return this.parseFlowMappingFromString(valueStr);
+		if (trimmed.startsWith("{")) {
+			return this.parseFlowMappingFromString(trimmed);
 		}
-		if (valueStr.startsWith("[")) {
-			return this.parseFlowSequenceFromString(valueStr);
+		if (trimmed.startsWith("[")) {
+			return this.parseFlowSequenceFromString(trimmed);
 		}
-		return this.parseScalar(valueStr);
+		return this.parseScalar(trimmed);
 	}
 	
 	/**
@@ -1154,6 +1153,7 @@ public class YamlReader implements AutoCloseable {
 		boolean escaped = false;
 		for (int i = 0; i < value.length(); i++) {
 			char c = value.charAt(i);
+			
 			if (escaped) {
 				switch (c) {
 					case 'n' -> result.append('\n');

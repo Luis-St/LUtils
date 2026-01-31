@@ -27,17 +27,12 @@ import java.util.Objects;
  * The anchor wraps another element and assigns it a name that can be referenced via aliases.<br>
  *
  * @author Luis-St
+ * @param name
+The name of this anchor.<br>
+ * @param element
+The element wrapped by this anchor.<br>
  */
-public class YamlAnchor implements YamlElement {
-	
-	/**
-	 * The name of this anchor.<br>
-	 */
-	private final String name;
-	/**
-	 * The element wrapped by this anchor.<br>
-	 */
-	private final YamlElement element;
+public record YamlAnchor(String name, YamlElement element) implements YamlElement {
 	
 	/**
 	 * Constructs a new yaml anchor with the given name and element.<br>
@@ -54,7 +49,7 @@ public class YamlAnchor implements YamlElement {
 		if (name.isBlank()) {
 			throw new IllegalArgumentException("Anchor name must not be blank");
 		}
-		if (!isValidAnchorName(name)) {
+		if (!YamlHelper.isValidAnchorName(name)) {
 			throw new IllegalArgumentException("Invalid anchor name: '" + name + "'. Anchor names must contain only alphanumeric characters, underscores, and hyphens");
 		}
 		if (element instanceof YamlAlias) {
@@ -63,30 +58,11 @@ public class YamlAnchor implements YamlElement {
 	}
 	
 	/**
-	 * Checks if the given name is a valid anchor name.<br>
-	 * Valid anchor names contain only alphanumeric characters, underscores, and hyphens.<br>
-	 *
-	 * @param name The name to check
-	 * @return True if the name is valid, false otherwise
-	 * @throws NullPointerException If the name is null
-	 */
-	private static boolean isValidAnchorName(@NonNull String name) {
-		Objects.requireNonNull(name, "Name must not be null");
-		
-		for (int i = 0; i < name.length(); i++) {
-			char c = name.charAt(i);
-			if (!Character.isLetterOrDigit(c) && c != '_' && c != '-') {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	/**
 	 * Returns the anchor name.<br>
 	 * @return The anchor name without the '&amp;' prefix
 	 */
-	public @NonNull String getName() {
+	@Override
+	public @NonNull String name() {
 		return this.name;
 	}
 	
@@ -94,7 +70,8 @@ public class YamlAnchor implements YamlElement {
 	 * Returns the anchored element.<br>
 	 * @return The wrapped element
 	 */
-	public @NonNull YamlElement getElement() {
+	@Override
+	public @NonNull YamlElement element() {
 		return this.element;
 	}
 	
@@ -118,11 +95,6 @@ public class YamlAnchor implements YamlElement {
 		if (!(o instanceof YamlAnchor that)) return false;
 		
 		return this.name.equals(that.name) && this.element.equals(that.element);
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(this.name, this.element);
 	}
 	
 	@Override

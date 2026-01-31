@@ -25,13 +25,13 @@ import java.time.*;
 import java.util.*;
 
 /**
- * A fluent builder for constructing TOML tables.<br>
- * Provides a chainable API for building TOML structures programmatically.<br>
+ * A fluent builder for constructing toml tables.<br>
+ * Provides a chainable API for building toml structures programmatically.<br>
  *
  * <p>Example usage:</p>
  * <pre>{@code
  * TomlTable table = TomlBuilder.table()
- *     .add("title", "TOML Example")
+ *     .add("title", "toml Example")
  *     .startTable("database")
  *         .add("host", "localhost")
  *         .add("port", 5432)
@@ -59,24 +59,22 @@ public final class TomlBuilder {
 	private final TomlTable rootTable;
 	
 	/**
-	 * Constructs a new TOML builder.<br>
+	 * Constructs a new toml builder.<br>
 	 */
 	private TomlBuilder() {
 		this.rootTable = new TomlTable();
 	}
 	
 	/**
-	 * Creates a new TOML builder for building a TOML table.<br>
-	 *
-	 * @return A new TOML builder
+	 * Creates a new toml builder for building a toml table.<br>
+	 * @return A new toml builder
 	 */
 	public static @NonNull TomlBuilder table() {
 		return new TomlBuilder();
 	}
 	
 	/**
-	 * Creates a new array builder for building a TOML array.<br>
-	 *
+	 * Creates a new array builder for building a toml array.<br>
 	 * @return A new array builder
 	 */
 	public static @NonNull ArrayBuilder array() {
@@ -85,7 +83,6 @@ public final class TomlBuilder {
 	
 	/**
 	 * Creates a new inline table builder.<br>
-	 *
 	 * @return A new inline table builder
 	 */
 	public static @NonNull InlineTableBuilder inlineTable() {
@@ -94,7 +91,6 @@ public final class TomlBuilder {
 	
 	/**
 	 * Returns the current table being built.<br>
-	 *
 	 * @return The current table
 	 */
 	private @NonNull TomlTable getCurrentTable() {
@@ -108,7 +104,7 @@ public final class TomlBuilder {
 	 * Adds a property with a string value.<br>
 	 *
 	 * @param key The property key
-	 * @param value The string value (null becomes TomlNull)
+	 * @param value The string value (null becomes toml null
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 */
@@ -138,7 +134,7 @@ public final class TomlBuilder {
 	 * Adds a property with a number value.<br>
 	 *
 	 * @param key The property key
-	 * @param value The number value (null becomes TomlNull)
+	 * @param value The number value (null becomes toml null
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 */
@@ -153,7 +149,7 @@ public final class TomlBuilder {
 	 * Adds a property with a local date value.<br>
 	 *
 	 * @param key The property key
-	 * @param value The local date value (null becomes TomlNull)
+	 * @param value The local date value (null becomes toml null
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 */
@@ -168,7 +164,7 @@ public final class TomlBuilder {
 	 * Adds a property with a local time value.<br>
 	 *
 	 * @param key The property key
-	 * @param value The local time value (null becomes TomlNull)
+	 * @param value The local time value (null becomes toml null
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 */
@@ -183,7 +179,7 @@ public final class TomlBuilder {
 	 * Adds a property with a local date-time value.<br>
 	 *
 	 * @param key The property key
-	 * @param value The local date-time value (null becomes TomlNull)
+	 * @param value The local date-time value (null becomes toml null
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 */
@@ -198,7 +194,7 @@ public final class TomlBuilder {
 	 * Adds a property with an offset date-time value.<br>
 	 *
 	 * @param key The property key
-	 * @param value The offset date-time value (null becomes TomlNull)
+	 * @param value The offset date-time value (null becomes toml null
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 */
@@ -210,10 +206,10 @@ public final class TomlBuilder {
 	}
 	
 	/**
-	 * Adds a property with a TOML element value.<br>
+	 * Adds a property with a toml element value.<br>
 	 *
 	 * @param key The property key
-	 * @param element The TOML element value (null becomes TomlNull)
+	 * @param element The toml element value (null becomes toml null
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 */
@@ -359,18 +355,11 @@ public final class TomlBuilder {
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the name or tables are null
 	 */
-	public @NonNull TomlBuilder addArrayOfTables(@NonNull String name, @NonNull TomlTable... tables) {
+	public @NonNull TomlBuilder addArrayOfTables(@NonNull String name, TomlTable @NonNull ... tables) {
 		Objects.requireNonNull(name, "Array name must not be null");
-		Objects.requireNonNull(tables, "Tables must not be null");
+		Objects.requireNonNull(tables, "Table array must not be null");
 		
-		TomlArray array = new TomlArray();
-		array.setArrayOfTables(true);
-		for (TomlTable table : tables) {
-			array.add(table);
-		}
-		
-		this.getCurrentTable().add(name, array);
-		return this;
+		return this.addArrayOfTables(name, Arrays.asList(tables));
 	}
 	
 	/**
@@ -383,7 +372,7 @@ public final class TomlBuilder {
 	 */
 	public @NonNull TomlBuilder addArrayOfTables(@NonNull String name, @NonNull List<TomlTable> tables) {
 		Objects.requireNonNull(name, "Array name must not be null");
-		Objects.requireNonNull(tables, "Tables must not be null");
+		Objects.requireNonNull(tables, "Table list must not be null");
 		
 		TomlArray array = new TomlArray();
 		array.setArrayOfTables(true);
@@ -423,10 +412,10 @@ public final class TomlBuilder {
 	}
 	
 	/**
-	 * Builds and returns the TOML table.<br>
+	 * Builds and returns the toml table.<br>
 	 * Automatically closes any open nested tables.<br>
 	 *
-	 * @return The built TOML table
+	 * @return The built toml table
 	 */
 	public @NonNull TomlTable build() {
 		this.contextStack.clear();
@@ -441,7 +430,7 @@ public final class TomlBuilder {
 	/**
 	 * Returns a string representation of the table being built.<br>
 	 *
-	 * @param config The TOML config to use for formatting
+	 * @param config The toml config to use for formatting
 	 * @return The string representation
 	 */
 	public @NonNull String toString(@NonNull TomlConfig config) {
@@ -474,7 +463,7 @@ public final class TomlBuilder {
 	//region Array builder
 	
 	/**
-	 * A builder for constructing TOML arrays.<br>
+	 * A builder for constructing toml arrays.<br>
 	 *
 	 * @author Luis-St
 	 */
@@ -493,7 +482,7 @@ public final class TomlBuilder {
 		/**
 		 * Adds a string value to the array.<br>
 		 *
-		 * @param value The string value (null becomes TomlNull)
+		 * @param value The string value (null becomes toml null)
 		 * @return This builder for chaining
 		 */
 		public @NonNull ArrayBuilder add(@Nullable String value) {
@@ -515,7 +504,7 @@ public final class TomlBuilder {
 		/**
 		 * Adds a number value to the array.<br>
 		 *
-		 * @param value The number value (null becomes TomlNull)
+		 * @param value The number value (null becomes toml null)
 		 * @return This builder for chaining
 		 */
 		public @NonNull ArrayBuilder add(@Nullable Number value) {
@@ -526,7 +515,7 @@ public final class TomlBuilder {
 		/**
 		 * Adds a local date value to the array.<br>
 		 *
-		 * @param value The local date value (null becomes TomlNull)
+		 * @param value The local date value (null becomes toml null)
 		 * @return This builder for chaining
 		 */
 		public @NonNull ArrayBuilder add(@Nullable LocalDate value) {
@@ -537,7 +526,7 @@ public final class TomlBuilder {
 		/**
 		 * Adds a local time value to the array.<br>
 		 *
-		 * @param value The local time value (null becomes TomlNull)
+		 * @param value The local time value (null becomes toml null)
 		 * @return This builder for chaining
 		 */
 		public @NonNull ArrayBuilder add(@Nullable LocalTime value) {
@@ -548,7 +537,7 @@ public final class TomlBuilder {
 		/**
 		 * Adds a local date-time value to the array.<br>
 		 *
-		 * @param value The local date-time value (null becomes TomlNull)
+		 * @param value The local date-time value (null becomes toml null)
 		 * @return This builder for chaining
 		 */
 		public @NonNull ArrayBuilder add(@Nullable LocalDateTime value) {
@@ -559,7 +548,7 @@ public final class TomlBuilder {
 		/**
 		 * Adds an offset date-time value to the array.<br>
 		 *
-		 * @param value The offset date-time value (null becomes TomlNull)
+		 * @param value The offset date-time value (null becomes toml null)
 		 * @return This builder for chaining
 		 */
 		public @NonNull ArrayBuilder add(@Nullable OffsetDateTime value) {
@@ -568,9 +557,9 @@ public final class TomlBuilder {
 		}
 		
 		/**
-		 * Adds a TOML element to the array.<br>
+		 * Adds a toml element to the array.<br>
 		 *
-		 * @param element The element (null becomes TomlNull)
+		 * @param element The element (null becomes toml null)
 		 * @return This builder for chaining
 		 */
 		public @NonNull ArrayBuilder add(@Nullable TomlElement element) {
@@ -615,9 +604,9 @@ public final class TomlBuilder {
 		}
 		
 		/**
-		 * Builds and returns the TOML array.<br>
+		 * Builds and returns the toml array.<br>
 		 *
-		 * @return The built TOML array
+		 * @return The built toml array
 		 */
 		public @NonNull TomlArray build() {
 			return this.array;
@@ -628,7 +617,7 @@ public final class TomlBuilder {
 	//region Inline table builder
 	
 	/**
-	 * A builder for constructing inline TOML tables.<br>
+	 * A builder for constructing inline toml tables.<br>
 	 *
 	 * @author Luis-St
 	 */
@@ -650,7 +639,7 @@ public final class TomlBuilder {
 		 * Adds a property with a string value.<br>
 		 *
 		 * @param key The property key
-		 * @param value The string value (null becomes TomlNull)
+		 * @param value The string value (null becomes toml null)
 		 * @return This builder for chaining
 		 * @throws NullPointerException If the key is null
 		 */
@@ -676,7 +665,7 @@ public final class TomlBuilder {
 		 * Adds a property with a number value.<br>
 		 *
 		 * @param key The property key
-		 * @param value The number value (null becomes TomlNull)
+		 * @param value The number value (null becomes toml null)
 		 * @return This builder for chaining
 		 * @throws NullPointerException If the key is null
 		 */
@@ -686,10 +675,10 @@ public final class TomlBuilder {
 		}
 		
 		/**
-		 * Adds a property with a TOML element value.<br>
+		 * Adds a property with a toml element value.<br>
 		 *
 		 * @param key The property key
-		 * @param element The element (null becomes TomlNull)
+		 * @param element The element (null becomes toml null)
 		 * @return This builder for chaining
 		 * @throws NullPointerException If the key is null
 		 */
@@ -699,9 +688,8 @@ public final class TomlBuilder {
 		}
 		
 		/**
-		 * Builds and returns the inline TOML table.<br>
-		 *
-		 * @return The built inline TOML table
+		 * Builds and returns the inline toml table.<br>
+		 * @return The built inline toml table
 		 */
 		public @NonNull TomlTable build() {
 			return this.table;

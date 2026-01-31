@@ -102,31 +102,69 @@ public record PropertyConfig(
 	 * </ul>
 	 */
 	public static final PropertyConfig DEFAULT = new PropertyConfig(
-		'=', 1, Set.of('#'),
-		Pattern.compile("^[a-zA-Z0-9._${}:\\[\\]|-]+$"), Pattern.compile(".*"),
-		false, StandardCharsets.UTF_8,
-		false, "",
-		'[', ']', ',',
-		true, false,
+		'=',
+		1,
+		Set.of('#'),
+		Pattern.compile("^[a-zA-Z0-9._${}:\\[\\]|-]+$"),
+		Pattern.compile(".*"),
+		false,
+		StandardCharsets.UTF_8,
+		false,
+		"",
+		'[', ']',
+		',',
+		true,
+		false,
 		NullStyle.EMPTY,
-		false, 2,
-		':', ":-",
+		false,
+		2,
+		':',
+		":-",
 		null
 	);
 	/**
 	 * Configuration with advanced parsing enabled.<br>
 	 * Enables compacted keys, variable resolution, and typed value parsing.<br>
+	 * <ul>
+	 *     <li>Separator: '='</li>
+	 *     <li>Alignment: 1</li>
+	 *     <li>Comment characters: '#'</li>
+	 *     <li>Key pattern: "^[a-zA-Z0-9._${}:\[\]|-]+$" (supports advanced keys)</li>
+	 *     <li>Value pattern: ".*"</li>
+	 *     <li>Advanced parsing: true</li>
+	 *     <li>Charset: UTF-8</li>
+	 *     <li>Pretty print: true</li>
+	 *     <li>Indent: "\t"</li>
+	 *     <li>Array chars: '[', ']', ','</li>
+	 *     <li>Allow multi-line arrays: true</li>
+	 *     <li>Parse typed values: true</li>
+	 *     <li>Null style: EMPTY</li>
+	 *     <li>Write compaction: true</li>
+	 *     <li>Min compaction group size: 2</li>
+	 *     <li>Variable type separator: ':'</li>
+	 *     <li>Default value marker: ":-"</li>
+	 *     <li>Custom variables: null</li>
+	 * </ul>
 	 */
 	public static final PropertyConfig ADVANCED = new PropertyConfig(
-		'=', 1, Set.of('#'),
-		Pattern.compile("^[a-zA-Z0-9._${}:\\[\\]|-]+$"), Pattern.compile(".*"),
-		true, StandardCharsets.UTF_8,
-		true, "\t",
-		'[', ']', ',',
-		true, true,
+		'=',
+		1,
+		Set.of('#'),
+		Pattern.compile("^[a-zA-Z0-9._${}:\\[\\]|-]+$"),
+		Pattern.compile(".*"),
+		true,
+		StandardCharsets.UTF_8,
+		true,
+		"\t",
+		'[', ']',
+		',',
+		true,
+		true,
 		NullStyle.EMPTY,
-		true, 2,
-		':', ":-",
+		true,
+		2,
+		':',
+		":-",
 		null
 	);
 	
@@ -177,6 +215,7 @@ public record PropertyConfig(
 	 */
 	public void ensureKeyMatches(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		if (key.isBlank()) {
 			throw new PropertySyntaxException("Property key must not be empty");
 		}
@@ -194,6 +233,7 @@ public record PropertyConfig(
 	 */
 	public void ensureValueMatches(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
+		
 		if (!this.valuePattern.matcher(value).matches()) {
 			throw new PropertySyntaxException("Property value '" + value + "' does not match the pattern '" + this.valuePattern.pattern() + "' defined in property config");
 		}

@@ -104,15 +104,15 @@ class IniNullTest {
 	void primitiveTypeChecks() {
 		IniNull iniNull = IniNull.INSTANCE;
 		
-		assertFalse(iniNull.isBoolean());
-		assertFalse(iniNull.isNumber());
-		assertFalse(iniNull.isByte());
-		assertFalse(iniNull.isShort());
-		assertFalse(iniNull.isInteger());
-		assertFalse(iniNull.isLong());
-		assertFalse(iniNull.isFloat());
-		assertFalse(iniNull.isDouble());
-		assertFalse(iniNull.isString());
+		assertFalse(iniNull.isIniBoolean());
+		assertFalse(iniNull.isIniNumber());
+		assertFalse(iniNull.isIniByte());
+		assertFalse(iniNull.isIniShort());
+		assertFalse(iniNull.isIniInteger());
+		assertFalse(iniNull.isIniLong());
+		assertFalse(iniNull.isIniFloat());
+		assertFalse(iniNull.isIniDouble());
+		assertFalse(iniNull.isIniString());
 	}
 	
 	@Test

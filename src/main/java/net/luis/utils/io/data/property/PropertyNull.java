@@ -44,6 +44,8 @@ public final class PropertyNull implements PropertyElement {
 	 */
 	private PropertyNull() {}
 	
+	//region Object overrides
+	
 	@Override
 	public String toString() {
 		return this.toString(PropertyConfig.DEFAULT);
@@ -58,4 +60,5 @@ public final class PropertyNull implements PropertyElement {
 			case TILDE -> "~";
 		};
 	}
+	//endregion
 }

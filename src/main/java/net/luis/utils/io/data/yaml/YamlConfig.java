@@ -55,22 +55,55 @@ public record YamlConfig(
 	
 	/**
 	 * The default yaml configuration.<br>
-	 * Strict: true<br>
-	 * Pretty print: true<br>
-	 * Indent: "  " (2 spaces)<br>
-	 * Use block style: true<br>
-	 * Use document markers: false<br>
-	 * Null style: NULL<br>
-	 * Resolve anchors: true<br>
-	 * Allow duplicate keys: false<br>
-	 * Charset: UTF-8<br>
+	 * <ul>
+	 *     <li>Strict: true</li>
+	 *     <li>Pretty print: true</li>
+	 *     <li>Indent: "  " (2 spaces)</li>
+	 *     <li>Use block style: true</li>
+	 *     <li>Use document markers: false</li>
+	 *     <li>Null style: NULL</li>
+	 *     <li>Resolve anchors: true</li>
+	 *     <li>Allow duplicate keys: false
+	 *     <li>Charset: UTF-8</li>
+	 * </ul>
 	 */
-	public static final YamlConfig DEFAULT = new YamlConfig(true, true, "  ", true, false, NullStyle.NULL, true, false, StandardCharsets.UTF_8);
+	public static final YamlConfig DEFAULT = new YamlConfig(
+		true,
+		true,
+		"  ",
+		true,
+		false,
+		NullStyle.NULL,
+		true,
+		false,
+		StandardCharsets.UTF_8
+	);
 	/**
 	 * Configuration that preserves anchor/alias structure for inspection.<br>
 	 * Same as default but with resolveAnchors set to false.<br>
+	 * <ul>
+	 *     <li>Strict: true</li>
+	 *     <li>Pretty print: true</li>
+	 *     <li>Indent: "  " (2 spaces)</li>
+	 *     <li>Use block style: true</li>
+	 *     <li>Use document markers: false</li>
+	 *     <li>Null style: NULL</li>
+	 *     <li>Resolve anchors: false</li>
+	 *     <li>Allow duplicate keys: false
+	 *     <li>Charset: UTF-8</li>
+	 * </ul>
 	 */
-	public static final YamlConfig PRESERVE_ANCHORS = new YamlConfig(true, true, "  ", true, false, NullStyle.NULL, false, false, StandardCharsets.UTF_8);
+	public static final YamlConfig PRESERVE_ANCHORS = new YamlConfig(
+		true,
+		true,
+		"  ",
+		true,
+		false,
+		NullStyle.NULL,
+		false,
+		false,
+		StandardCharsets.UTF_8
+	);
 	
 	/**
 	 * Constructs a new yaml configuration.<br>

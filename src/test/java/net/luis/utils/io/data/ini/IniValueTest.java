@@ -377,23 +377,23 @@ class IniValueTest {
 		IniValue doubleValue = new IniValue(6.6);
 		IniValue stringValue = new IniValue("test");
 		
-		assertTrue(boolValue.isBoolean());
-		assertFalse(boolValue.isNumber());
-		assertFalse(boolValue.isString());
+		assertTrue(boolValue.isIniBoolean());
+		assertFalse(boolValue.isIniNumber());
+		assertFalse(boolValue.isIniString());
 		
-		assertFalse(byteValue.isBoolean());
-		assertTrue(byteValue.isNumber());
-		assertTrue(byteValue.isByte());
-		assertFalse(byteValue.isString());
+		assertFalse(byteValue.isIniBoolean());
+		assertTrue(byteValue.isIniNumber());
+		assertTrue(byteValue.isIniByte());
+		assertFalse(byteValue.isIniString());
 		
-		assertTrue(shortValue.isShort());
-		assertTrue(intValue.isInteger());
-		assertTrue(longValue.isLong());
-		assertTrue(floatValue.isFloat());
-		assertTrue(doubleValue.isDouble());
+		assertTrue(shortValue.isIniShort());
+		assertTrue(intValue.isIniInteger());
+		assertTrue(longValue.isIniLong());
+		assertTrue(floatValue.isIniFloat());
+		assertTrue(doubleValue.isIniDouble());
 		
-		assertFalse(stringValue.isBoolean());
-		assertFalse(stringValue.isNumber());
-		assertTrue(stringValue.isString());
+		assertFalse(stringValue.isIniBoolean());
+		assertFalse(stringValue.isIniNumber());
+		assertTrue(stringValue.isIniString());
 	}
 }

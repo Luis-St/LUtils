@@ -56,6 +56,7 @@ final class XmlHelper {
 	 */
 	private static void validateBase(@NonNull String str, @NonNull String message) {
 		Objects.requireNonNull(str, message + " must not be null");
+		
 		if (str.isEmpty()) {
 			throw new IllegalArgumentException(message + " must not be empty");
 		}
@@ -75,6 +76,7 @@ final class XmlHelper {
 	 */
 	static @NonNull String validateElementName(@NonNull String name) {
 		validateBase(name, "Xml element name");
+		
 		if (!XML_ELEMENT_NAME_PATTERN.matcher(name).matches()) {
 			throw new IllegalArgumentException("Xml element name must match the pattern '" + XML_ELEMENT_NAME_PATTERN.pattern() + "', but was: '" + name + "'");
 		}
@@ -92,6 +94,7 @@ final class XmlHelper {
 	 */
 	static @NonNull String validateAttributeKey(@NonNull String name) {
 		validateBase(name, "Xml attribute name");
+		
 		if (!XML_ATTRIBUTE_NAME_PATTERN.matcher(name).matches()) {
 			throw new IllegalArgumentException("Xml attribute name must match the pattern '" + XML_ATTRIBUTE_NAME_PATTERN.pattern() + "', but was: '" + name + "'");
 		}

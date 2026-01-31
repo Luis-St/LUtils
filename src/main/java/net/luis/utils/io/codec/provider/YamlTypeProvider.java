@@ -168,7 +168,7 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
-		if (!scalar.isBoolean()) {
+		if (!scalar.isYamlBoolean()) {
 			return Result.error("Yaml element '" + type + "' is not a yaml boolean");
 		}
 		return Result.success(scalar.getAsBoolean());
@@ -185,7 +185,7 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
-		if (!scalar.isNumber()) {
+		if (!scalar.isYamlNumber()) {
 			return Result.error("Yaml element '" + type + "' is not a yaml byte");
 		}
 		return Result.success(scalar.getAsByte());
@@ -202,7 +202,7 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
-		if (!scalar.isNumber()) {
+		if (!scalar.isYamlNumber()) {
 			return Result.error("Yaml element '" + type + "' is not a yaml short");
 		}
 		return Result.success(scalar.getAsShort());
@@ -219,7 +219,7 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
-		if (!scalar.isNumber()) {
+		if (!scalar.isYamlNumber()) {
 			return Result.error("Yaml element '" + type + "' is not a yaml integer");
 		}
 		return Result.success(scalar.getAsInteger());
@@ -236,7 +236,7 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
-		if (!scalar.isNumber()) {
+		if (!scalar.isYamlNumber()) {
 			return Result.error("Yaml element '" + type + "' is not a yaml long");
 		}
 		return Result.success(scalar.getAsLong());
@@ -253,7 +253,7 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
-		if (scalar.isString()) {
+		if (scalar.isYamlString()) {
 			return Result.error("Yaml element '" + type + "' is a yaml string, not a yaml float");
 		}
 		return Result.success(scalar.getAsFloat());
@@ -270,7 +270,7 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
-		if (!scalar.isNumber()) {
+		if (!scalar.isYamlNumber()) {
 			return Result.error("Yaml element '" + type + "' is not a yaml double");
 		}
 		return Result.success(scalar.getAsDouble());
@@ -287,7 +287,7 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
-		if (!scalar.isString()) {
+		if (!scalar.isYamlString()) {
 			return Result.error("Yaml element '" + type + "' is not a yaml string");
 		}
 		return Result.success(scalar.getAsString());
