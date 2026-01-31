@@ -56,6 +56,18 @@ public class PropertyArray implements PropertyElement, Iterable<PropertyElement>
 	}
 	
 	/**
+	 * Checks if the given index is valid for this property array.<br>
+	 *
+	 * @param index The index to check
+	 * @throws PropertyArrayIndexOutOfBoundsException If the index is out of bounds
+	 */
+	private void checkIndex(int index) {
+		if (index < 0 || index >= this.elements.size()) {
+			throw new PropertyArrayIndexOutOfBoundsException(index, this.elements.size());
+		}
+	}
+	
+	/**
 	 * Returns the number of elements in this property array.<br>
 	 * @return The size of this property array
 	 */
@@ -310,18 +322,6 @@ public class PropertyArray implements PropertyElement, Iterable<PropertyElement>
 	}
 	
 	/**
-	 * Checks if the given index is valid for this property array.<br>
-	 *
-	 * @param index The index to check
-	 * @throws PropertyArrayIndexOutOfBoundsException If the index is out of bounds
-	 */
-	private void checkIndex(int index) {
-		if (index < 0 || index >= this.elements.size()) {
-			throw new PropertyArrayIndexOutOfBoundsException(index, this.elements.size());
-		}
-	}
-	
-	/**
 	 * Gets the element at the given index from this property array.<br>
 	 *
 	 * @param index The index to get
@@ -526,6 +526,7 @@ public class PropertyArray implements PropertyElement, Iterable<PropertyElement>
 		return this.getAsPropertyValue(index).getAsDouble();
 	}
 	
+	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -562,4 +563,5 @@ public class PropertyArray implements PropertyElement, Iterable<PropertyElement>
 		builder.append(config.arrayCloseChar());
 		return builder.toString();
 	}
+	//endregion
 }

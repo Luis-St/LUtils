@@ -86,7 +86,7 @@ class JavaTypeProviderTest {
 		Map<?, ?> emptyMap = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap().resultOrThrow();
 		assertTrue(emptyMap.isEmpty());
 		
-		Result<Object> nullMap = JavaTypeProvider.INSTANCE.createMap((Map<String, Object>) null);
+		Result<Object> nullMap = JavaTypeProvider.INSTANCE.createMap(null);
 		assertTrue(nullMap.isError());
 		assertTrue(nullMap.errorOrThrow().startsWith("Value 'null'"));
 		

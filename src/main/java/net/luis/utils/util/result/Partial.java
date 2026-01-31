@@ -91,6 +91,10 @@ record Partial<T>(@Nullable T value, @NonNull String errorMessage, @NonNull List
 		return this.value;
 	}
 	
+	/**
+	 * Builds the complete error message including all causes.<br>
+	 * @return The complete error message
+	 */
 	private @NonNull String buildErrorMessage() {
 		StringBuilder sb = new StringBuilder(this.errorMessage);
 		if (this.causes.isEmpty()) {

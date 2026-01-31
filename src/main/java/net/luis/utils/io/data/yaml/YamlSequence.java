@@ -49,6 +49,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	
 	/**
 	 * Constructs a yaml sequence with the given list of yaml elements.<br>
+	 *
 	 * @param elements The list of yaml elements to add
 	 * @throws NullPointerException If the list of yaml elements is null
 	 */
@@ -449,16 +450,13 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	@Override
 	public @NonNull String toString(@NonNull YamlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
-		
 		if (this.elements.isEmpty()) {
 			return "[]";
 		}
 		
-		// Use flow style if configured or for simple sequences
 		if (!config.useBlockStyle()) {
 			return this.toFlowString(config);
 		}
-		
 		return this.toBlockString(config);
 	}
 	
@@ -467,8 +465,11 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 *
 	 * @param config The yaml config to use
 	 * @return The flow style string representation
+	 * @throws NullPointerException If the config is null
 	 */
 	private @NonNull String toFlowString(@NonNull YamlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
+		
 		StringBuilder builder = new StringBuilder("[");
 		for (int i = 0; i < this.elements.size(); i++) {
 			if (i > 0) {
@@ -484,8 +485,11 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 *
 	 * @param config The yaml config to use
 	 * @return The block style string representation
+	 * @throws NullPointerException If the config is null
 	 */
 	private @NonNull String toBlockString(@NonNull YamlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
+		
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < this.elements.size(); i++) {
 			if (i > 0) {
@@ -494,7 +498,6 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 			builder.append("- ");
 			String value = this.elements.get(i).toString(config);
 			if (value.contains(System.lineSeparator())) {
-				// Indent multi-line values
 				value = value.replace(System.lineSeparator(), System.lineSeparator() + config.indent());
 			}
 			builder.append(value);

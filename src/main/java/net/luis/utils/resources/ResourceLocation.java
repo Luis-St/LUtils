@@ -65,8 +65,6 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 		this.file = Objects.requireNonNull(file, "File must not be null").strip();
 	}
 	
-	//region Static factory methods
-	
 	/**
 	 * Creates a new resource location for a resource on the classpath.<br>
 	 *
@@ -147,23 +145,26 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	public static @NonNull ResourceLocation getResource(@Nullable String path, @NonNull String name, @Nullable Type preferredType) {
 		ResourceLocation internal = internal(path, name);
 		ResourceLocation external = external(path, name);
+		
 		if (preferredType == Type.INTERNAL && internal.exists()) {
 			return internal;
 		} else if (preferredType == Type.EXTERNAL && external.exists()) {
 			return external;
 		}
+		
 		if (internal.exists()) {
 			return internal;
 		} else if (external.exists()) {
 			return external;
 		}
+		
 		if (path == null) {
 			throw new IllegalArgumentException("Resource '" + name + "' was not found in any location");
 		}
+		
 		String location = (!path.isEmpty() && path.charAt(path.length() - 1) == '/' ? path : path + "/") + name;
 		throw new IllegalArgumentException("Resource '" + location + "' was not found in any location");
 	}
-	//endregion
 	
 	//region Static helper methods
 	
@@ -178,6 +179,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 		Objects.requireNonNull(file, "File must not be null");
 		String str = file.strip().replace("\\", "/");
 		int index = str.lastIndexOf("/");
+		
 		if (index == -1) {
 			return Pair.of("", str);
 		} else {
@@ -313,7 +315,6 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	}
 	//endregion
 	
-	//region Static initializer
 	static {
 		TEMP = FunctionUtils.memorize(() -> {
 			try {
@@ -323,7 +324,6 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 			}
 		});
 	}
-	//endregion
 	
 	/**
 	 * Represents the type of a {@link ResourceLocation}.<br>

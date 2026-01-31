@@ -31,6 +31,7 @@ class NoSuchItemExceptionTest {
 	
 	@Test
 	void constructor() {
+		assertDoesNotThrow(() -> new NoSuchItemException());
 		assertDoesNotThrow(() -> new NoSuchItemException((String) null));
 		assertDoesNotThrow(() -> new NoSuchItemException((Throwable) null));
 		assertDoesNotThrow(() -> new NoSuchItemException(null, null));

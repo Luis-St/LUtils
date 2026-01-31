@@ -75,6 +75,7 @@ public enum Radix {
 		if (0 >= radix) {
 			throw new IllegalArgumentException("Radix must be greater than 0 but found: " + radix);
 		}
+		
 		this.radix = radix;
 		this.prefix = Objects.requireNonNull(prefix, "Prefix must not be null");
 	}

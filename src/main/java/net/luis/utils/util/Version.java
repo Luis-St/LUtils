@@ -260,34 +260,39 @@ public class Version implements Comparable<Version> {
 		if (StringUtils.isBlank(version)) {
 			return ZERO;
 		}
+		
 		Matcher matcher = VERSION_PATTERN.matcher(version);
-		if (!matcher.matches()) {
-			return ZERO;
-		}
-		int major = Integer.parseInt(matcher.group(1));
-		int minor = Integer.parseInt(matcher.group(2));
-		int patch = 0;
-		if (matcher.group(4) != null) {
-			patch = Integer.parseInt(matcher.group(4));
-		}
-		Builder builder = builder(major, minor, patch);
-		if (matcher.group(11) != null) {
-			builder.withSuffixVersion(Integer.parseInt(matcher.group(11)));
-		}
-		if (StringUtils.isEmpty(matcher.group(5)) && StringUtils.isEmpty(matcher.group(9))) {
-			return builder.build();
-		}
-		if (matcher.group(5) != null) {
-			int build = Integer.parseInt(matcher.group(7));
-			char separator = matcher.group(6).charAt(0);
-			if (matcher.group(9) != null) {
-				return builder.withBuild(separator, build).withSuffix(matcher.group(9)).build();
+		if (matcher.matches()) {
+			int major = Integer.parseInt(matcher.group(1));
+			int minor = Integer.parseInt(matcher.group(2));
+			int patch = 0;
+			if (matcher.group(4) != null) {
+				patch = Integer.parseInt(matcher.group(4));
 			}
-			return builder.withBuild(separator, build).build();
+			
+			Builder builder = builder(major, minor, patch);
+			if (matcher.group(11) != null) {
+				builder.withSuffixVersion(Integer.parseInt(matcher.group(11)));
+			}
+			
+			if (StringUtils.isEmpty(matcher.group(5)) && StringUtils.isEmpty(matcher.group(9))) {
+				return builder.build();
+			}
+			
+			if (matcher.group(5) != null) {
+				int build = Integer.parseInt(matcher.group(7));
+				char separator = matcher.group(6).charAt(0);
+				if (matcher.group(9) != null) {
+					return builder.withBuild(separator, build).withSuffix(matcher.group(9)).build();
+				}
+				return builder.withBuild(separator, build).build();
+			}
+			
+			if (matcher.group(9) != null) {
+				return builder.withSuffix(matcher.group(9)).build();
+			}
 		}
-		if (matcher.group(9) != null) {
-			return builder.withSuffix(matcher.group(9)).build();
-		}
+		
 		return ZERO;
 	}
 	

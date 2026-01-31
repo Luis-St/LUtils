@@ -43,6 +43,7 @@ public interface ThrowableRunnable<X extends Throwable> {
 	 */
 	static @NonNull Runnable caught(@NonNull ThrowableRunnable<? extends Throwable> runnable) {
 		Objects.requireNonNull(runnable, "Throwable runnable must not be null");
+		
 		return () -> {
 			try {
 				runnable.run();
@@ -69,6 +70,7 @@ public interface ThrowableRunnable<X extends Throwable> {
 	 */
 	default @NonNull ThrowableRunnable<X> andThen(@NonNull ThrowableRunnable<X> after) {
 		Objects.requireNonNull(after, "After operation must not be null");
+		
 		return () -> {
 			this.run();
 			after.run();

@@ -57,6 +57,7 @@ public class Range {
 	protected Range(double min, double max) { // protected to prevent instantiation from outside but allow inheritance
 		this.min = min;
 		this.max = max;
+		
 		if (this.min > this.max) {
 			throw new IllegalArgumentException("The maximum value must be greater than the minimum value");
 		}
@@ -116,6 +117,7 @@ public class Range {
 		if (!str.startsWith("[") || !str.endsWith("]") || !str.contains("..")) {
 			return EMPTY;
 		}
+		
 		String[] parts = str.substring(1, str.length() - 1).split("\\.\\.");
 		if (parts.length != 2) {
 			return EMPTY;

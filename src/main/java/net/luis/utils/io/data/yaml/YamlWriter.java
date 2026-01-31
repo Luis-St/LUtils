@@ -79,6 +79,7 @@ public class YamlWriter implements AutoCloseable {
 				this.writer.write("---");
 				this.writer.newLine();
 			}
+			
 			this.writer.write(yaml.toString(this.config));
 			if (this.config.useDocumentMarkers()) {
 				this.writer.newLine();

@@ -80,7 +80,7 @@ public class XmlElements {
 	 * @throws XmlTypeException If the elements are not valid for the collection type
 	 */
 	public XmlElements(@NonNull Map<String, ? extends XmlElement> elements) {
-		Objects.requireNonNull(elements, "Elements must not be null").forEach((name, element) -> this.add(element));
+		Objects.requireNonNull(elements, "Elements must not be null").forEach((_, element) -> this.add(element));
 	}
 	
 	/**

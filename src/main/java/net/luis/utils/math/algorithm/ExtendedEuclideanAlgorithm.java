@@ -100,14 +100,13 @@ public class ExtendedEuclideanAlgorithm {
 	 * @throws IllegalArgumentException If the value or divisor is 0
 	 */
 	public ExtendedEuclideanAlgorithm(@NonNull BigInteger value, @NonNull BigInteger divisor) {
-		//region Validation
 		if (value.equals(ZERO)) {
 			throw new IllegalArgumentException("The value must not be 0");
 		}
 		if (divisor.equals(ZERO)) {
 			throw new IllegalArgumentException("The divisor must not be 0");
 		}
-		//endregion
+		
 		this.initialValue = value;
 		this.initialDivisor = divisor;
 		this.value = value;
@@ -155,8 +154,6 @@ public class ExtendedEuclideanAlgorithm {
 		eea.execute();
 		return eea.getDivisor();
 	}
-	
-	//region Getter
 	
 	/**
 	 * Checks if the EEA is complete.<br>
@@ -237,7 +234,6 @@ public class ExtendedEuclideanAlgorithm {
 	public @NonNull BigInteger getSecondCoefficient() {
 		return this.getSecondCoefficient(1);
 	}
-	//endregion
 	
 	/**
 	 * Executes the EEA for a single step.<br>

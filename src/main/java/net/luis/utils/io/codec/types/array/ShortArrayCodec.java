@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.io.codec.constraint.config.collection.PrimitiveArrayConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.collection.PrimitiveArrayConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -26,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for short arrays.<br>
@@ -33,7 +36,7 @@ import java.util.*;
  *
  * @author Luis-St
  */
-public class ShortArrayCodec extends AbstractCodec<short[], Object> {
+public class ShortArrayCodec extends AbstractCodec<short[], PrimitiveArrayConstraintConfig<short[]>> implements PrimitiveArrayConstraint<short[], ShortArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of shorts and the array representation.<br>
@@ -45,13 +48,36 @@ public class ShortArrayCodec extends AbstractCodec<short[], Object> {
 	 */
 	public ShortArrayCodec() {}
 	
+	/**
+	 * Constructs a new short array codec with the specified length constraint configuration.<br>
+	 *
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the constraint config is null
+	 */
+	private ShortArrayCodec(@NonNull PrimitiveArrayConstraintConfig<short[]> config) {
+		super(config);
+	}
+	
+	@Override
+	public @NonNull ShortArrayCodec apply(@NonNull UnaryOperator<PrimitiveArrayConstraintConfig<short[]>> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new ShortArrayCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(PrimitiveArrayConstraintConfig.shortArray()))
+		);
+	}
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, short @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to encode null as short array using '" + this + "'");
+		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
 		}
 		return this.internalCodec.encodeStart(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
 	}
@@ -70,11 +96,19 @@ public class ShortArrayCodec extends AbstractCodec<short[], Object> {
 		}
 		
 		List<Short> list = result.resultOrThrow();
-		return Result.success(ArrayUtils.toPrimitive(list.toArray(Short[]::new)));
+		short[] array = ArrayUtils.toPrimitive(list.toArray(Short[]::new));
+		
+		Result<Void> constraintResult = this.checkConstraints(array);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		return Result.success(array);
 	}
 	
 	@Override
 	public String toString() {
-		return "ShortArrayCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedShortArrayCodec[constraints=" + config + "]";
+		}).orElse("ShortArrayCodec");
 	}
 }

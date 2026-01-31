@@ -20,6 +20,7 @@ package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.codec.types.struct.*;
+import net.luis.utils.io.codec.types.struct.collection.*;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.result.ResultingFunction;

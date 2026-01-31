@@ -78,72 +78,72 @@ public interface PropertyElement {
 	 * Checks if this property value is a boolean.<br>
 	 * @return True if this property value is a boolean, false otherwise
 	 */
-	default boolean isBoolean() {
-		return this.isPropertyValue() && this.getAsPropertyValue().isBoolean();
+	default boolean isPropertyBoolean() {
+		return this.isPropertyValue() && this.getAsPropertyValue().isPropertyBoolean();
 	}
 	
 	/**
 	 * Checks if this property value is a number.<br>
 	 * @return True if this property value is a number, false otherwise
 	 */
-	default boolean isNumber() {
-		return this.isPropertyValue() && this.getAsPropertyValue().isNumber();
+	default boolean isPropertyNumber() {
+		return this.isPropertyValue() && this.getAsPropertyValue().isPropertyNumber();
 	}
 	
 	/**
 	 * Checks if this property value is a byte.<br>
 	 * @return True if this property value is a byte, false otherwise
 	 */
-	default boolean isByte() {
-		return this.isPropertyValue() && this.getAsPropertyValue().isByte();
+	default boolean isPropertyByte() {
+		return this.isPropertyValue() && this.getAsPropertyValue().isPropertyByte();
 	}
 	
 	/**
 	 * Checks if this property value is a short.<br>
 	 * @return True if this property value is a short, false otherwise
 	 */
-	default boolean isShort() {
-		return this.isPropertyValue() && this.getAsPropertyValue().isShort();
+	default boolean isPropertyShort() {
+		return this.isPropertyValue() && this.getAsPropertyValue().isPropertyShort();
 	}
 	
 	/**
 	 * Checks if this property value is an integer.<br>
 	 * @return True if this property value is an integer, false otherwise
 	 */
-	default boolean isInteger() {
-		return this.isPropertyValue() && this.getAsPropertyValue().isInteger();
+	default boolean isPropertyInteger() {
+		return this.isPropertyValue() && this.getAsPropertyValue().isPropertyInteger();
 	}
 	
 	/**
 	 * Checks if this property value is a long.<br>
 	 * @return True if this property value is a long, false otherwise
 	 */
-	default boolean isLong() {
-		return this.isPropertyValue() && this.getAsPropertyValue().isLong();
+	default boolean isPropertyLong() {
+		return this.isPropertyValue() && this.getAsPropertyValue().isPropertyLong();
 	}
 	
 	/**
 	 * Checks if this property value is a float.<br>
 	 * @return True if this property value is a float, false otherwise
 	 */
-	default boolean isFloat() {
-		return this.isPropertyValue() && this.getAsPropertyValue().isFloat();
+	default boolean isPropertyFloat() {
+		return this.isPropertyValue() && this.getAsPropertyValue().isPropertyFloat();
 	}
 	
 	/**
 	 * Checks if this property value is a double.<br>
 	 * @return True if this property value is a double, false otherwise
 	 */
-	default boolean isDouble() {
-		return this.isPropertyValue() && this.getAsPropertyValue().isDouble();
+	default boolean isPropertyDouble() {
+		return this.isPropertyValue() && this.getAsPropertyValue().isPropertyDouble();
 	}
 	
 	/**
 	 * Checks if this property value is a string.<br>
 	 * @return True if this property value is a string, false otherwise
 	 */
-	default boolean isString() {
-		return this.isPropertyValue() && this.getAsPropertyValue().isString();
+	default boolean isPropertyString() {
+		return this.isPropertyValue() && this.getAsPropertyValue().isPropertyString();
 	}
 	
 	/**

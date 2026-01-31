@@ -182,4 +182,12 @@ class ChanceTest {
 		assertEquals(Chance.ZERO.hashCode(), Chance.of(0.0).hashCode());
 		assertEquals(Chance.ONE.hashCode(), Chance.of(1.0).hashCode());
 	}
+	
+	@Test
+	void toStringFormatsCorrectly() {
+		assertEquals("0.0%", Chance.ZERO.toString());
+		assertEquals("1.0%", Chance.ONE.toString());
+		assertEquals("0.5%", Chance.of(0.5).toString());
+		assertEquals("0.1234%", Chance.of(0.1234).toString());
+	}
 }

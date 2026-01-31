@@ -25,6 +25,7 @@ import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,7 +65,7 @@ class PathCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("/tmp/test"), result.resultOrThrow());
+		assertEquals(new JsonPrimitive(File.separator + "tmp" + File.separator + "test"), result.resultOrThrow());
 	}
 	
 	@Test
@@ -75,7 +76,7 @@ class PathCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("relative/path"), result.resultOrThrow());
+		assertEquals(new JsonPrimitive("relative" + File.separator + "path"), result.resultOrThrow());
 	}
 	
 	@Test

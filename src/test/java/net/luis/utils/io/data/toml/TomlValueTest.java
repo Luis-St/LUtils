@@ -89,7 +89,7 @@ class TomlValueTest {
 		LocalDate date = LocalDate.of(2025, 1, 15);
 		TomlValue dateValue = new TomlValue(date);
 		
-		assertTrue(dateValue.isLocalDate());
+		assertTrue(dateValue.isTomlLocalDate());
 		assertEquals(date, dateValue.getAsLocalDate());
 		
 		assertThrows(NullPointerException.class, () -> new TomlValue((LocalDate) null));
@@ -100,7 +100,7 @@ class TomlValueTest {
 		LocalTime time = LocalTime.of(14, 30, 45);
 		TomlValue timeValue = new TomlValue(time);
 		
-		assertTrue(timeValue.isLocalTime());
+		assertTrue(timeValue.isTomlLocalTime());
 		assertEquals(time, timeValue.getAsLocalTime());
 		
 		assertThrows(NullPointerException.class, () -> new TomlValue((LocalTime) null));
@@ -111,7 +111,7 @@ class TomlValueTest {
 		LocalDateTime dateTime = LocalDateTime.of(2025, 1, 15, 14, 30, 45);
 		TomlValue dateTimeValue = new TomlValue(dateTime);
 		
-		assertTrue(dateTimeValue.isLocalDateTime());
+		assertTrue(dateTimeValue.isTomlLocalDateTime());
 		assertEquals(dateTime, dateTimeValue.getAsLocalDateTime());
 		
 		assertThrows(NullPointerException.class, () -> new TomlValue((LocalDateTime) null));
@@ -122,7 +122,7 @@ class TomlValueTest {
 		OffsetDateTime dateTime = OffsetDateTime.of(2025, 1, 15, 14, 30, 45, 0, ZoneOffset.ofHours(2));
 		TomlValue dateTimeValue = new TomlValue(dateTime);
 		
-		assertTrue(dateTimeValue.isOffsetDateTime());
+		assertTrue(dateTimeValue.isTomlOffsetDateTime());
 		assertEquals(dateTime, dateTimeValue.getAsOffsetDateTime());
 		
 		assertThrows(NullPointerException.class, () -> new TomlValue((OffsetDateTime) null));
@@ -300,32 +300,32 @@ class TomlValueTest {
 		TomlValue dateTimeValue = new TomlValue(LocalDateTime.of(2025, 1, 15, 14, 30, 45));
 		TomlValue offsetDateTimeValue = new TomlValue(OffsetDateTime.of(2025, 1, 15, 14, 30, 45, 0, ZoneOffset.UTC));
 		
-		assertTrue(dateValue.isLocalDate());
-		assertFalse(dateValue.isLocalTime());
-		assertFalse(dateValue.isLocalDateTime());
-		assertFalse(dateValue.isOffsetDateTime());
-		assertTrue(dateValue.isDateTime());
+		assertTrue(dateValue.isTomlLocalDate());
+		assertFalse(dateValue.isTomlLocalTime());
+		assertFalse(dateValue.isTomlLocalDateTime());
+		assertFalse(dateValue.isTomlOffsetDateTime());
+		assertTrue(dateValue.isTomlDateTime());
 		
-		assertFalse(timeValue.isLocalDate());
-		assertTrue(timeValue.isLocalTime());
-		assertFalse(timeValue.isLocalDateTime());
-		assertFalse(timeValue.isOffsetDateTime());
-		assertTrue(timeValue.isDateTime());
+		assertFalse(timeValue.isTomlLocalDate());
+		assertTrue(timeValue.isTomlLocalTime());
+		assertFalse(timeValue.isTomlLocalDateTime());
+		assertFalse(timeValue.isTomlOffsetDateTime());
+		assertTrue(timeValue.isTomlDateTime());
 		
-		assertFalse(dateTimeValue.isLocalDate());
-		assertFalse(dateTimeValue.isLocalTime());
-		assertTrue(dateTimeValue.isLocalDateTime());
-		assertFalse(dateTimeValue.isOffsetDateTime());
-		assertTrue(dateTimeValue.isDateTime());
+		assertFalse(dateTimeValue.isTomlLocalDate());
+		assertFalse(dateTimeValue.isTomlLocalTime());
+		assertTrue(dateTimeValue.isTomlLocalDateTime());
+		assertFalse(dateTimeValue.isTomlOffsetDateTime());
+		assertTrue(dateTimeValue.isTomlDateTime());
 		
-		assertFalse(offsetDateTimeValue.isLocalDate());
-		assertFalse(offsetDateTimeValue.isLocalTime());
-		assertFalse(offsetDateTimeValue.isLocalDateTime());
-		assertTrue(offsetDateTimeValue.isOffsetDateTime());
-		assertTrue(offsetDateTimeValue.isDateTime());
+		assertFalse(offsetDateTimeValue.isTomlLocalDate());
+		assertFalse(offsetDateTimeValue.isTomlLocalTime());
+		assertFalse(offsetDateTimeValue.isTomlLocalDateTime());
+		assertTrue(offsetDateTimeValue.isTomlOffsetDateTime());
+		assertTrue(offsetDateTimeValue.isTomlDateTime());
 		
 		TomlValue stringValue = new TomlValue("test");
-		assertFalse(stringValue.isDateTime());
+		assertFalse(stringValue.isTomlDateTime());
 	}
 	
 	@Test
@@ -477,24 +477,24 @@ class TomlValueTest {
 		TomlValue doubleValue = new TomlValue(6.6);
 		TomlValue stringValue = new TomlValue("test");
 		
-		assertTrue(boolValue.isBoolean());
-		assertFalse(boolValue.isNumber());
-		assertFalse(boolValue.isString());
+		assertTrue(boolValue.isTomlBoolean());
+		assertFalse(boolValue.isTomlNumber());
+		assertFalse(boolValue.isTomlString());
 		
-		assertFalse(byteValue.isBoolean());
-		assertTrue(byteValue.isNumber());
-		assertTrue(byteValue.isByte());
-		assertFalse(byteValue.isString());
+		assertFalse(byteValue.isTomlBoolean());
+		assertTrue(byteValue.isTomlNumber());
+		assertTrue(byteValue.isTomlByte());
+		assertFalse(byteValue.isTomlString());
 		
-		assertTrue(shortValue.isShort());
-		assertTrue(intValue.isInteger());
-		assertTrue(longValue.isLong());
-		assertTrue(floatValue.isFloat());
-		assertTrue(doubleValue.isDouble());
+		assertTrue(shortValue.isTomlShort());
+		assertTrue(intValue.isTomlInteger());
+		assertTrue(longValue.isTomlLong());
+		assertTrue(floatValue.isTomlFloat());
+		assertTrue(doubleValue.isTomlDouble());
 		
-		assertFalse(stringValue.isBoolean());
-		assertFalse(stringValue.isNumber());
-		assertTrue(stringValue.isString());
+		assertFalse(stringValue.isTomlBoolean());
+		assertFalse(stringValue.isTomlNumber());
+		assertTrue(stringValue.isTomlString());
 	}
 	
 	@Test

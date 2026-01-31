@@ -22,6 +22,8 @@ import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
+import org.apache.commons.lang3.mutable.Mutable;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -56,13 +58,13 @@ import java.util.function.Supplier;
  * @param <C> The type of the recursive value
  */
 public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
-
+	
 	/**
 	 * Supplier that lazily provides the actual codec.<br>
 	 * This is used to break the circular dependency during codec construction.
 	 */
 	private final Supplier<Codec<C>> codecSupplier;
-
+	
 	/**
 	 * Constructs a new recursive codec using the given factory function.<br>
 	 * <p>
@@ -75,47 +77,46 @@ public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
 	 */
 	public RecursiveCodec(@NonNull Function<Codec<C>, Codec<C>> codecFactory) {
 		Objects.requireNonNull(codecFactory, "Codec factory must not be null");
-
-		Codec<C>[] codecHolder = new Codec[1];
-		codecHolder[0] = codecFactory.apply(new LazyCodec<>(() -> codecHolder[0]));
-
-		this.codecSupplier = () -> codecHolder[0];
+		
+		Mutable<Codec<C>> codecHolder = new MutableObject<>();
+		codecHolder.setValue(codecFactory.apply(new LazyCodec<>(codecHolder)));
+		this.codecSupplier = codecHolder;
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		return this.codecSupplier.get().encodeStart(provider, current, value);
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		return this.codecSupplier.get().decodeStart(provider, current, value);
 	}
-
+	
 	@Override
 	public String toString() {
 		return "RecursiveCodec[" + this.codecSupplier.get() + "]";
 	}
-
+	
 	/**
 	 * Internal lazy codec that delegates to the actual codec once it's initialized.<br>
 	 * This is used to break the circular dependency during codec construction.
 	 *
 	 * @param <C> The type of the value
 	 */
-	private static class LazyCodec<C> extends AbstractCodec<C, Object> {
-
+	private static final class LazyCodec<C> extends AbstractCodec<C, Object> {
+		
 		/**
 		 * Supplier that provides the actual codec.<br>
 		 */
 		private final Supplier<Codec<C>> codecSupplier;
-
+		
 		/**
 		 * Constructs a new lazy codec.<br>
 		 *
@@ -124,17 +125,17 @@ public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
 		private LazyCodec(@NonNull Supplier<Codec<C>> codecSupplier) {
 			this.codecSupplier = Objects.requireNonNull(codecSupplier, "Codec supplier must not be null");
 		}
-
+		
 		@Override
 		public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 			return this.codecSupplier.get().encodeStart(provider, current, value);
 		}
-
+		
 		@Override
 		public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 			return this.codecSupplier.get().decodeStart(provider, current, value);
 		}
-
+		
 		@Override
 		public String toString() {
 			return "LazyCodec";

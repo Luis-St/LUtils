@@ -336,8 +336,10 @@ final class LoggingHelper {
 	 */
 	public static @NonNull LoggerConfiguration load(@NonNull List<String> loggers) {
 		String config = System.getProperty(LOGGING_CONFIG);
+		
 		if (StringUtils.isNotBlank(config)) {
 			String file = config.replace("\\", "/");
+			
 			if (!file.matches(PATH_PATTERN)) {
 				throw new InvalidValueException("Invalid value '" + file + "' for property '" + LOGGING_CONFIG + "', must be a relative or absolute path");
 			}
@@ -359,15 +361,18 @@ final class LoggingHelper {
 	 */
 	private static void loadProperties(@NonNull ResourceLocation location) {
 		Objects.requireNonNull(location, "Location must not be null");
+		
 		boolean noOverrides = !Boolean.parseBoolean(System.getProperty(LOGGING_CONFIG_OVERRIDE, "false"));
 		try {
 			for (String line : location.getLines().toList()) {
 				if (StringUtils.isBlank(line) || Strings.CS.startsWithAny(line, "#", "!")) {
 					continue;
 				}
+				
 				Matcher matcher = PROPERTY_PATTERN.matcher(line);
 				if (matcher.matches()) {
 					String key = matcher.group(1);
+					
 					if (System.getProperty(key) != null && noOverrides) {
 						throw new IllegalStateException("System property '" + key + "' is already set and override is not allowed");
 					}
@@ -393,6 +398,7 @@ final class LoggingHelper {
 	private static @NonNull LoggerConfiguration loadInternal(@NonNull List<String> loggers) {
 		LoggerConfiguration config = new LoggerConfiguration(loggers);
 		String statusLevel = System.getProperty(LOGGING_LEVEL_STATUS);
+		
 		if (StringUtils.isNotBlank(statusLevel)) {
 			Level level = Level.getLevel(statusLevel);
 			if (level == null) {
@@ -401,6 +407,7 @@ final class LoggingHelper {
 				config.setStatusLevel(level);
 			}
 		}
+		
 		String consoleLogging = System.getProperty(LOGGING_CONSOLE);
 		if (StringUtils.isNotBlank(consoleLogging)) {
 			if (isEnabled(consoleLogging)) {
@@ -411,6 +418,7 @@ final class LoggingHelper {
 				throw new InvalidValueException("Invalid value '" + consoleLogging + "' for property '" + LOGGING_CONSOLE + "'");
 			}
 		}
+		
 		String fileLogging = System.getProperty(LOGGING_FILE);
 		if (StringUtils.isNotBlank(fileLogging)) {
 			if (isEnabled(fileLogging)) {
@@ -421,45 +429,53 @@ final class LoggingHelper {
 				throw new InvalidValueException("Invalid value '" + fileLogging + "' for property '" + LOGGING_FILE + "'");
 			}
 		}
+		
 		String root = System.getProperty(LOGGING_FILE_FOLDER_ROOT, "./logs/").replace("\\", "/");
 		if (!root.matches(PATH_PATTERN)) {
 			throw new InvalidValueException("Invalid value '" + root + "' for property '" + LOGGING_FILE_FOLDER_ROOT + "', must be a relative or absolute path");
 		}
 		config.setRootDirectory(StringUtils.strip(root, "/ ") + "/"); // Root must be relative or absolute and end with '/'
+		
 		String fileSize = System.getProperty(LOGGING_FILE_SIZE, "20MB");
 		if (!Pattern.compile(FILE_SIZE, Pattern.CASE_INSENSITIVE).matcher(fileSize).matches()) {
 			throw new IllegalArgumentException("Invalid value '" + fileSize + "' for property '" + LOGGING_FILE_SIZE + "'");
 		}
 		config.setFileSize(fileSize);
+		
 		String archiveType = System.getProperty(LOGGING_ARCHIVE_TYPE, "gz");
 		if (!Pattern.compile(ARCHIVE_TYPE, Pattern.CASE_INSENSITIVE).matcher(archiveType).matches()) {
 			throw new IllegalArgumentException("Invalid value '" + archiveType + "' for property '" + LOGGING_ARCHIVE_TYPE + "'");
 		}
 		config.setArchiveType(archiveType);
+		
 		String compressionLevel = System.getProperty(LOGGING_ARCHIVE_COMPRESSION_LEVEL, "4");
 		try {
 			config.setCompressionLevel(Integer.parseInt(compressionLevel));
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Invalid value '" + compressionLevel + "' for property '" + LOGGING_ARCHIVE_COMPRESSION_LEVEL + "', expected a number between 0 and 9");
 		}
+		
 		String maxArchiveFiles = System.getProperty(LOGGING_ARCHIVE_MAX_FILES, "10");
 		try {
 			config.setMaxArchiveFiles(NumberUtils.toInt(maxArchiveFiles, 10));
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Invalid value '" + maxArchiveFiles + "' for property '" + LOGGING_ARCHIVE_MAX_FILES + "', expected a number greater than 0");
 		}
+		
 		String autoDeletionDepth = System.getProperty(LOGGING_ARCHIVE_AUTO_DELETION_DEPTH, "1");
 		try {
 			config.setArchiveAutoDeletionDepth(NumberUtils.toInt(autoDeletionDepth, 1));
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Invalid value '" + autoDeletionDepth + "' for property '" + LOGGING_ARCHIVE_AUTO_DELETION_DEPTH + "', expected a number greater than 0");
 		}
+		
 		String autoDeletionAge = System.getProperty(LOGGING_ARCHIVE_AUTO_DELETION_AGE, "30");
 		try {
 			config.setArchiveAutoDeletionAge(NumberUtils.toInt(autoDeletionAge, 30));
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Invalid value '" + autoDeletionAge + "' for property '" + LOGGING_ARCHIVE_AUTO_DELETION_AGE + "', expected a number greater than 0");
 		}
+		
 		//region Local record
 		record LogFile(Level level, String folder, String file, String archive) {
 			
@@ -497,6 +513,7 @@ final class LoggingHelper {
 			String archive = "/" + log.archiveOr(log.level().name().toLowerCase() + "-%d{dd-MM-yyyy}-%i.log.gz"); // Archive must not be null and starts with '/'
 			config.overrideLog(log.level(), folder + file, folder + archive);
 		});
+		
 		for (Level level : LoggingType.FILE) {
 			String value = System.getProperty("logging." + LoggingType.FILE + "." + level.name().toLowerCase(), "");
 			if (isEnabled(value)) {
@@ -547,6 +564,7 @@ final class LoggingHelper {
 		}).filter(entry -> !entry.getSecond().isEmpty()).forEach(entry -> {
 			Level level = entry.getFirst();
 			String value = entry.getSecond();
+			
 			if (isEnabled(value)) {
 				LoggingUtils.enableConsole(level);
 			} else if (isDisabled(value)) {

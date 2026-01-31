@@ -143,6 +143,7 @@ public class FieldCodec<C, O> {
 	 * The value is retrieved from the map using the name of this codec.<br>
 	 *
 	 * @param provider The type provider
+	 * @param current The current value
 	 * @param map The map to decode the value from
 	 * @param <R> The type to decode from
 	 * @return The result

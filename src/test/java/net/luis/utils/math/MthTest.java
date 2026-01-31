@@ -219,7 +219,22 @@ class MthTest {
 	}
 	
 	@Test
-	void fracReturnsCorrectFraction() {
+	void fracFloatReturnsCorrectFraction() {
+		assertEquals(0.5f, Mth.frac(1.5f), 0.0001f);
+		assertEquals(0.25f, Mth.frac(2.25f), 0.0001f);
+		assertEquals(0.0f, Mth.frac(3.0f), 0.0001f);
+		assertEquals(0.999f, Mth.frac(0.999f), 0.0001f);
+	}
+	
+	@Test
+	void fracFloatHandlesNegativeNumbers() {
+		assertEquals(-0.5f, Mth.frac(-1.5f), 0.0001f);
+		assertEquals(-0.25f, Mth.frac(-2.25f), 0.0001f);
+		assertEquals(0.0f, Mth.frac(-3.0f), 0.0001f);
+	}
+	
+	@Test
+	void fracDoubleReturnsCorrectFraction() {
 		assertEquals(0.5, Mth.frac(1.5), 0.0001);
 		assertEquals(0.25, Mth.frac(2.25), 0.0001);
 		assertEquals(0.0, Mth.frac(3.0), 0.0001);
@@ -227,7 +242,7 @@ class MthTest {
 	}
 	
 	@Test
-	void fracHandlesNegativeNumbers() {
+	void fracDoubleHandlesNegativeNumbers() {
 		assertEquals(-0.5, Mth.frac(-1.5), 0.0001);
 		assertEquals(-0.25, Mth.frac(-2.25), 0.0001);
 		assertEquals(0.0, Mth.frac(-3.0), 0.0001);

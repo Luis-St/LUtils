@@ -108,6 +108,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 */
 	public SortedList(@NonNull List<E> elements, @Nullable Comparator<E> comparator) {
 		Objects.requireNonNull(elements, "List must not be null");
+		
 		this.internalList = Lists.newArrayList(elements);
 		this.comparator = comparator;
 		this.internalList.sort(this.comparator);
@@ -145,6 +146,7 @@ public class SortedList<E> extends AbstractList<E> {
 	@Override
 	public E set(int index, @NonNull E element) {
 		Objects.requireNonNull(element, "Element must not be null");
+		
 		E old = this.internalList.set(index, element);
 		this.internalList.sort(this.comparator);
 		return old;

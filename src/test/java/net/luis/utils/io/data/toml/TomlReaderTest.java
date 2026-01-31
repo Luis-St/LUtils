@@ -23,7 +23,6 @@ import net.luis.utils.io.data.toml.exception.TomlSyntaxException;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 
@@ -71,7 +70,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlEmptyInput() throws IOException {
+	void readTomlEmptyInput() {
 		try (TomlReader reader = new TomlReader("")) {
 			TomlTable table = reader.readToml();
 			assertTrue(table.isEmpty());
@@ -79,7 +78,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlSingleKeyValue() throws IOException {
+	void readTomlSingleKeyValue() {
 		try (TomlReader reader = new TomlReader("key = \"value\"")) {
 			TomlTable table = reader.readToml();
 			assertEquals(1, table.size());
@@ -88,7 +87,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlMultipleKeyValues() throws IOException {
+	void readTomlMultipleKeyValues() {
 		String toml = """
 			key1 = "value1"
 			key2 = "value2"
@@ -105,7 +104,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlBooleanValues() throws IOException {
+	void readTomlBooleanValues() {
 		String toml = """
 			trueKey = true
 			falseKey = false
@@ -119,7 +118,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlIntegerValues() throws IOException {
+	void readTomlIntegerValues() {
 		String toml = """
 			int = 42
 			negative = -17
@@ -137,7 +136,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlHexOctalBinaryIntegers() throws IOException {
+	void readTomlHexOctalBinaryIntegers() {
 		String toml = """
 			hex = 0xFF
 			octal = 0o755
@@ -153,7 +152,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlFloatValues() throws IOException {
+	void readTomlFloatValues() {
 		String toml = """
 			float = 3.14
 			negative = -2.5
@@ -171,7 +170,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlSpecialFloatValues() throws IOException {
+	void readTomlSpecialFloatValues() {
 		String toml = """
 			inf1 = inf
 			inf2 = +inf
@@ -193,7 +192,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlBasicStrings() throws IOException {
+	void readTomlBasicStrings() {
 		String toml = """
 			simple = "hello"
 			withSpaces = "hello world"
@@ -209,7 +208,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlLiteralStrings() throws IOException {
+	void readTomlLiteralStrings() {
 		String toml = """
 			simple = 'hello'
 			withBackslash = 'C:\\Users\\name'
@@ -223,7 +222,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlEscapeSequences() throws IOException {
+	void readTomlEscapeSequences() {
 		String toml = """
 			newline = "line1\\nline2"
 			tab = "col1\\tcol2"
@@ -239,7 +238,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlMultiLineBasicString() throws IOException {
+	void readTomlMultiLineBasicString() {
 		String toml = """
 			text = \"""
 			Hello
@@ -253,7 +252,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlMultiLineLiteralString() throws IOException {
+	void readTomlMultiLineLiteralString() {
 		String toml = """
 			text = '''
 			Hello
@@ -267,7 +266,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlLocalDate() throws IOException {
+	void readTomlLocalDate() {
 		String toml = "date = 2024-01-15";
 		
 		try (TomlReader reader = new TomlReader(toml)) {
@@ -277,7 +276,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlLocalTime() throws IOException {
+	void readTomlLocalTime() {
 		String toml = "time = 14:30:00";
 		
 		try (TomlReader reader = new TomlReader(toml)) {
@@ -287,7 +286,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlLocalDateTime() throws IOException {
+	void readTomlLocalDateTime() {
 		String toml = "datetime = 2024-01-15T14:30:00";
 		
 		try (TomlReader reader = new TomlReader(toml)) {
@@ -297,7 +296,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlOffsetDateTime() throws IOException {
+	void readTomlOffsetDateTime() {
 		String toml = "datetime = 2024-01-15T14:30:00Z";
 		
 		try (TomlReader reader = new TomlReader(toml)) {
@@ -307,7 +306,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlSimpleTable() throws IOException {
+	void readTomlSimpleTable() {
 		String toml = """
 			[server]
 			host = "localhost"
@@ -324,7 +323,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlNestedTable() throws IOException {
+	void readTomlNestedTable() {
 		String toml = """
 			[server.database]
 			host = "localhost"
@@ -341,7 +340,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlMultipleTables() throws IOException {
+	void readTomlMultipleTables() {
 		String toml = """
 			[table1]
 			key1 = "value1"
@@ -363,7 +362,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlInlineTable() throws IOException {
+	void readTomlInlineTable() {
 		String toml = "point = { x = 1, y = 2 }";
 		
 		try (TomlReader reader = new TomlReader(toml)) {
@@ -376,7 +375,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlSimpleArray() throws IOException {
+	void readTomlSimpleArray() {
 		String toml = "numbers = [1, 2, 3, 4, 5]";
 		
 		try (TomlReader reader = new TomlReader(toml)) {
@@ -389,7 +388,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlMixedArray() throws IOException {
+	void readTomlMixedArray() {
 		String toml = "mixed = [\"string\", 42, true, 3.14]";
 		
 		try (TomlReader reader = new TomlReader(toml)) {
@@ -404,7 +403,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlNestedArray() throws IOException {
+	void readTomlNestedArray() {
 		String toml = "nested = [[1, 2], [3, 4], [5, 6]]";
 		
 		try (TomlReader reader = new TomlReader(toml)) {
@@ -417,7 +416,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlArrayOfTables() throws IOException {
+	void readTomlArrayOfTables() {
 		String toml = """
 			[[products]]
 			name = "Product 1"
@@ -440,7 +439,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlDottedKeys() throws IOException {
+	void readTomlDottedKeys() {
 		String toml = "physical.color = \"red\"";
 		
 		try (TomlReader reader = new TomlReader(toml)) {
@@ -451,7 +450,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlCommentsIgnored() throws IOException {
+	void readTomlCommentsIgnored() {
 		String toml = """
 			# This is a comment
 			key1 = "value1"
@@ -468,7 +467,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlEmptyLinesIgnored() throws IOException {
+	void readTomlEmptyLinesIgnored() {
 		String toml = """
 			
 			key1 = "value1"
@@ -490,8 +489,6 @@ class TomlReaderTest {
 		
 		try (TomlReader reader = new TomlReader(toml)) {
 			assertThrows(TomlSyntaxException.class, reader::readToml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
@@ -501,8 +498,6 @@ class TomlReaderTest {
 		
 		try (TomlReader reader = new TomlReader(toml)) {
 			assertThrows(TomlSyntaxException.class, reader::readToml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
@@ -512,8 +507,6 @@ class TomlReaderTest {
 		
 		try (TomlReader reader = new TomlReader(toml)) {
 			assertThrows(TomlSyntaxException.class, reader::readToml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
@@ -523,8 +516,6 @@ class TomlReaderTest {
 		
 		try (TomlReader reader = new TomlReader(toml)) {
 			assertThrows(TomlSyntaxException.class, reader::readToml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
@@ -534,8 +525,6 @@ class TomlReaderTest {
 		
 		try (TomlReader reader = new TomlReader(toml)) {
 			assertThrows(TomlSyntaxException.class, reader::readToml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
@@ -548,13 +537,11 @@ class TomlReaderTest {
 		
 		try (TomlReader reader = new TomlReader(toml, STRICT_CONFIG)) {
 			assertThrows(TomlSyntaxException.class, reader::readToml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 	
 	@Test
-	void readTomlDuplicateKeyNonStrict() throws IOException {
+	void readTomlDuplicateKeyNonStrict() {
 		String toml = """
 			key = "value1"
 			key = "value2"
@@ -567,7 +554,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlWithInputProvider() throws IOException {
+	void readTomlWithInputProvider() {
 		String toml = """
 			[server]
 			host = "localhost"
@@ -582,7 +569,7 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void readTomlWhitespaceTrimming() throws IOException {
+	void readTomlWhitespaceTrimming() {
 		String toml = """
 			  key1  =  "value1"
 			[  table  ]
@@ -597,14 +584,14 @@ class TomlReaderTest {
 	}
 	
 	@Test
-	void closeResource() throws IOException {
+	void closeResource() {
 		TomlReader reader = new TomlReader("key = \"value\"");
 		reader.readToml();
 		assertDoesNotThrow(reader::close);
 	}
 	
 	@Test
-	void readTomlComplexDocument() throws IOException {
+	void readTomlComplexDocument() {
 		String toml = """
 			# Application Configuration
 			title = "MyApplication"

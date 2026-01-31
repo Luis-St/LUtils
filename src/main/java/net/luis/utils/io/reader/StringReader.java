@@ -87,6 +87,7 @@ public class StringReader {
 	 */
 	public StringReader(@NonNull Reader reader) {
 		Objects.requireNonNull(reader, "Reader must not be null");
+		
 		try {
 			this.string = FileUtils.readString(reader);
 		} catch (IOException e) {
@@ -135,6 +136,7 @@ public class StringReader {
 		if (!this.canRead(amount)) {
 			throw new IndexOutOfBoundsException("Expected " + amount + " characters but found only " + (this.string.length() - this.index) + " remaining characters");
 		}
+		
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < amount; i++) {
 			builder.append(this.read());
@@ -176,6 +178,7 @@ public class StringReader {
 		if (0 >= amount) {
 			throw new IllegalArgumentException("Amount must be greater than zero");
 		}
+		
 		for (int i = 0; i < amount; i++) {
 			if (!this.canRead() || !predicate.test(this.string.charAt(this.index + i))) {
 				return false;
@@ -236,6 +239,7 @@ public class StringReader {
 	 */
 	public void skip(@NonNull Predicate<Character> predicate) {
 		Objects.requireNonNull(predicate, "Predicate must not be null");
+		
 		while (this.canRead() && predicate.test(this.peek())) {
 			this.skip();
 		}
@@ -282,9 +286,11 @@ public class StringReader {
 		if (!this.canRead()) {
 			return "";
 		}
+		
 		StringBuilder builder = new StringBuilder();
 		while (this.canRead()) {
 			char c = this.read();
+			
 			if (c != '\n' && c != '\r') {
 				builder.append(c);
 			} else {
@@ -323,12 +329,11 @@ public class StringReader {
 		if (!this.canRead()) {
 			return "";
 		}
+		
 		String remaining = this.string.substring(this.index);
 		this.index = this.string.length();
 		return remaining;
 	}
-	
-	//region Read string
 	
 	/**
 	 * Reads the string until the next whitespace (' ') is found.<br>
@@ -354,6 +359,7 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected an unquoted string but found nothing");
 		}
+		
 		StringBuilder builder = new StringBuilder();
 		while (this.canRead()) {
 			char c = this.read();
@@ -378,10 +384,12 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a quoted string but found nothing");
 		}
+		
 		char next = this.peek();
 		if (next != '"' && next != '\'') {
 			throw new InvalidStringException("Expected a single or double quote as next character, but found: '" + next + "'");
 		}
+		
 		this.skip();
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
@@ -419,6 +427,7 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a string value but found nothing");
 		}
+		
 		char next = this.peek();
 		if (next == '"' || next == '\'') {
 			this.skip();
@@ -426,9 +435,6 @@ public class StringReader {
 		}
 		return this.readUnquotedString();
 	}
-	//endregion
-	
-	//region Read until
 	
 	/**
 	 * Reads the string until the given terminator is found.<br>
@@ -534,6 +540,7 @@ public class StringReader {
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
 		boolean inDoubleQuotes = false;
+		
 		while (this.canRead()) {
 			char c = this.read();
 			if (escaped) {
@@ -635,6 +642,7 @@ public class StringReader {
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
 		boolean inDoubleQuotes = false;
+		
 		while (this.canRead()) {
 			char c = this.read();
 			if (escaped) {
@@ -661,6 +669,7 @@ public class StringReader {
 						}
 						break;
 					}
+					
 					if (!matcher.test(terminatorBuilder.toString())) {
 						builder.append(terminatorBuilder);
 						terminatorBuilder.setLength(0);
@@ -672,9 +681,6 @@ public class StringReader {
 		}
 		return builder.toString();
 	}
-	//endregion
-	
-	//region Read expected
 	
 	/**
 	 * Reads the given expected string from the reader.<br>
@@ -699,15 +705,18 @@ public class StringReader {
 		if (expected.isEmpty()) {
 			throw new IllegalArgumentException("Expected string must not be empty");
 		}
+		
 		int length = expected.length();
 		if (!this.canRead(length)) {
 			throw new InvalidStringException("Expected '" + expected + "' requires " + length + " characters but found " + (this.string.length() - this.index) + " remaining characters");
 		}
+		
 		int markedIndex = this.markedIndex;
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < length; i++) {
 			this.mark();
 			char c = this.read();
+			
 			if (caseSensitive) {
 				if (c != expected.charAt(i)) {
 					this.reset();
@@ -749,9 +758,11 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected one of '" + expected + "' but found nothing");
 		}
+		
 		if (expected.isEmpty()) {
 			throw new IllegalArgumentException("Expected strings must not be empty");
 		}
+		
 		int readable = this.string.length() - this.index;
 		List<String> possibleExpected = expected.stream().filter(e -> e.length() <= readable).collect(Collectors.toList());
 		if (possibleExpected.isEmpty()) {
@@ -764,14 +775,17 @@ public class StringReader {
 		for (int i = 0; i < readable; i++) {
 			this.mark();
 			char c = this.read();
+			
 			List<String> newPossibleExpected = Lists.newArrayList();
 			Iterator<String> iterator = possibleExpected.iterator();
 			while (iterator.hasNext()) {
 				String expectedString = iterator.next();
+				
 				if (i >= expectedString.length()) {
 					iterator.remove();
 					continue;
 				}
+				
 				if (caseSensitive) {
 					if (c != expectedString.charAt(i)) {
 						iterator.remove();
@@ -784,11 +798,13 @@ public class StringReader {
 					}
 				}
 				builder.append(c);
+				
 				if (caseSensitive ? expectedString.contentEquals(builder) : expectedString.equalsIgnoreCase(builder.toString())) {
 					return builder.toString();
 				}
 				newPossibleExpected.add(expectedString);
 			}
+			
 			if (newPossibleExpected.isEmpty()) {
 				this.reset();
 				break;
@@ -798,7 +814,6 @@ public class StringReader {
 		this.markedIndex = markedIndex;
 		throw new InvalidStringException("Expected one of '" + expected + "' but found: '" + this.string.substring(start, this.index) + "'");
 	}
-	//endregion
 	
 	/**
 	 * Reads a boolean.<br>
@@ -812,6 +827,7 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a boolean value but found nothing");
 		}
+		
 		char c = Character.toLowerCase(this.peek());
 		String value;
 		if (c == 't') {
@@ -821,6 +837,7 @@ public class StringReader {
 		} else {
 			throw new InvalidStringException("Expected a start character of 'true' or 'false' but found: '" + c + "'");
 		}
+		
 		if ("true".equalsIgnoreCase(value)) {
 			return true;
 		} else if ("false".equalsIgnoreCase(value)) {
@@ -828,8 +845,6 @@ public class StringReader {
 		}
 		throw new InvalidStringException("Expected a boolean value but found: '" + value + "'");
 	}
-	
-	//region Read number helper methods
 	
 	/**
 	 * Reads a number as a string of the given type.<br>
@@ -871,11 +886,13 @@ public class StringReader {
 		if (!this.canRead()) {
 			return null;
 		}
+		
 		char next = this.peek();
 		if (next == '"' || next == '\'') {
 			String number = this.readQuotedString();
 			return new StringReader(number).readNumberAsString(initialType);
 		}
+		
 		char sign = '+';
 		StringBuilder builder = new StringBuilder();
 		if (next == '-' || next == '+') {
@@ -916,6 +933,7 @@ public class StringReader {
 				if (builder.length() != 1 || builder.charAt(0) != '0') {
 					throw new InvalidStringException("Found invalid 'x' in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
 				}
+				
 				radix = Radix.HEXADECIMAL;
 				builder.setLength(0);
 				this.skip();
@@ -924,6 +942,7 @@ public class StringReader {
 				if (radix != Radix.DECIMAL) {
 					throw new InvalidStringException("Found invalid 'b' in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
 				}
+				
 				if (builder.length() == 1 && builder.charAt(0) == '0') {
 					radix = Radix.BINARY;
 					builder.setLength(0);
@@ -951,6 +970,7 @@ public class StringReader {
 				if (!exponent) {
 					throw new InvalidStringException(message);
 				}
+				
 				char last = Character.toLowerCase(builder.charAt(builder.length() - 1));
 				if (last != 'e' && last != 'p') {
 					throw new InvalidStringException(message);
@@ -969,8 +989,10 @@ public class StringReader {
 		if (this.canRead()) {
 			char c = Character.toLowerCase(this.peek());
 			NumberType newType = NumberType.getBySuffix(c);
+			
 			if (newType != null) {
 				this.skip();
+				
 				if (!newType.isSupportedRadix(radix)) {
 					throw new InvalidStringException("Try to read number of type '" + newType + "' which does not support radix '" + radix + "': '" + sign + builder + c + "'");
 				}
@@ -982,7 +1004,6 @@ public class StringReader {
 		}
 		return new ParsedNumber(sign, builder.toString(), type, radix);
 	}
-	//endregion
 	
 	/**
 	 * Reads a number.<br>
@@ -998,14 +1019,13 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a number but found nothing");
 		}
+		
 		ParsedNumber number = this.readNumberAsString(null);
 		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a number but found nothing");
 		}
 		return number.type().parseNumber(number.getSignedValue(), number.radix());
 	}
-	
-	//region Read integer numbers
 	
 	/**
 	 * Reads a byte.<br>
@@ -1020,13 +1040,16 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a byte value but found nothing");
 		}
+		
 		ParsedNumber number = this.readNumberAsString(NumberType.BYTE);
 		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a byte value but found nothing");
 		}
+		
 		if (number.type() != NumberType.BYTE) {
 			throw new InvalidStringException("Expected a byte value but found: '" + number + "'");
 		}
+		
 		try {
 			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
@@ -1047,13 +1070,16 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a short value but found nothing");
 		}
+		
 		ParsedNumber number = this.readNumberAsString(NumberType.SHORT);
 		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a short value but found nothing");
 		}
+		
 		if (number.type() != NumberType.SHORT) {
 			throw new InvalidStringException("Expected a short value but found: '" + number + "'");
 		}
+		
 		try {
 			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
@@ -1073,13 +1099,16 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected an integer value but found nothing");
 		}
+		
 		ParsedNumber number = this.readNumberAsString(NumberType.INTEGER);
 		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a integer value but found nothing");
 		}
+		
 		if (number.type() != NumberType.INTEGER) {
 			throw new InvalidStringException("Expected a integer value but found: '" + number + "'");
 		}
+		
 		try {
 			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
@@ -1100,22 +1129,22 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a long value but found nothing");
 		}
+		
 		ParsedNumber number = this.readNumberAsString(NumberType.LONG);
 		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a long value but found nothing");
 		}
+		
 		if (number.type() != NumberType.LONG) {
 			throw new InvalidStringException("Expected a long value but found: '" + number + "'");
 		}
+		
 		try {
 			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
 			throw new InvalidStringException("Unable to parse long value: '" + number + "'", e);
 		}
 	}
-	//endregion
-	
-	//region Floating point numbers
 	
 	/**
 	 * Reads a float.<br>
@@ -1130,13 +1159,16 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a float value but found nothing");
 		}
+		
 		ParsedNumber number = this.readNumberAsString(NumberType.FLOAT);
 		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a float value but found nothing");
 		}
+		
 		if (number.type() != NumberType.FLOAT) {
 			throw new InvalidStringException("Expected a float value but found: '" + number + "'");
 		}
+		
 		try {
 			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
@@ -1157,22 +1189,22 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a double value but found nothing");
 		}
+		
 		ParsedNumber number = this.readNumberAsString(NumberType.DOUBLE);
 		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a double value but found nothing");
 		}
+		
 		if (number.type() != NumberType.DOUBLE) {
 			throw new InvalidStringException("Expected a double value but found: '" + number + "'");
 		}
+		
 		try {
 			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
 			throw new InvalidStringException("Unable to parse double value: '" + number + "'", e);
 		}
 	}
-	//endregion
-	
-	//region Big numbers
 	
 	/**
 	 * Reads a big integer.<br>
@@ -1186,13 +1218,16 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a big integer value but found nothing");
 		}
+		
 		ParsedNumber number = this.readNumberAsString(NumberType.BIG_INTEGER);
 		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a big integer value but found nothing");
 		}
+		
 		if (number.type() != NumberType.BIG_INTEGER) {
 			throw new InvalidStringException("Expected a big integer value but found: '" + number + "'");
 		}
+		
 		try {
 			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
@@ -1212,20 +1247,22 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a big decimal value but found nothing");
 		}
+		
 		ParsedNumber number = this.readNumberAsString(NumberType.BIG_DECIMAL);
 		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a big decimal value but found nothing");
 		}
+		
 		if (number.type() != NumberType.BIG_DECIMAL) {
 			throw new InvalidStringException("Expected a big decimal value but found: '" + number + "'");
 		}
+		
 		try {
 			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
 			throw new InvalidStringException("Unable to parse big decimal value: '" + number + "'", e);
 		}
 	}
-	//endregion
 	
 	//region Object overrides
 	@Override

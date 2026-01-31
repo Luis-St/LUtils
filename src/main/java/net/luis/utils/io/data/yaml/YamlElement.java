@@ -91,6 +91,78 @@ public interface YamlElement {
 	}
 	
 	/**
+	 * Checks if this yaml scalar is a boolean.<br>
+	 * @return True if this yaml scalar is a boolean, false otherwise
+	 */
+	default boolean isYamlBoolean() {
+		return this.isYamlScalar() && this.getAsYamlScalar().isYamlBoolean();
+	}
+	
+	/**
+	 * Checks if this yaml scalar is a number.<br>
+	 * @return True if this yaml scalar is a number, false otherwise
+	 */
+	default boolean isYamlNumber() {
+		return this.isYamlScalar() && this.getAsYamlScalar().isYamlNumber();
+	}
+	
+	/**
+	 * Checks if this yaml scalar is a byte.<br>
+	 * @return True if this yaml scalar is a byte, false otherwise
+	 */
+	default boolean isYamlByte() {
+		return this.isYamlScalar() && this.getAsYamlScalar().isYamlByte();
+	}
+	
+	/**
+	 * Checks if this yaml scalar is a short.<br>
+	 * @return True if this yaml scalar is a short, false otherwise
+	 */
+	default boolean isYamlShort() {
+		return this.isYamlScalar() && this.getAsYamlScalar().isYamlShort();
+	}
+	
+	/**
+	 * Checks if this yaml scalar is an integer.<br>
+	 * @return True if this yaml scalar is an integer, false otherwise
+	 */
+	default boolean isYamlInteger() {
+		return this.isYamlScalar() && this.getAsYamlScalar().isYamlInteger();
+	}
+	
+	/**
+	 * Checks if this yaml scalar is a long.<br>
+	 * @return True if this yaml scalar is a long, false otherwise
+	 */
+	default boolean isYamlLong() {
+		return this.isYamlScalar() && this.getAsYamlScalar().isYamlLong();
+	}
+	
+	/**
+	 * Checks if this yaml scalar is a float.<br>
+	 * @return True if this yaml scalar is a float, false otherwise
+	 */
+	default boolean isYamlFloat() {
+		return this.isYamlScalar() && this.getAsYamlScalar().isYamlFloat();
+	}
+	
+	/**
+	 * Checks if this yaml scalar is a double.<br>
+	 * @return True if this yaml scalar is a double, false otherwise
+	 */
+	default boolean isYamlDouble() {
+		return this.isYamlScalar() && this.getAsYamlScalar().isYamlDouble();
+	}
+	
+	/**
+	 * Checks if this yaml scalar is a string.<br>
+	 * @return True if this yaml scalar is a string, false otherwise
+	 */
+	default boolean isYamlString() {
+		return this.isYamlScalar() && this.getAsYamlScalar().isYamlString();
+	}
+	
+	/**
 	 * Converts this yaml element to a yaml mapping.<br>
 	 * If this element is a yaml anchor containing a mapping, the mapping is returned.<br>
 	 *
@@ -101,7 +173,7 @@ public interface YamlElement {
 		if (this instanceof YamlMapping mapping) {
 			return mapping;
 		}
-		if (this instanceof YamlAnchor anchor && anchor.getElement() instanceof YamlMapping mapping) {
+		if (this instanceof YamlAnchor anchor && anchor.element() instanceof YamlMapping mapping) {
 			return mapping;
 		}
 		throw new YamlTypeException("Expected a yaml mapping, but found: " + this.getName());
@@ -118,7 +190,7 @@ public interface YamlElement {
 		if (this instanceof YamlSequence sequence) {
 			return sequence;
 		}
-		if (this instanceof YamlAnchor anchor && anchor.getElement() instanceof YamlSequence sequence) {
+		if (this instanceof YamlAnchor anchor && anchor.element() instanceof YamlSequence sequence) {
 			return sequence;
 		}
 		throw new YamlTypeException("Expected a yaml sequence, but found: " + this.getName());
@@ -135,7 +207,7 @@ public interface YamlElement {
 		if (this instanceof YamlScalar scalar) {
 			return scalar;
 		}
-		if (this instanceof YamlAnchor anchor && anchor.getElement() instanceof YamlScalar scalar) {
+		if (this instanceof YamlAnchor anchor && anchor.element() instanceof YamlScalar scalar) {
 			return scalar;
 		}
 		throw new YamlTypeException("Expected a yaml scalar, but found: " + this.getName());
@@ -165,6 +237,96 @@ public interface YamlElement {
 			return alias;
 		}
 		throw new YamlTypeException("Expected a yaml alias, but found: " + this.getName());
+	}
+	
+	/**
+	 * Converts this yaml element to a boolean.<br>
+	 *
+	 * @return This yaml value as a boolean
+	 * @throws YamlTypeException If this yaml element is not a yaml scalar or not a boolean
+	 */
+	default boolean getAsBoolean() {
+		return this.getAsYamlScalar().getAsBoolean();
+	}
+	
+	/**
+	 * Converts this yaml element to a number.<br>
+	 *
+	 * @return This yaml value as a number
+	 * @throws YamlTypeException If this yaml element is not a yaml scalar or not a number
+	 */
+	default @NonNull Number getAsNumber() {
+		return this.getAsYamlScalar().getAsNumber();
+	}
+	
+	/**
+	 * Converts this yaml element to a byte.<br>
+	 *
+	 * @return This yaml value as a byte
+	 * @throws YamlTypeException If this yaml element is not a yaml scalar or not a number
+	 */
+	default byte getAsByte() {
+		return this.getAsYamlScalar().getAsByte();
+	}
+	
+	/**
+	 * Converts this yaml element to a short.<br>
+	 *
+	 * @return This yaml value as a short
+	 * @throws YamlTypeException If this yaml element is not a yaml scalar or not a number
+	 */
+	default short getAsShort() {
+		return this.getAsYamlScalar().getAsShort();
+	}
+	
+	/**
+	 * Converts this yaml element to an integer.<br>
+	 *
+	 * @return This yaml value as an integer
+	 * @throws YamlTypeException If this yaml element is not a yaml scalar or not a number
+	 */
+	default int getAsInteger() {
+		return this.getAsYamlScalar().getAsInteger();
+	}
+	
+	/**
+	 * Converts this yaml element to a long.<br>
+	 *
+	 * @return This yaml value as a long
+	 * @throws YamlTypeException If this yaml element is not a yaml scalar or not a number
+	 */
+	default long getAsLong() {
+		return this.getAsYamlScalar().getAsLong();
+	}
+	
+	/**
+	 * Converts this yaml element to a float.<br>
+	 *
+	 * @return This yaml value as a float
+	 * @throws YamlTypeException If this yaml element is not a yaml scalar or not a number
+	 */
+	default float getAsFloat() {
+		return this.getAsYamlScalar().getAsFloat();
+	}
+	
+	/**
+	 * Converts this yaml element to a double.<br>
+	 *
+	 * @return This yaml value as a double
+	 * @throws YamlTypeException If this yaml element is not a yaml scalar or not a number
+	 */
+	default double getAsDouble() {
+		return this.getAsYamlScalar().getAsDouble();
+	}
+	
+	/**
+	 * Converts this yaml element to a string.<br>
+	 *
+	 * @return This yaml value as a string
+	 * @throws YamlTypeException If this yaml element is not a yaml scalar
+	 */
+	default @NonNull String getAsString() {
+		return this.getAsYamlScalar().getAsString();
 	}
 	
 	/**

@@ -23,13 +23,21 @@ import net.luis.utils.io.codec.types.array.*;
 import net.luis.utils.io.codec.types.i18n.CurrencyCodec;
 import net.luis.utils.io.codec.types.i18n.LocaleCodec;
 import net.luis.utils.io.codec.types.io.*;
-import net.luis.utils.io.codec.types.network.InetAddressCodec;
-import net.luis.utils.io.codec.types.network.InetSocketAddressCodec;
-import net.luis.utils.io.codec.types.primitiv.*;
-import net.luis.utils.io.codec.types.primitiv.numeric.*;
+import net.luis.utils.io.codec.types.io.InetAddressCodec;
+import net.luis.utils.io.codec.types.io.InetSocketAddressCodec;
+import net.luis.utils.io.codec.types.primitive.*;
+import net.luis.utils.io.codec.types.primitive.numeric.*;
 import net.luis.utils.io.codec.types.stream.*;
 import net.luis.utils.io.codec.types.struct.*;
-import net.luis.utils.io.codec.types.time.*;
+import net.luis.utils.io.codec.types.struct.collection.MapCodec;
+import net.luis.utils.io.codec.types.temporal.*;
+import net.luis.utils.io.codec.types.temporal.local.*;
+import net.luis.utils.io.codec.types.temporal.offset.OffsetDateTimeCodec;
+import net.luis.utils.io.codec.types.temporal.offset.OffsetTimeCodec;
+import net.luis.utils.io.codec.types.temporal.zoned.*;
+import net.luis.utils.io.network.address.IpAddress;
+import net.luis.utils.io.network.address.IpNetwork;
+import net.luis.utils.io.network.address.mac.MacAddress;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.result.ResultingFunction;
@@ -257,6 +265,21 @@ public final class Codecs {
 	 */
 	public static final InetSocketAddressCodec INET_SOCKET_ADDRESS = new InetSocketAddressCodec();
 	/**
+	 * A codec that encodes and decodes {@link IpAddress ip addresses}.<br>
+	 * The underlying IP address (IPv4 or IPv6) is converted to and from a string.<br>
+	 */
+	public static final IpAddressCodec IP_ADDRESS = new IpAddressCodec();
+	/**
+	 * A codec that encodes and decodes {@link IpNetwork ip networks}.<br>
+	 * The underlying IP network (IPv4 or IPv6) is converted to and from a CIDR notation string.<br>
+	 */
+	public static final IpNetworkCodec IP_NETWORK = new IpNetworkCodec();
+	/**
+	 * A codec that encodes and decodes {@link MacAddress mac addresses}.<br>
+	 * The underlying MAC address is converted to and from a colon-delimited string.<br>
+	 */
+	public static final MacAddressCodec MAC_ADDRESS = new MacAddressCodec();
+	/**
 	 * A codec that encodes and decodes {@link Locale locales}.<br>
 	 * The underlying locale is converted to and from a string.<br>
 	 */
@@ -271,7 +294,7 @@ public final class Codecs {
 	 * The underlying byte array is converted to and from a Base64-encoded string.<br>
 	 */
 	public static final Base64Codec BASE64 = new Base64Codec();
-
+	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 * This is a static helper class.<br>
@@ -380,8 +403,8 @@ public final class Codecs {
 	 * This codec tries each provided codec in order until one succeeds. If all codecs fail,
 	 * an error is returned containing all the individual error messages.<br>
 	 * <p>
-	 * This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
-	 * such as different payment method implementations or various message types.
+	 *     This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
+	 *     such as different payment method implementations or various message types.
 	 * </p>
 	 *
 	 * @param codecs The list of codecs to try in sequence
@@ -400,8 +423,8 @@ public final class Codecs {
 	 * This codec tries each provided codec in order until one succeeds. If all codecs fail,
 	 * an error is returned containing all the individual error messages.<br>
 	 * <p>
-	 * This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
-	 * such as different payment method implementations or various message types.
+	 *     This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
+	 *     such as different payment method implementations or various message types.
 	 * </p>
 	 *
 	 * @param codecs The array of codecs to try in sequence
@@ -521,7 +544,7 @@ public final class Codecs {
 	public static <C> @NonNull UnitCodec<C> unit(@NonNull Supplier<C> supplier) {
 		return new UnitCodec<>(supplier);
 	}
-
+	
 	/**
 	 * Creates a new recursive codec that supports encoding and decoding recursive data structures.<br>
 	 * <p>
@@ -553,7 +576,7 @@ public final class Codecs {
 	public static <C> @NonNull RecursiveCodec<C> recursive(@NonNull Function<Codec<C>, Codec<C>> codecFactory) {
 		return new RecursiveCodec<>(codecFactory);
 	}
-
+	
 	/**
 	 * Creates a new codec that encodes and decodes values of the type {@code C} to and from strings.<br>
 	 * The string encoder and decoder are defined as functions that convert values of the type {@code C} to and from strings.<br>

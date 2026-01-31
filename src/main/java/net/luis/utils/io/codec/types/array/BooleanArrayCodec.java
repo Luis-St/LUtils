@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.io.codec.constraint.config.collection.PrimitiveArrayConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.collection.PrimitiveArrayConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -26,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for boolean arrays.<br>
@@ -33,7 +36,7 @@ import java.util.*;
  *
  * @author Luis-St
  */
-public class BooleanArrayCodec extends AbstractCodec<boolean[], Object> {
+public class BooleanArrayCodec extends AbstractCodec<boolean[], PrimitiveArrayConstraintConfig<boolean[]>> implements PrimitiveArrayConstraint<boolean[], BooleanArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of booleans and the array representation.<br>
@@ -45,14 +48,38 @@ public class BooleanArrayCodec extends AbstractCodec<boolean[], Object> {
 	 */
 	public BooleanArrayCodec() {}
 	
+	/**
+	 * Constructs a new boolean array codec with the specified length constraint configuration.<br>
+	 *
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the constraint config is null
+	 */
+	private BooleanArrayCodec(@NonNull PrimitiveArrayConstraintConfig<boolean[]> config) {
+		super(config);
+	}
+	
+	@Override
+	public @NonNull BooleanArrayCodec apply(@NonNull UnaryOperator<PrimitiveArrayConstraintConfig<boolean[]>> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new BooleanArrayCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(PrimitiveArrayConstraintConfig.booleanArray()))
+		);
+	}
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, boolean @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to encode null as boolean array using '" + this + "'");
 		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		
 		return this.internalCodec.encodeStart(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
 	}
 	
@@ -70,11 +97,19 @@ public class BooleanArrayCodec extends AbstractCodec<boolean[], Object> {
 		}
 		
 		List<Boolean> list = result.resultOrThrow();
-		return Result.success(ArrayUtils.toPrimitive(list.toArray(Boolean[]::new)));
+		boolean[] array = ArrayUtils.toPrimitive(list.toArray(Boolean[]::new));
+		
+		Result<Void> constraintResult = this.checkConstraints(array);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		return Result.success(array);
 	}
 	
 	@Override
 	public String toString() {
-		return "BooleanArrayCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedBooleanArrayCodec[constraints=" + config + "]";
+		}).orElse("BooleanArrayCodec");
 	}
 }

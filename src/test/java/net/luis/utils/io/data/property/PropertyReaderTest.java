@@ -52,13 +52,24 @@ class PropertyReaderTest {
 	
 	@Test
 	void constructorWithInputProvider() {
-		assertThrows(NullPointerException.class, () -> new PropertyReader(null));
-		assertThrows(NullPointerException.class, () -> new PropertyReader(null, DEFAULT_CONFIG));
+		assertThrows(NullPointerException.class, () -> new PropertyReader((InputProvider) null));
+		assertThrows(NullPointerException.class, () -> new PropertyReader((InputProvider) null, DEFAULT_CONFIG));
 		assertThrows(NullPointerException.class, () -> new PropertyReader(new InputProvider(InputStream.nullInputStream()), null));
 		
 		assertDoesNotThrow(() -> new PropertyReader(new InputProvider(InputStream.nullInputStream())));
 		assertDoesNotThrow(() -> new PropertyReader(new InputProvider(InputStream.nullInputStream()), DEFAULT_CONFIG));
 		assertDoesNotThrow(() -> new PropertyReader(new InputProvider(InputStream.nullInputStream()), ADVANCED_CONFIG));
+	}
+	
+	@Test
+	void constructorWithString() {
+		assertThrows(NullPointerException.class, () -> new PropertyReader((String) null));
+		assertThrows(NullPointerException.class, () -> new PropertyReader((String) null, DEFAULT_CONFIG));
+		assertThrows(NullPointerException.class, () -> new PropertyReader("test", null));
+		
+		assertDoesNotThrow(() -> new PropertyReader(""));
+		assertDoesNotThrow(() -> new PropertyReader("", DEFAULT_CONFIG));
+		assertDoesNotThrow(() -> new PropertyReader("", ADVANCED_CONFIG));
 	}
 	
 	@Test
@@ -189,23 +200,23 @@ class PropertyReaderTest {
 			assertEquals(5, props.size());
 			
 			PropertyValue intVal = props.getPropertyValue("intValue");
-			assertTrue(intVal.isNumber());
+			assertTrue(intVal.isPropertyNumber());
 			assertEquals(42, intVal.getAsInteger());
 			
 			PropertyValue floatVal = props.getPropertyValue("floatValue");
-			assertTrue(floatVal.isNumber());
+			assertTrue(floatVal.isPropertyNumber());
 			assertEquals(3.14, floatVal.getAsDouble(), 0.001);
 			
 			PropertyValue boolTrueVal = props.getPropertyValue("boolTrue");
-			assertTrue(boolTrueVal.isBoolean());
+			assertTrue(boolTrueVal.isPropertyBoolean());
 			assertTrue(boolTrueVal.getAsBoolean());
 			
 			PropertyValue boolFalseVal = props.getPropertyValue("boolFalse");
-			assertTrue(boolFalseVal.isBoolean());
+			assertTrue(boolFalseVal.isPropertyBoolean());
 			assertFalse(boolFalseVal.getAsBoolean());
 			
 			PropertyValue stringVal = props.getPropertyValue("stringValue");
-			assertTrue(stringVal.isString());
+			assertTrue(stringVal.isPropertyString());
 			assertEquals("hello", stringVal.getAsString());
 		} catch (Exception e) {
 			fail("Unexpected exception: " + e.getMessage());

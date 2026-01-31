@@ -102,6 +102,7 @@ public interface Decoder<C> {
 	 * </ul>
 	 *
 	 * @param provider The type provider
+	 * @param current The current value
 	 * @param value The value to decode
 	 * @return The result of the decoding
 	 * @param <R> The type to decode from

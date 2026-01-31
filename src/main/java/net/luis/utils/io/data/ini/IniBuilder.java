@@ -65,7 +65,6 @@ public final class IniBuilder {
 	
 	/**
 	 * Creates a new ini builder for building an ini document.<br>
-	 *
 	 * @return A new ini builder
 	 */
 	public static @NonNull IniBuilder document() {
@@ -77,7 +76,7 @@ public final class IniBuilder {
 	 * Global properties appear before any section in the ini file.<br>
 	 *
 	 * @param key The property key
-	 * @param value The string value (null becomes IniNull)
+	 * @param value The string value (null becomes ini null)
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalStateException If currently inside a section
@@ -111,7 +110,7 @@ public final class IniBuilder {
 	 * Adds a global property with a number value.<br>
 	 *
 	 * @param key The property key
-	 * @param value The number value (null becomes IniNull)
+	 * @param value The number value (null becomes ini null)
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalStateException If currently inside a section
@@ -128,7 +127,7 @@ public final class IniBuilder {
 	 * Adds a global property with an ini element value.<br>
 	 *
 	 * @param key The property key
-	 * @param element The ini element value (null becomes IniNull)
+	 * @param element The ini element value (null becomes ini null)
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalStateException If currently inside a section
@@ -188,6 +187,7 @@ public final class IniBuilder {
 		if (this.contextStack.isEmpty()) {
 			throw new IllegalStateException("Not inside a section");
 		}
+		
 		this.contextStack.pop();
 		return this;
 	}
@@ -196,7 +196,7 @@ public final class IniBuilder {
 	 * Adds a property with a string value to the current section.<br>
 	 *
 	 * @param key The property key
-	 * @param value The string value (null becomes IniNull)
+	 * @param value The string value (null becomes ini null)
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalStateException If not currently inside a section
@@ -228,7 +228,7 @@ public final class IniBuilder {
 	 * Adds a property with a number value to the current section.<br>
 	 *
 	 * @param key The property key
-	 * @param value The number value (null becomes IniNull)
+	 * @param value The number value (null becomes ini null)
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalStateException If not currently inside a section
@@ -244,7 +244,7 @@ public final class IniBuilder {
 	 * Adds a property with an ini element value to the current section.<br>
 	 *
 	 * @param key The property key
-	 * @param element The ini element value (null becomes IniNull)
+	 * @param element The ini element value (null becomes ini null)
 	 * @return This builder for chaining
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalStateException If not currently inside a section
@@ -349,7 +349,6 @@ public final class IniBuilder {
 	
 	/**
 	 * Returns the current nesting depth.<br>
-	 *
 	 * @return The nesting depth (0 = document level, 1 = inside section)
 	 */
 	public int getNestingDepth() {
@@ -358,7 +357,6 @@ public final class IniBuilder {
 	
 	/**
 	 * Checks if currently inside a section.<br>
-	 *
 	 * @return True if inside a section, false otherwise
 	 */
 	public boolean isInSection() {
@@ -367,7 +365,6 @@ public final class IniBuilder {
 	
 	/**
 	 * Checks if at the document level (not inside any section).<br>
-	 *
 	 * @return True if at document level, false otherwise
 	 */
 	public boolean isAtDocumentLevel() {
@@ -386,6 +383,20 @@ public final class IniBuilder {
 	}
 	
 	//region Object overrides
+	
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof IniBuilder that)) return false;
+		
+		if (!this.contextStack.equals(that.contextStack)) return false;
+		return this.document.equals(that.document);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.contextStack, this.document);
+	}
+	
 	@Override
 	public String toString() {
 		return this.toString(IniConfig.DEFAULT);
@@ -405,8 +416,23 @@ public final class IniBuilder {
 	/**
 	 * Represents the current builder context.<br>
 	 *
+	 * @author Luis-St
+	 *
 	 * @param name The section name
 	 * @param section The section being built
 	 */
-	private record BuilderContext(@NonNull String name, @NonNull IniSection section) {}
+	private record BuilderContext(@NonNull String name, @NonNull IniSection section) {
+		
+		/**
+		 * Constructs a new builder context.<br>
+		 *
+		 * @param name The section name
+		 * @param section The section being built
+		 * @throws NullPointerException If name or section is null
+		 */
+		private BuilderContext {
+			Objects.requireNonNull(name, "Section name must not be null");
+			Objects.requireNonNull(section, "Section must not be null");
+		}
+	}
 }

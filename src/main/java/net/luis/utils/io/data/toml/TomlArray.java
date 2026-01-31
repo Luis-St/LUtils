@@ -29,10 +29,12 @@ import java.time.*;
 import java.util.*;
 
 /**
- * Represents a TOML array.<br>
- * A TOML array is an ordered collection of TOML elements.<br>
- * Note: In TOML, arrays should be homogeneous (same type), but this implementation
- * allows heterogeneous arrays for flexibility.<br>
+ * Represents a toml array.<br>
+ * A toml array is an ordered collection of toml elements.<br>
+ * <p>
+ *     Note:<br>
+ *     In toml, arrays should be homogeneous (same type), but this implementation allows heterogeneous arrays for flexibility.
+ * </p>
  *
  * @author Luis-St
  */
@@ -49,12 +51,12 @@ public class TomlArray implements TomlElement, Iterable<TomlElement> {
 	private boolean isArrayOfTables;
 	
 	/**
-	 * Constructs an empty TOML array.<br>
+	 * Constructs an empty toml array.<br>
 	 */
 	public TomlArray() {}
 	
 	/**
-	 * Constructs a TOML array with the given elements.<br>
+	 * Constructs a toml array with the given elements.<br>
 	 *
 	 * @param elements The elements to add
 	 * @throws NullPointerException If the elements are null
@@ -71,7 +73,7 @@ public class TomlArray implements TomlElement, Iterable<TomlElement> {
 	 */
 	private void checkIndex(int index) {
 		if (index < 0 || index >= this.elements.size()) {
-			throw new TomlArrayIndexOutOfBoundsException("Index " + index + " is out of bounds for TOML array of size " + this.elements.size());
+			throw new TomlArrayIndexOutOfBoundsException("Index " + index + " is out of bounds for toml array of size " + this.elements.size());
 		}
 	}
 	
@@ -306,36 +308,36 @@ public class TomlArray implements TomlElement, Iterable<TomlElement> {
 	}
 	
 	/**
-	 * Gets the element at the given index as a TOML value.<br>
+	 * Gets the element at the given index as a toml value.<br>
 	 *
 	 * @param index The index to get
-	 * @return The element as a TOML value
+	 * @return The element as a toml value
 	 * @throws TomlArrayIndexOutOfBoundsException If the index is out of bounds
-	 * @throws TomlTypeException If the element is not a TOML value
+	 * @throws TomlTypeException If the element is not a toml value
 	 */
 	public @NonNull TomlValue getAsTomlValue(int index) {
 		return this.get(index).getAsTomlValue();
 	}
 	
 	/**
-	 * Gets the element at the given index as a TOML array.<br>
+	 * Gets the element at the given index as a toml array.<br>
 	 *
 	 * @param index The index to get
-	 * @return The element as a TOML array
+	 * @return The element as a toml array
 	 * @throws TomlArrayIndexOutOfBoundsException If the index is out of bounds
-	 * @throws TomlTypeException If the element is not a TOML array
+	 * @throws TomlTypeException If the element is not a toml array
 	 */
 	public @NonNull TomlArray getAsTomlArray(int index) {
 		return this.get(index).getAsTomlArray();
 	}
 	
 	/**
-	 * Gets the element at the given index as a TOML table.<br>
+	 * Gets the element at the given index as a toml table.<br>
 	 *
 	 * @param index The index to get
-	 * @return The element as a TOML table
+	 * @return The element as a toml table
 	 * @throws TomlArrayIndexOutOfBoundsException If the index is out of bounds
-	 * @throws TomlTypeException If the element is not a TOML table
+	 * @throws TomlTypeException If the element is not a toml table
 	 */
 	public @NonNull TomlTable getAsTomlTable(int index) {
 		return this.get(index).getAsTomlTable();
@@ -478,7 +480,7 @@ public class TomlArray implements TomlElement, Iterable<TomlElement> {
 		this.elements.clear();
 	}
 	
-	//region  overrides
+	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -513,10 +515,12 @@ public class TomlArray implements TomlElement, Iterable<TomlElement> {
 	/**
 	 * Formats this array as an inline array.<br>
 	 *
-	 * @param config The TOML config
+	 * @param config The toml config
 	 * @return The inline array string
+	 * @throws NullPointerException If the config is null
 	 */
 	private @NonNull String toInlineString(@NonNull TomlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder();
 		builder.append("[");
 		
@@ -536,10 +540,12 @@ public class TomlArray implements TomlElement, Iterable<TomlElement> {
 	/**
 	 * Formats this array as a block array (multi-line).<br>
 	 *
-	 * @param config The TOML config
+	 * @param config The toml config
 	 * @return The block array string
+	 * @throws NullPointerException If the config is null
 	 */
 	private @NonNull String toBlockString(@NonNull TomlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder();
 		builder.append("[");
 		

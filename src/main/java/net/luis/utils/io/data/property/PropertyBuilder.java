@@ -76,6 +76,9 @@ public final class PropertyBuilder {
 	 * @param initialElement The initial property element
 	 */
 	private PropertyBuilder(@NonNull BuilderContext initialContext, @NonNull PropertyElement initialElement) {
+		Objects.requireNonNull(initialContext, "Initial context must not be null");
+		Objects.requireNonNull(initialElement, "Initial element must not be null");
+		
 		this.root = initialElement;
 		this.contextStack.push(new ContextFrame(initialContext, initialElement));
 	}
@@ -323,7 +326,7 @@ public final class PropertyBuilder {
 	
 	/**
 	 * Adds a string value to the current array.<br>
-	 * If the value is null, it will be converted to PropertyNull.
+	 * If the value is null, it will be converted to PropertyNull.<br>
 	 *
 	 * @param value The string value to add
 	 * @return This builder for method chaining
@@ -811,7 +814,9 @@ public final class PropertyBuilder {
 	}
 	
 	/**
-	 * Enumeration of builder contexts to track whether we're building an object or array.
+	 * Enumeration of builder contexts to track whether we're building an object or array.<br>
+	 *
+	 * @author Luis-St
 	 */
 	private enum BuilderContext {
 		/**
@@ -826,6 +831,8 @@ public final class PropertyBuilder {
 	
 	/**
 	 * Internal class to track nesting state.<br>
+	 *
+	 * @author Luis-St
 	 *
 	 * @param type The type of context (object or array)
 	 * @param element The property element associated with this context

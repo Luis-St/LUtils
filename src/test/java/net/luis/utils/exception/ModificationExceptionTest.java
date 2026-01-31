@@ -31,6 +31,7 @@ class ModificationExceptionTest {
 	
 	@Test
 	void constructor() {
+		assertDoesNotThrow(() -> new ModificationException());
 		assertDoesNotThrow(() -> new ModificationException((String) null));
 		assertDoesNotThrow(() -> new ModificationException((Throwable) null));
 		assertDoesNotThrow(() -> new ModificationException(null, null));

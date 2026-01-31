@@ -44,9 +44,15 @@ class LoggingIntegrationTest {
 	}
 	
 	@AfterAll
-	static void cleanUp() throws Exception {
-		FileUtils.deleteRecursively(Path.of("logs/test-logs"));
-		Files.delete(Path.of("logs/error.log"));
+	static void cleanUp() {
+		try {
+			FileUtils.deleteRecursively(Path.of("logs/test-logs"));
+			Files.delete(Path.of("logs/error.log"));
+		} catch (Exception e) {
+			if (!System.getProperty("os.name").toLowerCase().contains("win")) {
+				throw new RuntimeException(e); // Rethrow exception on non-Windows systems, Windows may fail due to file locks
+			}
+		}
 	}
 	
 	@Test

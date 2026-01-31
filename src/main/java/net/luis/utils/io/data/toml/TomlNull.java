@@ -24,11 +24,13 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
- * Represents a TOML null value.<br>
- * Note: TOML specification does not have a null type, but this is provided
- * for API consistency with other data formats. When serialized, null values
- * are typically represented as empty strings or omitted.<br>
- * This class is a singleton.<br>
+ * Represents a toml null value.<br>
+ * <p>
+ *     Note:<br>
+ *     Toml specification does not have a null type, but this is provided for API consistency with other data formats.<br>
+ *     When serialized, null values are typically represented as empty strings or omitted.<br>
+ *     This class is a singleton.
+ * </p>
  *
  * @author Luis-St
  */
@@ -42,10 +44,12 @@ public final class TomlNull implements TomlElement {
 	public static final TomlNull INSTANCE = new TomlNull();
 	
 	/**
-	 * Constructs a new TOML null.<br>
+	 * Constructs a new toml null.<br>
 	 * Should not be used, use {@link #INSTANCE} instead.<br>
 	 */
 	private TomlNull() {}
+	
+	//region Object overrides
 	
 	@Override
 	public String toString() {
@@ -57,4 +61,5 @@ public final class TomlNull implements TomlElement {
 		Objects.requireNonNull(config, "Config must not be null");
 		return "";
 	}
+	//endregion
 }

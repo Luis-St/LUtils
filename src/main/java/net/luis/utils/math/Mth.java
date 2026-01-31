@@ -41,8 +41,6 @@ public final class Mth {
 	 */
 	private Mth() {}
 	
-	//region Sum
-	
 	/**
 	 * Sums all digits of the given integer.<br>
 	 * If the given integer is negative, the absolute value will be used.<br>
@@ -76,9 +74,6 @@ public final class Mth {
 		}
 		return sum;
 	}
-	//endregion
-	
-	//region Random
 	
 	/**
 	 * Returns a random integer between min (inclusive) and max (exclusive).<br>
@@ -136,7 +131,6 @@ public final class Mth {
 		}
 		return min + rng.nextInt(max - min + 1);
 	}
-	//endregion
 	
 	/**
 	 * Rounds the given value to the given number of digits after the decimal point.<br>
@@ -205,7 +199,17 @@ public final class Mth {
 	}
 	
 	/**
-	 * Returns the fractional (decimal) part of the given value.<br>
+	 * Returns the fractional (decimal) part of the given float value.<br>
+	 *
+	 * @param f The value
+	 * @return The fractional part of the given value
+	 */
+	public static float frac(float f) {
+		return f - ((int) f);
+	}
+	
+	/**
+	 * Returns the fractional (decimal) part of the given double value.<br>
 	 *
 	 * @param f The value
 	 * @return The fractional part of the given value
@@ -213,8 +217,6 @@ public final class Mth {
 	public static double frac(double f) {
 		return f - ((int) f);
 	}
-	
-	//region Clamp
 	
 	/**
 	 * Clamps the given integer value between the given min and max value.<br>
@@ -278,9 +280,6 @@ public final class Mth {
 			return Math.min(value, max);
 		}
 	}
-	//endregion
-	
-	//region Min
 	
 	/**
 	 * Returns the minimum of the given integer values.<br>
@@ -326,9 +325,6 @@ public final class Mth {
 		}
 		return DoubleStream.of(values).min().orElseThrow(() -> new IllegalStateException("Unable to determine minimum value"));
 	}
-	//endregion
-	
-	//region Max
 	
 	/**
 	 * Returns the maximum of the given integer values.<br>
@@ -375,9 +371,6 @@ public final class Mth {
 		return DoubleStream.of(values).max().orElseThrow(() -> new IllegalStateException("Unable to determine maximum value"));
 	}
 	
-	//endregion
-	
-	//region Average
 	
 	/**
 	 * Returns the average of the given integer values.<br>
@@ -423,7 +416,6 @@ public final class Mth {
 		}
 		return DoubleStream.of(values).average().orElseThrow(() -> new IllegalStateException("Unable to determine average value"));
 	}
-	//endregion
 	
 	/**
 	 * Checks if the given value is a power of two.<br>

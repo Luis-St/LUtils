@@ -360,11 +360,6 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		
 		//region Object overrides
 		@Override
-		public String toString() {
-			return "(," + this.value + ")";
-		}
-		
-		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (!(o instanceof Right<?, ?> right)) return false;
@@ -375,6 +370,11 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		@Override
 		public int hashCode() {
 			return Objects.hash(this.value);
+		}
+		
+		@Override
+		public String toString() {
+			return "(," + this.value + ")";
 		}
 		//endregion
 	}

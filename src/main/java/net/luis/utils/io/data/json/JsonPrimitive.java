@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.data.json;
 
+import net.luis.utils.io.data.DataHelper;
 import net.luis.utils.io.data.json.exception.JsonTypeException;
-import net.luis.utils.io.reader.StringReader;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -72,32 +72,6 @@ public class JsonPrimitive implements JsonElement {
 	public JsonPrimitive(@NonNull String value) {
 		this.value = Objects.requireNonNull(value, "Value must not be null");
 	}
-	
-	//region Static helper methods
-	
-	/**
-	 * Tries to parse the given string to a boolean or number.<br>
-	 *
-	 * @param string The string
-	 * @return The parsed value or the string if it could not be parsed
-	 */
-	private static @NonNull Object tryParse(@NonNull String string) {
-		if ("true".equalsIgnoreCase(string) || "false".equalsIgnoreCase(string)) {
-			return Boolean.parseBoolean(string);
-		}
-		StringReader reader = new StringReader(string);
-		try {
-			Number number = reader.readNumber();
-			reader.skipWhitespaces();
-			if (reader.canRead()) {
-				return string;
-			}
-			return number;
-		} catch (Exception e) {
-			return string;
-		}
-	}
-	//endregion
 	
 	/**
 	 * Returns the name of the type of this json primitive in a human-readable format.<br>
@@ -208,7 +182,6 @@ public class JsonPrimitive implements JsonElement {
 		return this.value instanceof Float;
 	}
 	
-
 	@Override
 	public float getAsFloat() {
 		if (this.isJsonFloat()) {
@@ -239,7 +212,6 @@ public class JsonPrimitive implements JsonElement {
 		return this.value instanceof String;
 	}
 	
-
 	@Override
 	public @NonNull String getAsString() {
 		if (this.isJsonString()) {
@@ -260,7 +232,7 @@ public class JsonPrimitive implements JsonElement {
 	 */
 	public @NonNull JsonPrimitive getAsParsedJsonPrimitive() {
 		if (this.isJsonString()) {
-			Object parsed = tryParse(this.getAsString());
+			Object parsed = DataHelper.tryParse(this.getAsString());
 			
 			return switch (parsed) {
 				case Boolean bool -> new JsonPrimitive(bool);

@@ -128,7 +128,6 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C, Object> {
 	public @NonNull <R> Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to encode null value as discriminated using '" + this + "'");
 		}

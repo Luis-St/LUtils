@@ -19,6 +19,7 @@
 package net.luis.utils.math;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -128,9 +129,11 @@ public enum NumberType {
 		this.bitSize = bitSize;
 		this.minValue = minValue;
 		this.maxValue = maxValue;
+		
 		if (this.minValue == null ^ this.maxValue == null) {
 			throw new IllegalArgumentException("Both min and max value must be null or not null");
 		}
+		
 		this.floatingPoint = floatingPoint;
 		this.suffix = suffix;
 		this.supportedRadices = Objects.requireNonNull(supportedRadices, "Supported radices must not be null");
@@ -197,6 +200,7 @@ public enum NumberType {
 	private static @NonNull String insertRadixPrefix(@NonNull String value, @NonNull Radix radix) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(radix, "Radix must not be null");
+		
 		char sign = value.charAt(0);
 		if (sign == '+' || sign == '-') {
 			String unsignedValue = value.substring(1);
@@ -205,6 +209,7 @@ public enum NumberType {
 			}
 			return sign + radix.getPrefix() + unsignedValue;
 		}
+		
 		if (!value.startsWith(radix.getPrefix())) {
 			return radix.getPrefix() + value;
 		}
@@ -223,8 +228,9 @@ public enum NumberType {
 	private static @NonNull String removeRadixPrefixes(@NonNull String value, Radix @NonNull ... radices) {
 		Objects.requireNonNull(value, "Value must not be null");
 		String result = value;
+		
 		for (Radix radix : radices) {
-			result = StringUtils.replaceIgnoreCase(result, radix.getPrefix(), "");
+			result = Strings.CI.replace(result, radix.getPrefix(), "");
 		}
 		return result;
 	}

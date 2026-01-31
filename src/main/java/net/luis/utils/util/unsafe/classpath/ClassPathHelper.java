@@ -112,7 +112,7 @@ final class ClassPathHelper {
 		return classes;
 	}
 	
-	//region Internal helper methods
+	//region Internal methods
 	
 	/**
 	 * Gets a condition to filter the classes which should be ignored.<br>
@@ -135,6 +135,7 @@ final class ClassPathHelper {
 		if (classes.isEmpty()) {
 			return clazz -> false;
 		}
+		
 		List<String> ignored = classes.stream().filter(s -> !s.endsWith(".*")).toList();
 		List<String> patterns = ignored.stream().filter(s -> s.endsWith(".*")).map(s -> s.substring(0, s.length() - 1)).toList();
 		return clazz -> {

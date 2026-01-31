@@ -306,4 +306,145 @@ class EitherTest {
 		assertEquals(left1.hashCode(), left2.hashCode());
 		assertEquals(right1.hashCode(), right2.hashCode());
 	}
+	
+	@Test
+	void equalsLeftWithSameValue() {
+		Either<String, Integer> left1 = Either.left("value");
+		Either<String, Integer> left2 = Either.left("value");
+		
+		assertEquals(left1, left2);
+		assertEquals(left2, left1);
+	}
+	
+	@Test
+	void equalsLeftWithDifferentValue() {
+		Either<String, Integer> left1 = Either.left("value1");
+		Either<String, Integer> left2 = Either.left("value2");
+		
+		assertNotEquals(left1, left2);
+		assertNotEquals(left2, left1);
+	}
+	
+	@Test
+	void equalsLeftWithNullValue() {
+		Either<String, Integer> left1 = Either.left(null);
+		Either<String, Integer> left2 = Either.left(null);
+		Either<String, Integer> leftNonNull = Either.left("value");
+		
+		assertEquals(left1, left2);
+		assertNotEquals(left1, leftNonNull);
+		assertNotEquals(leftNonNull, left1);
+	}
+	
+	@Test
+	void equalsLeftReflexive() {
+		Either<String, Integer> left = Either.left("value");
+		assertEquals(left, left);
+	}
+	
+	@Test
+	void equalsLeftWithNull() {
+		Either<String, Integer> left = Either.left("value");
+		assertNotEquals(left, null);
+	}
+	
+	@Test
+	void equalsLeftWithDifferentType() {
+		Either<String, Integer> left = Either.left("value");
+		assertNotEquals(left, "value");
+		assertNotEquals(left, 42);
+	}
+	
+	@Test
+	void equalsLeftNotEqualsRight() {
+		Either<String, String> left = Either.left("same");
+		Either<String, String> right = Either.right("same");
+		
+		assertNotEquals(left, right);
+		assertNotEquals(right, left);
+	}
+	
+	@Test
+	void equalsRightWithSameValue() {
+		Either<Integer, String> right1 = Either.right("value");
+		Either<Integer, String> right2 = Either.right("value");
+		
+		assertEquals(right1, right2);
+		assertEquals(right2, right1);
+	}
+	
+	@Test
+	void equalsRightWithDifferentValue() {
+		Either<Integer, String> right1 = Either.right("value1");
+		Either<Integer, String> right2 = Either.right("value2");
+		
+		assertNotEquals(right1, right2);
+		assertNotEquals(right2, right1);
+	}
+	
+	@Test
+	void equalsRightWithNullValue() {
+		Either<Integer, String> right1 = Either.right(null);
+		Either<Integer, String> right2 = Either.right(null);
+		Either<Integer, String> rightNonNull = Either.right("value");
+		
+		assertEquals(right1, right2);
+		assertNotEquals(right1, rightNonNull);
+		assertNotEquals(rightNonNull, right1);
+	}
+	
+	@Test
+	void equalsRightReflexive() {
+		Either<Integer, String> right = Either.right("value");
+		assertEquals(right, right);
+	}
+	
+	@Test
+	void equalsRightWithNull() {
+		Either<Integer, String> right = Either.right("value");
+		assertNotEquals(right, null);
+	}
+	
+	@Test
+	void equalsRightWithDifferentType() {
+		Either<Integer, String> right = Either.right("value");
+		assertNotEquals(right, "value");
+		assertNotEquals(right, 42);
+	}
+	
+	@Test
+	void toStringLeftWithValue() {
+		Either<String, Integer> left = Either.left("test");
+		assertEquals("(test,)", left.toString());
+	}
+	
+	@Test
+	void toStringLeftWithNullValue() {
+		Either<String, Integer> left = Either.left(null);
+		assertEquals("(null,)", left.toString());
+	}
+	
+	@Test
+	void toStringLeftWithIntegerValue() {
+		Either<Integer, String> left = Either.left(42);
+		assertEquals("(42,)", left.toString());
+	}
+	
+	@Test
+	void toStringRightWithValue() {
+		Either<Integer, String> right = Either.right("test");
+		assertEquals("(,test)", right.toString());
+	}
+	
+	@Test
+	void toStringRightWithNullValue() {
+		Either<Integer, String> right = Either.right(null);
+		assertEquals("(,null)", right.toString());
+	}
+	
+	@Test
+	void toStringRightWithIntegerValue() {
+		Either<String, Integer> right = Either.right(42);
+		assertEquals("(,42)", right.toString());
+	}
 }

@@ -20,6 +20,8 @@ package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.constraint.config.io.URIConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.io.URIConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -28,19 +30,42 @@ import org.jspecify.annotations.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for URIs.<br>
  * Uses the URI string as an internal representation.<br>
+ * <p>
+ *     Supports URI constraints for validation.
+ * </p>
  *
  * @author Luis-St
  */
-public class URICodec extends AbstractCodec<URI, Object> {
-	
+public class URICodec extends AbstractCodec<URI, URIConstraintConfig> implements URIConstraint<URICodec> {
+
 	/**
 	 * Constructs a new URI codec.<br>
 	 */
 	public URICodec() {}
+
+	/**
+	 * Constructs a new URI codec with the given configuration.<br>
+	 *
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the config is null
+	 */
+	private URICodec(@NonNull URIConstraintConfig config) {
+		super(config);
+	}
+
+	@Override
+	public @NonNull URICodec apply(@NonNull UnaryOperator<URIConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+
+		return new URICodec(
+			configModifier.apply(this.getConstraintConfig().orElse(URIConstraintConfig.UNCONSTRAINED))
+		);
+	}
 	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable URI value) {
@@ -49,6 +74,11 @@ public class URICodec extends AbstractCodec<URI, Object> {
 		
 		if (value == null) {
 			return Result.error("Unable to encode null as URI using '" + this + "'");
+		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
 		}
 		return Codecs.STRING.encodeStart(provider, current, value.toString());
 	}
@@ -68,7 +98,13 @@ public class URICodec extends AbstractCodec<URI, Object> {
 		
 		String string = result.resultOrThrow();
 		try {
-			return Result.success(new URI(string));
+			URI uri = new URI(string);
+			
+			Result<Void> constraintResult = this.checkConstraints(uri);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(uri);
 		} catch (URISyntaxException e) {
 			return Result.error("Unable to decode URI '" + string + "' using '" + this + "': Unable to parse URI: " + e.getMessage());
 		}
@@ -76,6 +112,8 @@ public class URICodec extends AbstractCodec<URI, Object> {
 	
 	@Override
 	public String toString() {
-		return "URICodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedURICodec[constraints=" + config + "]";
+		}).orElse("URICodec");
 	}
 }
