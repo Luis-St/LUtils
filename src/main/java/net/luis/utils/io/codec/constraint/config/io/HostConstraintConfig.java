@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -181,15 +181,15 @@ public record HostConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull String value) {
+	public void validate(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchNestedConfig(value, this.ip, "Ip address"),
-			() -> ConstraintMatchers.matchNestedConfig(value, this.domain, "Domain"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateNestedConfig(value, this.ip, "Ip address"),
+			() -> ConstraintValidators.validateNestedConfig(value, this.domain, "Domain"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

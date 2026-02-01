@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.constraint.config.numeric;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
@@ -474,17 +474,17 @@ public record BigDecimalConstraintConfig(
 	public @NonNull Result<Void> matches(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
-			() -> ConstraintMatchers.matchSign(value, this.positive, this.negative, this.zero),
-			() -> ConstraintMatchers.matchPercentage(value, this.percentage),
-			() -> ConstraintMatchers.matchFlag(value, this.integral, v -> v.stripTrailingZeros().scale() <= 0, "Value '" + value + "' must be integral (no fractional part)"),
-			() -> ConstraintMatchers.matchFlag(value, this.normalized, v -> v.compareTo(BigDecimal.ZERO) >= 0 && v.compareTo(BigDecimal.ONE) <= 0, "Value '" + value + "' must be normalized (between 0.0 and 1.0)"),
-			() -> ConstraintMatchers.matchRange(value.scale(), this.scaleMin, this.scaleMax),
-			() -> ConstraintMatchers.matchRange(value.precision(), this.precisionMin, this.precisionMax),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.min, this.max),
+			() -> ConstraintValidators.validateSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintValidators.validatePercentage(value, this.percentage),
+			() -> ConstraintValidators.validateFlag(value, this.integral, v -> v.stripTrailingZeros().scale() <= 0, "Value '" + value + "' must be integral (no fractional part)"),
+			() -> ConstraintValidators.validateFlag(value, this.normalized, v -> v.compareTo(BigDecimal.ZERO) >= 0 && v.compareTo(BigDecimal.ONE) <= 0, "Value '" + value + "' must be normalized (between 0.0 and 1.0)"),
+			() -> ConstraintValidators.validateRange(value.scale(), this.scaleMin, this.scaleMax),
+			() -> ConstraintValidators.validateRange(value.precision(), this.precisionMin, this.precisionMax),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

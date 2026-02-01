@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.StringConstraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
@@ -654,35 +654,35 @@ public record StringConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull String value) {
+	public void validate(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalToIgnoreCase, String::equalsIgnoreCase),
-			() -> ConstraintMatchers.matchIn(value, this.inIgnoreCase, String::equalsIgnoreCase),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.length, String::length, "Length"),
-			() -> ConstraintMatchers.matchStartsWith(value, this.startsWith),
-			() -> ConstraintMatchers.matchStartsWithAny(value, this.startsWithAny),
-			() -> ConstraintMatchers.matchContains(value, this.contains),
-			() -> ConstraintMatchers.matchContainsAny(value, this.containsAny),
-			() -> ConstraintMatchers.matchContainsAll(value, this.containsAll),
-			() -> ConstraintMatchers.matchContainsOnly(value, this.containsOnly),
-			() -> ConstraintMatchers.matchEndsWith(value, this.endsWith),
-			() -> ConstraintMatchers.matchEndsWithAny(value, this.endsWithAny),
-			() -> ConstraintMatchers.matchPattern(value, this.matches),
-			() -> ConstraintMatchers.matchFlag(value, this.trimmed, s -> s.equals(s.trim()), "String '" + value + "' must be trimmed (no leading/trailing whitespace)"),
-			() -> ConstraintMatchers.matchFlag(value, this.blank, String::isBlank, "String '" + value + "' must be blank"),
-			() -> ConstraintMatchers.matchFlag(value, this.notBlank, s -> !s.isBlank(), "String '" + value + "' must not be blank"),
-			() -> ConstraintMatchers.matchFlag(value, this.upperCase, s -> s.equals(s.toUpperCase()), "String '" + value + "' must be upper case"),
-			() -> ConstraintMatchers.matchFlag(value, this.lowerCase, s -> s.equals(s.toLowerCase()), "String '" + value + "' must be lower case"),
-			() -> ConstraintMatchers.matchCharacterClass(value, this.numeric, Character::isDigit, "numeric"),
-			() -> ConstraintMatchers.matchCharacterClass(value, this.alphabetic, Character::isLetter, "alphabetic"),
-			() -> ConstraintMatchers.matchCharacterClass(value, this.alphanumeric, Character::isLetterOrDigit, "alphanumeric"),
-			() -> ConstraintMatchers.matchCharacterClass(value, this.ascii, c -> c < 128, "ASCII"),
-			() -> ConstraintMatchers.matchCharacterClass(value, this.latin1, c -> c < 256, "Latin-1"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateEqualTo(value, this.equalToIgnoreCase, String::equalsIgnoreCase),
+			() -> ConstraintValidators.validateIn(value, this.inIgnoreCase, String::equalsIgnoreCase),
+			() -> ConstraintValidators.validateExtractedValue(value, this.length, String::length, "Length"),
+			() -> ConstraintValidators.validateStartsWith(value, this.startsWith),
+			() -> ConstraintValidators.validateStartsWithAny(value, this.startsWithAny),
+			() -> ConstraintValidators.validateContains(value, this.contains),
+			() -> ConstraintValidators.validateContainsAny(value, this.containsAny),
+			() -> ConstraintValidators.validateContainsAll(value, this.containsAll),
+			() -> ConstraintValidators.validateContainsOnly(value, this.containsOnly),
+			() -> ConstraintValidators.validateEndsWith(value, this.endsWith),
+			() -> ConstraintValidators.validateEndsWithAny(value, this.endsWithAny),
+			() -> ConstraintValidators.validatePattern(value, this.matches),
+			() -> ConstraintValidators.validateFlag(value, this.trimmed, s -> s.equals(s.trim()), "String '" + value + "' must be trimmed (no leading/trailing whitespace)"),
+			() -> ConstraintValidators.validateFlag(value, this.blank, String::isBlank, "String '" + value + "' must be blank"),
+			() -> ConstraintValidators.validateFlag(value, this.notBlank, s -> !s.isBlank(), "String '" + value + "' must not be blank"),
+			() -> ConstraintValidators.validateFlag(value, this.upperCase, s -> s.equals(s.toUpperCase()), "String '" + value + "' must be upper case"),
+			() -> ConstraintValidators.validateFlag(value, this.lowerCase, s -> s.equals(s.toLowerCase()), "String '" + value + "' must be lower case"),
+			() -> ConstraintValidators.validateCharacterClass(value, this.numeric, Character::isDigit, "numeric"),
+			() -> ConstraintValidators.validateCharacterClass(value, this.alphabetic, Character::isLetter, "alphabetic"),
+			() -> ConstraintValidators.validateCharacterClass(value, this.alphanumeric, Character::isLetterOrDigit, "alphanumeric"),
+			() -> ConstraintValidators.validateCharacterClass(value, this.ascii, c -> c < 128, "ASCII"),
+			() -> ConstraintValidators.validateCharacterClass(value, this.latin1, c -> c < 256, "Latin-1"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

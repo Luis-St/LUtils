@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.TemporalMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.TemporalValidators;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
@@ -335,16 +335,16 @@ public record ZoneOffsetConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull ZoneOffset value) {
+	public void validate(@NonNull ZoneOffset value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max, Comparator.comparingInt(ZoneOffset::getTotalSeconds)),
-			() -> TemporalMatchers.matchZoneOffsetSign(value, this.positive, this.negative, this.zero),
-			() -> ConstraintMatchers.matchNestedConfig(value.getTotalSeconds() / 3600, this.hour, "Hours"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.min, this.max, Comparator.comparingInt(ZoneOffset::getTotalSeconds)),
+			() -> TemporalValidators.validateZoneOffsetSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintValidators.validateNestedConfig(value.getTotalSeconds() / 3600, this.hour, "Hours"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

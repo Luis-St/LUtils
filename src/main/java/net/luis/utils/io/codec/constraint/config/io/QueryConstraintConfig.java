@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
@@ -350,24 +350,24 @@ public record QueryConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Map<String, List<String>> value) {
+	public void validate(@NonNull Map<String, List<String>> value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.size, Map::size, "Size"),
-			() -> ConstraintMatchers.matchRequiredKeys(value.keySet(), this.requiredKeys, "Query"),
-			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Query"),
-			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Query"),
-			() -> ConstraintMatchers.matchFlag(value, this.nonNullKeys, v -> v.keySet().stream().noneMatch(Objects::isNull), "Query keys must not be null"),
-			() -> IOMatchers.matchQueryUniqueValues(value, this.uniqueValues),
-			() -> ConstraintMatchers.matchFlag(value, this.nonNullValues, v -> v.values().stream().flatMap(List::stream).noneMatch(Objects::isNull), "Query values must not be null"),
-			() -> IOMatchers.matchQueryValueConstraints(value, this.valueConstraints),
-			() -> IOMatchers.matchQueryPatternValueConstraints(value, this.patternValueConstraints),
-			() -> IOMatchers.matchQuerySingleValued(value, this.singleValued),
-			() -> IOMatchers.matchQueryMultiValuedConstraints(value, this.multiValuedConstraints),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateExtractedValue(value, this.size, Map::size, "Size"),
+			() -> ConstraintValidators.validateRequiredKeys(value.keySet(), this.requiredKeys, "Query"),
+			() -> ConstraintValidators.validateForbiddenKeys(value.keySet(), this.forbiddenKeys, "Query"),
+			() -> ConstraintValidators.validateAllowedKeys(value.keySet(), this.allowedKeys, "Query"),
+			() -> ConstraintValidators.validateFlag(value, this.nonNullKeys, v -> v.keySet().stream().noneMatch(Objects::isNull), "Query keys must not be null"),
+			() -> IOValidators.validateQueryUniqueValues(value, this.uniqueValues),
+			() -> ConstraintValidators.validateFlag(value, this.nonNullValues, v -> v.values().stream().flatMap(List::stream).noneMatch(Objects::isNull), "Query values must not be null"),
+			() -> IOValidators.validateQueryValueConstraints(value, this.valueConstraints),
+			() -> IOValidators.validateQueryPatternValueConstraints(value, this.patternValueConstraints),
+			() -> IOValidators.validateQuerySingleValued(value, this.singleValued),
+			() -> IOValidators.validateQueryMultiValuedConstraints(value, this.multiValuedConstraints),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

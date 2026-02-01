@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
@@ -261,20 +261,20 @@ public record ZoneIdConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull ZoneId value) {
+	public void validate(@NonNull ZoneId value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchFlag(value, this.normalized, v -> v.equals(v.normalized()), "Zone id '" + value + "' must be in normalized form"),
-			() -> ConstraintMatchers.matchFlag(value, this.regionBased, v -> !(v instanceof ZoneOffset), "Zone id '" + value + "' must be region-based"),
-			() -> ConstraintMatchers.matchFlag(value, this.offsetBased, ZoneOffset.class::isInstance, "Zone id '" + value + "' must be offset-based"),
-			() -> ConstraintMatchers.matchFlag(value, this.fixedOffset, ZoneOffset.class::isInstance, "Zone id '" + value + "' must be a fixed offset"),
-			() -> ConstraintMatchers.matchFlag(value, this.utc, v -> v.normalized().equals(ZoneOffset.UTC), "Zone id '" + value + "' must be UTC"),
-			() -> ConstraintMatchers.matchFlag(value, this.systemDefault, v -> v.equals(ZoneId.systemDefault()), "Zone id '" + value + "' must be the system default"),
-			() -> ConstraintMatchers.matchFlag(value, this.available, v -> ZoneId.getAvailableZoneIds().contains(v.getId()), "Zone id '" + value + "' must be in the available zone list"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getId(), this.region, "Region"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateFlag(value, this.normalized, v -> v.equals(v.normalized()), "Zone id '" + value + "' must be in normalized form"),
+			() -> ConstraintValidators.validateFlag(value, this.regionBased, v -> !(v instanceof ZoneOffset), "Zone id '" + value + "' must be region-based"),
+			() -> ConstraintValidators.validateFlag(value, this.offsetBased, ZoneOffset.class::isInstance, "Zone id '" + value + "' must be offset-based"),
+			() -> ConstraintValidators.validateFlag(value, this.fixedOffset, ZoneOffset.class::isInstance, "Zone id '" + value + "' must be a fixed offset"),
+			() -> ConstraintValidators.validateFlag(value, this.utc, v -> v.normalized().equals(ZoneOffset.UTC), "Zone id '" + value + "' must be UTC"),
+			() -> ConstraintValidators.validateFlag(value, this.systemDefault, v -> v.equals(ZoneId.systemDefault()), "Zone id '" + value + "' must be the system default"),
+			() -> ConstraintValidators.validateFlag(value, this.available, v -> ZoneId.getAvailableZoneIds().contains(v.getId()), "Zone id '" + value + "' must be in the available zone list"),
+			() -> ConstraintValidators.validateNestedConfig(value.getId(), this.region, "Region"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

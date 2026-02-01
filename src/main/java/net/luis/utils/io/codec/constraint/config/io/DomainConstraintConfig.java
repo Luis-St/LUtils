@@ -20,8 +20,8 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
@@ -517,25 +517,25 @@ public record DomainConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull String value) {
+	public void validate(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.length, String::length, "Length"),
-			() -> ConstraintMatchers.matchStartsWith(value, this.startsWith),
-			() -> ConstraintMatchers.matchStartsWithAny(value, this.startsWithAny),
-			() -> ConstraintMatchers.matchContains(value, this.contains),
-			() -> ConstraintMatchers.matchContainsAny(value, this.containsAny),
-			() -> ConstraintMatchers.matchContainsAll(value, this.containsAll),
-			() -> ConstraintMatchers.matchContainsOnly(value, this.containsOnly),
-			() -> ConstraintMatchers.matchEndsWith(value, this.endsWith),
-			() -> ConstraintMatchers.matchEndsWithAny(value, this.endsWithAny),
-			() -> ConstraintMatchers.matchPattern(value, this.matches),
-			() -> IOMatchers.matchRootDomain(value, this.rootDomain),
-			() -> IOMatchers.matchSubDomain(value, this.subDomain),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateExtractedValue(value, this.length, String::length, "Length"),
+			() -> ConstraintValidators.validateStartsWith(value, this.startsWith),
+			() -> ConstraintValidators.validateStartsWithAny(value, this.startsWithAny),
+			() -> ConstraintValidators.validateContains(value, this.contains),
+			() -> ConstraintValidators.validateContainsAny(value, this.containsAny),
+			() -> ConstraintValidators.validateContainsAll(value, this.containsAll),
+			() -> ConstraintValidators.validateContainsOnly(value, this.containsOnly),
+			() -> ConstraintValidators.validateEndsWith(value, this.endsWith),
+			() -> ConstraintValidators.validateEndsWithAny(value, this.endsWithAny),
+			() -> ConstraintValidators.validatePattern(value, this.matches),
+			() -> IOValidators.validateRootDomain(value, this.rootDomain),
+			() -> IOValidators.validateSubDomain(value, this.subDomain),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

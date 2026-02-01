@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Platform;
 import net.luis.utils.io.codec.constraint.util.Unit;
@@ -435,28 +435,28 @@ public record FilePathConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Path value) {
+	public void validate(@NonNull Path value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.length, p -> p.toString().length(), "Length"),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.depth, Path::getNameCount, "Depth"),
-			() -> ConstraintMatchers.matchFlag(value, this.absolute, Path::isAbsolute, "Path '" + value + "' must be absolute"),
-			() -> ConstraintMatchers.matchFlag(value, this.relative, p -> !p.isAbsolute(), "Path '" + value + "' must be relative"),
-			() -> ConstraintMatchers.matchFlag(value, this.normalized, p -> p.equals(p.normalize()), "Path '" + value + "' must be normalized"),
-			() -> IOMatchers.matchPathCanonical(value, this.canonical),
-			() -> IOMatchers.matchPathStringConfig(value, this.path),
-			() -> IOMatchers.matchPathRootConfig(value, this.root),
-			() -> IOMatchers.matchPathParentConfig(value, this.parent),
-			() -> IOMatchers.matchPathSegmentConfig(value, this.segment),
-			() -> IOMatchers.matchPathFileNameConfig(value, this.file),
-			() -> IOMatchers.matchPathWithoutExtension(value, this.withoutExtension),
-			() -> IOMatchers.matchPathExtensionConfig(value, this.extension),
-			() -> IOMatchers.matchPathAncestorOf(value, this.ancestorOf),
-			() -> IOMatchers.matchPathDescendantOf(value, this.descendantOf),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateExtractedValue(value, this.length, p -> p.toString().length(), "Length"),
+			() -> ConstraintValidators.validateExtractedValue(value, this.depth, Path::getNameCount, "Depth"),
+			() -> ConstraintValidators.validateFlag(value, this.absolute, Path::isAbsolute, "Path '" + value + "' must be absolute"),
+			() -> ConstraintValidators.validateFlag(value, this.relative, p -> !p.isAbsolute(), "Path '" + value + "' must be relative"),
+			() -> ConstraintValidators.validateFlag(value, this.normalized, p -> p.equals(p.normalize()), "Path '" + value + "' must be normalized"),
+			() -> IOValidators.validatePathCanonical(value, this.canonical),
+			() -> IOValidators.validatePathStringConfig(value, this.path),
+			() -> IOValidators.validatePathRootConfig(value, this.root),
+			() -> IOValidators.validatePathParentConfig(value, this.parent),
+			() -> IOValidators.validatePathSegmentConfig(value, this.segment),
+			() -> IOValidators.validatePathFileNameConfig(value, this.file),
+			() -> IOValidators.validatePathWithoutExtension(value, this.withoutExtension),
+			() -> IOValidators.validatePathExtensionConfig(value, this.extension),
+			() -> IOValidators.validatePathAncestorOf(value, this.ancestorOf),
+			() -> IOValidators.validatePathDescendantOf(value, this.descendantOf),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

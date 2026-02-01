@@ -20,8 +20,8 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
@@ -208,16 +208,16 @@ public record InetAddressConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull InetAddress value) {
+	public void validate(@NonNull InetAddress value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> IOMatchers.matchInetAddressIpVersion(value, this.ipVersion),
-			() -> IOMatchers.matchInetAddressIpType(value, this.ipType),
-			() -> IOMatchers.matchInetAddressInAnySubnet(value, this.inAnySubnet),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> IOValidators.validateInetAddressIpVersion(value, this.ipVersion),
+			() -> IOValidators.validateInetAddressIpType(value, this.ipType),
+			() -> IOValidators.validateInetAddressInAnySubnet(value, this.inAnySubnet),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

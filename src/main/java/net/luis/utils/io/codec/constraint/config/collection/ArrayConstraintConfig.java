@@ -20,12 +20,10 @@ package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.collection.ArrayConstraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -229,14 +227,14 @@ public record ArrayConstraintConfig<T>(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(T @NonNull [] value) {
+	public void validate(T @NonNull [] value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo, Arrays::equals),
-			() -> ConstraintMatchers.matchIn(value, this.in, Arrays::equals),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.length, arr -> arr.length, "Length"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo, Arrays::equals),
+			() -> ConstraintValidators.validateIn(value, this.in, Arrays::equals),
+			() -> ConstraintValidators.validateExtractedValue(value, this.length, arr -> arr.length, "Length"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

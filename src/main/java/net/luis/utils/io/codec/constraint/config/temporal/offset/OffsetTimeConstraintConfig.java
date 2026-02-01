@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.constraint.config.temporal.offset;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.Constraint;
@@ -365,21 +365,21 @@ public record OffsetTimeConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull OffsetTime value) {
+	public void validate(@NonNull OffsetTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.after, this.before),
-			() -> ConstraintMatchers.matchWithinLast(value, this.withinLast, OffsetTime::now, OffsetTime::minus, "Offset time"),
-			() -> ConstraintMatchers.matchWithinNext(value, this.withinNext, OffsetTime::now, OffsetTime::plus, "Offset time"),
-			() -> ConstraintMatchers.matchNumericField(value.getHour(), this.hour, "hour"),
-			() -> ConstraintMatchers.matchNumericField(value.getMinute(), this.minute, "minute"),
-			() -> ConstraintMatchers.matchNumericField(value.getSecond(), this.second, "second"),
-			() -> ConstraintMatchers.matchNumericField(value.getNano() / 1_000_000, this.millisecond, "millisecond"),
-			() -> ConstraintMatchers.matchNumericField(value.getNano(), this.nanosecond, "nanosecond"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getOffset(), this.offset, "Offset"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.after, this.before),
+			() -> ConstraintValidators.validateWithinLast(value, this.withinLast, OffsetTime::now, OffsetTime::minus, "Offset time"),
+			() -> ConstraintValidators.validateWithinNext(value, this.withinNext, OffsetTime::now, OffsetTime::plus, "Offset time"),
+			() -> ConstraintValidators.validateNumericField(value.getHour(), this.hour, "hour"),
+			() -> ConstraintValidators.validateNumericField(value.getMinute(), this.minute, "minute"),
+			() -> ConstraintValidators.validateNumericField(value.getSecond(), this.second, "second"),
+			() -> ConstraintValidators.validateNumericField(value.getNano() / 1_000_000, this.millisecond, "millisecond"),
+			() -> ConstraintValidators.validateNumericField(value.getNano(), this.nanosecond, "nanosecond"),
+			() -> ConstraintValidators.validateNestedConfig(value.getOffset(), this.offset, "Offset"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

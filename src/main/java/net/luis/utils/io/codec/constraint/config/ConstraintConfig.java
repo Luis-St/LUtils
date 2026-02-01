@@ -18,9 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -46,8 +45,8 @@ public interface ConstraintConfig<T> {
 	 * </p>
 	 *
 	 * @param value The value to be validated
-	 * @return A result indicating success or failure of the validation
 	 * @throws NullPointerException If the value is null
+	 * @throws ConstraintViolateException If the value does not satisfy the configured constraints
 	 */
-	@NotNull Result<Void> matches(@NonNull T value);
+	void validate(@NonNull T value);
 }
