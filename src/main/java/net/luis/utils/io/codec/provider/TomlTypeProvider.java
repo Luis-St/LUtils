@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.provider;
 import com.google.common.collect.Maps;
 import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.toml.*;
-import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -42,14 +42,9 @@ public final class TomlTypeProvider implements TypeProvider<TomlElement> {
 	 * Used for internal purposes only.<br>
 	 * The toml element has no string representation and will throw an exception if {@link TomlElement#toString(TomlConfig)} is called.<br>
 	 */
-	private static final TomlElement EMPTY_ELEMENT = new TomlElement() {
-		@Override
-		public @NonNull String toString(@NonNull TomlConfig config) {
-			return "Empty toml element has no string representation";
-		}
-	};
+	private static final TomlElement EMPTY_ELEMENT = _ -> "Empty toml element has no string representation";
 	
-	/**
+	/*
 	 * The singleton instance of this class.<br>
 	 */
 	public static final TomlTypeProvider INSTANCE = new TomlTypeProvider();
@@ -65,336 +60,324 @@ public final class TomlTypeProvider implements TypeProvider<TomlElement> {
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createNull() {
-		return Result.success(TomlNull.INSTANCE);
+	public @NonNull TomlElement createNull() {
+		return TomlNull.INSTANCE;
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createBoolean(boolean value) {
-		return Result.success(new TomlValue(value));
+	public @NonNull TomlElement createBoolean(boolean value) {
+		return new TomlValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createByte(byte value) {
-		return Result.success(new TomlValue(value));
+	public @NonNull TomlElement createByte(byte value) {
+		return new TomlValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createShort(short value) {
-		return Result.success(new TomlValue(value));
+	public @NonNull TomlElement createShort(short value) {
+		return new TomlValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createInteger(int value) {
-		return Result.success(new TomlValue(value));
+	public @NonNull TomlElement createInteger(int value) {
+		return new TomlValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createLong(long value) {
-		return Result.success(new TomlValue(value));
+	public @NonNull TomlElement createLong(long value) {
+		return new TomlValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createFloat(float value) {
-		return Result.success(new TomlValue(value));
+	public @NonNull TomlElement createFloat(float value) {
+		return new TomlValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createDouble(double value) {
-		return Result.success(new TomlValue(value));
+	public @NonNull TomlElement createDouble(double value) {
+		return new TomlValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createString(@Nullable String value) {
+	public @NonNull TomlElement createString(@Nullable String value) {
 		if (value == null) {
-			return Result.error("Value 'null' is not a valid string");
+			throw new TypeProviderException("Value 'null' is not a valid string");
 		}
-		
-		return Result.success(new TomlValue(value));
+		return new TomlValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createList(@Nullable List<? extends TomlElement> values) {
+	public @NonNull TomlElement createList(@Nullable List<? extends TomlElement> values) {
 		if (values == null) {
-			return Result.error("Value 'null' is not a valid list");
+			throw new TypeProviderException("Value 'null' is not a valid list");
 		}
-		
-		return Result.success(new TomlArray(values));
+		return new TomlArray(values);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createMap() {
-		return Result.success(new TomlTable());
+	public @NonNull TomlElement createMap() {
+		return new TomlTable();
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> createMap(@Nullable Map<String, ? extends TomlElement> values) {
+	public @NonNull TomlElement createMap(@Nullable Map<String, ? extends TomlElement> values) {
 		if (values == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
-		
-		return Result.success(new TomlTable(values));
+		return new TomlTable(values);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> getEmpty(@Nullable TomlElement type) {
+	public boolean isEmpty(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not empty");
+			throw new TypeProviderException("Value 'null' is not empty");
 		}
-		
-		if (type != EMPTY_ELEMENT) {
-			return Result.error("Toml element '" + type + "' is not a toml null");
-		}
-		return Result.success(type);
+		return type == EMPTY_ELEMENT;
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> isNull(@Nullable TomlElement type) {
+	public boolean isNull(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not toml null");
+			throw new TypeProviderException("Value 'null' is not toml null");
 		}
-		
-		return Result.success(type.isTomlNull());
+		return type.isTomlNull();
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> getBoolean(@Nullable TomlElement type) {
+	public @NonNull Boolean getBoolean(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a boolean");
+			throw new TypeProviderException("Value 'null' is not a boolean");
 		}
-		
 		if (!type.isTomlValue()) {
-			return Result.error("Toml element '" + type + "' is not a toml value");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml value");
 		}
 		
 		TomlValue value = type.getAsTomlValue();
 		if (!value.isTomlBoolean()) {
-			return Result.error("Toml element '" + type + "' is not a toml boolean");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml boolean");
 		}
-		return Result.success(value.getAsBoolean());
+		return value.getAsBoolean();
 	}
 	
 	@Override
-	public @NonNull Result<Byte> getByte(@Nullable TomlElement type) {
+	public @NonNull Byte getByte(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a byte");
+			throw new TypeProviderException("Value 'null' is not a byte");
 		}
-		
 		if (!type.isTomlValue()) {
-			return Result.error("Toml element '" + type + "' is not a toml value");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml value");
 		}
 		
 		TomlValue value = type.getAsTomlValue();
 		if (!value.isTomlNumber()) {
-			return Result.error("Toml element '" + type + "' is not a toml byte");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml byte");
 		}
-		return Result.success(value.getAsByte());
+		return value.getAsByte();
 	}
 	
 	@Override
-	public @NonNull Result<Short> getShort(@Nullable TomlElement type) {
+	public @NonNull Short getShort(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a short");
+			throw new TypeProviderException("Value 'null' is not a short");
 		}
-		
 		if (!type.isTomlValue()) {
-			return Result.error("Toml element '" + type + "' is not a toml value");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml value");
 		}
 		
 		TomlValue value = type.getAsTomlValue();
 		if (!value.isTomlNumber()) {
-			return Result.error("Toml element '" + type + "' is not a toml short");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml short");
 		}
-		return Result.success(value.getAsShort());
+		return value.getAsShort();
 	}
 	
 	@Override
-	public @NonNull Result<Integer> getInteger(@Nullable TomlElement type) {
+	public @NonNull Integer getInteger(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not an integer");
+			throw new TypeProviderException("Value 'null' is not an integer");
 		}
-		
 		if (!type.isTomlValue()) {
-			return Result.error("Toml element '" + type + "' is not a toml value");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml value");
 		}
 		
 		TomlValue value = type.getAsTomlValue();
 		if (!value.isTomlNumber()) {
-			return Result.error("Toml element '" + type + "' is not a toml integer");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml integer");
 		}
-		return Result.success(value.getAsInteger());
+		return value.getAsInteger();
 	}
 	
 	@Override
-	public @NonNull Result<Long> getLong(@Nullable TomlElement type) {
+	public @NonNull Long getLong(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a long");
+			throw new TypeProviderException("Value 'null' is not a long");
 		}
-		
 		if (!type.isTomlValue()) {
-			return Result.error("Toml element '" + type + "' is not a toml value");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml value");
 		}
 		
 		TomlValue value = type.getAsTomlValue();
 		if (!value.isTomlNumber()) {
-			return Result.error("Toml element '" + type + "' is not a toml long");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml long");
 		}
-		return Result.success(value.getAsLong());
+		return value.getAsLong();
 	}
 	
 	@Override
-	public @NonNull Result<Float> getFloat(@Nullable TomlElement type) {
+	public @NonNull Float getFloat(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a float");
+			throw new TypeProviderException("Value 'null' is not a float");
 		}
-		
 		if (!type.isTomlValue()) {
-			return Result.error("Toml element '" + type + "' is not a toml value");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml value");
 		}
 		
 		TomlValue value = type.getAsTomlValue();
 		if (!value.isTomlNumber()) {
-			return Result.error("Toml element '" + type + "' is a toml string, not a toml float");
+			throw new TypeProviderException("Toml element '" + type + "' is a toml string, not a toml float");
 		}
-		return Result.success(value.getAsFloat());
+		return value.getAsFloat();
 	}
 	
 	@Override
-	public @NonNull Result<Double> getDouble(@Nullable TomlElement type) {
+	public @NonNull Double getDouble(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a double");
+			throw new TypeProviderException("Value 'null' is not a double");
 		}
-		
 		if (!type.isTomlValue()) {
-			return Result.error("Toml element '" + type + "' is not a toml value");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml value");
 		}
 		
 		TomlValue value = type.getAsTomlValue();
 		if (!value.isTomlNumber()) {
-			return Result.error("Toml element '" + type + "' is not a toml double");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml double");
 		}
-		return Result.success(value.getAsDouble());
+		return value.getAsDouble();
 	}
 	
 	@Override
-	public @NonNull Result<String> getString(@Nullable TomlElement type) {
+	public @NonNull String getString(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a string");
+			throw new TypeProviderException("Value 'null' is not a string");
 		}
-		
 		if (!type.isTomlValue()) {
-			return Result.error("Toml element '" + type + "' is not a toml value");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml value");
 		}
 		
 		TomlValue value = type.getAsTomlValue();
 		if (!value.isTomlString()) {
-			return Result.error("Toml element '" + type + "' is not a toml string");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml string");
 		}
-		return Result.success(value.getAsString());
+		return value.getAsString();
 	}
 	
 	@Override
-	public @NonNull Result<List<TomlElement>> getList(@Nullable TomlElement type) {
+	public @NonNull List<TomlElement> getList(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid list");
+			throw new TypeProviderException("Value 'null' is not a valid list");
 		}
 		
 		if (!type.isTomlArray()) {
-			return Result.error("Toml element '" + type + "' is not a toml array");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml array");
 		}
-		return Result.success(type.getAsTomlArray().getElements());
+		return type.getAsTomlArray().getElements();
 	}
 	
 	@Override
-	public @NonNull Result<Map<String, TomlElement>> getMap(@Nullable TomlElement type) {
+	public @NonNull Map<String, TomlElement> getMap(@Nullable TomlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
-		
 		if (!type.isTomlTable()) {
-			return Result.error("Toml element '" + type + "' is not a toml table");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml table");
 		}
 		
 		Map<String, TomlElement> map = Maps.newLinkedHashMap();
 		type.getAsTomlTable().forEach(map::put);
-		return Result.success(map);
+		return map;
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> has(@Nullable TomlElement type, @Nullable String key) {
+	public boolean has(@Nullable TomlElement type, @Nullable String key) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isTomlTable()) {
-			return Result.error("Toml element '" + type + "' is not a toml table");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml table");
 		}
-		return Result.success(type.getAsTomlTable().containsKey(key));
+		return type.getAsTomlTable().containsKey(key);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> get(@Nullable TomlElement type, @Nullable String key) {
+	public @NonNull TomlElement get(@Nullable TomlElement type, @Nullable String key) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isTomlTable()) {
-			return Result.error("Toml element '" + type + "' is not a toml table");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml table");
 		}
-		return Result.success(type.getAsTomlTable().get(key));
+		
+		TomlElement element = type.getAsTomlTable().get(key);
+		if (element == null) {
+			throw new TypeProviderException("Key '" + key + "' does not exist in toml table '" + type + "'");
+		}
+		return element;
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> set(@Nullable TomlElement type, @Nullable String key, @Nullable TomlElement value) {
+	public void set(@Nullable TomlElement type, @Nullable String key, @Nullable TomlElement value) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		if (value == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isTomlTable()) {
-			return Result.error("Toml element '" + type + "' is not a toml table");
+			throw new TypeProviderException("Toml element '" + type + "' is not a toml table");
 		}
-		return Result.success(type.getAsTomlTable().add(key, value));
+		type.getAsTomlTable().add(key, value);
 	}
 	
 	@Override
-	public @NonNull Result<TomlElement> merge(@Nullable TomlElement current, @Nullable TomlElement value) {
+	public @UnknownNullability TomlElement merge(@Nullable TomlElement current, @Nullable TomlElement value) {
 		if (current == null) {
-			return Result.success(value);
+			return value;
 		}
 		if (value == null) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current == EMPTY_ELEMENT || current.isTomlNull()) {
-			return Result.success(value);
+			return value;
 		}
 		if (value == EMPTY_ELEMENT || value.isTomlNull()) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current.isTomlArray() && value.isTomlArray()) {
 			TomlArray array = current.getAsTomlArray();
 			array.addAll(value.getAsTomlArray());
-			return Result.success(array);
+			return array;
 		}
 		
 		if (current.isTomlTable() && value.isTomlTable()) {
 			TomlTable table = current.getAsTomlTable();
 			table.addAll(value.getAsTomlTable());
-			return Result.success(table);
+			return table;
 		}
-		return Result.error("Unable to merge '" + current + "' with '" + value + "'");
+		throw new TypeProviderException("Unable to merge '" + current + "' with '" + value + "'");
 	}
 }

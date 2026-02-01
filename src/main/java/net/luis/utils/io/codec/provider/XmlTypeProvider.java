@@ -22,7 +22,7 @@ import com.google.common.collect.Maps;
 import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.xml.*;
 import net.luis.utils.io.data.xml.exception.XmlTypeException;
-import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -116,378 +116,362 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createNull() {
-		return Result.success(new XmlElement(NULL));
+	public @NonNull XmlElement createNull() {
+		return new XmlElement(NULL);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createBoolean(boolean value) {
-		return Result.success(new XmlValue(BOOLEAN, value));
+	public @NonNull XmlElement createBoolean(boolean value) {
+		return new XmlValue(BOOLEAN, value);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createByte(byte value) {
-		return Result.success(new XmlValue(BYTE, value));
+	public @NonNull XmlElement createByte(byte value) {
+		return new XmlValue(BYTE, value);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createShort(short value) {
-		return Result.success(new XmlValue(SHORT, value));
+	public @NonNull XmlElement createShort(short value) {
+		return new XmlValue(SHORT, value);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createInteger(int value) {
-		return Result.success(new XmlValue(INTEGER, value));
+	public @NonNull XmlElement createInteger(int value) {
+		return new XmlValue(INTEGER, value);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createLong(long value) {
-		return Result.success(new XmlValue(LONG, value));
+	public @NonNull XmlElement createLong(long value) {
+		return new XmlValue(LONG, value);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createFloat(float value) {
-		return Result.success(new XmlValue(FLOAT, value));
+	public @NonNull XmlElement createFloat(float value) {
+		return new XmlValue(FLOAT, value);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createDouble(double value) {
-		return Result.success(new XmlValue(DOUBLE, value));
+	public @NonNull XmlElement createDouble(double value) {
+		return new XmlValue(DOUBLE, value);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createString(@Nullable String value) {
+	public @NonNull XmlElement createString(@Nullable String value) {
 		if (value == null) {
-			return Result.error("Value 'null' is not a valid string");
+			throw new TypeProviderException("Value 'null' is not a valid string");
 		}
-		
-		return Result.success(new XmlValue(STRING, value));
+		return new XmlValue(STRING, value);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createList(@Nullable List<? extends XmlElement> values) {
+	public @NonNull XmlElement createList(@Nullable List<? extends XmlElement> values) {
 		if (values == null) {
-			return Result.error("Value 'null' is not a valid list");
+			throw new TypeProviderException("Value 'null' is not a valid list");
 		}
 		
 		List<XmlElement> elements = values.stream().map(element -> this.copyWithName(ELEMENT, element)).toList();
-		return Result.success(new XmlContainer(LIST, new XmlElements(elements)));
+		return new XmlContainer(LIST, new XmlElements(elements));
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createMap() {
-		return Result.success(new XmlContainer(MAP));
+	public @NonNull XmlElement createMap() {
+		return new XmlContainer(MAP);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> createMap(@Nullable Map<String, ? extends XmlElement> values) {
+	public @NonNull XmlElement createMap(@Nullable Map<String, ? extends XmlElement> values) {
 		if (values == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
-		
-		return Result.success(new XmlContainer(MAP, new XmlElements(values)));
+		return new XmlContainer(MAP, new XmlElements(values));
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> getEmpty(@Nullable XmlElement type) {
+	public boolean isEmpty(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not empty");
+			throw new TypeProviderException("Value 'null' is not empty");
 		}
-		
-		if (!type.isSelfClosing()) {
-			return Result.error("Xml element '" + type + "' must be self-closing to be empty");
-		}
-		return Result.success(type);
+		return type.isSelfClosing();
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> isNull(@Nullable XmlElement type) {
+	public boolean isNull(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not xml null");
+			throw new TypeProviderException("Value 'null' is not xml null");
 		}
-		
-		return Result.success(type.isSelfClosing() && type.getName().equals(NULL));
+		return type.isSelfClosing() && type.getName().equals(NULL);
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> getBoolean(@Nullable XmlElement type) {
+	public @NonNull Boolean getBoolean(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a boolean");
+			throw new TypeProviderException("Value 'null' is not a boolean");
 		}
-		
 		if (!type.isXmlValue()) {
-			return Result.error("Xml element '" + type + "' must have a value to be a boolean");
+			throw new TypeProviderException("Xml element '" + type + "' must have a value to be a boolean");
 		}
 		
 		try {
-			return Result.success(type.getAsXmlValue().getAsBoolean());
+			return type.getAsXmlValue().getAsBoolean();
 		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to parse xml value as boolean: " + type.getAsXmlValue().getUnescapedValue());
+			throw new TypeProviderException("Unable to parse xml value as boolean: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<Byte> getByte(@Nullable XmlElement type) {
+	public @NonNull Byte getByte(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a byte");
+			throw new TypeProviderException("Value 'null' is not a byte");
 		}
-		
 		if (!type.isXmlValue()) {
-			return Result.error("Xml element '" + type + "' must have a value to be a byte");
+			throw new TypeProviderException("Xml element '" + type + "' must have a value to be a byte");
 		}
 		
 		try {
-			return Result.success(type.getAsXmlValue().getAsByte());
+			return type.getAsXmlValue().getAsByte();
 		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to parse xml value as byte: " + type.getAsXmlValue().getUnescapedValue());
+			throw new TypeProviderException("Unable to parse xml value as byte: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<Short> getShort(@Nullable XmlElement type) {
+	public @NonNull Short getShort(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a short");
+			throw new TypeProviderException("Value 'null' is not a short");
 		}
-		
 		if (!type.isXmlValue()) {
-			return Result.error("Xml element '" + type + "' must have a value to be a short");
+			throw new TypeProviderException("Xml element '" + type + "' must have a value to be a short");
 		}
 		
 		try {
-			return Result.success(type.getAsXmlValue().getAsShort());
+			return type.getAsXmlValue().getAsShort();
 		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to parse xml value as short: " + type.getAsXmlValue().getUnescapedValue());
+			throw new TypeProviderException("Unable to parse xml value as short: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<Integer> getInteger(@Nullable XmlElement type) {
+	public @NonNull Integer getInteger(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not an integer");
+			throw new TypeProviderException("Value 'null' is not an integer");
 		}
-		
 		if (!type.isXmlValue()) {
-			return Result.error("Xml element '" + type + "' must have a value to be an integer");
+			throw new TypeProviderException("Xml element '" + type + "' must have a value to be an integer");
 		}
 		
 		try {
-			return Result.success(type.getAsXmlValue().getAsInteger());
+			return type.getAsXmlValue().getAsInteger();
 		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to parse xml value as integer: " + type.getAsXmlValue().getUnescapedValue());
+			throw new TypeProviderException("Unable to parse xml value as integer: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<Long> getLong(@Nullable XmlElement type) {
+	public @NonNull Long getLong(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a long");
+			throw new TypeProviderException("Value 'null' is not a long");
 		}
-		
 		if (!type.isXmlValue()) {
-			return Result.error("Xml element '" + type + "' must have a value to be a long");
+			throw new TypeProviderException("Xml element '" + type + "' must have a value to be a long");
 		}
 		
 		try {
-			return Result.success(type.getAsXmlValue().getAsLong());
+			return type.getAsXmlValue().getAsLong();
 		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to parse xml value as long: " + type.getAsXmlValue().getUnescapedValue());
+			throw new TypeProviderException("Unable to parse xml value as long: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<Float> getFloat(@Nullable XmlElement type) {
+	public @NonNull Float getFloat(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a float");
+			throw new TypeProviderException("Value 'null' is not a float");
 		}
-		
 		if (!type.isXmlValue()) {
-			return Result.error("Xml element '" + type + "' must have a value to be a float");
+			throw new TypeProviderException("Xml element '" + type + "' must have a value to be a float");
 		}
 		
 		try {
-			return Result.success(type.getAsXmlValue().getAsFloat());
+			return type.getAsXmlValue().getAsFloat();
 		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to parse xml value as float: " + type.getAsXmlValue().getUnescapedValue());
+			throw new TypeProviderException("Unable to parse xml value as float: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<Double> getDouble(@Nullable XmlElement type) {
+	public @NonNull Double getDouble(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a double");
+			throw new TypeProviderException("Value 'null' is not a double");
 		}
-		
 		if (!type.isXmlValue()) {
-			return Result.error("Xml element '" + type + "' must have a value to be a double");
+			throw new TypeProviderException("Xml element '" + type + "' must have a value to be a double");
 		}
 		
 		try {
-			return Result.success(type.getAsXmlValue().getAsDouble());
+			return type.getAsXmlValue().getAsDouble();
 		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to parse xml value as double: " + type.getAsXmlValue().getUnescapedValue());
+			throw new TypeProviderException("Unable to parse xml value as double: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<String> getString(@Nullable XmlElement type) {
+	public @NonNull String getString(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a string");
+			throw new TypeProviderException("Value 'null' is not a string");
 		}
 		
 		if (!type.isXmlValue()) {
-			return Result.error("Xml element '" + type + "' must have a value to be a string");
+			throw new TypeProviderException("Xml element '" + type + "' must have a value to be a string");
 		}
-		return Result.success(type.getAsXmlValue().getAsString());
+		return type.getAsXmlValue().getAsString();
 	}
 	
 	@Override
-	public @NonNull Result<List<XmlElement>> getList(@Nullable XmlElement type) {
+	public @NonNull List<XmlElement> getList(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid list");
+			throw new TypeProviderException("Value 'null' is not a valid list");
 		}
 		
 		if (!type.isXmlContainer()) {
-			return Result.error("Xml element '" + type + "' is not a container");
+			throw new TypeProviderException("Xml element '" + type + "' is not a container");
 		}
 		
 		XmlContainer container = type.getAsXmlContainer();
 		if (container.isEmpty()) {
-			return Result.success(List.of());
+			return List.of();
 		}
 		
 		XmlElements elements = container.getElements();
 		if (elements.isArray()) {
-			return Result.success(elements.getAsArray());
+			return elements.getAsArray();
 		}
 		
 		if (elements.isUndefined()) {
 			XmlElement element = elements.get(0);
 			if (element != null) {
-				return Result.success(List.of(element));
+				return List.of(element);
 			}
-			return Result.error("Xml element '" + type + "' is an undefined xml container with no elements but not empty");
+			throw new TypeProviderException("Xml element '" + type + "' is an undefined xml container with no elements but not empty");
 		}
-		return Result.error("Xml element '" + type + "' is a container with non-array elements");
+		throw new TypeProviderException("Xml element '" + type + "' is a container with non-array elements");
 	}
 	
 	@Override
-	public @NonNull Result<Map<String, XmlElement>> getMap(@Nullable XmlElement type) {
+	public @NonNull Map<String, XmlElement> getMap(@Nullable XmlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		
 		if (!type.isXmlContainer()) {
-			return Result.error("Xml element '" + type + "' is not a container");
+			throw new TypeProviderException("Xml element '" + type + "' is not a container");
 		}
 		
 		XmlElements elements = type.getAsXmlContainer().getElements();
 		if (elements.isEmpty()) {
-			return Result.success(Map.of());
+			return Map.of();
 		}
 		
 		if (elements.isObject()) {
 			Map<String, XmlElement> map = Maps.newLinkedHashMap();
 			elements.getAsObject().forEach((key, value) -> map.put(this.unescapeName(key), value));
-			return Result.success(map);
+			return map;
 		}
 		
 		if (elements.isUndefined()) {
 			XmlElement element = elements.get(0);
 			if (element != null) {
 				XmlElement copied = this.copyWithName(element.getName(), element);
-				return Result.success(Map.of(this.unescapeName(copied.getName()), copied));
+				return Map.of(this.unescapeName(copied.getName()), copied);
 			}
-			return Result.error("Xml element '" + type + "' is an undefined container with no elements but not empty");
+			throw new TypeProviderException("Xml element '" + type + "' is an undefined container with no elements but not empty");
 		}
-		return Result.error("Xml element '" + type + "' is a container with non-object elements");
+		throw new TypeProviderException("Xml element '" + type + "' is a container with non-object elements");
 	}
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public @NonNull Result<Boolean> has(@Nullable XmlElement type, @Nullable String key) {
+	public boolean has(@Nullable XmlElement type, @Nullable String key) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isXmlContainer()) {
-			return Result.error("Xml element '" + type + "' is not a container");
+			throw new TypeProviderException("Xml element '" + type + "' is not a container");
 		}
 		
 		XmlElements elements = type.getAsXmlContainer().getElements();
 		if (elements.isEmpty()) {
-			return Result.success(false);
+			return false;
 		}
-		return Result.success(elements.containsName(this.escapeName(key)));
+		return elements.containsName(this.escapeName(key));
 	}
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public @NonNull Result<XmlElement> get(@Nullable XmlElement type, @Nullable String key) {
+	public @NonNull XmlElement get(@Nullable XmlElement type, @Nullable String key) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isXmlContainer()) {
-			return Result.error("Xml element '" + type + "' is not a container");
+			throw new TypeProviderException("Xml element '" + type + "' is not a container");
 		}
 		
 		XmlElements elements = type.getAsXmlContainer().getElements();
 		if (elements.isArray()) {
-			return Result.error("Xml element '" + type + "' is a container with array elements");
+			throw new TypeProviderException("Xml element '" + type + "' is a container with array elements");
 		}
 		
 		XmlElement element = elements.get(this.escapeName(key));
 		if (element == null) { // null is valid for unit codec
-			return Result.success(null);
+			return null;
 		}
-		return Result.success(this.copyWithName(this.escapeName(key), element));
+		return this.copyWithName(this.escapeName(key), element);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> set(@Nullable XmlElement type, @Nullable String key, @Nullable XmlElement value) {
+	public void set(@Nullable XmlElement type, @Nullable String key, @Nullable XmlElement value) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		if (value == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isXmlContainer()) {
-			return Result.error("Xml element '" + type + "' is not a container");
+			throw new TypeProviderException("Xml element '" + type + "' is not a container");
 		}
 		
 		XmlElements elements = type.getAsXmlContainer().getElements();
 		if (elements.isArray()) {
-			return Result.error("Xml element '" + type + "' is a container with array elements");
+			throw new TypeProviderException("Xml element '" + type + "' is a container with array elements");
 		}
-		
 		elements.add(this.copyWithName(this.escapeName(key), value));
-		return Result.success(type);
 	}
 	
 	@Override
-	public @NonNull Result<XmlElement> merge(@Nullable XmlElement current, @Nullable XmlElement value) {
+	public @UnknownNullability XmlElement merge(@Nullable XmlElement current, @Nullable XmlElement value) {
 		if (current == null) {
-			return Result.success(value);
+			return value;
 		}
 		if (value == null) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current.isSelfClosing()) {
-			return Result.success(value);
+			return value;
 		}
 		if (value.isSelfClosing()) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current.isXmlContainer() && value.isXmlContainer()) {
@@ -495,10 +479,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 			XmlContainer valueContainer = value.getAsXmlContainer();
 			
 			if (currentContainer.isEmpty()) {
-				return Result.success(value);
+				return value;
 			}
 			if (valueContainer.isEmpty()) {
-				return Result.success(current);
+				return current;
 			}
 			if (currentContainer.isContainerArray() && valueContainer.isContainerArray()) {
 				return this.createList(this.mergeArray(currentContainer.getElements(), valueContainer.getElements()));
@@ -510,9 +494,9 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 				return this.mergeUndefined(currentContainer.getElements(), valueContainer.getElements());
 			}
 			
-			return Result.error("Unable to merge container of different types: '" + current + "' with '" + value + "'");
+			throw new TypeProviderException("Unable to merge container of different types: '" + current + "' with '" + value + "'");
 		}
-		return Result.error("Unable to merge '" + current + "' with '" + value + "'");
+		throw new TypeProviderException("Unable to merge '" + current + "' with '" + value + "'");
 	}
 	
 	//region Helper methods
@@ -625,7 +609,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * @return A result containing the merged container or an error
 	 * @throws NullPointerException If the current or value elements are null
 	 */
-	private @NonNull Result<XmlElement> mergeUndefined(@NonNull XmlElements current, @NonNull XmlElements value) {
+	private @NonNull XmlElement mergeUndefined(@NonNull XmlElements current, @NonNull XmlElements value) {
 		Objects.requireNonNull(current, "Current elements must not be null");
 		Objects.requireNonNull(value, "Value elements must not be null");
 		
@@ -638,7 +622,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		} else if (elements.isObject()) {
 			return this.createMap(elements.getAsObject());
 		}
-		return Result.error("Unable to merge undefined container with elements: '" + elements + "'");
+		throw new TypeProviderException("Unable to merge undefined container with elements: '" + elements + "'");
 	}
 	//endregion
 }

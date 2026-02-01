@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.provider;
 import com.google.common.collect.Maps;
 import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.yaml.*;
-import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -42,12 +42,7 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	 * Used for internal purposes only.<br>
 	 * The yaml element has no string representation and will throw an exception if {@link YamlElement#toString(YamlConfig)} is called.<br>
 	 */
-	private static final YamlElement EMPTY_ELEMENT = new YamlElement() {
-		@Override
-		public @NonNull String toString(@NonNull YamlConfig config) {
-			return "Empty yaml element has no string representation";
-		}
-	};
+	private static final YamlElement EMPTY_ELEMENT = _ -> "Empty yaml element has no string representation";
 	
 	/**
 	 * The singleton instance of this class.<br>
@@ -65,338 +60,324 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createNull() {
-		return Result.success(YamlNull.INSTANCE);
+	public @NonNull YamlElement createNull() {
+		return YamlNull.INSTANCE;
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createBoolean(boolean value) {
-		return Result.success(new YamlScalar(value));
+	public @NonNull YamlElement createBoolean(boolean value) {
+		return new YamlScalar(value);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createByte(byte value) {
-		return Result.success(new YamlScalar(value));
+	public @NonNull YamlElement createByte(byte value) {
+		return new YamlScalar(value);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createShort(short value) {
-		return Result.success(new YamlScalar(value));
+	public @NonNull YamlElement createShort(short value) {
+		return new YamlScalar(value);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createInteger(int value) {
-		return Result.success(new YamlScalar(value));
+	public @NonNull YamlElement createInteger(int value) {
+		return new YamlScalar(value);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createLong(long value) {
-		return Result.success(new YamlScalar(value));
+	public @NonNull YamlElement createLong(long value) {
+		return new YamlScalar(value);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createFloat(float value) {
-		return Result.success(new YamlScalar(value));
+	public @NonNull YamlElement createFloat(float value) {
+		return new YamlScalar(value);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createDouble(double value) {
-		return Result.success(new YamlScalar(value));
+	public @NonNull YamlElement createDouble(double value) {
+		return new YamlScalar(value);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createString(@Nullable String value) {
+	public @NonNull YamlElement createString(@Nullable String value) {
 		if (value == null) {
-			return Result.error("Value 'null' is not a valid string");
+			throw new TypeProviderException("Value 'null' is not a valid string");
 		}
-		
-		return Result.success(new YamlScalar(value));
+		return new YamlScalar(value);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createList(@Nullable List<? extends YamlElement> values) {
+	public @NonNull YamlElement createList(@Nullable List<? extends YamlElement> values) {
 		if (values == null) {
-			return Result.error("Value 'null' is not a valid list");
+			throw new TypeProviderException("Value 'null' is not a valid list");
 		}
-		
-		return Result.success(new YamlSequence(values));
+		return new YamlSequence(values);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createMap() {
-		return Result.success(new YamlMapping());
+	public @NonNull YamlElement createMap() {
+		return new YamlMapping();
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> createMap(@Nullable Map<String, ? extends YamlElement> values) {
+	public @NonNull YamlElement createMap(@Nullable Map<String, ? extends YamlElement> values) {
 		if (values == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
-		
-		return Result.success(new YamlMapping(values));
+		return new YamlMapping(values);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> getEmpty(@Nullable YamlElement type) {
+	public boolean isEmpty(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not empty");
+			throw new TypeProviderException("Value 'null' is not empty");
 		}
-		
-		if (type != EMPTY_ELEMENT) {
-			return Result.error("Yaml element '" + type + "' is not a yaml null");
-		}
-		return Result.success(type);
+		return type == EMPTY_ELEMENT;
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> isNull(@Nullable YamlElement type) {
+	public boolean isNull(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not yaml null");
+			throw new TypeProviderException("Value 'null' is not yaml null");
 		}
-		
-		return Result.success(type.isYamlNull());
+		return type.isYamlNull();
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> getBoolean(@Nullable YamlElement type) {
+	public @NonNull Boolean getBoolean(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a boolean");
+			throw new TypeProviderException("Value 'null' is not a boolean");
 		}
-		
 		if (!type.isYamlScalar()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml scalar");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml scalar");
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
 		if (!scalar.isYamlBoolean()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml boolean");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml boolean");
 		}
-		return Result.success(scalar.getAsBoolean());
+		return scalar.getAsBoolean();
 	}
 	
 	@Override
-	public @NonNull Result<Byte> getByte(@Nullable YamlElement type) {
+	public @NonNull Byte getByte(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a byte");
+			throw new TypeProviderException("Value 'null' is not a byte");
 		}
-		
 		if (!type.isYamlScalar()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml scalar");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml scalar");
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
 		if (!scalar.isYamlNumber()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml byte");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml byte");
 		}
-		return Result.success(scalar.getAsByte());
+		return scalar.getAsByte();
 	}
 	
 	@Override
-	public @NonNull Result<Short> getShort(@Nullable YamlElement type) {
+	public @NonNull Short getShort(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a short");
+			throw new TypeProviderException("Value 'null' is not a short");
 		}
-		
 		if (!type.isYamlScalar()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml scalar");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml scalar");
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
 		if (!scalar.isYamlNumber()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml short");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml short");
 		}
-		return Result.success(scalar.getAsShort());
+		return scalar.getAsShort();
 	}
 	
 	@Override
-	public @NonNull Result<Integer> getInteger(@Nullable YamlElement type) {
+	public @NonNull Integer getInteger(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not an integer");
+			throw new TypeProviderException("Value 'null' is not an integer");
 		}
-		
 		if (!type.isYamlScalar()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml scalar");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml scalar");
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
 		if (!scalar.isYamlNumber()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml integer");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml integer");
 		}
-		return Result.success(scalar.getAsInteger());
+		return scalar.getAsInteger();
 	}
 	
 	@Override
-	public @NonNull Result<Long> getLong(@Nullable YamlElement type) {
+	public @NonNull Long getLong(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a long");
+			throw new TypeProviderException("Value 'null' is not a long");
 		}
-		
 		if (!type.isYamlScalar()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml scalar");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml scalar");
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
 		if (!scalar.isYamlNumber()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml long");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml long");
 		}
-		return Result.success(scalar.getAsLong());
+		return scalar.getAsLong();
 	}
 	
 	@Override
-	public @NonNull Result<Float> getFloat(@Nullable YamlElement type) {
+	public @NonNull Float getFloat(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a float");
+			throw new TypeProviderException("Value 'null' is not a float");
 		}
-		
 		if (!type.isYamlScalar()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml scalar");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml scalar");
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
 		if (scalar.isYamlString()) {
-			return Result.error("Yaml element '" + type + "' is a yaml string, not a yaml float");
+			throw new TypeProviderException("Yaml element '" + type + "' is a yaml string, not a yaml float");
 		}
-		return Result.success(scalar.getAsFloat());
+		return scalar.getAsFloat();
 	}
 	
 	@Override
-	public @NonNull Result<Double> getDouble(@Nullable YamlElement type) {
+	public @NonNull Double getDouble(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a double");
+			throw new TypeProviderException("Value 'null' is not a double");
 		}
-		
 		if (!type.isYamlScalar()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml scalar");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml scalar");
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
 		if (!scalar.isYamlNumber()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml double");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml double");
 		}
-		return Result.success(scalar.getAsDouble());
+		return scalar.getAsDouble();
 	}
 	
 	@Override
-	public @NonNull Result<String> getString(@Nullable YamlElement type) {
+	public @NonNull String getString(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a string");
+			throw new TypeProviderException("Value 'null' is not a string");
 		}
-		
 		if (!type.isYamlScalar()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml scalar");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml scalar");
 		}
 		
 		YamlScalar scalar = type.getAsYamlScalar();
 		if (!scalar.isYamlString()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml string");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml string");
 		}
-		return Result.success(scalar.getAsString());
+		return scalar.getAsString();
 	}
 	
 	@Override
-	public @NonNull Result<List<YamlElement>> getList(@Nullable YamlElement type) {
+	public @NonNull List<YamlElement> getList(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid list");
+			throw new TypeProviderException("Value 'null' is not a valid list");
 		}
 		
 		if (!type.isYamlSequence()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml sequence");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml sequence");
 		}
-		return Result.success(type.getAsYamlSequence().getElements());
+		return type.getAsYamlSequence().getElements();
 	}
 	
 	@Override
-	public @NonNull Result<Map<String, YamlElement>> getMap(@Nullable YamlElement type) {
+	public @NonNull Map<String, YamlElement> getMap(@Nullable YamlElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
-		
 		if (!type.isYamlMapping()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml mapping");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml mapping");
 		}
 		
 		Map<String, YamlElement> map = Maps.newLinkedHashMap();
 		type.getAsYamlMapping().forEach(map::put);
-		return Result.success(map);
+		return map;
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> has(@Nullable YamlElement type, @Nullable String key) {
+	public boolean has(@Nullable YamlElement type, @Nullable String key) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isYamlMapping()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml mapping");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml mapping");
 		}
-		return Result.success(type.getAsYamlMapping().containsKey(key));
+		return type.getAsYamlMapping().containsKey(key);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> get(@Nullable YamlElement type, @Nullable String key) {
+	public @NonNull YamlElement get(@Nullable YamlElement type, @Nullable String key) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isYamlMapping()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml mapping");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml mapping");
 		}
-		return Result.success(type.getAsYamlMapping().get(key));
+		
+		YamlElement element = type.getAsYamlMapping().get(key);
+		if (element == null) {
+			throw new TypeProviderException("Key '" + key + "' does not exist in yaml mapping '" + type + "'");
+		}
+		return element;
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> set(@Nullable YamlElement type, @Nullable String key, @Nullable YamlElement value) {
+	public void set(@Nullable YamlElement type, @Nullable String key, @Nullable YamlElement value) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		if (value == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isYamlMapping()) {
-			return Result.error("Yaml element '" + type + "' is not a yaml mapping");
+			throw new TypeProviderException("Yaml element '" + type + "' is not a yaml mapping");
 		}
-		YamlMapping mapping = type.getAsYamlMapping();
-		mapping.add(key, value);
-		return Result.success(mapping);
+		type.getAsYamlMapping().add(key, value);
 	}
 	
 	@Override
-	public @NonNull Result<YamlElement> merge(@Nullable YamlElement current, @Nullable YamlElement value) {
+	public @UnknownNullability YamlElement merge(@Nullable YamlElement current, @Nullable YamlElement value) {
 		if (current == null) {
-			return Result.success(value);
+			return value;
 		}
 		if (value == null) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current == EMPTY_ELEMENT || current.isYamlNull()) {
-			return Result.success(value);
+			return value;
 		}
 		if (value == EMPTY_ELEMENT || value.isYamlNull()) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current.isYamlSequence() && value.isYamlSequence()) {
 			YamlSequence sequence = current.getAsYamlSequence();
 			sequence.addAll(value.getAsYamlSequence());
-			return Result.success(sequence);
+			return sequence;
 		}
 		
 		if (current.isYamlMapping() && value.isYamlMapping()) {
 			YamlMapping mapping = current.getAsYamlMapping();
 			mapping.addAll(value.getAsYamlMapping());
-			return Result.success(mapping);
+			return mapping;
 		}
-		return Result.error("Unable to merge '" + current + "' with '" + value + "'");
+		throw new TypeProviderException("Unable to merge '" + current + "' with '" + value + "'");
 	}
 }

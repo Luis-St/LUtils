@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.provider;
 import com.google.common.collect.Maps;
 import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.ini.*;
-import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -51,12 +51,7 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	 * Used for internal purposes only.<br>
 	 * The ini element has no string representation and will throw an exception if {@link IniElement#toString(IniConfig)} is called.<br>
 	 */
-	private static final IniElement EMPTY_ELEMENT = new IniElement() {
-		@Override
-		public @NonNull String toString(@NonNull IniConfig config) {
-			return "Empty ini element has no string representation";
-		}
-	};
+	private static final IniElement EMPTY_ELEMENT = _ -> "Empty ini element has no string representation";
 	
 	/**
 	 * The prefix for generated section names.<br>
@@ -84,328 +79,310 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createNull() {
-		return Result.success(IniNull.INSTANCE);
+	public @NonNull IniElement createNull() {
+		return IniNull.INSTANCE;
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createBoolean(boolean value) {
-		return Result.success(new IniValue(value));
+	public @NonNull IniElement createBoolean(boolean value) {
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createByte(byte value) {
-		return Result.success(new IniValue(value));
+	public @NonNull IniElement createByte(byte value) {
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createShort(short value) {
-		return Result.success(new IniValue(value));
+	public @NonNull IniElement createShort(short value) {
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createInteger(int value) {
-		return Result.success(new IniValue(value));
+	public @NonNull IniElement createInteger(int value) {
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createLong(long value) {
-		return Result.success(new IniValue(value));
+	public @NonNull IniElement createLong(long value) {
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createFloat(float value) {
-		return Result.success(new IniValue(value));
+	public @NonNull IniElement createFloat(float value) {
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createDouble(double value) {
-		return Result.success(new IniValue(value));
+	public @NonNull IniElement createDouble(double value) {
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createString(@Nullable String value) {
+	public @NonNull IniElement createString(@Nullable String value) {
 		if (value == null) {
-			return Result.error("Value 'null' is not a valid string");
+			throw new TypeProviderException("Value 'null' is not a valid string");
 		}
-		return Result.success(new IniValue(value));
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createList(@Nullable List<? extends IniElement> values) {
-		return Result.error("Ini format does not support lists");
+	public @NonNull IniElement createList(@Nullable List<? extends IniElement> values) {
+		throw new TypeProviderException("Ini format does not support lists");
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createMap() {
-		return Result.success(new IniSection(GENERATED_SECTION + COUNTER.getAndIncrement()));
+	public @NonNull IniElement createMap() {
+		return new IniSection(GENERATED_SECTION + COUNTER.getAndIncrement());
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createMap(@Nullable Map<String, ? extends IniElement> values) {
+	public @NonNull IniElement createMap(@Nullable Map<String, ? extends IniElement> values) {
 		if (values == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		
 		IniSection section = new IniSection(GENERATED_SECTION + COUNTER.getAndIncrement());
 		section.addAll(values);
-		return Result.success(section);
+		return section;
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> getEmpty(@Nullable IniElement type) {
+	public boolean isEmpty(@Nullable IniElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not empty");
+			throw new TypeProviderException("Value 'null' is not empty");
 		}
-		
-		if (type != EMPTY_ELEMENT) {
-			return Result.error("Ini element '" + type + "' is not an ini null");
-		}
-		return Result.success(type);
+		return type == EMPTY_ELEMENT;
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> isNull(@Nullable IniElement type) {
+	public boolean isNull(@Nullable IniElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not ini null");
+			throw new TypeProviderException("Value 'null' is not ini null");
 		}
-		return Result.success(type.isIniNull());
+		return type.isIniNull();
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> getBoolean(@Nullable IniElement type) {
+	public @NonNull Boolean getBoolean(@Nullable IniElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a boolean");
+			throw new TypeProviderException("Value 'null' is not a boolean");
 		}
-		
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniBoolean()) {
-			return Result.error("Ini element '" + type + "' is not an ini boolean");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini boolean");
 		}
-		return Result.success(value.getAsBoolean());
+		return value.getAsBoolean();
 	}
 	
 	@Override
-	public @NonNull Result<Byte> getByte(@Nullable IniElement type) {
+	public @NonNull Byte getByte(@Nullable IniElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a byte");
+			throw new TypeProviderException("Value 'null' is not a byte");
 		}
-		
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniNumber()) {
-			return Result.error("Ini element '" + type + "' is not an ini byte");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini byte");
 		}
-		return Result.success(value.getAsByte());
+		return value.getAsByte();
 	}
 	
 	@Override
-	public @NonNull Result<Short> getShort(@Nullable IniElement type) {
+	public @NonNull Short getShort(@Nullable IniElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a short");
+			throw new TypeProviderException("Value 'null' is not a short");
 		}
-		
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniNumber()) {
-			return Result.error("Ini element '" + type + "' is not an ini short");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini short");
 		}
-		return Result.success(value.getAsShort());
+		return value.getAsShort();
 	}
 	
 	@Override
-	public @NonNull Result<Integer> getInteger(@Nullable IniElement type) {
+	public @NonNull Integer getInteger(@Nullable IniElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not an integer");
+			throw new TypeProviderException("Value 'null' is not an integer");
 		}
-		
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniNumber()) {
-			return Result.error("Ini element '" + type + "' is not an ini integer");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini integer");
 		}
-		return Result.success(value.getAsInteger());
+		return value.getAsInteger();
 	}
 	
 	@Override
-	public @NonNull Result<Long> getLong(@Nullable IniElement type) {
+	public @NonNull Long getLong(@Nullable IniElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a long");
+			throw new TypeProviderException("Value 'null' is not a long");
 		}
-		
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniNumber()) {
-			return Result.error("Ini element '" + type + "' is not an ini long");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini long");
 		}
-		return Result.success(value.getAsLong());
+		return value.getAsLong();
 	}
 	
 	@Override
-	public @NonNull Result<Float> getFloat(@Nullable IniElement type) {
+	public @NonNull Float getFloat(@Nullable IniElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a float");
+			throw new TypeProviderException("Value 'null' is not a float");
 		}
-		
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (value.isIniString()) {
-			return Result.error("Ini element '" + type + "' is an ini string, not an ini float");
+			throw new TypeProviderException("Ini element '" + type + "' is an ini string, not an ini float");
 		}
-		return Result.success(value.getAsFloat());
+		return value.getAsFloat();
 	}
 	
 	@Override
-	public @NonNull Result<Double> getDouble(@Nullable IniElement type) {
+	public @NonNull Double getDouble(@Nullable IniElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a double");
+			throw new TypeProviderException("Value 'null' is not a double");
 		}
-		
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniNumber()) {
-			return Result.error("Ini element '" + type + "' is not an ini double");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini double");
 		}
-		return Result.success(value.getAsDouble());
+		return value.getAsDouble();
 	}
 	
 	@Override
-	public @NonNull Result<String> getString(@Nullable IniElement type) {
+	public @NonNull String getString(@Nullable IniElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a string");
+			throw new TypeProviderException("Value 'null' is not a string");
 		}
-		
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniString()) {
-			return Result.error("Ini element '" + type + "' is not an ini string");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini string");
 		}
-		return Result.success(value.getAsString());
+		return value.getAsString();
 	}
 	
 	@Override
-	public @NonNull Result<List<IniElement>> getList(@Nullable IniElement type) {
-		return Result.error("Ini format does not support lists");
+	public @NonNull List<IniElement> getList(@Nullable IniElement type) {
+		throw new TypeProviderException("Ini format does not support lists");
 	}
 	
 	@Override
-	public @NonNull Result<Map<String, IniElement>> getMap(@Nullable IniElement type) {
+	public @NonNull Map<String, IniElement> getMap(@Nullable IniElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
-		
 		if (!type.isIniSection()) {
-			return Result.error("Ini element '" + type + "' is not an ini section");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini section");
 		}
 		
 		Map<String, IniElement> map = Maps.newLinkedHashMap();
 		type.getAsIniSection().forEach(map::put);
-		return Result.success(map);
+		return map;
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> has(@Nullable IniElement type, @Nullable String key) {
+	public boolean has(@Nullable IniElement type, @Nullable String key) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
-		
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isIniSection()) {
-			return Result.error("Ini element '" + type + "' is not an ini section");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini section");
 		}
-		return Result.success(type.getAsIniSection().containsKey(key));
+		return type.getAsIniSection().containsKey(key);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> get(@Nullable IniElement type, @Nullable String key) {
+	public @NonNull IniElement get(@Nullable IniElement type, @Nullable String key) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
-		
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
-		
 		if (!type.isIniSection()) {
-			return Result.error("Ini element '" + type + "' is not an ini section");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini section");
 		}
-		return Result.success(type.getAsIniSection().get(key));
+		
+		IniElement element = type.getAsIniSection().get(key);
+		if (element == null) {
+			throw new TypeProviderException("Key '" + key + "' does not exist in ini section '" + type + "'");
+		}
+		return element;
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> set(@Nullable IniElement type, @Nullable String key, @Nullable IniElement value) {
+	public void set(@Nullable IniElement type, @Nullable String key, @Nullable IniElement value) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
-		
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
-		
 		if (value == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isIniSection()) {
-			return Result.error("Ini element '" + type + "' is not an ini section");
+			throw new TypeProviderException("Ini element '" + type + "' is not an ini section");
 		}
-		
-		IniSection section = type.getAsIniSection();
-		section.add(key, value);
-		return Result.success(section);
+		type.getAsIniSection().add(key, value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> merge(@Nullable IniElement current, @Nullable IniElement value) {
+	public @UnknownNullability IniElement merge(@Nullable IniElement current, @Nullable IniElement value) {
 		if (current == null) {
-			return Result.success(value);
+			return value;
 		}
-		
 		if (value == null) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current == EMPTY_ELEMENT || current.isIniNull()) {
-			return Result.success(value);
+			return value;
 		}
-		
 		if (value == EMPTY_ELEMENT || value.isIniNull()) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current.isIniSection() && value.isIniSection()) {
 			IniSection section = current.getAsIniSection();
 			section.addAll(value.getAsIniSection());
-			return Result.success(section);
+			return section;
 		}
-		return Result.error("Unable to merge '" + current + "' with '" + value + "'");
+		throw new TypeProviderException("Unable to merge '" + current + "' with '" + value + "'");
 	}
 }

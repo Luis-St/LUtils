@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.provider;
 import com.google.common.collect.Maps;
 import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -42,12 +42,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	 * Used for internal purposes only.<br>
 	 * The json element has no string representation and will throw an exception if {@link JsonElement#toString(JsonConfig)} is called.<br>
 	 */
-	private static final JsonElement EMPTY_ELEMENT = new JsonElement() {
-		@Override
-		public @NonNull String toString(@NonNull JsonConfig config) {
-			return "Empty json element has no string representation";
-		}
-	};
+	private static final JsonElement EMPTY_ELEMENT = _ -> "Empty json element has no string representation";
 	
 	/**
 	 * The singleton instance of this class.<br>
@@ -65,336 +60,324 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createNull() {
-		return Result.success(JsonNull.INSTANCE);
+	public @NonNull JsonElement createNull() {
+		return JsonNull.INSTANCE;
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createBoolean(boolean value) {
-		return Result.success(new JsonPrimitive(value));
+	public @NonNull JsonElement createBoolean(boolean value) {
+		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createByte(byte value) {
-		return Result.success(new JsonPrimitive(value));
+	public @NonNull JsonElement createByte(byte value) {
+		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createShort(short value) {
-		return Result.success(new JsonPrimitive(value));
+	public @NonNull JsonElement createShort(short value) {
+		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createInteger(int value) {
-		return Result.success(new JsonPrimitive(value));
+	public @NonNull JsonElement createInteger(int value) {
+		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createLong(long value) {
-		return Result.success(new JsonPrimitive(value));
+	public @NonNull JsonElement createLong(long value) {
+		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createFloat(float value) {
-		return Result.success(new JsonPrimitive(value));
+	public @NonNull JsonElement createFloat(float value) {
+		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createDouble(double value) {
-		return Result.success(new JsonPrimitive(value));
+	public @NonNull JsonElement createDouble(double value) {
+		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createString(@Nullable String value) {
+	public @NonNull JsonElement createString(@Nullable String value) {
 		if (value == null) {
-			return Result.error("Value 'null' is not a valid string");
+			throw new TypeProviderException("Value 'null' is not a valid string");
 		}
-		
-		return Result.success(new JsonPrimitive(value));
+		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createList(@Nullable List<? extends JsonElement> values) {
+	public @NonNull JsonElement createList(@Nullable List<? extends JsonElement> values) {
 		if (values == null) {
-			return Result.error("Value 'null' is not a valid list");
+			throw new TypeProviderException("Value 'null' is not a valid list");
 		}
-		
-		return Result.success(new JsonArray(values));
+		return new JsonArray(values);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createMap() {
-		return Result.success(new JsonObject());
+	public @NonNull JsonElement createMap() {
+		return new JsonObject();
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> createMap(@Nullable Map<String, ? extends JsonElement> values) {
+	public @NonNull JsonElement createMap(@Nullable Map<String, ? extends JsonElement> values) {
 		if (values == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
-		
-		return Result.success(new JsonObject(values));
+		return new JsonObject(values);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> getEmpty(@Nullable JsonElement type) {
+	public boolean isEmpty(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not empty");
+			throw new TypeProviderException("Value 'null' is not empty");
 		}
-		
-		if (type != EMPTY_ELEMENT) {
-			return Result.error("Json element '" + type + "' is not a json null");
-		}
-		return Result.success(type);
+		return type == EMPTY_ELEMENT;
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> isNull(@Nullable JsonElement type) {
+	public boolean isNull(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not json null");
+			throw new TypeProviderException("Value 'null' is not json null");
 		}
-		
-		return Result.success(type.isJsonNull());
+		return type.isJsonNull();
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> getBoolean(@Nullable JsonElement type) {
+	public @NonNull Boolean getBoolean(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a boolean");
+			throw new TypeProviderException("Value 'null' is not a boolean");
 		}
-		
 		if (!type.isJsonPrimitive()) {
-			return Result.error("Json element '" + type + "' is not a json primitive");
+			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonBoolean()) {
-			return Result.error("Json element '" + type + "' is not a json boolean");
+			throw new TypeProviderException("Json element '" + type + "' is not a json boolean");
 		}
-		return Result.success(primitive.getAsBoolean());
+		return primitive.getAsBoolean();
 	}
 	
 	@Override
-	public @NonNull Result<Byte> getByte(@Nullable JsonElement type) {
+	public @NonNull Byte getByte(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a byte");
+			throw new TypeProviderException("Value 'null' is not a byte");
 		}
-		
 		if (!type.isJsonPrimitive()) {
-			return Result.error("Json element '" + type + "' is not a json primitive");
+			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonNumber()) {
-			return Result.error("Json element '" + type + "' is not a json byte");
+			throw new TypeProviderException("Json element '" + type + "' is not a json byte");
 		}
-		return Result.success(primitive.getAsByte());
+		return primitive.getAsByte();
 	}
 	
 	@Override
-	public @NonNull Result<Short> getShort(@Nullable JsonElement type) {
+	public @NonNull Short getShort(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a short");
+			throw new TypeProviderException("Value 'null' is not a short");
 		}
-		
 		if (!type.isJsonPrimitive()) {
-			return Result.error("Json element '" + type + "' is not a json primitive");
+			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonNumber()) {
-			return Result.error("Json element '" + type + "' is not a json short");
+			throw new TypeProviderException("Json element '" + type + "' is not a json short");
 		}
-		return Result.success(primitive.getAsShort());
+		return primitive.getAsShort();
 	}
 	
 	@Override
-	public @NonNull Result<Integer> getInteger(@Nullable JsonElement type) {
+	public @NonNull Integer getInteger(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not an integer");
+			throw new TypeProviderException("Value 'null' is not an integer");
 		}
-		
 		if (!type.isJsonPrimitive()) {
-			return Result.error("Json element '" + type + "' is not a json primitive");
+			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonNumber()) {
-			return Result.error("Json element '" + type + "' is not a json integer");
+			throw new TypeProviderException("Json element '" + type + "' is not a json integer");
 		}
-		return Result.success(primitive.getAsInteger());
+		return primitive.getAsInteger();
 	}
 	
 	@Override
-	public @NonNull Result<Long> getLong(@Nullable JsonElement type) {
+	public @NonNull Long getLong(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a long");
+			throw new TypeProviderException("Value 'null' is not a long");
 		}
-		
 		if (!type.isJsonPrimitive()) {
-			return Result.error("Json element '" + type + "' is not a json primitive");
+			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonNumber()) {
-			return Result.error("Json element '" + type + "' is not a json long");
+			throw new TypeProviderException("Json element '" + type + "' is not a json long");
 		}
-		return Result.success(primitive.getAsLong());
+		return primitive.getAsLong();
 	}
 	
 	@Override
-	public @NonNull Result<Float> getFloat(@Nullable JsonElement type) {
+	public @NonNull Float getFloat(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a float");
+			throw new TypeProviderException("Value 'null' is not a float");
 		}
-		
 		if (!type.isJsonPrimitive()) {
-			return Result.error("Json element '" + type + "' is not a json primitive");
+			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (primitive.isJsonString()) {
-			return Result.error("Json element '" + type + "' is a json string, not a json float");
+			throw new TypeProviderException("Json element '" + type + "' is a json string, not a json float");
 		}
-		return Result.success(primitive.getAsFloat());
+		return primitive.getAsFloat();
 	}
 	
 	@Override
-	public @NonNull Result<Double> getDouble(@Nullable JsonElement type) {
+	public @NonNull Double getDouble(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a double");
+			throw new TypeProviderException("Value 'null' is not a double");
 		}
-		
 		if (!type.isJsonPrimitive()) {
-			return Result.error("Json element '" + type + "' is not a json primitive");
+			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonNumber()) {
-			return Result.error("Json element '" + type + "' is not a json double");
+			throw new TypeProviderException("Json element '" + type + "' is not a json double");
 		}
-		return Result.success(primitive.getAsDouble());
+		return primitive.getAsDouble();
 	}
 	
 	@Override
-	public @NonNull Result<String> getString(@Nullable JsonElement type) {
+	public @NonNull String getString(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a string");
+			throw new TypeProviderException("Value 'null' is not a string");
 		}
-		
 		if (!type.isJsonPrimitive()) {
-			return Result.error("Json element '" + type + "' is not a json primitive");
+			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonString()) {
-			return Result.error("Json element '" + type + "' is not a json string");
+			throw new TypeProviderException("Json element '" + type + "' is not a json string");
 		}
-		return Result.success(type.getAsJsonPrimitive().getAsString());
+		return type.getAsJsonPrimitive().getAsString();
 	}
 	
 	@Override
-	public @NonNull Result<List<JsonElement>> getList(@Nullable JsonElement type) {
+	public @NonNull List<JsonElement> getList(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid list");
+			throw new TypeProviderException("Value 'null' is not a valid list");
 		}
 		
 		if (!type.isJsonArray()) {
-			return Result.error("Json element '" + type + "' is not a json array");
+			throw new TypeProviderException("Json element '" + type + "' is not a json array");
 		}
-		return Result.success(type.getAsJsonArray().getElements());
+		return type.getAsJsonArray().getElements();
 	}
 	
 	@Override
-	public @NonNull Result<Map<String, JsonElement>> getMap(@Nullable JsonElement type) {
+	public @NonNull Map<String, JsonElement> getMap(@Nullable JsonElement type) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
-		
 		if (!type.isJsonObject()) {
-			return Result.error("Json element '" + type + "' is not a json object");
+			throw new TypeProviderException("Json element '" + type + "' is not a json object");
 		}
 		
 		Map<String, JsonElement> map = Maps.newLinkedHashMap();
 		type.getAsJsonObject().forEach(map::put);
-		return Result.success(map);
+		return map;
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> has(@Nullable JsonElement type, @Nullable String key) {
+	public boolean has(@Nullable JsonElement type, @Nullable String key) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isJsonObject()) {
-			return Result.error("Json element '" + type + "' is not a json object");
+			throw new TypeProviderException("Json element '" + type + "' is not a json object");
 		}
-		return Result.success(type.getAsJsonObject().containsKey(key));
+		return type.getAsJsonObject().containsKey(key);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> get(@Nullable JsonElement type, @Nullable String key) {
+	public @NonNull JsonElement get(@Nullable JsonElement type, @Nullable String key) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isJsonObject()) {
-			return Result.error("Json element '" + type + "' is not a json object");
+			throw new TypeProviderException("Json element '" + type + "' is not a json object");
 		}
-		return Result.success(type.getAsJsonObject().get(key));
+		
+		JsonElement element = type.getAsJsonObject().get(key);
+		if (element == null) {
+			throw new TypeProviderException("Key '" + key + "' does not exist in json object '" + type + "'");
+		}
+		return element;
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> set(@Nullable JsonElement type, @Nullable String key, @Nullable JsonElement value) {
+	public void set(@Nullable JsonElement type, @Nullable String key, @Nullable JsonElement value) {
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw new TypeProviderException("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		if (value == null) {
-			return Result.error("Value 'null' is not valid");
+			throw new TypeProviderException("Value 'null' is not valid");
 		}
 		
 		if (!type.isJsonObject()) {
-			return Result.error("Json element '" + type + "' is not a json object");
+			throw new TypeProviderException("Json element '" + type + "' is not a json object");
 		}
-		return Result.success(type.getAsJsonObject().add(key, value));
+		type.getAsJsonObject().add(key, value);
 	}
 	
 	@Override
-	public @NonNull Result<JsonElement> merge(@Nullable JsonElement current, @Nullable JsonElement value) {
+	public @UnknownNullability JsonElement merge(@Nullable JsonElement current, @Nullable JsonElement value) {
 		if (current == null) {
-			return Result.success(value);
+			return value;
 		}
 		if (value == null) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current == EMPTY_ELEMENT || current.isJsonNull()) {
-			return Result.success(value);
+			return value;
 		}
 		if (value == EMPTY_ELEMENT || value.isJsonNull()) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current.isJsonArray() && value.isJsonArray()) {
 			JsonArray array = current.getAsJsonArray();
 			array.addAll(value.getAsJsonArray());
-			return Result.success(array);
+			return array;
 		}
 		
 		if (current.isJsonObject() && value.isJsonObject()) {
 			JsonObject object = current.getAsJsonObject();
 			object.addAll(value.getAsJsonObject());
-			return Result.success(object);
+			return object;
 		}
-		return Result.error("Unable to merge '" + current + "' with '" + value + "'");
+		throw new TypeProviderException("Unable to merge '" + current + "' with '" + value + "'");
 	}
 }
