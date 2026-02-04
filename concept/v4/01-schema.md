@@ -138,11 +138,101 @@ public record UserPartialJoined(
 ```java
 SqlForeignKey<UUID, User> customerKey = ...;
 
+// Access methods
 customerKey.key();           // UUID - always available
 customerKey.isLoaded();      // boolean - true if value loaded
 customerKey.value();         // User - loaded entity (null if not loaded)
 customerKey.requireValue();  // User - throws if not loaded
 customerKey.valueOptional(); // Optional<User>
+
+// Loading methods - fetch from database if not loaded
+customerKey.load();                    // User - loads and returns (caches result)
+customerKey.loadAsync();               // CompletableFuture<User>
+customerKey.reload();                  // User - forces fresh load from database
+customerKey.loadIfAbsent();            // User - loads only if not already loaded
+
+// Loading with options
+customerKey.load(SqlLoadOptions.builder()
+    .forUpdate()                       // SELECT ... FOR UPDATE
+    .timeout(Duration.ofSeconds(5))
+    .build());
+```
+
+### SqlForeignKey Full Interface
+
+```java
+public record SqlForeignKey<K, V>(K key, V value, SqlForeignKeyLoader<K, V> loader) {
+
+    // Factory methods
+    public static <K, V> SqlForeignKey<K, V> of(K key);
+    public static <K, V> SqlForeignKey<K, V> of(K key, V value);
+    public static <K, V> SqlForeignKey<K, V> withLoader(K key, SqlForeignKeyLoader<K, V> loader);
+
+    // Access
+    public K key();
+    public boolean isLoaded();
+    public V value();
+    public V requireValue();
+    public Optional<V> valueOptional();
+
+    // Loading (requires loader to be set)
+    public V load();
+    public CompletableFuture<V> loadAsync();
+    public V reload();
+    public V loadIfAbsent();
+    public V load(SqlLoadOptions options);
+	public CompletableFuture<V> loadAsync(SqlLoadOptions options);
+
+    // Returns new instance with loaded value
+    public SqlForeignKey<K, V> withValue(V value);
+}
+
+// Loader interface
+@FunctionalInterface
+public interface SqlForeignKeyLoader<K, V> {
+    V load(K key, LoadOptions options);
+}
+```
+
+### Loading One-to-Many Collections
+
+```java
+SqlForeignKey<UUID, List<Order>> ordersKey = user.ordersKey();
+
+// Load all orders for this user
+List<Order> orders = ordersKey.load();
+
+// Load with filtering/ordering
+List<Order> orders = ordersKey.load(LoadOptions.builder()
+    .where(OrderTable.STATUS.equalTo(OrderStatus.PENDING))
+    .orderBy(OrderTable.CREATED_AT.desc())
+    .limit(10)
+    .build());
+
+// Async loading
+CompletableFuture<List<Order>> ordersFuture = ordersKey.loadAsync();
+```
+
+### Batch Loading (Avoiding N+1)
+
+```java
+// Load multiple foreign keys in one query
+List<UserPartialJoined> users = ...;
+
+// Batch load all addresses in single query
+SqlForeignKey.loadAll(
+    users.stream().map(UserPartialJoined::addressKey).toList()
+);
+
+// Now all addressKeys have loaded values
+for (UserPartialJoined user : users) {
+    Address addr = user.addressKey().value();  // Already loaded
+}
+
+// Async batch loading
+CompletableFuture<Void> loaded = SqlForeignKey.loadAllAsync(
+    users.stream().map(UserPartialJoined::addressKey).toList()
+);
 ```
 
 ## Generated Table Class
