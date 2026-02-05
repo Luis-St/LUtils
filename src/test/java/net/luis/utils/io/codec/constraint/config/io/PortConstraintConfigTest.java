@@ -112,7 +112,18 @@ class PortConstraintConfigTest {
 		assertTrue(config.type().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(PortConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withEqualTo(80);
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withEqualTo(8080);

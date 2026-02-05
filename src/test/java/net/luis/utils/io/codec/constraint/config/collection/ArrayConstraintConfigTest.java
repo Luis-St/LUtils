@@ -94,7 +94,18 @@ class ArrayConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(new String[] { "a", "b" }).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(ArrayConstraintConfig.<String>unconstrained().isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withMinLength(1);
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		String[] array = new String[] { "a", "b" };

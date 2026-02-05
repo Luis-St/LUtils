@@ -156,7 +156,18 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(Period.ofDays(1)).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(PeriodConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withPositive();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withEqualTo(Period.ofDays(10));

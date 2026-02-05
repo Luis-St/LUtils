@@ -292,7 +292,18 @@ class ZonedDateTimeConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(ZonedDateTimeConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withPast();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withEqualTo(DT_2024_06_15_12_00);

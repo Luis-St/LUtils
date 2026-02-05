@@ -25,8 +25,6 @@ import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Platform;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.nio.file.Path;
@@ -171,6 +169,11 @@ public record FilePathConstraintConfig(
 		if (withoutExtension.isPresent() && extension.isPresent()) {
 			throw new IllegalArgumentException("Both without extension and extension constraints cannot be present at the same time");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods

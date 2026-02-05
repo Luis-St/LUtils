@@ -194,7 +194,18 @@ class IntegerConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(42).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(IntegerConstraintConfig.<Integer>unconstrained().isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withPositive();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withEqualTo(10);

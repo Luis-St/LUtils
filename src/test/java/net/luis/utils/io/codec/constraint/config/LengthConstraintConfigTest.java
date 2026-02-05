@@ -108,7 +108,18 @@ class LengthConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(42).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(LengthConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withMinLength(1);
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withEqualTo(10);

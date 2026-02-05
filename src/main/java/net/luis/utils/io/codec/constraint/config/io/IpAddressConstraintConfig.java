@@ -26,7 +26,6 @@ import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.io.network.address.IpAddress;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -96,6 +95,11 @@ public record IpAddressConstraintConfig(
 		if (inAnySubnet.isPresent() && inAnySubnet.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In any subnet set must not be empty when present");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -225,7 +229,7 @@ public record IpAddressConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull IpAddress<?> value) {
+	public void validate(@NonNull IpAddress<?> value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
 		ConstraintValidators.validateAll(

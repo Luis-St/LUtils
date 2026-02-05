@@ -24,8 +24,6 @@ import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.ZoneId;
@@ -120,6 +118,11 @@ public record ZoneIdConstraintConfig(
 		if (regionBased.isPresent() && offsetBased.isPresent()) {
 			throw new IllegalArgumentException("Region based and offset based constraints are mutually exclusive");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods

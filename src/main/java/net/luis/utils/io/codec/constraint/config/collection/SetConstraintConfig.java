@@ -24,7 +24,6 @@ import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.collection.SetConstraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -91,6 +90,11 @@ public record SetConstraintConfig<T>(
 	 */
 	public static <T> @NonNull SetConstraintConfig<T> unconstrained() {
 		return new SetConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.size.isEmpty() && this.custom.isEmpty();
 	}
 	
 	//region With methods
@@ -227,7 +231,7 @@ public record SetConstraintConfig<T>(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull Set<T> value) {
+	public void validate(@NonNull Set<T> value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
 		ConstraintValidators.validateAll(

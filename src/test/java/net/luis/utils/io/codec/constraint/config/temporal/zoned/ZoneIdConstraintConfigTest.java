@@ -163,7 +163,18 @@ class ZoneIdConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(UTC).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(ZoneIdConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withNormalized();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withEqualTo(EUROPE_BERLIN);

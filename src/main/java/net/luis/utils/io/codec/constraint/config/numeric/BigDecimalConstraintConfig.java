@@ -23,7 +23,6 @@ import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.math.BigDecimal;
@@ -166,6 +165,11 @@ public record BigDecimalConstraintConfig(
 		if (precisionMin.isPresent() && precisionMax.isPresent() && precisionMin.get().getFirst().equals(precisionMax.get().getFirst()) && (!precisionMin.get().getSecond() || !precisionMax.get().getSecond())) {
 			throw new IllegalArgumentException("Min and max precision are equal but at least one bound is exclusive when both are present");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -471,7 +475,7 @@ public record BigDecimalConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull BigDecimal value) {
+	public void validate(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
 		ConstraintValidators.validateAll(

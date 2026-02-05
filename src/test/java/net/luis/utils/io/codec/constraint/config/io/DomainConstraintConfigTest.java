@@ -99,7 +99,18 @@ class DomainConstraintConfigTest {
 		assertTrue(config.subDomain().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(DomainConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withEqualTo("example.com");
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withEqualTo("example.com");

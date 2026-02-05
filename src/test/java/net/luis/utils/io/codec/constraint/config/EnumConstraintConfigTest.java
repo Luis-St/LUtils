@@ -71,7 +71,18 @@ class EnumConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(TimeUnit.SECONDS).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(EnumConstraintConfig.<TimeUnit>unconstrained().isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.<TimeUnit>unconstrained().withEqualTo(TimeUnit.SECONDS);
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.<TimeUnit>unconstrained().withEqualTo(TimeUnit.SECONDS);

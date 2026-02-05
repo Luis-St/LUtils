@@ -94,7 +94,18 @@ class SetConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(Set.of("a", "b")).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(SetConstraintConfig.<String>unconstrained().isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withMinSize(1);
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		Set<String> set = Set.of("a", "b");

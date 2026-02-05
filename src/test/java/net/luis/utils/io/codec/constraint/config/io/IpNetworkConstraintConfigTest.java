@@ -90,7 +90,18 @@ class IpNetworkConstraintConfigTest {
 		assertTrue(config.stringConstraint().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(IpNetworkConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withIpVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4));
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		IpNetwork<?, ?> value = IpAddresses.parseNetwork("192.168.0.0/16");

@@ -87,7 +87,18 @@ class YearConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(Year.of(2024)).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(YearConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withPast();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withEqualTo(Year.of(2024));

@@ -16,10 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint.builder;
+package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.UUIDConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint.util.UUIDVariant;
 import net.luis.utils.util.Pair;
@@ -128,7 +126,18 @@ class UUIDConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(RANDOM_UUID).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(UUIDConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withNotNil();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withEqualTo(RANDOM_UUID);

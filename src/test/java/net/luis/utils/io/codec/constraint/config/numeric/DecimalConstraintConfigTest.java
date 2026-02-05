@@ -174,7 +174,18 @@ class DecimalConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(3.14).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(DecimalConstraintConfig.<Double>unconstrained().isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withPositive();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withEqualTo(3.14);

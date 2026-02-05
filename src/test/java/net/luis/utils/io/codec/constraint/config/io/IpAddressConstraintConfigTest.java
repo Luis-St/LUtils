@@ -97,7 +97,18 @@ class IpAddressConstraintConfigTest {
 		assertTrue(config.stringConstraint().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(IpAddressConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withIpVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4));
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		IpAddress<?> value = IpAddresses.parse("192.168.1.1");

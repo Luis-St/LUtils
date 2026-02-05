@@ -208,7 +208,18 @@ class LocalDateConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(LocalDate.now()).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(LocalDateConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		LocalDateConstraintConfig config = LocalDateConstraintConfig.UNCONSTRAINED.withPast();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		LocalDate date = LocalDate.now();

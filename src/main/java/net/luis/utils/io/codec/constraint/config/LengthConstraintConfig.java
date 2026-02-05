@@ -22,7 +22,6 @@ import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.core.LengthConstraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -103,6 +102,11 @@ public record LengthConstraintConfig(
 				throw new IllegalArgumentException("Min and max length are equal but at least one bound is exclusive when both are present");
 			}
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -209,7 +213,7 @@ public record LengthConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull Integer value) {
+	public void validate(@NonNull Integer value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
 		ConstraintValidators.validateAll(

@@ -95,7 +95,18 @@ class InetSocketAddressConstraintConfigTest {
 		assertTrue(config.unresolved().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(InetSocketAddressConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withPort(PortConstraintConfig.UNCONSTRAINED.withInRange(1, 65535));
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() throws UnknownHostException {
 		InetSocketAddress value = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);

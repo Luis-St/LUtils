@@ -90,7 +90,18 @@ class FilePathConstraintConfigTest {
 		assertTrue(config.relative().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(FilePathConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withAbsolute();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withEqualTo(Path.of("/home/user"));

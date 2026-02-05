@@ -204,7 +204,18 @@ class OffsetTimeConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(TIME_12_00).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(OffsetTimeConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withPast();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withEqualTo(TIME_12_00);

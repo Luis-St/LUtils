@@ -19,13 +19,11 @@
 package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.config.validator.TemporalValidators;
-import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.ZoneOffset;
@@ -115,6 +113,11 @@ public record ZoneOffsetConstraintConfig(
 		if (positive.isPresent() && negative.isPresent()) {
 			throw new IllegalArgumentException("Positive and negative constraints are mutually exclusive");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods

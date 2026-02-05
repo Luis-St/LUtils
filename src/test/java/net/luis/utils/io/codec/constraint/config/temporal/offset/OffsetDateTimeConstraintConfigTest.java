@@ -293,7 +293,18 @@ class OffsetDateTimeConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(OffsetDateTimeConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withPast();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withEqualTo(DT_2024_06_15_12_00);

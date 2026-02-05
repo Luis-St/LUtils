@@ -201,7 +201,18 @@ class MapConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(Map.of("a", 1)).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(MapConstraintConfig.<String, Integer>unconstrained().isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withMinSize(1);
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		Map<String, Integer> map = Map.of("a", 1);

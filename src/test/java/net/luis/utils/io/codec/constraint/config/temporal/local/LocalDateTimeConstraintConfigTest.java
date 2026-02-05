@@ -253,7 +253,18 @@ class LocalDateTimeConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(LocalDateTime.now()).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(LocalDateTimeConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withPast();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		LocalDateTime dateTime = LocalDateTime.now();

@@ -23,7 +23,6 @@ import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -133,6 +132,11 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		);
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.min.isEmpty() && this.max.isEmpty() && this.positive.isEmpty() && this.negative.isEmpty() && this.zero.isEmpty() && this.percentage.isEmpty() && this.finite.isEmpty() && this.notNaN.isEmpty() && this.integral.isEmpty() && this.normalized.isEmpty() && this.custom.isEmpty();
 	}
 	
 	//region With methods
@@ -374,7 +378,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull T value) {
+	public void validate(@NonNull T value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
 		ConstraintValidators.validateAll(

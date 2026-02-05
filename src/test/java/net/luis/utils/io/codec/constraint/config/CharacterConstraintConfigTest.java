@@ -16,9 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint.builder;
+package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint.config.CharacterConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
@@ -98,7 +97,18 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches('a').isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(CharacterConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLetter();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withEqualTo('x');

@@ -164,7 +164,18 @@ class URIPathConstraintConfigTest {
 		assertTrue(config.descendantOf().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(URIPathConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withAbsolute();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withEqualTo("/home/user");

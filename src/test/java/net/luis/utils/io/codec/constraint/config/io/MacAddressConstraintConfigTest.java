@@ -115,7 +115,18 @@ class MacAddressConstraintConfigTest {
 		assertTrue(config.stringConstraint().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(MacAddressConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withUnicast();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		MacAddress value = MacAddresses.parse("00:1a:2b:3c:4d:5e");

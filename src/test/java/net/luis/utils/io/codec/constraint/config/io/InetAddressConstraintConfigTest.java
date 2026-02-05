@@ -93,7 +93,18 @@ class InetAddressConstraintConfigTest {
 		assertTrue(config.inAnySubnet().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(InetAddressConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withIpType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK));
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() throws UnknownHostException {
 		InetAddress value = InetAddress.getByName("192.168.1.1");

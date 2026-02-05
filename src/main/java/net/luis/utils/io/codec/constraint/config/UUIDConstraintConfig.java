@@ -18,15 +18,13 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.UUIDConstraint;
 import net.luis.utils.io.codec.constraint.util.UUIDVariant;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -113,6 +111,11 @@ public record UUIDConstraintConfig(
 		if (nil.isPresent() && max.isPresent()) {
 			throw new IllegalArgumentException("Nil and max are mutually exclusive");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods

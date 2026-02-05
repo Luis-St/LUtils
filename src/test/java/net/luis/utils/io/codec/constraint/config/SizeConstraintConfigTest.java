@@ -108,7 +108,18 @@ class SizeConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(42).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(SizeConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		SizeConstraintConfig config = SizeConstraintConfig.UNCONSTRAINED.withMinSize(1);
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		SizeConstraintConfig config = SizeConstraintConfig.UNCONSTRAINED.withEqualTo(10);

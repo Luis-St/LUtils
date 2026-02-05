@@ -95,7 +95,18 @@ class NumericConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(42).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(NumericConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(10);
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(10);

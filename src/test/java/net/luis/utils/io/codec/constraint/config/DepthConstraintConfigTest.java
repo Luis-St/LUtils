@@ -108,7 +108,18 @@ class DepthConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(42).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(DepthConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withMinDepth(1);
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withEqualTo(10);

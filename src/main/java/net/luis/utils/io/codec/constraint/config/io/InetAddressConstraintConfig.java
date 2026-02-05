@@ -26,8 +26,6 @@ import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.net.InetAddress;
@@ -94,6 +92,11 @@ public record InetAddressConstraintConfig(
 		if (inAnySubnet.isPresent() && inAnySubnet.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In any subnet constraint set must not be empty when present");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods

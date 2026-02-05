@@ -164,6 +164,11 @@ public record CharacterConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**

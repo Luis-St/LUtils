@@ -224,7 +224,18 @@ class DurationConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(Duration.ofHours(1)).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(DurationConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withPositive();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withEqualTo(Duration.ofHours(2));

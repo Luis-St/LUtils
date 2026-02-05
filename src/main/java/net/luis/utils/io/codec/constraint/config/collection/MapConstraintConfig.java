@@ -25,8 +25,6 @@ import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.collection.MapConstraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -160,6 +158,11 @@ public record MapConstraintConfig<K, V>(
 	 */
 	public static <K, V> @NonNull MapConstraintConfig<K, V> unconstrained() {
 		return new MapConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.size.isEmpty() && this.requiredKeys.isEmpty() && this.forbiddenKeys.isEmpty() && this.allowedKeys.isEmpty() && this.nonNullKeys.isEmpty() && this.uniqueValues.isEmpty() && this.nonNullValues.isEmpty() && this.custom.isEmpty();
 	}
 	
 	//region With methods

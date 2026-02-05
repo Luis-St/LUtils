@@ -93,6 +93,11 @@ public record ArrayConstraintConfig<T>(
 		return new ArrayConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.length.isEmpty() && this.custom.isEmpty();
+	}
+	
 	//region With methods
 	
 	/**

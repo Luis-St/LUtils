@@ -144,7 +144,18 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(UTC).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(ZoneOffsetConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withPositive();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withEqualTo(PLUS_2);

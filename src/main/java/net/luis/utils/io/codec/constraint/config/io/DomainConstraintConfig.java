@@ -25,8 +25,6 @@ import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -157,6 +155,11 @@ public record DomainConstraintConfig(
 		if (rootDomain.isPresent() && subDomain.isPresent()) {
 			throw new IllegalArgumentException("Both root domain and sub domain constraints cannot be present at the same time");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods

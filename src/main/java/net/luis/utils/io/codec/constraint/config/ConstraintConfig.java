@@ -33,8 +33,13 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <T> The type of the value to be validated
  */
-@FunctionalInterface
 public interface ConstraintConfig<T> {
+	
+	/**
+	 * Checks if there are no constraints configured.<br>
+	 * @return True if there are no constraints, false otherwise
+	 */
+	boolean isUnconstrained();
 	
 	/**
 	 * Validates the given value against all configured constraints.<br>

@@ -108,6 +108,17 @@ class PrimitiveArrayConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(new int[] { 1, 2, 3 }).isSuccess());
 	}
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(PrimitiveArrayConstraintConfig.intArray().isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withMinLength(1);
+		assertFalse(config.isUnconstrained());
+	}
 	
 	@Test
 	void longArray() {

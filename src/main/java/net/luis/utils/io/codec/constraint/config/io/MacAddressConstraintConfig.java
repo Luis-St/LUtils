@@ -26,7 +26,6 @@ import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.io.network.address.mac.MacAddress;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -109,6 +108,11 @@ public record MacAddressConstraintConfig(
 		if (universal.isPresent() && local.isPresent()) {
 			throw new IllegalArgumentException("Universal and local constraints are mutually exclusive");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -262,7 +266,7 @@ public record MacAddressConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull MacAddress value) {
+	public void validate(@NonNull MacAddress value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
 		ConstraintValidators.validateAll(

@@ -94,7 +94,18 @@ class ListConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(List.of("a", "b")).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(ListConstraintConfig.<String>unconstrained().isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withMinSize(1);
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		List<String> list = List.of("a", "b");

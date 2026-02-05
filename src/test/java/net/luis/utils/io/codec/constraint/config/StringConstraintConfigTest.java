@@ -106,7 +106,18 @@ class StringConstraintConfigTest {
 		assertTrue(config.length().isEmpty());
 		assertTrue(config.matches("any string").isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(StringConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("test");
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("test");

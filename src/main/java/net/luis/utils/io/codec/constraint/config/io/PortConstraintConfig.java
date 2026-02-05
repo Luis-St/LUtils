@@ -25,8 +25,6 @@ import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.PortRange;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -110,6 +108,11 @@ public record PortConstraintConfig(
 				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + inRange.get().getFirst().getFirst() + " > " + inRange.get().getFirst().getSecond());
 			}
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods

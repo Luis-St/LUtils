@@ -248,7 +248,18 @@ class BigDecimalConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(new BigDecimal("3.14")).isSuccess());
 	}
-	
+
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(BigDecimalConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+
+	@Test
+	void isUnconstrainedWithConstraint() {
+		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withPositive();
+		assertFalse(config.isUnconstrained());
+	}
+
 	@Test
 	void withEqualTo() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withEqualTo(new BigDecimal("3.14"));
