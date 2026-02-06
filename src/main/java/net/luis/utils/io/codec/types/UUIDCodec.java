@@ -18,17 +18,17 @@
 
 package net.luis.utils.io.codec.types;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.UUIDConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.UUIDConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for UUIDs.<br>
@@ -36,12 +36,16 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class UUIDCodec extends AbstractCodec<UUID, UUIDConstraintConfig> implements UUIDConstraint<UUIDCodec> {
+public class UUIDCodec
+	extends AbstractConstrainableCodec<UUID, UUIDConstraintConfig, UUIDCodec>
+	implements UUIDConstraint<UUIDCodec> {
 	
 	/**
 	 * Constructs a new UUID codec.<br>
 	 */
-	public UUIDCodec() {}
+	public UUIDCodec() {
+		super(UUIDCodec::new, UUIDConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new UUID codec with the given configuration.<br>
@@ -50,92 +54,52 @@ public class UUIDCodec extends AbstractCodec<UUID, UUIDConstraintConfig> impleme
 	 * @throws NullPointerException If the config is null
 	 */
 	private UUIDCodec(@NonNull UUIDConstraintConfig config) {
-		super(config);
+		super(UUIDCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull UUIDCodec apply(@NonNull UnaryOperator<UUIDConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new UUIDCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(UUIDConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable UUID value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable UUID value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as UUID using '" + this + "'");
+			throw new EncoderException("Unable to encode null as uuid", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(value.toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString());
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull UUID key) {
+	public @NonNull String encodeKey(@NonNull UUID key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key.toString());
+		return this.validateEncodeConstraints(key).toString();
 	}
 	
 	@Override
-	public <R> @NonNull Result<UUID> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull UUID decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as UUID using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as uuid", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value);
 		try {
 			UUID uuid = UUID.fromString(string);
-			
-			Result<Void> constraintResult = this.checkConstraints(uuid);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(uuid);
+			return this.validateDecodeConstraints(uuid);
 		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to decode UUID '" + string + "' using '" + this + "': Unable to parse UUID: " + e.getMessage());
+			throw new DecoderException("Unable to decode uuid '" + string + ": Unable to parse UUID: " + e.getMessage(), this, e);
 		}
 	}
 	
 	@Override
-	public @NonNull Result<UUID> decodeKey(@NonNull String key) {
+	public @NonNull UUID decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			UUID uuid = UUID.fromString(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(uuid);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(uuid);
+			return this.validateDecodeConstraints(uuid);
 		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to decode UUID from key '" + key + "' using'" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode key '" + key + "' as uuid: Unable to parse UUID: " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedUUIDCodec[constraints=" + config + "]";
-		}).orElse("UUIDCodec");
 	}
 }

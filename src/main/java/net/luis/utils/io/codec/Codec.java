@@ -18,12 +18,17 @@
 
 package net.luis.utils.io.codec;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.codec.decoder.Decoder;
+import net.luis.utils.io.codec.decoder.DecoderException;
 import net.luis.utils.io.codec.encoder.Encoder;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.codec.types.struct.*;
 import net.luis.utils.io.codec.types.struct.collection.*;
-import net.luis.utils.util.result.*;
+import net.luis.utils.util.Either;
+import net.luis.utils.util.result.Result;
+import net.luis.utils.util.result.ResultingFunction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -33,8 +38,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import static net.luis.utils.util.result.ResultMappingFunction.*;
 
 /**
  * A codec is a combination of an encoder and a decoder.<br>
@@ -49,7 +52,7 @@ import static net.luis.utils.util.result.ResultMappingFunction.*;
  *
  * @param <C> The type of the value that is encoded and decoded by this codec
  */
-public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits AbstractCodec, AnonymousCodec, CodecGroup {
+public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits AbstractCodec, AbstractConstrainableCodec, AnonymousCodec, CodecGroup {
 	
 	/**
 	 * Creates a new codec from the given type, encoder, decoder, and name.<br>
@@ -129,18 +132,18 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	}
 	
 	@Override
-	<R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value);
+	<R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) throws EncoderException;
 	
 	@Override
-	default @NonNull Result<String> encodeKey(@NonNull C key) {
+	default @NonNull String encodeKey(@NonNull C key) throws EncoderException {
 		return Encoder.super.encodeKey(key);
 	}
 	
 	@Override
-	<R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value);
+	<R> @NonNull C decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException;
 	
 	@Override
-	default @NonNull Result<C> decodeKey(@NonNull String key) {
+	default @NonNull C decodeKey(@NonNull String key) throws DecoderException {
 		return Decoder.super.decodeKey(key);
 	}
 	
@@ -211,8 +214,8 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the key decoder is null
 	 */
-	default @NonNull Codec<C> keyable(@NonNull ResultingFunction<String, C> keyDecoder) {
-		return this.keyable(ResultingFunction.direct(String::valueOf), keyDecoder);
+	default @NonNull Codec<C> keyable(@NonNull ThrowableFunction<String, C, DecoderException> keyDecoder) {
+		return this.keyable(String::valueOf, keyDecoder);
 	}
 	
 	/**
@@ -233,30 +236,30 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see Encoder#encodeKey(Object)
 	 * @see Decoder#decodeKey(String)
 	 */
-	default @NonNull Codec<C> keyable(@NonNull ResultingFunction<C, String> keyEncoder, @NonNull ResultingFunction<String, C> keyDecoder) {
+	default @NonNull Codec<C> keyable(@NonNull ThrowableFunction<C, String, EncoderException> keyEncoder, @NonNull ThrowableFunction<String, C, DecoderException> keyDecoder) {
 		Objects.requireNonNull(keyEncoder, "Key encoder must not be null");
 		Objects.requireNonNull(keyDecoder, "Key decoder must not be null");
 		
 		Encoder<C> encoder = new Encoder<>() {
 			@Override
-			public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
-				return Codec.this.encodeStart(provider, current, value);
+			public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) throws EncoderException {
+				return Codec.this.encode(provider, current, value);
 			}
 			
 			@Override
-			public @NonNull Result<String> encodeKey(@NonNull C key) {
+			public @NonNull String encodeKey(@NonNull C key) throws EncoderException {
 				Objects.requireNonNull(key, "Key to encode must not be null");
 				return keyEncoder.apply(key);
 			}
 		};
 		Decoder<C> decoder = new Decoder<>() {
 			@Override
-			public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
-				return Codec.this.decodeStart(provider, current, value);
+			public <R> @NonNull C decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
+				return Codec.this.decode(provider, current, value);
 			}
 			
 			@Override
-			public @NonNull Result<C> decodeKey(@NonNull String key) {
+			public @NonNull C decodeKey(@NonNull String key) throws DecoderException {
 				Objects.requireNonNull(key, "Key to decode must not be null");
 				return keyDecoder.apply(key);
 			}
@@ -399,56 +402,11 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * Creates a new mapped codec of type {@code O} from the current codec.<br>
 	 * <p>
 	 *     The mapped codec maps the raw input and output values using the given functions.<br>
-	 *     The functions are applied before encoding and after decoding the base codec, on the raw values.<br>
-	 *     Any errors that occur during mapping must be self-contained and should not affect the base codec.
-	 * </p>
-	 *
-	 * @param to The encoding mapping function
-	 * @param from The decoding mapping function
-	 * @param <O> The type of the mapped value
-	 * @return A new mapped codec
-	 * @throws NullPointerException If the encoding mapping function or decoding mapping function is null
-	 * @see #mapFlat(Function, ResultMappingFunction)
-	 * @see #map(ResultingFunction, ResultMappingFunction)
-	 */
-	default <O> @NonNull Codec<O> xmap(@NonNull Function<O, C> to, @NonNull Function<C, O> from) {
-		return this.map(ResultingFunction.direct(to), direct(from));
-	}
-	
-	/**
-	 * Creates a new mapped codec of type {@code O} from the current codec.<br>
-	 * <p>
-	 *     The mapped codec maps the raw input value using the given function.<br>
-	 *     The function is applied before encoding the base codec.
+	 *     The functions are applied before encoding and after decoding the base codec, on the raw values.
 	 * </p>
 	 * <p>
-	 *     This mapping functions allows the handling of errors that occur during decode-mapping.<br>
-	 *     Therefor the mapping function is applied to the result of the base codec.<br>
-	 *     The mapping function must return a new result that contains the mapped value or an error message.
-	 * </p>
-	 *
-	 * @param to The encoding mapping function
-	 * @param from The decoding mapping function
-	 * @param <O> The type of the mapped value
-	 * @return A new mapped codec
-	 * @throws NullPointerException If the encoding mapping function or decoding mapping function is null
-	 * @see #xmap(Function, Function)
-	 * @see #map(ResultingFunction, ResultMappingFunction)
-	 */
-	default <O> @NonNull Codec<O> mapFlat(@NonNull Function<O, C> to, @NonNull ResultMappingFunction<C, O> from) {
-		return this.map(ResultingFunction.direct(to), from);
-	}
-	
-	/**
-	 * Creates a new mapped codec of type {@code O} from the current codec.<br>
-	 * This mapping functions allows the handling of errors that occur during mapping.<br>
-	 * <p>
-	 *     The encode-mapping function is applied before encoding the base codec.<br>
-	 *     The function can return a new result that contains the mapped value or an error message.
-	 * </p>
-	 * <p>
-	 *     The decode-mapping function is applied to the result of the base codec.<br>
-	 *     The function can return a new result that contains the mapped value or an error message.
+	 *     The encode-mapping function is always applied.<br>
+	 *     The decode-mapping function is only applied if the base codec decoding was successful.
 	 * </p>
 	 *
 	 * @param encoder The encoding mapping function
@@ -456,16 +414,48 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @param <O> The type of the mapped value
 	 * @return A new mapped codec
 	 * @throws NullPointerException If the encoding mapping function or decoding mapping function is null
-	 * @see #xmap(Function, Function)
-	 * @see #mapFlat(Function, ResultMappingFunction)
+	 * @see #map(ThrowableFunction, ThrowableFunction)
 	 */
-	default <O> @NonNull Codec<O> map(@NonNull ResultingFunction<O, C> encoder, @NonNull ResultMappingFunction<C, O> decoder) {
+	default <O> @NonNull Codec<O> xmap(@NonNull ThrowableFunction<O, C, EncoderException> encoder, @NonNull ThrowableFunction<C, O, DecoderException> decoder) {
+		Objects.requireNonNull(decoder, "Decoding mapping function must not be null");
+		
+		return this.map(encoder, either -> {
+			if (either.isLeft()) {
+				return decoder.apply(either.leftOrThrow());
+			} else {
+				throw new DecoderException("Decoding mapper could not be applied due to previous error", this, either.rightOrThrow());
+			}
+		});
+	}
+	
+	/**
+	 * Creates a new mapped codec of type {@code O} from the current codec.<br>
+	 * This mapping functions allows the handling of errors that occur during mapping.<br>
+	 * <p>
+	 *     The encode-mapping function is applied before encoding the base codec.<br>
+	 *     The function can either return the mapped value or throw an {@link EncoderException} if the mapping fails.<br>
+	 * </p>
+	 * <p>
+	 *     The decode-mapping function is applied to the result of the base codec.<br>
+	 *     The function can either return the mapped value or throw a {@link DecoderException} if the mapping fails.<br>
+	 * </p>
+	 *
+	 * @param encoder The encoding mapping function
+	 * @param decoder The decoding mapping function
+	 * @param <O> The type of the mapped value
+	 * @return A new mapped codec
+	 * @throws NullPointerException If the encoding mapping function or decoding mapping function is null
+	 */
+	default <O> @NonNull Codec<O> map(@NonNull ThrowableFunction<O, C, EncoderException> encoder, @NonNull ThrowableFunction<Either<C, DecoderException>, O, DecoderException> decoder) {
 		return of((Class<O>) null, this.mapEncoder(encoder), this.mapDecoder(decoder), "MappedCodec[" + this + "]");
 	}
 	
 	/**
 	 * Creates a new codec that will validate the result of the encoding and decoding process using the given validator function.<br>
-	 * The validator function is applied to the value and must return a result that contains the validated value or an error message.<br>
+	 * <p>
+	 *     The validator function is applied to the value and must return a result that contains the validated value or an error message.<br>
+	 *     If the validation fails (validator returns an error result), an {@link EncoderException} or {@link DecoderException} is thrown during encoding or decoding respectively.
+	 * </p>
 	 *
 	 * @param validator The validator function
 	 * @return A new codec
@@ -473,7 +463,24 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 */
 	default @NonNull Codec<C> validate(@NonNull ResultingFunction<C, C> validator) {
 		Objects.requireNonNull(validator, "Validator function must not be null");
-		return this.map(validator, result -> result.flatMap(validator));
+		
+		return this.map(value -> {
+			Result<C> result = validator.apply(value);
+			if (result.isError()) {
+				throw new EncoderException("Encoding validation of '" + value + "' failed: " + result.errorOrThrow(), this);
+			}
+			return result.resultOrThrow();
+		}, either -> {
+			if (either.isLeft()) {
+				Result<C> result = validator.apply(either.leftOrThrow());
+				if (result.isError()) {
+					throw new DecoderException("Decoding validation of '" + either.leftOrThrow() + "' failed: " + result.errorOrThrow(), this);
+				}
+				return result.resultOrThrow();
+			} else {
+				throw new DecoderException("Decoding validation could not be performed due to previous error", this, either.rightOrThrow());
+			}
+		});
 	}
 	
 	/**
@@ -498,7 +505,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 		Objects.requireNonNull(supplier, "Default value supplier must not be null");
 		
 		String name = "OrElseCodec[" + this + "]";
-		return of(this.createDelegateTypeSupplier(name), this, this.mapDecoder(result -> Result.success(result.orElseGet(supplier))), name);
+		return of(this.createDelegateTypeSupplier(name), this, this.mapDecoder(value -> value.left().orElseGet(supplier)), name);
 	}
 	
 	/**
@@ -679,11 +686,12 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 */
 	default <O> @NonNull FieldCodec<C, O> optionalFieldOf(@NonNull String name, @NonNull Set<String> aliases, @NonNull Supplier<C> defaultSupplier, @NonNull Function<O, C> getter) {
 		Objects.requireNonNull(defaultSupplier, "Default value supplier must not be null");
-		return new FieldCodec<>(
-			this.optional().xmap(Optional::ofNullable, optional -> optional.orElseGet(defaultSupplier)).codec("OptionalFieldCodec[" + this + "]"),
-			name,
-			aliases,
-			getter
-		);
+		
+		return new FieldCodec<>(this.optional().map(Optional::ofNullable, either -> {
+			if (either.isRight()) {
+				throw new DecoderException("Failed to decode optional field '" + name + "'", this, either.rightOrThrow());
+			}
+			return either.leftOrThrow().orElseGet(defaultSupplier);
+		}).codec("OptionalFieldCodec[" + this + "]"), name, aliases, getter);
 	}
 }

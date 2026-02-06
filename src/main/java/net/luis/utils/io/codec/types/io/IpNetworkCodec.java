@@ -18,19 +18,19 @@
 
 package net.luis.utils.io.codec.types.io;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.io.IpNetworkConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.io.IpNetworkConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.network.address.IpAddresses;
 import net.luis.utils.io.network.address.IpNetwork;
-import net.luis.utils.util.result.Result;
+import net.luis.utils.io.network.address.exception.IpParseException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for IP networks.<br>
@@ -42,12 +42,16 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class IpNetworkCodec extends AbstractCodec<IpNetwork<?, ?>, IpNetworkConstraintConfig> implements IpNetworkConstraint<IpNetworkCodec> {
+public class IpNetworkCodec
+	extends AbstractConstrainableCodec<IpNetwork<?, ?>, IpNetworkConstraintConfig, IpNetworkCodec>
+	implements IpNetworkConstraint<IpNetworkCodec> {
 	
 	/**
 	 * Constructs a new IP network codec.<br>
 	 */
-	public IpNetworkCodec() {}
+	public IpNetworkCodec() {
+		super(IpNetworkCodec::new, IpNetworkConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new IP network codec with the given configuration.<br>
@@ -56,92 +60,52 @@ public class IpNetworkCodec extends AbstractCodec<IpNetwork<?, ?>, IpNetworkCons
 	 * @throws NullPointerException If the config is null
 	 */
 	private IpNetworkCodec(@NonNull IpNetworkConstraintConfig config) {
-		super(config);
+		super(IpNetworkCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull IpNetworkCodec apply(@NonNull UnaryOperator<IpNetworkConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new IpNetworkCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(IpNetworkConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable IpNetwork<?, ?> value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable IpNetwork<?, ?> value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as IP network using '" + this + "'");
+			throw new EncoderException("Unable to encode null as ip network", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(value.toCidrNotation());
+		return provider.createString(this.validateEncodeConstraints(value).toCidrNotation());
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull IpNetwork<?, ?> key) {
+	public @NonNull String encodeKey(@NonNull IpNetwork<?, ?> key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key.toCidrNotation());
+		return this.validateEncodeConstraints(key).toCidrNotation();
 	}
 	
 	@Override
-	public <R> @NonNull Result<IpNetwork<?, ?>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull IpNetwork<?, ?> decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as IP network using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as ip network", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
+		String string = provider.getString(value);
+		try {
+			IpNetwork<?, ?> network = IpAddresses.parseNetwork(string);
+			return this.validateDecodeConstraints(network);
+		} catch (IpParseException e) {
+			throw new DecoderException("Unable to decode ip network '" + string + "': " + e.getMessage(), this, e);
 		}
-		
-		String string = result.resultOrThrow();
-		Optional<? extends IpNetwork<?, ?>> optionalNetwork = IpAddresses.tryParseNetwork(string);
-		if (optionalNetwork.isEmpty()) {
-			return Result.error("Unable to decode IP network '" + string + "' using '" + this + "': Invalid CIDR format");
-		}
-		
-		IpNetwork<?, ?> network = optionalNetwork.get();
-		Result<Void> constraintResult = this.checkConstraints(network);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(network);
 	}
 	
 	@Override
-	public @NonNull Result<IpNetwork<?, ?>> decodeKey(@NonNull String key) {
+	public @NonNull IpNetwork<?, ?> decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
-		Optional<? extends IpNetwork<?, ?>> optionalNetwork = IpAddresses.tryParseNetwork(key);
-		if (optionalNetwork.isEmpty()) {
-			return Result.error("Unable to decode key '" + key + "' as IP network using '" + this + "': Invalid CIDR format");
+		try {
+			IpNetwork<?, ?> network = IpAddresses.parseNetwork(key);
+			return this.validateDecodeConstraints(network);
+		} catch (IpParseException e) {
+			throw new DecoderException("Unable to decode key '" + key + "' as ip network: " + e.getMessage(), this, e);
 		}
-		
-		IpNetwork<?, ?> network = optionalNetwork.get();
-		Result<Void> constraintResult = this.checkConstraints(network);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(network);
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedIpNetworkCodec[constraints=" + config + "]";
-		}).orElse("IpNetworkCodec");
 	}
 }

@@ -18,116 +18,80 @@
 
 package net.luis.utils.io.codec.types.primitive.numeric;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.numeric.IntegerConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.numeric.IntegerConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for shorts.<br>
  *
  * @author Luis-St
  */
-public class ShortCodec extends AbstractCodec<Short, IntegerConstraintConfig<Short>> implements IntegerConstraint<Short, ShortCodec> {
+public class ShortCodec
+	extends AbstractConstrainableCodec<Short, IntegerConstraintConfig<Short>, ShortCodec>
+	implements IntegerConstraint<Short, ShortCodec> {
 	
 	/**
 	 * Constructs a new short codec.<br>
 	 */
-	public ShortCodec() {}
+	public ShortCodec() {
+		super(ShortCodec::new, IntegerConstraintConfig.unconstrained());
+	}
 	
 	/**
 	 * Constructs a new short codec with the specified integer constraint configuration.<br>
 	 *
-	 * @param constraintConfig The integer constraint configuration
+	 * @param config The integer constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	private ShortCodec(@NonNull IntegerConstraintConfig<Short> constraintConfig) {
-		super(constraintConfig);
+	private ShortCodec(@NonNull IntegerConstraintConfig<Short> config) {
+		super(ShortCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull ShortCodec apply(@NonNull UnaryOperator<IntegerConstraintConfig<Short>> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new ShortCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(IntegerConstraintConfig.unconstrained()))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Short value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Short value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as short using '" + this + "'");
+			throw new EncoderException("Unable to encode null as short", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createShort(value);
+		return provider.createShort(this.validateEncodeConstraints(value));
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull Short key) {
+	public @NonNull String encodeKey(@NonNull Short key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(Short.toString(key));
+		return Short.toString(this.validateEncodeConstraints(key));
 	}
 	
 	@Override
-	public <R> @NonNull Result<Short> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Short decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as short using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as short", this);
 		}
 		
-		Result<Short> result = provider.getShort(value);
-		if (result.isError()) {
-			return result;
-		}
-		
-		Short shortValue = result.resultOrThrow();
-		Result<Void> constraintResult = this.checkConstraints(shortValue);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(shortValue);
+		return this.validateDecodeConstraints(provider.getShort(value));
 	}
 	
 	@Override
-	public @NonNull Result<Short> decodeKey(@NonNull String key) {
+	public @NonNull Short decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			Short shortValue = Short.parseShort(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(shortValue);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(shortValue);
-		} catch (Exception e) {
-			return Result.error("Unable to decode key '" + key + "' as short using '" + this + "': " + e.getMessage());
+			return this.validateDecodeConstraints(shortValue);
+		} catch (NumberFormatException e) {
+			throw new DecoderException("Unable to decode key '" + key + "' as short: " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedShortCodec[constraints=" + config + "]";
-		}).orElse("ShortCodec");
 	}
 }

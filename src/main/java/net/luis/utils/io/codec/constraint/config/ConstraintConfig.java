@@ -44,8 +44,8 @@ public interface ConstraintConfig<T> {
 	/**
 	 * Validates the given value against all configured constraints.<br>
 	 * <p>
-	 *     If the value satisfies all constraints, a successful Result is returned.<br>
-	 *     If the value does not satisfy any constraint, a failed Result with an appropriate error message is returned.<br>
+	 *     If the value satisfies all constraints, the method completes successfully without throwing an exception.<br>
+	 *     If the value does not satisfy any constraint, a {@link ConstraintViolateException} with an appropriate error message is thrown.<br>
 	 *     The validation uses early-exit behavior, stopping at the first failed constraint.
 	 * </p>
 	 *

@@ -29,7 +29,6 @@ import net.luis.utils.io.network.address.ipv6.Ipv6Address;
 import net.luis.utils.io.network.address.ipv6.Ipv6Network;
 import net.luis.utils.io.network.address.mac.MacAddress;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 
@@ -99,9 +98,10 @@ public final class IOValidators {
 		}
 		
 		PortRange portRange = PortRange.fromPort(port);
-		Result<Void> result = type.get().matches(portRange);
-		if (result.isError()) {
-			throw new ConstraintViolateException("Port type constraint failed: " + result.errorOrThrow());
+		try {
+			type.get().validate(portRange);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Port type constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -126,12 +126,13 @@ public final class IOValidators {
 		} else if (IpAddresses.isValidIpv6(value)) {
 			detectedVersion = IpVersion.IPV6;
 		} else {
-			throw new ConstraintViolateException("Host '" + value + "' is not a valid IP address");
+			throw new ConstraintViolateException("Host '" + value + "' is not a valid Ip address");
 		}
 		
-		Result<Void> result = ipVersion.get().matches(detectedVersion);
-		if (result.isError()) {
-			throw new ConstraintViolateException("IP version constraint failed: " + result.errorOrThrow());
+		try {
+			ipVersion.get().validate(detectedVersion);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Ip version constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -152,7 +153,7 @@ public final class IOValidators {
 		
 		try {
 			IpAddress<?> address = IpAddresses.parse(value);
-			ipType.get().matches(getIpAddressType(address));
+			ipType.get().validate(getIpAddressType(address));
 		} catch (IpParseException e) {
 			throw new ConstraintViolateException("Host '" + value + "' is not a valid ip address: " + e.getMessage());
 		}
@@ -258,7 +259,7 @@ public final class IOValidators {
 			switch (address) {
 				case Ipv4Address ipv4 -> validateIpv4SubnetMembership(ipv4, subnets, inAnySubnet.get().getSecond());
 				case Ipv6Address ipv6 -> validateIpv6SubnetMembership(ipv6, subnets, inAnySubnet.get().getSecond());
-			};
+			}
 		} catch (IpParseException e) {
 			throw new ConstraintViolateException("Host '" + value + "' is not a valid ip address: " + e.getMessage());
 		}
@@ -432,9 +433,10 @@ public final class IOValidators {
 			return;
 		}
 		
-		Result<Void> result = pathConfig.get().matches(value.toString());
-		if (result.isError()) {
-			throw new ConstraintViolateException("Path constraint failed: " + result.errorOrThrow());
+		try {
+			pathConfig.get().validate(value.toString());
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Path constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -458,9 +460,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("Path '" + value + "' has no root component");
 		}
 		
-		Result<Void> result = rootConfig.get().matches(root.toString());
-		if (result.isError()) {
-			throw new ConstraintViolateException("Root constraint failed: " + result.errorOrThrow());
+		try {
+			rootConfig.get().validate(root.toString());
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Root constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -484,9 +487,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("Path '" + value + "' has no parent component");
 		}
 		
-		Result<Void> result = parentConfig.get().matches(parent.toString());
-		if (result.isError()) {
-			throw new ConstraintViolateException("Parent constraint failed: " + result.errorOrThrow());
+		try {
+			parentConfig.get().validate(parent.toString());
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Parent constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -506,9 +510,10 @@ public final class IOValidators {
 		}
 		
 		for (int i = 0; i < value.getNameCount(); i++) {
-			Result<Void> result = segmentConfig.get().matches(value.getName(i).toString());
-			if (result.isError()) {
-				throw new ConstraintViolateException("Segment '" + value.getName(i) + "' constraint failed: " + result.errorOrThrow());
+			try {
+				segmentConfig.get().validate(value.getName(i).toString());
+			} catch (ConstraintViolateException e) {
+				throw new ConstraintViolateException("Segment '" + value.getName(i) + "' constraint failed: " + e.getMessage(), e);
 			}
 		}
 	}
@@ -533,9 +538,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("Path '" + value + "' has no file name");
 		}
 		
-		Result<Void> result = fileConfig.get().matches(fileName.toString());
-		if (result.isError()) {
-			throw new ConstraintViolateException("File constraint failed: " + result.errorOrThrow());
+		try {
+			fileConfig.get().validate(fileName.toString());
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("File name constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -566,9 +572,11 @@ public final class IOValidators {
 		}
 		
 		String extension = fileNameStr.substring(dotIndex + 1);
-		Result<Void> result = extensionConfig.get().matches(extension);
-		if (result.isError()) {
-			throw new ConstraintViolateException("Extension constraint failed: " + result.errorOrThrow());
+		
+		try {
+			extensionConfig.get().validate(extension);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Extension constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -657,11 +665,13 @@ public final class IOValidators {
 		for (Map.Entry<String, StringConstraintConfig> entry : valueConstraints.get().entrySet()) {
 			String key = entry.getKey();
 			StringConstraintConfig config = entry.getValue();
+			
 			if (value.containsKey(key)) {
 				for (String v : value.get(key)) {
-					Result<Void> result = config.matches(v);
-					if (result.isError()) {
-						throw new ConstraintViolateException("Value constraint for key '" + key + "' failed: " + result.errorOrThrow());
+					try {
+						config.validate(v);
+					} catch (ConstraintViolateException e) {
+						throw new ConstraintViolateException("Value constraint for key '" + key + "' failed: " + e.getMessage(), e);
 					}
 				}
 			}
@@ -686,12 +696,14 @@ public final class IOValidators {
 		for (Map.Entry<Pattern, StringConstraintConfig> entry : patternValueConstraints.get().entrySet()) {
 			Pattern pattern = entry.getKey();
 			StringConstraintConfig config = entry.getValue();
+			
 			for (Map.Entry<String, List<String>> kvEntry : value.entrySet()) {
 				if (pattern.matcher(kvEntry.getKey()).matches()) {
 					for (String v : kvEntry.getValue()) {
-						Result<Void> result = config.matches(v);
-						if (result.isError()) {
-							throw new ConstraintViolateException("Pattern value constraint for key '" + kvEntry.getKey() + "' failed: " + result.errorOrThrow());
+						try {
+							config.validate(v);
+						} catch (ConstraintViolateException e) {
+							throw new ConstraintViolateException("Pattern value constraint for key '" + kvEntry.getKey() + "' failed: " + e.getMessage(), e);
 						}
 					}
 				}
@@ -764,10 +776,12 @@ public final class IOValidators {
 		for (Map.Entry<String, SizeConstraintConfig> entry : multiValuedConstraints.get().entrySet()) {
 			String key = entry.getKey();
 			SizeConstraintConfig config = entry.getValue();
+			
 			if (value.containsKey(key)) {
-				Result<Void> result = config.matches(value.get(key).size());
-				if (result.isError()) {
-					throw new ConstraintViolateException("Multi-valued constraint for key '" + key + "' failed: " + result.errorOrThrow());
+				try {
+					config.validate(value.get(key).size());
+				} catch (ConstraintViolateException e) {
+					throw new ConstraintViolateException("Multi-valued constraint for key '" + key + "' failed: " + e.getMessage(), e);
 				}
 			}
 		}
@@ -793,9 +807,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("URI '" + value + "' has no scheme");
 		}
 		
-		Result<Void> result = schemeConfig.get().matches(scheme);
-		if (result.isError()) {
-			throw new ConstraintViolateException("Scheme constraint failed: " + result.errorOrThrow());
+		try {
+			schemeConfig.get().validate(scheme);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Scheme constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -819,9 +834,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("URI '" + value + "' has no host");
 		}
 		
-		Result<Void> result = hostConfig.get().matches(host);
-		if (result.isError()) {
-			throw new ConstraintViolateException("Host constraint failed: " + result.errorOrThrow());
+		try {
+			hostConfig.get().validate(host);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Host constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -845,9 +861,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("URI '" + value + "' has no user info");
 		}
 		
-		Result<Void> result = userInfoConfig.get().matches(userInfo);
-		if (result.isError()) {
-			throw new ConstraintViolateException("User info constraint failed: " + result.errorOrThrow());
+		try {
+			userInfoConfig.get().validate(userInfo);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("User info constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -871,9 +888,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("URI '" + value + "' has no port");
 		}
 		
-		Result<Void> result = portConfig.get().matches(port);
-		if (result.isError()) {
-			throw new ConstraintViolateException("Port constraint failed: " + result.errorOrThrow());
+		try {
+			portConfig.get().validate(port);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Port constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -897,9 +915,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("URI '" + value + "' has no path");
 		}
 		
-		Result<Void> result = pathConfig.get().matches(pathStr);
-		if (result.isError()) {
-			throw new ConstraintViolateException("Path constraint failed: " + result.errorOrThrow());
+		try {
+			pathConfig.get().validate(pathStr);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Path constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -924,9 +943,10 @@ public final class IOValidators {
 		}
 		
 		Map<String, List<String>> queryParams = parseQuery(queryStr);
-		Result<Void> result = queryConfig.get().matches(queryParams);
-		if (result.isError()) {
-			throw new ConstraintViolateException("Query constraint failed: " + result.errorOrThrow());
+		try {
+			queryConfig.get().validate(queryParams);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Query constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -950,9 +970,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("URI '" + value + "' has no fragment");
 		}
 		
-		Result<Void> result = fragmentConfig.get().matches(fragment);
-		if (result.isError()) {
-			throw new ConstraintViolateException("Fragment constraint failed: " + result.errorOrThrow());
+		try {
+			fragmentConfig.get().validate(fragment);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Fragment constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -1105,9 +1126,10 @@ public final class IOValidators {
 			return;
 		}
 		
-		Result<Void> result = pathConfig.get().matches(value);
-		if (result.isError()) {
-			throw new ConstraintViolateException("Path constraint failed: " + result.errorOrThrow());
+		try {
+			pathConfig.get().validate(value);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Path constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -1128,9 +1150,10 @@ public final class IOValidators {
 		
 		String[] segments = getUriPathSegments(value);
 		for (String segment : segments) {
-			Result<Void> result = segmentConfig.get().matches(segment);
-			if (result.isError()) {
-				throw new ConstraintViolateException("Segment '" + segment + "' constraint failed: " + result.errorOrThrow());
+			try {
+				segmentConfig.get().validate(segment);
+			} catch (ConstraintViolateException e) {
+				throw new ConstraintViolateException("Segment '" + segment + "' constraint failed: " + e.getMessage(), e);
 			}
 		}
 	}
@@ -1155,9 +1178,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("URI path '" + value + "' has no file name");
 		}
 		
-		Result<Void> result = fileConfig.get().matches(fileName.get());
-		if (result.isError()) {
-			throw new ConstraintViolateException("File constraint failed: " + result.errorOrThrow());
+		try {
+			fileConfig.get().validate(fileName.get());
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("File name constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -1207,9 +1231,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("URI path '" + value + "' has no extension");
 		}
 		
-		Result<Void> result = extensionConfig.get().matches(extension.get());
-		if (result.isError()) {
-			throw new ConstraintViolateException("Extension constraint failed: " + result.errorOrThrow());
+		try {
+			extensionConfig.get().validate(extension.get());
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Extension constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -1349,12 +1374,13 @@ public final class IOValidators {
 		
 		InetAddress address = value.getAddress();
 		if (address == null) {
-			throw new ConstraintViolateException("InetSocketAddress '" + value + "' has no resolved address");
+			throw new ConstraintViolateException("Internet socker address '" + value + "' has no resolved address");
 		}
 		
-		Result<Void> result = addressConfig.get().matches(address);
-		if (result.isError()) {
-			throw new ConstraintViolateException("Address constraint failed: " + result.errorOrThrow());
+		try {
+			addressConfig.get().validate(address);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Address constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -1373,9 +1399,10 @@ public final class IOValidators {
 			return;
 		}
 		
-		Result<Void> result = portConfig.get().matches(value.getPort());
-		if (result.isError()) {
-			throw new ConstraintViolateException("Port constraint failed: " + result.errorOrThrow());
+		try {
+			portConfig.get().validate(value.getPort());
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Port constraint failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -1403,9 +1430,10 @@ public final class IOValidators {
 			throw new ConstraintViolateException("Unable to determine IP version for network: " + value);
 		}
 		
-		Result<Void> result = ipVersion.get().matches(version);
-		if (result.isError()) {
-			throw new ConstraintViolateException("IP version constraint failed: " + result.errorOrThrow());
+		try {
+			ipVersion.get().validate(version);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("IP version constraint failed: " + e.getMessage(), e);
 		}
 	}
 	

@@ -19,8 +19,9 @@
 package net.luis.utils.io.codec.types.primitive;
 
 import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -31,7 +32,7 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class BooleanCodec extends AbstractCodec<Boolean, Object> {
+public class BooleanCodec extends AbstractCodec<Boolean> {
 	
 	/**
 	 * Constructs a new boolean codec.<br>
@@ -39,43 +40,43 @@ public class BooleanCodec extends AbstractCodec<Boolean, Object> {
 	public BooleanCodec() {}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Boolean value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Boolean value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
-			return Result.error("Unable to encode null as boolean using '" + this + "'");
+			throw new EncoderException("Unable to encode null as boolean", this);
 		}
+		
 		return provider.createBoolean(value);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull Boolean key) {
+	public @NonNull String encodeKey(@NonNull Boolean key) {
 		Objects.requireNonNull(key, "Key must not be null");
-		return Result.success(key.toString());
+		return key.toString();
 	}
 	
 	@Override
-	public <R> @NonNull Result<Boolean> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Boolean decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as boolean using '" + this + "'");
+			throw new DecoderException("Unable to decode null as boolean", this);
 		}
 		
 		return provider.getBoolean(value);
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> decodeKey(@NonNull String key) {
+	public @NonNull Boolean decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		if ("true".equals(key)) {
-			return Result.success(true);
+			return true;
 		} else if ("false".equals(key)) {
-			return Result.success(false);
+			return false;
 		}
-		return Result.error("Unable to decode key '" + key + "' as boolean using '" + this + "'");
+		throw new DecoderException("Unable to decode key '" + key + "' as boolean", this);
 	}
 	
 	@Override

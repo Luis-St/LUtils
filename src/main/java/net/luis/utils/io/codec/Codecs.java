@@ -18,13 +18,14 @@
 
 package net.luis.utils.io.codec;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.types.UUIDCodec;
 import net.luis.utils.io.codec.types.array.*;
 import net.luis.utils.io.codec.types.i18n.CurrencyCodec;
 import net.luis.utils.io.codec.types.i18n.LocaleCodec;
 import net.luis.utils.io.codec.types.io.*;
-import net.luis.utils.io.codec.types.io.InetAddressCodec;
-import net.luis.utils.io.codec.types.io.InetSocketAddressCodec;
 import net.luis.utils.io.codec.types.primitive.*;
 import net.luis.utils.io.codec.types.primitive.numeric.*;
 import net.luis.utils.io.codec.types.stream.*;
@@ -39,8 +40,6 @@ import net.luis.utils.io.network.address.IpAddress;
 import net.luis.utils.io.network.address.IpNetwork;
 import net.luis.utils.io.network.address.mac.MacAddress;
 import net.luis.utils.util.Either;
-import net.luis.utils.util.result.Result;
-import net.luis.utils.util.result.ResultingFunction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -314,11 +313,11 @@ public final class Codecs {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<Integer, E> ordinalLookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::ordinal, Function.identity()));
 		
-		return INTEGER.xmap(Enum::ordinal, ordinalLookup::get).keyable(constant -> Result.success(String.valueOf(constant.ordinal())), str -> {
+		return INTEGER.xmap(Enum::ordinal, ordinalLookup::get).keyable(constant -> String.valueOf(constant.ordinal()), str -> {
 			try {
-				return Result.success(ordinalLookup.get(Integer.parseInt(str)));
+				return ordinalLookup.get(Integer.parseInt(str));
 			} catch (NumberFormatException e) {
-				return Result.error("Unable to decode enum ordinal from string '" + str + "': " + e.getMessage());
+				throw new DecoderException("Unable to decode enum ordinal from string '" + str + "': " + e.getMessage(), e);
 			}
 		});
 	}
@@ -336,12 +335,12 @@ public final class Codecs {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<String, E> lookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::name, Function.identity()));
 		
-		return STRING.xmap(Enum::name, lookup::get).keyable(ResultingFunction.direct(Enum::name), key -> {
+		return STRING.xmap(Enum::name, lookup::get).keyable(Enum::toString, key -> {
 			E value = lookup.get(key);
 			if (value == null) {
-				return Result.error("Unable to decode enum value from name '" + key + "': No enum constant found");
+				throw new DecoderException("Unable to decode enum value from name '" + key + "': No enum constant found");
 			}
-			return Result.success(value);
+			return value;
 		});
 	}
 	
@@ -355,10 +354,10 @@ public final class Codecs {
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the friendly name encoder or decoder is null
 	 */
-	public static <E extends Enum<E>> @NonNull Codec<E> friendlyEnumName(@NonNull Function<E, String> friendlyEncoder, @NonNull Function<String, E> friendlyDecoder) {
+	public static <E extends Enum<E>> @NonNull Codec<E> friendlyEnumName(@NonNull ThrowableFunction<E, String, EncoderException> friendlyEncoder, @NonNull ThrowableFunction<String, E, DecoderException> friendlyDecoder) {
 		Objects.requireNonNull(friendlyEncoder, "Friendly name encoder must not be null");
 		Objects.requireNonNull(friendlyDecoder, "Friendly name decoder must not be null");
-		return STRING.xmap(friendlyEncoder, friendlyDecoder).keyable(ResultingFunction.direct(friendlyEncoder), ResultingFunction.direct(friendlyDecoder));
+		return STRING.xmap(friendlyEncoder, friendlyDecoder).keyable(friendlyEncoder, friendlyDecoder);
 	}
 	
 	/**
@@ -381,20 +380,20 @@ public final class Codecs {
 		return either(INTEGER, STRING).xmap(
 			constant -> Either.right(constant.name()),
 			either -> either.mapTo(ordinalLookup::get, nameLookup::get)
-		).keyable(ResultingFunction.direct(Enum::name), key -> {
+		).keyable(Enum::name, key -> {
 			try {
 				int ordinal = Integer.parseInt(key);
 				E value = ordinalLookup.get(ordinal);
 				if (value != null) {
-					return Result.success(value);
+					return value;
 				}
 			} catch (NumberFormatException _) {}
 			
 			E value = nameLookup.get(key);
 			if (value != null) {
-				return Result.success(value);
+				return value;
 			}
-			return Result.error("Unable to decode enum value from key '" + key + "': No enum constant found");
+			throw new DecoderException("Unable to decode enum value from key '" + key + "': No enum constant found");
 		});
 	}
 	
@@ -580,7 +579,10 @@ public final class Codecs {
 	/**
 	 * Creates a new codec that encodes and decodes values of the type {@code C} to and from strings.<br>
 	 * The string encoder and decoder are defined as functions that convert values of the type {@code C} to and from strings.<br>
-	 * If the decoder is unable to decode a string, it should return null.<br>
+	 * <p>
+	 *     If the string encoder fails to encode a value, it should throw an {@link EncoderException} with a descriptive error message.<br>
+	 *     If the string decoder fails to decode a string, it should throw a {@link DecoderException} with a descriptive error message.
+	 * </p>
 	 *
 	 * @param stringEncoder The encoder function
 	 * @param stringDecoder The decoder function
@@ -588,23 +590,21 @@ public final class Codecs {
 	 * @return A new codec
 	 * @throws NullPointerException If the string encoder or decoder is null
 	 */
-	public static <E> @NonNull Codec<E> stringResolver(@NonNull Function<E, String> stringEncoder, @NonNull Function<String, @Nullable E> stringDecoder) {
+	public static <E> @NonNull Codec<E> stringResolver(@NonNull ThrowableFunction<E, String, EncoderException> stringEncoder, @NonNull ThrowableFunction<String, E, DecoderException> stringDecoder) {
 		Objects.requireNonNull(stringDecoder, "Element string decoder must not be null");
 		
-		return STRING.mapFlat(
-			stringEncoder,
-			result -> {
-				if (result.isSuccess()) {
-					E value;
-					try {
-						value = stringDecoder.apply(result.resultOrThrow());
-					} catch (Exception e) {
-						return Result.error("Unable to resolve element: " + e.getMessage());
-					}
-					return Optional.ofNullable(value).map(Result::success).orElseGet(() -> Result.error("Unknown element: " + result.resultOrThrow()));
+		return STRING.map(stringEncoder, either -> {
+			if (either.isLeft()) {
+				String str = either.leftOrThrow();
+				
+				try {
+					return stringDecoder.apply(str);
+				} catch (DecoderException e) {
+					throw new DecoderException("Unable to decode element from string '" + str + "': " + e.getMessage(), e);
 				}
-				return Result.error("Unable to resolve element: " + result.errorOrThrow());
 			}
-		);
+			DecoderException e = either.rightOrThrow();
+			throw new DecoderException("Unable to resolve element: " + e.getMessage(), e);
+		});
 	}
 }

@@ -18,18 +18,18 @@
 
 package net.luis.utils.io.codec.types.temporal.offset;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.temporal.offset.OffsetDateTimeConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.temporal.offset.OffsetDateTimeConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for offset date times.<br>
@@ -40,12 +40,16 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDateTimeConstraintConfig> implements OffsetDateTimeConstraint<OffsetDateTimeCodec> {
+public class OffsetDateTimeCodec
+	extends AbstractConstrainableCodec<OffsetDateTime, OffsetDateTimeConstraintConfig, OffsetDateTimeCodec>
+	implements OffsetDateTimeConstraint<OffsetDateTimeCodec> {
 	
 	/**
 	 * Constructs a new offset date time codec.<br>
 	 */
-	public OffsetDateTimeCodec() {}
+	public OffsetDateTimeCodec() {
+		super(OffsetDateTimeCodec::new, OffsetDateTimeConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new offset date time codec with the specified constraint configuration.<br>
@@ -54,93 +58,52 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 	 * @throws NullPointerException If the constraint config is null
 	 */
 	private OffsetDateTimeCodec(@NonNull OffsetDateTimeConstraintConfig constraintConfig) {
-		super(constraintConfig);
+		super(OffsetDateTimeCodec::new, constraintConfig);
 	}
 	
 	@Override
-	public @NonNull OffsetDateTimeCodec apply(@NonNull UnaryOperator<OffsetDateTimeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new OffsetDateTimeCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(OffsetDateTimeConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable OffsetDateTime value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable OffsetDateTime value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
-			return Result.error("Unable to encode null as offset date time using '" + this + "'");
+			throw new EncoderException("Unable to encode null as offset date time", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(value.toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString());
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull OffsetDateTime key) {
+	public @NonNull String encodeKey(@NonNull OffsetDateTime key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key.toString());
+		return this.validateEncodeConstraints(key).toString();
 	}
 	
 	@Override
-	public <R> @NonNull Result<OffsetDateTime> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull OffsetDateTime decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as offset date time using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as offset date time", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value);
 		try {
 			OffsetDateTime dateTime = OffsetDateTime.parse(string);
-			
-			Result<Void> constraintResult = this.checkConstraints(dateTime);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(dateTime);
+			return this.validateDecodeConstraints(dateTime);
 		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode offset date time '" + string + "' using '" + this + "': Unable to parse offset date time: " + e.getMessage());
+			throw new DecoderException("Unable to decode offset date time '" + string + "': " + e.getMessage(), this, e);
 		}
 	}
 	
 	@Override
-	public @NonNull Result<OffsetDateTime> decodeKey(@NonNull String key) {
+	public @NonNull OffsetDateTime decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			OffsetDateTime dateTime = OffsetDateTime.parse(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(dateTime);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(dateTime);
+			return this.validateDecodeConstraints(dateTime);
 		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode key '" + key + "' as offset date time using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode key '" + key + "' as offset date time: " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedOffsetDateTimeCodec[constraints=" + config + "]";
-		}).orElse("OffsetDateTimeCodec");
 	}
 }

@@ -197,7 +197,7 @@ public interface URIConstraint<C> extends ApplicableConstraint<URIConstraintConf
 	 */
 	default @NonNull C path(@NonNull UnaryOperator<URIPathConstraintBuilder> builder) {
 		Objects.requireNonNull(builder, "Builder must not be null");
-
+		
 		URIPathConstraintBuilder pathBuilder = new URIPathConstraintBuilder();
 		builder.apply(pathBuilder);
 		return this.apply(config -> config.withPath(pathBuilder.build()));

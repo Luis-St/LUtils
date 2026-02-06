@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.exception.ReflectionException;
+import net.luis.utils.io.codec.decoder.DecoderException;
 import net.luis.utils.io.codec.function.CodecBuilderFunction;
-import net.luis.utils.util.result.Result;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import org.jspecify.annotations.NonNull;
 
@@ -87,12 +87,12 @@ public class CodecCreator<O, F extends CodecBuilderFunction> {
 				Optional<Object> optional = this.invokeCreateMethod(function, components);
 				
 				if (optional.isEmpty()) {
-					return Result.error("Unable to create object with function '" + function + "' and decoded components: " + components);
+					throw new DecoderException("Unable to create object with function '" + function + "' and decoded components: " + components);
 				}
 				
-				return Result.success((O) optional.orElseThrow());
+				return (O) optional.orElseThrow();
 			} catch (ReflectionException e) {
-				return Result.error("Unable to create object with function '" + function + "' and decoded components " + components + ": " + e.getMessage());
+				throw new DecoderException("Unable to create object with function '" + function + "' and decoded components " + components + ": " + e.getMessage(), e);
 			}
 		});
 	}

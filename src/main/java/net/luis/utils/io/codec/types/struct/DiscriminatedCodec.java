@@ -20,8 +20,10 @@ package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
+import net.luis.utils.io.codec.provider.TypeProviderException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -90,7 +92,7 @@ import java.util.Objects;
  * @param <T> The type of the discriminator value
  */
 
-public class DiscriminatedCodec<C, T> extends AbstractCodec<C, Object> {
+public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
 	
 	/**
 	 * The name of the discriminator field in the parent object.<br>
@@ -125,55 +127,61 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C, Object> {
 	}
 	
 	@Override
-	public @NonNull <R> Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
+	public @NonNull <R> R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null value as discriminated using '" + this + "'");
+			throw new EncoderException("Unable to encode null value as discriminated", this);
 		}
 		
-		Result<R> discriminatorFieldResult = provider.get(current, this.discriminatedField);
-		if (discriminatorFieldResult.isError() || discriminatorFieldResult.resultOrThrow() == null) {
-			return Result.error("Unable to encode value as discriminated using '" + this + "': Discriminator field '" + this.discriminatedField + "' not found");
+		R discriminatorField;
+		try {
+			discriminatorField = provider.get(current, this.discriminatedField);
+		} catch (TypeProviderException e) {
+			throw new EncoderException("Unable to encode value as discriminated using '" + this + "': Discriminator field '" + this.discriminatedField + "' not found", this, e);
 		}
 		
-		Result<T> discriminatorResult = this.discriminatedCodec.decodeStart(provider, current, discriminatorFieldResult.resultOrThrow());
-		if (discriminatorResult.isError()) {
-			return Result.error("Unable to encode value as discriminated using '" + this + "': Failed to decode discriminator field: " + discriminatorResult.errorOrThrow());
+		T discriminator;
+		try {
+			discriminator = this.discriminatedCodec.decode(provider, current, discriminatorField);
+		} catch (DecoderException e) {
+			throw new EncoderException("Unable to encode value as discriminated using '" + this + "': Failed to decode discriminator field", this, e);
 		}
 		
-		T discriminatorValue = discriminatorResult.resultOrThrow();
-		Codec<C> codec = this.provider.getCodec(discriminatorValue);
+		Codec<C> codec = this.provider.getCodec(discriminator);
 		if (codec == null) {
-			return Result.error("Unable to encode value as discriminated using '" + this + "': No codec found for discriminator value '" + discriminatorValue + "'");
+			throw new EncoderException("Unable to encode value as discriminated using '" + this + "': No codec found for discriminator value '" + discriminator + "'", this);
 		}
-		return codec.encodeStart(provider, current, value);
+		return codec.encode(provider, current, value);
 	}
 	
 	@Override
-	public @NonNull <R> Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public @NonNull <R> C decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as discriminated using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as discriminated", this);
 		}
 		
-		Result<R> discriminatorFieldResult = provider.get(current, this.discriminatedField);
-		if (discriminatorFieldResult.isError() || discriminatorFieldResult.resultOrThrow() == null) {
-			return Result.error("Unable to decode value as discriminated using '" + this + "': Discriminator field '" + this.discriminatedField + "' not found");
+		R discriminatorField;
+		try {
+			discriminatorField = provider.get(current, this.discriminatedField);
+		} catch (TypeProviderException e) {
+			throw new DecoderException("Unable to decode value as discriminated: Discriminator field '" + this.discriminatedField + "' not found", this, e);
 		}
 		
-		Result<T> discriminatorResult = this.discriminatedCodec.decodeStart(provider, current, discriminatorFieldResult.resultOrThrow());
-		if (discriminatorResult.isError()) {
-			return Result.error("Unable to decode value as discriminated using '" + this + "': Failed to decode discriminator field: " + discriminatorResult.errorOrThrow());
+		T discriminator;
+		try {
+			discriminator = this.discriminatedCodec.decode(provider, current, discriminatorField);
+		} catch (DecoderException e) {
+			throw new DecoderException("Unable to decode value as discriminated using '" + this + "': Failed to decode discriminator field", this, e);
 		}
 		
-		T discriminatorValue = discriminatorResult.resultOrThrow();
-		Codec<C> codec = this.provider.getCodec(discriminatorValue);
+		Codec<C> codec = this.provider.getCodec(discriminator);
 		if (codec == null) {
-			return Result.error("Unable to decode value as discriminated using '" + this + "': No codec found for discriminator value '" + discriminatorValue + "'");
+			throw new DecoderException("Unable to decode value as discriminated: No codec found for discriminator value '" + discriminator + "'", this);
 		}
-		return codec.decodeStart(provider, current, value);
+		return codec.decode(provider, current, value);
 	}
 	
 	//region Object overrides

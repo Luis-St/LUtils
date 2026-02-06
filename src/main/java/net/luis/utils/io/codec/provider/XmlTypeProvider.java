@@ -606,7 +606,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 *
 	 * @param current The current elements
 	 * @param value The value elements
-	 * @return A result containing the merged container or an error
+	 * @return The merged container
 	 * @throws NullPointerException If the current or value elements are null
 	 */
 	private @NonNull XmlElement mergeUndefined(@NonNull XmlElements current, @NonNull XmlElements value) {

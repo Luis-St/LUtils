@@ -42,7 +42,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	private static final Object EMPTY_ELEMENT = new Object() {
 		@Override
 		public String toString() {
-			return  "Empty java element has no string representation";
+			return "Empty java element has no string representation";
 		}
 	};
 	

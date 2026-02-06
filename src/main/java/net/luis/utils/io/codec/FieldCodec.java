@@ -18,8 +18,9 @@
 
 package net.luis.utils.io.codec;
 
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -40,7 +41,7 @@ import java.util.function.Function;
  *     If the current value is not a data structure, the codec will return an error.
  * </p>
  * <p>
- *     The value in {@link #decodeStart(TypeProvider, Object, Object)} must be a data structure that contains the named value.<br>
+ *     The value in {@link #decode(TypeProvider, Object, Object)} must be a data structure that contains the named value.<br>
  *     If the value is not a data structure or the named value is not present, the codec will return an error.
  * </p>
  *
@@ -91,17 +92,18 @@ public class FieldCodec<C, O> {
 	 * @param provider The type provider
 	 * @param current The current value
 	 * @param object The object
-	 * @return The result of the encoding operation
+	 * @return The object as map with the encoded component
 	 * @param <R> The type of the current value
 	 * @throws NullPointerException If the type provider or current value is null
+	 * @throws EncoderException If an error occurs during encoding
 	 * @see #encodeInternal(TypeProvider, Object, Object)
 	 */
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable O object) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable O object) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
 		if (object == null) {
-			return Result.error("Unable to encode component because the component can not be retrieved from a null object");
+			throw new EncoderException("Unable to encode component because the component can not be retrieved from a null object", this.codec);
 		}
 		return this.encodeInternal(provider, current, this.getter.apply(object));
 	}
@@ -114,28 +116,25 @@ public class FieldCodec<C, O> {
 	 * @param map The map to encode the value into
 	 * @param value The value to encode
 	 * @param <R> The type to encode into
-	 * @return The result
+	 * @return The object as map with the encoded component
 	 * @throws NullPointerException If the provider or map is null
+	 * @throws EncoderException If an error occurs during encoding
 	 */
-	private <R> @NonNull Result<R> encodeInternal(@NonNull TypeProvider<R> provider, @NonNull R map, @Nullable C value) {
+	private <R> @NonNull R encodeInternal(@NonNull TypeProvider<R> provider, @NonNull R map, @Nullable C value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(map, "Current value must not be null");
 		
-		Result<R> encodedResult = this.codec.encodeStart(provider, provider.empty(), value);
-		if (encodedResult.isError()) {
-			return Result.error("Unable to encode named '" + this.name + "' '" + value + "' with '" + this + "': " + encodedResult.errorOrThrow());
+		try {
+			R encodedValue = this.codec.encode(provider, provider.empty(), value);
+			if (provider.isEmpty(encodedValue)) {
+				return provider.empty();
+			}
+			
+			provider.set(map, this.name, encodedValue);
+			return map;
+		} catch (EncoderException e) {
+			throw new EncoderException("Unable to encode named '" + this.name + "' '" + value, this.codec, e);
 		}
-		
-		R encoded = encodedResult.resultOrThrow();
-		if (provider.getEmpty(encoded).isSuccess()) {
-			return Result.success(provider.empty());
-		}
-		
-		Result<R> result = provider.set(map, this.name, encoded);
-		if (result.isError()) {
-			return Result.error("Unable to encode named '" + this.name + "' '" + value + "' with '" + this + "': " + result.errorOrThrow());
-		}
-		return Result.success(map);
 	}
 	
 	/**
@@ -146,79 +145,71 @@ public class FieldCodec<C, O> {
 	 * @param current The current value
 	 * @param map The map to decode the value from
 	 * @param <R> The type to decode from
-	 * @return The result
+	 * @return The decoded value
 	 * @throws NullPointerException If the provider is null
+	 * @throws DecoderException If an error occurs during decoding
 	 */
-	public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R map) {
+	public <R> @NonNull C decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R map) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (map == null) {
-			return Result.error("Unable to decode named '" + this.name + "' null value using '" + this + "'");
+			throw new DecoderException("Unable to decode named '" + this.name + "' null value", this.codec);
 		}
 		
-		Result<R> value = provider.get(map, this.name);
-		if (value.isError()) {
-			return this.decodeStartWithAlias(provider, map, value.errorOrThrow());
+		try {
+			R value = provider.get(map, this.name);
+			return this.codec.decode(provider, map, value);
+		} catch (DecoderException e) {
+			try {
+				return this.decodeWithAlias(provider, map);
+			} catch (DecoderException inner) {
+				DecoderException exception = new DecoderException("Unable to decode named '" + this.name + "' from '" + map + "'", this.codec, inner);
+				exception.addSuppressed(e);
+				throw exception;
+			}
 		}
-		
-		Result<C> result = this.codec.decodeStart(provider, map, value.resultOrThrow());
-		if (result.isError()) {
-			return this.decodeStartWithAlias(provider, map, result.errorOrThrow());
-		}
-		return result;
 	}
 	
 	/**
 	 * Decodes the value using the given provider and map.<br>
 	 * This method will try to decode the value by the first alias which is present in the map.<br>
 	 * If no alias is present, an error will be returned.<br>
-	 * The result will contain the decoded value or an error message.<br>
 	 *
 	 * @param provider The type provider
 	 * @param map The map to decode the value from
-	 * @param error The actual error message which occurred during decoding
-	 * @return The result
+	 * @return The decoded value
 	 * @param <R> The type to decode from
 	 * @throws NullPointerException If the provider, map or error is null
 	 */
-	private <R> @NonNull Result<C> decodeStartWithAlias(@NonNull TypeProvider<R> provider, @NonNull R map, @NonNull String error) {
+	private <R> @NonNull C decodeWithAlias(@NonNull TypeProvider<R> provider, @NonNull R map) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(map, "Map must not be null");
-		Objects.requireNonNull(error, "Error message must not be null");
 		
-		Result<String> name = this.getDecodeName(provider, map);
-		if (name.isError()) {
-			return Result.error("Unable to decode named '" + this.name + "' of '" + map + "' with '" + this + "': " + name.errorOrThrow() + "\nSuppresses actual error: " + error);
-		}
-		
-		Result<R> value = provider.get(map, name.resultOrThrow());
-		if (value.isError()) {
-			return Result.error("Unable to decode named '" + name.resultOrThrow() + "' of '" + map + "' with '" + this + "': " + value.errorOrThrow() + "\nSuppresses actual error: " + error);
-		}
-		return this.codec.decodeStart(provider, map, value.resultOrThrow());
+		String name = this.getDecodeName(provider, map);
+		R value = provider.get(map, name);
+		return this.codec.decode(provider, map, value);
 	}
 	
 	/**
 	 * Gets the first alias which is present in the given map or an error.<br>
-	 * The result contains the name or an error message.<br>
 	 *
 	 * @param provider The type provider
 	 * @param map The map to decode the value from
-	 * @return The result
+	 * @return The alias name
 	 * @param <R> The type to decode from
 	 * @throws NullPointerException If the provider or map is null
+	 * @throws DecoderException If an error occurs during alias checking
 	 */
-	private <R> @NonNull Result<String> getDecodeName(@NonNull TypeProvider<R> provider, @NonNull R map) {
+	private <R> @NonNull String getDecodeName(@NonNull TypeProvider<R> provider, @NonNull R map) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(map, "Map must not be null");
 		if (this.aliases.isEmpty()) {
-			return Result.error("Name '" + this.name + "' not found in '" + map + "', no aliases configured");
+			throw new DecoderException("Name '" + this.name + "' not found in '" + map + "', no aliases configured", this.codec);
 		}
 		
 		return this.aliases.stream().filter(alias -> {
-			Result<Boolean> hasAlias = provider.has(map, alias);
-			return hasAlias.isSuccess() && hasAlias.resultOrThrow();
-		}).findFirst().map(Result::success).orElse(Result.error("Name and aliases '" + this.name + "' and '" + this.aliases + "' not found in '" + map + "'"));
+			return provider.has(map, alias);
+		}).findFirst().orElseThrow(() -> new DecoderException("Name and aliases '" + this.name + "' and '" + this.aliases + "' not found in '" + map + "'", this.codec));
 	}
 	
 	//region Object overrides

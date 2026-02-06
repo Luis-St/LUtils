@@ -18,116 +18,80 @@
 
 package net.luis.utils.io.codec.types.primitive.numeric;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.numeric.IntegerConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.numeric.IntegerConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for integers.<br>
  *
  * @author Luis-St
  */
-public class IntegerCodec extends AbstractCodec<Integer, IntegerConstraintConfig<Integer>> implements IntegerConstraint<Integer, IntegerCodec> {
+public class IntegerCodec
+	extends AbstractConstrainableCodec<Integer, IntegerConstraintConfig<Integer>, IntegerCodec>
+	implements IntegerConstraint<Integer, IntegerCodec> {
 	
 	/**
 	 * Constructs a new integer codec.<br>
 	 */
-	public IntegerCodec() {}
+	public IntegerCodec() {
+		super(IntegerCodec::new, IntegerConstraintConfig.unconstrained());
+	}
 	
 	/**
 	 * Constructs a new integer codec with the specified integer constraint configuration.<br>
 	 *
-	 * @param constraintConfig The integer constraint configuration
+	 * @param config The integer constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	private IntegerCodec(@NonNull IntegerConstraintConfig<Integer> constraintConfig) {
-		super(constraintConfig);
+	private IntegerCodec(@NonNull IntegerConstraintConfig<Integer> config) {
+		super(IntegerCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull IntegerCodec apply(@NonNull UnaryOperator<IntegerConstraintConfig<Integer>> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new IntegerCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(IntegerConstraintConfig.unconstrained()))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Integer value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Integer value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as integer using '" + this + "'");
+			throw new EncoderException("Unable to encode null as integer", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createInteger(value);
+		return provider.createInteger(this.validateEncodeConstraints(value));
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull Integer key) {
+	public @NonNull String encodeKey(@NonNull Integer key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(Integer.toString(key));
+		return Integer.toString(this.validateEncodeConstraints(key));
 	}
 	
 	@Override
-	public <R> @NonNull Result<Integer> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Integer decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as integer using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as integer", this);
 		}
 		
-		Result<Integer> result = provider.getInteger(value);
-		if (result.isError()) {
-			return result;
-		}
-		
-		Integer intValue = result.resultOrThrow();
-		Result<Void> constraintResult = this.checkConstraints(intValue);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(intValue);
+		return this.validateDecodeConstraints(provider.getInteger(value));
 	}
 	
 	@Override
-	public @NonNull Result<Integer> decodeKey(@NonNull String key) {
+	public @NonNull Integer decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			Integer intValue = Integer.parseInt(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(intValue);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(intValue);
-		} catch (Exception e) {
-			return Result.error("Unable to decode key '" + key + "' as integer using '" + this + "': " + e.getMessage());
+			return this.validateDecodeConstraints(intValue);
+		} catch (NumberFormatException e) {
+			throw new DecoderException("Unable to decode key '" + key + "' as integer: " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedIntegerCodec[constraints=" + config + "]";
-		}).orElse("IntegerCodec");
 	}
 }

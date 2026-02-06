@@ -27,35 +27,78 @@ import org.jspecify.annotations.Nullable;
  *
  * @author Luis-St
  */
-public class EncoderException extends RuntimeException {
+public class EncoderException extends Exception {
 	
 	/**
-	 * Constructs a new encoder exception with no details.<br>
+	 * The encoder that caused the exception.<br>
 	 */
-	public EncoderException() {}
+	private final Encoder<?> encoder;
+	
+	/**
+	 * Constructs a new encoder exception with the specified encoder.<br>
+	 * @param encoder The encoder that caused the exception
+	 */
+	public EncoderException(@Nullable Encoder<?> encoder) {
+		this.encoder = encoder;
+	}
 	
 	/**
 	 * Constructs a new encoder exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
 	public EncoderException(@Nullable String message) {
+		this(message, (Encoder<?>) null);
+	}
+	
+	/**
+	 * Constructs a new encoder exception with the specified message and encoder.<br>
+	 *
+	 * @param message The message of the exception
+	 * @param encoder The encoder that caused the exception
+	 */
+	public EncoderException(@Nullable String message, @Nullable Encoder<?> encoder) {
 		super(message);
+		this.encoder = encoder;
 	}
 	
 	/**
 	 * Constructs a new encoder exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
 	public EncoderException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
+		this(message, null, cause);
 	}
 	
 	/**
-	 * Constructs a new encoder exception with the specified cause.<br>
+	 * Constructs a new encoder exception with the specified message, encoder and cause.<br>
+	 *
+	 * @param message The message of the exception
+	 * @param encoder The encoder that caused the exception
 	 * @param cause The cause of the exception
 	 */
-	public EncoderException(@Nullable Throwable cause) {
+	public EncoderException(@Nullable String message, @Nullable Encoder<?> encoder, @Nullable Throwable cause) {
+		super(message, cause);
+		this.encoder = encoder;
+	}
+	
+	/**
+	 * Constructs a new encoder exception with the specified encoder and cause.<br>
+	 *
+	 * @param encoder The encoder that caused the exception
+	 * @param cause The cause of the exception
+	 */
+	public EncoderException(@Nullable Encoder<?> encoder, @Nullable Throwable cause) {
 		super(cause);
+		this.encoder = encoder;
+	}
+	
+	/**
+	 * Gets the encoder that caused the exception.<br>
+	 * @return The encoder, or null if no encoder is associated with the exception
+	 */
+	public @Nullable Encoder<?> getCodec() {
+		return this.encoder;
 	}
 }

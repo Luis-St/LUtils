@@ -23,7 +23,6 @@ import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
@@ -37,7 +36,6 @@ import java.util.stream.Collectors;
  * Utility class providing static methods for common constraint validation patterns.<br>
  * <p>
  *     This class contains reusable validation logic that is shared across multiple constraint configuration records.
- *     All methods return {@link Result Result&lt;Void&gt;} indicating success or failure of the validation.
  * </p>
  * <p>
  *     The validation methods use early-exit behavior through the {@link #validateAll(Runnable[])} method,
@@ -214,7 +212,9 @@ public final class ConstraintValidators {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(custom, "Custom constraint must not be null");
 		
-		custom.map(constraint -> constraint.validate(value)).orElseGet(Result::success);
+		if (custom.isPresent()) {
+			custom.orElseThrow().validate(value);
+		}
 	}
 	
 	/**
@@ -912,9 +912,10 @@ public final class ConstraintValidators {
 			return;
 		}
 		
-		Result<Void> result = config.get().matches(value);
-		if (result.isError()) {
-			throw new ConstraintViolateException("Field '" + fieldName + "' constraint failed: " + result.errorOrThrow());
+		try {
+			config.get().validate(value);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Field '" + fieldName + "' constraint failed: " + e.getMessage(), e);
 		}
 	}
 	

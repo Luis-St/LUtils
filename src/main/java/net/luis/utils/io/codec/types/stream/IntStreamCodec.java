@@ -19,8 +19,9 @@
 package net.luis.utils.io.codec.types.stream;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -34,7 +35,7 @@ import java.util.stream.Stream;
  *
  * @author Luis-St
  */
-public class IntStreamCodec extends AbstractCodec<IntStream, Object> {
+public class IntStreamCodec extends AbstractCodec<IntStream> {
 	
 	/**
 	 * The internal codec that handles the conversion between a stream of boxed integers and the unboxed version.<br>
@@ -47,29 +48,25 @@ public class IntStreamCodec extends AbstractCodec<IntStream, Object> {
 	public IntStreamCodec() {}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable IntStream value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable IntStream value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
-			return Result.error("Unable to encode null as int stream using '" + this + "'");
+			throw new EncoderException("Unable to encode null as int stream", this);
 		}
-		return this.internalCodec.encodeStart(provider, current, value.boxed());
+		
+		return this.internalCodec.encode(provider, current, value.boxed());
 	}
 	
 	@Override
-	public <R> @NonNull Result<IntStream> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull IntStream decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as int stream using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as int stream", this);
 		}
 		
-		Result<Stream<Integer>> result = this.internalCodec.decodeStart(provider, current, value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		return Result.success(result.resultOrThrow().mapToInt(Integer::intValue));
+		return this.internalCodec.decode(provider, current, value).mapToInt(Integer::intValue);
 	}
 	
 	@Override

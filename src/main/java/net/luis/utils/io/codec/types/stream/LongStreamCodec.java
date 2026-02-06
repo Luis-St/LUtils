@@ -19,8 +19,9 @@
 package net.luis.utils.io.codec.types.stream;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -34,7 +35,7 @@ import java.util.stream.Stream;
  *
  * @author Luis-St
  */
-public class LongStreamCodec extends AbstractCodec<LongStream, Object> {
+public class LongStreamCodec extends AbstractCodec<LongStream> {
 	
 	/**
 	 * The internal codec that handles the conversion between a stream of boxed longs and the unboxed version.<br>
@@ -47,29 +48,25 @@ public class LongStreamCodec extends AbstractCodec<LongStream, Object> {
 	public LongStreamCodec() {}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LongStream value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LongStream value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
-			return Result.error("Unable to encode null as long stream using '" + this + "'");
+			throw new EncoderException("Unable to encode null as long stream", this);
 		}
-		return this.internalCodec.encodeStart(provider, current, value.boxed());
+		
+		return this.internalCodec.encode(provider, current, value.boxed());
 	}
 	
 	@Override
-	public <R> @NonNull Result<LongStream> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull LongStream decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as long stream using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as long stream", this);
 		}
 		
-		Result<Stream<Long>> result = this.internalCodec.decodeStart(provider, current, value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		return Result.success(result.resultOrThrow().mapToLong(Long::longValue));
+		return this.internalCodec.decode(provider, current, value).mapToLong(Long::longValue);
 	}
 	
 	@Override

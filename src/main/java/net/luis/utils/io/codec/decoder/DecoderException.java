@@ -27,35 +27,78 @@ import org.jspecify.annotations.Nullable;
  *
  * @author Luis-St
  */
-public class DecoderException extends RuntimeException {
+public class DecoderException extends Exception {
 	
 	/**
-	 * Constructs a new decoder exception with no details.<br>
+	 * The decoder that caused the exception.<br>
 	 */
-	public DecoderException() {}
+	private final Decoder<?> decoder;
+	
+	/**
+	 * Constructs a new decoder exception with the specified decoder.<br>
+	 * @param decoder The decoder that caused the exception
+	 */
+	public DecoderException(@Nullable Decoder<?> decoder) {
+		this.decoder = decoder;
+	}
 	
 	/**
 	 * Constructs a new decoder exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
 	public DecoderException(@Nullable String message) {
+		this(message, (Decoder<?>) null);
+	}
+	
+	/**
+	 * Constructs a new decoder exception with the specified message and decoder.<br>
+	 *
+	 * @param message The message of the exception
+	 * @param decoder The decoder that caused the exception
+	 */
+	public DecoderException(@Nullable String message, @Nullable Decoder<?> decoder) {
 		super(message);
+		this.decoder = decoder;
 	}
 	
 	/**
 	 * Constructs a new decoder exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
 	public DecoderException(@Nullable String message, @Nullable Throwable cause) {
+		this(message, null, cause);
+	}
+	
+	/**
+	 * Constructs a new decoder exception with the specified message, decoder and cause.<br>
+	 *
+	 * @param message The message of the exception
+	 * @param decoder The decoder that caused the exception
+	 * @param cause The cause of the exception
+	 */
+	public DecoderException(@Nullable String message, @Nullable Decoder<?> decoder, @Nullable Throwable cause) {
 		super(message, cause);
+		this.decoder = decoder;
 	}
 	
 	/**
 	 * Constructs a new decoder exception with the specified cause.<br>
+	 *
+	 * @param decoder The decoder that caused the exception
 	 * @param cause The cause of the exception
 	 */
-	public DecoderException(@Nullable Throwable cause) {
+	public DecoderException(@Nullable Decoder<?> decoder, @Nullable Throwable cause) {
 		super(cause);
+		this.decoder = decoder;
+	}
+	
+	/**
+	 * Gets the decoder that caused the exception.<br>
+	 * @return The decoder, or null if no decoder is associated with this exception
+	 */
+	public @Nullable Decoder<?> getDecoder() {
+		return this.decoder;
 	}
 }

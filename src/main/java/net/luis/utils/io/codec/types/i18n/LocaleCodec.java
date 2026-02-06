@@ -19,8 +19,9 @@
 package net.luis.utils.io.codec.types.i18n;
 
 import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -33,7 +34,7 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class LocaleCodec extends AbstractCodec<Locale, Object> {
+public class LocaleCodec extends AbstractCodec<Locale> {
 	
 	/**
 	 * Constructs a new locale codec.<br>
@@ -41,51 +42,46 @@ public class LocaleCodec extends AbstractCodec<Locale, Object> {
 	public LocaleCodec() {}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Locale value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Locale value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
 		if (value == null) {
-			return Result.error("Unable to encode null as locale using '" + this + "'");
+			throw new EncoderException("Unable to encode null as locale", this);
 		}
 		return provider.createString(value.toLanguageTag());
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull Locale key) {
+	public @NonNull String encodeKey(@NonNull Locale key) {
 		Objects.requireNonNull(key, "Key must not be null");
-		return Result.success(key.toLanguageTag());
+		return key.toLanguageTag();
 	}
 	
 	@Override
-	public <R> @NonNull Result<Locale> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Locale decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as locale using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as locale", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value);
 		try {
-			return Result.success(Locale.forLanguageTag(string));
+			return Locale.forLanguageTag(string);
 		} catch (Exception e) {
-			return Result.error("Unable to decode locale '" + string + "' using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode locale '" + string + ": " + e.getMessage(), this);
 		}
 	}
 	
 	@Override
-	public @NonNull Result<Locale> decodeKey(@NonNull String key) {
+	public @NonNull Locale decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(Locale.forLanguageTag(key));
+			return Locale.forLanguageTag(key);
 		} catch (Exception e) {
-			return Result.error("Unable to decode key '" + key + "' as locale using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode key '" + key + "' as locale: " + e.getMessage(), this);
 		}
 	}
 	

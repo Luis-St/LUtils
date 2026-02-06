@@ -20,9 +20,10 @@ package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Either;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -44,7 +45,7 @@ import java.util.Objects;
  * @param <F> The type of the first value
  * @param <S> The type of the second value
  */
-public class EitherCodec<F, S> extends AbstractCodec<Either<F, S>, Object> {
+public class EitherCodec<F, S> extends AbstractCodec<Either<F, S>> {
 	
 	/**
 	 * The codec used to encode and decode the values of the first type.<br>
@@ -74,37 +75,48 @@ public class EitherCodec<F, S> extends AbstractCodec<Either<F, S>, Object> {
 	}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Either<F, S> value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Either<F, S> value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null value as either using '" + this + "'");
+			throw new EncoderException("Unable to encode null value as either", this);
 		}
 		
-		return value.mapTo(
-			first -> this.firstCodec.encodeStart(provider, current, first),
-			second -> this.secondCodec.encodeStart(provider, current, second)
-		);
+		if (value.isLeft()) {
+			return this.firstCodec.encode(provider, current, value.leftOrThrow());
+		} else if (value.isRight()) {
+			return this.secondCodec.encode(provider, current, value.rightOrThrow());
+		} else {
+			throw new EncoderException("Either value must be either left or right", this);
+		}
 	}
 	
 	@Override
-	public <R> @NonNull Result<Either<F, S>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Either<F, S> decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as either");
+			throw new DecoderException("Unable to decode null value as either", this);
 		}
 		
-		Result<F> firstResult = this.firstCodec.decodeStart(provider, current, value);
-		Result<S> secondResult = this.secondCodec.decodeStart(provider, current, value);
-		if (firstResult.isError() && secondResult.isError()) {
-			return Result.error("Unable to decode value as either using '" + this + "': \n" + firstResult.errorOrThrow() + "\n" + secondResult.errorOrThrow());
+		DecoderException left;
+		try {
+			return Either.left(this.firstCodec.decode(provider, current, value));
+		} catch (DecoderException e) {
+			left = e;
 		}
 		
-		if (firstResult.isSuccess()) {
-			return firstResult.map(Either::left);
+		DecoderException right;
+		try {
+			return Either.right(this.secondCodec.decode(provider, current, value));
+		} catch (DecoderException e) {
+			right = e;
 		}
-		return secondResult.map(Either::right);
+		
+		DecoderException e = new DecoderException("Unable to decode value as either", this);
+		e.addSuppressed(right);
+		e.addSuppressed(left);
+		throw e;
 	}
 	
 	//region Object overrides

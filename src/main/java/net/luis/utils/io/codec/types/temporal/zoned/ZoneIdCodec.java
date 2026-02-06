@@ -18,18 +18,18 @@
 
 package net.luis.utils.io.codec.types.temporal.zoned;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneIdConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.temporal.zoned.ZoneIdConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.ZoneId;
 import java.time.zone.ZoneRulesException;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for zone ids.<br>
@@ -37,12 +37,16 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class ZoneIdCodec extends AbstractCodec<ZoneId, ZoneIdConstraintConfig> implements ZoneIdConstraint<ZoneIdCodec> {
+public class ZoneIdCodec
+	extends AbstractConstrainableCodec<ZoneId, ZoneIdConstraintConfig, ZoneIdCodec>
+	implements ZoneIdConstraint<ZoneIdCodec> {
 	
 	/**
 	 * Constructs a new zone id codec.<br>
 	 */
-	public ZoneIdCodec() {}
+	public ZoneIdCodec() {
+		super(ZoneIdCodec::new, ZoneIdConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new zone id codec with the given configuration.<br>
@@ -51,92 +55,52 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, ZoneIdConstraintConfig> i
 	 * @throws NullPointerException If the config is null
 	 */
 	private ZoneIdCodec(@NonNull ZoneIdConstraintConfig config) {
-		super(config);
+		super(ZoneIdCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull ZoneIdCodec apply(@NonNull UnaryOperator<ZoneIdConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new ZoneIdCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(ZoneIdConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZoneId value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZoneId value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as zone id using '" + this + "'");
+			throw new EncoderException("Unable to encode null as zone id", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(value.getId());
+		return provider.createString(this.validateEncodeConstraints(value).getId());
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull ZoneId key) {
+	public @NonNull String encodeKey(@NonNull ZoneId key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key.getId());
+		return this.validateEncodeConstraints(key).getId();
 	}
 	
 	@Override
-	public <R> @NonNull Result<ZoneId> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull ZoneId decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as zone id using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as zone id", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value);
 		try {
 			ZoneId zoneId = ZoneId.of(string);
-			
-			Result<Void> constraintResult = this.checkConstraints(zoneId);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(zoneId);
+			return this.validateDecodeConstraints(zoneId);
 		} catch (ZoneRulesException e) {
-			return Result.error("Unable to decode zone id '" + string + "' using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode zone id '" + string + "': " + e.getMessage(), this, e);
 		}
 	}
 	
 	@Override
-	public @NonNull Result<ZoneId> decodeKey(@NonNull String key) {
+	public @NonNull ZoneId decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			ZoneId zoneId = ZoneId.of(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(zoneId);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(zoneId);
+			return this.validateDecodeConstraints(zoneId);
 		} catch (ZoneRulesException e) {
-			return Result.error("Unable to decode key '" + key + "' as zone id using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode key '" + key + "' as zone id: " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedZoneIdCodec[constraints=" + config + "]";
-		}).orElse("ZoneIdCodec");
 	}
 }

@@ -21,14 +21,14 @@ package net.luis.utils.io.codec.types.array;
 import net.luis.utils.io.codec.*;
 import net.luis.utils.io.codec.constraint.config.collection.PrimitiveArrayConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.collection.PrimitiveArrayConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for long arrays.<br>
@@ -36,7 +36,9 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class LongArrayCodec extends AbstractCodec<long[], PrimitiveArrayConstraintConfig<long[]>> implements PrimitiveArrayConstraint<long[], LongArrayCodec> {
+public class LongArrayCodec
+	extends AbstractConstrainableCodec<long[], PrimitiveArrayConstraintConfig<long[]>, LongArrayCodec>
+	implements PrimitiveArrayConstraint<long[], LongArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of longs and the array representation.<br>
@@ -46,7 +48,9 @@ public class LongArrayCodec extends AbstractCodec<long[], PrimitiveArrayConstrai
 	/**
 	 * Constructs a new long array codec.<br>
 	 */
-	public LongArrayCodec() {}
+	public LongArrayCodec() {
+		super(LongArrayCodec::new, PrimitiveArrayConstraintConfig.longArray());
+	}
 	
 	/**
 	 * Constructs a new long array codec with the specified length constraint configuration.<br>
@@ -55,60 +59,31 @@ public class LongArrayCodec extends AbstractCodec<long[], PrimitiveArrayConstrai
 	 * @throws NullPointerException If the constraint config is null
 	 */
 	private LongArrayCodec(@NonNull PrimitiveArrayConstraintConfig<long[]> config) {
-		super(config);
+		super(LongArrayCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull LongArrayCodec apply(@NonNull UnaryOperator<PrimitiveArrayConstraintConfig<long[]>> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new LongArrayCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(PrimitiveArrayConstraintConfig.longArray()))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, long @Nullable [] value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, long @Nullable [] value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as long array using '" + this + "'");
+			throw new EncoderException("Unable to encode null as long array", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return this.internalCodec.encodeStart(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
+		this.validateEncodeConstraints(value);
+		return this.internalCodec.encode(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
 	}
 	
 	@Override
-	public <R> @NonNull Result<long[]> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> long @NonNull [] decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as long array using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as long array", this);
 		}
 		
-		Result<List<Long>> result = this.internalCodec.decodeStart(provider, current, value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		List<Long> list = result.resultOrThrow();
+		List<Long> list = this.internalCodec.decode(provider, current, value);
 		long[] array = ArrayUtils.toPrimitive(list.toArray(Long[]::new));
-		
-		Result<Void> constraintResult = this.checkConstraints(array);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(array);
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedLongArrayCodec[constraints=" + config + "]";
-		}).orElse("LongArrayCodec");
+		return this.validateDecodeConstraints(array);
 	}
 }

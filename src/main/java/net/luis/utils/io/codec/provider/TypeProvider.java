@@ -19,7 +19,6 @@
 package net.luis.utils.io.codec.provider;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -36,14 +35,12 @@ import java.util.Map;
  *     as long as a {@link TypeProvider TypeProvider} is provided for that type.
  * </p>
  * <p>
- *     The most methods in this interface return a {@link Result} object.<br>
- *     This is to provide a way to handle errors in the encoding and decoding process.<br>
- *     If the operation was successful, the {@link Result} will contain the result of the operation<br>
- *     or if the operation failed, the {@link Result} will contain an error message.
+ *     The most methods in this interface might fail.<br>
+ *     If a method fails, it should throw a {@link TypeProviderException}.<br>
  * </p>
  * <p>
  *     All methods of this interface must handle {@code null} values appropriately.<br>
- *     If a method does not accept {@code null} values, it must return an error {@link Result}.
+ *     If a method does not accept {@code null} values, it must throw a {@link TypeProviderException} when a {@code null} value is passed.<br>
  * </p>
  *
  * @author Luis-St
