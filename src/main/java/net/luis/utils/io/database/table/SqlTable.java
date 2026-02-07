@@ -45,7 +45,6 @@ public interface SqlTable<T> {
 
 	@NonNull SqlJoinBuilder<T> leftJoin(@NonNull SqlTable<?> other);
 
-	// DDL methods
 	void create();
 
 	void createIfNotExists();

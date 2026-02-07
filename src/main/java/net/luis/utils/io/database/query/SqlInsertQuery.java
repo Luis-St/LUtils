@@ -36,11 +36,11 @@ public interface SqlInsertQuery<T> {
 	@NonNull SqlInsertQuery<T> insert(@NonNull T entity);
 
 	@SuppressWarnings("unchecked")
-	@NonNull SqlInsertQuery<T> insert(@NonNull T... entities);
+	@NonNull SqlInsertQuery<T> insert(T @NonNull ... entities);
 
 	@NonNull SqlInsertQuery<T> upsert(@NonNull T entity, @NonNull SqlColumn<?> conflictColumn, @NonNull Function<T, T> onConflict);
 
-	@NonNull SqlInsertQuery<T> insertOrIgnore(@NonNull T entity, @NonNull SqlColumn<?>... conflictColumns);
+	@NonNull SqlInsertQuery<T> insertOrIgnore(@NonNull T entity, SqlColumn<?> @NonNull ... conflictColumns);
 
 	int execute();
 
@@ -49,4 +49,8 @@ public interface SqlInsertQuery<T> {
 	@NonNull List<T> fetchInserted();
 
 	@NonNull CompletableFuture<Integer> executeAsync();
+	
+	@NonNull CompletableFuture<List<T>> returningAsync();
+	
+	@NonNull CompletableFuture<List<T>> fetchInsertedAsync();
 }

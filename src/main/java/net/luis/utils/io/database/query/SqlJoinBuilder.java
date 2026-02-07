@@ -37,7 +37,7 @@ public interface SqlJoinBuilder<T> {
 
 	@NonNull SqlJoinBuilder<T> where(@NonNull SqlCondition condition);
 
-	@NonNull SqlJoinBuilder<T> orderBy(@NonNull SqlOrderable... orderables);
+	@NonNull SqlJoinBuilder<T> orderBy(SqlOrderable @NonNull ... orderables);
 
 	@NonNull SqlJoinBuilder<T> limit(int limit);
 

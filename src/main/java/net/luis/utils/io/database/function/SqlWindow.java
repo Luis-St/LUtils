@@ -57,11 +57,11 @@ public class SqlWindow {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object partitionBy(@NonNull SqlColumn<?>... columns) {
+	public static @NonNull Object partitionBy(SqlColumn<?> @NonNull ... columns) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object orderBy(@NonNull SqlOrderable... orderables) {
+	public static @NonNull Object orderBy(SqlOrderable@NonNull ... orderables) {
 		throw new UnsupportedOperationException();
 	}
 }

@@ -36,7 +36,7 @@ public interface SqlSelectProjectionQuery<T> {
 
 	@NonNull SqlSelectProjectionQuery<T> where(@NonNull SqlCondition condition);
 
-	@NonNull SqlSelectProjectionQuery<T> orderBy(@NonNull SqlOrderable... orderables);
+	@NonNull SqlSelectProjectionQuery<T> orderBy(SqlOrderable @NonNull ... orderables);
 
 	@NonNull SqlSelectProjectionQuery<T> limit(int limit);
 

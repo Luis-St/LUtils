@@ -67,12 +67,14 @@ public interface SqlForeignKey<K, V> {
 	void load();
 
 	@NonNull CompletableFuture<V> loadAsync();
-
-	void reload();
-
-	void loadIfAbsent();
-
+	
 	void load(@NonNull SqlLoadOptions options);
+	
+	@NonNull CompletableFuture<V> loadAsync(@NonNull SqlLoadOptions options);
+	
+	void reload();
+	
+	@NonNull CompletableFuture<V> reloadAsync();
 
 	@NonNull SqlForeignKey<K, V> withValue(@Nullable V value);
 }

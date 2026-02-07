@@ -20,7 +20,7 @@ package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlOrderable;
-import net.luis.utils.io.database.page.SqlPage;
+import net.luis.utils.io.database.SqlPage;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -43,7 +43,7 @@ public interface SqlSelectQuery<T> {
 
 	@NonNull SqlSelectQuery<T> whereNotExists(@NonNull SqlSelectQuery<?> subquery);
 
-	@NonNull SqlSelectQuery<T> orderBy(@NonNull SqlOrderable... orderables);
+	@NonNull SqlSelectQuery<T> orderBy(SqlOrderable @NonNull ... orderables);
 
 	@NonNull SqlSelectQuery<T> limit(int limit);
 

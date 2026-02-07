@@ -33,64 +33,58 @@ import java.util.List;
  * @author Luis-St
  */
 public interface SqlColumn<T> extends SqlOrderable {
-
-	// Equality
+	
 	@NonNull SqlCondition equalTo(@NonNull T value);
-
+	
 	@NonNull SqlCondition notEqualTo(@NonNull T value);
-
+	
 	@NonNull SqlCondition equalToIgnoreCase(@NonNull String value);
-
-	// Null
+	
 	@NonNull SqlCondition isNull();
-
+	
 	@NonNull SqlCondition isNotNull();
-
-	// Comparison
+	
 	@NonNull SqlCondition greaterThan(@NonNull T value);
-
+	
 	@NonNull SqlCondition greaterThanOrEqualTo(@NonNull T value);
-
+	
 	@NonNull SqlCondition lessThan(@NonNull T value);
-
+	
 	@NonNull SqlCondition lessThanOrEqualTo(@NonNull T value);
-
+	
 	@NonNull SqlCondition between(@NonNull T start, @NonNull T end);
-
+	
 	@NonNull SqlCondition withinLast(@NonNull Duration duration);
-
-	// String patterns
+	
 	@NonNull SqlCondition like(@NonNull String pattern);
-
+	
 	@NonNull SqlCondition startsWith(@NonNull String prefix);
-
+	
 	@NonNull SqlCondition contains(@NonNull String substring);
-
+	
 	@NonNull SqlCondition endsWith(@NonNull String suffix);
-
+	
 	@NonNull SqlCondition lengthGreaterThan(int length);
-
-	// Collection
+	
 	@SuppressWarnings("unchecked")
-	@NonNull SqlCondition in(@NonNull T... values);
-
+	@NonNull SqlCondition in(T @NonNull ... values);
+	
 	@NonNull SqlCondition in(@NonNull List<T> values);
-
+	
 	@NonNull SqlCondition in(@NonNull SqlSelectQuery<?> subquery);
-
+	
 	@SuppressWarnings("unchecked")
-	@NonNull SqlCondition notIn(@NonNull T... values);
-
-	// Ordering (SqlOrderable)
+	@NonNull SqlCondition notIn(T @NonNull ... values);
+	
 	@Override
 	@NonNull SqlColumn<T> asc();
-
+	
 	@Override
 	@NonNull SqlColumn<T> desc();
-
+	
 	@Override
 	@NonNull SqlColumn<T> nullsFirst();
-
+	
 	@Override
 	@NonNull SqlColumn<T> nullsLast();
 }

@@ -16,20 +16,26 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.result;
+package net.luis.utils.io.database;
 
 import org.jspecify.annotations.NonNull;
 
+import java.time.Duration;
+import java.util.function.Supplier;
+
 /**
- * Interface representing a row with two columns.<br>
+ * Interface for SQL retry operations.<br>
  *
- * @param <A> The type of the first column
- * @param <B> The type of the second column
  * @author Luis-St
  */
-public interface Row2<A, B> {
+public interface SqlRetry {
 
-	@NonNull A first();
+	static @NonNull SqlRetry withBackoff(int maxRetries, @NonNull Duration initialDelay) {
+		throw new UnsupportedOperationException();
+	}
 
-	@NonNull B second();
+	@SuppressWarnings("unchecked")
+	@NonNull SqlRetry retryOn(Class<? extends Throwable> @NonNull ... exceptions);
+
+	<T> T execute(@NonNull Supplier<T> action);
 }

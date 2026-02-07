@@ -48,7 +48,7 @@ public class SqlString {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object concat(@NonNull Object... values) {
+	public static @NonNull Object concat(Object @NonNull ... values) {
 		throw new UnsupportedOperationException();
 	}
 

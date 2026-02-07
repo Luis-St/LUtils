@@ -16,38 +16,29 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.result;
+package net.luis.utils.io.database;
 
 import org.jspecify.annotations.NonNull;
 
+import java.util.List;
+
 /**
- * Interface representing a row with eight columns.<br>
+ * Interface representing a page of SQL query results.<br>
  *
- * @param <A> The type of the first column
- * @param <B> The type of the second column
- * @param <C> The type of the third column
- * @param <D> The type of the fourth column
- * @param <E> The type of the fifth column
- * @param <F> The type of the sixth column
- * @param <G> The type of the seventh column
- * @param <H> The type of the eighth column
+ * @param <T> The type of the content
  * @author Luis-St
  */
-public interface Row8<A, B, C, D, E, F, G, H> {
+public interface SqlPage<T> {
 
-	@NonNull A first();
+	@NonNull List<T> content();
 
-	@NonNull B second();
+	long totalElements();
 
-	@NonNull C third();
+	int totalPages();
 
-	@NonNull D fourth();
+	int currentPage();
 
-	@NonNull E fifth();
+	boolean hasNext();
 
-	@NonNull F sixth();
-
-	@NonNull G seventh();
-
-	@NonNull H eighth();
+	boolean hasPrevious();
 }

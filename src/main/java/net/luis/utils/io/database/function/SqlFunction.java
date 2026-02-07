@@ -41,11 +41,11 @@ public class SqlFunction {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object greatest(@NonNull Object... values) {
+	public static @NonNull Object greatest(Object @NonNull ... values) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object least(@NonNull Object... values) {
+	public static @NonNull Object least(Object @NonNull ... values) {
 		throw new UnsupportedOperationException();
 	}
 
