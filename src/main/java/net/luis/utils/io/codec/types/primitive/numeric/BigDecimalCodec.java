@@ -65,7 +65,7 @@ public class BigDecimalCodec
 			throw new EncoderException("Unable to encode null as big decimal", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toPlainString());
+		return provider.createString(this.validateEncodeConstraints(value).toPlainString(), EncoderException::new);
 	}
 	
 	@Override
@@ -82,7 +82,7 @@ public class BigDecimalCodec
 			throw new DecoderException("Unable to decode null value as big decimal", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			BigDecimal bigDecimal = new BigDecimal(string);
 			return this.validateDecodeConstraints(bigDecimal);

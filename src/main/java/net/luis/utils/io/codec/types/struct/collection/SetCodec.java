@@ -121,14 +121,14 @@ public class SetCodec<C>
 			try {
 				R encodedElement = this.codec.encode(provider, current, element);
 				
-				if (!provider.isEmpty(encodedElement)) {
+				if (!provider.isEmpty(encodedElement, EncoderException::new)) {
 					partialElements.add(Either.left(encodedElement));
 				}
 			} catch (EncoderException e) {
 				partialElements.add(Either.right(e));
 			}
 		}
-		return provider.merge(current, provider.createList(this.encode(partialElements)));
+		return provider.merge(current, provider.createList(this.encode(partialElements), EncoderException::new), EncoderException::new);
 	}
 	
 	@Override
@@ -141,7 +141,7 @@ public class SetCodec<C>
 		}
 		
 		List<Either<C, DecoderException>> partialElements = new ArrayList<>();
-		for (R element : provider.getList(value)) {
+		for (R element : provider.getList(value, DecoderException::new)) {
 			try {
 				C decodedElement = this.codec.decode(provider, current, element);
 				partialElements.add(Either.left(decodedElement));

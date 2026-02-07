@@ -65,7 +65,7 @@ public class BigIntegerCodec
 			throw new EncoderException("Unable to encode null as big integer", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
@@ -82,7 +82,7 @@ public class BigIntegerCodec
 			throw new DecoderException("Unable to decode null value as big integer", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			BigInteger bigInteger = new BigInteger(string);
 			return this.validateDecodeConstraints(bigInteger);

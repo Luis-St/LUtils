@@ -63,7 +63,7 @@ public class ShortCodec
 			throw new EncoderException("Unable to encode null as short", this);
 		}
 		
-		return provider.createShort(this.validateEncodeConstraints(value));
+		return provider.createShort(this.validateEncodeConstraints(value), EncoderException::new);
 	}
 	
 	@Override
@@ -80,7 +80,7 @@ public class ShortCodec
 			throw new DecoderException("Unable to decode null value as short", this);
 		}
 		
-		return this.validateDecodeConstraints(provider.getShort(value));
+		return this.validateDecodeConstraints(provider.getShort(value, DecoderException::new));
 	}
 	
 	@Override

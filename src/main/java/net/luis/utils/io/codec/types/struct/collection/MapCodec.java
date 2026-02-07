@@ -130,7 +130,7 @@ public class MapCodec<K, V>
 			try {
 				Map.Entry<String, R> encodedEntry = this.encodeEntry(provider, entry);
 				
-				if (!provider.isEmpty(encodedEntry.getValue())) {
+				if (!provider.isEmpty(encodedEntry.getValue(), EncoderException::new)) {
 					partialEntries.add(Either.left(encodedEntry));
 				}
 			} catch (EncoderException e) {
@@ -138,11 +138,11 @@ public class MapCodec<K, V>
 			}
 		}
 		
-		R map = provider.createMap();
+		R map = provider.createMap(EncoderException::new);
 		for (Map.Entry<String, R> entry : this.encode(partialEntries)) {
-			provider.set(map, entry.getKey(), entry.getValue());
+			provider.set(map, entry.getKey(), entry.getValue(), EncoderException::new);
 		}
-		return provider.merge(current, map);
+		return provider.merge(current, map, EncoderException::new);
 	}
 	
 	/**
@@ -174,7 +174,7 @@ public class MapCodec<K, V>
 		}
 		
 		List<Either<Map.Entry<K, V>, DecoderException>> partialEntries = new ArrayList<>();
-		for (Map.Entry<String, R> entry : provider.getMap(value).entrySet()) {
+		for (Map.Entry<String, R> entry : provider.getMap(value, DecoderException::new).entrySet()) {
 			try {
 				Map.Entry<K, V> decodedEntry = this.decodeEntry(provider, value, entry);
 				partialEntries.add(Either.left(decodedEntry));

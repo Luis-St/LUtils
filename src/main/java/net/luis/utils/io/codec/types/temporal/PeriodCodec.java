@@ -75,7 +75,7 @@ public class PeriodCodec
 		Period validated = this.validateEncodeConstraints(value);
 		
 		if (validated.isZero()) {
-			return provider.createString("0d");
+			return provider.createString("0d", EncoderException::new);
 		}
 		
 		List<String> parts = new ArrayList<>();
@@ -88,7 +88,7 @@ public class PeriodCodec
 		if (validated.getDays() != 0) {
 			parts.add(validated.getDays() + "d");
 		}
-		return provider.createString(String.join(" ", parts));
+		return provider.createString(String.join(" ", parts), EncoderException::new);
 	}
 	
 	@Override
@@ -99,7 +99,7 @@ public class PeriodCodec
 			throw new DecoderException("Unable to decode null value as period", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			if ("0d".equalsIgnoreCase(string)) {
 				return Period.ZERO;

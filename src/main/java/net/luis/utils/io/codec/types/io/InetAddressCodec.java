@@ -70,7 +70,7 @@ public class InetAddressCodec
 			throw new EncoderException("Unable to encode null as network address", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).getHostAddress());
+		return provider.createString(this.validateEncodeConstraints(value).getHostAddress(), EncoderException::new);
 	}
 	
 	@Override
@@ -87,7 +87,7 @@ public class InetAddressCodec
 			throw new DecoderException("Unable to decode null value as network address", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			InetAddress address = InetAddress.getByName(string);
 			return this.validateDecodeConstraints(address);

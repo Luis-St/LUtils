@@ -599,7 +599,7 @@ public final class Codecs {
 				
 				try {
 					return stringDecoder.apply(str);
-				} catch (DecoderException e) {
+				} catch (Exception e) {
 					throw new DecoderException("Unable to decode element from string '" + str + "': " + e.getMessage(), e);
 				}
 			}

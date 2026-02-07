@@ -63,7 +63,7 @@ public class IntegerCodec
 			throw new EncoderException("Unable to encode null as integer", this);
 		}
 		
-		return provider.createInteger(this.validateEncodeConstraints(value));
+		return provider.createInteger(this.validateEncodeConstraints(value), EncoderException::new);
 	}
 	
 	@Override
@@ -80,7 +80,7 @@ public class IntegerCodec
 			throw new DecoderException("Unable to decode null value as integer", this);
 		}
 		
-		return this.validateDecodeConstraints(provider.getInteger(value));
+		return this.validateDecodeConstraints(provider.getInteger(value, DecoderException::new));
 	}
 	
 	@Override

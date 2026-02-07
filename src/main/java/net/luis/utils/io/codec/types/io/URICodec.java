@@ -69,7 +69,7 @@ public class URICodec
 			throw new EncoderException("Unable to encode null as uri", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
@@ -80,7 +80,7 @@ public class URICodec
 			throw new DecoderException("Unable to decode null as uri", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			URI uri = new URI(string);
 			return this.validateDecodeConstraints(uri);

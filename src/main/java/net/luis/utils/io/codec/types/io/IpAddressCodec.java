@@ -71,7 +71,7 @@ public class IpAddressCodec
 			throw new EncoderException("Unable to encode null as ip address", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
@@ -88,7 +88,7 @@ public class IpAddressCodec
 			throw new DecoderException("Unable to decode null value as ip address", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			IpAddress<?> address = IpAddresses.parse(string);
 			return this.validateDecodeConstraints(address);
@@ -105,7 +105,7 @@ public class IpAddressCodec
 			IpAddress<?> address = IpAddresses.parse(key);
 			return this.validateDecodeConstraints(address);
 		} catch (IpParseException e) {
-			throw new DecoderException("Unable to decode ip address key '" + key + ": " + e.getMessage(), this, e);
+			throw new DecoderException("Unable to decode key '" + key + "' as ip address: " + e.getMessage(), this, e);
 		}
 	}
 }

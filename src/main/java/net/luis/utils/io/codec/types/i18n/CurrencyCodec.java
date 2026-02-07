@@ -49,7 +49,7 @@ public class CurrencyCodec extends AbstractCodec<Currency> {
 		if (value == null) {
 			throw new EncoderException("Unable to encode null as currency", this);
 		}
-		return provider.createString(value.getCurrencyCode());
+		return provider.createString(value.getCurrencyCode(), EncoderException::new);
 	}
 	
 	@Override
@@ -66,7 +66,7 @@ public class CurrencyCodec extends AbstractCodec<Currency> {
 			throw new DecoderException("Unable to decode null value as currency", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			return Currency.getInstance(string);
 		} catch (IllegalArgumentException e) {

@@ -126,11 +126,11 @@ public class FieldCodec<C, O> {
 		
 		try {
 			R encodedValue = this.codec.encode(provider, provider.empty(), value);
-			if (provider.isEmpty(encodedValue)) {
+			if (provider.isEmpty(encodedValue, EncoderException::new)) {
 				return provider.empty();
 			}
 			
-			provider.set(map, this.name, encodedValue);
+			provider.set(map, this.name, encodedValue, EncoderException::new);
 			return map;
 		} catch (EncoderException e) {
 			throw new EncoderException("Unable to encode named '" + this.name + "' '" + value, this.codec, e);
@@ -157,15 +157,13 @@ public class FieldCodec<C, O> {
 		}
 		
 		try {
-			R value = provider.get(map, this.name);
+			R value = provider.get(map, this.name, DecoderException::new);
 			return this.codec.decode(provider, map, value);
 		} catch (DecoderException e) {
 			try {
 				return this.decodeWithAlias(provider, map);
 			} catch (DecoderException inner) {
-				DecoderException exception = new DecoderException("Unable to decode named '" + this.name + "' from '" + map + "'", this.codec, inner);
-				exception.addSuppressed(e);
-				throw exception;
+				throw new DecoderException("Unable to decode named '" + this.name + "' from '" + map + "': " + inner.getMessage(), this.codec, inner);
 			}
 		}
 	}
@@ -186,7 +184,7 @@ public class FieldCodec<C, O> {
 		Objects.requireNonNull(map, "Map must not be null");
 		
 		String name = this.getDecodeName(provider, map);
-		R value = provider.get(map, name);
+		R value = provider.get(map, name, DecoderException::new);
 		return this.codec.decode(provider, map, value);
 	}
 	
@@ -208,7 +206,11 @@ public class FieldCodec<C, O> {
 		}
 		
 		return this.aliases.stream().filter(alias -> {
-			return provider.has(map, alias);
+			try {
+				return provider.has(map, alias, DecoderException::new);
+			} catch (DecoderException e) {
+				return false;
+			}
 		}).findFirst().orElseThrow(() -> new DecoderException("Name and aliases '" + this.name + "' and '" + this.aliases + "' not found in '" + map + "'", this.codec));
 	}
 	

@@ -63,7 +63,7 @@ public class LongCodec
 			throw new EncoderException("Unable to encode null as long", this);
 		}
 		
-		return provider.createLong(this.validateEncodeConstraints(value));
+		return provider.createLong(this.validateEncodeConstraints(value), EncoderException::new);
 	}
 	
 	@Override
@@ -80,7 +80,7 @@ public class LongCodec
 			throw new DecoderException("Unable to decode null value as long", this);
 		}
 		
-		return this.validateDecodeConstraints(provider.getLong(value));
+		return this.validateDecodeConstraints(provider.getLong(value, DecoderException::new));
 	}
 	
 	@Override

@@ -69,7 +69,7 @@ public class LocalDateCodec
 			throw new EncoderException("Unable to encode null as local date", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
@@ -86,7 +86,7 @@ public class LocalDateCodec
 			throw new DecoderException("Unable to decode null value as local date", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			LocalDate date = LocalDate.parse(string);
 			return this.validateDecodeConstraints(date);

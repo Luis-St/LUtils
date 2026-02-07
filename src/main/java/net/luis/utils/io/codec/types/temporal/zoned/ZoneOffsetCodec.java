@@ -66,7 +66,7 @@ public class ZoneOffsetCodec
 			throw new EncoderException("Unable to encode null as zone offset", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).getId());
+		return provider.createString(this.validateEncodeConstraints(value).getId(), EncoderException::new);
 	}
 	
 	@Override
@@ -83,7 +83,7 @@ public class ZoneOffsetCodec
 			throw new DecoderException("Unable to decode null value as zone offset", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			ZoneOffset zoneOffset = ZoneOffset.of(string);
 			return this.validateDecodeConstraints(zoneOffset);

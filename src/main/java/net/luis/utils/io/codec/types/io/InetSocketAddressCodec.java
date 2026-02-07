@@ -26,6 +26,7 @@ import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.network.address.IpAddress;
 import net.luis.utils.io.network.address.IpAddresses;
+import net.luis.utils.io.network.address.exception.IpParseException;
 import net.luis.utils.io.network.address.format.IpParseOptions;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -81,7 +82,7 @@ public class InetSocketAddressCodec
 		} else {
 			formatted = address + ":" + port;
 		}
-		return provider.createString(formatted);
+		return provider.createString(formatted, EncoderException::new);
 	}
 	
 	@Override
@@ -105,16 +106,24 @@ public class InetSocketAddressCodec
 			throw new DecoderException("Unable to decode null value as network socket address", this);
 		}
 		
-		InetSocketAddress socketAddress = this.parseSocketAddress(provider.getString(value));
-		return this.validateDecodeConstraints(socketAddress);
+		try {
+			InetSocketAddress socketAddress = this.parseSocketAddress(provider.getString(value, DecoderException::new));
+			return this.validateDecodeConstraints(socketAddress);
+		} catch (IpParseException e) {
+			throw new DecoderException("Unable to decode value as network socket address: " + e.getMessage(), this, e);
+		}
 	}
 	
 	@Override
 	public @NonNull InetSocketAddress decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
-		InetSocketAddress socketAddress = this.parseSocketAddress(key);
-		return this.validateDecodeConstraints(socketAddress);
+		try {
+			InetSocketAddress socketAddress = this.parseSocketAddress(key);
+			return this.validateDecodeConstraints(socketAddress);
+		} catch (IpParseException e) {
+			throw new DecoderException("Unable to decode key '" + key + "' as network socket address: " + e.getMessage(), this, e);
+		}
 	}
 	
 	/**

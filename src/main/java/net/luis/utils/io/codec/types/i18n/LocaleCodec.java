@@ -49,7 +49,7 @@ public class LocaleCodec extends AbstractCodec<Locale> {
 		if (value == null) {
 			throw new EncoderException("Unable to encode null as locale", this);
 		}
-		return provider.createString(value.toLanguageTag());
+		return provider.createString(value.toLanguageTag(), EncoderException::new);
 	}
 	
 	@Override
@@ -66,7 +66,7 @@ public class LocaleCodec extends AbstractCodec<Locale> {
 			throw new DecoderException("Unable to decode null value as locale", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			return Locale.forLanguageTag(string);
 		} catch (Exception e) {

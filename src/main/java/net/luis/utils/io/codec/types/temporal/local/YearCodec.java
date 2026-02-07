@@ -69,7 +69,7 @@ public class YearCodec
 			throw new EncoderException("Unable to encode null as year", this);
 		}
 		
-		return provider.createInteger(this.validateEncodeConstraints(value).getValue());
+		return provider.createInteger(this.validateEncodeConstraints(value).getValue(), EncoderException::new);
 	}
 	
 	@Override
@@ -86,7 +86,7 @@ public class YearCodec
 			throw new DecoderException("Unable to decode null value as year", this);
 		}
 		
-		int yearValue = provider.getInteger(value);
+		int yearValue = provider.getInteger(value, DecoderException::new);
 		try {
 			Year year = Year.of(yearValue);
 			return this.validateDecodeConstraints(year);

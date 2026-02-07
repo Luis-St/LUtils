@@ -70,7 +70,7 @@ public class MacAddressCodec
 			throw new EncoderException("Unable to encode null as mac address", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toColonString());
+		return provider.createString(this.validateEncodeConstraints(value).toColonString(), EncoderException::new);
 	}
 	
 	@Override
@@ -87,7 +87,7 @@ public class MacAddressCodec
 			throw new DecoderException("Unable to decode null value as mac address", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			MacAddress address = MacAddresses.parse(string);
 			return this.validateDecodeConstraints(address);

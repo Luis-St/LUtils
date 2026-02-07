@@ -69,7 +69,7 @@ public class OffsetTimeCodec
 			throw new EncoderException("Unable to encode null as offset time", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
@@ -86,7 +86,7 @@ public class OffsetTimeCodec
 			throw new DecoderException("Unable to decode null value as offset time", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			OffsetTime time = OffsetTime.parse(string);
 			return this.validateDecodeConstraints(time);

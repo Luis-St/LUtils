@@ -62,7 +62,7 @@ public class StringCodec
 			throw new EncoderException("Unable to encode null as string", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value));
+		return provider.createString(this.validateEncodeConstraints(value), EncoderException::new);
 	}
 	
 	@Override
@@ -79,7 +79,7 @@ public class StringCodec
 			throw new DecoderException("Unable to decode null as string", this);
 		}
 		
-		return this.validateDecodeConstraints(provider.getString(value));
+		return this.validateDecodeConstraints(provider.getString(value, DecoderException::new));
 	}
 	
 	@Override

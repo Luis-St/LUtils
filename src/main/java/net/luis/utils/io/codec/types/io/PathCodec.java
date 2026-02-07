@@ -68,7 +68,7 @@ public class PathCodec
 			throw new EncoderException("Unable to encode null as path", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
@@ -79,7 +79,7 @@ public class PathCodec
 			throw new DecoderException("Unable to decode null as path", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			Path path = Path.of(string);
 			return this.validateDecodeConstraints(path);

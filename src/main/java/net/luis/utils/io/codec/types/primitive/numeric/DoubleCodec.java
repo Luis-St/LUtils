@@ -63,7 +63,7 @@ public class DoubleCodec
 			throw new EncoderException("Unable to encode null as double", this);
 		}
 		
-		return provider.createDouble(this.validateEncodeConstraints(value));
+		return provider.createDouble(this.validateEncodeConstraints(value), EncoderException::new);
 	}
 	
 	@Override
@@ -80,7 +80,7 @@ public class DoubleCodec
 			throw new DecoderException("Unable to decode null as double", this);
 		}
 		
-		return this.validateDecodeConstraints(provider.getDouble(value));
+		return this.validateDecodeConstraints(provider.getDouble(value, DecoderException::new));
 	}
 	
 	@Override

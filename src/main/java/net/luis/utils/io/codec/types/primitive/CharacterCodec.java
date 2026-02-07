@@ -63,7 +63,7 @@ public class CharacterCodec
 		}
 		
 		this.validateEncodeConstraints(value);
-		return provider.createString(String.valueOf(value));
+		return provider.createString(String.valueOf(value), EncoderException::new);
 	}
 	
 	@Override
@@ -80,7 +80,7 @@ public class CharacterCodec
 			throw new DecoderException("Unable to decode null as character", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		if (string.length() != 1) {
 			throw new DecoderException("Unable to decode value '" + string + "' as character: String must have exactly one character to decode as character", this);
 		}

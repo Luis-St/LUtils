@@ -69,7 +69,7 @@ public class InstantCodec
 			throw new EncoderException("Unable to encode null as instant", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
@@ -86,7 +86,7 @@ public class InstantCodec
 			throw new DecoderException("Unable to decode null value as instant", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			Instant instant = Instant.parse(string);
 			return this.validateDecodeConstraints(instant);

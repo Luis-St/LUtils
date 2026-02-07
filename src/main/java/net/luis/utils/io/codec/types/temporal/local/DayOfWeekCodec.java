@@ -65,13 +65,13 @@ public class DayOfWeekCodec
 			throw new EncoderException("Unable to encode null as day of week", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).name().toLowerCase());
+		return provider.createString(this.validateEncodeConstraints(value).name(), EncoderException::new);
 	}
 	
 	@Override
 	public @NonNull String encodeKey(@NonNull DayOfWeek key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		return this.validateEncodeConstraints(key).name().toLowerCase();
+		return this.validateEncodeConstraints(key).name();
 	}
 	
 	@Override
@@ -82,9 +82,9 @@ public class DayOfWeekCodec
 			throw new DecoderException("Unable to decode null value as day of week", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
-			DayOfWeek dayOfWeek = DayOfWeek.valueOf(string.toUpperCase());
+			DayOfWeek dayOfWeek = DayOfWeek.valueOf(string);
 			return this.validateDecodeConstraints(dayOfWeek);
 		} catch (IllegalArgumentException e) {
 			throw new DecoderException("Unable to decode day of week '" + string + "': " + e.getMessage(), this, e);
@@ -96,7 +96,7 @@ public class DayOfWeekCodec
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			DayOfWeek dayOfWeek = DayOfWeek.valueOf(key.toUpperCase());
+			DayOfWeek dayOfWeek = DayOfWeek.valueOf(key);
 			return this.validateDecodeConstraints(dayOfWeek);
 		} catch (IllegalArgumentException e) {
 			throw new DecoderException("Unable to decode key '" + key + "' as day of week: " + e.getMessage(), this, e);

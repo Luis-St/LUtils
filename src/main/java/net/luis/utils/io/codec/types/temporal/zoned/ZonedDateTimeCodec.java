@@ -69,7 +69,7 @@ public class ZonedDateTimeCodec
 			throw new EncoderException("Unable to encode null as zoned date time", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
@@ -86,7 +86,7 @@ public class ZonedDateTimeCodec
 			throw new DecoderException("Unable to decode null value as zoned date time", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			ZonedDateTime dateTime = ZonedDateTime.parse(string);
 			return this.validateDecodeConstraints(dateTime);

@@ -65,7 +65,7 @@ public class UUIDCodec
 			throw new EncoderException("Unable to encode null as uuid", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
@@ -82,7 +82,7 @@ public class UUIDCodec
 			throw new DecoderException("Unable to decode null value as uuid", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			UUID uuid = UUID.fromString(string);
 			return this.validateDecodeConstraints(uuid);

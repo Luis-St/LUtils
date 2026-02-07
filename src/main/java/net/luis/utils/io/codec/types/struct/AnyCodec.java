@@ -114,7 +114,7 @@ public class AnyCodec<C> extends AbstractCodec<C> {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			throw new EncoderException("Unable to encode null value", this);
+			throw new EncoderException("Unable to encode null as any", this);
 		}
 		
 		List<EncoderException> exceptions = new ArrayList<>();
@@ -136,7 +136,7 @@ public class AnyCodec<C> extends AbstractCodec<C> {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			throw new DecoderException("Unable to decode null value", this);
+			throw new DecoderException("Unable to decode null as any", this);
 		}
 		
 		List<DecoderException> exceptions = new ArrayList<>();

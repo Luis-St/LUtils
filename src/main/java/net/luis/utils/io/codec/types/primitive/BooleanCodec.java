@@ -47,7 +47,7 @@ public class BooleanCodec extends AbstractCodec<Boolean> {
 			throw new EncoderException("Unable to encode null as boolean", this);
 		}
 		
-		return provider.createBoolean(value);
+		return provider.createBoolean(value, EncoderException::new);
 	}
 	
 	@Override
@@ -64,7 +64,7 @@ public class BooleanCodec extends AbstractCodec<Boolean> {
 			throw new DecoderException("Unable to decode null as boolean", this);
 		}
 		
-		return provider.getBoolean(value);
+		return provider.getBoolean(value, DecoderException::new);
 	}
 	
 	@Override

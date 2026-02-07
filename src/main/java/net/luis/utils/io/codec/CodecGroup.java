@@ -78,7 +78,7 @@ public final class CodecGroup<O> implements Codec<O> {
 			throw new EncoderException("Unable to encode null value", this);
 		}
 		
-		R map = provider.merge(current, provider.createMap());
+		R map = provider.merge(current, provider.createMap(EncoderException::new), EncoderException::new);
 		for (FieldCodec<?, O> codec : this.codecs) {
 			try {
 				codec.encode(provider, map, value);
@@ -97,7 +97,7 @@ public final class CodecGroup<O> implements Codec<O> {
 			throw new DecoderException("Unable to decode null value", this);
 		}
 		
-		provider.getMap(value); // Validate that value is a map
+		provider.getMap(value, DecoderException::new); // Validate that value is a map
 		
 		List<Object> components = new ArrayList<>(this.codecs.size());
 		for (FieldCodec<?, O> codec : this.codecs) {

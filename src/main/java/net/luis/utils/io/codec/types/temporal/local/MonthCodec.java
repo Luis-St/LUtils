@@ -65,13 +65,13 @@ public class MonthCodec
 			throw new EncoderException("Unable to encode null as month", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).name().toLowerCase());
+		return provider.createString(this.validateEncodeConstraints(value).name(), EncoderException::new);
 	}
 	
 	@Override
 	public @NonNull String encodeKey(@NonNull Month key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		return this.validateEncodeConstraints(key).name().toLowerCase();
+		return this.validateEncodeConstraints(key).name();
 	}
 	
 	@Override
@@ -82,9 +82,9 @@ public class MonthCodec
 			throw new DecoderException("Unable to decode null value as month", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
-			Month month = Month.valueOf(string.toUpperCase());
+			Month month = Month.valueOf(string);
 			return this.validateDecodeConstraints(month);
 		} catch (IllegalArgumentException e) {
 			throw new DecoderException("Unable to decode month '" + string + "': " + e.getMessage(), this, e);
@@ -96,7 +96,7 @@ public class MonthCodec
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			Month month = Month.valueOf(key.toUpperCase());
+			Month month = Month.valueOf(key);
 			return this.validateDecodeConstraints(month);
 		} catch (IllegalArgumentException e) {
 			throw new DecoderException("Unable to decode key '" + key + "' as month: " + e.getMessage(), this, e);

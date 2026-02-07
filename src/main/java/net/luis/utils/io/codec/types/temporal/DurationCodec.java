@@ -106,7 +106,7 @@ public class DurationCodec
 		if (encoded.isEmpty()) {
 			encoded = "0s";
 		}
-		return provider.createString(encoded);
+		return provider.createString(encoded, EncoderException::new);
 	}
 	
 	@Override
@@ -117,7 +117,7 @@ public class DurationCodec
 			throw new DecoderException("Unable to decode null value as duration", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			String[] parts = string.toLowerCase().split("\\s+");
 			long totalSeconds = 0;

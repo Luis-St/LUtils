@@ -71,7 +71,7 @@ public class IpNetworkCodec
 			throw new EncoderException("Unable to encode null as ip network", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toCidrNotation());
+		return provider.createString(this.validateEncodeConstraints(value).toCidrNotation(), EncoderException::new);
 	}
 	
 	@Override
@@ -88,7 +88,7 @@ public class IpNetworkCodec
 			throw new DecoderException("Unable to decode null value as ip network", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			IpNetwork<?, ?> network = IpAddresses.parseNetwork(string);
 			return this.validateDecodeConstraints(network);

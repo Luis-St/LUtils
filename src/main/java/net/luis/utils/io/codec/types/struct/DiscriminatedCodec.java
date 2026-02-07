@@ -23,7 +23,6 @@ import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.decoder.DecoderException;
 import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.io.codec.provider.TypeProviderException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -136,9 +135,9 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
 		
 		R discriminatorField;
 		try {
-			discriminatorField = provider.get(current, this.discriminatedField);
-		} catch (TypeProviderException e) {
-			throw new EncoderException("Unable to encode value as discriminated using '" + this + "': Discriminator field '" + this.discriminatedField + "' not found", this, e);
+			discriminatorField = provider.get(current, this.discriminatedField, EncoderException::new);
+		} catch (EncoderException e) {
+			throw new EncoderException("Unable to encode value as discriminated using '" + this + "': Discriminator field '" + this.discriminatedField + "' not found", this);
 		}
 		
 		T discriminator;
@@ -165,9 +164,9 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
 		
 		R discriminatorField;
 		try {
-			discriminatorField = provider.get(current, this.discriminatedField);
-		} catch (TypeProviderException e) {
-			throw new DecoderException("Unable to decode value as discriminated: Discriminator field '" + this.discriminatedField + "' not found", this, e);
+			discriminatorField = provider.get(current, this.discriminatedField, DecoderException::new);
+		} catch (DecoderException e) {
+			throw new DecoderException("Unable to decode value as discriminated: Discriminator field '" + this.discriminatedField + "' not found", this);
 		}
 		
 		T discriminator;

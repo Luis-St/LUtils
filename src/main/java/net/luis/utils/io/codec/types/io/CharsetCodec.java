@@ -49,7 +49,7 @@ public class CharsetCodec extends AbstractCodec<Charset> {
 		if (value == null) {
 			throw new EncoderException("Unable to encode null as charset", this);
 		}
-		return provider.createString(value.name());
+		return provider.createString(value.name(), EncoderException::new);
 	}
 	
 	@Override
@@ -60,7 +60,7 @@ public class CharsetCodec extends AbstractCodec<Charset> {
 			throw new DecoderException("Unable to decode null value as charset", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			return Charset.forName(string);
 		} catch (IllegalCharsetNameException | UnsupportedCharsetException e) {

@@ -66,7 +66,7 @@ public class ZoneIdCodec
 			throw new EncoderException("Unable to encode null as zone id", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).getId());
+		return provider.createString(this.validateEncodeConstraints(value).getId(), EncoderException::new);
 	}
 	
 	@Override
@@ -83,7 +83,7 @@ public class ZoneIdCodec
 			throw new DecoderException("Unable to decode null value as zone id", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			ZoneId zoneId = ZoneId.of(string);
 			return this.validateDecodeConstraints(zoneId);

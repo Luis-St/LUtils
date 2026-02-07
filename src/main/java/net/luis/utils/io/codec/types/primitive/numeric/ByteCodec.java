@@ -63,7 +63,7 @@ public class ByteCodec
 			throw new EncoderException("Unable to encode null as byte", this);
 		}
 		
-		return provider.createByte(this.validateEncodeConstraints(value));
+		return provider.createByte(this.validateEncodeConstraints(value), EncoderException::new);
 	}
 	
 	@Override
@@ -80,7 +80,7 @@ public class ByteCodec
 			throw new DecoderException("Unable to decode null value as byte", this);
 		}
 		
-		return this.validateDecodeConstraints(provider.getByte(value));
+		return this.validateDecodeConstraints(provider.getByte(value, DecoderException::new));
 	}
 	
 	@Override

@@ -49,7 +49,7 @@ public class Base64Codec extends AbstractCodec<byte[]> {
 		if (value == null) {
 			throw new EncoderException("Unable to encode null as base 64", this);
 		}
-		return provider.createString(Base64.getEncoder().encodeToString(value));
+		return provider.createString(Base64.getEncoder().encodeToString(value), EncoderException::new);
 	}
 	
 	@Override
@@ -60,7 +60,7 @@ public class Base64Codec extends AbstractCodec<byte[]> {
 			throw new DecoderException("Unable to decode null value as base 64", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			return Base64.getDecoder().decode(string);
 		} catch (IllegalArgumentException e) {

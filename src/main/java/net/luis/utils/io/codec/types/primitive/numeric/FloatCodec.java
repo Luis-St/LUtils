@@ -63,7 +63,7 @@ public class FloatCodec
 			throw new EncoderException("Unable to encode null as float", this);
 		}
 		
-		return provider.createFloat(this.validateEncodeConstraints(value));
+		return provider.createFloat(this.validateEncodeConstraints(value), EncoderException::new);
 	}
 	
 	@Override
@@ -80,7 +80,7 @@ public class FloatCodec
 			throw new DecoderException("Unable to decode null value as float", this);
 		}
 		
-		return this.validateDecodeConstraints(provider.getFloat(value));
+		return this.validateDecodeConstraints(provider.getFloat(value, DecoderException::new));
 	}
 	
 	@Override

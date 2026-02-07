@@ -69,7 +69,7 @@ public class LocalTimeCodec
 			throw new EncoderException("Unable to encode null as local time", this);
 		}
 		
-		return provider.createString(this.validateEncodeConstraints(value).toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
@@ -86,7 +86,7 @@ public class LocalTimeCodec
 			throw new DecoderException("Unable to decode null value as local time", this);
 		}
 		
-		String string = provider.getString(value);
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			LocalTime time = LocalTime.parse(string);
 			return this.validateDecodeConstraints(time);

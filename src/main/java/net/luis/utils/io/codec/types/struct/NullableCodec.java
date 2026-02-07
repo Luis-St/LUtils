@@ -73,7 +73,7 @@ public class NullableCodec<C> extends AbstractCodec<C> {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return provider.createNull();
+			return provider.createNull(EncoderException::new);
 		}
 		
 		return this.codec.encode(provider, current, value);
@@ -88,7 +88,7 @@ public class NullableCodec<C> extends AbstractCodec<C> {
 			return null;
 		}
 		
-		if (provider.isNull(value)) {
+		if (provider.isNull(value, DecoderException::new)) {
 			return null;
 		}
 		return this.codec.decode(provider, current, value);

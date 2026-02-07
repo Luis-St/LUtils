@@ -113,7 +113,7 @@ public class OptionalCodec<C> extends AbstractCodec<Optional<C>> {
 			return this.defaultProvider.get();
 		}
 		
-		if (provider.isEmpty(value)) {
+		if (provider.isEmpty(value, RuntimeException::new)) {
 			return this.defaultProvider.get();
 		}
 		
