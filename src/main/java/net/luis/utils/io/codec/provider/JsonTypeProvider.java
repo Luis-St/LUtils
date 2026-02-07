@@ -21,12 +21,13 @@ package net.luis.utils.io.codec.provider;
 import com.google.common.collect.Maps;
 import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.json.*;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * Type provider implementation for json elements.<br>
@@ -60,237 +61,285 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NonNull JsonElement createNull() {
+	public <X extends Exception> @NonNull JsonElement createNull(@NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		return JsonNull.INSTANCE;
 	}
 	
 	@Override
-	public @NonNull JsonElement createBoolean(boolean value) {
+	public <X extends Exception> @NonNull JsonElement createBoolean(boolean value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull JsonElement createByte(byte value) {
+	public <X extends Exception> @NonNull JsonElement createByte(byte value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull JsonElement createShort(short value) {
+	public <X extends Exception> @NonNull JsonElement createShort(short value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull JsonElement createInteger(int value) {
+	public <X extends Exception> @NonNull JsonElement createInteger(int value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull JsonElement createLong(long value) {
+	public <X extends Exception> @NonNull JsonElement createLong(long value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull JsonElement createFloat(float value) {
+	public <X extends Exception> @NonNull JsonElement createFloat(float value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull JsonElement createDouble(double value) {
+	public <X extends Exception> @NonNull JsonElement createDouble(double value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull JsonElement createString(@Nullable String value) {
+	public <X extends Exception> @NonNull JsonElement createString(@Nullable String value, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (value == null) {
-			throw new TypeProviderException("Value 'null' is not a valid string");
+			throw exceptionConstructor.apply("Value 'null' is not a valid string");
 		}
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
-	public @NonNull JsonElement createList(@Nullable List<? extends JsonElement> values) {
+	public <X extends Exception> @NonNull JsonElement createList(@Nullable List<? extends JsonElement> values, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (values == null) {
-			throw new TypeProviderException("Value 'null' is not a valid list");
+			throw exceptionConstructor.apply("Value 'null' is not a valid list");
 		}
 		return new JsonArray(values);
 	}
 	
 	@Override
-	public @NonNull JsonElement createMap() {
+	public <X extends Exception> @NonNull JsonElement createMap(@NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		return new JsonObject();
 	}
 	
 	@Override
-	public @NonNull JsonElement createMap(@Nullable Map<String, ? extends JsonElement> values) {
+	public <X extends Exception> @NonNull JsonElement createMap(@Nullable Map<String, ? extends JsonElement> values, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (values == null) {
-			throw new TypeProviderException("Value 'null' is not a valid map");
+			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
 		return new JsonObject(values);
 	}
 	
 	@Override
-	public boolean isEmpty(@Nullable JsonElement type) {
+	public <X extends Exception> boolean isEmpty(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not empty");
+			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
 		return type == EMPTY_ELEMENT;
 	}
 	
 	@Override
-	public boolean isNull(@Nullable JsonElement type) {
+	public <X extends Exception> boolean isNull(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not json null");
+			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
 		return type.isJsonNull();
 	}
 	
 	@Override
-	public @NonNull Boolean getBoolean(@Nullable JsonElement type) {
+	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a boolean");
+			throw exceptionConstructor.apply("Value 'null' is not a boolean");
 		}
 		if (!type.isJsonPrimitive()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonBoolean()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json boolean");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json boolean");
 		}
 		return primitive.getAsBoolean();
 	}
 	
 	@Override
-	public @NonNull Byte getByte(@Nullable JsonElement type) {
+	public <X extends Exception> @NonNull Byte getByte(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a byte");
+			throw exceptionConstructor.apply("Value 'null' is not a byte");
 		}
 		if (!type.isJsonPrimitive()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonNumber()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json byte");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json byte");
 		}
 		return primitive.getAsByte();
 	}
 	
 	@Override
-	public @NonNull Short getShort(@Nullable JsonElement type) {
+	public <X extends Exception> @NonNull Short getShort(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a short");
+			throw exceptionConstructor.apply("Value 'null' is not a short");
 		}
 		if (!type.isJsonPrimitive()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonNumber()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json short");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json short");
 		}
 		return primitive.getAsShort();
 	}
 	
 	@Override
-	public @NonNull Integer getInteger(@Nullable JsonElement type) {
+	public <X extends Exception> @NonNull Integer getInteger(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not an integer");
+			throw exceptionConstructor.apply("Value 'null' is not an integer");
 		}
 		if (!type.isJsonPrimitive()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonNumber()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json integer");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json integer");
 		}
 		return primitive.getAsInteger();
 	}
 	
 	@Override
-	public @NonNull Long getLong(@Nullable JsonElement type) {
+	public <X extends Exception> @NonNull Long getLong(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a long");
+			throw exceptionConstructor.apply("Value 'null' is not a long");
 		}
 		if (!type.isJsonPrimitive()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonNumber()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json long");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json long");
 		}
 		return primitive.getAsLong();
 	}
 	
 	@Override
-	public @NonNull Float getFloat(@Nullable JsonElement type) {
+	public <X extends Exception> @NonNull Float getFloat(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a float");
+			throw exceptionConstructor.apply("Value 'null' is not a float");
 		}
 		if (!type.isJsonPrimitive()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (primitive.isJsonString()) {
-			throw new TypeProviderException("Json element '" + type + "' is a json string, not a json float");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json float");
 		}
 		return primitive.getAsFloat();
 	}
 	
 	@Override
-	public @NonNull Double getDouble(@Nullable JsonElement type) {
+	public <X extends Exception> @NonNull Double getDouble(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a double");
+			throw exceptionConstructor.apply("Value 'null' is not a double");
 		}
 		if (!type.isJsonPrimitive()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonNumber()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json double");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json number");
 		}
 		return primitive.getAsDouble();
 	}
 	
 	@Override
-	public @NonNull String getString(@Nullable JsonElement type) {
+	public <X extends Exception> @NonNull String getString(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a string");
+			throw exceptionConstructor.apply("Value 'null' is not a string");
 		}
 		if (!type.isJsonPrimitive()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json primitive");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json primitive");
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		if (!primitive.isJsonString()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json string");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json string");
 		}
 		return type.getAsJsonPrimitive().getAsString();
 	}
 	
 	@Override
-	public @NonNull List<JsonElement> getList(@Nullable JsonElement type) {
+	public <X extends Exception> @NonNull List<JsonElement> getList(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a valid list");
+			throw exceptionConstructor.apply("Value 'null' is not a valid list");
 		}
 		
 		if (!type.isJsonArray()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json array");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json array");
 		}
 		return type.getAsJsonArray().getElements();
 	}
 	
 	@Override
-	public @NonNull Map<String, JsonElement> getMap(@Nullable JsonElement type) {
+	public <X extends Exception> @NonNull Map<String, JsonElement> getMap(@Nullable JsonElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a valid map");
+			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
 		if (!type.isJsonObject()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json object");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json object");
 		}
 		
 		Map<String, JsonElement> map = Maps.newLinkedHashMap();
@@ -299,60 +348,68 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public boolean has(@Nullable JsonElement type, @Nullable String key) {
+	public <X extends Exception> boolean has(@Nullable JsonElement type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a valid map");
+			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			throw new TypeProviderException("Value 'null' is not valid");
+			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
 		
 		if (!type.isJsonObject()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json object");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json object");
 		}
 		return type.getAsJsonObject().containsKey(key);
 	}
 	
 	@Override
-	public @NonNull JsonElement get(@Nullable JsonElement type, @Nullable String key) {
+	public <X extends Exception> @NonNull JsonElement get(@Nullable JsonElement type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a valid map");
+			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			throw new TypeProviderException("Value 'null' is not valid");
+			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
 		
 		if (!type.isJsonObject()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json object");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json object");
 		}
 		
 		JsonElement element = type.getAsJsonObject().get(key);
 		if (element == null) {
-			throw new TypeProviderException("Key '" + key + "' does not exist in json object '" + type + "'");
+			throw exceptionConstructor.apply("Key '" + key + "' does not exist in json object '" + type + "'");
 		}
 		return element;
 	}
 	
 	@Override
-	public void set(@Nullable JsonElement type, @Nullable String key, @Nullable JsonElement value) {
+	public <X extends Exception> void set(@Nullable JsonElement type, @Nullable String key, @Nullable JsonElement value, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			throw new TypeProviderException("Value 'null' is not a valid map");
+			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
 		if (key == null) {
-			throw new TypeProviderException("Value 'null' is not valid");
+			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
 		if (value == null) {
-			throw new TypeProviderException("Value 'null' is not valid");
+			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
 		
 		if (!type.isJsonObject()) {
-			throw new TypeProviderException("Json element '" + type + "' is not a json object");
+			throw exceptionConstructor.apply("Json element '" + type + "' is not a json object");
 		}
 		type.getAsJsonObject().add(key, value);
 	}
 	
 	@Override
-	public @UnknownNullability JsonElement merge(@Nullable JsonElement current, @Nullable JsonElement value) {
+	public <X extends Exception> @UnknownNullability JsonElement merge(@Nullable JsonElement current, @Nullable JsonElement value, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (current == null) {
 			return value;
 		}
@@ -378,6 +435,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 			object.addAll(value.getAsJsonObject());
 			return object;
 		}
-		throw new TypeProviderException("Unable to merge '" + current + "' with '" + value + "'");
+		throw exceptionConstructor.apply("Unable to merge '" + current + "' with '" + value + "'");
 	}
 }

@@ -35,32 +35,25 @@ import static org.junit.jupiter.api.Assertions.*;
 class JavaTypeProviderTest {
 	
 	@Test
-	void emptyReturnsPlainObject() {
-		Object empty = JavaTypeProvider.INSTANCE.empty();
-		assertNotNull(empty);
-		assertEquals(Object.class, empty.getClass());
-	}
-	
-	@Test
 	void createNullReturnsNull() {
-		assertNull(JavaTypeProvider.INSTANCE.createNull());
+		assertNull(JavaTypeProvider.INSTANCE.createNull(RuntimeException::new));
 	}
 	
 	@Test
 	void createPrimitiveTypes() {
-		assertEquals(true, JavaTypeProvider.INSTANCE.createBoolean(true));
-		assertEquals((byte) 42, JavaTypeProvider.INSTANCE.createByte((byte) 42));
-		assertEquals((short) 42, JavaTypeProvider.INSTANCE.createShort((short) 42));
-		assertEquals(42, JavaTypeProvider.INSTANCE.createInteger(42));
-		assertEquals(42L, JavaTypeProvider.INSTANCE.createLong(42L));
-		assertEquals(42.5f, JavaTypeProvider.INSTANCE.createFloat(42.5f));
-		assertEquals(42.5, JavaTypeProvider.INSTANCE.createDouble(42.5));
-		assertEquals("test", JavaTypeProvider.INSTANCE.createString("test"));
+		assertEquals(true, JavaTypeProvider.INSTANCE.createBoolean(true, RuntimeException::new));
+		assertEquals((byte) 42, JavaTypeProvider.INSTANCE.createByte((byte) 42, RuntimeException::new));
+		assertEquals((short) 42, JavaTypeProvider.INSTANCE.createShort((short) 42, RuntimeException::new));
+		assertEquals(42, JavaTypeProvider.INSTANCE.createInteger(42, RuntimeException::new));
+		assertEquals(42L, JavaTypeProvider.INSTANCE.createLong(42L, RuntimeException::new));
+		assertEquals(42.5f, JavaTypeProvider.INSTANCE.createFloat(42.5f, RuntimeException::new));
+		assertEquals(42.5, JavaTypeProvider.INSTANCE.createDouble(42.5, RuntimeException::new));
+		assertEquals("test", JavaTypeProvider.INSTANCE.createString("test", RuntimeException::new));
 	}
 	
 	@Test
 	void createStringWithNullThrowsException() {
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.createString(null));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.createString(null, RuntimeException::new));
 	}
 	
 	@Test
@@ -68,25 +61,25 @@ class JavaTypeProviderTest {
 		Object element1 = "a";
 		Object element2 = "b";
 		
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.createList(null));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.createList(null, RuntimeException::new));
 		
-		List<?> emptyList = (List<?>) JavaTypeProvider.INSTANCE.createList(List.of());
+		List<?> emptyList = (List<?>) JavaTypeProvider.INSTANCE.createList(List.of(), RuntimeException::new);
 		assertTrue(emptyList.isEmpty());
 		
-		List<?> listWithElements = (List<?>) JavaTypeProvider.INSTANCE.createList(List.of(element1, element2));
+		List<?> listWithElements = (List<?>) JavaTypeProvider.INSTANCE.createList(List.of(element1, element2), RuntimeException::new);
 		assertEquals(2, listWithElements.size());
 		assertEquals(element1, listWithElements.get(0));
 		assertEquals(element2, listWithElements.get(1));
 		
-		Map<?, ?> emptyMap = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap();
+		Map<?, ?> emptyMap = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap(RuntimeException::new);
 		assertTrue(emptyMap.isEmpty());
 		
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.createMap(null));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.createMap(null, RuntimeException::new));
 		
-		Map<?, ?> emptyMapFromValues = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap(Map.of());
+		Map<?, ?> emptyMapFromValues = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap(Map.of(), RuntimeException::new);
 		assertTrue(emptyMapFromValues.isEmpty());
 		
-		Map<?, ?> mapWithElements = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap(Map.of("key1", element1, "key2", element2));
+		Map<?, ?> mapWithElements = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap(Map.of("key1", element1, "key2", element2), RuntimeException::new);
 		assertEquals(2, mapWithElements.size());
 		assertEquals(element1, mapWithElements.get("key1"));
 		assertEquals(element2, mapWithElements.get("key2"));
@@ -94,91 +87,89 @@ class JavaTypeProviderTest {
 	
 	@Test
 	void getEmptyValidation() {
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.isEmpty(null));
-		assertFalse(JavaTypeProvider.INSTANCE.isEmpty(List.of()));
-		assertFalse(JavaTypeProvider.INSTANCE.isEmpty(1));
-		assertFalse(JavaTypeProvider.INSTANCE.isEmpty(Map.of()));
-		assertFalse(JavaTypeProvider.INSTANCE.isEmpty("test"));
-		
-		Object emptyObject = new Object();
-		assertTrue(JavaTypeProvider.INSTANCE.isEmpty(emptyObject));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.isEmpty(null, RuntimeException::new));
+		assertFalse(JavaTypeProvider.INSTANCE.isEmpty(List.of(), RuntimeException::new));
+		assertFalse(JavaTypeProvider.INSTANCE.isEmpty(1, RuntimeException::new));
+		assertFalse(JavaTypeProvider.INSTANCE.isEmpty(Map.of(), RuntimeException::new));
+		assertFalse(JavaTypeProvider.INSTANCE.isEmpty("test", RuntimeException::new));
+		assertFalse(JavaTypeProvider.INSTANCE.isEmpty(new Object(), RuntimeException::new));
 	}
 	
 	@Test
 	void isNullValidation() {
-		assertTrue(JavaTypeProvider.INSTANCE.isNull(null));
+		assertTrue(JavaTypeProvider.INSTANCE.isNull(null, RuntimeException::new));
 		
-		assertFalse(JavaTypeProvider.INSTANCE.isNull(new Object()));
-		assertFalse(JavaTypeProvider.INSTANCE.isNull(List.of()));
-		assertFalse(JavaTypeProvider.INSTANCE.isNull(Map.of()));
-		assertFalse(JavaTypeProvider.INSTANCE.isNull(1));
-		assertFalse(JavaTypeProvider.INSTANCE.isNull(true));
-		assertFalse(JavaTypeProvider.INSTANCE.isNull("test"));
+		assertFalse(JavaTypeProvider.INSTANCE.isNull(new Object(), RuntimeException::new));
+		assertFalse(JavaTypeProvider.INSTANCE.isNull(List.of(), RuntimeException::new));
+		assertFalse(JavaTypeProvider.INSTANCE.isNull(Map.of(), RuntimeException::new));
+		assertFalse(JavaTypeProvider.INSTANCE.isNull(1, RuntimeException::new));
+		assertFalse(JavaTypeProvider.INSTANCE.isNull(true, RuntimeException::new));
+		assertFalse(JavaTypeProvider.INSTANCE.isNull("test", RuntimeException::new));
 	}
 	
 	@Test
 	void getPrimitiveTypes() {
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getBoolean(null));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getByte(null));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getShort(null));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getInteger(null));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getLong(null));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getFloat(null));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getDouble(null));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getString(null));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getBoolean(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getByte(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getShort(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getInteger(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getLong(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getFloat(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getDouble(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getString(null, RuntimeException::new));
 		
 		List<?> wrongType = List.of();
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getBoolean(wrongType));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getByte(wrongType));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getShort(wrongType));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getInteger(wrongType));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getLong(wrongType));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getFloat(wrongType));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getDouble(wrongType));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getString(wrongType));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getBoolean(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getByte(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getShort(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getInteger(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getLong(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getFloat(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getDouble(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getString(wrongType, RuntimeException::new));
 		
 		String invalidValue = "not-a-number";
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getBoolean(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getByte(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getShort(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getInteger(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getLong(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getFloat(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getDouble(invalidValue));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getBoolean(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getByte(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getShort(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getInteger(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getLong(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getFloat(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getDouble(invalidValue, RuntimeException::new));
 		
-		assertTrue(JavaTypeProvider.INSTANCE.getBoolean(true));
-		assertEquals((byte) 42, JavaTypeProvider.INSTANCE.getByte((byte) 42));
-		assertEquals((short) 42, JavaTypeProvider.INSTANCE.getShort((short) 42));
-		assertEquals(42, JavaTypeProvider.INSTANCE.getInteger(42));
-		assertEquals(42L, JavaTypeProvider.INSTANCE.getLong(42L));
-		assertEquals(42.5f, JavaTypeProvider.INSTANCE.getFloat(42.5f));
-		assertEquals(42.5, JavaTypeProvider.INSTANCE.getDouble(42.5));
-		assertEquals("test", JavaTypeProvider.INSTANCE.getString("test"));
+		assertTrue(JavaTypeProvider.INSTANCE.getBoolean(true, RuntimeException::new));
+		assertEquals((byte) 42, JavaTypeProvider.INSTANCE.getByte((byte) 42, RuntimeException::new));
+		assertEquals((short) 42, JavaTypeProvider.INSTANCE.getShort((short) 42, RuntimeException::new));
+		assertEquals(42, JavaTypeProvider.INSTANCE.getInteger(42, RuntimeException::new));
+		assertEquals(42L, JavaTypeProvider.INSTANCE.getLong(42L, RuntimeException::new));
+		assertEquals(42.5f, JavaTypeProvider.INSTANCE.getFloat(42.5f, RuntimeException::new));
+		assertEquals(42.5, JavaTypeProvider.INSTANCE.getDouble(42.5, RuntimeException::new));
+		assertEquals("test", JavaTypeProvider.INSTANCE.getString("test", RuntimeException::new));
 	}
 	
 	@Test
 	void getCollectionTypes() {
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getList(null));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getMap(null));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getList(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getMap(null, RuntimeException::new));
 		
 		Integer wrongType = 1;
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getList(wrongType));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.getMap(wrongType));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getList(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.getMap(wrongType, RuntimeException::new));
 		
 		List<Object> emptyList = List.of();
-		assertTrue(JavaTypeProvider.INSTANCE.getList(emptyList).isEmpty());
+		assertTrue(JavaTypeProvider.INSTANCE.getList(emptyList, RuntimeException::new).isEmpty());
 		
 		List<Object> listWithElements = List.of("a", "b");
-		List<Object> listResult = JavaTypeProvider.INSTANCE.getList(listWithElements);
+		List<Object> listResult = JavaTypeProvider.INSTANCE.getList(listWithElements, RuntimeException::new);
 		assertEquals(2, listResult.size());
 		assertEquals("a", listResult.get(0));
 		assertEquals("b", listResult.get(1));
 		
 		Map<String, Object> emptyMap = Map.of();
-		assertTrue(JavaTypeProvider.INSTANCE.getMap(emptyMap).isEmpty());
+		assertTrue(JavaTypeProvider.INSTANCE.getMap(emptyMap, RuntimeException::new).isEmpty());
 		
 		Map<String, Object> mapWithElements = Map.of("key", "value");
-		Map<String, Object> mapResult = JavaTypeProvider.INSTANCE.getMap(mapWithElements);
+		Map<String, Object> mapResult = JavaTypeProvider.INSTANCE.getMap(mapWithElements, RuntimeException::new);
 		assertEquals(1, mapResult.size());
 		assertEquals("value", mapResult.get("key"));
 	}
@@ -186,77 +177,77 @@ class JavaTypeProviderTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	void mapOperations() {
-		Map<String, Object> map = (Map<String, Object>) JavaTypeProvider.INSTANCE.createMap();
+		Map<String, Object> map = (Map<String, Object>) JavaTypeProvider.INSTANCE.createMap(RuntimeException::new);
 		Object testValue = "test";
 		
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.has(null, "key"));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.has(map, null));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.get(null, "key"));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.get(map, null));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.set(null, "key", testValue));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.set(map, null, testValue));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.has(null, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.has(map, null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.get(null, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.get(map, null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.set(null, "key", testValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.set(map, null, testValue, RuntimeException::new));
 		
-		JavaTypeProvider.INSTANCE.set(map, "key", null);
+		JavaTypeProvider.INSTANCE.set(map, "key", null, RuntimeException::new);
 		
 		List<?> wrongType = List.of();
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.has(wrongType, "key"));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.get(wrongType, "key"));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.set(wrongType, "key", testValue));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.has(wrongType, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.get(wrongType, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.set(wrongType, "key", testValue, RuntimeException::new));
 		
-		assertTrue(JavaTypeProvider.INSTANCE.has(map, "key"));
-		assertNull(JavaTypeProvider.INSTANCE.get(map, "key"));
+		assertTrue(JavaTypeProvider.INSTANCE.has(map, "key", RuntimeException::new));
+		assertNull(JavaTypeProvider.INSTANCE.get(map, "key", RuntimeException::new));
 		
-		JavaTypeProvider.INSTANCE.set(map, "key", testValue);
-		assertTrue(JavaTypeProvider.INSTANCE.has(map, "key"));
-		assertEquals(testValue, JavaTypeProvider.INSTANCE.get(map, "key"));
+		JavaTypeProvider.INSTANCE.set(map, "key", testValue, RuntimeException::new);
+		assertTrue(JavaTypeProvider.INSTANCE.has(map, "key", RuntimeException::new));
+		assertEquals(testValue, JavaTypeProvider.INSTANCE.get(map, "key", RuntimeException::new));
 	}
 	
 	@Test
 	@SuppressWarnings("unchecked")
 	void mergeOperations() {
 		Object emptyObject = new Object();
-		Object nullObject = JavaTypeProvider.INSTANCE.createNull();
+		Object nullObject = JavaTypeProvider.INSTANCE.createNull(RuntimeException::new);
 		Integer primitive = 1;
 		List<Object> list1 = List.of("a");
 		List<Object> list2 = List.of("b");
 		Map<String, Object> map1 = Map.of("key1", "value1");
 		Map<String, Object> map2 = Map.of("key2", "value2");
 		
-		assertEquals(primitive, JavaTypeProvider.INSTANCE.merge(emptyObject, primitive));
-		assertEquals(list1, JavaTypeProvider.INSTANCE.merge(emptyObject, list1));
-		assertEquals(map1, JavaTypeProvider.INSTANCE.merge(emptyObject, map1));
+		assertEquals(primitive, JavaTypeProvider.INSTANCE.merge(emptyObject, primitive, RuntimeException::new));
+		assertEquals(list1, JavaTypeProvider.INSTANCE.merge(emptyObject, list1, RuntimeException::new));
+		assertEquals(map1, JavaTypeProvider.INSTANCE.merge(emptyObject, map1, RuntimeException::new));
 		
-		assertEquals(emptyObject, JavaTypeProvider.INSTANCE.merge(emptyObject, nullObject));
-		assertEquals(emptyObject, JavaTypeProvider.INSTANCE.merge(nullObject, emptyObject));
+		assertEquals(emptyObject, JavaTypeProvider.INSTANCE.merge(emptyObject, nullObject, RuntimeException::new));
+		assertEquals(emptyObject, JavaTypeProvider.INSTANCE.merge(nullObject, emptyObject, RuntimeException::new));
 		
-		assertEquals(primitive, JavaTypeProvider.INSTANCE.merge(primitive, nullObject));
-		assertEquals(primitive, JavaTypeProvider.INSTANCE.merge(nullObject, primitive));
+		assertEquals(primitive, JavaTypeProvider.INSTANCE.merge(primitive, nullObject, RuntimeException::new));
+		assertEquals(primitive, JavaTypeProvider.INSTANCE.merge(nullObject, primitive, RuntimeException::new));
 		
-		assertEquals(list1, JavaTypeProvider.INSTANCE.merge(list1, nullObject));
-		assertEquals(list1, JavaTypeProvider.INSTANCE.merge(nullObject, list1));
+		assertEquals(list1, JavaTypeProvider.INSTANCE.merge(list1, nullObject, RuntimeException::new));
+		assertEquals(list1, JavaTypeProvider.INSTANCE.merge(nullObject, list1, RuntimeException::new));
 		
-		assertEquals(map1, JavaTypeProvider.INSTANCE.merge(map1, nullObject));
-		assertEquals(map1, JavaTypeProvider.INSTANCE.merge(nullObject, map1));
+		assertEquals(map1, JavaTypeProvider.INSTANCE.merge(map1, nullObject, RuntimeException::new));
+		assertEquals(map1, JavaTypeProvider.INSTANCE.merge(nullObject, map1, RuntimeException::new));
 		
-		List<Object> mutableList1 = (List<Object>) JavaTypeProvider.INSTANCE.createList(Lists.newArrayList("a"));
-		Object mergedListResult = JavaTypeProvider.INSTANCE.merge(mutableList1, list2);
+		List<Object> mutableList1 = (List<Object>) JavaTypeProvider.INSTANCE.createList(Lists.newArrayList("a"), RuntimeException::new);
+		Object mergedListResult = JavaTypeProvider.INSTANCE.merge(mutableList1, list2, RuntimeException::new);
 		List<Object> mergedList = (List<Object>) mergedListResult;
 		assertEquals(2, mergedList.size());
 		assertEquals("a", mergedList.get(0));
 		assertEquals("b", mergedList.get(1));
 		
-		Map<String, Object> mutableMap1 = (Map<String, Object>) JavaTypeProvider.INSTANCE.createMap(Maps.newHashMap(Map.of("key1", "value1")));
-		Object mergedMapResult = JavaTypeProvider.INSTANCE.merge(mutableMap1, map2);
+		Map<String, Object> mutableMap1 = (Map<String, Object>) JavaTypeProvider.INSTANCE.createMap(Maps.newHashMap(Map.of("key1", "value1")), RuntimeException::new);
+		Object mergedMapResult = JavaTypeProvider.INSTANCE.merge(mutableMap1, map2, RuntimeException::new);
 		Map<String, Object> mergedMap = (Map<String, Object>) mergedMapResult;
 		assertEquals(2, mergedMap.size());
 		assertEquals("value1", mergedMap.get("key1"));
 		assertEquals("value2", mergedMap.get("key2"));
 		
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.merge(primitive, list1));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.merge(primitive, map1));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.merge(list1, primitive));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.merge(list1, map1));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.merge(map1, primitive));
-		assertThrows(TypeProviderException.class, () -> JavaTypeProvider.INSTANCE.merge(map1, list1));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.merge(primitive, list1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.merge(primitive, map1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.merge(list1, primitive, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.merge(list1, map1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.merge(map1, primitive, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JavaTypeProvider.INSTANCE.merge(map1, list1, RuntimeException::new));
 	}
 }

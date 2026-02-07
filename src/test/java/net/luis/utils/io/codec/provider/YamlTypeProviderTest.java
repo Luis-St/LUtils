@@ -44,24 +44,24 @@ class YamlTypeProviderTest {
 	
 	@Test
 	void createNullReturnsYamlNull() {
-		assertEquals(YamlNull.INSTANCE, YamlTypeProvider.INSTANCE.createNull());
+		assertEquals(YamlNull.INSTANCE, YamlTypeProvider.INSTANCE.createNull(RuntimeException::new));
 	}
 	
 	@Test
 	void createPrimitiveTypes() {
-		assertEquals(new YamlScalar(true), YamlTypeProvider.INSTANCE.createBoolean(true));
-		assertEquals(new YamlScalar((byte) 42), YamlTypeProvider.INSTANCE.createByte((byte) 42));
-		assertEquals(new YamlScalar((short) 42), YamlTypeProvider.INSTANCE.createShort((short) 42));
-		assertEquals(new YamlScalar(42), YamlTypeProvider.INSTANCE.createInteger(42));
-		assertEquals(new YamlScalar(42L), YamlTypeProvider.INSTANCE.createLong(42L));
-		assertEquals(new YamlScalar(42.5f), YamlTypeProvider.INSTANCE.createFloat(42.5f));
-		assertEquals(new YamlScalar(42.5), YamlTypeProvider.INSTANCE.createDouble(42.5));
-		assertEquals(new YamlScalar("test"), YamlTypeProvider.INSTANCE.createString("test"));
+		assertEquals(new YamlScalar(true), YamlTypeProvider.INSTANCE.createBoolean(true, RuntimeException::new));
+		assertEquals(new YamlScalar((byte) 42), YamlTypeProvider.INSTANCE.createByte((byte) 42, RuntimeException::new));
+		assertEquals(new YamlScalar((short) 42), YamlTypeProvider.INSTANCE.createShort((short) 42, RuntimeException::new));
+		assertEquals(new YamlScalar(42), YamlTypeProvider.INSTANCE.createInteger(42, RuntimeException::new));
+		assertEquals(new YamlScalar(42L), YamlTypeProvider.INSTANCE.createLong(42L, RuntimeException::new));
+		assertEquals(new YamlScalar(42.5f), YamlTypeProvider.INSTANCE.createFloat(42.5f, RuntimeException::new));
+		assertEquals(new YamlScalar(42.5), YamlTypeProvider.INSTANCE.createDouble(42.5, RuntimeException::new));
+		assertEquals(new YamlScalar("test"), YamlTypeProvider.INSTANCE.createString("test", RuntimeException::new));
 	}
 	
 	@Test
 	void createStringWithNullThrowsException() {
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.createString(null));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.createString(null, RuntimeException::new));
 	}
 	
 	@Test
@@ -69,106 +69,106 @@ class YamlTypeProviderTest {
 		YamlElement element1 = new YamlScalar("a");
 		YamlElement element2 = new YamlScalar("b");
 		
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.createList(null));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.createList(null, RuntimeException::new));
 		
 		YamlSequence emptySequence = new YamlSequence();
-		assertEquals(emptySequence, YamlTypeProvider.INSTANCE.createList(List.of()));
+		assertEquals(emptySequence, YamlTypeProvider.INSTANCE.createList(List.of(), RuntimeException::new));
 		
 		YamlSequence sequenceWithElements = new YamlSequence(List.of(element1, element2));
-		assertEquals(sequenceWithElements, YamlTypeProvider.INSTANCE.createList(List.of(element1, element2)));
+		assertEquals(sequenceWithElements, YamlTypeProvider.INSTANCE.createList(List.of(element1, element2), RuntimeException::new));
 		
 		YamlMapping emptyMapping = new YamlMapping();
-		assertEquals(emptyMapping, YamlTypeProvider.INSTANCE.createMap());
-		assertEquals(emptyMapping, YamlTypeProvider.INSTANCE.createMap(Map.of()));
+		assertEquals(emptyMapping, YamlTypeProvider.INSTANCE.createMap(RuntimeException::new));
+		assertEquals(emptyMapping, YamlTypeProvider.INSTANCE.createMap(Map.of(), RuntimeException::new));
 		
 		YamlMapping mappingWithElements = new YamlMapping(Map.of("key1", element1, "key2", element2));
-		assertEquals(mappingWithElements, YamlTypeProvider.INSTANCE.createMap(Map.of("key1", element1, "key2", element2)));
+		assertEquals(mappingWithElements, YamlTypeProvider.INSTANCE.createMap(Map.of("key1", element1, "key2", element2), RuntimeException::new));
 	}
 	
 	@Test
 	void getEmptyValidation() {
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.isEmpty(null));
-		assertFalse(YamlTypeProvider.INSTANCE.isEmpty(new YamlSequence()));
-		assertFalse(YamlTypeProvider.INSTANCE.isEmpty(new YamlScalar(1)));
-		assertFalse(YamlTypeProvider.INSTANCE.isEmpty(new YamlMapping()));
-		assertFalse(YamlTypeProvider.INSTANCE.isEmpty(YamlNull.INSTANCE));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.isEmpty(null, RuntimeException::new));
+		assertFalse(YamlTypeProvider.INSTANCE.isEmpty(new YamlSequence(), RuntimeException::new));
+		assertFalse(YamlTypeProvider.INSTANCE.isEmpty(new YamlScalar(1), RuntimeException::new));
+		assertFalse(YamlTypeProvider.INSTANCE.isEmpty(new YamlMapping(), RuntimeException::new));
+		assertFalse(YamlTypeProvider.INSTANCE.isEmpty(YamlNull.INSTANCE, RuntimeException::new));
 	}
 	
 	@Test
 	void isNullValidation() {
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.isNull(null));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.isNull(null, RuntimeException::new));
 		
-		assertTrue(YamlTypeProvider.INSTANCE.isNull(YamlNull.INSTANCE));
+		assertTrue(YamlTypeProvider.INSTANCE.isNull(YamlNull.INSTANCE, RuntimeException::new));
 		
-		assertFalse(YamlTypeProvider.INSTANCE.isNull(new YamlSequence()));
-		assertFalse(YamlTypeProvider.INSTANCE.isNull(new YamlMapping()));
-		assertFalse(YamlTypeProvider.INSTANCE.isNull(new YamlScalar(1)));
-		assertFalse(YamlTypeProvider.INSTANCE.isNull(new YamlScalar(true)));
-		assertFalse(YamlTypeProvider.INSTANCE.isNull(new YamlScalar("test")));
+		assertFalse(YamlTypeProvider.INSTANCE.isNull(new YamlSequence(), RuntimeException::new));
+		assertFalse(YamlTypeProvider.INSTANCE.isNull(new YamlMapping(), RuntimeException::new));
+		assertFalse(YamlTypeProvider.INSTANCE.isNull(new YamlScalar(1), RuntimeException::new));
+		assertFalse(YamlTypeProvider.INSTANCE.isNull(new YamlScalar(true), RuntimeException::new));
+		assertFalse(YamlTypeProvider.INSTANCE.isNull(new YamlScalar("test"), RuntimeException::new));
 	}
 	
 	@Test
 	void getPrimitiveTypes() {
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getBoolean(null));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getByte(null));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getShort(null));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getInteger(null));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getLong(null));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getFloat(null));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getDouble(null));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getString(null));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getBoolean(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getByte(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getShort(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getInteger(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getLong(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getFloat(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getDouble(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getString(null, RuntimeException::new));
 		
 		YamlSequence wrongType = new YamlSequence();
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getBoolean(wrongType));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getByte(wrongType));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getShort(wrongType));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getInteger(wrongType));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getLong(wrongType));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getFloat(wrongType));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getDouble(wrongType));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getString(wrongType));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getBoolean(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getByte(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getShort(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getInteger(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getLong(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getFloat(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getDouble(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getString(wrongType, RuntimeException::new));
 		
 		YamlScalar invalidValue = new YamlScalar("not-a-number");
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getBoolean(invalidValue));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getByte(invalidValue));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getShort(invalidValue));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getInteger(invalidValue));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getLong(invalidValue));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getFloat(invalidValue));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getDouble(invalidValue));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getBoolean(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getByte(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getShort(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getInteger(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getLong(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getFloat(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getDouble(invalidValue, RuntimeException::new));
 		
-		assertTrue(YamlTypeProvider.INSTANCE.getBoolean(new YamlScalar(true)));
-		assertEquals((byte) 42, YamlTypeProvider.INSTANCE.getByte(new YamlScalar((byte) 42)));
-		assertEquals((short) 42, YamlTypeProvider.INSTANCE.getShort(new YamlScalar((short) 42)));
-		assertEquals(42, YamlTypeProvider.INSTANCE.getInteger(new YamlScalar(42)));
-		assertEquals(42L, YamlTypeProvider.INSTANCE.getLong(new YamlScalar(42L)));
-		assertEquals(42.5f, YamlTypeProvider.INSTANCE.getFloat(new YamlScalar(42.5f)));
-		assertEquals(42.5, YamlTypeProvider.INSTANCE.getDouble(new YamlScalar(42.5)));
-		assertEquals("test", YamlTypeProvider.INSTANCE.getString(new YamlScalar("test")));
+		assertTrue(YamlTypeProvider.INSTANCE.getBoolean(new YamlScalar(true), RuntimeException::new));
+		assertEquals((byte) 42, YamlTypeProvider.INSTANCE.getByte(new YamlScalar((byte) 42), RuntimeException::new));
+		assertEquals((short) 42, YamlTypeProvider.INSTANCE.getShort(new YamlScalar((short) 42), RuntimeException::new));
+		assertEquals(42, YamlTypeProvider.INSTANCE.getInteger(new YamlScalar(42), RuntimeException::new));
+		assertEquals(42L, YamlTypeProvider.INSTANCE.getLong(new YamlScalar(42L), RuntimeException::new));
+		assertEquals(42.5f, YamlTypeProvider.INSTANCE.getFloat(new YamlScalar(42.5f), RuntimeException::new));
+		assertEquals(42.5, YamlTypeProvider.INSTANCE.getDouble(new YamlScalar(42.5), RuntimeException::new));
+		assertEquals("test", YamlTypeProvider.INSTANCE.getString(new YamlScalar("test"), RuntimeException::new));
 	}
 	
 	@Test
 	void getCollectionTypes() {
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getList(null));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getMap(null));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getList(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getMap(null, RuntimeException::new));
 		
 		YamlScalar wrongType = new YamlScalar(1);
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getList(wrongType));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.getMap(wrongType));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getList(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.getMap(wrongType, RuntimeException::new));
 		
 		YamlSequence emptySequence = new YamlSequence();
-		assertTrue(YamlTypeProvider.INSTANCE.getList(emptySequence).isEmpty());
+		assertTrue(YamlTypeProvider.INSTANCE.getList(emptySequence, RuntimeException::new).isEmpty());
 		
 		YamlSequence sequenceWithElements = new YamlSequence(List.of(new YamlScalar("a"), new YamlScalar("b")));
-		List<YamlElement> listResult = YamlTypeProvider.INSTANCE.getList(sequenceWithElements);
+		List<YamlElement> listResult = YamlTypeProvider.INSTANCE.getList(sequenceWithElements, RuntimeException::new);
 		assertEquals(2, listResult.size());
 		assertEquals("a", listResult.getFirst().getAsYamlScalar().getAsString());
 		
 		YamlMapping emptyMapping = new YamlMapping();
-		assertTrue(YamlTypeProvider.INSTANCE.getMap(emptyMapping).isEmpty());
+		assertTrue(YamlTypeProvider.INSTANCE.getMap(emptyMapping, RuntimeException::new).isEmpty());
 		
 		YamlMapping mappingWithElements = new YamlMapping(Map.of("key", new YamlScalar("value")));
-		Map<String, YamlElement> mapResult = YamlTypeProvider.INSTANCE.getMap(mappingWithElements);
+		Map<String, YamlElement> mapResult = YamlTypeProvider.INSTANCE.getMap(mappingWithElements, RuntimeException::new);
 		assertEquals(1, mapResult.size());
 		assertEquals("value", mapResult.get("key").getAsYamlScalar().getAsString());
 	}
@@ -178,30 +178,30 @@ class YamlTypeProviderTest {
 		YamlMapping yamlMapping = new YamlMapping();
 		YamlElement testValue = new YamlScalar("test");
 		
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.has(null, "key"));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.has(yamlMapping, null));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.get(null, "key"));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.get(yamlMapping, null));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.set(null, "key", testValue));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.set(yamlMapping, null, testValue));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.set(yamlMapping, "key", null));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.has(null, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.has(yamlMapping, null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.get(null, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.get(yamlMapping, null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.set(null, "key", testValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.set(yamlMapping, null, testValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.set(yamlMapping, "key", null, RuntimeException::new));
 		
 		YamlSequence wrongType = new YamlSequence();
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.has(wrongType, "key"));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.get(wrongType, "key"));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.set(wrongType, "key", testValue));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.has(wrongType, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.get(wrongType, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.set(wrongType, "key", testValue, RuntimeException::new));
 		
-		assertFalse(YamlTypeProvider.INSTANCE.has(yamlMapping, "key"));
+		assertFalse(YamlTypeProvider.INSTANCE.has(yamlMapping, "key", RuntimeException::new));
 		
-		YamlTypeProvider.INSTANCE.set(yamlMapping, "key", testValue);
-		assertTrue(YamlTypeProvider.INSTANCE.has(yamlMapping, "key"));
-		assertEquals(testValue, YamlTypeProvider.INSTANCE.get(yamlMapping, "key"));
+		YamlTypeProvider.INSTANCE.set(yamlMapping, "key", testValue, RuntimeException::new);
+		assertTrue(YamlTypeProvider.INSTANCE.has(yamlMapping, "key", RuntimeException::new));
+		assertEquals(testValue, YamlTypeProvider.INSTANCE.get(yamlMapping, "key", RuntimeException::new));
 	}
 	
 	@Test
 	void mergeOperations() {
-		assertEquals(YamlNull.INSTANCE, YamlTypeProvider.INSTANCE.merge(null, YamlNull.INSTANCE));
-		assertEquals(YamlNull.INSTANCE, YamlTypeProvider.INSTANCE.merge(YamlNull.INSTANCE, null));
+		assertEquals(YamlNull.INSTANCE, YamlTypeProvider.INSTANCE.merge(null, YamlNull.INSTANCE, RuntimeException::new));
+		assertEquals(YamlNull.INSTANCE, YamlTypeProvider.INSTANCE.merge(YamlNull.INSTANCE, null, RuntimeException::new));
 		
 		YamlElement scalar = new YamlScalar(1);
 		YamlSequence sequence1 = new YamlSequence(List.of(new YamlScalar("a")));
@@ -209,36 +209,36 @@ class YamlTypeProviderTest {
 		YamlMapping mapping1 = new YamlMapping(Map.of("key1", new YamlScalar("value1")));
 		YamlMapping mapping2 = new YamlMapping(Map.of("key2", new YamlScalar("value2")));
 		
-		assertEquals(scalar, YamlTypeProvider.INSTANCE.merge(YamlTypeProvider.INSTANCE.empty(), scalar));
-		assertEquals(sequence1, YamlTypeProvider.INSTANCE.merge(YamlTypeProvider.INSTANCE.empty(), sequence1));
-		assertEquals(mapping1, YamlTypeProvider.INSTANCE.merge(YamlTypeProvider.INSTANCE.empty(), mapping1));
+		assertEquals(scalar, YamlTypeProvider.INSTANCE.merge(YamlTypeProvider.INSTANCE.empty(), scalar, RuntimeException::new));
+		assertEquals(sequence1, YamlTypeProvider.INSTANCE.merge(YamlTypeProvider.INSTANCE.empty(), sequence1, RuntimeException::new));
+		assertEquals(mapping1, YamlTypeProvider.INSTANCE.merge(YamlTypeProvider.INSTANCE.empty(), mapping1, RuntimeException::new));
 		
-		assertEquals(YamlNull.INSTANCE, YamlTypeProvider.INSTANCE.merge(YamlTypeProvider.INSTANCE.empty(), YamlNull.INSTANCE));
+		assertEquals(YamlNull.INSTANCE, YamlTypeProvider.INSTANCE.merge(YamlTypeProvider.INSTANCE.empty(), YamlNull.INSTANCE, RuntimeException::new));
 		
-		assertEquals(scalar, YamlTypeProvider.INSTANCE.merge(scalar, YamlNull.INSTANCE));
-		assertEquals(scalar, YamlTypeProvider.INSTANCE.merge(YamlNull.INSTANCE, scalar));
+		assertEquals(scalar, YamlTypeProvider.INSTANCE.merge(scalar, YamlNull.INSTANCE, RuntimeException::new));
+		assertEquals(scalar, YamlTypeProvider.INSTANCE.merge(YamlNull.INSTANCE, scalar, RuntimeException::new));
 		
-		assertEquals(sequence1, YamlTypeProvider.INSTANCE.merge(sequence1, YamlNull.INSTANCE));
-		assertEquals(sequence1, YamlTypeProvider.INSTANCE.merge(YamlNull.INSTANCE, sequence1));
+		assertEquals(sequence1, YamlTypeProvider.INSTANCE.merge(sequence1, YamlNull.INSTANCE, RuntimeException::new));
+		assertEquals(sequence1, YamlTypeProvider.INSTANCE.merge(YamlNull.INSTANCE, sequence1, RuntimeException::new));
 		
-		assertEquals(mapping1, YamlTypeProvider.INSTANCE.merge(mapping1, YamlNull.INSTANCE));
-		assertEquals(mapping1, YamlTypeProvider.INSTANCE.merge(YamlNull.INSTANCE, mapping1));
+		assertEquals(mapping1, YamlTypeProvider.INSTANCE.merge(mapping1, YamlNull.INSTANCE, RuntimeException::new));
+		assertEquals(mapping1, YamlTypeProvider.INSTANCE.merge(YamlNull.INSTANCE, mapping1, RuntimeException::new));
 		
-		YamlSequence mergedSequence = YamlTypeProvider.INSTANCE.merge(sequence1, sequence2).getAsYamlSequence();
+		YamlSequence mergedSequence = YamlTypeProvider.INSTANCE.merge(sequence1, sequence2, RuntimeException::new).getAsYamlSequence();
 		assertEquals(2, mergedSequence.size());
 		assertEquals("a", mergedSequence.get(0).getAsYamlScalar().getAsString());
 		assertEquals("b", mergedSequence.get(1).getAsYamlScalar().getAsString());
 		
-		YamlMapping mergedMapping = YamlTypeProvider.INSTANCE.merge(mapping1, mapping2).getAsYamlMapping();
+		YamlMapping mergedMapping = YamlTypeProvider.INSTANCE.merge(mapping1, mapping2, RuntimeException::new).getAsYamlMapping();
 		assertEquals(2, mergedMapping.size());
 		assertEquals("value1", mergedMapping.get("key1").getAsYamlScalar().getAsString());
 		assertEquals("value2", mergedMapping.get("key2").getAsYamlScalar().getAsString());
 		
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.merge(scalar, sequence1));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.merge(scalar, mapping1));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.merge(sequence1, scalar));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.merge(sequence1, mapping1));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.merge(mapping1, scalar));
-		assertThrows(TypeProviderException.class, () -> YamlTypeProvider.INSTANCE.merge(mapping1, sequence1));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.merge(scalar, sequence1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.merge(scalar, mapping1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.merge(sequence1, scalar, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.merge(sequence1, mapping1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.merge(mapping1, scalar, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> YamlTypeProvider.INSTANCE.merge(mapping1, sequence1, RuntimeException::new));
 	}
 }

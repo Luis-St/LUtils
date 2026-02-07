@@ -44,24 +44,24 @@ class JsonTypeProviderTest {
 	
 	@Test
 	void createNullReturnsJsonNull() {
-		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.createNull());
+		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.createNull(RuntimeException::new));
 	}
 	
 	@Test
 	void createPrimitiveTypes() {
-		assertEquals(new JsonPrimitive(true), JsonTypeProvider.INSTANCE.createBoolean(true));
-		assertEquals(new JsonPrimitive((byte) 42), JsonTypeProvider.INSTANCE.createByte((byte) 42));
-		assertEquals(new JsonPrimitive((short) 42), JsonTypeProvider.INSTANCE.createShort((short) 42));
-		assertEquals(new JsonPrimitive(42), JsonTypeProvider.INSTANCE.createInteger(42));
-		assertEquals(new JsonPrimitive(42L), JsonTypeProvider.INSTANCE.createLong(42L));
-		assertEquals(new JsonPrimitive(42.5f), JsonTypeProvider.INSTANCE.createFloat(42.5f));
-		assertEquals(new JsonPrimitive(42.5), JsonTypeProvider.INSTANCE.createDouble(42.5));
-		assertEquals(new JsonPrimitive("test"), JsonTypeProvider.INSTANCE.createString("test"));
+		assertEquals(new JsonPrimitive(true), JsonTypeProvider.INSTANCE.createBoolean(true, RuntimeException::new));
+		assertEquals(new JsonPrimitive((byte) 42), JsonTypeProvider.INSTANCE.createByte((byte) 42, RuntimeException::new));
+		assertEquals(new JsonPrimitive((short) 42), JsonTypeProvider.INSTANCE.createShort((short) 42, RuntimeException::new));
+		assertEquals(new JsonPrimitive(42), JsonTypeProvider.INSTANCE.createInteger(42, RuntimeException::new));
+		assertEquals(new JsonPrimitive(42L), JsonTypeProvider.INSTANCE.createLong(42L, RuntimeException::new));
+		assertEquals(new JsonPrimitive(42.5f), JsonTypeProvider.INSTANCE.createFloat(42.5f, RuntimeException::new));
+		assertEquals(new JsonPrimitive(42.5), JsonTypeProvider.INSTANCE.createDouble(42.5, RuntimeException::new));
+		assertEquals(new JsonPrimitive("test"), JsonTypeProvider.INSTANCE.createString("test", RuntimeException::new));
 	}
 	
 	@Test
 	void createStringWithNullThrowsException() {
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.createString(null));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.createString(null, RuntimeException::new));
 	}
 	
 	@Test
@@ -69,106 +69,106 @@ class JsonTypeProviderTest {
 		JsonElement element1 = new JsonPrimitive("a");
 		JsonElement element2 = new JsonPrimitive("b");
 		
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.createList(null));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.createList(null, RuntimeException::new));
 		
 		JsonArray emptyArray = new JsonArray();
-		assertEquals(emptyArray, JsonTypeProvider.INSTANCE.createList(List.of()));
+		assertEquals(emptyArray, JsonTypeProvider.INSTANCE.createList(List.of(), RuntimeException::new));
 		
 		JsonArray arrayWithElements = new JsonArray(List.of(element1, element2));
-		assertEquals(arrayWithElements, JsonTypeProvider.INSTANCE.createList(List.of(element1, element2)));
+		assertEquals(arrayWithElements, JsonTypeProvider.INSTANCE.createList(List.of(element1, element2), RuntimeException::new));
 		
 		JsonObject emptyObject = new JsonObject();
-		assertEquals(emptyObject, JsonTypeProvider.INSTANCE.createMap());
-		assertEquals(emptyObject, JsonTypeProvider.INSTANCE.createMap(Map.of()));
+		assertEquals(emptyObject, JsonTypeProvider.INSTANCE.createMap(RuntimeException::new));
+		assertEquals(emptyObject, JsonTypeProvider.INSTANCE.createMap(Map.of(), RuntimeException::new));
 		
 		JsonObject objectWithElements = new JsonObject(Map.of("key1", element1, "key2", element2));
-		assertEquals(objectWithElements, JsonTypeProvider.INSTANCE.createMap(Map.of("key1", element1, "key2", element2)));
+		assertEquals(objectWithElements, JsonTypeProvider.INSTANCE.createMap(Map.of("key1", element1, "key2", element2), RuntimeException::new));
 	}
 	
 	@Test
 	void getEmptyValidation() {
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.isEmpty(null));
-		assertFalse(JsonTypeProvider.INSTANCE.isEmpty(new JsonArray()));
-		assertFalse(JsonTypeProvider.INSTANCE.isEmpty(new JsonPrimitive(1)));
-		assertFalse(JsonTypeProvider.INSTANCE.isEmpty(new JsonObject()));
-		assertFalse(JsonTypeProvider.INSTANCE.isEmpty(JsonNull.INSTANCE));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.isEmpty(null, RuntimeException::new));
+		assertFalse(JsonTypeProvider.INSTANCE.isEmpty(new JsonArray(), RuntimeException::new));
+		assertFalse(JsonTypeProvider.INSTANCE.isEmpty(new JsonPrimitive(1), RuntimeException::new));
+		assertFalse(JsonTypeProvider.INSTANCE.isEmpty(new JsonObject(), RuntimeException::new));
+		assertFalse(JsonTypeProvider.INSTANCE.isEmpty(JsonNull.INSTANCE, RuntimeException::new));
 	}
 	
 	@Test
 	void isNullValidation() {
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.isNull(null));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.isNull(null, RuntimeException::new));
 		
-		assertTrue(JsonTypeProvider.INSTANCE.isNull(JsonNull.INSTANCE));
+		assertTrue(JsonTypeProvider.INSTANCE.isNull(JsonNull.INSTANCE, RuntimeException::new));
 		
-		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonArray()));
-		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonObject()));
-		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonPrimitive(1)));
-		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonPrimitive(true)));
-		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonPrimitive("test")));
+		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonArray(), RuntimeException::new));
+		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonObject(), RuntimeException::new));
+		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonPrimitive(1), RuntimeException::new));
+		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonPrimitive(true), RuntimeException::new));
+		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonPrimitive("test"), RuntimeException::new));
 	}
 	
 	@Test
 	void getPrimitiveTypes() {
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getBoolean(null));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getByte(null));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getShort(null));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getInteger(null));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getLong(null));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getFloat(null));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getDouble(null));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getString(null));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getBoolean(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getByte(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getShort(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getInteger(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getLong(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getFloat(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getDouble(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getString(null, RuntimeException::new));
 		
 		JsonArray wrongType = new JsonArray();
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getBoolean(wrongType));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getByte(wrongType));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getShort(wrongType));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getInteger(wrongType));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getLong(wrongType));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getFloat(wrongType));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getDouble(wrongType));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getString(wrongType));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getBoolean(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getByte(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getShort(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getInteger(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getLong(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getFloat(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getDouble(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getString(wrongType, RuntimeException::new));
 		
 		JsonPrimitive invalidValue = new JsonPrimitive("not-a-number");
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getBoolean(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getByte(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getShort(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getInteger(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getLong(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getFloat(invalidValue));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getDouble(invalidValue));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getBoolean(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getByte(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getShort(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getInteger(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getLong(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getFloat(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getDouble(invalidValue, RuntimeException::new));
 		
-		assertTrue(JsonTypeProvider.INSTANCE.getBoolean(new JsonPrimitive(true)));
-		assertEquals((byte) 42, JsonTypeProvider.INSTANCE.getByte(new JsonPrimitive((byte) 42)));
-		assertEquals((short) 42, JsonTypeProvider.INSTANCE.getShort(new JsonPrimitive((short) 42)));
-		assertEquals(42, JsonTypeProvider.INSTANCE.getInteger(new JsonPrimitive(42)));
-		assertEquals(42L, JsonTypeProvider.INSTANCE.getLong(new JsonPrimitive(42L)));
-		assertEquals(42.5f, JsonTypeProvider.INSTANCE.getFloat(new JsonPrimitive(42.5f)));
-		assertEquals(42.5, JsonTypeProvider.INSTANCE.getDouble(new JsonPrimitive(42.5)));
-		assertEquals("test", JsonTypeProvider.INSTANCE.getString(new JsonPrimitive("test")));
+		assertTrue(JsonTypeProvider.INSTANCE.getBoolean(new JsonPrimitive(true), RuntimeException::new));
+		assertEquals((byte) 42, JsonTypeProvider.INSTANCE.getByte(new JsonPrimitive((byte) 42), RuntimeException::new));
+		assertEquals((short) 42, JsonTypeProvider.INSTANCE.getShort(new JsonPrimitive((short) 42), RuntimeException::new));
+		assertEquals(42, JsonTypeProvider.INSTANCE.getInteger(new JsonPrimitive(42), RuntimeException::new));
+		assertEquals(42L, JsonTypeProvider.INSTANCE.getLong(new JsonPrimitive(42L), RuntimeException::new));
+		assertEquals(42.5f, JsonTypeProvider.INSTANCE.getFloat(new JsonPrimitive(42.5f), RuntimeException::new));
+		assertEquals(42.5, JsonTypeProvider.INSTANCE.getDouble(new JsonPrimitive(42.5), RuntimeException::new));
+		assertEquals("test", JsonTypeProvider.INSTANCE.getString(new JsonPrimitive("test"), RuntimeException::new));
 	}
 	
 	@Test
 	void getCollectionTypes() {
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getList(null));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getMap(null));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getList(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getMap(null, RuntimeException::new));
 		
 		JsonPrimitive wrongType = new JsonPrimitive(1);
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getList(wrongType));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.getMap(wrongType));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getList(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.getMap(wrongType, RuntimeException::new));
 		
 		JsonArray emptyArray = new JsonArray();
-		assertTrue(JsonTypeProvider.INSTANCE.getList(emptyArray).isEmpty());
+		assertTrue(JsonTypeProvider.INSTANCE.getList(emptyArray, RuntimeException::new).isEmpty());
 		
 		JsonArray arrayWithElements = new JsonArray(List.of(new JsonPrimitive("a"), new JsonPrimitive("b")));
-		List<JsonElement> listResult = JsonTypeProvider.INSTANCE.getList(arrayWithElements);
+		List<JsonElement> listResult = JsonTypeProvider.INSTANCE.getList(arrayWithElements, RuntimeException::new);
 		assertEquals(2, listResult.size());
 		assertEquals("a", listResult.getFirst().getAsJsonPrimitive().getAsString());
 		
 		JsonObject emptyObject = new JsonObject();
-		assertTrue(JsonTypeProvider.INSTANCE.getMap(emptyObject).isEmpty());
+		assertTrue(JsonTypeProvider.INSTANCE.getMap(emptyObject, RuntimeException::new).isEmpty());
 		
 		JsonObject objectWithElements = new JsonObject(Map.of("key", new JsonPrimitive("value")));
-		Map<String, JsonElement> mapResult = JsonTypeProvider.INSTANCE.getMap(objectWithElements);
+		Map<String, JsonElement> mapResult = JsonTypeProvider.INSTANCE.getMap(objectWithElements, RuntimeException::new);
 		assertEquals(1, mapResult.size());
 		assertEquals("value", mapResult.get("key").getAsJsonPrimitive().getAsString());
 	}
@@ -178,30 +178,30 @@ class JsonTypeProviderTest {
 		JsonObject jsonObject = new JsonObject();
 		JsonElement testValue = new JsonPrimitive("test");
 		
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.has(null, "key"));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.has(jsonObject, null));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.get(null, "key"));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.get(jsonObject, null));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.set(null, "key", testValue));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.set(jsonObject, null, testValue));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.set(jsonObject, "key", null));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.has(null, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.has(jsonObject, null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.get(null, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.get(jsonObject, null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.set(null, "key", testValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.set(jsonObject, null, testValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.set(jsonObject, "key", null, RuntimeException::new));
 		
 		JsonArray wrongType = new JsonArray();
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.has(wrongType, "key"));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.get(wrongType, "key"));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.set(wrongType, "key", testValue));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.has(wrongType, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.get(wrongType, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.set(wrongType, "key", testValue, RuntimeException::new));
 		
-		assertFalse(JsonTypeProvider.INSTANCE.has(jsonObject, "key"));
+		assertFalse(JsonTypeProvider.INSTANCE.has(jsonObject, "key", RuntimeException::new));
 		
-		JsonTypeProvider.INSTANCE.set(jsonObject, "key", testValue);
-		assertTrue(JsonTypeProvider.INSTANCE.has(jsonObject, "key"));
-		assertEquals(testValue, JsonTypeProvider.INSTANCE.get(jsonObject, "key"));
+		JsonTypeProvider.INSTANCE.set(jsonObject, "key", testValue, RuntimeException::new);
+		assertTrue(JsonTypeProvider.INSTANCE.has(jsonObject, "key", RuntimeException::new));
+		assertEquals(testValue, JsonTypeProvider.INSTANCE.get(jsonObject, "key", RuntimeException::new));
 	}
 	
 	@Test
 	void mergeOperations() {
-		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.merge(null, JsonNull.INSTANCE));
-		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, null));
+		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.merge(null, JsonNull.INSTANCE, RuntimeException::new));
+		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, null, RuntimeException::new));
 		
 		JsonElement primitive = new JsonPrimitive(1);
 		JsonArray array1 = new JsonArray(List.of(new JsonPrimitive("a")));
@@ -209,36 +209,36 @@ class JsonTypeProviderTest {
 		JsonObject object1 = new JsonObject(Map.of("key1", new JsonPrimitive("value1")));
 		JsonObject object2 = new JsonObject(Map.of("key2", new JsonPrimitive("value2")));
 		
-		assertEquals(primitive, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), primitive));
-		assertEquals(array1, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), array1));
-		assertEquals(object1, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), object1));
+		assertEquals(primitive, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), primitive, RuntimeException::new));
+		assertEquals(array1, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), array1, RuntimeException::new));
+		assertEquals(object1, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), object1, RuntimeException::new));
 		
-		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), JsonNull.INSTANCE));
+		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), JsonNull.INSTANCE, RuntimeException::new));
 		
-		assertEquals(primitive, JsonTypeProvider.INSTANCE.merge(primitive, JsonNull.INSTANCE));
-		assertEquals(primitive, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, primitive));
+		assertEquals(primitive, JsonTypeProvider.INSTANCE.merge(primitive, JsonNull.INSTANCE, RuntimeException::new));
+		assertEquals(primitive, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, primitive, RuntimeException::new));
 		
-		assertEquals(array1, JsonTypeProvider.INSTANCE.merge(array1, JsonNull.INSTANCE));
-		assertEquals(array1, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, array1));
+		assertEquals(array1, JsonTypeProvider.INSTANCE.merge(array1, JsonNull.INSTANCE, RuntimeException::new));
+		assertEquals(array1, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, array1, RuntimeException::new));
 		
-		assertEquals(object1, JsonTypeProvider.INSTANCE.merge(object1, JsonNull.INSTANCE));
-		assertEquals(object1, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, object1));
+		assertEquals(object1, JsonTypeProvider.INSTANCE.merge(object1, JsonNull.INSTANCE, RuntimeException::new));
+		assertEquals(object1, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, object1, RuntimeException::new));
 		
-		JsonArray mergedArray = JsonTypeProvider.INSTANCE.merge(array1, array2).getAsJsonArray();
+		JsonArray mergedArray = JsonTypeProvider.INSTANCE.merge(array1, array2, RuntimeException::new).getAsJsonArray();
 		assertEquals(2, mergedArray.size());
 		assertEquals("a", mergedArray.get(0).getAsJsonPrimitive().getAsString());
 		assertEquals("b", mergedArray.get(1).getAsJsonPrimitive().getAsString());
 		
-		JsonObject mergedObject = JsonTypeProvider.INSTANCE.merge(object1, object2).getAsJsonObject();
+		JsonObject mergedObject = JsonTypeProvider.INSTANCE.merge(object1, object2, RuntimeException::new).getAsJsonObject();
 		assertEquals(2, mergedObject.size());
 		assertEquals("value1", mergedObject.get("key1").getAsJsonPrimitive().getAsString());
 		assertEquals("value2", mergedObject.get("key2").getAsJsonPrimitive().getAsString());
 		
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.merge(primitive, array1));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.merge(primitive, object1));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.merge(array1, primitive));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.merge(array1, object1));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.merge(object1, primitive));
-		assertThrows(TypeProviderException.class, () -> JsonTypeProvider.INSTANCE.merge(object1, array1));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.merge(primitive, array1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.merge(primitive, object1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.merge(array1, primitive, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.merge(array1, object1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.merge(object1, primitive, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> JsonTypeProvider.INSTANCE.merge(object1, array1, RuntimeException::new));
 	}
 }

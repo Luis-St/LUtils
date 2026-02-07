@@ -44,24 +44,24 @@ class TomlTypeProviderTest {
 	
 	@Test
 	void createNullReturnsTomlNull() {
-		assertEquals(TomlNull.INSTANCE, TomlTypeProvider.INSTANCE.createNull());
+		assertEquals(TomlNull.INSTANCE, TomlTypeProvider.INSTANCE.createNull(RuntimeException::new));
 	}
 	
 	@Test
 	void createPrimitiveTypes() {
-		assertEquals(new TomlValue(true), TomlTypeProvider.INSTANCE.createBoolean(true));
-		assertEquals(new TomlValue((byte) 42), TomlTypeProvider.INSTANCE.createByte((byte) 42));
-		assertEquals(new TomlValue((short) 42), TomlTypeProvider.INSTANCE.createShort((short) 42));
-		assertEquals(new TomlValue(42), TomlTypeProvider.INSTANCE.createInteger(42));
-		assertEquals(new TomlValue(42L), TomlTypeProvider.INSTANCE.createLong(42L));
-		assertEquals(new TomlValue(42.5f), TomlTypeProvider.INSTANCE.createFloat(42.5f));
-		assertEquals(new TomlValue(42.5), TomlTypeProvider.INSTANCE.createDouble(42.5));
-		assertEquals(new TomlValue("test"), TomlTypeProvider.INSTANCE.createString("test"));
+		assertEquals(new TomlValue(true), TomlTypeProvider.INSTANCE.createBoolean(true, RuntimeException::new));
+		assertEquals(new TomlValue((byte) 42), TomlTypeProvider.INSTANCE.createByte((byte) 42, RuntimeException::new));
+		assertEquals(new TomlValue((short) 42), TomlTypeProvider.INSTANCE.createShort((short) 42, RuntimeException::new));
+		assertEquals(new TomlValue(42), TomlTypeProvider.INSTANCE.createInteger(42, RuntimeException::new));
+		assertEquals(new TomlValue(42L), TomlTypeProvider.INSTANCE.createLong(42L, RuntimeException::new));
+		assertEquals(new TomlValue(42.5f), TomlTypeProvider.INSTANCE.createFloat(42.5f, RuntimeException::new));
+		assertEquals(new TomlValue(42.5), TomlTypeProvider.INSTANCE.createDouble(42.5, RuntimeException::new));
+		assertEquals(new TomlValue("test"), TomlTypeProvider.INSTANCE.createString("test", RuntimeException::new));
 	}
 	
 	@Test
 	void createStringWithNullThrowsException() {
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.createString(null));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.createString(null, RuntimeException::new));
 	}
 	
 	@Test
@@ -69,106 +69,106 @@ class TomlTypeProviderTest {
 		TomlElement element1 = new TomlValue("a");
 		TomlElement element2 = new TomlValue("b");
 		
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.createList(null));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.createList(null, RuntimeException::new));
 		
 		TomlArray emptyArray = new TomlArray();
-		assertEquals(emptyArray, TomlTypeProvider.INSTANCE.createList(List.of()));
+		assertEquals(emptyArray, TomlTypeProvider.INSTANCE.createList(List.of(), RuntimeException::new));
 		
 		TomlArray arrayWithElements = new TomlArray(List.of(element1, element2));
-		assertEquals(arrayWithElements, TomlTypeProvider.INSTANCE.createList(List.of(element1, element2)));
+		assertEquals(arrayWithElements, TomlTypeProvider.INSTANCE.createList(List.of(element1, element2), RuntimeException::new));
 		
 		TomlTable emptyTable = new TomlTable();
-		assertEquals(emptyTable, TomlTypeProvider.INSTANCE.createMap());
-		assertEquals(emptyTable, TomlTypeProvider.INSTANCE.createMap(Map.of()));
+		assertEquals(emptyTable, TomlTypeProvider.INSTANCE.createMap(RuntimeException::new));
+		assertEquals(emptyTable, TomlTypeProvider.INSTANCE.createMap(Map.of(), RuntimeException::new));
 		
 		TomlTable tableWithElements = new TomlTable(Map.of("key1", element1, "key2", element2));
-		assertEquals(tableWithElements, TomlTypeProvider.INSTANCE.createMap(Map.of("key1", element1, "key2", element2)));
+		assertEquals(tableWithElements, TomlTypeProvider.INSTANCE.createMap(Map.of("key1", element1, "key2", element2), RuntimeException::new));
 	}
 	
 	@Test
 	void getEmptyValidation() {
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.isEmpty(null));
-		assertFalse(TomlTypeProvider.INSTANCE.isEmpty(new TomlArray()));
-		assertFalse(TomlTypeProvider.INSTANCE.isEmpty(new TomlValue(1)));
-		assertFalse(TomlTypeProvider.INSTANCE.isEmpty(new TomlTable()));
-		assertFalse(TomlTypeProvider.INSTANCE.isEmpty(TomlNull.INSTANCE));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.isEmpty(null, RuntimeException::new));
+		assertFalse(TomlTypeProvider.INSTANCE.isEmpty(new TomlArray(), RuntimeException::new));
+		assertFalse(TomlTypeProvider.INSTANCE.isEmpty(new TomlValue(1), RuntimeException::new));
+		assertFalse(TomlTypeProvider.INSTANCE.isEmpty(new TomlTable(), RuntimeException::new));
+		assertFalse(TomlTypeProvider.INSTANCE.isEmpty(TomlNull.INSTANCE, RuntimeException::new));
 	}
 	
 	@Test
 	void isNullValidation() {
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.isNull(null));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.isNull(null, RuntimeException::new));
 		
-		assertTrue(TomlTypeProvider.INSTANCE.isNull(TomlNull.INSTANCE));
+		assertTrue(TomlTypeProvider.INSTANCE.isNull(TomlNull.INSTANCE, RuntimeException::new));
 		
-		assertFalse(TomlTypeProvider.INSTANCE.isNull(new TomlArray()));
-		assertFalse(TomlTypeProvider.INSTANCE.isNull(new TomlTable()));
-		assertFalse(TomlTypeProvider.INSTANCE.isNull(new TomlValue(1)));
-		assertFalse(TomlTypeProvider.INSTANCE.isNull(new TomlValue(true)));
-		assertFalse(TomlTypeProvider.INSTANCE.isNull(new TomlValue("test")));
+		assertFalse(TomlTypeProvider.INSTANCE.isNull(new TomlArray(), RuntimeException::new));
+		assertFalse(TomlTypeProvider.INSTANCE.isNull(new TomlTable(), RuntimeException::new));
+		assertFalse(TomlTypeProvider.INSTANCE.isNull(new TomlValue(1), RuntimeException::new));
+		assertFalse(TomlTypeProvider.INSTANCE.isNull(new TomlValue(true), RuntimeException::new));
+		assertFalse(TomlTypeProvider.INSTANCE.isNull(new TomlValue("test"), RuntimeException::new));
 	}
 	
 	@Test
 	void getPrimitiveTypes() {
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getBoolean(null));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getByte(null));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getShort(null));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getInteger(null));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getLong(null));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getFloat(null));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getDouble(null));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getString(null));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getBoolean(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getByte(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getShort(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getInteger(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getLong(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getFloat(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getDouble(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getString(null, RuntimeException::new));
 		
 		TomlArray wrongType = new TomlArray();
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getBoolean(wrongType));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getByte(wrongType));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getShort(wrongType));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getInteger(wrongType));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getLong(wrongType));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getFloat(wrongType));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getDouble(wrongType));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getString(wrongType));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getBoolean(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getByte(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getShort(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getInteger(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getLong(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getFloat(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getDouble(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getString(wrongType, RuntimeException::new));
 		
 		TomlValue invalidValue = new TomlValue("not-a-number");
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getBoolean(invalidValue));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getByte(invalidValue));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getShort(invalidValue));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getInteger(invalidValue));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getLong(invalidValue));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getFloat(invalidValue));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getDouble(invalidValue));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getBoolean(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getByte(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getShort(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getInteger(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getLong(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getFloat(invalidValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getDouble(invalidValue, RuntimeException::new));
 		
-		assertTrue(TomlTypeProvider.INSTANCE.getBoolean(new TomlValue(true)));
-		assertEquals((byte) 42, TomlTypeProvider.INSTANCE.getByte(new TomlValue((byte) 42)));
-		assertEquals((short) 42, TomlTypeProvider.INSTANCE.getShort(new TomlValue((short) 42)));
-		assertEquals(42, TomlTypeProvider.INSTANCE.getInteger(new TomlValue(42)));
-		assertEquals(42L, TomlTypeProvider.INSTANCE.getLong(new TomlValue(42L)));
-		assertEquals(42.5f, TomlTypeProvider.INSTANCE.getFloat(new TomlValue(42.5f)));
-		assertEquals(42.5, TomlTypeProvider.INSTANCE.getDouble(new TomlValue(42.5)));
-		assertEquals("test", TomlTypeProvider.INSTANCE.getString(new TomlValue("test")));
+		assertTrue(TomlTypeProvider.INSTANCE.getBoolean(new TomlValue(true), RuntimeException::new));
+		assertEquals((byte) 42, TomlTypeProvider.INSTANCE.getByte(new TomlValue((byte) 42), RuntimeException::new));
+		assertEquals((short) 42, TomlTypeProvider.INSTANCE.getShort(new TomlValue((short) 42), RuntimeException::new));
+		assertEquals(42, TomlTypeProvider.INSTANCE.getInteger(new TomlValue(42), RuntimeException::new));
+		assertEquals(42L, TomlTypeProvider.INSTANCE.getLong(new TomlValue(42L), RuntimeException::new));
+		assertEquals(42.5f, TomlTypeProvider.INSTANCE.getFloat(new TomlValue(42.5f), RuntimeException::new));
+		assertEquals(42.5, TomlTypeProvider.INSTANCE.getDouble(new TomlValue(42.5), RuntimeException::new));
+		assertEquals("test", TomlTypeProvider.INSTANCE.getString(new TomlValue("test"), RuntimeException::new));
 	}
 	
 	@Test
 	void getCollectionTypes() {
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getList(null));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getMap(null));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getList(null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getMap(null, RuntimeException::new));
 		
 		TomlValue wrongType = new TomlValue(1);
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getList(wrongType));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.getMap(wrongType));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getList(wrongType, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.getMap(wrongType, RuntimeException::new));
 		
 		TomlArray emptyArray = new TomlArray();
-		assertTrue(TomlTypeProvider.INSTANCE.getList(emptyArray).isEmpty());
+		assertTrue(TomlTypeProvider.INSTANCE.getList(emptyArray, RuntimeException::new).isEmpty());
 		
 		TomlArray arrayWithElements = new TomlArray(List.of(new TomlValue("a"), new TomlValue("b")));
-		List<TomlElement> listResult = TomlTypeProvider.INSTANCE.getList(arrayWithElements);
+		List<TomlElement> listResult = TomlTypeProvider.INSTANCE.getList(arrayWithElements, RuntimeException::new);
 		assertEquals(2, listResult.size());
 		assertEquals("a", listResult.getFirst().getAsTomlValue().getAsString());
 		
 		TomlTable emptyTable = new TomlTable();
-		assertTrue(TomlTypeProvider.INSTANCE.getMap(emptyTable).isEmpty());
+		assertTrue(TomlTypeProvider.INSTANCE.getMap(emptyTable, RuntimeException::new).isEmpty());
 		
 		TomlTable tableWithElements = new TomlTable(Map.of("key", new TomlValue("value")));
-		Map<String, TomlElement> mapResult = TomlTypeProvider.INSTANCE.getMap(tableWithElements);
+		Map<String, TomlElement> mapResult = TomlTypeProvider.INSTANCE.getMap(tableWithElements, RuntimeException::new);
 		assertEquals(1, mapResult.size());
 		assertEquals("value", mapResult.get("key").getAsTomlValue().getAsString());
 	}
@@ -178,30 +178,30 @@ class TomlTypeProviderTest {
 		TomlTable tomlTable = new TomlTable();
 		TomlElement testValue = new TomlValue("test");
 		
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.has(null, "key"));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.has(tomlTable, null));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.get(null, "key"));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.get(tomlTable, null));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.set(null, "key", testValue));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.set(tomlTable, null, testValue));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.set(tomlTable, "key", null));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.has(null, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.has(tomlTable, null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.get(null, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.get(tomlTable, null, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.set(null, "key", testValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.set(tomlTable, null, testValue, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.set(tomlTable, "key", null, RuntimeException::new));
 		
 		TomlArray wrongType = new TomlArray();
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.has(wrongType, "key"));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.get(wrongType, "key"));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.set(wrongType, "key", testValue));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.has(wrongType, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.get(wrongType, "key", RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.set(wrongType, "key", testValue, RuntimeException::new));
 		
-		assertFalse(TomlTypeProvider.INSTANCE.has(tomlTable, "key"));
+		assertFalse(TomlTypeProvider.INSTANCE.has(tomlTable, "key", RuntimeException::new));
 		
-		TomlTypeProvider.INSTANCE.set(tomlTable, "key", testValue);
-		assertTrue(TomlTypeProvider.INSTANCE.has(tomlTable, "key"));
-		assertEquals(testValue, TomlTypeProvider.INSTANCE.get(tomlTable, "key"));
+		TomlTypeProvider.INSTANCE.set(tomlTable, "key", testValue, RuntimeException::new);
+		assertTrue(TomlTypeProvider.INSTANCE.has(tomlTable, "key", RuntimeException::new));
+		assertEquals(testValue, TomlTypeProvider.INSTANCE.get(tomlTable, "key", RuntimeException::new));
 	}
 	
 	@Test
 	void mergeOperations() {
-		assertEquals(TomlNull.INSTANCE, TomlTypeProvider.INSTANCE.merge(null, TomlNull.INSTANCE));
-		assertEquals(TomlNull.INSTANCE, TomlTypeProvider.INSTANCE.merge(TomlNull.INSTANCE, null));
+		assertEquals(TomlNull.INSTANCE, TomlTypeProvider.INSTANCE.merge(null, TomlNull.INSTANCE, RuntimeException::new));
+		assertEquals(TomlNull.INSTANCE, TomlTypeProvider.INSTANCE.merge(TomlNull.INSTANCE, null, RuntimeException::new));
 		
 		TomlElement primitive = new TomlValue(1);
 		TomlArray array1 = new TomlArray(List.of(new TomlValue("a")));
@@ -209,36 +209,36 @@ class TomlTypeProviderTest {
 		TomlTable table1 = new TomlTable(Map.of("key1", new TomlValue("value1")));
 		TomlTable table2 = new TomlTable(Map.of("key2", new TomlValue("value2")));
 		
-		assertEquals(primitive, TomlTypeProvider.INSTANCE.merge(TomlTypeProvider.INSTANCE.empty(), primitive));
-		assertEquals(array1, TomlTypeProvider.INSTANCE.merge(TomlTypeProvider.INSTANCE.empty(), array1));
-		assertEquals(table1, TomlTypeProvider.INSTANCE.merge(TomlTypeProvider.INSTANCE.empty(), table1));
+		assertEquals(primitive, TomlTypeProvider.INSTANCE.merge(TomlTypeProvider.INSTANCE.empty(), primitive, RuntimeException::new));
+		assertEquals(array1, TomlTypeProvider.INSTANCE.merge(TomlTypeProvider.INSTANCE.empty(), array1, RuntimeException::new));
+		assertEquals(table1, TomlTypeProvider.INSTANCE.merge(TomlTypeProvider.INSTANCE.empty(), table1, RuntimeException::new));
 		
-		assertEquals(TomlNull.INSTANCE, TomlTypeProvider.INSTANCE.merge(TomlTypeProvider.INSTANCE.empty(), TomlNull.INSTANCE));
+		assertEquals(TomlNull.INSTANCE, TomlTypeProvider.INSTANCE.merge(TomlTypeProvider.INSTANCE.empty(), TomlNull.INSTANCE, RuntimeException::new));
 		
-		assertEquals(primitive, TomlTypeProvider.INSTANCE.merge(primitive, TomlNull.INSTANCE));
-		assertEquals(primitive, TomlTypeProvider.INSTANCE.merge(TomlNull.INSTANCE, primitive));
+		assertEquals(primitive, TomlTypeProvider.INSTANCE.merge(primitive, TomlNull.INSTANCE, RuntimeException::new));
+		assertEquals(primitive, TomlTypeProvider.INSTANCE.merge(TomlNull.INSTANCE, primitive, RuntimeException::new));
 		
-		assertEquals(array1, TomlTypeProvider.INSTANCE.merge(array1, TomlNull.INSTANCE));
-		assertEquals(array1, TomlTypeProvider.INSTANCE.merge(TomlNull.INSTANCE, array1));
+		assertEquals(array1, TomlTypeProvider.INSTANCE.merge(array1, TomlNull.INSTANCE, RuntimeException::new));
+		assertEquals(array1, TomlTypeProvider.INSTANCE.merge(TomlNull.INSTANCE, array1, RuntimeException::new));
 		
-		assertEquals(table1, TomlTypeProvider.INSTANCE.merge(table1, TomlNull.INSTANCE));
-		assertEquals(table1, TomlTypeProvider.INSTANCE.merge(TomlNull.INSTANCE, table1));
+		assertEquals(table1, TomlTypeProvider.INSTANCE.merge(table1, TomlNull.INSTANCE, RuntimeException::new));
+		assertEquals(table1, TomlTypeProvider.INSTANCE.merge(TomlNull.INSTANCE, table1, RuntimeException::new));
 		
-		TomlArray mergedArray = TomlTypeProvider.INSTANCE.merge(array1, array2).getAsTomlArray();
+		TomlArray mergedArray = TomlTypeProvider.INSTANCE.merge(array1, array2, RuntimeException::new).getAsTomlArray();
 		assertEquals(2, mergedArray.size());
 		assertEquals("a", mergedArray.get(0).getAsTomlValue().getAsString());
 		assertEquals("b", mergedArray.get(1).getAsTomlValue().getAsString());
 		
-		TomlTable mergedTable = TomlTypeProvider.INSTANCE.merge(table1, table2).getAsTomlTable();
+		TomlTable mergedTable = TomlTypeProvider.INSTANCE.merge(table1, table2, RuntimeException::new).getAsTomlTable();
 		assertEquals(2, mergedTable.size());
 		assertEquals("value1", mergedTable.get("key1").getAsTomlValue().getAsString());
 		assertEquals("value2", mergedTable.get("key2").getAsTomlValue().getAsString());
 		
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.merge(primitive, array1));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.merge(primitive, table1));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.merge(array1, primitive));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.merge(array1, table1));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.merge(table1, primitive));
-		assertThrows(TypeProviderException.class, () -> TomlTypeProvider.INSTANCE.merge(table1, array1));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.merge(primitive, array1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.merge(primitive, table1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.merge(array1, primitive, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.merge(array1, table1, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.merge(table1, primitive, RuntimeException::new));
+		assertThrows(RuntimeException.class, () -> TomlTypeProvider.INSTANCE.merge(table1, array1, RuntimeException::new));
 	}
 }
