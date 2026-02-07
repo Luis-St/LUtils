@@ -18,11 +18,11 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal.offset;
 
-import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.*;
@@ -291,20 +291,20 @@ class OffsetDateTimeConstraintConfigTest {
 		assertTrue(config.nanosecond().isEmpty());
 		assertTrue(config.offset().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(OffsetDateTimeConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
-		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withPast();
+		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withAfter(DT_2024_01_15_10_30);
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withEqualTo(DT_2024_06_15_12_00);
@@ -646,7 +646,9 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withCustom(dt -> dt.getHour() < 12 ? Result.success() : Result.error("Time must be before noon"));
+		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withCustom(dt -> {
+			if (dt.getHour() >= 12) throw new ConstraintViolateException("Time must be before noon");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -656,129 +658,129 @@ class OffsetDateTimeConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withEqualTo(DT_2024_06_15_12_00);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_01_15_10_30).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_01_15_10_30));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withNotEqualTo(DT_2024_06_15_12_00);
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_06_15_12_00));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withIn(List.of(DT_2024_01_15_10_30, DT_2024_06_15_12_00));
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_12_25_14_30));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withNotIn(List.of(DT_2024_01_15_10_30, DT_2024_06_15_12_00));
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
-		assertTrue(config.matches(DT_2024_01_15_10_30).isError());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_01_15_10_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_06_15_12_00));
 	}
 	
 	@Test
-	void matchesWithAfter() {
+	void validateWithAfter() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withAfter(DT_2024_01_15_10_30);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_01_15_10_30).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_01_15_10_30));
 	}
 	
 	@Test
-	void matchesWithAfterOrEqual() {
+	void validateWithAfterOrEqual() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withAfterOrEqual(DT_2024_01_15_10_30);
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
 	}
 	
 	@Test
-	void matchesWithBefore() {
+	void validateWithBefore() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withBefore(DT_2025_01_01_00_00);
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
-		assertTrue(config.matches(DT_2025_01_01_00_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2025_01_01_00_00));
 	}
 	
 	@Test
-	void matchesWithBeforeOrEqual() {
+	void validateWithBeforeOrEqual() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withBeforeOrEqual(DT_2025_01_01_00_00);
-		assertTrue(config.matches(DT_2025_01_01_00_00).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
+		assertDoesNotThrow(() -> config.validate(DT_2025_01_01_00_00));
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withBetween(DT_2024_01_15_10_30, DT_2025_01_01_00_00);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
-		assertTrue(config.matches(DT_2024_01_15_10_30).isError());
-		assertTrue(config.matches(DT_2025_01_01_00_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_01_15_10_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2025_01_01_00_00));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(DT_2024_01_15_10_30, DT_2025_01_01_00_00);
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2025_01_01_00_00).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertDoesNotThrow(() -> config.validate(DT_2025_01_01_00_00));
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
 	}
 	
 	@Test
-	void matchesWithMonthConstraint() {
+	void validateWithMonthConstraint() {
 		EnumConstraintConfig<Month> monthConfig = EnumConstraintConfig.<Month>unconstrained().withIn(List.of(Month.JUNE, Month.DECEMBER));
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withMonth(monthConfig);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
-		assertTrue(config.matches(DT_2024_01_15_10_30).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_01_15_10_30));
 	}
 	
 	@Test
-	void matchesWithYearConstraint() {
+	void validateWithYearConstraint() {
 		NumericConstraintConfig yearConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(2024);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withYear(yearConfig);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2025_01_01_00_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2025_01_01_00_00));
 	}
 	
 	@Test
-	void matchesWithHourConstraint() {
+	void validateWithHourConstraint() {
 		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 13);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_12_25_14_30));
 	}
 	
 	@Test
-	void matchesWithOffsetConstraint() {
+	void validateWithOffsetConstraint() {
 		ZoneOffsetConstraintConfig offsetConfig = ZoneOffsetConstraintConfig.UNCONSTRAINED.withZero();
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withOffset(offsetConfig);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(OffsetDateTime.of(2024, 6, 15, 12, 0, 0, 0, ZoneOffset.ofHours(2))).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(OffsetDateTime.of(2024, 6, 15, 12, 0, 0, 0, ZoneOffset.ofHours(2))));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED
 			.withAfterOrEqual(DT_2024_01_15_10_30)
 			.withBeforeOrEqual(DT_2025_01_01_00_00)
 			.withNotIn(List.of(DT_2024_06_15_12_00));
 		
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_06_15_12_00));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

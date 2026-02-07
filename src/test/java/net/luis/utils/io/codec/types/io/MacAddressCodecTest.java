@@ -19,12 +19,13 @@
 package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.io.network.address.mac.MacAddress;
 import net.luis.utils.io.network.address.mac.MacAddresses;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,56 +38,52 @@ import static org.junit.jupiter.api.Assertions.*;
 class MacAddressCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		MacAddress address = MacAddresses.parse("00:1A:2B:3C:4D:5E");
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), address));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, address));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), address));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, address));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as MAC address"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as MAC address"));
 	}
 	
 	@Test
-	void encodeStartWithValidMac() {
+	void encodeWithValidMac() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		MacAddress address = MacAddresses.parse("00:1A:2B:3C:4D:5E");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("00:1a:2b:3c:4d:5e"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), address);
+		assertEquals(new JsonPrimitive("00:1a:2b:3c:4d:5e"), result);
 	}
 	
 	@Test
-	void encodeStartWithBroadcast() {
+	void encodeWithBroadcast() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		MacAddress address = MacAddresses.broadcast();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("ff:ff:ff:ff:ff:ff"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), address);
+		assertEquals(new JsonPrimitive("ff:ff:ff:ff:ff:ff"), result);
 	}
 	
 	@Test
-	void encodeStartWithZero() {
+	void encodeWithZero() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		MacAddress address = MacAddresses.zero();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("00:00:00:00:00:00"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), address);
+		assertEquals(new JsonPrimitive("00:00:00:00:00:00"), result);
 	}
 	
 	@Test
@@ -97,110 +94,100 @@ class MacAddressCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithValidMac() {
+	void encodeKeyWithValidMac() throws EncoderException {
 		Codec<MacAddress> codec = new MacAddressCodec();
 		MacAddress address = MacAddresses.parse("00:1A:2B:3C:4D:5E");
 		
-		Result<String> result = codec.encodeKey(address);
-		assertTrue(result.isSuccess());
-		assertEquals("00:1a:2b:3c:4d:5e", result.resultOrThrow());
+		String result = codec.encodeKey(address);
+		assertEquals("00:1a:2b:3c:4d:5e", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("00:1A:2B:3C:4D:5E")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("00:1A:2B:3C:4D:5E")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as MAC address"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as MAC address"));
 	}
 	
 	@Test
-	void decodeStartWithColonFormat() {
+	void decodeWithColonFormat() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1A:2B:3C:4D:5E"));
-		assertTrue(result.isSuccess());
-		assertEquals(MacAddresses.parse("00:1A:2B:3C:4D:5E"), result.resultOrThrow());
+		MacAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1A:2B:3C:4D:5E"));
+		assertEquals(MacAddresses.parse("00:1A:2B:3C:4D:5E"), result);
 	}
 	
 	@Test
-	void decodeStartWithDashFormat() {
+	void decodeWithDashFormat() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00-1A-2B-3C-4D-5E"));
-		assertTrue(result.isSuccess());
-		assertEquals(MacAddresses.parse("00:1A:2B:3C:4D:5E"), result.resultOrThrow());
+		MacAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00-1A-2B-3C-4D-5E"));
+		assertEquals(MacAddresses.parse("00:1A:2B:3C:4D:5E"), result);
 	}
 	
 	@Test
-	void decodeStartWithCiscoFormat() {
+	void decodeWithCiscoFormat() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("001A.2B3C.4D5E"));
-		assertTrue(result.isSuccess());
-		assertEquals(MacAddresses.parse("00:1A:2B:3C:4D:5E"), result.resultOrThrow());
+		MacAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("001A.2B3C.4D5E"));
+		assertEquals(MacAddresses.parse("00:1A:2B:3C:4D:5E"), result);
 	}
 	
 	@Test
-	void decodeStartWithBareFormat() {
+	void decodeWithBareFormat() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("001A2B3C4D5E"));
-		assertTrue(result.isSuccess());
-		assertEquals(MacAddresses.parse("00:1A:2B:3C:4D:5E"), result.resultOrThrow());
+		MacAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("001A2B3C4D5E"));
+		assertEquals(MacAddresses.parse("00:1A:2B:3C:4D:5E"), result);
 	}
 	
 	@Test
-	void decodeStartWithBroadcast() {
+	void decodeWithBroadcast() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("FF:FF:FF:FF:FF:FF"));
-		assertTrue(result.isSuccess());
-		assertEquals(MacAddresses.broadcast(), result.resultOrThrow());
+		MacAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("FF:FF:FF:FF:FF:FF"));
+		assertEquals(MacAddresses.broadcast(), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidFormat() {
+	void decodeWithInvalidFormat() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-mac"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode MAC address"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-mac")));
+		assertTrue(exception.getMessage().contains("Unable to decode MAC address"));
 	}
 	
 	@Test
-	void decodeStartWithInvalidLength() {
+	void decodeWithInvalidLength() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1A:2B"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode MAC address"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1A:2B")));
+		assertTrue(exception.getMessage().contains("Unable to decode MAC address"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -211,21 +198,19 @@ class MacAddressCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidMac() {
+	void decodeKeyWithValidMac() throws DecoderException {
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<MacAddress> result = codec.decodeKey("00:1A:2B:3C:4D:5E");
-		assertTrue(result.isSuccess());
-		assertEquals(MacAddresses.parse("00:1A:2B:3C:4D:5E"), result.resultOrThrow());
+		MacAddress result = codec.decodeKey("00:1A:2B:3C:4D:5E");
+		assertEquals(MacAddresses.parse("00:1A:2B:3C:4D:5E"), result);
 	}
 	
 	@Test
 	void decodeKeyWithInvalidFormat() {
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
-		Result<MacAddress> result = codec.decodeKey("not-a-mac");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'not-a-mac' as MAC address"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("not-a-mac"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'not-a-mac' as MAC address"));
 	}
 	
 	@Test

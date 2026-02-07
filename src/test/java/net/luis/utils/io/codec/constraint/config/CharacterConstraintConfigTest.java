@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -95,20 +95,20 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.ascii().isEmpty());
 		assertTrue(config.latin1().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches('a').isSuccess());
+		assertDoesNotThrow(() -> config.validate('a'));
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(CharacterConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLetter();
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withEqualTo('x');
@@ -273,7 +273,9 @@ class CharacterConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withCustom(c -> Character.isLetter(c) ? Result.success() : Result.error("Must be letter"));
+		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withCustom(c -> {
+			if (!Character.isLetter(c)) throw new ConstraintViolateException("Must be letter");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -283,188 +285,188 @@ class CharacterConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withEqualTo('a');
-		assertTrue(config.matches('a').isSuccess());
-		assertTrue(config.matches('b').isError());
+		assertDoesNotThrow(() -> config.validate('a'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('b'));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withNotEqualTo('a');
-		assertTrue(config.matches('b').isSuccess());
-		assertTrue(config.matches('a').isError());
+		assertDoesNotThrow(() -> config.validate('b'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('a'));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withIn(List.of('a', 'b', 'c'));
-		assertTrue(config.matches('a').isSuccess());
-		assertTrue(config.matches('b').isSuccess());
-		assertTrue(config.matches('d').isError());
+		assertDoesNotThrow(() -> config.validate('a'));
+		assertDoesNotThrow(() -> config.validate('b'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('d'));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withNotIn(List.of('x', 'y'));
-		assertTrue(config.matches('a').isSuccess());
-		assertTrue(config.matches('x').isError());
+		assertDoesNotThrow(() -> config.validate('a'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('x'));
 	}
 	
 	@Test
-	void matchesWithGreaterThan() {
+	void validateWithGreaterThan() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withGreaterThan('m');
-		assertTrue(config.matches('n').isSuccess());
-		assertTrue(config.matches('m').isError());
-		assertTrue(config.matches('a').isError());
+		assertDoesNotThrow(() -> config.validate('n'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('m'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('a'));
 	}
 	
 	@Test
-	void matchesWithGreaterThanOrEqual() {
+	void validateWithGreaterThanOrEqual() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual('m');
-		assertTrue(config.matches('m').isSuccess());
-		assertTrue(config.matches('n').isSuccess());
-		assertTrue(config.matches('l').isError());
+		assertDoesNotThrow(() -> config.validate('m'));
+		assertDoesNotThrow(() -> config.validate('n'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('l'));
 	}
 	
 	@Test
-	void matchesWithLessThan() {
+	void validateWithLessThan() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLessThan('m');
-		assertTrue(config.matches('l').isSuccess());
-		assertTrue(config.matches('m').isError());
-		assertTrue(config.matches('z').isError());
+		assertDoesNotThrow(() -> config.validate('l'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('m'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('z'));
 	}
 	
 	@Test
-	void matchesWithLessThanOrEqual() {
+	void validateWithLessThanOrEqual() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLessThanOrEqual('m');
-		assertTrue(config.matches('m').isSuccess());
-		assertTrue(config.matches('l').isSuccess());
-		assertTrue(config.matches('n').isError());
+		assertDoesNotThrow(() -> config.validate('m'));
+		assertDoesNotThrow(() -> config.validate('l'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('n'));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withBetween('a', 'z');
-		assertTrue(config.matches('m').isSuccess());
-		assertTrue(config.matches('a').isError());
-		assertTrue(config.matches('z').isError());
+		assertDoesNotThrow(() -> config.validate('m'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('a'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('z'));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withBetweenOrEqual('a', 'z');
-		assertTrue(config.matches('a').isSuccess());
-		assertTrue(config.matches('z').isSuccess());
-		assertTrue(config.matches('m').isSuccess());
-		assertTrue(config.matches('A').isError());
+		assertDoesNotThrow(() -> config.validate('a'));
+		assertDoesNotThrow(() -> config.validate('z'));
+		assertDoesNotThrow(() -> config.validate('m'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('A'));
 	}
 	
 	@Test
-	void matchesWithLetter() {
+	void validateWithLetter() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLetter();
-		assertTrue(config.matches('a').isSuccess());
-		assertTrue(config.matches('Z').isSuccess());
-		assertTrue(config.matches('1').isError());
-		assertTrue(config.matches('!').isError());
+		assertDoesNotThrow(() -> config.validate('a'));
+		assertDoesNotThrow(() -> config.validate('Z'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('1'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('!'));
 	}
 	
 	@Test
-	void matchesWithDigit() {
+	void validateWithDigit() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withDigit();
-		assertTrue(config.matches('0').isSuccess());
-		assertTrue(config.matches('9').isSuccess());
-		assertTrue(config.matches('a').isError());
+		assertDoesNotThrow(() -> config.validate('0'));
+		assertDoesNotThrow(() -> config.validate('9'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('a'));
 	}
 	
 	@Test
-	void matchesWithAlphanumeric() {
+	void validateWithAlphanumeric() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withAlphanumeric();
-		assertTrue(config.matches('a').isSuccess());
-		assertTrue(config.matches('5').isSuccess());
-		assertTrue(config.matches('!').isError());
+		assertDoesNotThrow(() -> config.validate('a'));
+		assertDoesNotThrow(() -> config.validate('5'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('!'));
 	}
 	
 	@Test
-	void matchesWithWhitespace() {
+	void validateWithWhitespace() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withWhitespace();
-		assertTrue(config.matches(' ').isSuccess());
-		assertTrue(config.matches('\t').isSuccess());
-		assertTrue(config.matches('a').isError());
+		assertDoesNotThrow(() -> config.validate(' '));
+		assertDoesNotThrow(() -> config.validate('\t'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('a'));
 	}
 	
 	@Test
-	void matchesWithPunctuation() {
+	void validateWithPunctuation() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withPunctuation();
-		assertTrue(config.matches('.').isSuccess());
-		assertTrue(config.matches(',').isSuccess());
-		assertTrue(config.matches('a').isError());
+		assertDoesNotThrow(() -> config.validate('.'));
+		assertDoesNotThrow(() -> config.validate(','));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('a'));
 	}
 	
 	@Test
-	void matchesWithSymbol() {
+	void validateWithSymbol() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withSymbol();
-		assertTrue(config.matches('+').isSuccess());
-		assertTrue(config.matches('$').isSuccess());
-		assertTrue(config.matches('a').isError());
+		assertDoesNotThrow(() -> config.validate('+'));
+		assertDoesNotThrow(() -> config.validate('$'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('a'));
 	}
 	
 	@Test
-	void matchesWithControl() {
+	void validateWithControl() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withControl();
-		assertTrue(config.matches('\u0000').isSuccess());
-		assertTrue(config.matches('\u001F').isSuccess());
-		assertTrue(config.matches('a').isError());
+		assertDoesNotThrow(() -> config.validate('\u0000'));
+		assertDoesNotThrow(() -> config.validate('\u001F'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('a'));
 	}
 	
 	@Test
-	void matchesWithUpperCase() {
+	void validateWithUpperCase() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withUpperCase();
-		assertTrue(config.matches('A').isSuccess());
-		assertTrue(config.matches('Z').isSuccess());
-		assertTrue(config.matches('a').isError());
+		assertDoesNotThrow(() -> config.validate('A'));
+		assertDoesNotThrow(() -> config.validate('Z'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('a'));
 	}
 	
 	@Test
-	void matchesWithLowerCase() {
+	void validateWithLowerCase() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLowerCase();
-		assertTrue(config.matches('a').isSuccess());
-		assertTrue(config.matches('z').isSuccess());
-		assertTrue(config.matches('A').isError());
+		assertDoesNotThrow(() -> config.validate('a'));
+		assertDoesNotThrow(() -> config.validate('z'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('A'));
 	}
 	
 	@Test
-	void matchesWithAscii() {
+	void validateWithAscii() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withAscii();
-		assertTrue(config.matches('a').isSuccess());
-		assertTrue(config.matches('\u007F').isSuccess());
-		assertTrue(config.matches('\u0080').isError());
+		assertDoesNotThrow(() -> config.validate('a'));
+		assertDoesNotThrow(() -> config.validate('\u007F'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('\u0080'));
 	}
 	
 	@Test
-	void matchesWithLatin1() {
+	void validateWithLatin1() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLatin1();
-		assertTrue(config.matches('a').isSuccess());
-		assertTrue(config.matches('\u00FF').isSuccess());
-		assertTrue(config.matches('\u0100').isError());
+		assertDoesNotThrow(() -> config.validate('a'));
+		assertDoesNotThrow(() -> config.validate('\u00FF'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('\u0100'));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED
 			.withLetter()
 			.withLowerCase()
 			.withAscii();
 		
-		assertTrue(config.matches('a').isSuccess());
-		assertTrue(config.matches('z').isSuccess());
-		assertTrue(config.matches('A').isError());
-		assertTrue(config.matches('1').isError());
+		assertDoesNotThrow(() -> config.validate('a'));
+		assertDoesNotThrow(() -> config.validate('z'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('A'));
+		assertThrows(ConstraintViolateException.class, () -> config.validate('1'));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

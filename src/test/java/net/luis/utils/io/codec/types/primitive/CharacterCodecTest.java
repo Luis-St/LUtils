@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.primitive;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,72 +36,66 @@ import static org.junit.jupiter.api.Assertions.*;
 class CharacterCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		Character value = 'a';
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), value));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as character"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as character"));
 	}
 	
 	@Test
-	void encodeStartWithLowercaseLetter() {
+	void encodeWithLowercaseLetter() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 'a');
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("a"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), 'a');
+		assertEquals(new JsonPrimitive("a"), result);
 	}
 	
 	@Test
-	void encodeStartWithUppercaseLetter() {
+	void encodeWithUppercaseLetter() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 'Z');
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("Z"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), 'Z');
+		assertEquals(new JsonPrimitive("Z"), result);
 	}
 	
 	@Test
-	void encodeStartWithDigit() {
+	void encodeWithDigit() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), '5');
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("5"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), '5');
+		assertEquals(new JsonPrimitive("5"), result);
 	}
 	
 	@Test
-	void encodeStartWithSpecialCharacter() {
+	void encodeWithSpecialCharacter() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), '@');
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("@"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), '@');
+		assertEquals(new JsonPrimitive("@"), result);
 	}
 	
 	@Test
-	void encodeStartWithSpace() {
+	void encodeWithSpace() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), ' ');
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(" "), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), ' ');
+		assertEquals(new JsonPrimitive(" "), result);
 	}
 	
 	@Test
@@ -112,70 +107,64 @@ class CharacterCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithCharacter() {
+	void encodeKeyWithCharacter() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<String> result = codec.encodeKey('x');
-		assertTrue(result.isSuccess());
-		assertEquals("x", result.resultOrThrow());
+		String result = codec.encodeKey('x');
+		assertEquals("x", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("a")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("a")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<Character> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as character"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null as character"));
 	}
 	
 	@Test
-	void decodeStartWithValidCharacter() {
+	void decodeWithValidCharacter() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<Character> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("a"));
-		assertTrue(result.isSuccess());
-		assertEquals('a', result.resultOrThrow());
+		Character result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("a"));
+		assertEquals('a', result);
 	}
 	
 	@Test
-	void decodeStartWithMultiCharacterString() {
+	void decodeWithMultiCharacterString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<Character> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("abc"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("String must have exactly one character to decode as character"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("abc")));
+		assertTrue(exception.getMessage().contains("String must have exactly one character to decode as character"));
 	}
 	
 	@Test
-	void decodeStartWithEmptyString() {
+	void decodeWithEmptyString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<Character> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(""));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("String must have exactly one character to decode as character"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("")));
+		assertTrue(exception.getMessage().contains("String must have exactly one character to decode as character"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<Character> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -187,13 +176,12 @@ class CharacterCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidCharacter() {
+	void decodeKeyWithValidCharacter() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<Character> result = codec.decodeKey("x");
-		assertTrue(result.isSuccess());
-		assertEquals('x', result.resultOrThrow());
+		Character result = codec.decodeKey("x");
+		assertEquals('x', result);
 	}
 	
 	@Test
@@ -201,9 +189,8 @@ class CharacterCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<Character> result = codec.decodeKey("abc");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Key must have exactly one character to decode as character"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("abc"));
+		assertTrue(exception.getMessage().contains("Key must have exactly one character to decode as character"));
 	}
 	
 	@Test
@@ -211,9 +198,8 @@ class CharacterCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Character> codec = new CharacterCodec();
 		
-		Result<Character> result = codec.decodeKey("");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Key must have exactly one character to decode as character"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey(""));
+		assertTrue(exception.getMessage().contains("Key must have exactly one character to decode as character"));
 	}
 	
 	@Test

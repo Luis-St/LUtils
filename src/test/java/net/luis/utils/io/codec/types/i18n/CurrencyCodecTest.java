@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.i18n;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.Currency;
@@ -37,67 +38,62 @@ import static org.junit.jupiter.api.Assertions.*;
 class CurrencyCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		Currency currency = Currency.getInstance("USD");
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), currency));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, currency));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), currency));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, currency));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as currency"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as currency"));
 	}
 	
 	@Test
-	void encodeStartWithUSD() {
+	void encodeWithUSD() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		Currency currency = Currency.getInstance("USD");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), currency);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("USD"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), currency);
+		assertEquals(new JsonPrimitive("USD"), result);
 	}
 	
 	@Test
-	void encodeStartWithEUR() {
+	void encodeWithEUR() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		Currency currency = Currency.getInstance("EUR");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), currency);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("EUR"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), currency);
+		assertEquals(new JsonPrimitive("EUR"), result);
 	}
 	
 	@Test
-	void encodeStartWithGBP() {
+	void encodeWithGBP() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		Currency currency = Currency.getInstance("GBP");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), currency);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("GBP"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), currency);
+		assertEquals(new JsonPrimitive("GBP"), result);
 	}
 	
 	@Test
-	void encodeStartWithJPY() {
+	void encodeWithJPY() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		Currency currency = Currency.getInstance("JPY");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), currency);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("JPY"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), currency);
+		assertEquals(new JsonPrimitive("JPY"), result);
 	}
 	
 	@Test
@@ -109,101 +105,92 @@ class CurrencyCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithCurrency() {
+	void encodeKeyWithCurrency() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		Currency currency = Currency.getInstance("CHF");
 		
-		Result<String> result = codec.encodeKey(currency);
-		assertTrue(result.isSuccess());
-		assertEquals("CHF", result.resultOrThrow());
+		String result = codec.encodeKey(currency);
+		assertEquals("CHF", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("USD")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("USD")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<Currency> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as currency"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as currency"));
 	}
 	
 	@Test
-	void decodeStartWithValidUSD() {
+	void decodeWithValidUSD() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<Currency> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("USD"));
-		assertTrue(result.isSuccess());
-		assertEquals(Currency.getInstance("USD"), result.resultOrThrow());
+		Currency result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("USD"));
+		assertEquals(Currency.getInstance("USD"), result);
 	}
 	
 	@Test
-	void decodeStartWithValidEUR() {
+	void decodeWithValidEUR() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<Currency> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("EUR"));
-		assertTrue(result.isSuccess());
-		assertEquals(Currency.getInstance("EUR"), result.resultOrThrow());
+		Currency result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("EUR"));
+		assertEquals(Currency.getInstance("EUR"), result);
 	}
 	
 	@Test
-	void decodeStartWithValidGBP() {
+	void decodeWithValidGBP() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<Currency> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("GBP"));
-		assertTrue(result.isSuccess());
-		assertEquals(Currency.getInstance("GBP"), result.resultOrThrow());
+		Currency result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("GBP"));
+		assertEquals(Currency.getInstance("GBP"), result);
 	}
 	
 	@Test
-	void decodeStartWithValidJPY() {
+	void decodeWithValidJPY() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<Currency> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("JPY"));
-		assertTrue(result.isSuccess());
-		assertEquals(Currency.getInstance("JPY"), result.resultOrThrow());
+		Currency result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("JPY"));
+		assertEquals(Currency.getInstance("JPY"), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidCurrency() {
+	void decodeWithInvalidCurrency() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<Currency> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("12345"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode currency"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("12345")));
+		assertTrue(exception.getMessage().contains("Unable to decode currency"));
 	}
 	
 	@Test
-	void decodeStartWithLowercaseCurrency() {
+	void decodeWithLowercaseCurrency() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<Currency> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("usd"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode currency"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("usd")));
+		assertTrue(exception.getMessage().contains("Unable to decode currency"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<Currency> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -215,23 +202,21 @@ class CurrencyCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidCurrency() {
+	void decodeKeyWithValidCurrency() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<Currency> result = codec.decodeKey("USD");
-		assertTrue(result.isSuccess());
-		assertEquals(Currency.getInstance("USD"), result.resultOrThrow());
+		Currency result = codec.decodeKey("USD");
+		assertEquals(Currency.getInstance("USD"), result);
 	}
 	
 	@Test
-	void decodeKeyWithEUR() {
+	void decodeKeyWithEUR() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<Currency> result = codec.decodeKey("EUR");
-		assertTrue(result.isSuccess());
-		assertEquals(Currency.getInstance("EUR"), result.resultOrThrow());
+		Currency result = codec.decodeKey("EUR");
+		assertEquals(Currency.getInstance("EUR"), result);
 	}
 	
 	@Test
@@ -239,9 +224,8 @@ class CurrencyCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Currency> codec = new CurrencyCodec();
 		
-		Result<Currency> result = codec.decodeKey("ABCDE");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'ABCDE' as currency"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("ABCDE"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'ABCDE' as currency"));
 	}
 	
 	@Test

@@ -19,9 +19,9 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.PortRange;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -112,18 +112,18 @@ class PortConstraintConfigTest {
 		assertTrue(config.type().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(PortConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withEqualTo(80);
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withEqualTo(8080);
@@ -199,7 +199,7 @@ class PortConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -210,52 +210,52 @@ class PortConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() {
+	void validateUnconstrained() {
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches(0).isSuccess());
-		assertTrue(config.matches(80).isSuccess());
-		assertTrue(config.matches(8080).isSuccess());
-		assertTrue(config.matches(65535).isSuccess());
+		assertDoesNotThrow(() -> config.validate(0));
+		assertDoesNotThrow(() -> config.validate(80));
+		assertDoesNotThrow(() -> config.validate(8080));
+		assertDoesNotThrow(() -> config.validate(65535));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> PortConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> PortConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() {
+	void validateEqualTo() {
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withEqualTo(8080);
 		
-		assertTrue(config.matches(8080).isSuccess());
-		assertTrue(config.matches(80).isError());
+		assertDoesNotThrow(() -> config.validate(8080));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(80));
 	}
 	
 	@Test
-	void matchesNotEqualTo() {
+	void validateNotEqualTo() {
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withNotEqualTo(22);
 		
-		assertTrue(config.matches(80).isSuccess());
-		assertTrue(config.matches(22).isError());
+		assertDoesNotThrow(() -> config.validate(80));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(22));
 	}
 	
 	@Test
-	void matchesIn() {
+	void validateIn() {
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withIn(List.of(80, 443, 8080));
 		
-		assertTrue(config.matches(80).isSuccess());
-		assertTrue(config.matches(443).isSuccess());
-		assertTrue(config.matches(8080).isSuccess());
-		assertTrue(config.matches(22).isError());
+		assertDoesNotThrow(() -> config.validate(80));
+		assertDoesNotThrow(() -> config.validate(443));
+		assertDoesNotThrow(() -> config.validate(8080));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(22));
 	}
 	
 	@Test
-	void matchesNotIn() {
+	void validateNotIn() {
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withNotIn(List.of(22, 23));
 		
-		assertTrue(config.matches(80).isSuccess());
-		assertTrue(config.matches(22).isError());
-		assertTrue(config.matches(23).isError());
+		assertDoesNotThrow(() -> config.validate(80));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(22));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(23));
 	}
 }

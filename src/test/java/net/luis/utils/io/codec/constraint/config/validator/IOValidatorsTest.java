@@ -22,7 +22,6 @@ import net.luis.utils.io.codec.constraint.config.*;
 import net.luis.utils.io.codec.constraint.config.io.*;
 import net.luis.utils.io.codec.constraint.util.*;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -42,30 +41,25 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePortRangeWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePortRange(8080, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePortRange(8080, Optional.empty()));
 	}
 	
 	@Test
 	void validatePortRangeWithInRange() {
-		Result<Void> result = IOValidators.validatePortRange(8080, Optional.of(Pair.of(Pair.of(8000, 9000), false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePortRange(8080, Optional.of(Pair.of(Pair.of(8000, 9000), false))));
 	}
 	
 	@Test
 	void validatePortRangeWithOutOfRange() {
-		Result<Void> result = IOValidators.validatePortRange(7000, Optional.of(Pair.of(Pair.of(8000, 9000), false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be in range"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePortRange(7000, Optional.of(Pair.of(Pair.of(8000, 9000), false))));
+		assertTrue(exception.getMessage().contains("must be in range"));
 	}
 	
 	@Test
 	void validatePortRangeWithNegated() {
-		Result<Void> result = IOValidators.validatePortRange(7000, Optional.of(Pair.of(Pair.of(8000, 9000), true)));
-		assertTrue(result.isSuccess());
-		Result<Void> negatedResult = IOValidators.validatePortRange(8080, Optional.of(Pair.of(Pair.of(8000, 9000), true)));
-		assertTrue(negatedResult.isError());
-		assertTrue(negatedResult.errorOrThrow().contains("must not be in range"));
+		assertDoesNotThrow(() -> IOValidators.validatePortRange(7000, Optional.of(Pair.of(Pair.of(8000, 9000), true))));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePortRange(8080, Optional.of(Pair.of(Pair.of(8000, 9000), true))));
+		assertTrue(exception.getMessage().contains("must not be in range"));
 	}
 	
 	@Test
@@ -75,37 +69,32 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePortTypeWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePortType(80, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePortType(80, Optional.empty()));
 	}
 	
 	@Test
 	void validatePortTypeWithSystemPort() {
 		EnumConstraintConfig<PortRange> config = EnumConstraintConfig.<PortRange>unconstrained().withEqualTo(PortRange.SYSTEM);
-		Result<Void> result = IOValidators.validatePortType(80, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePortType(80, Optional.of(config)));
 	}
 	
 	@Test
 	void validatePortTypeWithRegisteredPort() {
 		EnumConstraintConfig<PortRange> config = EnumConstraintConfig.<PortRange>unconstrained().withEqualTo(PortRange.REGISTERED);
-		Result<Void> result = IOValidators.validatePortType(8080, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePortType(8080, Optional.of(config)));
 	}
 	
 	@Test
 	void validatePortTypeWithDynamicPort() {
 		EnumConstraintConfig<PortRange> config = EnumConstraintConfig.<PortRange>unconstrained().withEqualTo(PortRange.DYNAMIC);
-		Result<Void> result = IOValidators.validatePortType(50000, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePortType(50000, Optional.of(config)));
 	}
 	
 	@Test
 	void validatePortTypeWithMismatch() {
 		EnumConstraintConfig<PortRange> config = EnumConstraintConfig.<PortRange>unconstrained().withEqualTo(PortRange.SYSTEM);
-		Result<Void> result = IOValidators.validatePortType(8080, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Port type constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePortType(8080, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("Port type constraint failed"));
 	}
 	
 	@Test
@@ -115,38 +104,33 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateIpVersionWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateIpVersion("192.168.1.1", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpVersion("192.168.1.1", Optional.empty()));
 	}
 	
 	@Test
 	void validateIpVersionWithIpv4() {
 		EnumConstraintConfig<IpVersion> config = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4);
-		Result<Void> result = IOValidators.validateIpVersion("192.168.1.1", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpVersion("192.168.1.1", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpVersionWithIpv6() {
 		EnumConstraintConfig<IpVersion> config = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6);
-		Result<Void> result = IOValidators.validateIpVersion("2001:0db8::1", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpVersion("2001:0db8::1", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpVersionWithMismatch() {
 		EnumConstraintConfig<IpVersion> config = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6);
-		Result<Void> result = IOValidators.validateIpVersion("192.168.1.1", Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("IP version constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateIpVersion("192.168.1.1", Optional.of(config)));
+		assertTrue(exception.getMessage().contains("IP version constraint failed") || exception.getMessage().contains("Ip version constraint failed"));
 	}
 	
 	@Test
 	void validateIpVersionWithInvalidIp() {
 		EnumConstraintConfig<IpVersion> config = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4);
-		Result<Void> result = IOValidators.validateIpVersion("not.an.ip", Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("not a valid IP address"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateIpVersion("not.an.ip", Optional.of(config)));
+		assertTrue(exception.getMessage().contains("not a valid"));
 	}
 	
 	@Test
@@ -157,93 +141,80 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateIpTypeWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateIpType("192.168.1.1", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpType("192.168.1.1", Optional.empty()));
 	}
 	
 	@Test
 	void validateIpTypeWithPublicIpv4() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PUBLIC);
-		Result<Void> result = IOValidators.validateIpType("8.8.8.8", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpType("8.8.8.8", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpTypeWithPrivateIpv4() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE);
-		Result<Void> result = IOValidators.validateIpType("192.168.1.1", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpType("192.168.1.1", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpTypeWithLoopbackIpv4() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
-		Result<Void> result = IOValidators.validateIpType("127.0.0.1", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpType("127.0.0.1", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpTypeWithLinkLocalIpv4() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LINK_LOCAL);
-		Result<Void> result = IOValidators.validateIpType("169.254.1.1", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpType("169.254.1.1", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpTypeWithMulticastIpv4() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.MULTICAST);
-		Result<Void> result = IOValidators.validateIpType("224.0.0.1", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpType("224.0.0.1", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpTypeWithBroadcastIpv4() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.BROADCAST);
-		Result<Void> result = IOValidators.validateIpType("255.255.255.255", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpType("255.255.255.255", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpTypeWithDocumentationIpv4() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.DOCUMENTATION);
-		Result<Void> result = IOValidators.validateIpType("192.0.2.1", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpType("192.0.2.1", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpTypeWithUnspecifiedIpv4() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.UNSPECIFIED);
-		Result<Void> result = IOValidators.validateIpType("0.0.0.0", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpType("0.0.0.0", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpTypeWithLoopbackIpv6() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
-		Result<Void> result = IOValidators.validateIpType("::1", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpType("::1", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpTypeWithDocumentationIpv6() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.DOCUMENTATION);
-		Result<Void> result = IOValidators.validateIpType("2001:db8::1", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateIpType("2001:db8::1", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpTypeWithMismatch() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PUBLIC);
-		Result<Void> result = IOValidators.validateIpType("192.168.1.1", Optional.of(config));
-		assertTrue(result.isError());
+		assertThrows(ConstraintViolateException.class, () -> IOValidators.validateIpType("192.168.1.1", Optional.of(config)));
 	}
 	
 	@Test
 	void validateIpTypeWithInvalidIp() {
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PUBLIC);
-		Result<Void> result = IOValidators.validateIpType("invalid", Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("not a valid ip address"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateIpType("invalid", Optional.of(config)));
+		assertTrue(exception.getMessage().contains("not a valid ip address"));
 	}
 	
 	@Test
@@ -254,73 +225,62 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateInAnySubnetWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateInAnySubnet("192.168.1.1", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInAnySubnet("192.168.1.1", Optional.empty()));
 	}
 	
 	@Test
 	void validateInAnySubnetWithIpv4InSubnet() {
-		Result<Void> result = IOValidators.validateInAnySubnet("192.168.1.50", Optional.of(Pair.of(Set.of("192.168.1.0/24"), false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInAnySubnet("192.168.1.50", Optional.of(Pair.of(Set.of("192.168.1.0/24"), false))));
 	}
 	
 	@Test
 	void validateInAnySubnetWithIpv4NotInSubnet() {
-		Result<Void> result = IOValidators.validateInAnySubnet("10.0.0.1", Optional.of(Pair.of(Set.of("192.168.1.0/24"), false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be member of at least one specified subnet"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInAnySubnet("10.0.0.1", Optional.of(Pair.of(Set.of("192.168.1.0/24"), false))));
+		assertTrue(exception.getMessage().contains("must be member of at least one specified subnet"));
 	}
 	
 	@Test
 	void validateInAnySubnetWithIpv6InSubnet() {
-		Result<Void> result = IOValidators.validateInAnySubnet("2001:db8::1", Optional.of(Pair.of(Set.of("2001:db8::/32"), false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInAnySubnet("2001:db8::1", Optional.of(Pair.of(Set.of("2001:db8::/32"), false))));
 	}
 	
 	@Test
 	void validateInAnySubnetWithIpv6NotInSubnet() {
-		Result<Void> result = IOValidators.validateInAnySubnet("2001:db9::1", Optional.of(Pair.of(Set.of("2001:db8::/32"), false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be member of at least one specified subnet"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInAnySubnet("2001:db9::1", Optional.of(Pair.of(Set.of("2001:db8::/32"), false))));
+		assertTrue(exception.getMessage().contains("must be member of at least one specified subnet"));
 	}
 	
 	@Test
 	void validateInAnySubnetWithMultipleSubnets() {
-		Result<Void> result = IOValidators.validateInAnySubnet("10.0.0.1", Optional.of(Pair.of(Set.of("192.168.0.0/16", "10.0.0.0/8"), false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInAnySubnet("10.0.0.1", Optional.of(Pair.of(Set.of("192.168.0.0/16", "10.0.0.0/8"), false))));
 	}
 	
 	@Test
 	void validateInAnySubnetWithNegatedNotMember() {
-		Result<Void> result = IOValidators.validateInAnySubnet("8.8.8.8", Optional.of(Pair.of(Set.of("192.168.0.0/16"), true)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInAnySubnet("8.8.8.8", Optional.of(Pair.of(Set.of("192.168.0.0/16"), true))));
 	}
 	
 	@Test
 	void validateInAnySubnetWithNegatedMember() {
-		Result<Void> result = IOValidators.validateInAnySubnet("192.168.1.1", Optional.of(Pair.of(Set.of("192.168.0.0/16"), true)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must not be member of any specified subnet"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInAnySubnet("192.168.1.1", Optional.of(Pair.of(Set.of("192.168.0.0/16"), true))));
+		assertTrue(exception.getMessage().contains("must not be member of any specified subnet"));
 	}
 	
 	@Test
 	void validateInAnySubnetWithInvalidCidr() {
-		Result<Void> result = IOValidators.validateInAnySubnet("192.168.1.1", Optional.of(Pair.of(Set.of("invalid"), false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Invalid CIDR"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInAnySubnet("192.168.1.1", Optional.of(Pair.of(Set.of("invalid"), false))));
+		assertTrue(exception.getMessage().contains("Invalid CIDR"));
 	}
 	
 	@Test
 	void validateInAnySubnetWithInvalidIp() {
-		Result<Void> result = IOValidators.validateInAnySubnet("invalid", Optional.of(Pair.of(Set.of("192.168.0.0/16"), false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("not a valid ip address"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInAnySubnet("invalid", Optional.of(Pair.of(Set.of("192.168.0.0/16"), false))));
+		assertTrue(exception.getMessage().contains("not a valid ip address"));
 	}
 	
 	@Test
 	void validateInAnySubnetWithMixedSubnets() {
-		Result<Void> result = IOValidators.validateInAnySubnet("192.168.1.1", Optional.of(Pair.of(Set.of("192.168.0.0/16", "2001:db8::/32"), false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInAnySubnet("192.168.1.1", Optional.of(Pair.of(Set.of("192.168.0.0/16", "2001:db8::/32"), false))));
 	}
 	
 	@Test
@@ -331,28 +291,24 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateRootDomainWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateRootDomain("example.com", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateRootDomain("example.com", Optional.empty()));
 	}
 	
 	@Test
 	void validateRootDomainWithValidRootDomain() {
-		Result<Void> result = IOValidators.validateRootDomain("example.com", Optional.of(Unit.INSTANCE));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateRootDomain("example.com", Optional.of(Unit.INSTANCE)));
 	}
 	
 	@Test
 	void validateRootDomainWithSubDomain() {
-		Result<Void> result = IOValidators.validateRootDomain("sub.example.com", Optional.of(Unit.INSTANCE));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be a root domain"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateRootDomain("sub.example.com", Optional.of(Unit.INSTANCE)));
+		assertTrue(exception.getMessage().contains("must be a root domain"));
 	}
 	
 	@Test
 	void validateRootDomainWithNoDot() {
-		Result<Void> result = IOValidators.validateRootDomain("localhost", Optional.of(Unit.INSTANCE));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be a root domain"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateRootDomain("localhost", Optional.of(Unit.INSTANCE)));
+		assertTrue(exception.getMessage().contains("must be a root domain"));
 	}
 	
 	@Test
@@ -363,21 +319,18 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateSubDomainWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateSubDomain("sub.example.com", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateSubDomain("sub.example.com", Optional.empty()));
 	}
 	
 	@Test
 	void validateSubDomainWithValidSubDomain() {
-		Result<Void> result = IOValidators.validateSubDomain("sub.example.com", Optional.of(Unit.INSTANCE));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateSubDomain("sub.example.com", Optional.of(Unit.INSTANCE)));
 	}
 	
 	@Test
 	void validateSubDomainWithRootDomain() {
-		Result<Void> result = IOValidators.validateSubDomain("example.com", Optional.of(Unit.INSTANCE));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be a subdomain"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateSubDomain("example.com", Optional.of(Unit.INSTANCE)));
+		assertTrue(exception.getMessage().contains("must be a subdomain"));
 	}
 	
 	@Test
@@ -388,8 +341,7 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePathCanonicalWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePathCanonical(Path.of("/some/path"), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathCanonical(Path.of("/some/path"), Optional.empty()));
 	}
 	
 	@Test
@@ -400,24 +352,21 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePathStringConfigWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePathStringConfig(Path.of("/some/path"), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathStringConfig(Path.of("/some/path"), Optional.empty()));
 	}
 	
 	@Test
 	void matchPathStringConfigWithValidate() {
 		String separator = File.separator;
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withStartsWith(separator);
-		Result<Void> result = IOValidators.validatePathStringConfig(Path.of(separator + "some" + separator + "path"), Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathStringConfig(Path.of(separator + "some" + separator + "path"), Optional.of(config)));
 	}
 	
 	@Test
 	void matchPathStringConfigWithNoValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withStartsWith("/usr");
-		Result<Void> result = IOValidators.validatePathStringConfig(Path.of("/home/user"), Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Path constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePathStringConfig(Path.of("/home/user"), Optional.of(config)));
+		assertTrue(exception.getMessage().contains("Path constraint failed"));
 	}
 	
 	@Test
@@ -428,16 +377,14 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePathRootConfigWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePathRootConfig(Path.of("/some/path"), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathRootConfig(Path.of("/some/path"), Optional.empty()));
 	}
 	
 	@Test
 	void validatePathRootConfigWithNoRoot() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("/");
-		Result<Void> result = IOValidators.validatePathRootConfig(Path.of("relative/path"), Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no root component"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePathRootConfig(Path.of("relative/path"), Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no root component"));
 	}
 	
 	@Test
@@ -448,16 +395,14 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePathParentConfigWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePathParentConfig(Path.of("/some/path"), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathParentConfig(Path.of("/some/path"), Optional.empty()));
 	}
 	
 	@Test
 	void validatePathParentConfigWithNoParent() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withContains("some");
-		Result<Void> result = IOValidators.validatePathParentConfig(Path.of("file"), Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no parent component"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePathParentConfig(Path.of("file"), Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no parent component"));
 	}
 	
 	@Test
@@ -468,23 +413,20 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePathSegmentConfigWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePathSegmentConfig(Path.of("/some/path"), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathSegmentConfig(Path.of("/some/path"), Optional.empty()));
 	}
 	
 	@Test
 	void matchPathSegmentConfigWithValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withAlphabetic();
-		Result<Void> result = IOValidators.validatePathSegmentConfig(Path.of("some/path"), Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathSegmentConfig(Path.of("some/path"), Optional.of(config)));
 	}
 	
 	@Test
 	void matchPathSegmentConfigWithNoValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNumeric();
-		Result<Void> result = IOValidators.validatePathSegmentConfig(Path.of("some/path"), Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Segment"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePathSegmentConfig(Path.of("some/path"), Optional.of(config)));
+		assertTrue(exception.getMessage().contains("Segment"));
 	}
 	
 	@Test
@@ -495,23 +437,20 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePathFileNameConfigWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePathFileNameConfig(Path.of("/some/file.txt"), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathFileNameConfig(Path.of("/some/file.txt"), Optional.empty()));
 	}
 	
 	@Test
 	void matchPathFileNameConfigWithValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEndsWith(".txt");
-		Result<Void> result = IOValidators.validatePathFileNameConfig(Path.of("/some/file.txt"), Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathFileNameConfig(Path.of("/some/file.txt"), Optional.of(config)));
 	}
 	
 	@Test
 	void matchPathFileNameConfigWithNoValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEndsWith(".java");
-		Result<Void> result = IOValidators.validatePathFileNameConfig(Path.of("/some/file.txt"), Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("File constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePathFileNameConfig(Path.of("/some/file.txt"), Optional.of(config)));
+		assertTrue(exception.getMessage().contains("File name constraint failed") || exception.getMessage().contains("File constraint failed"));
 	}
 	
 	@Test
@@ -522,23 +461,20 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePathExtensionConfigWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePathExtensionConfig(Path.of("/some/file.txt"), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathExtensionConfig(Path.of("/some/file.txt"), Optional.empty()));
 	}
 	
 	@Test
 	void matchPathExtensionConfigWithValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("txt");
-		Result<Void> result = IOValidators.validatePathExtensionConfig(Path.of("/some/file.txt"), Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathExtensionConfig(Path.of("/some/file.txt"), Optional.of(config)));
 	}
 	
 	@Test
 	void validatePathExtensionConfigWithNoExtension() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("txt");
-		Result<Void> result = IOValidators.validatePathExtensionConfig(Path.of("/some/file"), Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no extension"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePathExtensionConfig(Path.of("/some/file"), Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no extension"));
 	}
 	
 	@Test
@@ -549,21 +485,18 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePathWithoutExtensionWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePathWithoutExtension(Path.of("/some/file.txt"), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathWithoutExtension(Path.of("/some/file.txt"), Optional.empty()));
 	}
 	
 	@Test
 	void validatePathWithoutExtensionWithNoExtension() {
-		Result<Void> result = IOValidators.validatePathWithoutExtension(Path.of("/some/file"), Optional.of(Unit.INSTANCE));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathWithoutExtension(Path.of("/some/file"), Optional.of(Unit.INSTANCE)));
 	}
 	
 	@Test
 	void validatePathWithoutExtensionWithExtension() {
-		Result<Void> result = IOValidators.validatePathWithoutExtension(Path.of("/some/file.txt"), Optional.of(Unit.INSTANCE));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must not have an extension"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePathWithoutExtension(Path.of("/some/file.txt"), Optional.of(Unit.INSTANCE)));
+		assertTrue(exception.getMessage().contains("must not have an extension"));
 	}
 	
 	@Test
@@ -574,21 +507,18 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePathAncestorOfWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePathAncestorOf(Path.of("/some"), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathAncestorOf(Path.of("/some"), Optional.empty()));
 	}
 	
 	@Test
 	void validatePathAncestorOfWithValid() {
-		Result<Void> result = IOValidators.validatePathAncestorOf(Path.of("/some"), Optional.of(Set.of("/some/path", "/some/other")));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathAncestorOf(Path.of("/some"), Optional.of(Set.of("/some/path", "/some/other"))));
 	}
 	
 	@Test
 	void validatePathAncestorOfWithInvalid() {
-		Result<Void> result = IOValidators.validatePathAncestorOf(Path.of("/other"), Optional.of(Set.of("/some/path")));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be ancestor of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePathAncestorOf(Path.of("/other"), Optional.of(Set.of("/some/path"))));
+		assertTrue(exception.getMessage().contains("must be ancestor of"));
 	}
 	
 	@Test
@@ -599,21 +529,18 @@ class IOValidatorsTest {
 	
 	@Test
 	void validatePathDescendantOfWithEmptyOptional() {
-		Result<Void> result = IOValidators.validatePathDescendantOf(Path.of("/some/path/file"), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathDescendantOf(Path.of("/some/path/file"), Optional.empty()));
 	}
 	
 	@Test
 	void validatePathDescendantOfWithValid() {
-		Result<Void> result = IOValidators.validatePathDescendantOf(Path.of("/some/path/file"), Optional.of(Set.of("/some", "/some/path")));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validatePathDescendantOf(Path.of("/some/path/file"), Optional.of(Set.of("/some", "/some/path"))));
 	}
 	
 	@Test
 	void validatePathDescendantOfWithInvalid() {
-		Result<Void> result = IOValidators.validatePathDescendantOf(Path.of("/other/path"), Optional.of(Set.of("/some")));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be descendant of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validatePathDescendantOf(Path.of("/other/path"), Optional.of(Set.of("/some"))));
+		assertTrue(exception.getMessage().contains("must be descendant of"));
 	}
 	
 	@Test
@@ -625,25 +552,22 @@ class IOValidatorsTest {
 	@Test
 	void validateQueryValueConstraintsWithEmptyOptional() {
 		Map<String, List<String>> query = Map.of("key", List.of("value"));
-		Result<Void> result = IOValidators.validateQueryValueConstraints(query, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateQueryValueConstraints(query, Optional.empty()));
 	}
 	
 	@Test
 	void matchQueryValueConstraintsWithValidate() {
 		Map<String, List<String>> query = Map.of("key", List.of("value"));
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("value");
-		Result<Void> result = IOValidators.validateQueryValueConstraints(query, Optional.of(Map.of("key", config)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateQueryValueConstraints(query, Optional.of(Map.of("key", config))));
 	}
 	
 	@Test
 	void matchQueryValueConstraintsWithNoValidate() {
 		Map<String, List<String>> query = Map.of("key", List.of("wrong"));
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("value");
-		Result<Void> result = IOValidators.validateQueryValueConstraints(query, Optional.of(Map.of("key", config)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Value constraint for key"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateQueryValueConstraints(query, Optional.of(Map.of("key", config))));
+		assertTrue(exception.getMessage().contains("Value constraint for key"));
 	}
 	
 	@Test
@@ -655,25 +579,22 @@ class IOValidatorsTest {
 	@Test
 	void validateQueryPatternValueConstraintsWithEmptyOptional() {
 		Map<String, List<String>> query = Map.of("key1", List.of("value"));
-		Result<Void> result = IOValidators.validateQueryPatternValueConstraints(query, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateQueryPatternValueConstraints(query, Optional.empty()));
 	}
 	
 	@Test
 	void matchQueryPatternValueConstraintsWithValidate() {
 		Map<String, List<String>> query = Map.of("key1", List.of("value"));
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withAlphabetic();
-		Result<Void> result = IOValidators.validateQueryPatternValueConstraints(query, Optional.of(Map.of(Pattern.compile("key\\d+"), config)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateQueryPatternValueConstraints(query, Optional.of(Map.of(Pattern.compile("key\\d+"), config))));
 	}
 	
 	@Test
 	void matchQueryPatternValueConstraintsWithNoValidate() {
 		Map<String, List<String>> query = Map.of("key1", List.of("123"));
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withAlphabetic();
-		Result<Void> result = IOValidators.validateQueryPatternValueConstraints(query, Optional.of(Map.of(Pattern.compile("key\\d+"), config)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Pattern value constraint"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateQueryPatternValueConstraints(query, Optional.of(Map.of(Pattern.compile("key\\d+"), config))));
+		assertTrue(exception.getMessage().contains("Pattern value constraint"));
 	}
 	
 	@Test
@@ -685,23 +606,20 @@ class IOValidatorsTest {
 	@Test
 	void validateQuerySingleValuedWithEmptyOptional() {
 		Map<String, List<String>> query = Map.of("key", List.of("value1", "value2"));
-		Result<Void> result = IOValidators.validateQuerySingleValued(query, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateQuerySingleValued(query, Optional.empty()));
 	}
 	
 	@Test
 	void validateQuerySingleValuedWithSingleValues() {
 		Map<String, List<String>> query = Map.of("key1", List.of("value1"), "key2", List.of("value2"));
-		Result<Void> result = IOValidators.validateQuerySingleValued(query, Optional.of(Unit.INSTANCE));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateQuerySingleValued(query, Optional.of(Unit.INSTANCE)));
 	}
 	
 	@Test
 	void validateQuerySingleValuedWithMultipleValues() {
 		Map<String, List<String>> query = Map.of("key", List.of("value1", "value2"));
-		Result<Void> result = IOValidators.validateQuerySingleValued(query, Optional.of(Unit.INSTANCE));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must have exactly one value"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateQuerySingleValued(query, Optional.of(Unit.INSTANCE)));
+		assertTrue(exception.getMessage().contains("must have exactly one value"));
 	}
 	
 	@Test
@@ -713,23 +631,20 @@ class IOValidatorsTest {
 	@Test
 	void validateQueryUniqueValuesWithEmptyOptional() {
 		Map<String, List<String>> query = Map.of("key1", List.of("value"), "key2", List.of("value"));
-		Result<Void> result = IOValidators.validateQueryUniqueValues(query, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateQueryUniqueValues(query, Optional.empty()));
 	}
 	
 	@Test
 	void validateQueryUniqueValuesWithUnique() {
 		Map<String, List<String>> query = Map.of("key1", List.of("value1"), "key2", List.of("value2"));
-		Result<Void> result = IOValidators.validateQueryUniqueValues(query, Optional.of(Unit.INSTANCE));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateQueryUniqueValues(query, Optional.of(Unit.INSTANCE)));
 	}
 	
 	@Test
 	void validateQueryUniqueValuesWithDuplicates() {
 		Map<String, List<String>> query = Map.of("key1", List.of("value", "other"), "key2", List.of("value"));
-		Result<Void> result = IOValidators.validateQueryUniqueValues(query, Optional.of(Unit.INSTANCE));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be unique"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateQueryUniqueValues(query, Optional.of(Unit.INSTANCE)));
+		assertTrue(exception.getMessage().contains("must be unique"));
 	}
 	
 	@Test
@@ -741,25 +656,22 @@ class IOValidatorsTest {
 	@Test
 	void validateQueryMultiValuedConstraintsWithEmptyOptional() {
 		Map<String, List<String>> query = Map.of("key", List.of("v1", "v2", "v3"));
-		Result<Void> result = IOValidators.validateQueryMultiValuedConstraints(query, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateQueryMultiValuedConstraints(query, Optional.empty()));
 	}
 	
 	@Test
 	void matchQueryMultiValuedConstraintsWithValidate() {
 		Map<String, List<String>> query = Map.of("key", List.of("v1", "v2"));
 		SizeConstraintConfig config = SizeConstraintConfig.UNCONSTRAINED.withSizeBetween(1, 3);
-		Result<Void> result = IOValidators.validateQueryMultiValuedConstraints(query, Optional.of(Map.of("key", config)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateQueryMultiValuedConstraints(query, Optional.of(Map.of("key", config))));
 	}
 	
 	@Test
 	void matchQueryMultiValuedConstraintsWithNoValidate() {
 		Map<String, List<String>> query = Map.of("key", List.of("v1", "v2", "v3", "v4", "v5"));
 		SizeConstraintConfig config = SizeConstraintConfig.UNCONSTRAINED.withMaxSize(3);
-		Result<Void> result = IOValidators.validateQueryMultiValuedConstraints(query, Optional.of(Map.of("key", config)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Multi-valued constraint"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateQueryMultiValuedConstraints(query, Optional.of(Map.of("key", config))));
+		assertTrue(exception.getMessage().contains("Multi-valued constraint"));
 	}
 	
 	@Test
@@ -771,25 +683,22 @@ class IOValidatorsTest {
 	@Test
 	void validateUriSchemeConfigWithEmptyOptional() {
 		URI uri = URI.create("https://example.com");
-		Result<Void> result = IOValidators.validateUriSchemeConfig(uri, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriSchemeConfig(uri, Optional.empty()));
 	}
 	
 	@Test
 	void matchUriSchemeConfigWithValidate() {
 		URI uri = URI.create("https://example.com");
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("https");
-		Result<Void> result = IOValidators.validateUriSchemeConfig(uri, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriSchemeConfig(uri, Optional.of(config)));
 	}
 	
 	@Test
 	void validateUriSchemeConfigWithNoScheme() {
 		URI uri = URI.create("//example.com");
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("https");
-		Result<Void> result = IOValidators.validateUriSchemeConfig(uri, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no scheme"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriSchemeConfig(uri, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no scheme"));
 	}
 	
 	@Test
@@ -801,34 +710,30 @@ class IOValidatorsTest {
 	@Test
 	void validateUriHostConfigWithEmptyOptional() {
 		URI uri = URI.create("https://example.com");
-		Result<Void> result = IOValidators.validateUriHostConfig(uri, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriHostConfig(uri, Optional.empty()));
 	}
 	
 	@Test
 	void matchUriHostConfigWithValidate() {
 		URI uri = URI.create("https://example.com");
 		HostConstraintConfig config = HostConstraintConfig.UNCONSTRAINED.withEqualTo("example.com");
-		Result<Void> result = IOValidators.validateUriHostConfig(uri, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriHostConfig(uri, Optional.of(config)));
 	}
 	
 	@Test
 	void matchUriHostConfigWithNoValidate() {
 		URI uri = URI.create("https://example.com");
 		HostConstraintConfig config = HostConstraintConfig.UNCONSTRAINED.withEqualTo("other.com");
-		Result<Void> result = IOValidators.validateUriHostConfig(uri, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Host constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriHostConfig(uri, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("Host constraint failed"));
 	}
 	
 	@Test
 	void validateUriHostConfigWithNoHost() {
 		URI uri = URI.create("file:/path/to/file");
 		HostConstraintConfig config = HostConstraintConfig.UNCONSTRAINED.withEqualTo("example.com");
-		Result<Void> result = IOValidators.validateUriHostConfig(uri, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no host"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriHostConfig(uri, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no host"));
 	}
 	
 	@Test
@@ -840,25 +745,22 @@ class IOValidatorsTest {
 	@Test
 	void validateUriUserInfoConfigWithEmptyOptional() {
 		URI uri = URI.create("https://user:pass@example.com");
-		Result<Void> result = IOValidators.validateUriUserInfoConfig(uri, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriUserInfoConfig(uri, Optional.empty()));
 	}
 	
 	@Test
 	void matchUriUserInfoConfigWithValidate() {
 		URI uri = URI.create("https://user:pass@example.com");
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withContains("user");
-		Result<Void> result = IOValidators.validateUriUserInfoConfig(uri, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriUserInfoConfig(uri, Optional.of(config)));
 	}
 	
 	@Test
 	void validateUriUserInfoConfigWithNoUserInfo() {
 		URI uri = URI.create("https://example.com");
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withContains("user");
-		Result<Void> result = IOValidators.validateUriUserInfoConfig(uri, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no user info"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriUserInfoConfig(uri, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no user info"));
 	}
 	
 	@Test
@@ -870,34 +772,30 @@ class IOValidatorsTest {
 	@Test
 	void validateUriPortConfigWithEmptyOptional() {
 		URI uri = URI.create("https://example.com:8080");
-		Result<Void> result = IOValidators.validateUriPortConfig(uri, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPortConfig(uri, Optional.empty()));
 	}
 	
 	@Test
 	void matchUriPortConfigWithValidate() {
 		URI uri = URI.create("https://example.com:8080");
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withEqualTo(8080);
-		Result<Void> result = IOValidators.validateUriPortConfig(uri, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPortConfig(uri, Optional.of(config)));
 	}
 	
 	@Test
 	void matchUriPortConfigWithNoValidate() {
 		URI uri = URI.create("https://example.com:8080");
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withEqualTo(443);
-		Result<Void> result = IOValidators.validateUriPortConfig(uri, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Port constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPortConfig(uri, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("Port constraint failed"));
 	}
 	
 	@Test
 	void validateUriPortConfigWithNoPort() {
 		URI uri = URI.create("https://example.com");
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withEqualTo(8080);
-		Result<Void> result = IOValidators.validateUriPortConfig(uri, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no port"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPortConfig(uri, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no port"));
 	}
 	
 	@Test
@@ -909,8 +807,7 @@ class IOValidatorsTest {
 	@Test
 	void validateUriPathConfigWithEmptyOptional() {
 		URI uri = URI.create("https://example.com/path/to/resource");
-		Result<Void> result = IOValidators.validateUriPathConfig(uri, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathConfig(uri, Optional.empty()));
 	}
 	
 	@Test
@@ -919,8 +816,7 @@ class IOValidatorsTest {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withDepth(
 			DepthConstraintConfig.UNCONSTRAINED.withMinDepth(2)
 		);
-		Result<Void> result = IOValidators.validateUriPathConfig(uri, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathConfig(uri, Optional.of(config)));
 	}
 	
 	@Test
@@ -929,9 +825,8 @@ class IOValidatorsTest {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withDepth(
 			DepthConstraintConfig.UNCONSTRAINED.withMinDepth(3)
 		);
-		Result<Void> result = IOValidators.validateUriPathConfig(uri, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Path constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPathConfig(uri, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("Path constraint failed"));
 	}
 	
 	@Test
@@ -940,9 +835,8 @@ class IOValidatorsTest {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withDepth(
 			DepthConstraintConfig.UNCONSTRAINED.withMinDepth(1)
 		);
-		Result<Void> result = IOValidators.validateUriPathConfig(uri, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no path"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPathConfig(uri, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no path"));
 	}
 	
 	@Test
@@ -954,34 +848,30 @@ class IOValidatorsTest {
 	@Test
 	void validateUriQueryConfigWithEmptyOptional() {
 		URI uri = URI.create("https://example.com?key=value");
-		Result<Void> result = IOValidators.validateUriQueryConfig(uri, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriQueryConfig(uri, Optional.empty()));
 	}
 	
 	@Test
 	void matchUriQueryConfigWithValidate() {
 		URI uri = URI.create("https://example.com?key=value");
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withRequiredKeys(List.of("key"));
-		Result<Void> result = IOValidators.validateUriQueryConfig(uri, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriQueryConfig(uri, Optional.of(config)));
 	}
 	
 	@Test
 	void matchUriQueryConfigWithNoValidate() {
 		URI uri = URI.create("https://example.com?key=value");
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withRequiredKeys(List.of("missing"));
-		Result<Void> result = IOValidators.validateUriQueryConfig(uri, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Query constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriQueryConfig(uri, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("Query constraint failed"));
 	}
 	
 	@Test
 	void validateUriQueryConfigWithNoQuery() {
 		URI uri = URI.create("https://example.com");
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withSize(SizeConstraintConfig.UNCONSTRAINED.withMinSize(1));
-		Result<Void> result = IOValidators.validateUriQueryConfig(uri, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no query"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriQueryConfig(uri, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no query"));
 	}
 	
 	@Test
@@ -993,25 +883,22 @@ class IOValidatorsTest {
 	@Test
 	void validateUriFragmentConfigWithEmptyOptional() {
 		URI uri = URI.create("https://example.com#section");
-		Result<Void> result = IOValidators.validateUriFragmentConfig(uri, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriFragmentConfig(uri, Optional.empty()));
 	}
 	
 	@Test
 	void matchUriFragmentConfigWithValidate() {
 		URI uri = URI.create("https://example.com#section");
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("section");
-		Result<Void> result = IOValidators.validateUriFragmentConfig(uri, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriFragmentConfig(uri, Optional.of(config)));
 	}
 	
 	@Test
 	void validateUriFragmentConfigWithNoFragment() {
 		URI uri = URI.create("https://example.com");
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("section");
-		Result<Void> result = IOValidators.validateUriFragmentConfig(uri, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no fragment"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriFragmentConfig(uri, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no fragment"));
 	}
 	
 	@Test
@@ -1071,23 +958,20 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateUriPathStringConfigWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateUriPathStringConfig("/some/path", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathStringConfig("/some/path", Optional.empty()));
 	}
 	
 	@Test
 	void matchUriPathStringConfigWithValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withStartsWith("/");
-		Result<Void> result = IOValidators.validateUriPathStringConfig("/some/path", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathStringConfig("/some/path", Optional.of(config)));
 	}
 	
 	@Test
 	void matchUriPathStringConfigWithNoValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withStartsWith("/usr");
-		Result<Void> result = IOValidators.validateUriPathStringConfig("/home/user", Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Path constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPathStringConfig("/home/user", Optional.of(config)));
+		assertTrue(exception.getMessage().contains("Path constraint failed"));
 	}
 	
 	@Test
@@ -1098,23 +982,20 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateUriPathSegmentConfigWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateUriPathSegmentConfig("/some/path", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathSegmentConfig("/some/path", Optional.empty()));
 	}
 	
 	@Test
 	void matchUriPathSegmentConfigWithValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withAlphabetic();
-		Result<Void> result = IOValidators.validateUriPathSegmentConfig("/some/path", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathSegmentConfig("/some/path", Optional.of(config)));
 	}
 	
 	@Test
 	void matchUriPathSegmentConfigWithNoValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNumeric();
-		Result<Void> result = IOValidators.validateUriPathSegmentConfig("/some/path", Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Segment"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPathSegmentConfig("/some/path", Optional.of(config)));
+		assertTrue(exception.getMessage().contains("Segment"));
 	}
 	
 	@Test
@@ -1125,31 +1006,27 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateUriPathFileNameConfigWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateUriPathFileNameConfig("/some/file.txt", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathFileNameConfig("/some/file.txt", Optional.empty()));
 	}
 	
 	@Test
 	void matchUriPathFileNameConfigWithValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEndsWith(".txt");
-		Result<Void> result = IOValidators.validateUriPathFileNameConfig("/some/file.txt", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathFileNameConfig("/some/file.txt", Optional.of(config)));
 	}
 	
 	@Test
 	void matchUriPathFileNameConfigWithNoValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEndsWith(".java");
-		Result<Void> result = IOValidators.validateUriPathFileNameConfig("/some/file.txt", Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("File constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPathFileNameConfig("/some/file.txt", Optional.of(config)));
+		assertTrue(exception.getMessage().contains("File") && exception.getMessage().contains("constraint failed"));
 	}
 	
 	@Test
 	void validateUriPathFileNameConfigWithNoFileName() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("test");
-		Result<Void> result = IOValidators.validateUriPathFileNameConfig("", Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no file name"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPathFileNameConfig("", Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no file name"));
 	}
 	
 	@Test
@@ -1160,21 +1037,18 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateUriPathWithoutExtensionWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateUriPathWithoutExtension("/some/file.txt", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathWithoutExtension("/some/file.txt", Optional.empty()));
 	}
 	
 	@Test
 	void validateUriPathWithoutExtensionWithNoExtension() {
-		Result<Void> result = IOValidators.validateUriPathWithoutExtension("/some/file", Optional.of(Unit.INSTANCE));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathWithoutExtension("/some/file", Optional.of(Unit.INSTANCE)));
 	}
 	
 	@Test
 	void validateUriPathWithoutExtensionWithExtension() {
-		Result<Void> result = IOValidators.validateUriPathWithoutExtension("/some/file.txt", Optional.of(Unit.INSTANCE));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must not have an extension"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPathWithoutExtension("/some/file.txt", Optional.of(Unit.INSTANCE)));
+		assertTrue(exception.getMessage().contains("must not have an extension"));
 	}
 	
 	@Test
@@ -1185,31 +1059,27 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateUriPathExtensionConfigWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateUriPathExtensionConfig("/some/file.txt", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathExtensionConfig("/some/file.txt", Optional.empty()));
 	}
 	
 	@Test
 	void matchUriPathExtensionConfigWithValidate() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("txt");
-		Result<Void> result = IOValidators.validateUriPathExtensionConfig("/some/file.txt", Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathExtensionConfig("/some/file.txt", Optional.of(config)));
 	}
 	
 	@Test
 	void validateUriPathExtensionConfigWithNoExtension() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("txt");
-		Result<Void> result = IOValidators.validateUriPathExtensionConfig("/some/file", Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no extension"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPathExtensionConfig("/some/file", Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no extension"));
 	}
 	
 	@Test
 	void validateUriPathExtensionConfigWithNoFileName() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("txt");
-		Result<Void> result = IOValidators.validateUriPathExtensionConfig("", Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no file name"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPathExtensionConfig("", Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no file name"));
 	}
 	
 	@Test
@@ -1220,21 +1090,18 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateUriPathAncestorOfWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateUriPathAncestorOf("/some", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathAncestorOf("/some", Optional.empty()));
 	}
 	
 	@Test
 	void validateUriPathAncestorOfWithValid() {
-		Result<Void> result = IOValidators.validateUriPathAncestorOf("/some", Optional.of(Set.of("/some/path", "/some/other")));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathAncestorOf("/some", Optional.of(Set.of("/some/path", "/some/other"))));
 	}
 	
 	@Test
 	void validateUriPathAncestorOfWithInvalid() {
-		Result<Void> result = IOValidators.validateUriPathAncestorOf("/other", Optional.of(Set.of("/some/path")));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be ancestor of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPathAncestorOf("/other", Optional.of(Set.of("/some/path"))));
+		assertTrue(exception.getMessage().contains("must be ancestor of"));
 	}
 	
 	@Test
@@ -1245,21 +1112,18 @@ class IOValidatorsTest {
 	
 	@Test
 	void validateUriPathDescendantOfWithEmptyOptional() {
-		Result<Void> result = IOValidators.validateUriPathDescendantOf("/some/path/file", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathDescendantOf("/some/path/file", Optional.empty()));
 	}
 	
 	@Test
 	void validateUriPathDescendantOfWithValid() {
-		Result<Void> result = IOValidators.validateUriPathDescendantOf("/some/path/file", Optional.of(Set.of("/some", "/some/path")));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateUriPathDescendantOf("/some/path/file", Optional.of(Set.of("/some", "/some/path"))));
 	}
 	
 	@Test
 	void validateUriPathDescendantOfWithInvalid() {
-		Result<Void> result = IOValidators.validateUriPathDescendantOf("/other/path", Optional.of(Set.of("/some")));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be descendant of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateUriPathDescendantOf("/other/path", Optional.of(Set.of("/some"))));
+		assertTrue(exception.getMessage().contains("must be descendant of"));
 	}
 	
 	@Test
@@ -1271,32 +1135,28 @@ class IOValidatorsTest {
 	@Test
 	void validateInetAddressIpVersionWithEmptyOptional() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("192.168.1.1");
-		Result<Void> result = IOValidators.validateInetAddressIpVersion(address, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetAddressIpVersion(address, Optional.empty()));
 	}
 	
 	@Test
 	void validateInetAddressIpVersionWithIpv4() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("192.168.1.1");
 		EnumConstraintConfig<IpVersion> config = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4);
-		Result<Void> result = IOValidators.validateInetAddressIpVersion(address, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetAddressIpVersion(address, Optional.of(config)));
 	}
 	
 	@Test
 	void validateInetAddressIpVersionWithIpv6() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("::1");
 		EnumConstraintConfig<IpVersion> config = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6);
-		Result<Void> result = IOValidators.validateInetAddressIpVersion(address, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetAddressIpVersion(address, Optional.of(config)));
 	}
 	
 	@Test
 	void validateInetAddressIpVersionWithMismatch() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("192.168.1.1");
 		EnumConstraintConfig<IpVersion> config = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6);
-		Result<Void> result = IOValidators.validateInetAddressIpVersion(address, Optional.of(config));
-		assertTrue(result.isError());
+		assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInetAddressIpVersion(address, Optional.of(config)));
 	}
 	
 	@Test
@@ -1308,40 +1168,35 @@ class IOValidatorsTest {
 	@Test
 	void validateInetAddressIpTypeWithEmptyOptional() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("192.168.1.1");
-		Result<Void> result = IOValidators.validateInetAddressIpType(address, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetAddressIpType(address, Optional.empty()));
 	}
 	
 	@Test
 	void validateInetAddressIpTypeWithPrivate() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("192.168.1.1");
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE);
-		Result<Void> result = IOValidators.validateInetAddressIpType(address, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetAddressIpType(address, Optional.of(config)));
 	}
 	
 	@Test
 	void validateInetAddressIpTypeWithLoopback() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("127.0.0.1");
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
-		Result<Void> result = IOValidators.validateInetAddressIpType(address, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetAddressIpType(address, Optional.of(config)));
 	}
 	
 	@Test
 	void validateInetAddressIpTypeWithLoopbackIpv6() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("::1");
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
-		Result<Void> result = IOValidators.validateInetAddressIpType(address, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetAddressIpType(address, Optional.of(config)));
 	}
 	
 	@Test
 	void validateInetAddressIpTypeWithMismatch() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("192.168.1.1");
 		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
-		Result<Void> result = IOValidators.validateInetAddressIpType(address, Optional.of(config));
-		assertTrue(result.isError());
+		assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInetAddressIpType(address, Optional.of(config)));
 	}
 	
 	@Test
@@ -1353,38 +1208,33 @@ class IOValidatorsTest {
 	@Test
 	void validateInetAddressInAnySubnetWithEmptyOptional() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("192.168.1.1");
-		Result<Void> result = IOValidators.validateInetAddressInAnySubnet(address, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetAddressInAnySubnet(address, Optional.empty()));
 	}
 	
 	@Test
 	void matchInetAddressInAnySubnetWithValidate() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("192.168.1.50");
-		Result<Void> result = IOValidators.validateInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.1.0/24"), false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.1.0/24"), false))));
 	}
 	
 	@Test
 	void matchInetAddressInAnySubnetWithNoValidate() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("10.0.0.1");
-		Result<Void> result = IOValidators.validateInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.1.0/24"), false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be member of at least one specified subnet"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.1.0/24"), false))));
+		assertTrue(exception.getMessage().contains("must be member of at least one specified subnet"));
 	}
 	
 	@Test
 	void validateInetAddressInAnySubnetWithNegated() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("10.0.0.1");
-		Result<Void> result = IOValidators.validateInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.0.0/16"), true)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.0.0/16"), true))));
 	}
 	
 	@Test
 	void validateInetAddressInAnySubnetWithNegatedMember() throws UnknownHostException {
 		InetAddress address = InetAddress.getByName("192.168.1.1");
-		Result<Void> result = IOValidators.validateInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.0.0/16"), true)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must not be member of any specified subnet"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.0.0/16"), true))));
+		assertTrue(exception.getMessage().contains("must not be member of any specified subnet"));
 	}
 	
 	@Test
@@ -1396,8 +1246,7 @@ class IOValidatorsTest {
 	@Test
 	void validateInetSocketAddressAddressWithEmptyOptional() throws UnknownHostException {
 		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
-		Result<Void> result = IOValidators.validateInetSocketAddressAddress(socketAddress, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetSocketAddressAddress(socketAddress, Optional.empty()));
 	}
 	
 	@Test
@@ -1406,8 +1255,7 @@ class IOValidatorsTest {
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withIpType(
 			EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE)
 		);
-		Result<Void> result = IOValidators.validateInetSocketAddressAddress(socketAddress, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetSocketAddressAddress(socketAddress, Optional.of(config)));
 	}
 	
 	@Test
@@ -1416,18 +1264,16 @@ class IOValidatorsTest {
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withIpType(
 			EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE)
 		);
-		Result<Void> result = IOValidators.validateInetSocketAddressAddress(socketAddress, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Address constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInetSocketAddressAddress(socketAddress, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("Address constraint failed"));
 	}
 	
 	@Test
 	void validateInetSocketAddressAddressWithUnresolved() {
 		InetSocketAddress socketAddress = InetSocketAddress.createUnresolved("nonexistent.invalid", 8080);
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED;
-		Result<Void> result = IOValidators.validateInetSocketAddressAddress(socketAddress, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("has no resolved address"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInetSocketAddressAddress(socketAddress, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("has no resolved address"));
 	}
 	
 	@Test
@@ -1441,33 +1287,29 @@ class IOValidatorsTest {
 	@Test
 	void validateInetSocketAddressPortWithEmptyOptional() throws UnknownHostException {
 		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
-		Result<Void> result = IOValidators.validateInetSocketAddressPort(socketAddress, Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetSocketAddressPort(socketAddress, Optional.empty()));
 	}
 	
 	@Test
 	void matchInetSocketAddressPortWithValidate() throws UnknownHostException {
 		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withInRange(8000, 9000);
-		Result<Void> result = IOValidators.validateInetSocketAddressPort(socketAddress, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetSocketAddressPort(socketAddress, Optional.of(config)));
 	}
 	
 	@Test
 	void matchInetSocketAddressPortWithNoValidate() throws UnknownHostException {
 		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 80);
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withInRange(8000, 9000);
-		Result<Void> result = IOValidators.validateInetSocketAddressPort(socketAddress, Optional.of(config));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Port constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> IOValidators.validateInetSocketAddressPort(socketAddress, Optional.of(config)));
+		assertTrue(exception.getMessage().contains("Port constraint failed"));
 	}
 	
 	@Test
 	void matchInetSocketAddressPortWithExactValidate() throws UnknownHostException {
 		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 443);
 		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withEqualTo(443);
-		Result<Void> result = IOValidators.validateInetSocketAddressPort(socketAddress, Optional.of(config));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> IOValidators.validateInetSocketAddressPort(socketAddress, Optional.of(config)));
 	}
 	
 	@Test
@@ -1476,5 +1318,75 @@ class IOValidatorsTest {
 		assertThrows(NullPointerException.class, () -> IOValidators.validateInetSocketAddressPort(
 			new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080), null
 		));
+	}
+	
+	@Test
+	void calculateUriPathDepthWithEmptyPath() {
+		assertEquals(0, IOValidators.calculateUriPathDepth(""));
+	}
+	
+	@Test
+	void calculateUriPathDepthWithRootOnly() {
+		assertEquals(0, IOValidators.calculateUriPathDepth("/"));
+	}
+	
+	@Test
+	void calculateUriPathDepthWithSegments() {
+		assertEquals(3, IOValidators.calculateUriPathDepth("/some/path/file"));
+	}
+	
+	@Test
+	void calculateUriPathDepthWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> IOValidators.calculateUriPathDepth(null));
+	}
+	
+	@Test
+	void getUriPathSegmentsWithEmptyPath() {
+		assertArrayEquals(new String[0], IOValidators.getUriPathSegments(""));
+	}
+	
+	@Test
+	void getUriPathSegmentsWithSegments() {
+		assertArrayEquals(new String[] { "some", "path", "file" }, IOValidators.getUriPathSegments("/some/path/file"));
+	}
+	
+	@Test
+	void getUriPathSegmentsWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> IOValidators.getUriPathSegments(null));
+	}
+	
+	@Test
+	void getUriPathFileNameWithEmptyPath() {
+		assertTrue(IOValidators.getUriPathFileName("").isEmpty());
+	}
+	
+	@Test
+	void getUriPathFileNameWithSegments() {
+		assertEquals(Optional.of("file.txt"), IOValidators.getUriPathFileName("/some/path/file.txt"));
+	}
+	
+	@Test
+	void getUriPathFileNameWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> IOValidators.getUriPathFileName(null));
+	}
+	
+	@Test
+	void isUriPathNormalizedWithNormalizedPath() {
+		assertTrue(IOValidators.isUriPathNormalized("/some/path/file"));
+	}
+	
+	@Test
+	void isUriPathNormalizedWithDotSegment() {
+		assertFalse(IOValidators.isUriPathNormalized("/some/./path"));
+	}
+	
+	@Test
+	void isUriPathNormalizedWithDotDotSegment() {
+		assertFalse(IOValidators.isUriPathNormalized("/some/../path"));
+	}
+	
+	@Test
+	void isUriPathNormalizedWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> IOValidators.isUriPathNormalized(null));
 	}
 }

@@ -19,10 +19,10 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
@@ -93,18 +93,18 @@ class InetAddressConstraintConfigTest {
 		assertTrue(config.inAnySubnet().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(InetAddressConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withIpType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK));
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() throws UnknownHostException {
 		InetAddress value = InetAddress.getByName("192.168.1.1");
@@ -219,7 +219,7 @@ class InetAddressConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -230,123 +230,125 @@ class InetAddressConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() throws UnknownHostException {
+	void validateUnconstrained() throws UnknownHostException {
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("10.0.0.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("127.0.0.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("::1")).isSuccess());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("192.168.1.1")));
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("10.0.0.1")));
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("127.0.0.1")));
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("::1")));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> InetAddressConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> InetAddressConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() throws UnknownHostException {
+	void validateEqualTo() throws UnknownHostException {
 		InetAddress expected = InetAddress.getByName("192.168.1.1");
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withEqualTo(expected);
 		
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.2")).isError());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("192.168.1.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(InetAddress.getByName("192.168.1.2")));
 	}
 	
 	@Test
-	void matchesNotEqualTo() throws UnknownHostException {
+	void validateNotEqualTo() throws UnknownHostException {
 		InetAddress excluded = InetAddress.getByName("192.168.1.1");
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withNotEqualTo(excluded);
 		
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.2")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isError());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("192.168.1.2")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(InetAddress.getByName("192.168.1.1")));
 	}
 	
 	@Test
-	void matchesIn() throws UnknownHostException {
+	void validateIn() throws UnknownHostException {
 		InetAddress addr1 = InetAddress.getByName("192.168.1.1");
 		InetAddress addr2 = InetAddress.getByName("192.168.1.2");
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withIn(List.of(addr1, addr2));
 		
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.2")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.3")).isError());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("192.168.1.1")));
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("192.168.1.2")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(InetAddress.getByName("192.168.1.3")));
 	}
 	
 	@Test
-	void matchesNotIn() throws UnknownHostException {
+	void validateNotIn() throws UnknownHostException {
 		InetAddress excluded = InetAddress.getByName("192.168.1.1");
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withNotIn(List.of(excluded));
 		
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.2")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isError());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("192.168.1.2")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(InetAddress.getByName("192.168.1.1")));
 	}
 	
 	@Test
-	void matchesIpVersionIpv4() throws UnknownHostException {
+	void validateIpVersionIpv4() throws UnknownHostException {
 		EnumConstraintConfig<IpVersion> versionConfig = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4);
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withIpVersion(versionConfig);
 		
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("::1")).isError());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("192.168.1.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(InetAddress.getByName("::1")));
 	}
 	
 	@Test
-	void matchesIpVersionIpv6() throws UnknownHostException {
+	void validateIpVersionIpv6() throws UnknownHostException {
 		EnumConstraintConfig<IpVersion> versionConfig = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6);
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withIpVersion(versionConfig);
 		
-		assertTrue(config.matches(InetAddress.getByName("::1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("2001:db8::1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isError());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("::1")));
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("2001:db8::1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(InetAddress.getByName("192.168.1.1")));
 	}
 	
 	@Test
-	void matchesIpTypePrivate() throws UnknownHostException {
+	void validateIpTypePrivate() throws UnknownHostException {
 		EnumConstraintConfig<IpAddressType> typeConfig = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE);
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withIpType(typeConfig);
 		
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("10.0.0.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("172.16.0.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("127.0.0.1")).isError());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("192.168.1.1")));
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("10.0.0.1")));
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("172.16.0.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(InetAddress.getByName("127.0.0.1")));
 	}
 	
 	@Test
-	void matchesIpTypeLoopback() throws UnknownHostException {
+	void validateIpTypeLoopback() throws UnknownHostException {
 		EnumConstraintConfig<IpAddressType> typeConfig = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withIpType(typeConfig);
 		
-		assertTrue(config.matches(InetAddress.getByName("127.0.0.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("::1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isError());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("127.0.0.1")));
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("::1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(InetAddress.getByName("192.168.1.1")));
 	}
 	
 	@Test
-	void matchesInAnySubnet() throws UnknownHostException {
+	void validateInAnySubnet() throws UnknownHostException {
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withInAnySubnet(List.of("192.168.0.0/16"));
 		
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("192.168.255.255")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("10.0.0.1")).isError());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("192.168.1.1")));
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("192.168.255.255")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(InetAddress.getByName("10.0.0.1")));
 	}
 	
 	@Test
-	void matchesNotInAnySubnet() throws UnknownHostException {
+	void validateNotInAnySubnet() throws UnknownHostException {
 		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withNotInAnySubnet(List.of("192.168.0.0/16"));
 		
-		assertTrue(config.matches(InetAddress.getByName("10.0.0.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("172.16.0.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isError());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("10.0.0.1")));
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("172.16.0.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(InetAddress.getByName("192.168.1.1")));
 	}
 	
 	@Test
-	void matchesCustom() throws UnknownHostException {
-		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withCustom(
-			value -> value.getHostAddress().startsWith("192.") ? Result.success() : Result.error("Address must start with 192.")
-		);
+	void validateCustom() throws UnknownHostException {
+		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withCustom(value -> {
+			if (!value.getHostAddress().startsWith("192.")) {
+				throw new ConstraintViolateException("Address must start with 192.");
+			}
+		});
 		
-		assertTrue(config.matches(InetAddress.getByName("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(InetAddress.getByName("10.0.0.1")).isError());
+		assertDoesNotThrow(() -> config.validate(InetAddress.getByName("192.168.1.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(InetAddress.getByName("10.0.0.1")));
 	}
 }

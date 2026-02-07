@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.temporal;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Period;
@@ -37,175 +38,160 @@ import static org.junit.jupiter.api.Assertions.*;
 class PeriodCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		Period period = Period.ofYears(1);
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), period));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), period));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as period"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as period"));
 	}
 	
 	@Test
-	void encodeStartWithZero() {
+	void encodeWithZero() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		Period period = Period.ZERO;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), period);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("0d"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), period);
+		assertEquals(new JsonPrimitive("0d"), result);
 	}
 	
 	@Test
-	void encodeStartWithYears() {
+	void encodeWithYears() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		Period period = Period.ofYears(2);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), period);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("2y"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), period);
+		assertEquals(new JsonPrimitive("2y"), result);
 	}
 	
 	@Test
-	void encodeStartWithMonths() {
+	void encodeWithMonths() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		Period period = Period.ofMonths(6);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), period);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("6m"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), period);
+		assertEquals(new JsonPrimitive("6m"), result);
 	}
 	
 	@Test
-	void encodeStartWithDays() {
+	void encodeWithDays() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		Period period = Period.ofDays(15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), period);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("15d"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), period);
+		assertEquals(new JsonPrimitive("15d"), result);
 	}
 	
 	@Test
-	void encodeStartWithComplexPeriod() {
+	void encodeWithComplexPeriod() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		Period period = Period.of(1, 6, 15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), period);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("1y 6m 15d"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), period);
+		assertEquals(new JsonPrimitive("1y 6m 15d"), result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("1y")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("1y")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		
-		Result<Period> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as period"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as period"));
 	}
 	
 	@Test
-	void decodeStartWithZero() {
+	void decodeWithZero() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		
-		Result<Period> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0d"));
-		assertTrue(result.isSuccess());
-		assertEquals(Period.ZERO, result.resultOrThrow());
+		Period result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("0d"));
+		assertEquals(Period.ZERO, result);
 	}
 	
 	@Test
-	void decodeStartWithYears() {
+	void decodeWithYears() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		
-		Result<Period> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2y"));
-		assertTrue(result.isSuccess());
-		assertEquals(Period.ofYears(2), result.resultOrThrow());
+		Period result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2y"));
+		assertEquals(Period.ofYears(2), result);
 	}
 	
 	@Test
-	void decodeStartWithMonths() {
+	void decodeWithMonths() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		
-		Result<Period> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("6m"));
-		assertTrue(result.isSuccess());
-		assertEquals(Period.ofMonths(6), result.resultOrThrow());
+		Period result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("6m"));
+		assertEquals(Period.ofMonths(6), result);
 	}
 	
 	@Test
-	void decodeStartWithDays() {
+	void decodeWithDays() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		
-		Result<Period> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("15d"));
-		assertTrue(result.isSuccess());
-		assertEquals(Period.ofDays(15), result.resultOrThrow());
+		Period result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("15d"));
+		assertEquals(Period.ofDays(15), result);
 	}
 	
 	@Test
-	void decodeStartWithComplexPeriod() {
+	void decodeWithComplexPeriod() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		
-		Result<Period> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("1y 6m 15d"));
-		assertTrue(result.isSuccess());
-		assertEquals(Period.of(1, 6, 15), result.resultOrThrow());
+		Period result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("1y 6m 15d"));
+		assertEquals(Period.of(1, 6, 15), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidFormat() {
+	void decodeWithInvalidFormat() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		
-		Result<Period> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-period"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode period"));
-		assertTrue(result.errorOrThrow().contains("Invalid period format"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-period")));
+		assertTrue(exception.getMessage().contains("Unable to decode period"));
+		assertTrue(exception.getMessage().contains("Invalid period format"));
 	}
 	
 	@Test
-	void decodeStartWithInvalidUnit() {
+	void decodeWithInvalidUnit() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		
-		Result<Period> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("5x"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unknown time unit"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("5x")));
+		assertTrue(exception.getMessage().contains("Unknown time unit"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 		
-		Result<Period> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test

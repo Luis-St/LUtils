@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -69,20 +69,20 @@ class EnumConstraintConfigTest {
 		assertTrue(config.equalTo().isEmpty());
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(TimeUnit.SECONDS).isSuccess());
+		assertDoesNotThrow(() -> config.validate(TimeUnit.SECONDS));
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(EnumConstraintConfig.<TimeUnit>unconstrained().isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.<TimeUnit>unconstrained().withEqualTo(TimeUnit.SECONDS);
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.<TimeUnit>unconstrained().withEqualTo(TimeUnit.SECONDS);
@@ -137,7 +137,9 @@ class EnumConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.<TimeUnit>unconstrained().withCustom(v -> v.ordinal() <= 2 ? Result.error("Ordinal must be > 2") : Result.success());
+		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.<TimeUnit>unconstrained().withCustom(v -> {
+			if (v.ordinal() <= 2) throw new ConstraintViolateException("Ordinal must be > 2");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -147,50 +149,50 @@ class EnumConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.<TimeUnit>unconstrained().withEqualTo(TimeUnit.SECONDS);
-		assertTrue(config.matches(TimeUnit.SECONDS).isSuccess());
-		assertTrue(config.matches(TimeUnit.MINUTES).isError());
+		assertDoesNotThrow(() -> config.validate(TimeUnit.SECONDS));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TimeUnit.MINUTES));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.<TimeUnit>unconstrained().withNotEqualTo(TimeUnit.SECONDS);
-		assertTrue(config.matches(TimeUnit.MINUTES).isSuccess());
-		assertTrue(config.matches(TimeUnit.SECONDS).isError());
+		assertDoesNotThrow(() -> config.validate(TimeUnit.MINUTES));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TimeUnit.SECONDS));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.<TimeUnit>unconstrained().withIn(List.of(TimeUnit.SECONDS, TimeUnit.MINUTES));
-		assertTrue(config.matches(TimeUnit.SECONDS).isSuccess());
-		assertTrue(config.matches(TimeUnit.MINUTES).isSuccess());
-		assertTrue(config.matches(TimeUnit.HOURS).isError());
+		assertDoesNotThrow(() -> config.validate(TimeUnit.SECONDS));
+		assertDoesNotThrow(() -> config.validate(TimeUnit.MINUTES));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TimeUnit.HOURS));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.<TimeUnit>unconstrained().withNotIn(List.of(TimeUnit.HOURS, TimeUnit.DAYS));
-		assertTrue(config.matches(TimeUnit.SECONDS).isSuccess());
-		assertTrue(config.matches(TimeUnit.HOURS).isError());
-		assertTrue(config.matches(TimeUnit.DAYS).isError());
+		assertDoesNotThrow(() -> config.validate(TimeUnit.SECONDS));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TimeUnit.HOURS));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TimeUnit.DAYS));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.<TimeUnit>unconstrained()
 			.withIn(List.of(TimeUnit.SECONDS, TimeUnit.MINUTES, TimeUnit.HOURS))
 			.withNotEqualTo(TimeUnit.HOURS);
 		
-		assertTrue(config.matches(TimeUnit.SECONDS).isSuccess());
-		assertTrue(config.matches(TimeUnit.MINUTES).isSuccess());
-		assertTrue(config.matches(TimeUnit.HOURS).isError());
-		assertTrue(config.matches(TimeUnit.DAYS).isError());
+		assertDoesNotThrow(() -> config.validate(TimeUnit.SECONDS));
+		assertDoesNotThrow(() -> config.validate(TimeUnit.MINUTES));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TimeUnit.HOURS));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TimeUnit.DAYS));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		EnumConstraintConfig<TimeUnit> config = EnumConstraintConfig.unconstrained();
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

@@ -18,12 +18,13 @@
 
 package net.luis.utils.io.codec;
 
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.codec.types.struct.*;
 import net.luis.utils.io.codec.types.struct.collection.*;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.result.Result;
-import net.luis.utils.util.result.ResultingFunction;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CodecTest {
 	
 	@Test
-	void typed() {
+	void typed() throws Exception {
 		Codec<String> codec = STRING.typed(String.class);
 		assertEquals(String.class, codec.getType());
 		
@@ -52,29 +53,25 @@ class CodecTest {
 	}
 	
 	@Test
-	void keyable() {
-		assertThrows(NullPointerException.class, () -> STRING.keyable((ResultingFunction<String, String>) null));
-		assertThrows(NullPointerException.class, () -> STRING.keyable(null, ResultingFunction.identity()));
-		assertThrows(NullPointerException.class, () -> STRING.keyable(ResultingFunction.identity(), null));
-		
+	void keyable() throws Exception {
 		Codec<Integer> keyableCodec = INTEGER.keyable(
-			ResultingFunction.direct(String::valueOf),
+			String::valueOf,
 			key -> {
 				try {
-					return Result.success(Integer.parseInt(key));
+					return Integer.parseInt(key);
 				} catch (NumberFormatException e) {
-					return Result.error("Invalid integer: " + key);
+					throw new DecoderException("Invalid integer: " + key);
 				}
 			}
 		);
 		
-		assertEquals("42", keyableCodec.encodeKey(42).resultOrThrow());
-		assertEquals(42, keyableCodec.decodeKey("42").resultOrThrow());
-		assertTrue(keyableCodec.decodeKey("invalid").isError());
+		assertEquals("42", keyableCodec.encodeKey(42));
+		assertEquals(42, keyableCodec.decodeKey("42"));
+		assertThrows(DecoderException.class, () -> keyableCodec.decodeKey("invalid"));
 	}
 	
 	@Test
-	void nullable() {
+	void nullable() throws Exception {
 		Codec<String> nullableCodec = STRING.nullable();
 		assertInstanceOf(NullableCodec.class, nullableCodec);
 		
@@ -98,15 +95,15 @@ class CodecTest {
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
-		assertTrue(unionCodec.encodeStart(provider, provider.empty(), "a").isSuccess());
-		assertTrue(unionCodec.encodeStart(provider, provider.empty(), "d").isError());
+		assertDoesNotThrow(() -> unionCodec.encode(provider, provider.empty(), "a"));
+		assertThrows(EncoderException.class, () -> unionCodec.encode(provider, provider.empty(), "d"));
 		
-		assertTrue(unionCodec.decodeStart(provider, provider.empty(), new JsonPrimitive("b")).isSuccess());
-		assertTrue(unionCodec.decodeStart(provider, provider.empty(), new JsonPrimitive("invalid")).isError());
+		assertDoesNotThrow(() -> unionCodec.decode(provider, provider.empty(), new JsonPrimitive("b")));
+		assertThrows(DecoderException.class, () -> unionCodec.decode(provider, provider.empty(), new JsonPrimitive("invalid")));
 	}
 	
 	@Test
-	void optional() {
+	void optional() throws Exception {
 		assertInstanceOf(OptionalCodec.class, INTEGER.optional());
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
@@ -128,7 +125,7 @@ class CodecTest {
 	}
 	
 	@Test
-	void optionalWithDefaultValue() {
+	void optionalWithDefaultValue() throws Exception {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		Codec<Optional<Integer>> optionalCodec = INTEGER.optional(100);
 		
@@ -141,7 +138,7 @@ class CodecTest {
 	}
 	
 	@Test
-	void optionalWithSupplier() {
+	void optionalWithSupplier() throws Exception {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		Codec<Optional<Integer>> optionalCodec = INTEGER.optional(() -> 100);
 		
@@ -154,7 +151,7 @@ class CodecTest {
 	}
 	
 	@Test
-	void array() {
+	void array() throws Exception {
 		Codec<String[]> arrayCodec = STRING.array();
 		assertInstanceOf(ArrayCodec.class, arrayCodec);
 		
@@ -168,7 +165,7 @@ class CodecTest {
 	}
 	
 	@Test
-	void list() {
+	void list() throws Exception {
 		Codec<List<String>> listCodec = STRING.list();
 		assertInstanceOf(ListCodec.class, listCodec);
 		
@@ -182,7 +179,7 @@ class CodecTest {
 	}
 	
 	@Test
-	void set() {
+	void set() throws Exception {
 		Codec<Set<String>> setCodec = STRING.set();
 		assertInstanceOf(SetCodec.class, setCodec);
 		
@@ -197,7 +194,7 @@ class CodecTest {
 	}
 	
 	@Test
-	void stream() {
+	void stream() throws Exception {
 		Codec<Stream<String>> streamCodec = STRING.stream();
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
@@ -217,20 +214,17 @@ class CodecTest {
 		Codec<String> fallbackCodec = STRING.union("c", "d");
 		Codec<String> combinedCodec = primaryCodec.withFallback(fallbackCodec);
 		
-		assertTrue(combinedCodec.encodeStart(provider, provider.empty(), "a").isSuccess());
-		assertTrue(combinedCodec.encodeStart(provider, provider.empty(), "c").isSuccess());
-		assertTrue(combinedCodec.encodeStart(provider, provider.empty(), "invalid").isError());
+		assertDoesNotThrow(() -> combinedCodec.encode(provider, provider.empty(), "a"));
+		assertDoesNotThrow(() -> combinedCodec.encode(provider, provider.empty(), "c"));
+		assertThrows(EncoderException.class, () -> combinedCodec.encode(provider, provider.empty(), "invalid"));
 		
-		assertTrue(combinedCodec.decodeStart(provider, provider.empty(), new JsonPrimitive("b")).isSuccess());
-		assertTrue(combinedCodec.decodeStart(provider, provider.empty(), new JsonPrimitive("d")).isSuccess());
-		assertTrue(combinedCodec.decodeStart(provider, provider.empty(), new JsonPrimitive("invalid")).isError());
+		assertDoesNotThrow(() -> combinedCodec.decode(provider, provider.empty(), new JsonPrimitive("b")));
+		assertDoesNotThrow(() -> combinedCodec.decode(provider, provider.empty(), new JsonPrimitive("d")));
+		assertThrows(DecoderException.class, () -> combinedCodec.decode(provider, provider.empty(), new JsonPrimitive("invalid")));
 	}
 	
 	@Test
-	void xmap() {
-		assertThrows(NullPointerException.class, () -> STRING.xmap((Function<String, String>) null, Function.identity()));
-		assertThrows(NullPointerException.class, () -> STRING.xmap(Function.identity(), (Function<String, String>) null));
-		
+	void xmap() throws Exception {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		Codec<Integer> lengthCodec = STRING.xmap(String::valueOf, String::length);
@@ -240,55 +234,23 @@ class CodecTest {
 	}
 	
 	@Test
-	void mapFlat() {
-		assertThrows(NullPointerException.class, () -> STRING.mapFlat((Function<String, String>) null, result -> result.map(Function.identity())));
-		assertThrows(NullPointerException.class, () -> STRING.<String>mapFlat(Function.identity(), null));
-		
+	void mapFlat() throws Exception {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
-		Codec<Integer> parseCodec = STRING.mapFlat(
+		Codec<Integer> parseCodec = STRING.xmap(
 			String::valueOf,
-			result -> {
-				if (result.isError()) {
-					return Result.error(result.errorOrThrow());
-				}
+			value -> {
 				try {
-					return Result.success(Integer.parseInt(result.resultOrThrow()));
+					return Integer.parseInt(value);
 				} catch (NumberFormatException e) {
-					return Result.error("Not a valid integer: " + result.resultOrThrow());
+					throw new DecoderException("Not a valid integer: " + value);
 				}
 			}
 		);
 		
 		assertEquals(new JsonPrimitive("42"), parseCodec.encode(provider, 42));
 		assertEquals(42, parseCodec.decode(provider, new JsonPrimitive("42")));
-		assertTrue(parseCodec.decodeStart(provider, provider.empty(), new JsonPrimitive("not-a-number")).isError());
-	}
-	
-	@Test
-	void map() {
-		assertThrows(NullPointerException.class, () -> STRING.map((ResultingFunction<String, String>) null, result -> result.map(Function.identity())));
-		assertThrows(NullPointerException.class, () -> STRING.<String>map(ResultingFunction.direct(Function.identity()), null));
-		
-		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
-		
-		Codec<Integer> mappedCodec = STRING.map(
-			value -> Result.success(String.valueOf(value)),
-			result -> {
-				if (result.isError()) {
-					return Result.error(result.errorOrThrow());
-				}
-				try {
-					return Result.success(Integer.parseInt(result.resultOrThrow()));
-				} catch (NumberFormatException e) {
-					return Result.error("Not a valid integer: " + result.resultOrThrow());
-				}
-			}
-		);
-		
-		assertEquals(new JsonPrimitive("42"), mappedCodec.encode(provider, 42));
-		assertEquals(42, mappedCodec.decode(provider, new JsonPrimitive("42")));
-		assertTrue(mappedCodec.decodeStart(provider, provider.empty(), new JsonPrimitive("not-a-number")).isError());
+		assertThrows(DecoderException.class, () -> parseCodec.decode(provider, new JsonPrimitive("not-a-number")));
 	}
 	
 	@Test
@@ -304,15 +266,15 @@ class CodecTest {
 			return Result.error("Value must be positive, got: " + value);
 		});
 		
-		assertTrue(positiveCodec.encodeStart(provider, provider.empty(), 42).isSuccess());
-		assertTrue(positiveCodec.encodeStart(provider, provider.empty(), -1).isError());
+		assertDoesNotThrow(() -> positiveCodec.encode(provider, provider.empty(), 42));
+		assertThrows(EncoderException.class, () -> positiveCodec.encode(provider, provider.empty(), -1));
 		
-		assertTrue(positiveCodec.decodeStart(provider, provider.empty(), new JsonPrimitive(42)).isSuccess());
-		assertTrue(positiveCodec.decodeStart(provider, provider.empty(), new JsonPrimitive(-1)).isError());
+		assertDoesNotThrow(() -> positiveCodec.decode(provider, provider.empty(), new JsonPrimitive(42)));
+		assertThrows(DecoderException.class, () -> positiveCodec.decode(provider, provider.empty(), new JsonPrimitive(-1)));
 	}
 	
 	@Test
-	void orElse() {
+	void orElse() throws Exception {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		Codec<String> positiveOnlyCodec = STRING.union("positive").orElse("default");
@@ -322,7 +284,7 @@ class CodecTest {
 	}
 	
 	@Test
-	void orElseGet() {
+	void orElseGet() throws Exception {
 		assertThrows(NullPointerException.class, () -> STRING.orElseGet(null));
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
@@ -334,7 +296,7 @@ class CodecTest {
 	}
 	
 	@Test
-	void fieldOf() {
+	void fieldOf() throws Exception {
 		assertThrows(NullPointerException.class, () -> STRING.fieldOf(null, TestObject::name));
 		assertThrows(NullPointerException.class, () -> STRING.fieldOf("name", (Function<TestObject, String>) null));
 		
@@ -343,20 +305,18 @@ class CodecTest {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		JsonObject current = new JsonObject();
-		Result<JsonElement> result = fieldCodec.encodeStart(provider, current, new TestObject("John"));
-		assertTrue(result.isSuccess());
+		JsonElement result = fieldCodec.encode(provider, current, new TestObject("John"));
 		
 		JsonObject expected = new JsonObject();
 		expected.add("name", new JsonPrimitive("John"));
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 		
-		Result<String> decoded = fieldCodec.decodeStart(provider, provider.empty(), expected);
-		assertTrue(decoded.isSuccess());
-		assertEquals("John", decoded.resultOrThrow());
+		String decoded = fieldCodec.decode(provider, expected, expected);
+		assertEquals("John", decoded);
 	}
 	
 	@Test
-	void fieldOfWithAlias() {
+	void fieldOfWithAlias() throws Exception {
 		assertThrows(NullPointerException.class, () -> STRING.fieldOf("name", (String) null, TestObject::name));
 		
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", "alias", TestObject::name);
@@ -366,13 +326,12 @@ class CodecTest {
 		JsonObject aliasJson = new JsonObject();
 		aliasJson.add("alias", new JsonPrimitive("John"));
 		
-		Result<String> decoded = fieldCodec.decodeStart(provider, provider.empty(), aliasJson);
-		assertTrue(decoded.isSuccess());
-		assertEquals("John", decoded.resultOrThrow());
+		String decoded = fieldCodec.decode(provider, aliasJson, aliasJson);
+		assertEquals("John", decoded);
 	}
 	
 	@Test
-	void fieldOfWithAliases() {
+	void fieldOfWithAliases() throws Exception {
 		assertThrows(NullPointerException.class, () -> STRING.fieldOf("name", (Set<String>) null, TestObject::name));
 		
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", Set.of("alias1", "alias2"), TestObject::name);
@@ -381,95 +340,82 @@ class CodecTest {
 		
 		JsonObject alias1Json = new JsonObject();
 		alias1Json.add("alias1", new JsonPrimitive("John"));
-		
-		Result<String> decoded1 = fieldCodec.decodeStart(provider, provider.empty(), alias1Json);
-		assertTrue(decoded1.isSuccess());
-		assertEquals("John", decoded1.resultOrThrow());
+		assertEquals("John", fieldCodec.decode(provider, alias1Json, alias1Json));
 		
 		JsonObject alias2Json = new JsonObject();
 		alias2Json.add("alias2", new JsonPrimitive("Jane"));
-		
-		Result<String> decoded2 = fieldCodec.decodeStart(provider, provider.empty(), alias2Json);
-		assertTrue(decoded2.isSuccess());
-		assertEquals("Jane", decoded2.resultOrThrow());
+		assertEquals("Jane", fieldCodec.decode(provider, alias2Json, alias2Json));
 	}
 	
 	@Test
-	void optionalFieldOf() {
+	void optionalFieldOf() throws Exception {
 		FieldCodec<String, TestObject> fieldCodec = STRING.optionalFieldOf("name", "default", TestObject::name);
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		JsonObject emptyJson = new JsonObject();
-		Result<String> decoded = fieldCodec.decodeStart(provider, provider.empty(), emptyJson);
-		assertTrue(decoded.isSuccess());
-		assertEquals("default", decoded.resultOrThrow());
+		String decoded = fieldCodec.decode(provider, emptyJson, emptyJson);
+		assertEquals("default", decoded);
 		
 		JsonObject presentJson = new JsonObject();
 		presentJson.add("name", new JsonPrimitive("John"));
-		Result<String> decodedPresent = fieldCodec.decodeStart(provider, provider.empty(), presentJson);
-		assertTrue(decodedPresent.isSuccess());
-		assertEquals("John", decodedPresent.resultOrThrow());
+		String decodedPresent = fieldCodec.decode(provider, presentJson, presentJson);
+		assertEquals("John", decodedPresent);
 	}
 	
 	@Test
-	void optionalFieldOfWithSupplier() {
+	void optionalFieldOfWithSupplier() throws Exception {
 		FieldCodec<String, TestObject> fieldCodec = STRING.optionalFieldOf("name", () -> "default", TestObject::name);
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		JsonObject emptyJson = new JsonObject();
-		Result<String> decoded = fieldCodec.decodeStart(provider, provider.empty(), emptyJson);
-		assertTrue(decoded.isSuccess());
-		assertEquals("default", decoded.resultOrThrow());
+		String decoded = fieldCodec.decode(provider, emptyJson, emptyJson);
+		assertEquals("default", decoded);
 	}
 	
 	@Test
-	void optionalFieldOfWithAlias() {
+	void optionalFieldOfWithAlias() throws Exception {
 		FieldCodec<String, TestObject> fieldCodec = STRING.optionalFieldOf("name", "alias", "default", TestObject::name);
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		JsonObject emptyJson = new JsonObject();
-		Result<String> decodedDefault = fieldCodec.decodeStart(provider, provider.empty(), emptyJson);
-		assertTrue(decodedDefault.isSuccess());
-		assertEquals("default", decodedDefault.resultOrThrow());
+		String decodedDefault = fieldCodec.decode(provider, emptyJson, emptyJson);
+		assertEquals("default", decodedDefault);
 	}
 	
 	@Test
-	void optionalFieldOfWithAliasAndSupplier() {
+	void optionalFieldOfWithAliasAndSupplier() throws Exception {
 		FieldCodec<String, TestObject> fieldCodec = STRING.optionalFieldOf("name", "alias", () -> "default", TestObject::name);
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		JsonObject emptyJson = new JsonObject();
-		Result<String> decoded = fieldCodec.decodeStart(provider, provider.empty(), emptyJson);
-		assertTrue(decoded.isSuccess());
-		assertEquals("default", decoded.resultOrThrow());
+		String decoded = fieldCodec.decode(provider, emptyJson, emptyJson);
+		assertEquals("default", decoded);
 	}
 	
 	@Test
-	void optionalFieldOfWithAliases() {
+	void optionalFieldOfWithAliases() throws Exception {
 		FieldCodec<String, TestObject> fieldCodec = STRING.optionalFieldOf("name", Set.of("alias1", "alias2"), "default", TestObject::name);
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		JsonObject emptyJson = new JsonObject();
-		Result<String> decodedDefault = fieldCodec.decodeStart(provider, provider.empty(), emptyJson);
-		assertTrue(decodedDefault.isSuccess());
-		assertEquals("default", decodedDefault.resultOrThrow());
+		String decodedDefault = fieldCodec.decode(provider, emptyJson, emptyJson);
+		assertEquals("default", decodedDefault);
 	}
 	
 	@Test
-	void optionalFieldOfWithAliasesAndSupplier() {
+	void optionalFieldOfWithAliasesAndSupplier() throws Exception {
 		FieldCodec<String, TestObject> fieldCodec = STRING.optionalFieldOf("name", Set.of("alias1", "alias2"), () -> "default", TestObject::name);
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		JsonObject emptyJson = new JsonObject();
-		Result<String> decoded = fieldCodec.decodeStart(provider, provider.empty(), emptyJson);
-		assertTrue(decoded.isSuccess());
-		assertEquals("default", decoded.resultOrThrow());
+		String decoded = fieldCodec.decode(provider, emptyJson, emptyJson);
+		assertEquals("default", decoded);
 	}
 	
 	private record TestObject(@NonNull String name) {}

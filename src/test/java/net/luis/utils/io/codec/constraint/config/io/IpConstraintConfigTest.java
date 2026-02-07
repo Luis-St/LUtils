@@ -20,15 +20,13 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,7 +47,7 @@ class IpConstraintConfigTest {
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructorNullChecks() {
 		assertThrows(NullPointerException.class, () -> new IpConstraintConfig(
@@ -63,7 +61,7 @@ class IpConstraintConfigTest {
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructorEmptyInSet() {
 		assertThrows(IllegalArgumentException.class, () -> new IpConstraintConfig(
@@ -72,7 +70,7 @@ class IpConstraintConfigTest {
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructorMinMaxLengthValidation() {
 		// LengthConstraintConfig validates this internally
@@ -87,7 +85,7 @@ class IpConstraintConfigTest {
 			Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructorEmptySubnetSet() {
 		assertThrows(IllegalArgumentException.class, () -> new IpConstraintConfig(
@@ -106,18 +104,18 @@ class IpConstraintConfigTest {
 		assertTrue(config.length().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(IpConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withIpVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4));
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withEqualTo("192.168.1.1");
@@ -162,50 +160,50 @@ class IpConstraintConfigTest {
 	@Test
 	void withMinLength() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withMinLength(7);
-
+		
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());
 		assertEquals(7, config.length().get().min().get().getFirst());
 		assertTrue(config.length().get().min().get().getSecond());
 	}
-
+	
 	@Test
 	void withMaxLength() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withMaxLength(15);
-
+		
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().max().isPresent());
 		assertEquals(15, config.length().get().max().get().getFirst());
 		assertTrue(config.length().get().max().get().getSecond());
 	}
-
+	
 	@Test
 	void withExactLength() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withExactLength(11);
-
+		
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());
 		assertTrue(config.length().get().max().isPresent());
 		assertEquals(11, config.length().get().min().get().getFirst());
 		assertEquals(11, config.length().get().max().get().getFirst());
 	}
-
+	
 	@Test
 	void withLengthBetween() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withLengthBetween(7, 15);
-
+		
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());
 		assertTrue(config.length().get().max().isPresent());
 		assertEquals(7, config.length().get().min().get().getFirst());
 		assertEquals(15, config.length().get().max().get().getFirst());
 	}
-
+	
 	@Test
 	void withLength() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(7).withMaxLength(15);
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
-
+		
 		assertTrue(config.length().isPresent());
 		assertEquals(lengthConfig, config.length().get());
 	}
@@ -316,7 +314,7 @@ class IpConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -327,75 +325,75 @@ class IpConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() {
+	void validateUnconstrained() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches("192.168.1.1").isSuccess());
-		assertTrue(config.matches("10.0.0.1").isSuccess());
-		assertTrue(config.matches("any-string").isSuccess());
+		assertDoesNotThrow(() -> config.validate("192.168.1.1"));
+		assertDoesNotThrow(() -> config.validate("10.0.0.1"));
+		assertDoesNotThrow(() -> config.validate("any-string"));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> IpConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> IpConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() {
+	void validateEqualTo() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withEqualTo("192.168.1.1");
 		
-		assertTrue(config.matches("192.168.1.1").isSuccess());
-		assertTrue(config.matches("10.0.0.1").isError());
+		assertDoesNotThrow(() -> config.validate("192.168.1.1"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("10.0.0.1"));
 	}
 	
 	@Test
-	void matchesNotEqualTo() {
+	void validateNotEqualTo() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withNotEqualTo("192.168.1.1");
 		
-		assertTrue(config.matches("10.0.0.1").isSuccess());
-		assertTrue(config.matches("192.168.1.1").isError());
+		assertDoesNotThrow(() -> config.validate("10.0.0.1"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("192.168.1.1"));
 	}
 	
 	@Test
-	void matchesIn() {
+	void validateIn() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withIn(List.of("192.168.1.1", "10.0.0.1"));
 		
-		assertTrue(config.matches("192.168.1.1").isSuccess());
-		assertTrue(config.matches("10.0.0.1").isSuccess());
-		assertTrue(config.matches("172.16.0.1").isError());
+		assertDoesNotThrow(() -> config.validate("192.168.1.1"));
+		assertDoesNotThrow(() -> config.validate("10.0.0.1"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("172.16.0.1"));
 	}
 	
 	@Test
-	void matchesLengthConstraint() {
+	void validateLengthConstraint() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withLengthBetween(7, 15);
 		
-		assertTrue(config.matches("1.1.1.1").isSuccess());
-		assertTrue(config.matches("192.168.1.1").isSuccess());
-		assertTrue(config.matches("192.168.100.100").isSuccess());
-		assertTrue(config.matches("1.1.1").isError());
+		assertDoesNotThrow(() -> config.validate("1.1.1.1"));
+		assertDoesNotThrow(() -> config.validate("192.168.1.1"));
+		assertDoesNotThrow(() -> config.validate("192.168.100.100"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("1.1.1"));
 	}
 	
 	@Test
-	void matchesStartsWith() {
+	void validateStartsWith() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withStartsWith("192.");
 		
-		assertTrue(config.matches("192.168.1.1").isSuccess());
-		assertTrue(config.matches("10.0.0.1").isError());
+		assertDoesNotThrow(() -> config.validate("192.168.1.1"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("10.0.0.1"));
 	}
 	
 	@Test
-	void matchesContains() {
+	void validateContains() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withContains("168");
 		
-		assertTrue(config.matches("192.168.1.1").isSuccess());
-		assertTrue(config.matches("10.0.0.1").isError());
+		assertDoesNotThrow(() -> config.validate("192.168.1.1"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("10.0.0.1"));
 	}
 	
 	@Test
-	void matchesEndsWith() {
+	void validateEndsWith() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withEndsWith(".1");
 		
-		assertTrue(config.matches("192.168.1.1").isSuccess());
-		assertTrue(config.matches("192.168.1.2").isError());
+		assertDoesNotThrow(() -> config.validate("192.168.1.1"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("192.168.1.2"));
 	}
 }

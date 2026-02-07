@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,103 +36,94 @@ import static org.junit.jupiter.api.Assertions.*;
 class DoubleCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		Double value = 3.141592653589793;
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), value));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, value));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), value));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, value));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as double"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as double"));
 	}
 	
 	@Test
-	void encodeStartWithPositiveValue() {
+	void encodeWithPositiveValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.141592653589793);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(3.141592653589793), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), 3.141592653589793);
+		assertEquals(new JsonPrimitive(3.141592653589793), result);
 	}
 	
 	@Test
-	void encodeStartWithNegativeValue() {
+	void encodeWithNegativeValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), -3.141592653589793);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(-3.141592653589793), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), -3.141592653589793);
+		assertEquals(new JsonPrimitive(-3.141592653589793), result);
 	}
 	
 	@Test
-	void encodeStartWithZero() {
+	void encodeWithZero() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.0);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(0.0), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), 0.0);
+		assertEquals(new JsonPrimitive(0.0), result);
 	}
 	
 	@Test
-	void encodeStartWithMaxValue() {
+	void encodeWithMaxValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Double.MAX_VALUE);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Double.MAX_VALUE), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Double.MAX_VALUE);
+		assertEquals(new JsonPrimitive(Double.MAX_VALUE), result);
 	}
 	
 	@Test
-	void encodeStartWithMinValue() {
+	void encodeWithMinValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Double.MIN_VALUE);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Double.MIN_VALUE), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Double.MIN_VALUE);
+		assertEquals(new JsonPrimitive(Double.MIN_VALUE), result);
 	}
 	
 	@Test
-	void encodeStartWithPositiveInfinity() {
+	void encodeWithPositiveInfinity() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Double.POSITIVE_INFINITY);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Double.POSITIVE_INFINITY), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Double.POSITIVE_INFINITY);
+		assertEquals(new JsonPrimitive(Double.POSITIVE_INFINITY), result);
 	}
 	
 	@Test
-	void encodeStartWithNegativeInfinity() {
+	void encodeWithNegativeInfinity() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Double.NEGATIVE_INFINITY);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Double.NEGATIVE_INFINITY), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Double.NEGATIVE_INFINITY);
+		assertEquals(new JsonPrimitive(Double.NEGATIVE_INFINITY), result);
 	}
 	
 	@Test
-	void encodeStartWithNaN() {
+	void encodeWithNaN() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Double.NaN);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Double.NaN), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Double.NaN);
+		assertEquals(new JsonPrimitive(Double.NaN), result);
 	}
 	
 	@Test
@@ -143,90 +135,82 @@ class DoubleCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithValue() {
+	void encodeKeyWithValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<String> result = codec.encodeKey(3.141592653589793);
-		assertTrue(result.isSuccess());
-		assertEquals("3.141592653589793", result.resultOrThrow());
+		String result = codec.encodeKey(3.141592653589793);
+		assertEquals("3.141592653589793", result);
 	}
 	
 	@Test
-	void encodeKeyWithNegativeValue() {
+	void encodeKeyWithNegativeValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<String> result = codec.encodeKey(-3.141592653589793);
-		assertTrue(result.isSuccess());
-		assertEquals("-3.141592653589793", result.resultOrThrow());
+		String result = codec.encodeKey(-3.141592653589793);
+		assertEquals("-3.141592653589793", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive(3.141592653589793)));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive(3.141592653589793)));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as double"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as double"));
 	}
 	
 	@Test
-	void decodeStartWithValidValue() {
+	void decodeWithValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3.141592653589793));
-		assertTrue(result.isSuccess());
-		assertEquals(3.141592653589793, result.resultOrThrow(), 0.000001);
+		Double result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(3.141592653589793));
+		assertEquals(3.141592653589793, result, 0.000001);
 	}
 	
 	@Test
-	void decodeStartWithNegativeValue() {
+	void decodeWithNegativeValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-3.141592653589793));
-		assertTrue(result.isSuccess());
-		assertEquals(-3.141592653589793, result.resultOrThrow(), 0.000001);
+		Double result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(-3.141592653589793));
+		assertEquals(-3.141592653589793, result, 0.000001);
 	}
 	
 	@Test
-	void decodeStartWithMaxValue() {
+	void decodeWithMaxValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Double.MAX_VALUE));
-		assertTrue(result.isSuccess());
-		assertEquals(Double.MAX_VALUE, result.resultOrThrow());
+		Double result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(Double.MAX_VALUE));
+		assertEquals(Double.MAX_VALUE, result);
 	}
 	
 	@Test
-	void decodeStartWithMinValue() {
+	void decodeWithMinValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Double.MIN_VALUE));
-		assertTrue(result.isSuccess());
-		assertEquals(Double.MIN_VALUE, result.resultOrThrow());
+		Double result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(Double.MIN_VALUE));
+		assertEquals(Double.MIN_VALUE, result);
 	}
 	
 	@Test
-	void decodeStartWithNonNumber() {
+	void decodeWithNonNumber() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not a number"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not a number")));
 	}
 	
 	@Test
@@ -239,23 +223,21 @@ class DoubleCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidValue() {
+	void decodeKeyWithValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey("3.141592653589793");
-		assertTrue(result.isSuccess());
-		assertEquals(3.141592653589793, result.resultOrThrow(), 0.000001);
+		Double result = codec.decodeKey("3.141592653589793");
+		assertEquals(3.141592653589793, result, 0.000001);
 	}
 	
 	@Test
-	void decodeKeyWithNegativeValue() {
+	void decodeKeyWithNegativeValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey("-3.141592653589793");
-		assertTrue(result.isSuccess());
-		assertEquals(-3.141592653589793, result.resultOrThrow(), 0.000001);
+		Double result = codec.decodeKey("-3.141592653589793");
+		assertEquals(-3.141592653589793, result, 0.000001);
 	}
 	
 	@Test
@@ -263,39 +245,35 @@ class DoubleCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey("invalid");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as double"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("invalid"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'invalid' as double"));
 	}
 	
 	@Test
-	void decodeKeyWithInfinity() {
+	void decodeKeyWithInfinity() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey("Infinity");
-		assertTrue(result.isSuccess());
-		assertEquals(Double.POSITIVE_INFINITY, result.resultOrThrow());
+		Double result = codec.decodeKey("Infinity");
+		assertEquals(Double.POSITIVE_INFINITY, result);
 	}
 	
 	@Test
-	void decodeKeyWithNegativeInfinity() {
+	void decodeKeyWithNegativeInfinity() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey("-Infinity");
-		assertTrue(result.isSuccess());
-		assertEquals(Double.NEGATIVE_INFINITY, result.resultOrThrow());
+		Double result = codec.decodeKey("-Infinity");
+		assertEquals(Double.NEGATIVE_INFINITY, result);
 	}
 	
 	@Test
-	void decodeKeyWithNaN() {
+	void decodeKeyWithNaN() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey("NaN");
-		assertTrue(result.isSuccess());
-		assertTrue(Double.isNaN(result.resultOrThrow()));
+		Double result = codec.decodeKey("NaN");
+		assertTrue(Double.isNaN(result));
 	}
 	
 	@Test

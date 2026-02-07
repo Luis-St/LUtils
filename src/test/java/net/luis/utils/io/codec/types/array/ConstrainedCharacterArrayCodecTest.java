@@ -20,9 +20,11 @@ package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -37,23 +39,22 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedCharacterArrayCodecTest {
 	
 	@Test
-	void encodeStartWithValidConstrainedValue() {
+	void encodeWithValidConstrainedValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMinLength(1));
-		char[] validArray = new char[] { 'a', 'b', 'c' };
+		char[] validArray = { 'a', 'b', 'c' };
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), validArray);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), validArray);
 		
 		JsonArray expected = new JsonArray();
 		expected.add(new JsonPrimitive('a'));
 		expected.add(new JsonPrimitive('b'));
 		expected.add(new JsonPrimitive('c'));
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void decodeStartWithValidConstrainedValue() {
+	void decodeWithValidConstrainedValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMinLength(1));
 		
@@ -61,9 +62,8 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('b'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new char[] { 'a', 'b' }, result.resultOrThrow());
+		char[] result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertArrayEquals(new char[] { 'a', 'b' }, result);
 	}
 	
 	@Test
@@ -74,25 +74,23 @@ class ConstrainedCharacterArrayCodecTest {
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintSuccess() {
+	void encodeEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.equalTo(new char[] { 'a', 'b', 'c' });
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' }));
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.equalTo(new char[] { 'a', 'b', 'c' });
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'd', 'e' });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'd', 'e' }));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintSuccess() {
+	void decodeEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.equalTo(new char[] { 'a', 'b', 'c' });
 		
@@ -101,12 +99,11 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('b'));
 		array.add(new JsonPrimitive('c'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintViolation() {
+	void decodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.equalTo(new char[] { 'a', 'b', 'c' });
 		
@@ -114,30 +111,27 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('d'));
 		array.add(new JsonPrimitive('e'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintSuccess() {
+	void encodeNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.notEqualTo(new char[] { 'a', 'b', 'c' });
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'd', 'e', 'f' });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'd', 'e', 'f' }));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.notEqualTo(new char[] { 'a', 'b', 'c' });
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' }));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintSuccess() {
+	void decodeNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.notEqualTo(new char[] { 'a', 'b', 'c' });
 		
@@ -145,12 +139,11 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('d'));
 		array.add(new JsonPrimitive('e'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintViolation() {
+	void decodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.notEqualTo(new char[] { 'a', 'b', 'c' });
 		
@@ -159,30 +152,27 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('b'));
 		array.add(new JsonPrimitive('c'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartInConstraintSuccess() {
+	void encodeInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.in(List.of(new char[] { 'a', 'b' }, new char[] { 'c', 'd' }));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b' });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b' }));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.in(List.of(new char[] { 'a', 'b' }, new char[] { 'c', 'd' }));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'e', 'f' });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'e', 'f' }));
 	}
 	
 	@Test
-	void decodeStartInConstraintSuccess() {
+	void decodeInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.in(List.of(new char[] { 'a', 'b' }, new char[] { 'c', 'd' }));
 		
@@ -190,12 +180,11 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('c'));
 		array.add(new JsonPrimitive('d'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartInConstraintViolation() {
+	void decodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.in(List.of(new char[] { 'a', 'b' }, new char[] { 'c', 'd' }));
 		
@@ -203,30 +192,27 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('g'));
 		array.add(new JsonPrimitive('h'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintSuccess() {
+	void encodeNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.notIn(List.of(new char[] { 'a', 'b' }, new char[] { 'c', 'd' }));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'e', 'f' });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'e', 'f' }));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.notIn(List.of(new char[] { 'a', 'b' }, new char[] { 'c', 'd' }));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b' });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b' }));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintSuccess() {
+	void decodeNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.notIn(List.of(new char[] { 'a', 'b' }, new char[] { 'c', 'd' }));
 		
@@ -234,12 +220,11 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('g'));
 		array.add(new JsonPrimitive('h'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintViolation() {
+	void decodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.notIn(List.of(new char[] { 'a', 'b' }, new char[] { 'c', 'd' }));
 		
@@ -247,30 +232,27 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('c'));
 		array.add(new JsonPrimitive('d'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartMinLengthConstraintSuccess() {
+	void encodeMinLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMinLength(2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' }));
 	}
 	
 	@Test
-	void encodeStartMinLengthConstraintViolation() {
+	void encodeMinLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMinLength(3));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b' });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b' }));
 	}
 	
 	@Test
-	void decodeStartMinLengthConstraintSuccess() {
+	void decodeMinLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMinLength(2));
 		
@@ -278,12 +260,11 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('b'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartMinLengthConstraintViolation() {
+	void decodeMinLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMinLength(3));
 		
@@ -291,30 +272,27 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('b'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartMaxLengthConstraintSuccess() {
+	void encodeMaxLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMaxLength(5));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' }));
 	}
 	
 	@Test
-	void encodeStartMaxLengthConstraintViolation() {
+	void encodeMaxLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMaxLength(2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' }));
 	}
 	
 	@Test
-	void decodeStartMaxLengthConstraintSuccess() {
+	void decodeMaxLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMaxLength(5));
 		
@@ -322,12 +300,11 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('b'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartMaxLengthConstraintViolation() {
+	void decodeMaxLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMaxLength(2));
 		
@@ -336,30 +313,27 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('b'));
 		array.add(new JsonPrimitive('c'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartExactLengthConstraintSuccess() {
+	void encodeExactLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withExactLength(3));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' }));
 	}
 	
 	@Test
-	void encodeStartExactLengthConstraintViolation() {
+	void encodeExactLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withExactLength(3));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b' });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b' }));
 	}
 	
 	@Test
-	void decodeStartExactLengthConstraintSuccess() {
+	void decodeExactLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withExactLength(2));
 		
@@ -367,12 +341,11 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('b'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartExactLengthConstraintViolation() {
+	void decodeExactLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withExactLength(3));
 		
@@ -380,39 +353,35 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('b'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartLengthBetweenConstraintSuccess() {
+	void encodeLengthBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withLengthBetween(2, 4));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' }));
 	}
 	
 	@Test
-	void encodeStartLengthBetweenConstraintViolationTooSmall() {
+	void encodeLengthBetweenConstraintViolationTooSmall() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withLengthBetween(3, 5));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b' });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b' }));
 	}
 	
 	@Test
-	void encodeStartLengthBetweenConstraintViolationTooLarge() {
+	void encodeLengthBetweenConstraintViolationTooLarge() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withLengthBetween(1, 2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' }));
 	}
 	
 	@Test
-	void decodeStartLengthBetweenConstraintSuccess() {
+	void decodeLengthBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withLengthBetween(1, 3));
 		
@@ -420,12 +389,11 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('b'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartLengthBetweenConstraintViolation() {
+	void decodeLengthBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withLengthBetween(3, 5));
 		
@@ -433,102 +401,91 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('b'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintSuccess() {
+	void encodeCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.custom(arr -> {
 			for (char c : arr) {
 				if (c < 'a' || c > 'z') {
-					return Result.error("All characters must be lowercase letters");
+					throw new ConstraintViolateException("All characters must be lowercase letters");
 				}
 			}
-			return Result.success(null);
 		});
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' });
-		assertTrue(result.isSuccess());
+		
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' }));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.custom(arr -> {
 			for (char c : arr) {
 				if (c < 'a' || c > 'z') {
-					return Result.error("All characters must be lowercase letters");
+					throw new ConstraintViolateException("All characters must be lowercase letters");
 				}
 			}
-			return Result.success(null);
 		});
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'B', 'c' });
-		assertTrue(result.isError());
+		
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'B', 'c' }));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintSuccess() {
+	void decodeCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.custom(arr -> {
 			for (char c : arr) {
 				if (c < 'a' || c > 'z') {
-					return Result.error("All characters must be lowercase letters");
+					throw new ConstraintViolateException("All characters must be lowercase letters");
 				}
 			}
-			return Result.success(null);
 		});
-
+		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('b'));
-
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintViolation() {
+	void decodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.custom(arr -> {
 			for (char c : arr) {
 				if (c < 'a' || c > 'z') {
-					return Result.error("All characters must be lowercase letters");
+					throw new ConstraintViolateException("All characters must be lowercase letters");
 				}
 			}
-			return Result.success(null);
 		});
-
+		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('B'));
-
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartCombinedConstraintsSuccess() {
+	void encodeCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMinLength(2).withMaxLength(4));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a', 'b', 'c' }));
 	}
 	
 	@Test
-	void encodeStartCombinedConstraintsViolation() {
+	void encodeCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMinLength(2).withMaxLength(4));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new char[] { 'a' });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new char[] { 'a' }));
 	}
 	
 	@Test
-	void decodeStartCombinedConstraintsSuccess() {
+	void decodeCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMinLength(1).withMaxLength(3));
 		
@@ -536,12 +493,11 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('b'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartCombinedConstraintsViolation() {
+	void decodeCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<char[]> codec = Codecs.CHARACTER_ARRAY.apply(config -> config.withMinLength(3).withMaxLength(5));
 		
@@ -549,7 +505,6 @@ class ConstrainedCharacterArrayCodecTest {
 		array.add(new JsonPrimitive('a'));
 		array.add(new JsonPrimitive('b'));
 		
-		Result<char[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 }

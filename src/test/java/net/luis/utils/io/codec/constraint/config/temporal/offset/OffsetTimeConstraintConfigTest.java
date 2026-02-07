@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal.offset;
 
-import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.*;
@@ -202,20 +202,20 @@ class OffsetTimeConstraintConfigTest {
 		assertTrue(config.nanosecond().isEmpty());
 		assertTrue(config.offset().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(TIME_12_00).isSuccess());
+		assertDoesNotThrow(() -> config.validate(TIME_12_00));
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(OffsetTimeConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
-		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withPast();
+		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withAfter(TIME_10_30);
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withEqualTo(TIME_12_00);
@@ -466,7 +466,9 @@ class OffsetTimeConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withCustom(time -> time.getHour() < 12 ? Result.success() : Result.error("Time must be before noon"));
+		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withCustom(time -> {
+			if (time.getHour() >= 12) throw new ConstraintViolateException("Time must be before noon");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -476,122 +478,122 @@ class OffsetTimeConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withEqualTo(TIME_12_00);
-		assertTrue(config.matches(TIME_12_00).isSuccess());
-		assertTrue(config.matches(TIME_10_30).isError());
+		assertDoesNotThrow(() -> config.validate(TIME_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TIME_10_30));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withNotEqualTo(TIME_12_00);
-		assertTrue(config.matches(TIME_10_30).isSuccess());
-		assertTrue(config.matches(TIME_12_00).isError());
+		assertDoesNotThrow(() -> config.validate(TIME_10_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TIME_12_00));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withIn(List.of(TIME_10_30, TIME_12_00));
-		assertTrue(config.matches(TIME_10_30).isSuccess());
-		assertTrue(config.matches(TIME_12_00).isSuccess());
-		assertTrue(config.matches(TIME_14_30).isError());
+		assertDoesNotThrow(() -> config.validate(TIME_10_30));
+		assertDoesNotThrow(() -> config.validate(TIME_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TIME_14_30));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withNotIn(List.of(TIME_10_30, TIME_12_00));
-		assertTrue(config.matches(TIME_14_30).isSuccess());
-		assertTrue(config.matches(TIME_10_30).isError());
-		assertTrue(config.matches(TIME_12_00).isError());
+		assertDoesNotThrow(() -> config.validate(TIME_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TIME_10_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TIME_12_00));
 	}
 	
 	@Test
-	void matchesWithAfter() {
+	void validateWithAfter() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withAfter(TIME_10_30);
-		assertTrue(config.matches(TIME_12_00).isSuccess());
-		assertTrue(config.matches(TIME_10_30).isError());
+		assertDoesNotThrow(() -> config.validate(TIME_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TIME_10_30));
 	}
 	
 	@Test
-	void matchesWithAfterOrEqual() {
+	void validateWithAfterOrEqual() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withAfterOrEqual(TIME_10_30);
-		assertTrue(config.matches(TIME_10_30).isSuccess());
-		assertTrue(config.matches(TIME_12_00).isSuccess());
+		assertDoesNotThrow(() -> config.validate(TIME_10_30));
+		assertDoesNotThrow(() -> config.validate(TIME_12_00));
 	}
 	
 	@Test
-	void matchesWithBefore() {
+	void validateWithBefore() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withBefore(TIME_18_00);
-		assertTrue(config.matches(TIME_14_30).isSuccess());
-		assertTrue(config.matches(TIME_18_00).isError());
+		assertDoesNotThrow(() -> config.validate(TIME_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TIME_18_00));
 	}
 	
 	@Test
-	void matchesWithBeforeOrEqual() {
+	void validateWithBeforeOrEqual() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withBeforeOrEqual(TIME_18_00);
-		assertTrue(config.matches(TIME_18_00).isSuccess());
-		assertTrue(config.matches(TIME_14_30).isSuccess());
+		assertDoesNotThrow(() -> config.validate(TIME_18_00));
+		assertDoesNotThrow(() -> config.validate(TIME_14_30));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withBetween(TIME_10_30, TIME_18_00);
-		assertTrue(config.matches(TIME_12_00).isSuccess());
-		assertTrue(config.matches(TIME_14_30).isSuccess());
-		assertTrue(config.matches(TIME_10_30).isError());
-		assertTrue(config.matches(TIME_18_00).isError());
+		assertDoesNotThrow(() -> config.validate(TIME_12_00));
+		assertDoesNotThrow(() -> config.validate(TIME_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TIME_10_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TIME_18_00));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(TIME_10_30, TIME_18_00);
-		assertTrue(config.matches(TIME_10_30).isSuccess());
-		assertTrue(config.matches(TIME_18_00).isSuccess());
-		assertTrue(config.matches(TIME_12_00).isSuccess());
+		assertDoesNotThrow(() -> config.validate(TIME_10_30));
+		assertDoesNotThrow(() -> config.validate(TIME_18_00));
+		assertDoesNotThrow(() -> config.validate(TIME_12_00));
 	}
 	
 	@Test
-	void matchesWithHourConstraint() {
+	void validateWithHourConstraint() {
 		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
-		assertTrue(config.matches(TIME_10_30).isSuccess());
-		assertTrue(config.matches(TIME_12_00).isSuccess());
-		assertTrue(config.matches(TIME_14_30).isSuccess());
-		assertTrue(config.matches(TIME_18_00).isError());
+		assertDoesNotThrow(() -> config.validate(TIME_10_30));
+		assertDoesNotThrow(() -> config.validate(TIME_12_00));
+		assertDoesNotThrow(() -> config.validate(TIME_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TIME_18_00));
 	}
 	
 	@Test
-	void matchesWithMinuteConstraint() {
+	void validateWithMinuteConstraint() {
 		NumericConstraintConfig minuteConfig = NumericConstraintConfig.UNCONSTRAINED.withIn(List.of(0, 30));
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withMinute(minuteConfig);
-		assertTrue(config.matches(TIME_10_30).isSuccess());
-		assertTrue(config.matches(TIME_12_00).isSuccess());
-		assertTrue(config.matches(OffsetTime.of(12, 15, 0, 0, ZoneOffset.UTC)).isError());
+		assertDoesNotThrow(() -> config.validate(TIME_10_30));
+		assertDoesNotThrow(() -> config.validate(TIME_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(OffsetTime.of(12, 15, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
-	void matchesWithOffsetConstraint() {
+	void validateWithOffsetConstraint() {
 		ZoneOffsetConstraintConfig offsetConfig = ZoneOffsetConstraintConfig.UNCONSTRAINED.withZero();
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withOffset(offsetConfig);
-		assertTrue(config.matches(TIME_12_00).isSuccess());
-		assertTrue(config.matches(OffsetTime.of(12, 0, 0, 0, ZoneOffset.ofHours(2))).isError());
+		assertDoesNotThrow(() -> config.validate(TIME_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(OffsetTime.of(12, 0, 0, 0, ZoneOffset.ofHours(2))));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED
 			.withAfterOrEqual(TIME_10_30)
 			.withBeforeOrEqual(TIME_18_00)
 			.withNotIn(List.of(TIME_12_00));
 		
-		assertTrue(config.matches(TIME_10_30).isSuccess());
-		assertTrue(config.matches(TIME_14_30).isSuccess());
-		assertTrue(config.matches(TIME_12_00).isError());
+		assertDoesNotThrow(() -> config.validate(TIME_10_30));
+		assertDoesNotThrow(() -> config.validate(TIME_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(TIME_12_00));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

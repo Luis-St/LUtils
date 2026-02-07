@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.temporal;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -37,124 +38,114 @@ import static org.junit.jupiter.api.Assertions.*;
 class InstantCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		Instant instant = Instant.now();
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), instant));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, instant));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), instant));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, instant));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as instant"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as instant"));
 	}
 	
 	@Test
-	void encodeStartWithValidInstant() {
+	void encodeWithValidInstant() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		Instant instant = Instant.parse("2025-01-15T10:30:00Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), instant);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("2025-01-15T10:30:00Z"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), instant);
+		assertEquals(new JsonPrimitive("2025-01-15T10:30:00Z"), result);
 	}
 	
 	@Test
-	void encodeStartWithEpoch() {
+	void encodeWithEpoch() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		Instant instant = Instant.EPOCH;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), instant);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("1970-01-01T00:00:00Z"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), instant);
+		assertEquals(new JsonPrimitive("1970-01-01T00:00:00Z"), result);
 	}
 	
 	@Test
-	void encodeStartWithNanoseconds() {
+	void encodeWithNanoseconds() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		Instant instant = Instant.parse("2025-01-15T10:30:00.123456789Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), instant);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("2025-01-15T10:30:00.123456789Z"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), instant);
+		assertEquals(new JsonPrimitive("2025-01-15T10:30:00.123456789Z"), result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("2025-01-15T10:30:00Z")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("2025-01-15T10:30:00Z")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		
-		Result<Instant> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as instant"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as instant"));
 	}
 	
 	@Test
-	void decodeStartWithValidString() {
+	void decodeWithValidString() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		
-		Result<Instant> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2025-01-15T10:30:00Z"));
-		assertTrue(result.isSuccess());
-		assertEquals(Instant.parse("2025-01-15T10:30:00Z"), result.resultOrThrow());
+		Instant result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2025-01-15T10:30:00Z"));
+		assertEquals(Instant.parse("2025-01-15T10:30:00Z"), result);
 	}
 	
 	@Test
-	void decodeStartWithEpoch() {
+	void decodeWithEpoch() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		
-		Result<Instant> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("1970-01-01T00:00:00Z"));
-		assertTrue(result.isSuccess());
-		assertEquals(Instant.EPOCH, result.resultOrThrow());
+		Instant result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("1970-01-01T00:00:00Z"));
+		assertEquals(Instant.EPOCH, result);
 	}
 	
 	@Test
-	void decodeStartWithNanoseconds() {
+	void decodeWithNanoseconds() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		
-		Result<Instant> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2025-01-15T10:30:00.123456789Z"));
-		assertTrue(result.isSuccess());
-		assertEquals(Instant.parse("2025-01-15T10:30:00.123456789Z"), result.resultOrThrow());
+		Instant result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2025-01-15T10:30:00.123456789Z"));
+		assertEquals(Instant.parse("2025-01-15T10:30:00.123456789Z"), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidFormat() {
+	void decodeWithInvalidFormat() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		
-		Result<Instant> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-instant"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode instant"));
-		assertTrue(result.errorOrThrow().contains("Unable to parse instant"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-instant")));
+		assertTrue(exception.getMessage().contains("Unable to decode instant"));
+		assertTrue(exception.getMessage().contains("Unable to parse instant"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = new InstantCodec();
 		
-		Result<Instant> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test

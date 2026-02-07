@@ -19,9 +19,10 @@
 package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,141 +42,122 @@ class UnitCodecTest {
 	}
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		Codec<Integer> codec = new UnitCodec<>(() -> 1);
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(JsonTypeProvider.INSTANCE, null, 1));
+		assertThrows(NullPointerException.class, () -> codec.encode(JsonTypeProvider.INSTANCE, null, 1));
 	}
 	
 	@Test
-	void encodeStartIgnoresTypeProvider() {
+	void encodeIgnoresTypeProvider() throws EncoderException {
 		Codec<Integer> codec = new UnitCodec<>(() -> 42);
 		JsonElement empty = JsonNull.INSTANCE;
 		
-		Result<JsonElement> result = codec.encodeStart(null, empty, 1);
-		assertTrue(result.isSuccess());
-		assertSame(empty, result.resultOrThrow());
+		JsonElement result = codec.encode(null, empty, 1);
+		assertSame(empty, result);
 	}
 	
 	@Test
-	void encodeStartReturnsCurrentValue() {
+	void encodeReturnsCurrentValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new UnitCodec<>(() -> 42);
 		JsonObject current = new JsonObject();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, current, 123);
-		assertTrue(result.isSuccess());
-		assertSame(current, result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, current, 123);
+		assertSame(current, result);
 	}
 	
 	@Test
-	void encodeStartWithNullValue() {
+	void encodeWithNullValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new UnitCodec<>(() -> 42);
 		JsonArray current = new JsonArray();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, current, null);
-		assertTrue(result.isSuccess());
-		assertSame(current, result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, current, null);
+		assertSame(current, result);
 	}
 	
 	@Test
-	void encodeStartWithDifferentCurrentTypes() {
+	void encodeWithDifferentCurrentTypes() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnitCodec<>(() -> "unit");
 		
 		JsonPrimitive primitive = new JsonPrimitive(42);
-		Result<JsonElement> primitiveResult = codec.encodeStart(typeProvider, primitive, "ignored");
-		assertTrue(primitiveResult.isSuccess());
-		assertSame(primitive, primitiveResult.resultOrThrow());
+		JsonElement primitiveResult = codec.encode(typeProvider, primitive, "ignored");
+		assertSame(primitive, primitiveResult);
 		
 		JsonArray array = new JsonArray();
-		Result<JsonElement> arrayResult = codec.encodeStart(typeProvider, array, "ignored");
-		assertTrue(arrayResult.isSuccess());
-		assertSame(array, arrayResult.resultOrThrow());
+		JsonElement arrayResult = codec.encode(typeProvider, array, "ignored");
+		assertSame(array, arrayResult);
 	}
 	
 	@Test
-	void decodeStartIgnoresTypeProvider() {
+	void decodeIgnoresTypeProvider() throws DecoderException {
 		Codec<Integer> codec = new UnitCodec<>(() -> 42);
 		
-		Result<Integer> result = codec.decodeStart(null, null, JsonNull.INSTANCE);
-		assertTrue(result.isSuccess());
-		assertEquals(42, result.resultOrThrow());
+		Integer result = codec.decode(null, null, JsonNull.INSTANCE);
+		assertEquals(42, result);
 	}
 	
 	@Test
-	void decodeStartIgnoresValue() {
+	void decodeIgnoresValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnitCodec<>(() -> "unit-value");
 		
-		Result<String> nullResult = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(nullResult.isSuccess());
-		assertEquals("unit-value", nullResult.resultOrThrow());
+		String nullResult = codec.decode(typeProvider, typeProvider.empty(), null);
+		assertEquals("unit-value", nullResult);
 		
-		Result<String> primitiveResult = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(123));
-		assertTrue(primitiveResult.isSuccess());
-		assertEquals("unit-value", primitiveResult.resultOrThrow());
+		String primitiveResult = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(123));
+		assertEquals("unit-value", primitiveResult);
 		
-		Result<String> objectResult = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonObject());
-		assertTrue(objectResult.isSuccess());
-		assertEquals("unit-value", objectResult.resultOrThrow());
+		String objectResult = codec.decode(typeProvider, typeProvider.empty(), new JsonObject());
+		assertEquals("unit-value", objectResult);
 	}
 	
 	@Test
-	void decodeStartWithNullSupplier() {
+	void decodeWithNullSupplier() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnitCodec<>(() -> null);
 		
-		Result<String> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("anything"));
-		assertTrue(result.isSuccess());
-		assertNull(result.resultOrThrow());
+		String result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("anything"));
+		assertNull(result);
 	}
 	
 	@Test
-	void decodeStartWithDifferentSupplierTypes() {
+	void decodeWithDifferentSupplierTypes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<Integer> intCodec = new UnitCodec<>(() -> 999);
-		Result<Integer> intResult = intCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("ignored"));
-		assertTrue(intResult.isSuccess());
-		assertEquals(999, intResult.resultOrThrow());
+		assertEquals(999, intCodec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("ignored")));
 		
 		Codec<Boolean> boolCodec = new UnitCodec<>(() -> true);
-		Result<Boolean> boolResult = boolCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonArray());
-		assertTrue(boolResult.isSuccess());
-		assertTrue(boolResult.resultOrThrow());
+		assertTrue(boolCodec.decode(typeProvider, typeProvider.empty(), new JsonArray()));
 		
 		Codec<Double> doubleCodec = new UnitCodec<>(() -> 3.14);
-		Result<Double> doubleResult = doubleCodec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(doubleResult.isSuccess());
-		assertEquals(3.14, doubleResult.resultOrThrow());
+		assertEquals(3.14, doubleCodec.decode(typeProvider, typeProvider.empty(), null));
 	}
 	
 	@Test
-	void decodeStartWithComplexTypes() {
+	void decodeWithComplexTypes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Person defaultPerson = new Person("Default", 0);
 		Codec<Person> codec = new UnitCodec<>(() -> defaultPerson);
 		
-		Result<Person> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonObject());
-		assertTrue(result.isSuccess());
-		assertSame(defaultPerson, result.resultOrThrow());
+		Person result = codec.decode(typeProvider, typeProvider.empty(), new JsonObject());
+		assertSame(defaultPerson, result);
 	}
 	
 	@Test
-	void supplierCalledForEachDecode() {
+	void supplierCalledForEachDecode() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		int[] counter = { 0 };
 		Codec<Integer> codec = new UnitCodec<>(() -> ++counter[0]);
 		
-		Result<Integer> firstResult = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(firstResult.isSuccess());
-		assertEquals(1, firstResult.resultOrThrow());
+		Integer firstResult = codec.decode(typeProvider, typeProvider.empty(), null);
+		assertEquals(1, firstResult);
 		
-		Result<Integer> secondResult = codec.decodeStart(typeProvider, typeProvider.empty(), JsonNull.INSTANCE);
-		assertTrue(secondResult.isSuccess());
-		assertEquals(2, secondResult.resultOrThrow());
+		Integer secondResult = codec.decode(typeProvider, typeProvider.empty(), JsonNull.INSTANCE);
+		assertEquals(2, secondResult);
 	}
 	
 	@Test
@@ -185,7 +167,7 @@ class UnitCodecTest {
 			throw new RuntimeException("Supplier failed");
 		});
 		
-		assertThrows(RuntimeException.class, () -> codec.decodeStart(typeProvider, typeProvider.empty(), null));
+		assertThrows(RuntimeException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
 	}
 	
 	@Test

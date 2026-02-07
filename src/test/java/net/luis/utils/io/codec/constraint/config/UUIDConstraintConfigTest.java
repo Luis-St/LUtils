@@ -19,9 +19,9 @@
 package net.luis.utils.io.codec.constraint.config;
 
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.UUIDVariant;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -124,20 +124,20 @@ class UUIDConstraintConfigTest {
 		assertTrue(config.notNil().isEmpty());
 		assertTrue(config.max().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(RANDOM_UUID).isSuccess());
+		assertDoesNotThrow(() -> config.validate(RANDOM_UUID));
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(UUIDConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withNotNil();
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withEqualTo(RANDOM_UUID);
@@ -240,7 +240,9 @@ class UUIDConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withCustom(u -> u.version() != 4 ? Result.error("Must be version 4") : Result.success());
+		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withCustom(u -> {
+			if (u.version() != 4) throw new ConstraintViolateException("Must be version 4");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -250,80 +252,80 @@ class UUIDConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		UUID uuid = UUID.randomUUID();
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withEqualTo(uuid);
-		assertTrue(config.matches(uuid).isSuccess());
-		assertTrue(config.matches(UUID.randomUUID()).isError());
+		assertDoesNotThrow(() -> config.validate(uuid));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(UUID.randomUUID()));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		UUID uuid = UUID.randomUUID();
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withNotEqualTo(uuid);
-		assertTrue(config.matches(UUID.randomUUID()).isSuccess());
-		assertTrue(config.matches(uuid).isError());
+		assertDoesNotThrow(() -> config.validate(UUID.randomUUID()));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(uuid));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		UUID uuid1 = UUID.randomUUID();
 		UUID uuid2 = UUID.randomUUID();
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withIn(List.of(uuid1, uuid2));
-		assertTrue(config.matches(uuid1).isSuccess());
-		assertTrue(config.matches(uuid2).isSuccess());
-		assertTrue(config.matches(UUID.randomUUID()).isError());
+		assertDoesNotThrow(() -> config.validate(uuid1));
+		assertDoesNotThrow(() -> config.validate(uuid2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(UUID.randomUUID()));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		UUID uuid1 = UUID.randomUUID();
 		UUID uuid2 = UUID.randomUUID();
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withNotIn(List.of(uuid1, uuid2));
-		assertTrue(config.matches(UUID.randomUUID()).isSuccess());
-		assertTrue(config.matches(uuid1).isError());
-		assertTrue(config.matches(uuid2).isError());
+		assertDoesNotThrow(() -> config.validate(UUID.randomUUID()));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(uuid1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(uuid2));
 	}
 	
 	@Test
-	void matchesWithVersion() {
+	void validateWithVersion() {
 		NumericConstraintConfig versionConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4);
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVersion(versionConfig);
-		assertTrue(config.matches(RANDOM_UUID).isSuccess());
-		assertTrue(config.matches(NIL_UUID).isError());
+		assertDoesNotThrow(() -> config.validate(RANDOM_UUID));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(NIL_UUID));
 	}
 	
 	@Test
-	void matchesWithVariant() {
+	void validateWithVariant() {
 		EnumConstraintConfig<UUIDVariant> variantConfig = EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122);
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVariant(variantConfig);
-		assertTrue(config.matches(RANDOM_UUID).isSuccess());
-		assertTrue(config.matches(NIL_UUID).isError());
+		assertDoesNotThrow(() -> config.validate(RANDOM_UUID));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(NIL_UUID));
 	}
 	
 	@Test
-	void matchesWithNil() {
+	void validateWithNil() {
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withNil();
-		assertTrue(config.matches(NIL_UUID).isSuccess());
-		assertTrue(config.matches(RANDOM_UUID).isError());
+		assertDoesNotThrow(() -> config.validate(NIL_UUID));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(RANDOM_UUID));
 	}
 	
 	@Test
-	void matchesWithNotNil() {
+	void validateWithNotNil() {
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withNotNil();
-		assertTrue(config.matches(RANDOM_UUID).isSuccess());
-		assertTrue(config.matches(NIL_UUID).isError());
+		assertDoesNotThrow(() -> config.validate(RANDOM_UUID));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(NIL_UUID));
 	}
 	
 	@Test
-	void matchesWithMax() {
+	void validateWithMax() {
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withMax();
-		assertTrue(config.matches(MAX_UUID).isSuccess());
-		assertTrue(config.matches(RANDOM_UUID).isError());
+		assertDoesNotThrow(() -> config.validate(MAX_UUID));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(RANDOM_UUID));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		NumericConstraintConfig versionConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4);
 		EnumConstraintConfig<UUIDVariant> variantConfig = EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122);
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED
@@ -331,14 +333,14 @@ class UUIDConstraintConfigTest {
 			.withVariant(variantConfig)
 			.withNotNil();
 		
-		assertTrue(config.matches(RANDOM_UUID).isSuccess());
-		assertTrue(config.matches(NIL_UUID).isError());
-		assertTrue(config.matches(MAX_UUID).isError());
+		assertDoesNotThrow(() -> config.validate(RANDOM_UUID));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(NIL_UUID));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MAX_UUID));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

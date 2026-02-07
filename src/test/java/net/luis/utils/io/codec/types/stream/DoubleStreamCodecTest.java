@@ -19,9 +19,10 @@
 package net.luis.utils.io.codec.types.stream;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -37,155 +38,142 @@ import static org.junit.jupiter.api.Assertions.*;
 class DoubleStreamCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		DoubleStream stream = DoubleStream.of(1.0, 2.0, 3.0);
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), stream));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, stream));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), stream));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, stream));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as double stream"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as double stream"));
 	}
 	
 	@Test
-	void encodeStartWithValidStream() {
+	void encodeWithValidStream() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		DoubleStream stream = DoubleStream.of(1.0, 2.0, 3.0);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), stream);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonArray(List.of(new JsonPrimitive(1.0), new JsonPrimitive(2.0), new JsonPrimitive(3.0))), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), stream);
+		assertEquals(new JsonArray(List.of(new JsonPrimitive(1.0), new JsonPrimitive(2.0), new JsonPrimitive(3.0))), result);
 	}
 	
 	@Test
-	void encodeStartWithEmptyStream() {
+	void encodeWithEmptyStream() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		DoubleStream stream = DoubleStream.empty();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), stream);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonArray(List.of()), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), stream);
+		assertEquals(new JsonArray(List.of()), result);
 	}
 	
 	@Test
-	void encodeStartWithSingleElement() {
+	void encodeWithSingleElement() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		DoubleStream stream = DoubleStream.of(42.5);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), stream);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonArray(List.of(new JsonPrimitive(42.5))), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), stream);
+		assertEquals(new JsonArray(List.of(new JsonPrimitive(42.5))), result);
 	}
 	
 	@Test
-	void encodeStartWithNegativeValues() {
+	void encodeWithNegativeValues() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		DoubleStream stream = DoubleStream.of(-1.5, -2.5, -3.5);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), stream);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonArray(List.of(new JsonPrimitive(-1.5), new JsonPrimitive(-2.5), new JsonPrimitive(-3.5))), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), stream);
+		assertEquals(new JsonArray(List.of(new JsonPrimitive(-1.5), new JsonPrimitive(-2.5), new JsonPrimitive(-3.5))), result);
 	}
 	
 	@Test
-	void encodeStartWithLargeValues() {
+	void encodeWithLargeValues() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		DoubleStream stream = DoubleStream.of(Double.MAX_VALUE, Double.MIN_VALUE);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), stream);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonArray(List.of(new JsonPrimitive(Double.MAX_VALUE), new JsonPrimitive(Double.MIN_VALUE))), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), stream);
+		assertEquals(new JsonArray(List.of(new JsonPrimitive(Double.MAX_VALUE), new JsonPrimitive(Double.MIN_VALUE))), result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonArray(List.of(new JsonPrimitive(1.0)))));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonArray(List.of(new JsonPrimitive(1.0)))));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		
-		Result<DoubleStream> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as double stream"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as double stream"));
 	}
 	
 	@Test
-	void decodeStartWithValidArray() {
+	void decodeWithValidArray() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		
-		Result<DoubleStream> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonArray(List.of(new JsonPrimitive(1.0), new JsonPrimitive(2.0), new JsonPrimitive(3.0))));
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, result.resultOrThrow().toArray());
+		DoubleStream result = codec.decode(typeProvider, typeProvider.empty(), new JsonArray(List.of(new JsonPrimitive(1.0), new JsonPrimitive(2.0), new JsonPrimitive(3.0))));
+		assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, result.toArray());
 	}
 	
 	@Test
-	void decodeStartWithEmptyArray() {
+	void decodeWithEmptyArray() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		
-		Result<DoubleStream> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonArray(List.of()));
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new double[] {}, result.resultOrThrow().toArray());
+		DoubleStream result = codec.decode(typeProvider, typeProvider.empty(), new JsonArray(List.of()));
+		assertArrayEquals(new double[] {}, result.toArray());
 	}
 	
 	@Test
-	void decodeStartWithSingleElement() {
+	void decodeWithSingleElement() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		
-		Result<DoubleStream> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonArray(List.of(new JsonPrimitive(42.5))));
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new double[] { 42.5 }, result.resultOrThrow().toArray());
+		DoubleStream result = codec.decode(typeProvider, typeProvider.empty(), new JsonArray(List.of(new JsonPrimitive(42.5))));
+		assertArrayEquals(new double[] { 42.5 }, result.toArray());
 	}
 	
 	@Test
-	void decodeStartWithNegativeValues() {
+	void decodeWithNegativeValues() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		
-		Result<DoubleStream> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonArray(List.of(new JsonPrimitive(-1.5), new JsonPrimitive(-2.5), new JsonPrimitive(-3.5))));
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new double[] { -1.5, -2.5, -3.5 }, result.resultOrThrow().toArray());
+		DoubleStream result = codec.decode(typeProvider, typeProvider.empty(), new JsonArray(List.of(new JsonPrimitive(-1.5), new JsonPrimitive(-2.5), new JsonPrimitive(-3.5))));
+		assertArrayEquals(new double[] { -1.5, -2.5, -3.5 }, result.toArray());
 	}
 	
 	@Test
-	void decodeStartWithLargeValues() {
+	void decodeWithLargeValues() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		
-		Result<DoubleStream> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonArray(List.of(new JsonPrimitive(Double.MAX_VALUE), new JsonPrimitive(Double.MIN_VALUE))));
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new double[] { Double.MAX_VALUE, Double.MIN_VALUE }, result.resultOrThrow().toArray());
+		DoubleStream result = codec.decode(typeProvider, typeProvider.empty(), new JsonArray(List.of(new JsonPrimitive(Double.MAX_VALUE), new JsonPrimitive(Double.MIN_VALUE))));
+		assertArrayEquals(new double[] { Double.MAX_VALUE, Double.MIN_VALUE }, result.toArray());
 	}
 	
 	@Test
-	void decodeStartWithNonArray() {
+	void decodeWithNonArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DoubleStream> codec = new DoubleStreamCodec();
 		
-		Result<DoubleStream> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42.0));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42.0)));
 	}
 	
 	@Test

@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config.numeric;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
 import org.junit.jupiter.api.Test;
 
@@ -93,20 +94,20 @@ class NumericConstraintConfigTest {
 		assertTrue(config.min().isEmpty());
 		assertTrue(config.max().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(42).isSuccess());
+		assertDoesNotThrow(() -> config.validate(42));
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(NumericConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(10);
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(10);
@@ -194,101 +195,101 @@ class NumericConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(42);
-		assertTrue(config.matches(42).isSuccess());
-		assertTrue(config.matches(43).isError());
+		assertDoesNotThrow(() -> config.validate(42));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(43));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withNotEqualTo(42);
-		assertTrue(config.matches(41).isSuccess());
-		assertTrue(config.matches(42).isError());
+		assertDoesNotThrow(() -> config.validate(41));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(42));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withIn(List.of(1, 2, 3));
-		assertTrue(config.matches(1).isSuccess());
-		assertTrue(config.matches(2).isSuccess());
-		assertTrue(config.matches(4).isError());
+		assertDoesNotThrow(() -> config.validate(1));
+		assertDoesNotThrow(() -> config.validate(2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(4));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withNotIn(List.of(1, 2, 3));
-		assertTrue(config.matches(4).isSuccess());
-		assertTrue(config.matches(1).isError());
+		assertDoesNotThrow(() -> config.validate(4));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1));
 	}
 	
 	@Test
-	void matchesWithGreaterThan() {
+	void validateWithGreaterThan() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withGreaterThan(5);
-		assertTrue(config.matches(6).isSuccess());
-		assertTrue(config.matches(5).isError());
-		assertTrue(config.matches(4).isError());
+		assertDoesNotThrow(() -> config.validate(6));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(4));
 	}
 	
 	@Test
-	void matchesWithGreaterThanOrEqual() {
+	void validateWithGreaterThanOrEqual() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(5);
-		assertTrue(config.matches(5).isSuccess());
-		assertTrue(config.matches(6).isSuccess());
-		assertTrue(config.matches(4).isError());
+		assertDoesNotThrow(() -> config.validate(5));
+		assertDoesNotThrow(() -> config.validate(6));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(4));
 	}
 	
 	@Test
-	void matchesWithLessThan() {
+	void validateWithLessThan() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withLessThan(10);
-		assertTrue(config.matches(9).isSuccess());
-		assertTrue(config.matches(10).isError());
-		assertTrue(config.matches(11).isError());
+		assertDoesNotThrow(() -> config.validate(9));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(10));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(11));
 	}
 	
 	@Test
-	void matchesWithLessThanOrEqual() {
+	void validateWithLessThanOrEqual() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(10);
-		assertTrue(config.matches(10).isSuccess());
-		assertTrue(config.matches(9).isSuccess());
-		assertTrue(config.matches(11).isError());
+		assertDoesNotThrow(() -> config.validate(10));
+		assertDoesNotThrow(() -> config.validate(9));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(11));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withBetween(1, 10);
-		assertTrue(config.matches(5).isSuccess());
-		assertTrue(config.matches(1).isError());
-		assertTrue(config.matches(10).isError());
+		assertDoesNotThrow(() -> config.validate(5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(10));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 10);
-		assertTrue(config.matches(1).isSuccess());
-		assertTrue(config.matches(10).isSuccess());
-		assertTrue(config.matches(5).isSuccess());
-		assertTrue(config.matches(0).isError());
-		assertTrue(config.matches(11).isError());
+		assertDoesNotThrow(() -> config.validate(1));
+		assertDoesNotThrow(() -> config.validate(10));
+		assertDoesNotThrow(() -> config.validate(5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(11));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED
 			.withGreaterThanOrEqual(0)
 			.withLessThanOrEqual(100)
 			.withNotIn(List.of(50));
 		
-		assertTrue(config.matches(0).isSuccess());
-		assertTrue(config.matches(100).isSuccess());
-		assertTrue(config.matches(49).isSuccess());
-		assertTrue(config.matches(50).isError());
-		assertTrue(config.matches(-1).isError());
+		assertDoesNotThrow(() -> config.validate(0));
+		assertDoesNotThrow(() -> config.validate(100));
+		assertDoesNotThrow(() -> config.validate(49));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(50));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-1));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

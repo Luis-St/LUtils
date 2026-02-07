@@ -19,12 +19,12 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.io.network.address.IpAddress;
 import net.luis.utils.io.network.address.IpAddresses;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -97,18 +97,18 @@ class IpAddressConstraintConfigTest {
 		assertTrue(config.stringConstraint().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(IpAddressConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withIpVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4));
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		IpAddress<?> value = IpAddresses.parse("192.168.1.1");
@@ -223,7 +223,7 @@ class IpAddressConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -234,123 +234,125 @@ class IpAddressConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() {
+	void validateUnconstrained() {
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("10.0.0.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("127.0.0.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("::1")).isSuccess());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("192.168.1.1")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("10.0.0.1")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("127.0.0.1")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("::1")));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> IpAddressConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> IpAddressConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() {
+	void validateEqualTo() {
 		IpAddress<?> expected = IpAddresses.parse("192.168.1.1");
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withEqualTo(expected);
 		
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.2")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("192.168.1.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parse("192.168.1.2")));
 	}
 	
 	@Test
-	void matchesNotEqualTo() {
+	void validateNotEqualTo() {
 		IpAddress<?> excluded = IpAddresses.parse("192.168.1.1");
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withNotEqualTo(excluded);
 		
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.2")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("192.168.1.2")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parse("192.168.1.1")));
 	}
 	
 	@Test
-	void matchesIn() {
+	void validateIn() {
 		IpAddress<?> addr1 = IpAddresses.parse("192.168.1.1");
 		IpAddress<?> addr2 = IpAddresses.parse("192.168.1.2");
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withIn(List.of(addr1, addr2));
 		
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.2")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.3")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("192.168.1.1")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("192.168.1.2")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parse("192.168.1.3")));
 	}
 	
 	@Test
-	void matchesNotIn() {
+	void validateNotIn() {
 		IpAddress<?> excluded = IpAddresses.parse("192.168.1.1");
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withNotIn(List.of(excluded));
 		
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.2")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("192.168.1.2")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parse("192.168.1.1")));
 	}
 	
 	@Test
-	void matchesIpVersionIpv4() {
+	void validateIpVersionIpv4() {
 		EnumConstraintConfig<IpVersion> versionConfig = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4);
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withIpVersion(versionConfig);
 		
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("::1")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("192.168.1.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parse("::1")));
 	}
 	
 	@Test
-	void matchesIpVersionIpv6() {
+	void validateIpVersionIpv6() {
 		EnumConstraintConfig<IpVersion> versionConfig = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6);
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withIpVersion(versionConfig);
 		
-		assertTrue(config.matches(IpAddresses.parse("::1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("2001:db8::1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("::1")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("2001:db8::1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parse("192.168.1.1")));
 	}
 	
 	@Test
-	void matchesIpTypePrivate() {
+	void validateIpTypePrivate() {
 		EnumConstraintConfig<IpAddressType> typeConfig = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE);
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withIpType(typeConfig);
 		
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("10.0.0.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("172.16.0.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("127.0.0.1")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("192.168.1.1")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("10.0.0.1")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("172.16.0.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parse("127.0.0.1")));
 	}
 	
 	@Test
-	void matchesIpTypeLoopback() {
+	void validateIpTypeLoopback() {
 		EnumConstraintConfig<IpAddressType> typeConfig = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withIpType(typeConfig);
 		
-		assertTrue(config.matches(IpAddresses.parse("127.0.0.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("::1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("127.0.0.1")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("::1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parse("192.168.1.1")));
 	}
 	
 	@Test
-	void matchesInAnySubnet() {
+	void validateInAnySubnet() {
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withInAnySubnet(List.of("192.168.0.0/16"));
 		
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("192.168.255.255")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("10.0.0.1")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("192.168.1.1")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("192.168.255.255")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parse("10.0.0.1")));
 	}
 	
 	@Test
-	void matchesNotInAnySubnet() {
+	void validateNotInAnySubnet() {
 		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withNotInAnySubnet(List.of("192.168.0.0/16"));
 		
-		assertTrue(config.matches(IpAddresses.parse("10.0.0.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("172.16.0.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("10.0.0.1")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("172.16.0.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parse("192.168.1.1")));
 	}
 	
 	@Test
-	void matchesCustom() {
-		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withCustom(
-			value -> value.toString().startsWith("192.") ? Result.success() : Result.error("Address must start with 192.")
-		);
+	void validateCustom() {
+		IpAddressConstraintConfig config = IpAddressConstraintConfig.UNCONSTRAINED.withCustom(value -> {
+			if (!value.toString().startsWith("192.")) {
+				throw new ConstraintViolateException("Address must start with 192.");
+			}
+		});
 		
-		assertTrue(config.matches(IpAddresses.parse("192.168.1.1")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parse("10.0.0.1")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parse("192.168.1.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parse("10.0.0.1")));
 	}
 }

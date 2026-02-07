@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -38,123 +39,113 @@ import static org.junit.jupiter.api.Assertions.*;
 class PathCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		Path path = Path.of("/tmp/test");
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), path));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, path));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), path));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, path));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as path"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as path"));
 	}
 	
 	@Test
-	void encodeStartWithValidPath() {
+	void encodeWithValidPath() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		Path path = Path.of("/tmp/test");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(File.separator + "tmp" + File.separator + "test"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), path);
+		assertEquals(new JsonPrimitive(File.separator + "tmp" + File.separator + "test"), result);
 	}
 	
 	@Test
-	void encodeStartWithRelativePath() {
+	void encodeWithRelativePath() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		Path path = Path.of("relative/path");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("relative" + File.separator + "path"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), path);
+		assertEquals(new JsonPrimitive("relative" + File.separator + "path"), result);
 	}
 	
 	@Test
-	void encodeStartWithCurrentDirectory() {
+	void encodeWithCurrentDirectory() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		Path path = Path.of(".");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), path);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("."), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), path);
+		assertEquals(new JsonPrimitive("."), result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("/tmp/test")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("/tmp/test")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		
-		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as path"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as path"));
 	}
 	
 	@Test
-	void decodeStartWithValidString() {
+	void decodeWithValidString() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		
-		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/tmp/test"));
-		assertTrue(result.isSuccess());
-		assertEquals(Path.of("/tmp/test"), result.resultOrThrow());
+		Path result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("/tmp/test"));
+		assertEquals(Path.of("/tmp/test"), result);
 	}
 	
 	@Test
-	void decodeStartWithRelativePath() {
+	void decodeWithRelativePath() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		
-		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("relative/path"));
-		assertTrue(result.isSuccess());
-		assertEquals(Path.of("relative/path"), result.resultOrThrow());
+		Path result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("relative/path"));
+		assertEquals(Path.of("relative/path"), result);
 	}
 	
 	@Test
-	void decodeStartWithCurrentDirectory() {
+	void decodeWithCurrentDirectory() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		
-		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("."));
-		assertTrue(result.isSuccess());
-		assertEquals(Path.of("."), result.resultOrThrow());
+		Path result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("."));
+		assertEquals(Path.of("."), result);
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		
-		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
-	void decodeStartWithEmptyString() {
+	void decodeWithEmptyString() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec();
 		
-		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(""));
-		assertTrue(result.isSuccess());
-		assertEquals(Path.of(""), result.resultOrThrow());
+		Path result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(""));
+		assertEquals(Path.of(""), result);
 	}
 	
 	@Test

@@ -20,10 +20,10 @@ package net.luis.utils.io.codec.types.temporal.zoned;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
-import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;
@@ -40,38 +40,34 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedZoneIdCodecTest {
 	
 	@Test
-	void encodeStartWithValidConstrainedValue() {
+	void encodeWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.utc();
 		ZoneId validValue = ZoneOffset.UTC;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), validValue);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), validValue));
 	}
 	
 	@Test
 	void encodeKeyWithValidConstrainedValue() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.utc();
 		
-		Result<String> result = codec.encodeKey(ZoneOffset.UTC);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(ZoneOffset.UTC));
 	}
 	
 	@Test
-	void decodeStartWithValidConstrainedValue() {
+	void decodeWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.utc();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("Z"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("Z")));
 	}
 	
 	@Test
 	void decodeKeyWithValidConstrainedValue() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.available();
 		
-		Result<ZoneId> result = codec.decodeKey("Europe/Berlin");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("Europe/Berlin"));
 	}
 	
 	@Test
@@ -81,24 +77,22 @@ class ConstrainedZoneIdCodecTest {
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ZoneId expected = ZoneId.of("Europe/Berlin");
 		Codec<ZoneId> codec = Codecs.ZONE_ID.equalTo(expected);
 		ZoneId differentValue = ZoneId.of("America/New_York");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), differentValue);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), differentValue));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintViolation() {
+	void decodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ZoneId expected = ZoneId.of("Europe/Berlin");
 		Codec<ZoneId> codec = Codecs.ZONE_ID.equalTo(expected);
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("America/New_York"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("America/New_York")));
 	}
 	
 	@Test
@@ -106,8 +100,7 @@ class ConstrainedZoneIdCodecTest {
 		ZoneId expected = ZoneId.of("Europe/Berlin");
 		Codec<ZoneId> codec = Codecs.ZONE_ID.equalTo(expected);
 		
-		Result<String> result = codec.encodeKey(expected);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(expected));
 	}
 	
 	@Test
@@ -115,28 +108,25 @@ class ConstrainedZoneIdCodecTest {
 		ZoneId expected = ZoneId.of("Europe/Berlin");
 		Codec<ZoneId> codec = Codecs.ZONE_ID.equalTo(expected);
 		
-		Result<ZoneId> result = codec.decodeKey("Europe/Berlin");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("Europe/Berlin"));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ZoneId excluded = ZoneId.of("Europe/Berlin");
 		Codec<ZoneId> codec = Codecs.ZONE_ID.notEqualTo(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintViolation() {
+	void decodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ZoneId excluded = ZoneId.of("Europe/Berlin");
 		Codec<ZoneId> codec = Codecs.ZONE_ID.notEqualTo(excluded);
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin")));
 	}
 	
 	@Test
@@ -144,8 +134,7 @@ class ConstrainedZoneIdCodecTest {
 		ZoneId excluded = ZoneId.of("Europe/Berlin");
 		Codec<ZoneId> codec = Codecs.ZONE_ID.notEqualTo(excluded);
 		
-		Result<String> result = codec.encodeKey(ZoneId.of("America/New_York"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(ZoneId.of("America/New_York")));
 	}
 	
 	@Test
@@ -153,12 +142,11 @@ class ConstrainedZoneIdCodecTest {
 		ZoneId excluded = ZoneId.of("Europe/Berlin");
 		Codec<ZoneId> codec = Codecs.ZONE_ID.notEqualTo(excluded);
 		
-		Result<ZoneId> result = codec.decodeKey("America/New_York");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("America/New_York"));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<ZoneId> allowed = Set.of(
 			ZoneId.of("Europe/Berlin"),
@@ -167,12 +155,11 @@ class ConstrainedZoneIdCodecTest {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.in(allowed);
 		ZoneId notAllowed = ZoneId.of("America/New_York");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notAllowed);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), notAllowed));
 	}
 	
 	@Test
-	void decodeStartInConstraintViolation() {
+	void decodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<ZoneId> allowed = Set.of(
 			ZoneId.of("Europe/Berlin"),
@@ -180,8 +167,7 @@ class ConstrainedZoneIdCodecTest {
 		);
 		Codec<ZoneId> codec = Codecs.ZONE_ID.in(allowed);
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("America/New_York"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("America/New_York")));
 	}
 	
 	@Test
@@ -192,8 +178,7 @@ class ConstrainedZoneIdCodecTest {
 		);
 		Codec<ZoneId> codec = Codecs.ZONE_ID.in(allowed);
 		
-		Result<String> result = codec.encodeKey(ZoneId.of("Europe/Berlin"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(ZoneId.of("Europe/Berlin")));
 	}
 	
 	@Test
@@ -204,12 +189,11 @@ class ConstrainedZoneIdCodecTest {
 		);
 		Codec<ZoneId> codec = Codecs.ZONE_ID.in(allowed);
 		
-		Result<ZoneId> result = codec.decodeKey("Europe/Berlin");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("Europe/Berlin"));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<ZoneId> excluded = Set.of(
 			ZoneId.of("Europe/Berlin"),
@@ -217,12 +201,11 @@ class ConstrainedZoneIdCodecTest {
 		);
 		Codec<ZoneId> codec = Codecs.ZONE_ID.notIn(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), ZoneId.of("Europe/Berlin"));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), ZoneId.of("Europe/Berlin")));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintViolation() {
+	void decodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<ZoneId> excluded = Set.of(
 			ZoneId.of("Europe/Berlin"),
@@ -230,8 +213,7 @@ class ConstrainedZoneIdCodecTest {
 		);
 		Codec<ZoneId> codec = Codecs.ZONE_ID.notIn(excluded);
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin")));
 	}
 	
 	@Test
@@ -242,8 +224,7 @@ class ConstrainedZoneIdCodecTest {
 		);
 		Codec<ZoneId> codec = Codecs.ZONE_ID.notIn(excluded);
 		
-		Result<String> result = codec.encodeKey(ZoneId.of("America/New_York"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(ZoneId.of("America/New_York")));
 	}
 	
 	@Test
@@ -254,217 +235,200 @@ class ConstrainedZoneIdCodecTest {
 		);
 		Codec<ZoneId> codec = Codecs.ZONE_ID.notIn(excluded);
 		
-		Result<ZoneId> result = codec.decodeKey("America/New_York");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("America/New_York"));
 	}
 	
 	@Test
-	void encodeStartRegionBasedConstraintViolation() {
+	void encodeRegionBasedConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.regionBased();
 		ZoneId offsetBased = ZoneOffset.of("+02:00");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), offsetBased);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), offsetBased));
 	}
 	
 	@Test
-	void decodeStartRegionBasedConstraintViolation() {
+	void decodeRegionBasedConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.regionBased();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+02:00"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("+02:00")));
 	}
 	
 	@Test
 	void encodeKeyRegionBasedConstraintValid() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.regionBased();
 		
-		Result<String> result = codec.encodeKey(ZoneId.of("Europe/Berlin"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(ZoneId.of("Europe/Berlin")));
 	}
 	
 	@Test
 	void decodeKeyRegionBasedConstraintValid() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.regionBased();
 		
-		Result<ZoneId> result = codec.decodeKey("Europe/Berlin");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("Europe/Berlin"));
 	}
 	
 	@Test
-	void encodeStartOffsetBasedConstraintViolation() {
+	void encodeOffsetBasedConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.offsetBased();
 		ZoneId regionBased = ZoneId.of("Europe/Berlin");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), regionBased);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), regionBased));
 	}
 	
 	@Test
-	void decodeStartOffsetBasedConstraintViolation() {
+	void decodeOffsetBasedConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.offsetBased();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin")));
 	}
 	
 	@Test
 	void encodeKeyOffsetBasedConstraintValid() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.offsetBased();
 		
-		Result<String> result = codec.encodeKey(ZoneOffset.of("+02:00"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(ZoneOffset.of("+02:00")));
 	}
 	
 	@Test
 	void decodeKeyOffsetBasedConstraintValid() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.offsetBased();
 		
-		Result<ZoneId> result = codec.decodeKey("+02:00");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("+02:00"));
 	}
 	
 	@Test
-	void encodeStartUtcConstraintViolation() {
+	void encodeUtcConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.utc();
 		ZoneId nonUtc = ZoneId.of("Europe/Berlin");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), nonUtc);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), nonUtc));
 	}
 	
 	@Test
-	void decodeStartUtcConstraintViolation() {
+	void decodeUtcConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.utc();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin")));
 	}
 	
 	@Test
 	void encodeKeyUtcConstraintValid() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.utc();
 		
-		Result<String> result = codec.encodeKey(ZoneOffset.UTC);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(ZoneOffset.UTC));
 	}
 	
 	@Test
 	void decodeKeyUtcConstraintValid() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.utc();
 		
-		Result<ZoneId> result = codec.decodeKey("Z");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("Z"));
 	}
 	
 	@Test
-	void encodeStartAvailableConstraintValid() {
+	void encodeAvailableConstraintValid() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.available();
 		ZoneId availableZone = ZoneId.of("Europe/Berlin");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), availableZone);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), availableZone));
 	}
 	
 	@Test
-	void decodeStartAvailableConstraintValid() {
+	void decodeAvailableConstraintValid() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.available();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin")));
 	}
 	
 	@Test
 	void encodeKeyAvailableConstraintValid() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.available();
 		
-		Result<String> result = codec.encodeKey(ZoneId.of("Europe/Berlin"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(ZoneId.of("Europe/Berlin")));
 	}
 	
 	@Test
 	void decodeKeyAvailableConstraintValid() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.available();
 		
-		Result<ZoneId> result = codec.decodeKey("Europe/Berlin");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("Europe/Berlin"));
 	}
 	
 	@Test
-	void encodeStartRegionConstraintViolation() {
+	void encodeRegionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.region(builder -> builder.startsWith("Europe/"));
 		ZoneId americanZone = ZoneId.of("America/New_York");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), americanZone);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), americanZone));
 	}
 	
 	@Test
-	void decodeStartRegionConstraintViolation() {
+	void decodeRegionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = Codecs.ZONE_ID.region(builder -> builder.startsWith("Europe/"));
-
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("America/New_York"));
-		assertTrue(result.isError());
+		
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("America/New_York")));
 	}
 	
 	@Test
 	void encodeKeyRegionConstraintValid() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.region(builder -> builder.startsWith("Europe/"));
-
-		Result<String> result = codec.encodeKey(ZoneId.of("Europe/Berlin"));
-		assertTrue(result.isSuccess());
+		
+		assertDoesNotThrow(() -> codec.encodeKey(ZoneId.of("Europe/Berlin")));
 	}
 	
 	@Test
 	void decodeKeyRegionConstraintValid() {
 		Codec<ZoneId> codec = Codecs.ZONE_ID.region(builder -> builder.startsWith("Europe/"));
-
-		Result<ZoneId> result = codec.decodeKey("Europe/Berlin");
-		assertTrue(result.isSuccess());
+		
+		assertDoesNotThrow(() -> codec.decodeKey("Europe/Berlin"));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneId> codec = Codecs.ZONE_ID.custom(value -> value.getId().contains("Europe") ? Result.success(null) : Result.error("Zone ID must be in Europe"));
+		Codec<ZoneId> codec = Codecs.ZONE_ID.custom(value -> {
+			if (!(value.getId().contains("Europe"))) throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Zone ID must be in Europe");
+		});
 		ZoneId americanZone = ZoneId.of("America/New_York");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), americanZone);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), americanZone));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintViolation() {
+	void decodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<ZoneId> codec = Codecs.ZONE_ID.custom(value -> value.getId().contains("Europe") ? Result.success(null) : Result.error("Zone ID must be in Europe"));
+		Codec<ZoneId> codec = Codecs.ZONE_ID.custom(value -> {
+			if (!(value.getId().contains("Europe"))) throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Zone ID must be in Europe");
+		});
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("America/New_York"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("America/New_York")));
 	}
 	
 	@Test
 	void encodeKeyCustomConstraintValid() {
-		Codec<ZoneId> codec = Codecs.ZONE_ID.custom(value -> value.getId().contains("Europe") ? Result.success(null) : Result.error("Zone ID must be in Europe"));
+		Codec<ZoneId> codec = Codecs.ZONE_ID.custom(value -> {
+			if (!(value.getId().contains("Europe"))) throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Zone ID must be in Europe");
+		});
 		
-		Result<String> result = codec.encodeKey(ZoneId.of("Europe/Berlin"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(ZoneId.of("Europe/Berlin")));
 	}
 	
 	@Test
 	void decodeKeyCustomConstraintValid() {
-		Codec<ZoneId> codec = Codecs.ZONE_ID.custom(value -> value.getId().contains("Europe") ? Result.success(null) : Result.error("Zone ID must be in Europe"));
+		Codec<ZoneId> codec = Codecs.ZONE_ID.custom(value -> {
+			if (!(value.getId().contains("Europe"))) throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Zone ID must be in Europe");
+		});
 		
-		Result<ZoneId> result = codec.decodeKey("Europe/Berlin");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("Europe/Berlin"));
 	}
 }

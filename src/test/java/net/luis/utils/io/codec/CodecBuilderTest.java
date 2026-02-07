@@ -41,7 +41,7 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void autoMapCodecWithValidRecord() {
+	void autoMapCodecWithValidRecord() throws Exception {
 		record SimpleRecord(String name, int age) {}
 		
 		Codec<SimpleRecord> codec = CodecBuilder.of(SimpleRecord.class);
@@ -60,7 +60,7 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void autoMapCodecWithEnum() {
+	void autoMapCodecWithEnum() throws Exception {
 		enum TestEnum {FIRST, SECOND, THIRD}
 		
 		Codec<TestEnum> codec = CodecBuilder.of(TestEnum.class);
@@ -74,7 +74,7 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void ofWithSingleCodec() {
+	void ofWithSingleCodec() throws Exception {
 		FieldCodec<String, TestObject> nameCodec = STRING.fieldOf("name", TestObject::name);
 		
 		assertThrows(NullPointerException.class, () -> CodecBuilder.of((FieldCodec<String, TestObject>) null));
@@ -91,7 +91,7 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void ofWithTwoCodecs() {
+	void ofWithTwoCodecs() throws Exception {
 		FieldCodec<String, TestObjectWithAge> nameCodec = STRING.fieldOf("name", TestObjectWithAge::name);
 		FieldCodec<Integer, TestObjectWithAge> ageCodec = INTEGER.fieldOf("age", TestObjectWithAge::age);
 		
@@ -111,7 +111,7 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void ofWithThreeCodecs() {
+	void ofWithThreeCodecs() throws Exception {
 		FieldCodec<String, TestObjectWithAgeAndHeight> nameCodec = STRING.fieldOf("name", TestObjectWithAgeAndHeight::name);
 		FieldCodec<Integer, TestObjectWithAgeAndHeight> ageCodec = INTEGER.fieldOf("age", TestObjectWithAgeAndHeight::age);
 		FieldCodec<Double, TestObjectWithAgeAndHeight> heightCodec = DOUBLE.fieldOf("height", TestObjectWithAgeAndHeight::height);
@@ -135,7 +135,7 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void ofWithOptionalField() {
+	void ofWithOptionalField() throws Exception {
 		FieldCodec<Optional<Integer>, TestObjectWithOptional> ageCodec = INTEGER.optional().fieldOf("age", TestObjectWithOptional::age);
 		
 		Codec<TestObjectWithOptional> codec = CodecBuilder.of(ageCodec).create(TestObjectWithOptional::new);
@@ -152,7 +152,7 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void ofSupportsUpToSixteenCodecs() {
+	void ofSupportsUpToSixteenCodecs() throws Exception {
 		FieldCodec<String, MultiFieldObject> codec1 = STRING.fieldOf("field1", obj -> "field1");
 		FieldCodec<String, MultiFieldObject> codec2 = STRING.fieldOf("field2", obj -> "field2");
 		FieldCodec<String, MultiFieldObject> codec3 = STRING.fieldOf("field3", obj -> "field3");

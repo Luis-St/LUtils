@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,73 +36,67 @@ import static org.junit.jupiter.api.Assertions.*;
 class LongCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		Long value = 9999999999L;
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), value));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, value));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), value));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, value));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as long"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as long"));
 	}
 	
 	@Test
-	void encodeStartWithPositiveValue() {
+	void encodeWithPositiveValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 9999999999L);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(9999999999L), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), 9999999999L);
+		assertEquals(new JsonPrimitive(9999999999L), result);
 	}
 	
 	@Test
-	void encodeStartWithNegativeValue() {
+	void encodeWithNegativeValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), -9999999999L);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(-9999999999L), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), -9999999999L);
+		assertEquals(new JsonPrimitive(-9999999999L), result);
 	}
 	
 	@Test
-	void encodeStartWithZero() {
+	void encodeWithZero() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0L);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(0L), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), 0L);
+		assertEquals(new JsonPrimitive(0L), result);
 	}
 	
 	@Test
-	void encodeStartWithMaxValue() {
+	void encodeWithMaxValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Long.MAX_VALUE);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Long.MAX_VALUE), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Long.MAX_VALUE);
+		assertEquals(new JsonPrimitive(Long.MAX_VALUE), result);
 	}
 	
 	@Test
-	void encodeStartWithMinValue() {
+	void encodeWithMinValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Long.MIN_VALUE);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Long.MIN_VALUE), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Long.MIN_VALUE);
+		assertEquals(new JsonPrimitive(Long.MIN_VALUE), result);
 	}
 	
 	@Test
@@ -113,90 +108,82 @@ class LongCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithValue() {
+	void encodeKeyWithValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<String> result = codec.encodeKey(9999999999L);
-		assertTrue(result.isSuccess());
-		assertEquals("9999999999", result.resultOrThrow());
+		String result = codec.encodeKey(9999999999L);
+		assertEquals("9999999999", result);
 	}
 	
 	@Test
-	void encodeKeyWithNegativeValue() {
+	void encodeKeyWithNegativeValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<String> result = codec.encodeKey(-9999999999L);
-		assertTrue(result.isSuccess());
-		assertEquals("-9999999999", result.resultOrThrow());
+		String result = codec.encodeKey(-9999999999L);
+		assertEquals("-9999999999", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive(9999999999L)));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive(9999999999L)));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as long"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as long"));
 	}
 	
 	@Test
-	void decodeStartWithValidValue() {
+	void decodeWithValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(9999999999L));
-		assertTrue(result.isSuccess());
-		assertEquals(9999999999L, result.resultOrThrow());
+		Long result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(9999999999L));
+		assertEquals(9999999999L, result);
 	}
 	
 	@Test
-	void decodeStartWithNegativeValue() {
+	void decodeWithNegativeValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-9999999999L));
-		assertTrue(result.isSuccess());
-		assertEquals(-9999999999L, result.resultOrThrow());
+		Long result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(-9999999999L));
+		assertEquals(-9999999999L, result);
 	}
 	
 	@Test
-	void decodeStartWithMaxValue() {
+	void decodeWithMaxValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Long.MAX_VALUE));
-		assertTrue(result.isSuccess());
-		assertEquals(Long.MAX_VALUE, result.resultOrThrow());
+		Long result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(Long.MAX_VALUE));
+		assertEquals(Long.MAX_VALUE, result);
 	}
 	
 	@Test
-	void decodeStartWithMinValue() {
+	void decodeWithMinValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Long.MIN_VALUE));
-		assertTrue(result.isSuccess());
-		assertEquals(Long.MIN_VALUE, result.resultOrThrow());
+		Long result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(Long.MIN_VALUE));
+		assertEquals(Long.MIN_VALUE, result);
 	}
 	
 	@Test
-	void decodeStartWithNonNumber() {
+	void decodeWithNonNumber() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not a number"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not a number")));
 	}
 	
 	@Test
@@ -209,23 +196,21 @@ class LongCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidValue() {
+	void decodeKeyWithValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeKey("9999999999");
-		assertTrue(result.isSuccess());
-		assertEquals(9999999999L, result.resultOrThrow());
+		Long result = codec.decodeKey("9999999999");
+		assertEquals(9999999999L, result);
 	}
 	
 	@Test
-	void decodeKeyWithNegativeValue() {
+	void decodeKeyWithNegativeValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeKey("-9999999999");
-		assertTrue(result.isSuccess());
-		assertEquals(-9999999999L, result.resultOrThrow());
+		Long result = codec.decodeKey("-9999999999");
+		assertEquals(-9999999999L, result);
 	}
 	
 	@Test
@@ -233,9 +218,8 @@ class LongCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeKey("invalid");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as long"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("invalid"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'invalid' as long"));
 	}
 	
 	@Test
@@ -243,9 +227,8 @@ class LongCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeKey("99999999999999999999999999999");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key '99999999999999999999999999999' as long"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("99999999999999999999999999999"));
+		assertTrue(exception.getMessage().contains("Unable to decode key '99999999999999999999999999999' as long"));
 	}
 	
 	@Test

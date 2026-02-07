@@ -18,10 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.io.QueryConstraintConfig;
-import net.luis.utils.util.result.Result;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -127,7 +126,7 @@ class QueryConstraintBuilderTest {
 	@Test
 	void customReturnsBuilder() {
 		QueryConstraintBuilder builder = new QueryConstraintBuilder();
-		Constraint<Map<String, List<String>>> constraint = value -> Result.success(null);
+		Constraint<Map<String, List<String>>> constraint = value -> {};
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
 	}

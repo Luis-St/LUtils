@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -37,78 +38,72 @@ import static org.junit.jupiter.api.Assertions.*;
 class BigDecimalCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		BigDecimal value = new BigDecimal("123.456");
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), value));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, value));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), value));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, value));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as big decimal"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as big decimal"));
 	}
 	
 	@Test
-	void encodeStartWithPositiveValue() {
+	void encodeWithPositiveValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		BigDecimal value = new BigDecimal("123.456");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("123.456"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), value);
+		assertEquals(new JsonPrimitive("123.456"), result);
 	}
 	
 	@Test
-	void encodeStartWithNegativeValue() {
+	void encodeWithNegativeValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		BigDecimal value = new BigDecimal("-987.654");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("-987.654"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), value);
+		assertEquals(new JsonPrimitive("-987.654"), result);
 	}
 	
 	@Test
-	void encodeStartWithZero() {
+	void encodeWithZero() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		BigDecimal value = BigDecimal.ZERO;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("0"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), value);
+		assertEquals(new JsonPrimitive("0"), result);
 	}
 	
 	@Test
-	void encodeStartWithVeryLargeValue() {
+	void encodeWithVeryLargeValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		BigDecimal value = new BigDecimal("123456789012345678901234567890.123456789012345678901234567890");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("123456789012345678901234567890.123456789012345678901234567890"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), value);
+		assertEquals(new JsonPrimitive("123456789012345678901234567890.123456789012345678901234567890"), result);
 	}
 	
 	@Test
-	void encodeStartWithScientificNotation() {
+	void encodeWithScientificNotation() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		BigDecimal value = new BigDecimal("1.23E+10");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("12300000000"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), value);
+		assertEquals(new JsonPrimitive("12300000000"), result);
 	}
 	
 	@Test
@@ -120,112 +115,102 @@ class BigDecimalCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithValue() {
+	void encodeKeyWithValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		BigDecimal value = new BigDecimal("123.456");
 		
-		Result<String> result = codec.encodeKey(value);
-		assertTrue(result.isSuccess());
-		assertEquals("123.456", result.resultOrThrow());
+		String result = codec.encodeKey(value);
+		assertEquals("123.456", result);
 	}
 	
 	@Test
-	void encodeKeyWithNegativeValue() {
+	void encodeKeyWithNegativeValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		BigDecimal value = new BigDecimal("-987.654");
 		
-		Result<String> result = codec.encodeKey(value);
-		assertTrue(result.isSuccess());
-		assertEquals("-987.654", result.resultOrThrow());
+		String result = codec.encodeKey(value);
+		assertEquals("-987.654", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("123.456")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("123.456")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as big decimal"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as big decimal"));
 	}
 	
 	@Test
-	void decodeStartWithValidValue() {
+	void decodeWithValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("123.456"));
-		assertTrue(result.isSuccess());
-		assertEquals(new BigDecimal("123.456"), result.resultOrThrow());
+		BigDecimal result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("123.456"));
+		assertEquals(new BigDecimal("123.456"), result);
 	}
 	
 	@Test
-	void decodeStartWithNegativeValue() {
+	void decodeWithNegativeValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-987.654"));
-		assertTrue(result.isSuccess());
-		assertEquals(new BigDecimal("-987.654"), result.resultOrThrow());
+		BigDecimal result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("-987.654"));
+		assertEquals(new BigDecimal("-987.654"), result);
 	}
 	
 	@Test
-	void decodeStartWithZero() {
+	void decodeWithZero() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
-		assertTrue(result.isSuccess());
-		assertEquals(BigDecimal.ZERO, result.resultOrThrow());
+		BigDecimal result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
+		assertEquals(BigDecimal.ZERO, result);
 	}
 	
 	@Test
-	void decodeStartWithVeryLargeValue() {
+	void decodeWithVeryLargeValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("123456789012345678901234567890.123456789012345678901234567890"));
-		assertTrue(result.isSuccess());
-		assertEquals(new BigDecimal("123456789012345678901234567890.123456789012345678901234567890"), result.resultOrThrow());
+		BigDecimal result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("123456789012345678901234567890.123456789012345678901234567890"));
+		assertEquals(new BigDecimal("123456789012345678901234567890.123456789012345678901234567890"), result);
 	}
 	
 	@Test
-	void decodeStartWithScientificNotation() {
+	void decodeWithScientificNotation() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("1.23E+10"));
-		assertTrue(result.isSuccess());
-		assertEquals(new BigDecimal("1.23E+10"), result.resultOrThrow());
+		BigDecimal result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("1.23E+10"));
+		assertEquals(new BigDecimal("1.23E+10"), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidFormat() {
+	void decodeWithInvalidFormat() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode big decimal"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number")));
+		assertTrue(exception.getMessage().contains("Unable to decode big decimal"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<BigDecimal> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -237,23 +222,21 @@ class BigDecimalCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidValue() {
+	void decodeKeyWithValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<BigDecimal> result = codec.decodeKey("123.456");
-		assertTrue(result.isSuccess());
-		assertEquals(new BigDecimal("123.456"), result.resultOrThrow());
+		BigDecimal result = codec.decodeKey("123.456");
+		assertEquals(new BigDecimal("123.456"), result);
 	}
 	
 	@Test
-	void decodeKeyWithNegativeValue() {
+	void decodeKeyWithNegativeValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<BigDecimal> result = codec.decodeKey("-987.654");
-		assertTrue(result.isSuccess());
-		assertEquals(new BigDecimal("-987.654"), result.resultOrThrow());
+		BigDecimal result = codec.decodeKey("-987.654");
+		assertEquals(new BigDecimal("-987.654"), result);
 	}
 	
 	@Test
@@ -261,9 +244,8 @@ class BigDecimalCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigDecimal> codec = new BigDecimalCodec();
 		
-		Result<BigDecimal> result = codec.decodeKey("invalid");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as big decimal"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("invalid"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'invalid' as big decimal"));
 	}
 	
 	@Test

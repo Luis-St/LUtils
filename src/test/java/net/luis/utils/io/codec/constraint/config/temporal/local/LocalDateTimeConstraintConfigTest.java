@@ -20,8 +20,8 @@ package net.luis.utils.io.codec.constraint.config.temporal.local;
 
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.*;
@@ -251,20 +251,20 @@ class LocalDateTimeConstraintConfigTest {
 		assertTrue(config.millisecond().isEmpty());
 		assertTrue(config.nanosecond().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(LocalDateTime.now()).isSuccess());
+		assertDoesNotThrow(() -> config.validate(LocalDateTime.now()));
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(LocalDateTimeConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
-		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withPast();
+		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withAfter(LocalDateTime.now());
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		LocalDateTime dateTime = LocalDateTime.now();
@@ -477,109 +477,111 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withCustom(dt -> dt.getYear() > 2000 ? Result.success() : Result.error("Year must be after 2000"));
+		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withCustom(dt -> {
+			if (dt.getYear() <= 2000) throw new ConstraintViolateException("Year must be after 2000");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		LocalDateTime dateTime = LocalDateTime.of(2024, 6, 15, 10, 30, 0);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withEqualTo(dateTime);
-		assertTrue(config.matches(dateTime).isSuccess());
-		assertTrue(config.matches(dateTime.plusSeconds(1)).isError());
+		assertDoesNotThrow(() -> config.validate(dateTime));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(dateTime.plusSeconds(1)));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		LocalDateTime dateTime = LocalDateTime.of(2024, 6, 15, 10, 30, 0);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withNotEqualTo(dateTime);
-		assertTrue(config.matches(dateTime.plusSeconds(1)).isSuccess());
-		assertTrue(config.matches(dateTime).isError());
+		assertDoesNotThrow(() -> config.validate(dateTime.plusSeconds(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(dateTime));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		LocalDateTime dateTime1 = LocalDateTime.of(2024, 6, 15, 10, 30, 0);
 		LocalDateTime dateTime2 = LocalDateTime.of(2024, 6, 16, 10, 30, 0);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withIn(List.of(dateTime1, dateTime2));
-		assertTrue(config.matches(dateTime1).isSuccess());
-		assertTrue(config.matches(dateTime2).isSuccess());
-		assertTrue(config.matches(LocalDateTime.of(2024, 6, 17, 10, 30, 0)).isError());
+		assertDoesNotThrow(() -> config.validate(dateTime1));
+		assertDoesNotThrow(() -> config.validate(dateTime2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(LocalDateTime.of(2024, 6, 17, 10, 30, 0)));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		LocalDateTime dateTime1 = LocalDateTime.of(2024, 6, 15, 10, 30, 0);
 		LocalDateTime dateTime2 = LocalDateTime.of(2024, 6, 16, 10, 30, 0);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withNotIn(List.of(dateTime1, dateTime2));
-		assertTrue(config.matches(LocalDateTime.of(2024, 6, 17, 10, 30, 0)).isSuccess());
-		assertTrue(config.matches(dateTime1).isError());
+		assertDoesNotThrow(() -> config.validate(LocalDateTime.of(2024, 6, 17, 10, 30, 0)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(dateTime1));
 	}
 	
 	@Test
-	void matchesWithAfter() {
+	void validateWithAfter() {
 		LocalDateTime threshold = LocalDateTime.of(2024, 6, 15, 10, 30, 0);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withAfter(threshold);
-		assertTrue(config.matches(threshold.plusSeconds(1)).isSuccess());
-		assertTrue(config.matches(threshold).isError());
-		assertTrue(config.matches(threshold.minusSeconds(1)).isError());
+		assertDoesNotThrow(() -> config.validate(threshold.plusSeconds(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold.minusSeconds(1)));
 	}
 	
 	@Test
-	void matchesWithAfterOrEqual() {
+	void validateWithAfterOrEqual() {
 		LocalDateTime threshold = LocalDateTime.of(2024, 6, 15, 10, 30, 0);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withAfterOrEqual(threshold);
-		assertTrue(config.matches(threshold).isSuccess());
-		assertTrue(config.matches(threshold.plusSeconds(1)).isSuccess());
-		assertTrue(config.matches(threshold.minusSeconds(1)).isError());
+		assertDoesNotThrow(() -> config.validate(threshold));
+		assertDoesNotThrow(() -> config.validate(threshold.plusSeconds(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold.minusSeconds(1)));
 	}
 	
 	@Test
-	void matchesWithBefore() {
+	void validateWithBefore() {
 		LocalDateTime threshold = LocalDateTime.of(2024, 6, 15, 10, 30, 0);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withBefore(threshold);
-		assertTrue(config.matches(threshold.minusSeconds(1)).isSuccess());
-		assertTrue(config.matches(threshold).isError());
-		assertTrue(config.matches(threshold.plusSeconds(1)).isError());
+		assertDoesNotThrow(() -> config.validate(threshold.minusSeconds(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold.plusSeconds(1)));
 	}
 	
 	@Test
-	void matchesWithBeforeOrEqual() {
+	void validateWithBeforeOrEqual() {
 		LocalDateTime threshold = LocalDateTime.of(2024, 6, 15, 10, 30, 0);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withBeforeOrEqual(threshold);
-		assertTrue(config.matches(threshold).isSuccess());
-		assertTrue(config.matches(threshold.minusSeconds(1)).isSuccess());
-		assertTrue(config.matches(threshold.plusSeconds(1)).isError());
+		assertDoesNotThrow(() -> config.validate(threshold));
+		assertDoesNotThrow(() -> config.validate(threshold.minusSeconds(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold.plusSeconds(1)));
 	}
 	
 	@Test
-	void matchesWithDayOfWeek() {
+	void validateWithDayOfWeek() {
 		EnumConstraintConfig<DayOfWeek> dayOfWeekConfig = EnumConstraintConfig.<DayOfWeek>unconstrained().withEqualTo(DayOfWeek.MONDAY);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withDayOfWeek(dayOfWeekConfig);
-		assertTrue(config.matches(LocalDateTime.of(2024, 6, 17, 10, 0, 0)).isSuccess()); // Monday
-		assertTrue(config.matches(LocalDateTime.of(2024, 6, 18, 10, 0, 0)).isError()); // Tuesday
+		assertDoesNotThrow(() -> config.validate(LocalDateTime.of(2024, 6, 17, 10, 0, 0))); // Monday
+		assertThrows(ConstraintViolateException.class, () -> config.validate(LocalDateTime.of(2024, 6, 18, 10, 0, 0))); // Tuesday
 	}
 	
 	@Test
-	void matchesWithMonth() {
+	void validateWithMonth() {
 		EnumConstraintConfig<Month> monthConfig = EnumConstraintConfig.<Month>unconstrained().withEqualTo(Month.JANUARY);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withMonth(monthConfig);
-		assertTrue(config.matches(LocalDateTime.of(2024, 1, 15, 10, 0, 0)).isSuccess());
-		assertTrue(config.matches(LocalDateTime.of(2024, 6, 15, 10, 0, 0)).isError());
+		assertDoesNotThrow(() -> config.validate(LocalDateTime.of(2024, 1, 15, 10, 0, 0)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(LocalDateTime.of(2024, 6, 15, 10, 0, 0)));
 	}
 	
 	@Test
-	void matchesWithHour() {
+	void validateWithHour() {
 		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
-		assertTrue(config.matches(LocalDateTime.of(2024, 6, 15, 10, 0, 0)).isSuccess());
-		assertTrue(config.matches(LocalDateTime.of(2024, 6, 15, 8, 0, 0)).isError());
-		assertTrue(config.matches(LocalDateTime.of(2024, 6, 15, 18, 0, 0)).isError());
+		assertDoesNotThrow(() -> config.validate(LocalDateTime.of(2024, 6, 15, 10, 0, 0)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(LocalDateTime.of(2024, 6, 15, 8, 0, 0)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(LocalDateTime.of(2024, 6, 15, 18, 0, 0)));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

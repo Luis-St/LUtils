@@ -20,11 +20,11 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.io.network.address.IpAddresses;
 import net.luis.utils.io.network.address.IpNetwork;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -90,18 +90,18 @@ class IpNetworkConstraintConfigTest {
 		assertTrue(config.stringConstraint().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(IpNetworkConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withIpVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4));
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		IpNetwork<?, ?> value = IpAddresses.parseNetwork("192.168.0.0/16");
@@ -197,7 +197,7 @@ class IpNetworkConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -208,131 +208,133 @@ class IpNetworkConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() {
+	void validateUnconstrained() {
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("10.0.0.0/8")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("2001:db8::/32")).isSuccess());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("10.0.0.0/8")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("2001:db8::/32")));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> IpNetworkConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> IpNetworkConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() {
+	void validateEqualTo() {
 		IpNetwork<?, ?> expected = IpAddresses.parseNetwork("192.168.0.0/16");
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withEqualTo(expected);
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/24")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("192.168.0.0/24")));
 	}
 	
 	@Test
-	void matchesNotEqualTo() {
+	void validateNotEqualTo() {
 		IpNetwork<?, ?> excluded = IpAddresses.parseNetwork("192.168.0.0/16");
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withNotEqualTo(excluded);
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("10.0.0.0/8")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("10.0.0.0/8")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
 	}
 	
 	@Test
-	void matchesIn() {
+	void validateIn() {
 		IpNetwork<?, ?> net1 = IpAddresses.parseNetwork("192.168.0.0/16");
 		IpNetwork<?, ?> net2 = IpAddresses.parseNetwork("10.0.0.0/8");
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withIn(List.of(net1, net2));
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("10.0.0.0/8")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("172.16.0.0/12")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("10.0.0.0/8")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("172.16.0.0/12")));
 	}
 	
 	@Test
-	void matchesNotIn() {
+	void validateNotIn() {
 		IpNetwork<?, ?> excluded = IpAddresses.parseNetwork("192.168.0.0/16");
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withNotIn(List.of(excluded));
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("10.0.0.0/8")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("10.0.0.0/8")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
 	}
 	
 	@Test
-	void matchesIpVersionIpv4() {
+	void validateIpVersionIpv4() {
 		EnumConstraintConfig<IpVersion> versionConfig = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4);
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withIpVersion(versionConfig);
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("2001:db8::/32")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("2001:db8::/32")));
 	}
 	
 	@Test
-	void matchesIpVersionIpv6() {
+	void validateIpVersionIpv6() {
 		EnumConstraintConfig<IpVersion> versionConfig = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6);
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withIpVersion(versionConfig);
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("2001:db8::/32")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("2001:db8::/32")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
 	}
 	
 	@Test
-	void matchesPrefixLengthMin() {
+	void validatePrefixLengthMin() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(16);
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withPrefixLength(lengthConfig);
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.1.0/24")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("10.0.0.0/8")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("192.168.1.0/24")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("10.0.0.0/8")));
 	}
 	
 	@Test
-	void matchesPrefixLengthMax() {
+	void validatePrefixLengthMax() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMaxLength(16);
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withPrefixLength(lengthConfig);
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("10.0.0.0/8")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.1.0/24")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("10.0.0.0/8")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("192.168.1.0/24")));
 	}
 	
 	@Test
-	void matchesPrefixLengthExact() {
+	void validatePrefixLengthExact() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withExactLength(16);
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withPrefixLength(lengthConfig);
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("10.0.0.0/8")).isError());
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.1.0/24")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("10.0.0.0/8")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("192.168.1.0/24")));
 	}
 	
 	@Test
-	void matchesPrefixLengthBetween() {
+	void validatePrefixLengthBetween() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(8).withMaxLength(16);
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withPrefixLength(lengthConfig);
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("10.0.0.0/8")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.1.0/24")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("10.0.0.0/8")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("192.168.1.0/24")));
 	}
 	
 	@Test
-	void matchesCanonical() {
+	void validateCanonical() {
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withCanonical();
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("10.0.0.0/8")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("2001:db8::/32")).isSuccess());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("10.0.0.0/8")));
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("2001:db8::/32")));
 	}
 	
 	@Test
-	void matchesCustom() {
+	void validateCustom() {
 		IpNetworkConstraintConfig config = IpNetworkConstraintConfig.UNCONSTRAINED.withCustom(
-			value -> value.prefixLength() == 16 ? Result.success() : Result.error("Prefix length must be 16")
+			value -> {
+				if (value.prefixLength() != 16) throw new ConstraintViolateException("Prefix length must be 16");
+			}
 		);
 		
-		assertTrue(config.matches(IpAddresses.parseNetwork("192.168.0.0/16")).isSuccess());
-		assertTrue(config.matches(IpAddresses.parseNetwork("10.0.0.0/8")).isError());
+		assertDoesNotThrow(() -> config.validate(IpAddresses.parseNetwork("192.168.0.0/16")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(IpAddresses.parseNetwork("10.0.0.0/8")));
 	}
 }

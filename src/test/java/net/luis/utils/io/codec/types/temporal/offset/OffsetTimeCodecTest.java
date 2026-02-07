@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.temporal.offset;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetTime;
@@ -37,67 +38,62 @@ import static org.junit.jupiter.api.Assertions.*;
 class OffsetTimeCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		OffsetTime time = OffsetTime.now();
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), time));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, time));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), time));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, time));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as offset time"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as offset time"));
 	}
 	
 	@Test
-	void encodeStartWithValidTime() {
+	void encodeWithValidTime() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		OffsetTime time = OffsetTime.parse("10:30:00+01:00");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), time);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("10:30+01:00"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), time);
+		assertEquals(new JsonPrimitive("10:30+01:00"), result);
 	}
 	
 	@Test
-	void encodeStartWithUTCOffset() {
+	void encodeWithUTCOffset() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		OffsetTime time = OffsetTime.parse("10:30:00Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), time);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("10:30Z"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), time);
+		assertEquals(new JsonPrimitive("10:30Z"), result);
 	}
 	
 	@Test
-	void encodeStartWithNegativeOffset() {
+	void encodeWithNegativeOffset() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		OffsetTime time = OffsetTime.parse("10:30:00-05:00");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), time);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("10:30-05:00"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), time);
+		assertEquals(new JsonPrimitive("10:30-05:00"), result);
 	}
 	
 	@Test
-	void encodeStartWithNanoseconds() {
+	void encodeWithNanoseconds() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		OffsetTime time = OffsetTime.parse("10:30:00.123456789+02:00");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), time);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("10:30:00.123456789+02:00"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), time);
+		assertEquals(new JsonPrimitive("10:30:00.123456789+02:00"), result);
 	}
 	
 	@Test
@@ -108,91 +104,83 @@ class OffsetTimeCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithValidTime() {
+	void encodeKeyWithValidTime() throws EncoderException {
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		OffsetTime time = OffsetTime.parse("10:30:00+01:00");
 		
-		Result<String> result = codec.encodeKey(time);
-		assertTrue(result.isSuccess());
-		assertEquals("10:30+01:00", result.resultOrThrow());
+		String result = codec.encodeKey(time);
+		assertEquals("10:30+01:00", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("10:30:00+01:00")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("10:30:00+01:00")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		
-		Result<OffsetTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as offset time"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as offset time"));
 	}
 	
 	@Test
-	void decodeStartWithValidString() {
+	void decodeWithValidString() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		
-		Result<OffsetTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10:30:00+01:00"));
-		assertTrue(result.isSuccess());
-		assertEquals(OffsetTime.parse("10:30:00+01:00"), result.resultOrThrow());
+		OffsetTime result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("10:30:00+01:00"));
+		assertEquals(OffsetTime.parse("10:30:00+01:00"), result);
 	}
 	
 	@Test
-	void decodeStartWithUTCOffset() {
+	void decodeWithUTCOffset() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		
-		Result<OffsetTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10:30:00Z"));
-		assertTrue(result.isSuccess());
-		assertEquals(OffsetTime.parse("10:30:00Z"), result.resultOrThrow());
+		OffsetTime result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("10:30:00Z"));
+		assertEquals(OffsetTime.parse("10:30:00Z"), result);
 	}
 	
 	@Test
-	void decodeStartWithNegativeOffset() {
+	void decodeWithNegativeOffset() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		
-		Result<OffsetTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10:30:00-05:00"));
-		assertTrue(result.isSuccess());
-		assertEquals(OffsetTime.parse("10:30:00-05:00"), result.resultOrThrow());
+		OffsetTime result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("10:30:00-05:00"));
+		assertEquals(OffsetTime.parse("10:30:00-05:00"), result);
 	}
 	
 	@Test
-	void decodeStartWithNanoseconds() {
+	void decodeWithNanoseconds() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		
-		Result<OffsetTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10:30:00.123456789+02:00"));
-		assertTrue(result.isSuccess());
-		assertEquals(OffsetTime.parse("10:30:00.123456789+02:00"), result.resultOrThrow());
+		OffsetTime result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("10:30:00.123456789+02:00"));
+		assertEquals(OffsetTime.parse("10:30:00.123456789+02:00"), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidFormat() {
+	void decodeWithInvalidFormat() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		
-		Result<OffsetTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-time"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode offset time"));
-		assertTrue(result.errorOrThrow().contains("Unable to parse offset time"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-time")));
+		assertTrue(exception.getMessage().contains("Unable to decode offset time"));
+		assertTrue(exception.getMessage().contains("Unable to parse offset time"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		
-		Result<OffsetTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -203,21 +191,19 @@ class OffsetTimeCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidString() {
+	void decodeKeyWithValidString() throws DecoderException {
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		
-		Result<OffsetTime> result = codec.decodeKey("10:30:00+01:00");
-		assertTrue(result.isSuccess());
-		assertEquals(OffsetTime.parse("10:30:00+01:00"), result.resultOrThrow());
+		OffsetTime result = codec.decodeKey("10:30:00+01:00");
+		assertEquals(OffsetTime.parse("10:30:00+01:00"), result);
 	}
 	
 	@Test
 	void decodeKeyWithInvalidString() {
 		Codec<OffsetTime> codec = new OffsetTimeCodec();
 		
-		Result<OffsetTime> result = codec.decodeKey("invalid-time");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid-time' as offset time"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("invalid-time"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'invalid-time' as offset time"));
 	}
 	
 	@Test

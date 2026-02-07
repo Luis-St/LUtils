@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -40,7 +41,7 @@ class UnionCodecTest {
 	@Test
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new UnionCodec(null, Set.of("a", "b")));
-		assertThrows(NullPointerException.class, () -> new UnionCodec(STRING, (Collection<String>) null));
+		assertThrows(NullPointerException.class, () -> new UnionCodec(STRING, null));
 		assertThrows(IllegalArgumentException.class, () -> new UnionCodec(STRING, Collections.emptySet()));
 		assertThrows(IllegalArgumentException.class, () -> new UnionCodec(STRING, Collections.emptyList()));
 		assertDoesNotThrow(() -> new UnionCodec(STRING, Set.of("a", "b", "c")));
@@ -48,228 +49,179 @@ class UnionCodecTest {
 	}
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), "pending"));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, "pending"));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), "pending"));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, "pending"));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null value as union"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null value as union"));
 	}
 	
 	@Test
-	void encodeStartWithValidValue() {
+	void encodeWithValidValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), "pending");
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("pending"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), "pending");
+		assertEquals(new JsonPrimitive("pending"), result);
 	}
 	
 	@Test
-	void encodeStartWithAllValidValues() {
+	void encodeWithAllValidValues() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
-		Result<JsonElement> result1 = codec.encodeStart(typeProvider, typeProvider.empty(), "pending");
-		assertTrue(result1.isSuccess());
-		assertEquals(new JsonPrimitive("pending"), result1.resultOrThrow());
-		
-		Result<JsonElement> result2 = codec.encodeStart(typeProvider, typeProvider.empty(), "active");
-		assertTrue(result2.isSuccess());
-		assertEquals(new JsonPrimitive("active"), result2.resultOrThrow());
-		
-		Result<JsonElement> result3 = codec.encodeStart(typeProvider, typeProvider.empty(), "completed");
-		assertTrue(result3.isSuccess());
-		assertEquals(new JsonPrimitive("completed"), result3.resultOrThrow());
+		assertEquals(new JsonPrimitive("pending"), codec.encode(typeProvider, typeProvider.empty(), "pending"));
+		assertEquals(new JsonPrimitive("active"), codec.encode(typeProvider, typeProvider.empty(), "active"));
+		assertEquals(new JsonPrimitive("completed"), codec.encode(typeProvider, typeProvider.empty(), "completed"));
 	}
 	
 	@Test
-	void encodeStartWithInvalidValue() {
+	void encodeWithInvalidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), "invalid");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("value is not in the set of valid values"));
-		assertTrue(result.errorOrThrow().contains("invalid"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), "invalid"));
+		assertTrue(exception.getMessage().contains("value is not in the set of valid values"));
+		assertTrue(exception.getMessage().contains("invalid"));
 	}
 	
 	@Test
-	void encodeStartWithDifferentTypes() {
+	void encodeWithDifferentTypes() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<String> stringCodec = new UnionCodec(STRING, List.of("apple", "banana", "cherry"));
-		Result<JsonElement> stringResult = stringCodec.encodeStart(typeProvider, typeProvider.empty(), "apple");
-		assertTrue(stringResult.isSuccess());
-		assertEquals(new JsonPrimitive("apple"), stringResult.resultOrThrow());
+		assertEquals(new JsonPrimitive("apple"), stringCodec.encode(typeProvider, typeProvider.empty(), "apple"));
 		
 		Codec<Integer> integerCodec = new UnionCodec(INTEGER, List.of(1, 2, 3));
-		Result<JsonElement> intResult = integerCodec.encodeStart(typeProvider, typeProvider.empty(), 2);
-		assertTrue(intResult.isSuccess());
-		assertEquals(new JsonPrimitive(2), intResult.resultOrThrow());
+		assertEquals(new JsonPrimitive(2), integerCodec.encode(typeProvider, typeProvider.empty(), 2));
 		
 		Codec<Boolean> booleanCodec = new UnionCodec(BOOLEAN, List.of(true));
-		Result<JsonElement> boolResult = booleanCodec.encodeStart(typeProvider, typeProvider.empty(), true);
-		assertTrue(boolResult.isSuccess());
-		assertEquals(new JsonPrimitive(true), boolResult.resultOrThrow());
+		assertEquals(new JsonPrimitive(true), booleanCodec.encode(typeProvider, typeProvider.empty(), true));
 	}
 	
 	@Test
-	void encodeStartWithSingleValidValue() {
+	void encodeWithSingleValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("only"));
 		
-		Result<JsonElement> validResult = codec.encodeStart(typeProvider, typeProvider.empty(), "only");
-		assertTrue(validResult.isSuccess());
-		
-		Result<JsonElement> invalidResult = codec.encodeStart(typeProvider, typeProvider.empty(), "other");
-		assertTrue(invalidResult.isError());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), "only"));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), "other"));
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("pending")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("pending")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
-		Result<String> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as union"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as union"));
 	}
 	
 	@Test
-	void decodeStartWithValidValue() {
+	void decodeWithValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
-		Result<String> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("pending"));
-		assertTrue(result.isSuccess());
-		assertEquals("pending", result.resultOrThrow());
+		String result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("pending"));
+		assertEquals("pending", result);
 	}
 	
 	@Test
-	void decodeStartWithAllValidValues() {
+	void decodeWithAllValidValues() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
-		Result<String> result1 = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("pending"));
-		assertTrue(result1.isSuccess());
-		assertEquals("pending", result1.resultOrThrow());
-		
-		Result<String> result2 = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("active"));
-		assertTrue(result2.isSuccess());
-		assertEquals("active", result2.resultOrThrow());
-		
-		Result<String> result3 = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("completed"));
-		assertTrue(result3.isSuccess());
-		assertEquals("completed", result3.resultOrThrow());
+		assertEquals("pending", codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("pending")));
+		assertEquals("active", codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("active")));
+		assertEquals("completed", codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("completed")));
 	}
 	
 	@Test
-	void decodeStartWithInvalidValue() {
+	void decodeWithInvalidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
-		Result<String> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("value is not in the set of valid values"));
-		assertTrue(result.errorOrThrow().contains("invalid"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid")));
+		assertTrue(exception.getMessage().contains("value is not in the set of valid values"));
+		assertTrue(exception.getMessage().contains("invalid"));
 	}
 	
 	@Test
-	void decodeStartWithInvalidType() {
+	void decodeWithInvalidType() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
-		Result<String> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(123));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(123)));
 	}
 	
 	@Test
-	void decodeStartWithDifferentTypes() {
+	void decodeWithDifferentTypes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<String> stringCodec = new UnionCodec(STRING, List.of("apple", "banana", "cherry"));
-		Result<String> stringResult = stringCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("banana"));
-		assertTrue(stringResult.isSuccess());
-		assertEquals("banana", stringResult.resultOrThrow());
+		assertEquals("banana", stringCodec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("banana")));
 		
 		Codec<Integer> integerCodec = new UnionCodec(INTEGER, List.of(1, 2, 3));
-		Result<Integer> intResult = integerCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3));
-		assertTrue(intResult.isSuccess());
-		assertEquals(3, intResult.resultOrThrow());
+		assertEquals(3, integerCodec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(3)));
 		
 		Codec<Boolean> booleanCodec = new UnionCodec(BOOLEAN, List.of(true));
-		Result<Boolean> boolResult = booleanCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(true));
-		assertTrue(boolResult.isSuccess());
-		assertTrue(boolResult.resultOrThrow());
+		assertTrue(booleanCodec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(true)));
 	}
 	
 	@Test
-	void decodeStartWithSingleValidValue() {
+	void decodeWithSingleValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("only"));
 		
-		Result<String> validResult = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("only"));
-		assertTrue(validResult.isSuccess());
-		assertEquals("only", validResult.resultOrThrow());
-		
-		Result<String> invalidResult = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("other"));
-		assertTrue(invalidResult.isError());
+		assertEquals("only", codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("only")));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("other")));
 	}
 	
 	@Test
-	void decodeStartInnerCodecFailure() {
+	void decodeInnerCodecFailure() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new UnionCodec(INTEGER, List.of(1, 2, 3));
 		
-		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number")));
 	}
 	
 	@Test
-	void roundTripEncodingDecoding() {
+	void roundTripEncodingDecoding() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = new UnionCodec(STRING, List.of("red", "green", "blue"));
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), "green");
-		assertTrue(encoded.isSuccess());
-		
-		Result<String> decoded = codec.decodeStart(typeProvider, typeProvider.empty(), encoded.resultOrThrow());
-		assertTrue(decoded.isSuccess());
-		assertEquals("green", decoded.resultOrThrow());
+		JsonElement encoded = codec.encode(typeProvider, typeProvider.empty(), "green");
+		String decoded = codec.decode(typeProvider, typeProvider.empty(), encoded);
+		assertEquals("green", decoded);
 	}
 	
 	@Test
-	void roundTripWithMultipleValues() {
+	void roundTripWithMultipleValues() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new UnionCodec(INTEGER, List.of(10, 20, 30, 40, 50));
 		
 		for (int value : Arrays.asList(10, 20, 30, 40, 50)) {
-			Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-			assertTrue(encoded.isSuccess());
-			
-			Result<Integer> decoded = codec.decodeStart(typeProvider, typeProvider.empty(), encoded.resultOrThrow());
-			assertTrue(decoded.isSuccess());
-			assertEquals(value, decoded.resultOrThrow());
+			JsonElement encoded = codec.encode(typeProvider, typeProvider.empty(), value);
+			Integer decoded = codec.decode(typeProvider, typeProvider.empty(), encoded);
+			assertEquals(value, decoded);
 		}
 	}
 	
@@ -280,8 +232,7 @@ class UnionCodecTest {
 		assertInstanceOf(UnionCodec.class, codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), "two");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), "two"));
 	}
 	
 	@Test
@@ -292,8 +243,7 @@ class UnionCodecTest {
 		assertInstanceOf(UnionCodec.class, codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 200);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), 200));
 	}
 	
 	@Test
@@ -337,14 +287,9 @@ class UnionCodecTest {
 		Codec<String> unionCodec = STRING.union("a", "b", "c");
 		Codec<String> nullableUnion = unionCodec.nullable();
 		
-		Result<JsonElement> nullResult = nullableUnion.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(nullResult.isSuccess());
-		
-		Result<JsonElement> validResult = nullableUnion.encodeStart(typeProvider, typeProvider.empty(), "a");
-		assertTrue(validResult.isSuccess());
-		
-		Result<JsonElement> invalidResult = nullableUnion.encodeStart(typeProvider, typeProvider.empty(), "d");
-		assertTrue(invalidResult.isError());
+		assertDoesNotThrow(() -> nullableUnion.encode(typeProvider, typeProvider.empty(), null));
+		assertDoesNotThrow(() -> nullableUnion.encode(typeProvider, typeProvider.empty(), "a"));
+		assertThrows(EncoderException.class, () -> nullableUnion.encode(typeProvider, typeProvider.empty(), "d"));
 	}
 	
 	@Test
@@ -353,14 +298,9 @@ class UnionCodecTest {
 		Codec<String> unionCodec = STRING.union("x", "y", "z");
 		Codec<Optional<String>> optionalUnion = unionCodec.optional();
 		
-		Result<JsonElement> emptyResult = optionalUnion.encodeStart(typeProvider, typeProvider.empty(), Optional.empty());
-		assertTrue(emptyResult.isSuccess());
-		
-		Result<JsonElement> validResult = optionalUnion.encodeStart(typeProvider, typeProvider.empty(), Optional.of("x"));
-		assertTrue(validResult.isSuccess());
-		
-		Result<JsonElement> invalidResult = optionalUnion.encodeStart(typeProvider, typeProvider.empty(), Optional.of("invalid"));
-		assertTrue(invalidResult.isError());
+		assertDoesNotThrow(() -> optionalUnion.encode(typeProvider, typeProvider.empty(), Optional.empty()));
+		assertDoesNotThrow(() -> optionalUnion.encode(typeProvider, typeProvider.empty(), Optional.of("x")));
+		assertThrows(EncoderException.class, () -> optionalUnion.encode(typeProvider, typeProvider.empty(), Optional.of("invalid")));
 	}
 	
 	@Test
@@ -369,10 +309,7 @@ class UnionCodecTest {
 		Codec<String> unionCodec = STRING.union("red", "green", "blue");
 		Codec<List<String>> listUnion = unionCodec.list();
 		
-		Result<JsonElement> validResult = listUnion.encodeStart(typeProvider, typeProvider.empty(), List.of("red", "green", "blue"));
-		assertTrue(validResult.isSuccess());
-		
-		Result<JsonElement> invalidResult = listUnion.encodeStart(typeProvider, typeProvider.empty(), List.of("red", "yellow", "blue"));
-		assertTrue(invalidResult.isPartial());
+		assertDoesNotThrow(() -> listUnion.encode(typeProvider, typeProvider.empty(), List.of("red", "green", "blue")));
+		assertThrows(EncoderException.class, () -> listUnion.encode(typeProvider, typeProvider.empty(), List.of("red", "yellow", "blue")));
 	}
 }

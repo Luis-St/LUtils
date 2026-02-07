@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -106,20 +106,20 @@ class LengthConstraintConfigTest {
 		assertTrue(config.min().isEmpty());
 		assertTrue(config.max().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(42).isSuccess());
+		assertDoesNotThrow(() -> config.validate(42));
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(LengthConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withMinLength(1);
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withEqualTo(10);
@@ -202,7 +202,9 @@ class LengthConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withCustom(v -> v % 2 != 0 ? Result.error("Length must be even") : Result.success());
+		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withCustom(v -> {
+			if (v % 2 != 0) throw new ConstraintViolateException("Length must be even");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -212,84 +214,84 @@ class LengthConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withEqualTo(42);
-		assertTrue(config.matches(42).isSuccess());
-		assertTrue(config.matches(43).isError());
+		assertDoesNotThrow(() -> config.validate(42));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(43));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withNotEqualTo(42);
-		assertTrue(config.matches(41).isSuccess());
-		assertTrue(config.matches(42).isError());
+		assertDoesNotThrow(() -> config.validate(41));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(42));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withIn(List.of(1, 2, 3));
-		assertTrue(config.matches(1).isSuccess());
-		assertTrue(config.matches(2).isSuccess());
-		assertTrue(config.matches(4).isError());
+		assertDoesNotThrow(() -> config.validate(1));
+		assertDoesNotThrow(() -> config.validate(2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(4));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withNotIn(List.of(1, 2, 3));
-		assertTrue(config.matches(4).isSuccess());
-		assertTrue(config.matches(1).isError());
+		assertDoesNotThrow(() -> config.validate(4));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1));
 	}
 	
 	@Test
-	void matchesWithMinLength() {
+	void validateWithMinLength() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withMinLength(5);
-		assertTrue(config.matches(5).isSuccess());
-		assertTrue(config.matches(6).isSuccess());
-		assertTrue(config.matches(4).isError());
+		assertDoesNotThrow(() -> config.validate(5));
+		assertDoesNotThrow(() -> config.validate(6));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(4));
 	}
 	
 	@Test
-	void matchesWithMaxLength() {
+	void validateWithMaxLength() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withMaxLength(10);
-		assertTrue(config.matches(10).isSuccess());
-		assertTrue(config.matches(9).isSuccess());
-		assertTrue(config.matches(11).isError());
+		assertDoesNotThrow(() -> config.validate(10));
+		assertDoesNotThrow(() -> config.validate(9));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(11));
 	}
 	
 	@Test
-	void matchesWithExactLength() {
+	void validateWithExactLength() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withExactLength(7);
-		assertTrue(config.matches(7).isSuccess());
-		assertTrue(config.matches(6).isError());
-		assertTrue(config.matches(8).isError());
+		assertDoesNotThrow(() -> config.validate(7));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(6));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(8));
 	}
 	
 	@Test
-	void matchesWithLengthBetween() {
+	void validateWithLengthBetween() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withLengthBetween(3, 8);
-		assertTrue(config.matches(3).isSuccess());
-		assertTrue(config.matches(8).isSuccess());
-		assertTrue(config.matches(5).isSuccess());
-		assertTrue(config.matches(2).isError());
-		assertTrue(config.matches(9).isError());
+		assertDoesNotThrow(() -> config.validate(3));
+		assertDoesNotThrow(() -> config.validate(8));
+		assertDoesNotThrow(() -> config.validate(5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(9));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED
 			.withMinLength(0)
 			.withMaxLength(100)
 			.withNotIn(List.of(50));
 		
-		assertTrue(config.matches(0).isSuccess());
-		assertTrue(config.matches(100).isSuccess());
-		assertTrue(config.matches(49).isSuccess());
-		assertTrue(config.matches(50).isError());
+		assertDoesNotThrow(() -> config.validate(0));
+		assertDoesNotThrow(() -> config.validate(100));
+		assertDoesNotThrow(() -> config.validate(49));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(50));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

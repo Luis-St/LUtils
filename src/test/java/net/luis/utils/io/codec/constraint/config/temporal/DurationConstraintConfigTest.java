@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.temporal;
 
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -222,20 +222,20 @@ class DurationConstraintConfigTest {
 		assertTrue(config.millisecond().isEmpty());
 		assertTrue(config.nanosecond().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(Duration.ofHours(1)).isSuccess());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(1)));
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(DurationConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withPositive();
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withEqualTo(Duration.ofHours(2));
@@ -420,140 +420,142 @@ class DurationConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withCustom(d -> d.toHours() < 100 ? Result.success() : Result.error("Duration must be less than 100 hours"));
+		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withCustom(d -> {
+			if (d.toHours() >= 100) throw new ConstraintViolateException("Duration must be less than 100 hours");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withEqualTo(Duration.ofHours(2));
-		assertTrue(config.matches(Duration.ofHours(2)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(3)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(3)));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withNotEqualTo(Duration.ofHours(2));
-		assertTrue(config.matches(Duration.ofHours(1)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(2)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(2)));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withIn(List.of(Duration.ofHours(1), Duration.ofHours(2)));
-		assertTrue(config.matches(Duration.ofHours(1)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(2)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(3)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(1)));
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(3)));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withNotIn(List.of(Duration.ofHours(1), Duration.ofHours(2)));
-		assertTrue(config.matches(Duration.ofHours(3)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(1)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(3)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(1)));
 	}
 	
 	@Test
-	void matchesWithGreaterThan() {
+	void validateWithGreaterThan() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withGreaterThan(Duration.ofHours(5));
-		assertTrue(config.matches(Duration.ofHours(6)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(5)).isError());
-		assertTrue(config.matches(Duration.ofHours(4)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(6)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(5)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(4)));
 	}
 	
 	@Test
-	void matchesWithGreaterThanOrEqual() {
+	void validateWithGreaterThanOrEqual() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(Duration.ofHours(5));
-		assertTrue(config.matches(Duration.ofHours(5)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(6)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(4)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(5)));
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(6)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(4)));
 	}
 	
 	@Test
-	void matchesWithLessThan() {
+	void validateWithLessThan() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withLessThan(Duration.ofHours(10));
-		assertTrue(config.matches(Duration.ofHours(9)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(10)).isError());
-		assertTrue(config.matches(Duration.ofHours(11)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(9)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(10)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(11)));
 	}
 	
 	@Test
-	void matchesWithLessThanOrEqual() {
+	void validateWithLessThanOrEqual() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(Duration.ofHours(10));
-		assertTrue(config.matches(Duration.ofHours(10)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(9)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(11)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(10)));
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(9)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(11)));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withBetween(Duration.ofHours(1), Duration.ofHours(10));
-		assertTrue(config.matches(Duration.ofHours(5)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(1)).isError());
-		assertTrue(config.matches(Duration.ofHours(10)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(5)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(10)));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(Duration.ofHours(1), Duration.ofHours(10));
-		assertTrue(config.matches(Duration.ofHours(1)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(10)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(5)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(0)).isError());
-		assertTrue(config.matches(Duration.ofHours(11)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(1)));
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(10)));
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(5)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(0)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(11)));
 	}
 	
 	@Test
-	void matchesWithPositive() {
+	void validateWithPositive() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withPositive();
-		assertTrue(config.matches(Duration.ofHours(1)).isSuccess());
-		assertTrue(config.matches(Duration.ZERO).isError());
-		assertTrue(config.matches(Duration.ofHours(-1)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ZERO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(-1)));
 	}
 	
 	@Test
-	void matchesWithNonPositive() {
+	void validateWithNonPositive() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withNonPositive();
-		assertTrue(config.matches(Duration.ZERO).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(-1)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(1)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ZERO));
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(-1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(1)));
 	}
 	
 	@Test
-	void matchesWithNegative() {
+	void validateWithNegative() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withNegative();
-		assertTrue(config.matches(Duration.ofHours(-1)).isSuccess());
-		assertTrue(config.matches(Duration.ZERO).isError());
-		assertTrue(config.matches(Duration.ofHours(1)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(-1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ZERO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(1)));
 	}
 	
 	@Test
-	void matchesWithNonNegative() {
+	void validateWithNonNegative() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withNonNegative();
-		assertTrue(config.matches(Duration.ZERO).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(1)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(-1)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ZERO));
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(-1)));
 	}
 	
 	@Test
-	void matchesWithZero() {
+	void validateWithZero() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withZero();
-		assertTrue(config.matches(Duration.ZERO).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(1)).isError());
-		assertTrue(config.matches(Duration.ofHours(-1)).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ZERO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ofHours(-1)));
 	}
 	
 	@Test
-	void matchesWithNonZero() {
+	void validateWithNonZero() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withNonZero();
-		assertTrue(config.matches(Duration.ofHours(1)).isSuccess());
-		assertTrue(config.matches(Duration.ofHours(-1)).isSuccess());
-		assertTrue(config.matches(Duration.ZERO).isError());
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(1)));
+		assertDoesNotThrow(() -> config.validate(Duration.ofHours(-1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Duration.ZERO));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

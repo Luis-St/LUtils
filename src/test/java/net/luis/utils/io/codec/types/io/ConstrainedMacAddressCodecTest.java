@@ -20,12 +20,13 @@ package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.io.network.address.mac.MacAddress;
 import net.luis.utils.io.network.address.mac.MacAddresses;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -40,45 +41,41 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedMacAddressCodecTest {
 	
 	@Test
-	void encodeStartWithValidConstrainedValue() {
+	void encodeWithValidConstrainedValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		MacAddress expected = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.equalTo(expected);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), expected);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("00:1a:2b:3c:4d:5e"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), expected);
+		assertEquals(new JsonPrimitive("00:1a:2b:3c:4d:5e"), result);
 	}
 	
 	@Test
-	void encodeKeyWithValidConstrainedValue() {
+	void encodeKeyWithValidConstrainedValue() throws EncoderException {
 		MacAddress expected = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.equalTo(expected);
 		
-		Result<String> result = codec.encodeKey(expected);
-		assertTrue(result.isSuccess());
-		assertEquals("00:1a:2b:3c:4d:5e", result.resultOrThrow());
+		String result = codec.encodeKey(expected);
+		assertEquals("00:1a:2b:3c:4d:5e", result);
 	}
 	
 	@Test
-	void decodeStartWithValidConstrainedValue() {
+	void decodeWithValidConstrainedValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		MacAddress expected = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.equalTo(expected);
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e"));
-		assertTrue(result.isSuccess());
-		assertEquals(expected, result.resultOrThrow());
+		MacAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e"));
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void decodeKeyWithValidConstrainedValue() {
+	void decodeKeyWithValidConstrainedValue() throws DecoderException {
 		MacAddress expected = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.equalTo(expected);
 		
-		Result<MacAddress> result = codec.decodeKey("00:1a:2b:3c:4d:5e");
-		assertTrue(result.isSuccess());
-		assertEquals(expected, result.resultOrThrow());
+		MacAddress result = codec.decodeKey("00:1a:2b:3c:4d:5e");
+		assertEquals(expected, result);
 	}
 	
 	@Test
@@ -89,14 +86,13 @@ class ConstrainedMacAddressCodecTest {
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		MacAddress expected = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.equalTo(expected);
 		MacAddress different = MacAddresses.parse("aa:bb:cc:dd:ee:ff");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), different);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), different));
 	}
 	
 	@Test
@@ -105,18 +101,16 @@ class ConstrainedMacAddressCodecTest {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.equalTo(expected);
 		MacAddress different = MacAddresses.parse("aa:bb:cc:dd:ee:ff");
 		
-		Result<String> result = codec.encodeKey(different);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(different));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintViolation() {
+	void decodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		MacAddress expected = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.equalTo(expected);
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("aa:bb:cc:dd:ee:ff"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("aa:bb:cc:dd:ee:ff")));
 	}
 	
 	@Test
@@ -124,18 +118,16 @@ class ConstrainedMacAddressCodecTest {
 		MacAddress expected = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.equalTo(expected);
 		
-		Result<MacAddress> result = codec.decodeKey("aa:bb:cc:dd:ee:ff");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("aa:bb:cc:dd:ee:ff"));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		MacAddress excluded = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notEqualTo(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded));
 	}
 	
 	@Test
@@ -143,18 +135,16 @@ class ConstrainedMacAddressCodecTest {
 		MacAddress excluded = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notEqualTo(excluded);
 		
-		Result<String> result = codec.encodeKey(excluded);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(excluded));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintViolation() {
+	void decodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		MacAddress excluded = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notEqualTo(excluded);
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
@@ -162,19 +152,17 @@ class ConstrainedMacAddressCodecTest {
 		MacAddress excluded = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notEqualTo(excluded);
 		
-		Result<MacAddress> result = codec.decodeKey("00:1a:2b:3c:4d:5e");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("00:1a:2b:3c:4d:5e"));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<MacAddress> allowed = List.of(MacAddresses.parse("00:1a:2b:3c:4d:5e"), MacAddresses.parse("00:1a:2b:3c:4d:5f"));
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.in(allowed);
 		MacAddress notAllowed = MacAddresses.parse("aa:bb:cc:dd:ee:ff");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notAllowed);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), notAllowed));
 	}
 	
 	@Test
@@ -183,18 +171,16 @@ class ConstrainedMacAddressCodecTest {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.in(allowed);
 		MacAddress notAllowed = MacAddresses.parse("aa:bb:cc:dd:ee:ff");
 		
-		Result<String> result = codec.encodeKey(notAllowed);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(notAllowed));
 	}
 	
 	@Test
-	void decodeStartInConstraintViolation() {
+	void decodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<MacAddress> allowed = List.of(MacAddresses.parse("00:1a:2b:3c:4d:5e"), MacAddresses.parse("00:1a:2b:3c:4d:5f"));
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.in(allowed);
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("aa:bb:cc:dd:ee:ff"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("aa:bb:cc:dd:ee:ff")));
 	}
 	
 	@Test
@@ -202,19 +188,17 @@ class ConstrainedMacAddressCodecTest {
 		List<MacAddress> allowed = List.of(MacAddresses.parse("00:1a:2b:3c:4d:5e"), MacAddresses.parse("00:1a:2b:3c:4d:5f"));
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.in(allowed);
 		
-		Result<MacAddress> result = codec.decodeKey("aa:bb:cc:dd:ee:ff");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("aa:bb:cc:dd:ee:ff"));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<MacAddress> excluded = List.of(MacAddresses.parse("00:1a:2b:3c:4d:5e"), MacAddresses.parse("00:1a:2b:3c:4d:5f"));
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notIn(excluded);
 		MacAddress excludedValue = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excludedValue);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excludedValue));
 	}
 	
 	@Test
@@ -223,18 +207,16 @@ class ConstrainedMacAddressCodecTest {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notIn(excluded);
 		MacAddress excludedValue = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<String> result = codec.encodeKey(excludedValue);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(excludedValue));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintViolation() {
+	void decodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<MacAddress> excluded = List.of(MacAddresses.parse("00:1a:2b:3c:4d:5e"), MacAddresses.parse("00:1a:2b:3c:4d:5f"));
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notIn(excluded);
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
@@ -242,18 +224,16 @@ class ConstrainedMacAddressCodecTest {
 		List<MacAddress> excluded = List.of(MacAddresses.parse("00:1a:2b:3c:4d:5e"), MacAddresses.parse("00:1a:2b:3c:4d:5f"));
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notIn(excluded);
 		
-		Result<MacAddress> result = codec.decodeKey("00:1a:2b:3c:4d:5e");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("00:1a:2b:3c:4d:5e"));
 	}
 	
 	@Test
-	void encodeStartUnicastConstraintViolation() {
+	void encodeUnicastConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.unicast();
 		MacAddress multicastAddress = MacAddresses.parse("01:00:5e:00:00:01");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), multicastAddress);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), multicastAddress));
 	}
 	
 	@Test
@@ -261,45 +241,40 @@ class ConstrainedMacAddressCodecTest {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.unicast();
 		MacAddress multicastAddress = MacAddresses.parse("01:00:5e:00:00:01");
 		
-		Result<String> result = codec.encodeKey(multicastAddress);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(multicastAddress));
 	}
 	
 	@Test
-	void decodeStartUnicastConstraintViolation() {
+	void decodeUnicastConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.unicast();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("01:00:5e:00:00:01"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("01:00:5e:00:00:01")));
 	}
 	
 	@Test
 	void decodeKeyUnicastConstraintViolation() {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.unicast();
 		
-		Result<MacAddress> result = codec.decodeKey("01:00:5e:00:00:01");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("01:00:5e:00:00:01"));
 	}
 	
 	@Test
-	void encodeStartUnicastSuccess() {
+	void encodeUnicastSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.unicast();
 		MacAddress unicastAddress = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), unicastAddress);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), unicastAddress));
 	}
 	
 	@Test
-	void encodeStartMulticastConstraintViolation() {
+	void encodeMulticastConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.multicast();
 		MacAddress unicastAddress = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), unicastAddress);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), unicastAddress));
 	}
 	
 	@Test
@@ -307,45 +282,40 @@ class ConstrainedMacAddressCodecTest {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.multicast();
 		MacAddress unicastAddress = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<String> result = codec.encodeKey(unicastAddress);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(unicastAddress));
 	}
 	
 	@Test
-	void decodeStartMulticastConstraintViolation() {
+	void decodeMulticastConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.multicast();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
 	void decodeKeyMulticastConstraintViolation() {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.multicast();
 		
-		Result<MacAddress> result = codec.decodeKey("00:1a:2b:3c:4d:5e");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("00:1a:2b:3c:4d:5e"));
 	}
 	
 	@Test
-	void encodeStartMulticastSuccess() {
+	void encodeMulticastSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.multicast();
 		MacAddress multicastAddress = MacAddresses.parse("01:00:5e:00:00:01");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), multicastAddress);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), multicastAddress));
 	}
 	
 	@Test
-	void encodeStartUniversalConstraintViolation() {
+	void encodeUniversalConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.universal();
 		MacAddress localAddress = MacAddresses.parse("02:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), localAddress);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), localAddress));
 	}
 	
 	@Test
@@ -353,45 +323,40 @@ class ConstrainedMacAddressCodecTest {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.universal();
 		MacAddress localAddress = MacAddresses.parse("02:1a:2b:3c:4d:5e");
 		
-		Result<String> result = codec.encodeKey(localAddress);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(localAddress));
 	}
 	
 	@Test
-	void decodeStartUniversalConstraintViolation() {
+	void decodeUniversalConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.universal();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("02:1a:2b:3c:4d:5e"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("02:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
 	void decodeKeyUniversalConstraintViolation() {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.universal();
 		
-		Result<MacAddress> result = codec.decodeKey("02:1a:2b:3c:4d:5e");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("02:1a:2b:3c:4d:5e"));
 	}
 	
 	@Test
-	void encodeStartUniversalSuccess() {
+	void encodeUniversalSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.universal();
 		MacAddress universalAddress = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), universalAddress);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), universalAddress));
 	}
 	
 	@Test
-	void encodeStartLocalConstraintViolation() {
+	void encodeLocalConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.local();
 		MacAddress universalAddress = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), universalAddress);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), universalAddress));
 	}
 	
 	@Test
@@ -399,45 +364,40 @@ class ConstrainedMacAddressCodecTest {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.local();
 		MacAddress universalAddress = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<String> result = codec.encodeKey(universalAddress);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(universalAddress));
 	}
 	
 	@Test
-	void decodeStartLocalConstraintViolation() {
+	void decodeLocalConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.local();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
 	void decodeKeyLocalConstraintViolation() {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.local();
 		
-		Result<MacAddress> result = codec.decodeKey("00:1a:2b:3c:4d:5e");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("00:1a:2b:3c:4d:5e"));
 	}
 	
 	@Test
-	void encodeStartLocalSuccess() {
+	void encodeLocalSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.local();
 		MacAddress localAddress = MacAddresses.parse("02:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), localAddress);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), localAddress));
 	}
 	
 	@Test
-	void encodeStartBroadcastConstraintViolation() {
+	void encodeBroadcastConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.broadcast();
 		MacAddress notBroadcast = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notBroadcast);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), notBroadcast));
 	}
 	
 	@Test
@@ -445,45 +405,40 @@ class ConstrainedMacAddressCodecTest {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.broadcast();
 		MacAddress notBroadcast = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<String> result = codec.encodeKey(notBroadcast);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(notBroadcast));
 	}
 	
 	@Test
-	void decodeStartBroadcastConstraintViolation() {
+	void decodeBroadcastConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.broadcast();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
 	void decodeKeyBroadcastConstraintViolation() {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.broadcast();
 		
-		Result<MacAddress> result = codec.decodeKey("00:1a:2b:3c:4d:5e");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("00:1a:2b:3c:4d:5e"));
 	}
 	
 	@Test
-	void encodeStartBroadcastSuccess() {
+	void encodeBroadcastSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.broadcast();
 		MacAddress broadcastAddress = MacAddresses.parse("ff:ff:ff:ff:ff:ff");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), broadcastAddress);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), broadcastAddress));
 	}
 	
 	@Test
-	void encodeStartNotBroadcastConstraintViolation() {
+	void encodeNotBroadcastConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notBroadcast();
 		MacAddress broadcastAddress = MacAddresses.parse("ff:ff:ff:ff:ff:ff");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), broadcastAddress);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), broadcastAddress));
 	}
 	
 	@Test
@@ -491,45 +446,40 @@ class ConstrainedMacAddressCodecTest {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notBroadcast();
 		MacAddress broadcastAddress = MacAddresses.parse("ff:ff:ff:ff:ff:ff");
 		
-		Result<String> result = codec.encodeKey(broadcastAddress);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(broadcastAddress));
 	}
 	
 	@Test
-	void decodeStartNotBroadcastConstraintViolation() {
+	void decodeNotBroadcastConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notBroadcast();
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("ff:ff:ff:ff:ff:ff"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("ff:ff:ff:ff:ff:ff")));
 	}
 	
 	@Test
 	void decodeKeyNotBroadcastConstraintViolation() {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notBroadcast();
 		
-		Result<MacAddress> result = codec.decodeKey("ff:ff:ff:ff:ff:ff");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("ff:ff:ff:ff:ff:ff"));
 	}
 	
 	@Test
-	void encodeStartNotBroadcastSuccess() {
+	void encodeNotBroadcastSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.notBroadcast();
 		MacAddress normalAddress = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), normalAddress);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), normalAddress));
 	}
 	
 	@Test
-	void encodeStartStringConstraintViolation() {
+	void encodeStringConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.string(builder -> builder.startsWith("aa:"));
 		MacAddress address = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), address));
 	}
 	
 	@Test
@@ -537,70 +487,70 @@ class ConstrainedMacAddressCodecTest {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.string(builder -> builder.startsWith("aa:"));
 		MacAddress address = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<String> result = codec.encodeKey(address);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(address));
 	}
 	
 	@Test
-	void decodeStartStringConstraintViolation() {
+	void decodeStringConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.string(builder -> builder.startsWith("aa:"));
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
 	void decodeKeyStringConstraintViolation() {
 		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.string(builder -> builder.startsWith("aa:"));
 		
-		Result<MacAddress> result = codec.decodeKey("00:1a:2b:3c:4d:5e");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("00:1a:2b:3c:4d:5e"));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.custom(value -> Result.error("Custom validation failed"));
+		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.custom(value -> {
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Custom validation failed");
+		});
 		MacAddress address = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), address));
 	}
 	
 	@Test
 	void encodeKeyCustomConstraintViolation() {
-		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.custom(value -> Result.error("Custom validation failed"));
+		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.custom(value -> {
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Custom validation failed");
+		});
 		MacAddress address = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<String> result = codec.encodeKey(address);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(address));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintViolation() {
+	void decodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.custom(value -> Result.error("Custom validation failed"));
+		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.custom(value -> {
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Custom validation failed");
+		});
 		
-		Result<MacAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
 	void decodeKeyCustomConstraintViolation() {
-		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.custom(value -> Result.error("Custom validation failed"));
+		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.custom(value -> {
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Custom validation failed");
+		});
 		
-		Result<MacAddress> result = codec.decodeKey("00:1a:2b:3c:4d:5e");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("00:1a:2b:3c:4d:5e"));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintSuccess() {
+	void encodeCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.custom(value -> Result.success());
+		Codec<MacAddress> codec = Codecs.MAC_ADDRESS.custom(value -> {});
 		MacAddress address = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), address));
 	}
 }

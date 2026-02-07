@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config.numeric;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
 import org.junit.jupiter.api.Test;
@@ -192,20 +193,20 @@ class IntegerConstraintConfigTest {
 		assertTrue(config.divisibleBy().isEmpty());
 		assertTrue(config.powerOf().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(42).isSuccess());
+		assertDoesNotThrow(() -> config.validate(42));
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(IntegerConstraintConfig.<Integer>unconstrained().isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withPositive();
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withEqualTo(10);
@@ -377,217 +378,217 @@ class IntegerConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withEqualTo(42);
-		assertTrue(config.matches(42).isSuccess());
-		assertTrue(config.matches(43).isError());
+		assertDoesNotThrow(() -> config.validate(42));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(43));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withNotEqualTo(42);
-		assertTrue(config.matches(41).isSuccess());
-		assertTrue(config.matches(42).isError());
+		assertDoesNotThrow(() -> config.validate(41));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(42));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withIn(List.of(1, 2, 3));
-		assertTrue(config.matches(1).isSuccess());
-		assertTrue(config.matches(2).isSuccess());
-		assertTrue(config.matches(4).isError());
+		assertDoesNotThrow(() -> config.validate(1));
+		assertDoesNotThrow(() -> config.validate(2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(4));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withNotIn(List.of(1, 2, 3));
-		assertTrue(config.matches(4).isSuccess());
-		assertTrue(config.matches(1).isError());
+		assertDoesNotThrow(() -> config.validate(4));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1));
 	}
 	
 	@Test
-	void matchesWithGreaterThan() {
+	void validateWithGreaterThan() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withGreaterThan(5);
-		assertTrue(config.matches(6).isSuccess());
-		assertTrue(config.matches(5).isError());
-		assertTrue(config.matches(4).isError());
+		assertDoesNotThrow(() -> config.validate(6));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(4));
 	}
 	
 	@Test
-	void matchesWithGreaterThanOrEqual() {
+	void validateWithGreaterThanOrEqual() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withGreaterThanOrEqual(5);
-		assertTrue(config.matches(5).isSuccess());
-		assertTrue(config.matches(6).isSuccess());
-		assertTrue(config.matches(4).isError());
+		assertDoesNotThrow(() -> config.validate(5));
+		assertDoesNotThrow(() -> config.validate(6));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(4));
 	}
 	
 	@Test
-	void matchesWithLessThan() {
+	void validateWithLessThan() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withLessThan(10);
-		assertTrue(config.matches(9).isSuccess());
-		assertTrue(config.matches(10).isError());
-		assertTrue(config.matches(11).isError());
+		assertDoesNotThrow(() -> config.validate(9));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(10));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(11));
 	}
 	
 	@Test
-	void matchesWithLessThanOrEqual() {
+	void validateWithLessThanOrEqual() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withLessThanOrEqual(10);
-		assertTrue(config.matches(10).isSuccess());
-		assertTrue(config.matches(9).isSuccess());
-		assertTrue(config.matches(11).isError());
+		assertDoesNotThrow(() -> config.validate(10));
+		assertDoesNotThrow(() -> config.validate(9));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(11));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withBetween(1, 10);
-		assertTrue(config.matches(5).isSuccess());
-		assertTrue(config.matches(1).isError());
-		assertTrue(config.matches(10).isError());
+		assertDoesNotThrow(() -> config.validate(5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(10));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withBetweenOrEqual(1, 10);
-		assertTrue(config.matches(1).isSuccess());
-		assertTrue(config.matches(10).isSuccess());
-		assertTrue(config.matches(5).isSuccess());
-		assertTrue(config.matches(0).isError());
-		assertTrue(config.matches(11).isError());
+		assertDoesNotThrow(() -> config.validate(1));
+		assertDoesNotThrow(() -> config.validate(10));
+		assertDoesNotThrow(() -> config.validate(5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(11));
 	}
 	
 	@Test
-	void matchesWithPositive() {
+	void validateWithPositive() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withPositive();
-		assertTrue(config.matches(1).isSuccess());
-		assertTrue(config.matches(100).isSuccess());
-		assertTrue(config.matches(0).isError());
-		assertTrue(config.matches(-1).isError());
+		assertDoesNotThrow(() -> config.validate(1));
+		assertDoesNotThrow(() -> config.validate(100));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-1));
 	}
 	
 	@Test
-	void matchesWithNonPositive() {
+	void validateWithNonPositive() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withNonPositive();
-		assertTrue(config.matches(0).isSuccess());
-		assertTrue(config.matches(-1).isSuccess());
-		assertTrue(config.matches(1).isError());
+		assertDoesNotThrow(() -> config.validate(0));
+		assertDoesNotThrow(() -> config.validate(-1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1));
 	}
 	
 	@Test
-	void matchesWithNegative() {
+	void validateWithNegative() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withNegative();
-		assertTrue(config.matches(-1).isSuccess());
-		assertTrue(config.matches(-100).isSuccess());
-		assertTrue(config.matches(0).isError());
-		assertTrue(config.matches(1).isError());
+		assertDoesNotThrow(() -> config.validate(-1));
+		assertDoesNotThrow(() -> config.validate(-100));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1));
 	}
 	
 	@Test
-	void matchesWithNonNegative() {
+	void validateWithNonNegative() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withNonNegative();
-		assertTrue(config.matches(0).isSuccess());
-		assertTrue(config.matches(1).isSuccess());
-		assertTrue(config.matches(-1).isError());
+		assertDoesNotThrow(() -> config.validate(0));
+		assertDoesNotThrow(() -> config.validate(1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-1));
 	}
 	
 	@Test
-	void matchesWithZero() {
+	void validateWithZero() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withZero();
-		assertTrue(config.matches(0).isSuccess());
-		assertTrue(config.matches(1).isError());
-		assertTrue(config.matches(-1).isError());
+		assertDoesNotThrow(() -> config.validate(0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-1));
 	}
 	
 	@Test
-	void matchesWithNonZero() {
+	void validateWithNonZero() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withNonZero();
-		assertTrue(config.matches(1).isSuccess());
-		assertTrue(config.matches(-1).isSuccess());
-		assertTrue(config.matches(0).isError());
+		assertDoesNotThrow(() -> config.validate(1));
+		assertDoesNotThrow(() -> config.validate(-1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0));
 	}
 	
 	@Test
-	void matchesWithPercentage() {
+	void validateWithPercentage() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withPercentage();
-		assertTrue(config.matches(0).isSuccess());
-		assertTrue(config.matches(50).isSuccess());
-		assertTrue(config.matches(100).isSuccess());
-		assertTrue(config.matches(-1).isError());
-		assertTrue(config.matches(101).isError());
+		assertDoesNotThrow(() -> config.validate(0));
+		assertDoesNotThrow(() -> config.validate(50));
+		assertDoesNotThrow(() -> config.validate(100));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(101));
 	}
 	
 	@Test
-	void matchesWithEven() {
+	void validateWithEven() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withEven();
-		assertTrue(config.matches(0).isSuccess());
-		assertTrue(config.matches(2).isSuccess());
-		assertTrue(config.matches(-4).isSuccess());
-		assertTrue(config.matches(1).isError());
-		assertTrue(config.matches(-3).isError());
+		assertDoesNotThrow(() -> config.validate(0));
+		assertDoesNotThrow(() -> config.validate(2));
+		assertDoesNotThrow(() -> config.validate(-4));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-3));
 	}
 	
 	@Test
-	void matchesWithOdd() {
+	void validateWithOdd() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withOdd();
-		assertTrue(config.matches(1).isSuccess());
-		assertTrue(config.matches(-3).isSuccess());
-		assertTrue(config.matches(0).isError());
-		assertTrue(config.matches(2).isError());
+		assertDoesNotThrow(() -> config.validate(1));
+		assertDoesNotThrow(() -> config.validate(-3));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(2));
 	}
 	
 	@Test
-	void matchesWithDivisibleBy() {
+	void validateWithDivisibleBy() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withDivisibleBy(5);
-		assertTrue(config.matches(0).isSuccess());
-		assertTrue(config.matches(5).isSuccess());
-		assertTrue(config.matches(10).isSuccess());
-		assertTrue(config.matches(-15).isSuccess());
-		assertTrue(config.matches(1).isError());
-		assertTrue(config.matches(7).isError());
+		assertDoesNotThrow(() -> config.validate(0));
+		assertDoesNotThrow(() -> config.validate(5));
+		assertDoesNotThrow(() -> config.validate(10));
+		assertDoesNotThrow(() -> config.validate(-15));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(7));
 	}
 	
 	@Test
-	void matchesWithPowerOfTwo() {
+	void validateWithPowerOfTwo() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withPowerOfTwo();
-		assertTrue(config.matches(1).isSuccess());
-		assertTrue(config.matches(2).isSuccess());
-		assertTrue(config.matches(4).isSuccess());
-		assertTrue(config.matches(8).isSuccess());
-		assertTrue(config.matches(16).isSuccess());
-		assertTrue(config.matches(0).isError());
-		assertTrue(config.matches(3).isError());
-		assertTrue(config.matches(5).isError());
+		assertDoesNotThrow(() -> config.validate(1));
+		assertDoesNotThrow(() -> config.validate(2));
+		assertDoesNotThrow(() -> config.validate(4));
+		assertDoesNotThrow(() -> config.validate(8));
+		assertDoesNotThrow(() -> config.validate(16));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(3));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(5));
 	}
 	
 	@Test
-	void matchesWithPowerOf() {
+	void validateWithPowerOf() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained().withPowerOf(3);
-		assertTrue(config.matches(1).isSuccess());
-		assertTrue(config.matches(3).isSuccess());
-		assertTrue(config.matches(9).isSuccess());
-		assertTrue(config.matches(27).isSuccess());
-		assertTrue(config.matches(0).isError());
-		assertTrue(config.matches(2).isError());
-		assertTrue(config.matches(6).isError());
+		assertDoesNotThrow(() -> config.validate(1));
+		assertDoesNotThrow(() -> config.validate(3));
+		assertDoesNotThrow(() -> config.validate(9));
+		assertDoesNotThrow(() -> config.validate(27));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(6));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.<Integer>unconstrained()
 			.withPositive()
 			.withEven()
 			.withLessThanOrEqual(100);
 		
-		assertTrue(config.matches(2).isSuccess());
-		assertTrue(config.matches(50).isSuccess());
-		assertTrue(config.matches(100).isSuccess());
-		assertTrue(config.matches(0).isError());
-		assertTrue(config.matches(1).isError());
-		assertTrue(config.matches(102).isError());
+		assertDoesNotThrow(() -> config.validate(2));
+		assertDoesNotThrow(() -> config.validate(50));
+		assertDoesNotThrow(() -> config.validate(100));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(102));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		IntegerConstraintConfig<Integer> config = IntegerConstraintConfig.unconstrained();
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

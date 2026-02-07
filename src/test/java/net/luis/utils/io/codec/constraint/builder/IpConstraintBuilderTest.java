@@ -18,11 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.io.IpConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -51,7 +50,7 @@ class IpConstraintBuilderTest {
 		IpConstraintConfig initialConfig = IpConstraintConfig.UNCONSTRAINED.withMinLength(7);
 		IpConstraintBuilder builder = new IpConstraintBuilder(initialConfig);
 		IpConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
 		assertTrue(config.length().isPresent());
@@ -118,7 +117,7 @@ class IpConstraintBuilderTest {
 	@Test
 	void customReturnsBuilder() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
-		Constraint<String> constraint = value -> Result.success(null);
+		Constraint<String> constraint = value -> {};
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
 	}
@@ -128,12 +127,12 @@ class IpConstraintBuilderTest {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.custom(null));
 	}
-
+	
 	@Test
 	void lengthReturnsBuilder() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
 		assertSame(builder, builder.length(l -> l.minLength(7).maxLength(15)));
-
+		
 		IpConstraintConfig config = builder.build();
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());
@@ -141,7 +140,7 @@ class IpConstraintBuilderTest {
 		assertEquals(7, config.length().get().min().get().getFirst());
 		assertEquals(15, config.length().get().max().get().getFirst());
 	}
-
+	
 	@Test
 	void lengthWithNullBuilder() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
@@ -438,26 +437,26 @@ class IpConstraintBuilderTest {
 	void buildReturnsCorrectConfig() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
 		builder.length(b -> b.minLength(7).maxLength(15)).startsWith("192.");
-
+		
 		IpConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());
 		assertTrue(config.length().get().max().isPresent());
 		assertTrue(config.startsWith().isPresent());
 	}
-
+	
 	@Test
 	void methodChainingWorks() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
-
+		
 		IpConstraintConfig config = builder
 			.length(b -> b.minLength(7).maxLength(15))
 			.startsWith("192.")
 			.ipVersion(b -> b.equalTo(IpVersion.IPV4))
 			.build();
-
+		
 		assertNotNull(config);
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());

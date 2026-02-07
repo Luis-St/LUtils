@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.primitive;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,43 +36,40 @@ import static org.junit.jupiter.api.Assertions.*;
 class BooleanCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		Boolean value = true;
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), value));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, value));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), value));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, value));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as boolean"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as boolean"));
 	}
 	
 	@Test
-	void encodeStartWithTrue() {
+	void encodeWithTrue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), true);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(true), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), true);
+		assertEquals(new JsonPrimitive(true), result);
 	}
 	
 	@Test
-	void encodeStartWithFalse() {
+	void encodeWithFalse() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), false);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(false), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), false);
+		assertEquals(new JsonPrimitive(false), result);
 	}
 	
 	@Test
@@ -83,70 +81,64 @@ class BooleanCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithTrue() {
+	void encodeKeyWithTrue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<String> result = codec.encodeKey(true);
-		assertTrue(result.isSuccess());
-		assertEquals("true", result.resultOrThrow());
+		String result = codec.encodeKey(true);
+		assertEquals("true", result);
 	}
 	
 	@Test
-	void encodeKeyWithFalse() {
+	void encodeKeyWithFalse() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<String> result = codec.encodeKey(false);
-		assertTrue(result.isSuccess());
-		assertEquals("false", result.resultOrThrow());
+		String result = codec.encodeKey(false);
+		assertEquals("false", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive(true)));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive(true)));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<Boolean> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as boolean"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null as boolean"));
 	}
 	
 	@Test
-	void decodeStartWithTrue() {
+	void decodeWithTrue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<Boolean> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(true));
-		assertTrue(result.isSuccess());
-		assertEquals(true, result.resultOrThrow());
+		Boolean result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(true));
+		assertEquals(true, result);
 	}
 	
 	@Test
-	void decodeStartWithFalse() {
+	void decodeWithFalse() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<Boolean> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(false));
-		assertTrue(result.isSuccess());
-		assertEquals(false, result.resultOrThrow());
+		Boolean result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(false));
+		assertEquals(false, result);
 	}
 	
 	@Test
-	void decodeStartWithNonBoolean() {
+	void decodeWithNonBoolean() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<Boolean> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -158,23 +150,21 @@ class BooleanCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithTrue() {
+	void decodeKeyWithTrue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<Boolean> result = codec.decodeKey("true");
-		assertTrue(result.isSuccess());
-		assertEquals(true, result.resultOrThrow());
+		Boolean result = codec.decodeKey("true");
+		assertEquals(true, result);
 	}
 	
 	@Test
-	void decodeKeyWithFalse() {
+	void decodeKeyWithFalse() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<Boolean> result = codec.decodeKey("false");
-		assertTrue(result.isSuccess());
-		assertEquals(false, result.resultOrThrow());
+		Boolean result = codec.decodeKey("false");
+		assertEquals(false, result);
 	}
 	
 	@Test
@@ -182,9 +172,8 @@ class BooleanCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new BooleanCodec();
 		
-		Result<Boolean> result = codec.decodeKey("invalid");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as boolean"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("invalid"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'invalid' as boolean"));
 	}
 	
 	@Test

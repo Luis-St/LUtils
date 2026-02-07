@@ -19,9 +19,10 @@
 package net.luis.utils.io.codec.types.struct.collection;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -44,118 +45,109 @@ class MapCodecTest {
 	}
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		Map<Integer, Boolean> map = Map.of(1, true, 2, false);
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), map));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, map));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), map));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, map));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null value as map"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null value as map"));
 	}
 	
 	@Test
-	void encodeStartWithValidMap() {
+	void encodeWithValidMap() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		Map<Integer, Boolean> map = Map.of(1, true, 2, false);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), map);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), map);
 		
 		JsonObject expected = new JsonObject();
 		expected.add("1", new JsonPrimitive(true));
 		expected.add("2", new JsonPrimitive(false));
 		
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void encodeStartWithEmptyMap() {
+	void encodeWithEmptyMap() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		Map<Integer, Boolean> map = Map.of();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), map);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonObject(), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), map);
+		assertEquals(new JsonObject(), result);
 	}
 	
 	@Test
-	void encodeStartWithSingleEntry() {
+	void encodeWithSingleEntry() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER);
 		Map<String, Integer> map = Map.of("key", 42);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), map);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), map);
 		
 		JsonObject expected = new JsonObject();
 		expected.add("key", new JsonPrimitive(42));
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void encodeStartWithDifferentTypes() {
+	void encodeWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<Map<String, String>> stringCodec = new MapCodec<>(STRING, STRING);
-		Result<JsonElement> stringResult = stringCodec.encodeStart(typeProvider, typeProvider.empty(), Map.of("a", "b"));
-		assertTrue(stringResult.isSuccess());
+		assertDoesNotThrow(() -> stringCodec.encode(typeProvider, typeProvider.empty(), Map.of("a", "b")));
 		
 		Codec<Map<Integer, Double>> numericCodec = new MapCodec<>(INTEGER, DOUBLE);
-		Result<JsonElement> numericResult = numericCodec.encodeStart(typeProvider, typeProvider.empty(), Map.of(1, 3.14));
-		assertTrue(numericResult.isSuccess());
+		assertDoesNotThrow(() -> numericCodec.encode(typeProvider, typeProvider.empty(), Map.of(1, 3.14)));
 	}
 	
 	@Test
-	void encodeStartWithInvalidKeys() {
+	void encodeWithInvalidKeys() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Map.of(1, true));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), Map.of(1, true)));
 	}
 	
 	@Test
-	void encodeStartWithInvalidValues() {
+	void encodeWithInvalidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, String>> codec = new MapCodec<>(INTEGER, STRING);
 		
 		Map<Integer, String> validMap = Map.of(1, "value");
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), validMap);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), validMap));
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonObject()));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonObject()));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		
-		Result<Map<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as map"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as map"));
 	}
 	
 	@Test
-	void decodeStartWithValidObject() {
+	void decodeWithValidObject() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		
@@ -163,46 +155,42 @@ class MapCodecTest {
 		object.add("1", new JsonPrimitive(true));
 		object.add("2", new JsonPrimitive(false));
 		
-		Result<Map<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), object);
-		assertTrue(result.isSuccess());
-		assertEquals(Map.of(1, true, 2, false), result.resultOrThrow());
+		Map<Integer, Boolean> result = codec.decode(typeProvider, typeProvider.empty(), object);
+		assertEquals(Map.of(1, true, 2, false), result);
 	}
 	
 	@Test
-	void decodeStartWithEmptyObject() {
+	void decodeWithEmptyObject() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		
-		Result<Map<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonObject());
-		assertTrue(result.isSuccess());
-		assertTrue(result.resultOrThrow().isEmpty());
+		Map<Integer, Boolean> result = codec.decode(typeProvider, typeProvider.empty(), new JsonObject());
+		assertTrue(result.isEmpty());
 	}
 	
 	@Test
-	void decodeStartWithSingleEntry() {
+	void decodeWithSingleEntry() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER);
 		
 		JsonObject object = new JsonObject();
 		object.add("key", new JsonPrimitive(42));
 		
-		Result<Map<String, Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), object);
-		assertTrue(result.isSuccess());
-		assertEquals(Map.of("key", 42), result.resultOrThrow());
+		Map<String, Integer> result = codec.decode(typeProvider, typeProvider.empty(), object);
+		assertEquals(Map.of("key", 42), result);
 	}
 	
 	@Test
-	void decodeStartWithNonObject() {
+	void decodeWithNonObject() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		
-		Result<Map<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode map"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
+		assertTrue(exception.getMessage().contains("Unable to decode map"));
 	}
 	
 	@Test
-	void decodeStartWithDifferentTypes() {
+	void decodeWithDifferentTypes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		JsonObject stringObject = new JsonObject();
@@ -210,21 +198,19 @@ class MapCodecTest {
 		stringObject.add("c", new JsonPrimitive("d"));
 		
 		Codec<Map<String, String>> stringCodec = new MapCodec<>(STRING, STRING);
-		Result<Map<String, String>> stringResult = stringCodec.decodeStart(typeProvider, typeProvider.empty(), stringObject);
-		assertTrue(stringResult.isSuccess());
-		assertEquals(Map.of("a", "b", "c", "d"), stringResult.resultOrThrow());
+		Map<String, String> stringResult = stringCodec.decode(typeProvider, typeProvider.empty(), stringObject);
+		assertEquals(Map.of("a", "b", "c", "d"), stringResult);
 		
 		JsonObject numericObject = new JsonObject();
 		numericObject.add("1", new JsonPrimitive(3.14));
 		
 		Codec<Map<Integer, Double>> numericCodec = new MapCodec<>(INTEGER, DOUBLE);
-		Result<Map<Integer, Double>> numericResult = numericCodec.decodeStart(typeProvider, typeProvider.empty(), numericObject);
-		assertTrue(numericResult.isSuccess());
-		assertEquals(Map.of(1, 3.14), numericResult.resultOrThrow());
+		Map<Integer, Double> numericResult = numericCodec.decode(typeProvider, typeProvider.empty(), numericObject);
+		assertEquals(Map.of(1, 3.14), numericResult);
 	}
 	
 	@Test
-	void decodeStartWithInvalidKeys() {
+	void decodeWithInvalidKeys() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		
@@ -232,14 +218,11 @@ class MapCodecTest {
 		object.add("not-a-number", new JsonPrimitive(true));
 		object.add("2", new JsonPrimitive(false));
 		
-		Result<Map<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), object);
-		assertTrue(result.isPartial());
-		assertTrue(result.hasError());
-		assertTrue(result.hasValue());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), object));
 	}
 	
 	@Test
-	void decodeStartWithInvalidValues() {
+	void decodeWithInvalidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		
@@ -247,14 +230,11 @@ class MapCodecTest {
 		object.add("1", new JsonPrimitive(true));
 		object.add("2", new JsonPrimitive("not-a-boolean"));
 		
-		Result<Map<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), object);
-		assertTrue(result.isPartial());
-		assertTrue(result.hasError());
-		assertTrue(result.hasValue());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), object));
 	}
 	
 	@Test
-	void decodeStartWithMixedValidInvalid() {
+	void decodeWithMixedValidInvalid() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Integer>> codec = new MapCodec<>(INTEGER, INTEGER);
 		
@@ -263,10 +243,7 @@ class MapCodecTest {
 		object.add("invalid-key", new JsonPrimitive(100));
 		object.add("3", new JsonPrimitive("invalid-value"));
 		
-		Result<Map<Integer, Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), object);
-		assertTrue(result.isPartial());
-		assertTrue(result.hasError());
-		assertTrue(result.hasValue());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), object));
 	}
 	
 	@Test

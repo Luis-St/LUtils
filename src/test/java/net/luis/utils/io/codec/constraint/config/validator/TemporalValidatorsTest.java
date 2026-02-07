@@ -19,7 +19,6 @@
 package net.luis.utils.io.codec.constraint.config.validator;
 
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.*;
@@ -36,68 +35,52 @@ class TemporalValidatorsTest {
 	
 	@Test
 	void validateDurationSignWithAllEmpty() {
-		Result<Void> result = TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.empty(), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void validateDurationSignWithPositive() {
-		Result<Void> result = TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.of(false), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateDurationSign(Duration.ofHours(-1), Optional.of(false), Optional.empty(), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be positive"));
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.of(false), Optional.empty(), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateDurationSign(Duration.ofHours(-1), Optional.of(false), Optional.empty(), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be positive"));
 	}
 	
 	@Test
 	void validateDurationSignWithNegative() {
-		Result<Void> result = TemporalValidators.validateDurationSign(Duration.ofHours(-1), Optional.empty(), Optional.of(false), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.empty(), Optional.of(false), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be negative"));
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationSign(Duration.ofHours(-1), Optional.empty(), Optional.of(false), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.empty(), Optional.of(false), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be negative"));
 	}
 	
 	@Test
 	void validateDurationSignWithZero() {
-		Result<Void> result = TemporalValidators.validateDurationSign(Duration.ZERO, Optional.empty(), Optional.empty(), Optional.of(false));
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.empty(), Optional.empty(), Optional.of(false));
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be zero"));
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationSign(Duration.ZERO, Optional.empty(), Optional.empty(), Optional.of(false)));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.empty(), Optional.empty(), Optional.of(false)));
+		assertTrue(exception.getMessage().contains("must be zero"));
 	}
 	
 	@Test
 	void validateDurationSignWithNonPositive() {
-		Result<Void> result = TemporalValidators.validateDurationSign(Duration.ofHours(-1), Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> zeroResult = TemporalValidators.validateDurationSign(Duration.ZERO, Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(zeroResult.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-positive"));
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationSign(Duration.ofHours(-1), Optional.of(true), Optional.empty(), Optional.empty()));
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationSign(Duration.ZERO, Optional.of(true), Optional.empty(), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.of(true), Optional.empty(), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be non-positive"));
 	}
 	
 	@Test
 	void validateDurationSignWithNonNegative() {
-		Result<Void> result = TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> zeroResult = TemporalValidators.validateDurationSign(Duration.ZERO, Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(zeroResult.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateDurationSign(Duration.ofHours(-1), Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-negative"));
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.empty(), Optional.of(true), Optional.empty()));
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationSign(Duration.ZERO, Optional.empty(), Optional.of(true), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateDurationSign(Duration.ofHours(-1), Optional.empty(), Optional.of(true), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be non-negative"));
 	}
 	
 	@Test
 	void validateDurationSignWithNonZero() {
-		Result<Void> result = TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.empty(), Optional.empty(), Optional.of(true));
-		assertTrue(result.isSuccess());
-		Result<Void> negResult = TemporalValidators.validateDurationSign(Duration.ofHours(-1), Optional.empty(), Optional.empty(), Optional.of(true));
-		assertTrue(negResult.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateDurationSign(Duration.ZERO, Optional.empty(), Optional.empty(), Optional.of(true));
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-zero"));
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationSign(Duration.ofHours(1), Optional.empty(), Optional.empty(), Optional.of(true)));
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationSign(Duration.ofHours(-1), Optional.empty(), Optional.empty(), Optional.of(true)));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateDurationSign(Duration.ZERO, Optional.empty(), Optional.empty(), Optional.of(true)));
+		assertTrue(exception.getMessage().contains("must be non-zero"));
 	}
 	
 	@Test
@@ -110,27 +93,23 @@ class TemporalValidatorsTest {
 	
 	@Test
 	void validateDurationWithinLastWithEmptyOptional() {
-		Result<Void> result = TemporalValidators.validateDurationWithinLast(Duration.ofHours(-5), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationWithinLast(Duration.ofHours(-5), Optional.empty()));
 	}
 	
 	@Test
 	void validateDurationWithinLastWithPass() {
-		Result<Void> result = TemporalValidators.validateDurationWithinLast(Duration.ofMinutes(-30), Optional.of(Duration.ofHours(1)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationWithinLast(Duration.ofMinutes(-30), Optional.of(Duration.ofHours(1))));
 	}
 	
 	@Test
 	void validateDurationWithinLastWithFail() {
-		Result<Void> result = TemporalValidators.validateDurationWithinLast(Duration.ofHours(-2), Optional.of(Duration.ofHours(1)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be within last"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateDurationWithinLast(Duration.ofHours(-2), Optional.of(Duration.ofHours(1))));
+		assertTrue(exception.getMessage().contains("must be within last"));
 	}
 	
 	@Test
 	void validateDurationWithinLastWithBoundary() {
-		Result<Void> result = TemporalValidators.validateDurationWithinLast(Duration.ofHours(-1), Optional.of(Duration.ofHours(1)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationWithinLast(Duration.ofHours(-1), Optional.of(Duration.ofHours(1))));
 	}
 	
 	@Test
@@ -141,27 +120,23 @@ class TemporalValidatorsTest {
 	
 	@Test
 	void validateDurationWithinNextWithEmptyOptional() {
-		Result<Void> result = TemporalValidators.validateDurationWithinNext(Duration.ofHours(5), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationWithinNext(Duration.ofHours(5), Optional.empty()));
 	}
 	
 	@Test
 	void validateDurationWithinNextWithPass() {
-		Result<Void> result = TemporalValidators.validateDurationWithinNext(Duration.ofMinutes(30), Optional.of(Duration.ofHours(1)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationWithinNext(Duration.ofMinutes(30), Optional.of(Duration.ofHours(1))));
 	}
 	
 	@Test
 	void validateDurationWithinNextWithFail() {
-		Result<Void> result = TemporalValidators.validateDurationWithinNext(Duration.ofHours(2), Optional.of(Duration.ofHours(1)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be within next"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateDurationWithinNext(Duration.ofHours(2), Optional.of(Duration.ofHours(1))));
+		assertTrue(exception.getMessage().contains("must be within next"));
 	}
 	
 	@Test
 	void validateDurationWithinNextWithBoundary() {
-		Result<Void> result = TemporalValidators.validateDurationWithinNext(Duration.ofHours(1), Optional.of(Duration.ofHours(1)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validateDurationWithinNext(Duration.ofHours(1), Optional.of(Duration.ofHours(1))));
 	}
 	
 	@Test
@@ -172,68 +147,52 @@ class TemporalValidatorsTest {
 	
 	@Test
 	void validatePeriodSignWithAllEmpty() {
-		Result<Void> result = TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.empty(), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void validatePeriodSignWithPositive() {
-		Result<Void> result = TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.of(false), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = TemporalValidators.validatePeriodSign(Period.ofMonths(-1), Optional.of(false), Optional.empty(), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be positive"));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.of(false), Optional.empty(), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validatePeriodSign(Period.ofMonths(-1), Optional.of(false), Optional.empty(), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be positive"));
 	}
 	
 	@Test
 	void validatePeriodSignWithNegative() {
-		Result<Void> result = TemporalValidators.validatePeriodSign(Period.ofMonths(-1), Optional.empty(), Optional.of(false), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.empty(), Optional.of(false), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be negative"));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodSign(Period.ofMonths(-1), Optional.empty(), Optional.of(false), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.empty(), Optional.of(false), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be negative"));
 	}
 	
 	@Test
 	void validatePeriodSignWithZero() {
-		Result<Void> result = TemporalValidators.validatePeriodSign(Period.ZERO, Optional.empty(), Optional.empty(), Optional.of(false));
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.empty(), Optional.empty(), Optional.of(false));
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be zero"));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodSign(Period.ZERO, Optional.empty(), Optional.empty(), Optional.of(false)));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.empty(), Optional.empty(), Optional.of(false)));
+		assertTrue(exception.getMessage().contains("must be zero"));
 	}
 	
 	@Test
 	void validatePeriodSignWithNonPositive() {
-		Result<Void> result = TemporalValidators.validatePeriodSign(Period.ofMonths(-1), Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> zeroResult = TemporalValidators.validatePeriodSign(Period.ZERO, Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(zeroResult.isSuccess());
-		Result<Void> failResult = TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-positive"));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodSign(Period.ofMonths(-1), Optional.of(true), Optional.empty(), Optional.empty()));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodSign(Period.ZERO, Optional.of(true), Optional.empty(), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.of(true), Optional.empty(), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be non-positive"));
 	}
 	
 	@Test
 	void validatePeriodSignWithNonNegative() {
-		Result<Void> result = TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> zeroResult = TemporalValidators.validatePeriodSign(Period.ZERO, Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(zeroResult.isSuccess());
-		Result<Void> failResult = TemporalValidators.validatePeriodSign(Period.ofMonths(-1), Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-negative"));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.empty(), Optional.of(true), Optional.empty()));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodSign(Period.ZERO, Optional.empty(), Optional.of(true), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validatePeriodSign(Period.ofMonths(-1), Optional.empty(), Optional.of(true), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be non-negative"));
 	}
 	
 	@Test
 	void validatePeriodSignWithNonZero() {
-		Result<Void> result = TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.empty(), Optional.empty(), Optional.of(true));
-		assertTrue(result.isSuccess());
-		Result<Void> negResult = TemporalValidators.validatePeriodSign(Period.ofMonths(-1), Optional.empty(), Optional.empty(), Optional.of(true));
-		assertTrue(negResult.isSuccess());
-		Result<Void> failResult = TemporalValidators.validatePeriodSign(Period.ZERO, Optional.empty(), Optional.empty(), Optional.of(true));
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-zero"));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodSign(Period.ofMonths(1), Optional.empty(), Optional.empty(), Optional.of(true)));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodSign(Period.ofMonths(-1), Optional.empty(), Optional.empty(), Optional.of(true)));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validatePeriodSign(Period.ZERO, Optional.empty(), Optional.empty(), Optional.of(true)));
+		assertTrue(exception.getMessage().contains("must be non-zero"));
 	}
 	
 	@Test
@@ -246,56 +205,45 @@ class TemporalValidatorsTest {
 	
 	@Test
 	void validatePeriodRangeWithAllEmpty() {
-		Result<Void> result = TemporalValidators.validatePeriodRange(Period.ofMonths(6), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodRange(Period.ofMonths(6), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void validatePeriodRangeWithMinOnly() {
-		Result<Void> result = TemporalValidators.validatePeriodRange(Period.ofMonths(6), Optional.of(Pair.of(Period.ofMonths(3), true)), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = TemporalValidators.validatePeriodRange(Period.ofMonths(2), Optional.of(Pair.of(Period.ofMonths(3), true)), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be greater than or equal to"));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodRange(Period.ofMonths(6), Optional.of(Pair.of(Period.ofMonths(3), true)), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validatePeriodRange(Period.ofMonths(2), Optional.of(Pair.of(Period.ofMonths(3), true)), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be greater than or equal to"));
 	}
 	
 	@Test
 	void validatePeriodRangeWithMaxOnly() {
-		Result<Void> result = TemporalValidators.validatePeriodRange(Period.ofMonths(6), Optional.empty(), Optional.of(Pair.of(Period.ofMonths(12), true)));
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = TemporalValidators.validatePeriodRange(Period.ofMonths(15), Optional.empty(), Optional.of(Pair.of(Period.ofMonths(12), true)));
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be less than or equal to"));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodRange(Period.ofMonths(6), Optional.empty(), Optional.of(Pair.of(Period.ofMonths(12), true))));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validatePeriodRange(Period.ofMonths(15), Optional.empty(), Optional.of(Pair.of(Period.ofMonths(12), true))));
+		assertTrue(exception.getMessage().contains("must be less than or equal to"));
 	}
 	
 	@Test
 	void validatePeriodRangeWithBoth() {
-		Result<Void> result = TemporalValidators.validatePeriodRange(Period.ofMonths(6), Optional.of(Pair.of(Period.ofMonths(3), true)), Optional.of(Pair.of(Period.ofMonths(12), true)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodRange(Period.ofMonths(6), Optional.of(Pair.of(Period.ofMonths(3), true)), Optional.of(Pair.of(Period.ofMonths(12), true))));
 	}
 	
 	@Test
 	void validatePeriodRangeWithInclusiveBounds() {
-		Result<Void> minResult = TemporalValidators.validatePeriodRange(Period.ofMonths(3), Optional.of(Pair.of(Period.ofMonths(3), true)), Optional.empty());
-		assertTrue(minResult.isSuccess());
-		Result<Void> maxResult = TemporalValidators.validatePeriodRange(Period.ofMonths(12), Optional.empty(), Optional.of(Pair.of(Period.ofMonths(12), true)));
-		assertTrue(maxResult.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodRange(Period.ofMonths(3), Optional.of(Pair.of(Period.ofMonths(3), true)), Optional.empty()));
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodRange(Period.ofMonths(12), Optional.empty(), Optional.of(Pair.of(Period.ofMonths(12), true))));
 	}
 	
 	@Test
 	void validatePeriodRangeWithExclusiveBounds() {
-		Result<Void> minResult = TemporalValidators.validatePeriodRange(Period.ofMonths(3), Optional.of(Pair.of(Period.ofMonths(3), false)), Optional.empty());
-		assertTrue(minResult.isError());
-		assertTrue(minResult.errorOrThrow().contains("must be greater than"));
-		Result<Void> maxResult = TemporalValidators.validatePeriodRange(Period.ofMonths(12), Optional.empty(), Optional.of(Pair.of(Period.ofMonths(12), false)));
-		assertTrue(maxResult.isError());
-		assertTrue(maxResult.errorOrThrow().contains("must be less than"));
+		ConstraintViolateException minException = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validatePeriodRange(Period.ofMonths(3), Optional.of(Pair.of(Period.ofMonths(3), false)), Optional.empty()));
+		assertTrue(minException.getMessage().contains("must be greater than"));
+		ConstraintViolateException maxException = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validatePeriodRange(Period.ofMonths(12), Optional.empty(), Optional.of(Pair.of(Period.ofMonths(12), false))));
+		assertTrue(maxException.getMessage().contains("must be less than"));
 	}
 	
 	@Test
 	void validatePeriodRangeWithDays() {
-		Result<Void> result = TemporalValidators.validatePeriodRange(Period.ofDays(15), Optional.of(Pair.of(Period.ofDays(10), true)), Optional.of(Pair.of(Period.ofDays(20), true)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validatePeriodRange(Period.ofDays(15), Optional.of(Pair.of(Period.ofDays(10), true)), Optional.of(Pair.of(Period.ofDays(20), true))));
 	}
 	
 	@Test
@@ -307,68 +255,52 @@ class TemporalValidatorsTest {
 	
 	@Test
 	void validateZoneOffsetSignWithAllEmpty() {
-		Result<Void> result = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void validateZoneOffsetSignWithPositive() {
-		Result<Void> result = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.of(false), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.of(false), Optional.empty(), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be positive"));
+		assertDoesNotThrow(() -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.of(false), Optional.empty(), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.of(false), Optional.empty(), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be positive"));
 	}
 	
 	@Test
 	void validateZoneOffsetSignWithNegative() {
-		Result<Void> result = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.empty(), Optional.of(false), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.of(false), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be negative"));
+		assertDoesNotThrow(() -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.empty(), Optional.of(false), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.of(false), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be negative"));
 	}
 	
 	@Test
 	void validateZoneOffsetSignWithZero() {
-		Result<Void> result = TemporalValidators.validateZoneOffsetSign(ZoneOffset.UTC, Optional.empty(), Optional.empty(), Optional.of(false));
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.empty(), Optional.of(false));
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be zero"));
+		assertDoesNotThrow(() -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.UTC, Optional.empty(), Optional.empty(), Optional.of(false)));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.empty(), Optional.of(false)));
+		assertTrue(exception.getMessage().contains("must be zero"));
 	}
 	
 	@Test
 	void validateZoneOffsetSignWithNonPositive() {
-		Result<Void> result = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> zeroResult = TemporalValidators.validateZoneOffsetSign(ZoneOffset.UTC, Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(zeroResult.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-positive"));
+		assertDoesNotThrow(() -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.of(true), Optional.empty(), Optional.empty()));
+		assertDoesNotThrow(() -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.UTC, Optional.of(true), Optional.empty(), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.of(true), Optional.empty(), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be non-positive"));
 	}
 	
 	@Test
 	void validateZoneOffsetSignWithNonNegative() {
-		Result<Void> result = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> zeroResult = TemporalValidators.validateZoneOffsetSign(ZoneOffset.UTC, Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(zeroResult.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-negative"));
+		assertDoesNotThrow(() -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.of(true), Optional.empty()));
+		assertDoesNotThrow(() -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.UTC, Optional.empty(), Optional.of(true), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.empty(), Optional.of(true), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be non-negative"));
 	}
 	
 	@Test
 	void validateZoneOffsetSignWithNonZero() {
-		Result<Void> result = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.empty(), Optional.of(true));
-		assertTrue(result.isSuccess());
-		Result<Void> negResult = TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.empty(), Optional.empty(), Optional.of(true));
-		assertTrue(negResult.isSuccess());
-		Result<Void> failResult = TemporalValidators.validateZoneOffsetSign(ZoneOffset.UTC, Optional.empty(), Optional.empty(), Optional.of(true));
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-zero"));
+		assertDoesNotThrow(() -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.empty(), Optional.of(true)));
+		assertDoesNotThrow(() -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.empty(), Optional.empty(), Optional.of(true)));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> TemporalValidators.validateZoneOffsetSign(ZoneOffset.UTC, Optional.empty(), Optional.empty(), Optional.of(true)));
+		assertTrue(exception.getMessage().contains("must be non-zero"));
 	}
 	
 	@Test

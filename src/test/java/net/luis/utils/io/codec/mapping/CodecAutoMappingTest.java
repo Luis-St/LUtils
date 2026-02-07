@@ -50,7 +50,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void simpleRecordCodecWorks() {
+	void simpleRecordCodecWorks() throws Exception {
 		record SimpleRecord(String name, int age, double height, boolean active) {}
 		
 		Codec<SimpleRecord> codec = CodecAutoMapping.createAutoMappedCodec(SimpleRecord.class);
@@ -71,7 +71,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void emptyRecordCodecWorks() {
+	void emptyRecordCodecWorks() throws Exception {
 		record EmptyRecord() {}
 		
 		Codec<EmptyRecord> codec = CodecAutoMapping.createAutoMappedCodec(EmptyRecord.class);
@@ -89,7 +89,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void enumCodecWorks() {
+	void enumCodecWorks() throws Exception {
 		Codec<TestEnum> codec = CodecAutoMapping.createAutoMappedCodec(TestEnum.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
@@ -104,7 +104,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void annotatedFieldsOnlyAreUsed() {
+	void annotatedFieldsOnlyAreUsed() throws Exception {
 		Codec<AnnotatedFieldsClass> codec = CodecAutoMapping.createAutoMappedCodec(AnnotatedFieldsClass.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
@@ -124,7 +124,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void implicitFinalFieldsAreUsed() {
+	void implicitFinalFieldsAreUsed() throws Exception {
 		Codec<ImplicitFieldsClass> codec = CodecAutoMapping.createAutoMappedCodec(ImplicitFieldsClass.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
@@ -144,7 +144,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void emptyClassCodecWorks() {
+	void emptyClassCodecWorks() throws Exception {
 		Codec<EmptyClass> codec = CodecAutoMapping.createAutoMappedCodec(EmptyClass.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
@@ -160,7 +160,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void multipleConstructorsWithAnnotation() {
+	void multipleConstructorsWithAnnotation() throws Exception {
 		Codec<MultiConstructorClass> codec = CodecAutoMapping.createAutoMappedCodec(MultiConstructorClass.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
@@ -183,7 +183,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void collectionsWithGenericInfo() {
+	void collectionsWithGenericInfo() throws Exception {
 		record CollectionRecord(
 			@GenericInfo(Integer.class) List<Integer> numbers,
 			@GenericInfo(String.class) Set<String> strings,
@@ -225,7 +225,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void nestedGenericTypes() {
+	void nestedGenericTypes() throws Exception {
 		record NestedGenericRecord(
 			@GenericInfo({ List.class, Integer.class }) List<List<Integer>> nestedList,
 			@GenericInfo({ String.class, List.class, String.class }) Map<String, List<String>> nestedMap,
@@ -261,7 +261,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void complexNestedStructures() {
+	void complexNestedStructures() throws Exception {
 		record Address(String street, String city, TestEnum country, int zipCode) {}
 		
 		record Person(
@@ -352,7 +352,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void arrayTypesAreSupported() {
+	void arrayTypesAreSupported() throws Exception {
 		record ArrayRecord(String[] strings, int[] numbers) {}
 		
 		Codec<ArrayRecord> codec = CodecAutoMapping.createAutoMappedCodec(ArrayRecord.class);
@@ -367,7 +367,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void twoDimensionalArraysAreSupported() {
+	void twoDimensionalArraysAreSupported() throws Exception {
 		record Array2DRecord(int[][] matrix, String[][] textGrid, boolean[][] flags) {}
 		
 		Codec<Array2DRecord> codec = CodecAutoMapping.createAutoMappedCodec(Array2DRecord.class);
@@ -415,7 +415,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void threeDimensionalArraysAreSupported() {
+	void threeDimensionalArraysAreSupported() throws Exception {
 		record Array3DRecord(int[][][] cube, byte[][][] data) {}
 		
 		Codec<Array3DRecord> codec = CodecAutoMapping.createAutoMappedCodec(Array3DRecord.class);
@@ -465,7 +465,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void jaggedArraysAreSupported() {
+	void jaggedArraysAreSupported() throws Exception {
 		record JaggedArrayRecord(int[][] jaggedMatrix, String[][] jaggedText) {}
 		
 		Codec<JaggedArrayRecord> codec = CodecAutoMapping.createAutoMappedCodec(JaggedArrayRecord.class);
@@ -499,7 +499,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void emptyMultiDimensionalArraysAreSupported() {
+	void emptyMultiDimensionalArraysAreSupported() throws Exception {
 		record EmptyArrayRecord(int[][] emptyMatrix, String[][] emptyGrid) {}
 		
 		Codec<EmptyArrayRecord> codec = CodecAutoMapping.createAutoMappedCodec(EmptyArrayRecord.class);
@@ -517,7 +517,7 @@ class CodecAutoMappingTest {
 	}
 	
 	@Test
-	void mixedDimensionalArraysWithComplexTypes() {
+	void mixedDimensionalArraysWithComplexTypes() throws Exception {
 		record ComplexArrayRecord(TestEnum[][] enumMatrix, LocalDate[][][] dateGrid) {}
 		
 		Codec<ComplexArrayRecord> codec = CodecAutoMapping.createAutoMappedCodec(ComplexArrayRecord.class);
@@ -579,7 +579,7 @@ class CodecAutoMappingTest {
 		
 		private final String name;
 		private final int age;
-		private transient final String transientField = "transient";
+		private final String transientField = "transient";
 		
 		private ImplicitFieldsClass(@NonNull String name, int age) {
 			this.name = name;
@@ -589,10 +589,7 @@ class CodecAutoMappingTest {
 	
 	private static class EmptyClass {}
 	
-	private static final class MultiConstructorClass {
-		
-		private final String name;
-		private final int age;
+	private record MultiConstructorClass(String name, int age) {
 		
 		private MultiConstructorClass(@NonNull String name) {
 			this(name, 0);
@@ -605,17 +602,11 @@ class CodecAutoMappingTest {
 		}
 	}
 	
-	private static final class InvalidConstructorClass {
-		
-		@CodecField
-		private final String name;
-		@CodecField
-		private final int age;
+	private record InvalidConstructorClass(@CodecField String name, @CodecField int age) {
 		
 		@CodecConstructor
 		private InvalidConstructorClass(@NonNull String name, @NonNull String age) {
-			this.name = name;
-			this.age = Integer.parseInt(age);
+			this(name, Integer.parseInt(age));
 		}
 	}
 	//endregion

@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
@@ -43,74 +43,47 @@ class ZoneOffsetConstraintConfigTest {
 	
 	@Test
 	void constructWithNullEqualTo() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullIn() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullMin() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullMax() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullPositive() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullNegative() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullZero() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			null, Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullHours() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), null, Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullCustom() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), null
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null));
 	}
 	
 	@Test
@@ -142,20 +115,20 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.zero().isEmpty());
 		assertTrue(config.hour().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(UTC).isSuccess());
+		assertDoesNotThrow(() -> config.validate(UTC));
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(ZoneOffsetConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withPositive();
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withEqualTo(PLUS_2);
@@ -366,7 +339,9 @@ class ZoneOffsetConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withCustom(offset -> offset.getTotalSeconds() % 3600 == 0 ? Result.success() : Result.error("Offset must be on the hour"));
+		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withCustom(offset -> {
+			if (offset.getTotalSeconds() % 3600 != 0) throw new ConstraintViolateException("Offset must be on the hour");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -376,165 +351,165 @@ class ZoneOffsetConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withEqualTo(PLUS_2);
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(PLUS_5).isError());
+		assertDoesNotThrow(() -> config.validate(PLUS_2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_5));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNotEqualTo(PLUS_2);
-		assertTrue(config.matches(PLUS_5).isSuccess());
-		assertTrue(config.matches(PLUS_2).isError());
+		assertDoesNotThrow(() -> config.validate(PLUS_5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_2));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withIn(List.of(UTC, PLUS_2));
-		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(PLUS_5).isError());
+		assertDoesNotThrow(() -> config.validate(UTC));
+		assertDoesNotThrow(() -> config.validate(PLUS_2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_5));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNotIn(List.of(UTC, PLUS_2));
-		assertTrue(config.matches(PLUS_5).isSuccess());
-		assertTrue(config.matches(UTC).isError());
-		assertTrue(config.matches(PLUS_2).isError());
+		assertDoesNotThrow(() -> config.validate(PLUS_5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(UTC));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_2));
 	}
 	
 	@Test
-	void matchesWithGreaterThan() {
+	void validateWithGreaterThan() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withGreaterThan(UTC);
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(PLUS_5).isSuccess());
-		assertTrue(config.matches(UTC).isError());
-		assertTrue(config.matches(MINUS_5).isError());
+		assertDoesNotThrow(() -> config.validate(PLUS_2));
+		assertDoesNotThrow(() -> config.validate(PLUS_5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(UTC));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MINUS_5));
 	}
 	
 	@Test
-	void matchesWithGreaterThanOrEqual() {
+	void validateWithGreaterThanOrEqual() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(UTC);
-		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(MINUS_5).isError());
+		assertDoesNotThrow(() -> config.validate(UTC));
+		assertDoesNotThrow(() -> config.validate(PLUS_2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MINUS_5));
 	}
 	
 	@Test
-	void matchesWithLessThan() {
+	void validateWithLessThan() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withLessThan(UTC);
-		assertTrue(config.matches(MINUS_5).isSuccess());
-		assertTrue(config.matches(MINUS_8).isSuccess());
-		assertTrue(config.matches(UTC).isError());
-		assertTrue(config.matches(PLUS_2).isError());
+		assertDoesNotThrow(() -> config.validate(MINUS_5));
+		assertDoesNotThrow(() -> config.validate(MINUS_8));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(UTC));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_2));
 	}
 	
 	@Test
-	void matchesWithLessThanOrEqual() {
+	void validateWithLessThanOrEqual() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(UTC);
-		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(MINUS_5).isSuccess());
-		assertTrue(config.matches(PLUS_2).isError());
+		assertDoesNotThrow(() -> config.validate(UTC));
+		assertDoesNotThrow(() -> config.validate(MINUS_5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_2));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetween(MINUS_5, PLUS_2);
-		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(MINUS_5).isError());
-		assertTrue(config.matches(PLUS_2).isError());
-		assertTrue(config.matches(MINUS_8).isError());
+		assertDoesNotThrow(() -> config.validate(UTC));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MINUS_5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MINUS_8));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(MINUS_5, PLUS_2);
-		assertTrue(config.matches(MINUS_5).isSuccess());
-		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(PLUS_5).isError());
-		assertTrue(config.matches(MINUS_8).isError());
+		assertDoesNotThrow(() -> config.validate(MINUS_5));
+		assertDoesNotThrow(() -> config.validate(UTC));
+		assertDoesNotThrow(() -> config.validate(PLUS_2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MINUS_8));
 	}
 	
 	@Test
-	void matchesWithPositive() {
+	void validateWithPositive() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withPositive();
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(PLUS_5).isSuccess());
-		assertTrue(config.matches(UTC).isError());
-		assertTrue(config.matches(MINUS_5).isError());
+		assertDoesNotThrow(() -> config.validate(PLUS_2));
+		assertDoesNotThrow(() -> config.validate(PLUS_5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(UTC));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MINUS_5));
 	}
 	
 	@Test
-	void matchesWithNonPositive() {
+	void validateWithNonPositive() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNonPositive();
-		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(MINUS_5).isSuccess());
-		assertTrue(config.matches(PLUS_2).isError());
+		assertDoesNotThrow(() -> config.validate(UTC));
+		assertDoesNotThrow(() -> config.validate(MINUS_5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_2));
 	}
 	
 	@Test
-	void matchesWithNegative() {
+	void validateWithNegative() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNegative();
-		assertTrue(config.matches(MINUS_5).isSuccess());
-		assertTrue(config.matches(MINUS_8).isSuccess());
-		assertTrue(config.matches(UTC).isError());
-		assertTrue(config.matches(PLUS_2).isError());
+		assertDoesNotThrow(() -> config.validate(MINUS_5));
+		assertDoesNotThrow(() -> config.validate(MINUS_8));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(UTC));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_2));
 	}
 	
 	@Test
-	void matchesWithNonNegative() {
+	void validateWithNonNegative() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNonNegative();
-		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(MINUS_5).isError());
+		assertDoesNotThrow(() -> config.validate(UTC));
+		assertDoesNotThrow(() -> config.validate(PLUS_2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MINUS_5));
 	}
 	
 	@Test
-	void matchesWithZero() {
+	void validateWithZero() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withZero();
-		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(PLUS_2).isError());
-		assertTrue(config.matches(MINUS_5).isError());
+		assertDoesNotThrow(() -> config.validate(UTC));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MINUS_5));
 	}
 	
 	@Test
-	void matchesWithNonZero() {
+	void validateWithNonZero() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNonZero();
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(MINUS_5).isSuccess());
-		assertTrue(config.matches(UTC).isError());
+		assertDoesNotThrow(() -> config.validate(PLUS_2));
+		assertDoesNotThrow(() -> config.validate(MINUS_5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(UTC));
 	}
 	
 	@Test
-	void matchesWithHoursConstraint() {
+	void validateWithHoursConstraint() {
 		NumericConstraintConfig hoursConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-2, 2);
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withHour(hoursConfig);
-		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(PLUS_5).isError());
-		assertTrue(config.matches(MINUS_5).isError());
+		assertDoesNotThrow(() -> config.validate(UTC));
+		assertDoesNotThrow(() -> config.validate(PLUS_2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MINUS_5));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED
 			.withGreaterThanOrEqual(MINUS_5)
 			.withLessThanOrEqual(PLUS_2)
 			.withNotIn(List.of(UTC));
 		
-		assertTrue(config.matches(MINUS_5).isSuccess());
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(UTC).isError());
-		assertTrue(config.matches(PLUS_5).isError());
-		assertTrue(config.matches(MINUS_8).isError());
+		assertDoesNotThrow(() -> config.validate(MINUS_5));
+		assertDoesNotThrow(() -> config.validate(PLUS_2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(UTC));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(PLUS_5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MINUS_8));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

@@ -56,7 +56,7 @@ class CodecArrayHelperTest {
 	}
 	
 	@Test
-	void singleDimensionalPrimitiveArraysWork() {
+	void singleDimensionalPrimitiveArraysWork() throws Exception {
 		Function<Class<?>, Codec<Object>> getter = clazz -> (Codec) STRING;
 		
 		Codec<boolean[]> booleanCodec = CodecArrayHelper.getOrCreateArrayCodec(boolean[].class, getter);
@@ -85,7 +85,7 @@ class CodecArrayHelperTest {
 	}
 	
 	@Test
-	void singleDimensionalObjectArraysWork() {
+	void singleDimensionalObjectArraysWork() throws Exception {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		Function<Class<?>, Codec<Object>> getter = clazz -> {
 			if (clazz == String.class) {
@@ -118,7 +118,7 @@ class CodecArrayHelperTest {
 	}
 	
 	@Test
-	void multiDimensionalArraysWork() {
+	void multiDimensionalArraysWork() throws Exception {
 		Function<Class<?>, Codec<Object>> getter = clazz -> {
 			if (clazz == String.class) {
 				return (Codec) STRING;
@@ -167,7 +167,7 @@ class CodecArrayHelperTest {
 	}
 	
 	@Test
-	void emptyArraysAreSupported() {
+	void emptyArraysAreSupported() throws Exception {
 		Function<Class<?>, Codec<Object>> getter = clazz -> (Codec) STRING;
 		
 		Codec<int[]> intCodec = CodecArrayHelper.getOrCreateArrayCodec(int[].class, getter);

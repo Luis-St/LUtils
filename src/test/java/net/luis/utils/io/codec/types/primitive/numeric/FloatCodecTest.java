@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,103 +36,94 @@ import static org.junit.jupiter.api.Assertions.*;
 class FloatCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		Float value = 3.14f;
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), value));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, value));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), value));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, value));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as float"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as float"));
 	}
 	
 	@Test
-	void encodeStartWithPositiveValue() {
+	void encodeWithPositiveValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14f);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(3.14f), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), 3.14f);
+		assertEquals(new JsonPrimitive(3.14f), result);
 	}
 	
 	@Test
-	void encodeStartWithNegativeValue() {
+	void encodeWithNegativeValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), -3.14f);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(-3.14f), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), -3.14f);
+		assertEquals(new JsonPrimitive(-3.14f), result);
 	}
 	
 	@Test
-	void encodeStartWithZero() {
+	void encodeWithZero() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.0f);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(0.0f), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), 0.0f);
+		assertEquals(new JsonPrimitive(0.0f), result);
 	}
 	
 	@Test
-	void encodeStartWithMaxValue() {
+	void encodeWithMaxValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Float.MAX_VALUE);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Float.MAX_VALUE), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Float.MAX_VALUE);
+		assertEquals(new JsonPrimitive(Float.MAX_VALUE), result);
 	}
 	
 	@Test
-	void encodeStartWithMinValue() {
+	void encodeWithMinValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Float.MIN_VALUE);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Float.MIN_VALUE), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Float.MIN_VALUE);
+		assertEquals(new JsonPrimitive(Float.MIN_VALUE), result);
 	}
 	
 	@Test
-	void encodeStartWithPositiveInfinity() {
+	void encodeWithPositiveInfinity() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Float.POSITIVE_INFINITY);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Float.POSITIVE_INFINITY), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Float.POSITIVE_INFINITY);
+		assertEquals(new JsonPrimitive(Float.POSITIVE_INFINITY), result);
 	}
 	
 	@Test
-	void encodeStartWithNegativeInfinity() {
+	void encodeWithNegativeInfinity() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Float.NEGATIVE_INFINITY);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Float.NEGATIVE_INFINITY), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Float.NEGATIVE_INFINITY);
+		assertEquals(new JsonPrimitive(Float.NEGATIVE_INFINITY), result);
 	}
 	
 	@Test
-	void encodeStartWithNaN() {
+	void encodeWithNaN() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Float.NaN);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Float.NaN), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Float.NaN);
+		assertEquals(new JsonPrimitive(Float.NaN), result);
 	}
 	
 	@Test
@@ -143,90 +135,82 @@ class FloatCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithValue() {
+	void encodeKeyWithValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<String> result = codec.encodeKey(3.14f);
-		assertTrue(result.isSuccess());
-		assertEquals("3.14", result.resultOrThrow());
+		String result = codec.encodeKey(3.14f);
+		assertEquals("3.14", result);
 	}
 	
 	@Test
-	void encodeKeyWithNegativeValue() {
+	void encodeKeyWithNegativeValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<String> result = codec.encodeKey(-3.14f);
-		assertTrue(result.isSuccess());
-		assertEquals("-3.14", result.resultOrThrow());
+		String result = codec.encodeKey(-3.14f);
+		assertEquals("-3.14", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive(3.14f)));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive(3.14f)));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as float"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as float"));
 	}
 	
 	@Test
-	void decodeStartWithValidValue() {
+	void decodeWithValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14f));
-		assertTrue(result.isSuccess());
-		assertEquals(3.14f, result.resultOrThrow(), 0.001f);
+		Float result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14f));
+		assertEquals(3.14f, result, 0.001f);
 	}
 	
 	@Test
-	void decodeStartWithNegativeValue() {
+	void decodeWithNegativeValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-3.14f));
-		assertTrue(result.isSuccess());
-		assertEquals(-3.14f, result.resultOrThrow(), 0.001f);
+		Float result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(-3.14f));
+		assertEquals(-3.14f, result, 0.001f);
 	}
 	
 	@Test
-	void decodeStartWithMaxValue() {
+	void decodeWithMaxValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Float.MAX_VALUE));
-		assertTrue(result.isSuccess());
-		assertEquals(Float.MAX_VALUE, result.resultOrThrow());
+		Float result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(Float.MAX_VALUE));
+		assertEquals(Float.MAX_VALUE, result);
 	}
 	
 	@Test
-	void decodeStartWithMinValue() {
+	void decodeWithMinValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Float.MIN_VALUE));
-		assertTrue(result.isSuccess());
-		assertEquals(Float.MIN_VALUE, result.resultOrThrow());
+		Float result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(Float.MIN_VALUE));
+		assertEquals(Float.MIN_VALUE, result);
 	}
 	
 	@Test
-	void decodeStartWithNonNumber() {
+	void decodeWithNonNumber() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not a number"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not a number")));
 	}
 	
 	@Test
@@ -239,23 +223,21 @@ class FloatCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidValue() {
+	void decodeKeyWithValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey("3.14");
-		assertTrue(result.isSuccess());
-		assertEquals(3.14f, result.resultOrThrow(), 0.001f);
+		Float result = codec.decodeKey("3.14");
+		assertEquals(3.14f, result, 0.001f);
 	}
 	
 	@Test
-	void decodeKeyWithNegativeValue() {
+	void decodeKeyWithNegativeValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey("-3.14");
-		assertTrue(result.isSuccess());
-		assertEquals(-3.14f, result.resultOrThrow(), 0.001f);
+		Float result = codec.decodeKey("-3.14");
+		assertEquals(-3.14f, result, 0.001f);
 	}
 	
 	@Test
@@ -263,39 +245,35 @@ class FloatCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey("invalid");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as float"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("invalid"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'invalid' as float"));
 	}
 	
 	@Test
-	void decodeKeyWithInfinity() {
+	void decodeKeyWithInfinity() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey("Infinity");
-		assertTrue(result.isSuccess());
-		assertEquals(Float.POSITIVE_INFINITY, result.resultOrThrow());
+		Float result = codec.decodeKey("Infinity");
+		assertEquals(Float.POSITIVE_INFINITY, result);
 	}
 	
 	@Test
-	void decodeKeyWithNegativeInfinity() {
+	void decodeKeyWithNegativeInfinity() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey("-Infinity");
-		assertTrue(result.isSuccess());
-		assertEquals(Float.NEGATIVE_INFINITY, result.resultOrThrow());
+		Float result = codec.decodeKey("-Infinity");
+		assertEquals(Float.NEGATIVE_INFINITY, result);
 	}
 	
 	@Test
-	void decodeKeyWithNaN() {
+	void decodeKeyWithNaN() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey("NaN");
-		assertTrue(result.isSuccess());
-		assertTrue(Float.isNaN(result.resultOrThrow()));
+		Float result = codec.decodeKey("NaN");
+		assertTrue(Float.isNaN(result));
 	}
 	
 	@Test

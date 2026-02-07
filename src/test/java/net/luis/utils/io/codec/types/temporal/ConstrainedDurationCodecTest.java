@@ -20,10 +20,10 @@ package net.luis.utils.io.codec.types.temporal;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
-import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -39,351 +39,319 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedDurationCodecTest {
 	
 	@Test
-	void encodeStartWithValidGreaterThanConstraint() {
+	void encodeWithValidGreaterThanConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration threshold = Duration.ofHours(1);
 		Codec<Duration> codec = Codecs.DURATION.greaterThan(threshold);
 		Duration value = Duration.ofHours(2);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidLessThanConstraint() {
+	void encodeWithValidLessThanConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration threshold = Duration.ofHours(5);
 		Codec<Duration> codec = Codecs.DURATION.lessThan(threshold);
 		Duration value = Duration.ofHours(2);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidBetweenConstraint() {
+	void encodeWithValidBetweenConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration min = Duration.ofMinutes(30);
 		Duration max = Duration.ofHours(5);
 		Codec<Duration> codec = Codecs.DURATION.between(min, max);
 		Duration value = Duration.ofHours(2);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidEqualToConstraint() {
+	void encodeWithValidEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration target = Duration.ofHours(2).plusMinutes(30);
 		Codec<Duration> codec = Codecs.DURATION.equalTo(target);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), target);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), target));
 	}
 	
 	@Test
-	void encodeStartWithValidInConstraint() {
+	void encodeWithValidInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration value1 = Duration.ofHours(1);
 		Duration value2 = Duration.ofHours(2);
 		Codec<Duration> codec = Codecs.DURATION.in(Set.of(value1, value2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value1);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value1));
 	}
 	
 	@Test
-	void encodeStartWithValidNotEqualToConstraint() {
+	void encodeWithValidNotEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration excluded = Duration.ofHours(1);
 		Duration value = Duration.ofHours(2);
 		Codec<Duration> codec = Codecs.DURATION.notEqualTo(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidNotInConstraint() {
+	void encodeWithValidNotInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration excluded1 = Duration.ofHours(1);
 		Duration excluded2 = Duration.ofHours(2);
 		Duration value = Duration.ofHours(3);
 		Codec<Duration> codec = Codecs.DURATION.notIn(Set.of(excluded1, excluded2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidPositiveConstraint() {
+	void encodeWithValidPositiveConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.positive();
 		Duration value = Duration.ofHours(1);
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
-
+	
 	@Test
-	void encodeStartWithValidNonNegativeConstraint() {
+	void encodeWithValidNonNegativeConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.nonNegative();
 		Duration value = Duration.ZERO;
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
-
+	
 	@Test
-	void encodeStartWithValidNonZeroConstraint() {
+	void encodeWithValidNonZeroConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.nonZero();
 		Duration value = Duration.ofSeconds(1);
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
-
+	
 	@Test
-	void encodeStartWithValidZeroConstraint() {
+	void encodeWithValidZeroConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.zero();
 		Duration value = Duration.ZERO;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidHourConstraint() {
+	void encodeWithValidHourConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.hour(builder -> builder.greaterThanOrEqual(1));
 		Duration value = Duration.ofHours(2).plusMinutes(30);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidMinuteConstraint() {
+	void encodeWithValidMinuteConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.minute(builder -> builder.betweenOrEqual(0, 30));
 		Duration value = Duration.ofHours(1).plusMinutes(15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidSecondConstraint() {
+	void encodeWithValidSecondConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.second(builder -> builder.lessThan(30));
 		Duration value = Duration.ofMinutes(1).plusSeconds(15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void decodeStartWithValidConstraint() {
+	void decodeWithValidConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration threshold = Duration.ofHours(1);
 		Codec<Duration> codec = Codecs.DURATION.greaterThan(threshold);
 		
-		Result<Duration> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2h"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2h")));
 	}
 	
 	@Test
-	void encodeStartWithCustomConstraint() {
+	void encodeWithCustomConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.custom(value -> {
 			if (value.toMinutes() % 15 == 0) {
-				return Result.success(null);
+				return;
 			}
-			return Result.error("Duration must be divisible by 15 minutes");
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Duration must be divisible by 15 minutes");
 		});
 		Duration value = Duration.ofMinutes(45);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartGreaterThanConstraintViolation() {
+	void encodeGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration threshold = Duration.ofHours(2);
 		Codec<Duration> codec = Codecs.DURATION.greaterThan(threshold);
 		Duration value = Duration.ofHours(1);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartLessThanConstraintViolation() {
+	void encodeLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration threshold = Duration.ofHours(1);
 		Codec<Duration> codec = Codecs.DURATION.lessThan(threshold);
 		Duration value = Duration.ofHours(2);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintViolationTooSmall() {
+	void encodeBetweenConstraintViolationTooSmall() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration min = Duration.ofHours(1);
 		Duration max = Duration.ofHours(5);
 		Codec<Duration> codec = Codecs.DURATION.between(min, max);
 		Duration value = Duration.ofMinutes(30);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintViolationTooLarge() {
+	void encodeBetweenConstraintViolationTooLarge() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration min = Duration.ofHours(1);
 		Duration max = Duration.ofHours(5);
 		Codec<Duration> codec = Codecs.DURATION.between(min, max);
 		Duration value = Duration.ofHours(10);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration target = Duration.ofHours(2);
 		Codec<Duration> codec = Codecs.DURATION.equalTo(target);
 		Duration differentValue = Duration.ofHours(3);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), differentValue);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), differentValue));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration value1 = Duration.ofHours(1);
 		Duration value2 = Duration.ofHours(2);
 		Codec<Duration> codec = Codecs.DURATION.in(Set.of(value1, value2));
 		Duration notInSet = Duration.ofHours(3);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notInSet);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), notInSet));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration excluded = Duration.ofHours(2);
 		Codec<Duration> codec = Codecs.DURATION.notEqualTo(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration excluded1 = Duration.ofHours(1);
 		Duration excluded2 = Duration.ofHours(2);
 		Codec<Duration> codec = Codecs.DURATION.notIn(Set.of(excluded1, excluded2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded1);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded1));
 	}
 	
 	@Test
-	void encodeStartPositiveConstraintViolation() {
+	void encodePositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.positive();
 		Duration value = Duration.ZERO;
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
-
+	
 	@Test
-	void encodeStartNonNegativeConstraintViolation() {
+	void encodeNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.nonNegative();
 		Duration value = Duration.ofSeconds(-1);
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
-
+	
 	@Test
-	void encodeStartNonZeroConstraintViolation() {
+	void encodeNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.nonZero();
 		Duration value = Duration.ZERO;
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
-
+	
 	@Test
-	void encodeStartZeroConstraintViolation() {
+	void encodeZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.zero();
 		Duration value = Duration.ofSeconds(1);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartHourConstraintViolation() {
+	void encodeHourConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.hour(builder -> builder.greaterThanOrEqual(5));
 		Duration value = Duration.ofHours(2).plusMinutes(30);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartMinuteConstraintViolation() {
+	void encodeMinuteConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.minute(builder -> builder.lessThan(15));
 		Duration value = Duration.ofHours(1).plusMinutes(45);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void decodeStartConstraintViolation() {
+	void decodeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Duration threshold = Duration.ofHours(3);
 		Codec<Duration> codec = Codecs.DURATION.greaterThan(threshold);
 		
-		Result<Duration> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2h"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2h")));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Duration> codec = Codecs.DURATION.custom(value -> {
 			if (value.toMinutes() % 15 == 0) {
-				return Result.success(null);
+				return;
 			}
-			return Result.error("Duration must be divisible by 15 minutes");
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Duration must be divisible by 15 minutes");
 		});
 		Duration value = Duration.ofMinutes(47);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test

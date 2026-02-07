@@ -21,10 +21,10 @@ package net.luis.utils.io.codec.types.temporal.offset;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.constraint.builder.ZoneOffsetConstraintBuilder;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
-import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
@@ -41,14 +41,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedOffsetDateTimeCodecTest {
 	
 	@Test
-	void encodeStartWithValidConstrainedValue() {
+	void encodeWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.after(boundary);
 		OffsetDateTime validValue = OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), validValue);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), validValue));
 	}
 	
 	@Test
@@ -56,18 +55,16 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.after(boundary);
 		
-		Result<String> result = codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
-	void decodeStartWithValidConstrainedValue() {
+	void decodeWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.after(boundary);
 		
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:00:00Z"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:00:00Z")));
 	}
 	
 	@Test
@@ -75,8 +72,7 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.after(boundary);
 		
-		Result<OffsetDateTime> result = codec.decodeKey("2023-06-15T12:00:00Z");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("2023-06-15T12:00:00Z"));
 	}
 	
 	@Test
@@ -87,24 +83,22 @@ class ConstrainedOffsetDateTimeCodecTest {
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime expected = OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.equalTo(expected);
 		OffsetDateTime differentValue = OffsetDateTime.of(2023, 6, 15, 14, 0, 0, 0, ZoneOffset.UTC);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), differentValue);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), differentValue));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintViolation() {
+	void decodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime expected = OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.equalTo(expected);
 		
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T14:00:00Z"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T14:00:00Z")));
 	}
 	
 	@Test
@@ -112,8 +106,7 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime expected = OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.equalTo(expected);
 		
-		Result<String> result = codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 14, 0, 0, 0, ZoneOffset.UTC));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 14, 0, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
@@ -121,28 +114,25 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime expected = OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.equalTo(expected);
 		
-		Result<OffsetDateTime> result = codec.decodeKey("2023-06-15T14:00:00Z");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2023-06-15T14:00:00Z"));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime excluded = OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.notEqualTo(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintViolation() {
+	void decodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime excluded = OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.notEqualTo(excluded);
 		
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:00:00Z"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:00:00Z")));
 	}
 	
 	@Test
@@ -150,8 +140,7 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime excluded = OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.notEqualTo(excluded);
 		
-		Result<String> result = codec.encodeKey(excluded);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(excluded));
 	}
 	
 	@Test
@@ -159,12 +148,11 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime excluded = OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.notEqualTo(excluded);
 		
-		Result<OffsetDateTime> result = codec.decodeKey("2023-06-15T12:00:00Z");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2023-06-15T12:00:00Z"));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<OffsetDateTime> allowed = Set.of(
 			OffsetDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
@@ -173,12 +161,11 @@ class ConstrainedOffsetDateTimeCodecTest {
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.in(allowed);
 		OffsetDateTime notAllowed = OffsetDateTime.of(2023, 7, 20, 10, 0, 0, 0, ZoneOffset.UTC);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notAllowed);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), notAllowed));
 	}
 	
 	@Test
-	void decodeStartInConstraintViolation() {
+	void decodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<OffsetDateTime> allowed = Set.of(
 			OffsetDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
@@ -186,8 +173,7 @@ class ConstrainedOffsetDateTimeCodecTest {
 		);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.in(allowed);
 		
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-07-20T10:00:00Z"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-07-20T10:00:00Z")));
 	}
 	
 	@Test
@@ -198,8 +184,7 @@ class ConstrainedOffsetDateTimeCodecTest {
 		);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.in(allowed);
 		
-		Result<String> result = codec.encodeKey(OffsetDateTime.of(2023, 7, 20, 10, 0, 0, 0, ZoneOffset.UTC));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(OffsetDateTime.of(2023, 7, 20, 10, 0, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
@@ -210,12 +195,11 @@ class ConstrainedOffsetDateTimeCodecTest {
 		);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.in(allowed);
 		
-		Result<OffsetDateTime> result = codec.decodeKey("2023-07-20T10:00:00Z");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2023-07-20T10:00:00Z"));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<OffsetDateTime> excluded = Set.of(
 			OffsetDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
@@ -223,12 +207,11 @@ class ConstrainedOffsetDateTimeCodecTest {
 		);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.notIn(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintViolation() {
+	void decodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<OffsetDateTime> excluded = Set.of(
 			OffsetDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
@@ -236,8 +219,7 @@ class ConstrainedOffsetDateTimeCodecTest {
 		);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.notIn(excluded);
 		
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:00:00Z"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:00:00Z")));
 	}
 	
 	@Test
@@ -248,8 +230,7 @@ class ConstrainedOffsetDateTimeCodecTest {
 		);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.notIn(excluded);
 		
-		Result<String> result = codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
@@ -260,29 +241,26 @@ class ConstrainedOffsetDateTimeCodecTest {
 		);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.notIn(excluded);
 		
-		Result<OffsetDateTime> result = codec.decodeKey("2023-06-15T12:00:00Z");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2023-06-15T12:00:00Z"));
 	}
 	
 	@Test
-	void encodeStartAfterConstraintViolation() {
+	void encodeAfterConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.after(boundary);
 		OffsetDateTime beforeBoundary = OffsetDateTime.of(2019, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), beforeBoundary);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), beforeBoundary));
 	}
 	
 	@Test
-	void decodeStartAfterConstraintViolation() {
+	void decodeAfterConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.after(boundary);
 		
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2019-06-15T12:00:00Z"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2019-06-15T12:00:00Z")));
 	}
 	
 	@Test
@@ -290,8 +268,7 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.after(boundary);
 		
-		Result<String> result = codec.encodeKey(OffsetDateTime.of(2019, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(OffsetDateTime.of(2019, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
@@ -299,29 +276,26 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.after(boundary);
 		
-		Result<OffsetDateTime> result = codec.decodeKey("2019-06-15T12:00:00Z");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2019-06-15T12:00:00Z"));
 	}
 	
 	@Test
-	void encodeStartBeforeConstraintViolation() {
+	void encodeBeforeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.before(boundary);
 		OffsetDateTime afterBoundary = OffsetDateTime.of(2021, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), afterBoundary);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), afterBoundary));
 	}
 	
 	@Test
-	void decodeStartBeforeConstraintViolation() {
+	void decodeBeforeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.before(boundary);
 		
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2021-06-15T12:00:00Z"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2021-06-15T12:00:00Z")));
 	}
 	
 	@Test
@@ -329,8 +303,7 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.before(boundary);
 		
-		Result<String> result = codec.encodeKey(OffsetDateTime.of(2021, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(OffsetDateTime.of(2021, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
@@ -338,43 +311,39 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime boundary = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.before(boundary);
 		
-		Result<OffsetDateTime> result = codec.decodeKey("2021-06-15T12:00:00Z");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2021-06-15T12:00:00Z"));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintViolationTooEarly() {
+	void encodeBetweenConstraintViolationTooEarly() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime start = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		OffsetDateTime end = OffsetDateTime.of(2022, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.between(start, end);
 		OffsetDateTime tooEarly = OffsetDateTime.of(2019, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), tooEarly);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), tooEarly));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintViolationTooLate() {
+	void encodeBetweenConstraintViolationTooLate() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime start = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		OffsetDateTime end = OffsetDateTime.of(2022, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.between(start, end);
 		OffsetDateTime tooLate = OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), tooLate);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), tooLate));
 	}
 	
 	@Test
-	void decodeStartBetweenConstraintViolation() {
+	void decodeBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		OffsetDateTime start = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		OffsetDateTime end = OffsetDateTime.of(2022, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.between(start, end);
 		
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2019-06-15T12:00:00Z"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2019-06-15T12:00:00Z")));
 	}
 	
 	@Test
@@ -383,8 +352,7 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime end = OffsetDateTime.of(2022, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.between(start, end);
 		
-		Result<String> result = codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
@@ -393,147 +361,138 @@ class ConstrainedOffsetDateTimeCodecTest {
 		OffsetDateTime end = OffsetDateTime.of(2022, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.between(start, end);
 		
-		Result<OffsetDateTime> result = codec.decodeKey("2023-06-15T12:00:00Z");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2023-06-15T12:00:00Z"));
 	}
 	
 	@Test
-	void encodeStartHourConstraintViolation() {
+	void encodeHourConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.hour(builder -> builder.betweenOrEqual(9, 17));
 		OffsetDateTime outsideHours = OffsetDateTime.of(2023, 6, 15, 8, 0, 0, 0, ZoneOffset.UTC);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), outsideHours);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), outsideHours));
 	}
 	
 	@Test
-	void decodeStartHourConstraintViolation() {
+	void decodeHourConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.hour(builder -> builder.betweenOrEqual(9, 17));
 		
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T08:00:00Z"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T08:00:00Z")));
 	}
 	
 	@Test
 	void encodeKeyHourConstraintViolation() {
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.hour(builder -> builder.betweenOrEqual(9, 17));
 		
-		Result<String> result = codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 8, 0, 0, 0, ZoneOffset.UTC));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 8, 0, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
 	void decodeKeyHourConstraintViolation() {
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.hour(builder -> builder.betweenOrEqual(9, 17));
 		
-		Result<OffsetDateTime> result = codec.decodeKey("2023-06-15T08:00:00Z");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2023-06-15T08:00:00Z"));
 	}
 	
 	@Test
-	void encodeStartYearConstraintViolation() {
+	void encodeYearConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.year(builder -> builder.greaterThanOrEqual(2020));
 		OffsetDateTime oldYear = OffsetDateTime.of(2019, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), oldYear);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), oldYear));
 	}
 	
 	@Test
-	void decodeStartYearConstraintViolation() {
+	void decodeYearConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.year(builder -> builder.greaterThanOrEqual(2020));
 		
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2019-06-15T12:00:00Z"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2019-06-15T12:00:00Z")));
 	}
 	
 	@Test
 	void encodeKeyYearConstraintViolation() {
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.year(builder -> builder.greaterThanOrEqual(2020));
 		
-		Result<String> result = codec.encodeKey(OffsetDateTime.of(2019, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(OffsetDateTime.of(2019, 6, 15, 12, 0, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
 	void decodeKeyYearConstraintViolation() {
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.year(builder -> builder.greaterThanOrEqual(2020));
 		
-		Result<OffsetDateTime> result = codec.decodeKey("2019-06-15T12:00:00Z");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2019-06-15T12:00:00Z"));
 	}
 	
 	@Test
-	void encodeStartOffsetConstraintViolation() {
+	void encodeOffsetConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.offset(ZoneOffsetConstraintBuilder::zero);
 		OffsetDateTime nonUtcValue = OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.ofHours(2));
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), nonUtcValue);
-		assertTrue(result.isError());
+		
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), nonUtcValue));
 	}
-
+	
 	@Test
-	void decodeStartOffsetConstraintViolation() {
+	void decodeOffsetConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.offset(ZoneOffsetConstraintBuilder::zero);
-
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:00:00+02:00"));
-		assertTrue(result.isError());
+		
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:00:00+02:00")));
 	}
-
+	
 	@Test
 	void encodeKeyOffsetConstraintViolation() {
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.offset(ZoneOffsetConstraintBuilder::zero);
-
-		Result<String> result = codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.ofHours(2)));
-		assertTrue(result.isError());
+		
+		assertThrows(EncoderException.class, () -> codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 12, 0, 0, 0, ZoneOffset.ofHours(2))));
 	}
-
+	
 	@Test
 	void decodeKeyOffsetConstraintViolation() {
 		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.offset(ZoneOffsetConstraintBuilder::zero);
-
-		Result<OffsetDateTime> result = codec.decodeKey("2023-06-15T12:00:00+02:00");
-		assertTrue(result.isError());
+		
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2023-06-15T12:00:00+02:00"));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.custom(value -> value.getMinute() == 0 && value.getSecond() == 0 ? Result.success(null) : Result.error("Value must be on the hour"));
+		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.custom(value -> {
+			if (!(value.getMinute() == 0 && value.getSecond() == 0)) throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Value must be on the hour");
+		});
 		OffsetDateTime notOnHour = OffsetDateTime.of(2023, 6, 15, 12, 30, 0, 0, ZoneOffset.UTC);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notOnHour);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), notOnHour));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintViolation() {
+	void decodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.custom(value -> value.getMinute() == 0 && value.getSecond() == 0 ? Result.success(null) : Result.error("Value must be on the hour"));
+		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.custom(value -> {
+			if (!(value.getMinute() == 0 && value.getSecond() == 0)) throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Value must be on the hour");
+		});
 		
-		Result<OffsetDateTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:30:00Z"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:30:00Z")));
 	}
 	
 	@Test
 	void encodeKeyCustomConstraintViolation() {
-		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.custom(value -> value.getMinute() == 0 && value.getSecond() == 0 ? Result.success(null) : Result.error("Value must be on the hour"));
+		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.custom(value -> {
+			if (!(value.getMinute() == 0 && value.getSecond() == 0)) throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Value must be on the hour");
+		});
 		
-		Result<String> result = codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 12, 30, 0, 0, ZoneOffset.UTC));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(OffsetDateTime.of(2023, 6, 15, 12, 30, 0, 0, ZoneOffset.UTC)));
 	}
 	
 	@Test
 	void decodeKeyCustomConstraintViolation() {
-		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.custom(value -> value.getMinute() == 0 && value.getSecond() == 0 ? Result.success(null) : Result.error("Value must be on the hour"));
+		Codec<OffsetDateTime> codec = Codecs.OFFSET_DATE_TIME.custom(value -> {
+			if (!(value.getMinute() == 0 && value.getSecond() == 0)) throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Value must be on the hour");
+		});
 		
-		Result<OffsetDateTime> result = codec.decodeKey("2023-06-15T12:30:00Z");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2023-06-15T12:30:00Z"));
 	}
 }

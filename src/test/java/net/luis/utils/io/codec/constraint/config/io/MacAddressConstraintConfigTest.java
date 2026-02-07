@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.config.io;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.network.address.mac.MacAddress;
 import net.luis.utils.io.network.address.mac.MacAddresses;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -115,18 +115,18 @@ class MacAddressConstraintConfigTest {
 		assertTrue(config.stringConstraint().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithUnconstrained() {
 		assertTrue(MacAddressConstraintConfig.UNCONSTRAINED.isUnconstrained());
 	}
-
+	
 	@Test
 	void isUnconstrainedWithConstraint() {
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withUnicast();
 		assertFalse(config.isUnconstrained());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		MacAddress value = MacAddresses.parse("00:1a:2b:3c:4d:5e");
@@ -237,7 +237,7 @@ class MacAddressConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -248,112 +248,114 @@ class MacAddressConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() {
+	void validateUnconstrained() {
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("ff:ff:ff:ff:ff:ff")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("01:00:5e:00:00:01")).isSuccess());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("ff:ff:ff:ff:ff:ff")));
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("01:00:5e:00:00:01")));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> MacAddressConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> MacAddressConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() {
+	void validateEqualTo() {
 		MacAddress expected = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withEqualTo(expected);
 		
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5f")).isError());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5f")));
 	}
 	
 	@Test
-	void matchesNotEqualTo() {
+	void validateNotEqualTo() {
 		MacAddress excluded = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withNotEqualTo(excluded);
 		
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5f")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isError());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5f")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
-	void matchesIn() {
+	void validateIn() {
 		MacAddress addr1 = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		MacAddress addr2 = MacAddresses.parse("00:1a:2b:3c:4d:5f");
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withIn(List.of(addr1, addr2));
 		
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5f")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:60")).isError());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5f")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:60")));
 	}
 	
 	@Test
-	void matchesNotIn() {
+	void validateNotIn() {
 		MacAddress excluded = MacAddresses.parse("00:1a:2b:3c:4d:5e");
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withNotIn(List.of(excluded));
 		
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5f")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isError());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5f")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
-	void matchesUnicast() {
+	void validateUnicast() {
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withUnicast();
 		
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("01:00:5e:00:00:01")).isError());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MacAddresses.parse("01:00:5e:00:00:01")));
 	}
 	
 	@Test
-	void matchesMulticast() {
+	void validateMulticast() {
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withMulticast();
 		
-		assertTrue(config.matches(MacAddresses.parse("01:00:5e:00:00:01")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isError());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("01:00:5e:00:00:01")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
-	void matchesUniversal() {
+	void validateUniversal() {
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withUniversal();
 		
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("02:1a:2b:3c:4d:5e")).isError());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MacAddresses.parse("02:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
-	void matchesLocal() {
+	void validateLocal() {
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withLocal();
 		
-		assertTrue(config.matches(MacAddresses.parse("02:1a:2b:3c:4d:5e")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isError());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("02:1a:2b:3c:4d:5e")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
-	void matchesBroadcast() {
+	void validateBroadcast() {
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withBroadcast();
 		
-		assertTrue(config.matches(MacAddresses.parse("ff:ff:ff:ff:ff:ff")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isError());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("ff:ff:ff:ff:ff:ff")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
 	}
 	
 	@Test
-	void matchesNotBroadcast() {
+	void validateNotBroadcast() {
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withNotBroadcast();
 		
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("ff:ff:ff:ff:ff:ff")).isError());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MacAddresses.parse("ff:ff:ff:ff:ff:ff")));
 	}
 	
 	@Test
-	void matchesCustom() {
+	void validateCustom() {
 		MacAddressConstraintConfig config = MacAddressConstraintConfig.UNCONSTRAINED.withCustom(
-			value -> value.toColonString().startsWith("00:") ? Result.success() : Result.error("Address must start with 00:")
+			value -> {
+				if (!value.toColonString().startsWith("00:")) throw new ConstraintViolateException("Address must start with 00:");
+			}
 		);
 		
-		assertTrue(config.matches(MacAddresses.parse("00:1a:2b:3c:4d:5e")).isSuccess());
-		assertTrue(config.matches(MacAddresses.parse("01:1a:2b:3c:4d:5e")).isError());
+		assertDoesNotThrow(() -> config.validate(MacAddresses.parse("00:1a:2b:3c:4d:5e")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(MacAddresses.parse("01:1a:2b:3c:4d:5e")));
 	}
 }

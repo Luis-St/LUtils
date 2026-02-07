@@ -19,9 +19,10 @@
 package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,7 +40,7 @@ class RecursiveCodecTest {
 	}
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LinkedListNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(
@@ -49,12 +50,12 @@ class RecursiveCodecTest {
 		);
 		
 		LinkedListNode node = new LinkedListNode(1, null);
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), node));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, node));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), node));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, node));
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LinkedListNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(
@@ -65,12 +66,12 @@ class RecursiveCodecTest {
 		
 		JsonObject obj = new JsonObject();
 		obj.add("value", 1);
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), obj));
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(typeProvider, null, obj));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), obj));
+		assertThrows(NullPointerException.class, () -> codec.decode(typeProvider, null, obj));
 	}
 	
 	@Test
-	void encodeLinkedListWithSingleNode() {
+	void encodeLinkedListWithSingleNode() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LinkedListNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(
@@ -80,10 +81,7 @@ class RecursiveCodecTest {
 		);
 		
 		LinkedListNode node = new LinkedListNode(42, null);
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), node);
-		
-		assertTrue(result.isSuccess());
-		JsonElement element = result.resultOrThrow();
+		JsonElement element = codec.encode(typeProvider, typeProvider.empty(), node);
 		assertInstanceOf(JsonObject.class, element);
 		
 		JsonObject obj = element.getAsJsonObject();
@@ -92,7 +90,7 @@ class RecursiveCodecTest {
 	}
 	
 	@Test
-	void encodeLinkedListWithMultipleNodes() {
+	void encodeLinkedListWithMultipleNodes() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LinkedListNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(
@@ -102,10 +100,7 @@ class RecursiveCodecTest {
 		);
 		
 		LinkedListNode node = new LinkedListNode(1, new LinkedListNode(2, new LinkedListNode(3, null)));
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), node);
-		
-		assertTrue(result.isSuccess());
-		JsonElement element = result.resultOrThrow();
+		JsonElement element = codec.encode(typeProvider, typeProvider.empty(), node);
 		assertInstanceOf(JsonObject.class, element);
 		
 		JsonObject obj = element.getAsJsonObject();
@@ -120,7 +115,7 @@ class RecursiveCodecTest {
 	}
 	
 	@Test
-	void decodeLinkedListWithSingleNode() {
+	void decodeLinkedListWithSingleNode() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LinkedListNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(
@@ -133,16 +128,13 @@ class RecursiveCodecTest {
 		obj.add("value", 42);
 		obj.add("next", JsonNull.INSTANCE);
 		
-		Result<LinkedListNode> result = codec.decodeStart(typeProvider, typeProvider.empty(), obj);
-		assertTrue(result.isSuccess());
-		
-		LinkedListNode node = result.resultOrThrow();
+		LinkedListNode node = codec.decode(typeProvider, typeProvider.empty(), obj);
 		assertEquals(42, node.value());
 		assertNull(node.next());
 	}
 	
 	@Test
-	void decodeLinkedListWithMultipleNodes() {
+	void decodeLinkedListWithMultipleNodes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LinkedListNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(
@@ -163,10 +155,7 @@ class RecursiveCodecTest {
 		obj.add("value", 1);
 		obj.add("next", nextObj);
 		
-		Result<LinkedListNode> result = codec.decodeStart(typeProvider, typeProvider.empty(), obj);
-		assertTrue(result.isSuccess());
-		
-		LinkedListNode node = result.resultOrThrow();
+		LinkedListNode node = codec.decode(typeProvider, typeProvider.empty(), obj);
 		assertEquals(1, node.value());
 		assertNotNull(node.next());
 		assertEquals(2, node.next().value());
@@ -176,7 +165,7 @@ class RecursiveCodecTest {
 	}
 	
 	@Test
-	void roundTripLinkedList() {
+	void roundTripLinkedList() throws DecoderException, EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LinkedListNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(
@@ -187,18 +176,13 @@ class RecursiveCodecTest {
 		
 		LinkedListNode original = new LinkedListNode(1, new LinkedListNode(2, new LinkedListNode(3, null)));
 		
-		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), original);
-		assertTrue(encodeResult.isSuccess());
-		
-		Result<LinkedListNode> decodeResult = codec.decodeStart(typeProvider, typeProvider.empty(), encodeResult.resultOrThrow());
-		assertTrue(decodeResult.isSuccess());
-		
-		LinkedListNode decoded = decodeResult.resultOrThrow();
+		JsonElement encodeResult = codec.encode(typeProvider, typeProvider.empty(), original);
+		LinkedListNode decoded = codec.decode(typeProvider, typeProvider.empty(), encodeResult);
 		assertEquals(original, decoded);
 	}
 	
 	@Test
-	void encodeBinaryTreeWithSingleNode() {
+	void encodeBinaryTreeWithSingleNode() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<TreeNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(
@@ -209,10 +193,7 @@ class RecursiveCodecTest {
 		);
 		
 		TreeNode node = new TreeNode(42, null, null);
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), node);
-		
-		assertTrue(result.isSuccess());
-		JsonElement element = result.resultOrThrow();
+		JsonElement element = codec.encode(typeProvider, typeProvider.empty(), node);
 		assertInstanceOf(JsonObject.class, element);
 		
 		JsonObject obj = element.getAsJsonObject();
@@ -222,7 +203,7 @@ class RecursiveCodecTest {
 	}
 	
 	@Test
-	void encodeBinaryTreeWithMultipleNodes() {
+	void encodeBinaryTreeWithMultipleNodes() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<TreeNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(
@@ -238,10 +219,7 @@ class RecursiveCodecTest {
 			new TreeNode(15, null, null)
 		);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), tree);
-		assertTrue(result.isSuccess());
-		
-		JsonElement element = result.resultOrThrow();
+		JsonElement element = codec.encode(typeProvider, typeProvider.empty(), tree);
 		assertInstanceOf(JsonObject.class, element);
 		
 		JsonObject obj = element.getAsJsonObject();
@@ -255,7 +233,7 @@ class RecursiveCodecTest {
 	}
 	
 	@Test
-	void roundTripBinaryTree() {
+	void roundTripBinaryTree() throws DecoderException, EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<TreeNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(
@@ -271,13 +249,8 @@ class RecursiveCodecTest {
 			new TreeNode(15, new TreeNode(12, null, null), new TreeNode(20, null, null))
 		);
 		
-		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), original);
-		assertTrue(encodeResult.isSuccess());
-		
-		Result<TreeNode> decodeResult = codec.decodeStart(typeProvider, typeProvider.empty(), encodeResult.resultOrThrow());
-		assertTrue(decodeResult.isSuccess());
-		
-		TreeNode decoded = decodeResult.resultOrThrow();
+		JsonElement encodeResult = codec.encode(typeProvider, typeProvider.empty(), original);
+		TreeNode decoded = codec.decode(typeProvider, typeProvider.empty(), encodeResult);
 		assertEquals(original, decoded);
 	}
 	

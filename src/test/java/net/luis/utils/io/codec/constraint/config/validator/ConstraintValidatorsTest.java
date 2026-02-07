@@ -24,13 +24,11 @@ import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,83 +42,70 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void allOfWithAllPass() {
-		Result<Void> result = ConstraintValidators.validateAll(
-			Result::success,
-			Result::success,
-			Result::success
-		);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateAll(
+			() -> {},
+			() -> {},
+			() -> {}
+		));
 	}
 	
 	@Test
 	void validateAllWithFirstFails() {
-		Result<Void> result = ConstraintValidators.validateAll(
-			() -> Result.error("first error"),
-			Result::success,
-			Result::success
-		);
-		assertTrue(result.isError());
-		assertEquals("first error", result.errorOrThrow());
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateAll(
+			() -> {
+				throw new ConstraintViolateException("first error");
+			},
+			() -> {},
+			() -> {}
+		));
+		assertEquals("first error", exception.getMessage());
 	}
 	
 	@Test
 	void validateAllWithEarlyExit() {
 		int[] counter = { 0 };
-		Result<Void> result = ConstraintValidators.validateAll(
+		assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateAll(
+			() -> counter[0]++,
 			() -> {
 				counter[0]++;
-				return Result.success();
+				throw new ConstraintViolateException("second error");
 			},
-			() -> {
-				counter[0]++;
-				return Result.error("second error");
-			},
-			() -> {
-				counter[0]++;
-				return Result.success();
-			}
-		);
-		assertTrue(result.isError());
+			() -> counter[0]++
+		));
 		assertEquals(2, counter[0]);
 	}
 	
 	@Test
 	void validateAllWithNullChecks() {
-		assertThrows(NullPointerException.class, () -> ConstraintValidators.allOf((Supplier<Result<Void>>[]) null));
+		assertThrows(NullPointerException.class, () -> ConstraintValidators.validateAll((Runnable[]) null));
 	}
 	
 	@Test
 	void validateEqualToWithEmptyOptional() {
-		Result<Void> result = ConstraintValidators.validateEqualTo("test", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateEqualTo("test", Optional.empty()));
 	}
 	
 	@Test
 	void matchEqualToWithValidate() {
-		Result<Void> result = ConstraintValidators.validateEqualTo("test", Optional.of(Pair.of("test", false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateEqualTo("test", Optional.of(Pair.of("test", false))));
 	}
 	
 	@Test
 	void matchEqualToWithNoValidate() {
-		Result<Void> result = ConstraintValidators.validateEqualTo("test", Optional.of(Pair.of("other", false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be equal to"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateEqualTo("test", Optional.of(Pair.of("other", false))));
+		assertTrue(exception.getMessage().contains("must be equal to"));
 	}
 	
 	@Test
 	void validateEqualToWithNegated() {
-		Result<Void> result = ConstraintValidators.validateEqualTo("test", Optional.of(Pair.of("other", true)));
-		assertTrue(result.isSuccess());
-		Result<Void> negatedResult = ConstraintValidators.validateEqualTo("test", Optional.of(Pair.of("test", true)));
-		assertTrue(negatedResult.isError());
-		assertTrue(negatedResult.errorOrThrow().contains("must not be equal to"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateEqualTo("test", Optional.of(Pair.of("other", true))));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateEqualTo("test", Optional.of(Pair.of("test", true))));
+		assertTrue(exception.getMessage().contains("must not be equal to"));
 	}
 	
 	@Test
 	void validateEqualToWithCustomPredicate() {
-		Result<Void> result = ConstraintValidators.validateEqualTo("TEST", Optional.of(Pair.of("test", false)), String::equalsIgnoreCase);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateEqualTo("TEST", Optional.of(Pair.of("test", false)), String::equalsIgnoreCase));
 	}
 	
 	@Test
@@ -132,36 +117,30 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateInWithEmptyOptional() {
-		Result<Void> result = ConstraintValidators.validateIn("test", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateIn("test", Optional.empty()));
 	}
 	
 	@Test
 	void validateInWithInSet() {
-		Result<Void> result = ConstraintValidators.validateIn("test", Optional.of(Pair.of(Set.of("test", "other"), false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateIn("test", Optional.of(Pair.of(Set.of("test", "other"), false))));
 	}
 	
 	@Test
 	void validateInWithNotInSet() {
-		Result<Void> result = ConstraintValidators.validateIn("missing", Optional.of(Pair.of(Set.of("test", "other"), false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be in"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateIn("missing", Optional.of(Pair.of(Set.of("test", "other"), false))));
+		assertTrue(exception.getMessage().contains("must be in"));
 	}
 	
 	@Test
 	void validateInWithNegated() {
-		Result<Void> result = ConstraintValidators.validateIn("missing", Optional.of(Pair.of(Set.of("test", "other"), true)));
-		assertTrue(result.isSuccess());
-		Result<Void> negatedResult = ConstraintValidators.validateIn("test", Optional.of(Pair.of(Set.of("test", "other"), true)));
-		assertTrue(negatedResult.isError());
-		assertTrue(negatedResult.errorOrThrow().contains("must not be in"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateIn("missing", Optional.of(Pair.of(Set.of("test", "other"), true))));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateIn("test", Optional.of(Pair.of(Set.of("test", "other"), true))));
+		assertTrue(exception.getMessage().contains("must not be in"));
 	}
 	
 	@Test
 	void validateInWithCustomPredicate() {
-		Result<Void> result = ConstraintValidators.validateIn("TEST", Optional.of(Pair.of(Set.of("test", "other"), false)), String::equalsIgnoreCase);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateIn("TEST", Optional.of(Pair.of(Set.of("test", "other"), false)), String::equalsIgnoreCase));
 	}
 	
 	@Test
@@ -173,23 +152,22 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateCustomWithEmptyOptional() {
-		Result<Void> result = ConstraintValidators.validateCustom("test", Optional.empty());
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateCustom("test", Optional.empty()));
 	}
 	
 	@Test
 	void validateCustomWithConstraintPasses() {
-		Constraint<String> constraint = value -> Result.success();
-		Result<Void> result = ConstraintValidators.validateCustom("test", Optional.of(constraint));
-		assertTrue(result.isSuccess());
+		Constraint<String> constraint = value -> {};
+		assertDoesNotThrow(() -> ConstraintValidators.validateCustom("test", Optional.of(constraint)));
 	}
 	
 	@Test
 	void validateCustomWithConstraintFails() {
-		Constraint<String> constraint = value -> Result.error("custom error");
-		Result<Void> result = ConstraintValidators.validateCustom("test", Optional.of(constraint));
-		assertTrue(result.isError());
-		assertEquals("custom error", result.errorOrThrow());
+		Constraint<String> constraint = value -> {
+			throw new ConstraintViolateException("custom error");
+		};
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateCustom("test", Optional.of(constraint)));
+		assertEquals("custom error", exception.getMessage());
 	}
 	
 	@Test
@@ -200,50 +178,40 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateRangeWithMinOnly() {
-		Result<Void> result = ConstraintValidators.validateRange(10, Optional.of(Pair.of(5, true)), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = ConstraintValidators.validateRange(3, Optional.of(Pair.of(5, true)), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be greater than or equal to"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateRange(10, Optional.of(Pair.of(5, true)), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateRange(3, Optional.of(Pair.of(5, true)), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be greater than or equal to"));
 	}
 	
 	@Test
 	void validateRangeWithMaxOnly() {
-		Result<Void> result = ConstraintValidators.validateRange(5, Optional.empty(), Optional.of(Pair.of(10, true)));
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = ConstraintValidators.validateRange(15, Optional.empty(), Optional.of(Pair.of(10, true)));
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be less than or equal to"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateRange(5, Optional.empty(), Optional.of(Pair.of(10, true))));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateRange(15, Optional.empty(), Optional.of(Pair.of(10, true))));
+		assertTrue(exception.getMessage().contains("must be less than or equal to"));
 	}
 	
 	@Test
 	void validateRangeWithBoth() {
-		Result<Void> result = ConstraintValidators.validateRange(7, Optional.of(Pair.of(5, true)), Optional.of(Pair.of(10, true)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateRange(7, Optional.of(Pair.of(5, true)), Optional.of(Pair.of(10, true))));
 	}
 	
 	@Test
 	void validateRangeWithInclusiveBounds() {
-		Result<Void> minResult = ConstraintValidators.validateRange(5, Optional.of(Pair.of(5, true)), Optional.empty());
-		assertTrue(minResult.isSuccess());
-		Result<Void> maxResult = ConstraintValidators.validateRange(10, Optional.empty(), Optional.of(Pair.of(10, true)));
-		assertTrue(maxResult.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateRange(5, Optional.of(Pair.of(5, true)), Optional.empty()));
+		assertDoesNotThrow(() -> ConstraintValidators.validateRange(10, Optional.empty(), Optional.of(Pair.of(10, true))));
 	}
 	
 	@Test
 	void validateRangeWithExclusiveBounds() {
-		Result<Void> minResult = ConstraintValidators.validateRange(5, Optional.of(Pair.of(5, false)), Optional.empty());
-		assertTrue(minResult.isError());
-		assertTrue(minResult.errorOrThrow().contains("must be greater than"));
-		Result<Void> maxResult = ConstraintValidators.validateRange(10, Optional.empty(), Optional.of(Pair.of(10, false)));
-		assertTrue(maxResult.isError());
-		assertTrue(maxResult.errorOrThrow().contains("must be less than"));
+		ConstraintViolateException minException = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateRange(5, Optional.of(Pair.of(5, false)), Optional.empty()));
+		assertTrue(minException.getMessage().contains("must be greater than"));
+		ConstraintViolateException maxException = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateRange(10, Optional.empty(), Optional.of(Pair.of(10, false))));
+		assertTrue(maxException.getMessage().contains("must be less than"));
 	}
 	
 	@Test
 	void validateRangeWithCustomComparator() {
-		Result<Void> result = ConstraintValidators.validateRange("b", Optional.of(Pair.of("a", true)), Optional.of(Pair.of("c", true)), String::compareTo);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateRange("b", Optional.of(Pair.of("a", true)), Optional.of(Pair.of("c", true)), String::compareTo));
 	}
 	
 	@Test
@@ -255,21 +223,18 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateFlagWithEmptyOptional() {
-		Result<Void> result = ConstraintValidators.validateFlag("test", Optional.empty(), s -> true, "error");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateFlag("test", Optional.empty(), s -> true, "error"));
 	}
 	
 	@Test
 	void validateFlagWithConditionTrue() {
-		Result<Void> result = ConstraintValidators.validateFlag("test", Optional.of(Unit.INSTANCE), s -> s.length() == 4, "error");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateFlag("test", Optional.of(Unit.INSTANCE), s -> s.length() == 4, "error"));
 	}
 	
 	@Test
 	void validateFlagWithConditionFalse() {
-		Result<Void> result = ConstraintValidators.validateFlag("test", Optional.of(Unit.INSTANCE), s -> s.length() == 5, "Length must be 5");
-		assertTrue(result.isError());
-		assertEquals("Length must be 5", result.errorOrThrow());
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateFlag("test", Optional.of(Unit.INSTANCE), s -> s.length() == 5, "Length must be 5"));
+		assertEquals("Length must be 5", exception.getMessage());
 	}
 	
 	@Test
@@ -282,60 +247,46 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateSignWithPositive() {
-		Result<Void> result = ConstraintValidators.validateSign(5, Optional.of(false), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = ConstraintValidators.validateSign(-5, Optional.of(false), Optional.empty(), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be positive"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateSign(5, Optional.of(false), Optional.empty(), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateSign(-5, Optional.of(false), Optional.empty(), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be positive"));
 	}
 	
 	@Test
 	void validateSignWithNegative() {
-		Result<Void> result = ConstraintValidators.validateSign(-5, Optional.empty(), Optional.of(false), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = ConstraintValidators.validateSign(5, Optional.empty(), Optional.of(false), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be negative"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateSign(-5, Optional.empty(), Optional.of(false), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateSign(5, Optional.empty(), Optional.of(false), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be negative"));
 	}
 	
 	@Test
 	void validateSignWithZero() {
-		Result<Void> result = ConstraintValidators.validateSign(0, Optional.empty(), Optional.empty(), Optional.of(false));
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = ConstraintValidators.validateSign(5, Optional.empty(), Optional.empty(), Optional.of(false));
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be zero"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateSign(0, Optional.empty(), Optional.empty(), Optional.of(false)));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateSign(5, Optional.empty(), Optional.empty(), Optional.of(false)));
+		assertTrue(exception.getMessage().contains("must be zero"));
 	}
 	
 	@Test
 	void validateSignWithNonPositive() {
-		Result<Void> result = ConstraintValidators.validateSign(-5, Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> zeroResult = ConstraintValidators.validateSign(0, Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(zeroResult.isSuccess());
-		Result<Void> failResult = ConstraintValidators.validateSign(5, Optional.of(true), Optional.empty(), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-positive"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateSign(-5, Optional.of(true), Optional.empty(), Optional.empty()));
+		assertDoesNotThrow(() -> ConstraintValidators.validateSign(0, Optional.of(true), Optional.empty(), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateSign(5, Optional.of(true), Optional.empty(), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be non-positive"));
 	}
 	
 	@Test
 	void validateSignWithNonNegative() {
-		Result<Void> result = ConstraintValidators.validateSign(5, Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> zeroResult = ConstraintValidators.validateSign(0, Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(zeroResult.isSuccess());
-		Result<Void> failResult = ConstraintValidators.validateSign(-5, Optional.empty(), Optional.of(true), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-negative"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateSign(5, Optional.empty(), Optional.of(true), Optional.empty()));
+		assertDoesNotThrow(() -> ConstraintValidators.validateSign(0, Optional.empty(), Optional.of(true), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateSign(-5, Optional.empty(), Optional.of(true), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be non-negative"));
 	}
 	
 	@Test
 	void validateSignWithNonZero() {
-		Result<Void> result = ConstraintValidators.validateSign(5, Optional.empty(), Optional.empty(), Optional.of(true));
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = ConstraintValidators.validateSign(0, Optional.empty(), Optional.empty(), Optional.of(true));
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be non-zero"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateSign(5, Optional.empty(), Optional.empty(), Optional.of(true)));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateSign(0, Optional.empty(), Optional.empty(), Optional.of(true)));
+		assertTrue(exception.getMessage().contains("must be non-zero"));
 	}
 	
 	@Test
@@ -348,26 +299,21 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validatePercentageWithValidPercentage() {
-		Result<Void> result = ConstraintValidators.validatePercentage(50, Optional.of(Unit.INSTANCE));
-		assertTrue(result.isSuccess());
-		Result<Void> minResult = ConstraintValidators.validatePercentage(0, Optional.of(Unit.INSTANCE));
-		assertTrue(minResult.isSuccess());
-		Result<Void> maxResult = ConstraintValidators.validatePercentage(100, Optional.of(Unit.INSTANCE));
-		assertTrue(maxResult.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validatePercentage(50, Optional.of(Unit.INSTANCE)));
+		assertDoesNotThrow(() -> ConstraintValidators.validatePercentage(0, Optional.of(Unit.INSTANCE)));
+		assertDoesNotThrow(() -> ConstraintValidators.validatePercentage(100, Optional.of(Unit.INSTANCE)));
 	}
 	
 	@Test
 	void validatePercentageWithBelowZero() {
-		Result<Void> result = ConstraintValidators.validatePercentage(-1, Optional.of(Unit.INSTANCE));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be a percentage"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validatePercentage(-1, Optional.of(Unit.INSTANCE)));
+		assertTrue(exception.getMessage().contains("must be a percentage"));
 	}
 	
 	@Test
 	void validatePercentageWithAbove100() {
-		Result<Void> result = ConstraintValidators.validatePercentage(101, Optional.of(Unit.INSTANCE));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be a percentage"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validatePercentage(101, Optional.of(Unit.INSTANCE)));
+		assertTrue(exception.getMessage().contains("must be a percentage"));
 	}
 	
 	@Test
@@ -378,20 +324,16 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateParityWithEven() {
-		Result<Void> result = ConstraintValidators.validateParity(4, Optional.of(Unit.INSTANCE), Optional.empty());
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = ConstraintValidators.validateParity(5, Optional.of(Unit.INSTANCE), Optional.empty());
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be even"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateParity(4, Optional.of(Unit.INSTANCE), Optional.empty()));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateParity(5, Optional.of(Unit.INSTANCE), Optional.empty()));
+		assertTrue(exception.getMessage().contains("must be even"));
 	}
 	
 	@Test
 	void validateParityWithOdd() {
-		Result<Void> result = ConstraintValidators.validateParity(5, Optional.empty(), Optional.of(Unit.INSTANCE));
-		assertTrue(result.isSuccess());
-		Result<Void> failResult = ConstraintValidators.validateParity(4, Optional.empty(), Optional.of(Unit.INSTANCE));
-		assertTrue(failResult.isError());
-		assertTrue(failResult.errorOrThrow().contains("must be odd"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateParity(5, Optional.empty(), Optional.of(Unit.INSTANCE)));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateParity(4, Optional.empty(), Optional.of(Unit.INSTANCE)));
+		assertTrue(exception.getMessage().contains("must be odd"));
 	}
 	
 	@Test
@@ -402,15 +344,13 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateDivisibleByWithDivisible() {
-		Result<Void> result = ConstraintValidators.validateDivisibleBy(12, Optional.of(3L));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateDivisibleBy(12, Optional.of(3L)));
 	}
 	
 	@Test
 	void validateDivisibleByWithNotDivisible() {
-		Result<Void> result = ConstraintValidators.validateDivisibleBy(13, Optional.of(3L));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be divisible by"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateDivisibleBy(13, Optional.of(3L)));
+		assertTrue(exception.getMessage().contains("must be divisible by"));
 	}
 	
 	@Test
@@ -420,24 +360,20 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validatePowerOfWithIsPower() {
-		Result<Void> result = ConstraintValidators.validatePowerOf(8, Optional.of(2));
-		assertTrue(result.isSuccess());
-		Result<Void> result27 = ConstraintValidators.validatePowerOf(27, Optional.of(3));
-		assertTrue(result27.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validatePowerOf(8, Optional.of(2)));
+		assertDoesNotThrow(() -> ConstraintValidators.validatePowerOf(27, Optional.of(3)));
 	}
 	
 	@Test
 	void validatePowerOfWithNotPower() {
-		Result<Void> result = ConstraintValidators.validatePowerOf(10, Optional.of(2));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be a power of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validatePowerOf(10, Optional.of(2)));
+		assertTrue(exception.getMessage().contains("must be a power of"));
 	}
 	
 	@Test
 	void validatePowerOfWithNegativeValues() {
-		Result<Void> result = ConstraintValidators.validatePowerOf(-8, Optional.of(2));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be positive"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validatePowerOf(-8, Optional.of(2)));
+		assertTrue(exception.getMessage().contains("must be positive") || exception.getMessage().contains("must be a power of"));
 	}
 	
 	@Test
@@ -447,24 +383,20 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void matchStartsWithWithValidate() {
-		Result<Void> result = ConstraintValidators.validateStartsWith("hello world", Optional.of(Pair.of("hello", false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateStartsWith("hello world", Optional.of(Pair.of("hello", false))));
 	}
 	
 	@Test
 	void matchStartsWithWithNoValidate() {
-		Result<Void> result = ConstraintValidators.validateStartsWith("hello world", Optional.of(Pair.of("world", false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must start with"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateStartsWith("hello world", Optional.of(Pair.of("world", false))));
+		assertTrue(exception.getMessage().contains("must start with"));
 	}
 	
 	@Test
 	void validateStartsWithWithNegated() {
-		Result<Void> result = ConstraintValidators.validateStartsWith("hello world", Optional.of(Pair.of("world", true)));
-		assertTrue(result.isSuccess());
-		Result<Void> negatedResult = ConstraintValidators.validateStartsWith("hello world", Optional.of(Pair.of("hello", true)));
-		assertTrue(negatedResult.isError());
-		assertTrue(negatedResult.errorOrThrow().contains("must not start with"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateStartsWith("hello world", Optional.of(Pair.of("world", true))));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateStartsWith("hello world", Optional.of(Pair.of("hello", true))));
+		assertTrue(exception.getMessage().contains("must not start with"));
 	}
 	
 	@Test
@@ -475,22 +407,19 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateStartsWithAnyWithValidate() {
-		Result<Void> result = ConstraintValidators.validateStartsWithAny("hello world", Optional.of(Pair.of(Set.of("hi", "hello"), false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateStartsWithAny("hello world", Optional.of(Pair.of(Set.of("hi", "hello"), false))));
 	}
 	
 	@Test
 	void validateStartsWithAnyWithNoValidate() {
-		Result<Void> result = ConstraintValidators.validateStartsWithAny("hello world", Optional.of(Pair.of(Set.of("hi", "hey"), false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must start with one of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateStartsWithAny("hello world", Optional.of(Pair.of(Set.of("hi", "hey"), false))));
+		assertTrue(exception.getMessage().contains("must start with one of"));
 	}
 	
 	@Test
 	void validateStartsWithAnyWithNegated() {
-		Result<Void> result = ConstraintValidators.validateStartsWithAny("hello world", Optional.of(Pair.of(Set.of("hello", "hi"), true)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must not start with any of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateStartsWithAny("hello world", Optional.of(Pair.of(Set.of("hello", "hi"), true))));
+		assertTrue(exception.getMessage().contains("must not start with any of"));
 	}
 	
 	@Test
@@ -501,24 +430,20 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void matchContainsWithValidate() {
-		Result<Void> result = ConstraintValidators.validateContains("hello world", Optional.of(Pair.of("lo wo", false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateContains("hello world", Optional.of(Pair.of("lo wo", false))));
 	}
 	
 	@Test
 	void matchContainsWithNoValidate() {
-		Result<Void> result = ConstraintValidators.validateContains("hello world", Optional.of(Pair.of("xyz", false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must contain"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateContains("hello world", Optional.of(Pair.of("xyz", false))));
+		assertTrue(exception.getMessage().contains("must contain"));
 	}
 	
 	@Test
 	void validateContainsWithNegated() {
-		Result<Void> result = ConstraintValidators.validateContains("hello world", Optional.of(Pair.of("xyz", true)));
-		assertTrue(result.isSuccess());
-		Result<Void> negatedResult = ConstraintValidators.validateContains("hello world", Optional.of(Pair.of("world", true)));
-		assertTrue(negatedResult.isError());
-		assertTrue(negatedResult.errorOrThrow().contains("must not contain"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateContains("hello world", Optional.of(Pair.of("xyz", true))));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateContains("hello world", Optional.of(Pair.of("world", true))));
+		assertTrue(exception.getMessage().contains("must not contain"));
 	}
 	
 	@Test
@@ -529,22 +454,19 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateContainsAnyWithValidate() {
-		Result<Void> result = ConstraintValidators.validateContainsAny("hello world", Optional.of(Pair.of(Set.of("xyz", "world"), false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateContainsAny("hello world", Optional.of(Pair.of(Set.of("xyz", "world"), false))));
 	}
 	
 	@Test
 	void validateContainsAnyWithNoValidate() {
-		Result<Void> result = ConstraintValidators.validateContainsAny("hello world", Optional.of(Pair.of(Set.of("xyz", "abc"), false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must contain at least one of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateContainsAny("hello world", Optional.of(Pair.of(Set.of("xyz", "abc"), false))));
+		assertTrue(exception.getMessage().contains("must contain at least one of"));
 	}
 	
 	@Test
 	void validateContainsAnyWithNegated() {
-		Result<Void> result = ConstraintValidators.validateContainsAny("hello world", Optional.of(Pair.of(Set.of("world", "hello"), true)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must not contain any of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateContainsAny("hello world", Optional.of(Pair.of(Set.of("world", "hello"), true))));
+		assertTrue(exception.getMessage().contains("must not contain any of"));
 	}
 	
 	@Test
@@ -555,15 +477,13 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateContainsAllWithAllPresent() {
-		Result<Void> result = ConstraintValidators.validateContainsAll("hello world", Optional.of(Set.of("hello", "world")));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateContainsAll("hello world", Optional.of(Set.of("hello", "world"))));
 	}
 	
 	@Test
 	void validateContainsAllWithMissing() {
-		Result<Void> result = ConstraintValidators.validateContainsAll("hello world", Optional.of(Set.of("hello", "xyz")));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must contain all of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateContainsAll("hello world", Optional.of(Set.of("hello", "xyz"))));
+		assertTrue(exception.getMessage().contains("must contain all of"));
 	}
 	
 	@Test
@@ -574,15 +494,13 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateContainsOnlyWithValid() {
-		Result<Void> result = ConstraintValidators.validateContainsOnly("abc", Optional.of(Set.of("a", "b", "c")));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateContainsOnly("abc", Optional.of(Set.of("a", "b", "c"))));
 	}
 	
 	@Test
 	void validateContainsOnlyWithInvalid() {
-		Result<Void> result = ConstraintValidators.validateContainsOnly("abcd", Optional.of(Set.of("a", "b", "c")));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must contain only characters from"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateContainsOnly("abcd", Optional.of(Set.of("a", "b", "c"))));
+		assertTrue(exception.getMessage().contains("must contain only characters from"));
 	}
 	
 	@Test
@@ -593,24 +511,20 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void matchEndsWithWithValidate() {
-		Result<Void> result = ConstraintValidators.validateEndsWith("hello world", Optional.of(Pair.of("world", false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateEndsWith("hello world", Optional.of(Pair.of("world", false))));
 	}
 	
 	@Test
 	void matchEndsWithWithNoValidate() {
-		Result<Void> result = ConstraintValidators.validateEndsWith("hello world", Optional.of(Pair.of("hello", false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must end with"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateEndsWith("hello world", Optional.of(Pair.of("hello", false))));
+		assertTrue(exception.getMessage().contains("must end with"));
 	}
 	
 	@Test
 	void validateEndsWithWithNegated() {
-		Result<Void> result = ConstraintValidators.validateEndsWith("hello world", Optional.of(Pair.of("hello", true)));
-		assertTrue(result.isSuccess());
-		Result<Void> negatedResult = ConstraintValidators.validateEndsWith("hello world", Optional.of(Pair.of("world", true)));
-		assertTrue(negatedResult.isError());
-		assertTrue(negatedResult.errorOrThrow().contains("must not end with"));
+		assertDoesNotThrow(() -> ConstraintValidators.validateEndsWith("hello world", Optional.of(Pair.of("hello", true))));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateEndsWith("hello world", Optional.of(Pair.of("world", true))));
+		assertTrue(exception.getMessage().contains("must not end with"));
 	}
 	
 	@Test
@@ -621,22 +535,19 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateEndsWithAnyWithValidate() {
-		Result<Void> result = ConstraintValidators.validateEndsWithAny("hello world", Optional.of(Pair.of(Set.of("world", "test"), false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateEndsWithAny("hello world", Optional.of(Pair.of(Set.of("world", "test"), false))));
 	}
 	
 	@Test
 	void validateEndsWithAnyWithNoValidate() {
-		Result<Void> result = ConstraintValidators.validateEndsWithAny("hello world", Optional.of(Pair.of(Set.of("hello", "test"), false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must end with one of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateEndsWithAny("hello world", Optional.of(Pair.of(Set.of("hello", "test"), false))));
+		assertTrue(exception.getMessage().contains("must end with one of"));
 	}
 	
 	@Test
 	void validateEndsWithAnyWithNegated() {
-		Result<Void> result = ConstraintValidators.validateEndsWithAny("hello world", Optional.of(Pair.of(Set.of("world", "test"), true)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must not end with any of"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateEndsWithAny("hello world", Optional.of(Pair.of(Set.of("world", "test"), true))));
+		assertTrue(exception.getMessage().contains("must not end with any of"));
 	}
 	
 	@Test
@@ -647,24 +558,20 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void matchPatternWithValidate() {
-		Result<Void> result = ConstraintValidators.validatePattern("hello123", Optional.of(Pair.of(Pattern.compile("[a-z]+\\d+"), false)));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validatePattern("hello123", Optional.of(Pair.of(Pattern.compile("[a-z]+\\d+"), false))));
 	}
 	
 	@Test
 	void matchPatternWithNoValidate() {
-		Result<Void> result = ConstraintValidators.validatePattern("hello", Optional.of(Pair.of(Pattern.compile("[a-z]+\\d+"), false)));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must match pattern"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validatePattern("hello", Optional.of(Pair.of(Pattern.compile("[a-z]+\\d+"), false))));
+		assertTrue(exception.getMessage().contains("must match pattern"));
 	}
 	
 	@Test
 	void validatePatternWithNegated() {
-		Result<Void> result = ConstraintValidators.validatePattern("hello", Optional.of(Pair.of(Pattern.compile("[a-z]+\\d+"), true)));
-		assertTrue(result.isSuccess());
-		Result<Void> negatedResult = ConstraintValidators.validatePattern("hello123", Optional.of(Pair.of(Pattern.compile("[a-z]+\\d+"), true)));
-		assertTrue(negatedResult.isError());
-		assertTrue(negatedResult.errorOrThrow().contains("must not match pattern"));
+		assertDoesNotThrow(() -> ConstraintValidators.validatePattern("hello", Optional.of(Pair.of(Pattern.compile("[a-z]+\\d+"), true))));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validatePattern("hello123", Optional.of(Pair.of(Pattern.compile("[a-z]+\\d+"), true))));
+		assertTrue(exception.getMessage().contains("must not match pattern"));
 	}
 	
 	@Test
@@ -675,15 +582,13 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void matchCharacterClassWithAllValidate() {
-		Result<Void> result = ConstraintValidators.validateCharacterClass("ABC", Optional.of(Unit.INSTANCE), Character::isUpperCase, "uppercase");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateCharacterClass("ABC", Optional.of(Unit.INSTANCE), Character::isUpperCase, "uppercase"));
 	}
 	
 	@Test
 	void validateCharacterClassWithSomeFail() {
-		Result<Void> result = ConstraintValidators.validateCharacterClass("ABc", Optional.of(Unit.INSTANCE), Character::isUpperCase, "uppercase");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must contain only uppercase characters"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateCharacterClass("ABc", Optional.of(Unit.INSTANCE), Character::isUpperCase, "uppercase"));
+		assertTrue(exception.getMessage().contains("must contain only uppercase characters"));
 	}
 	
 	@Test
@@ -696,15 +601,13 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateRequiredKeysWithAllPresent() {
-		Result<Void> result = ConstraintValidators.validateRequiredKeys(Set.of("a", "b", "c"), Optional.of(Set.of("a", "b")), "Map");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateRequiredKeys(Set.of("a", "b", "c"), Optional.of(Set.of("a", "b")), "Map"));
 	}
 	
 	@Test
 	void validateRequiredKeysWithMissing() {
-		Result<Void> result = ConstraintValidators.validateRequiredKeys(Set.of("a", "c"), Optional.of(Set.of("a", "b")), "Map");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must contain required keys"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateRequiredKeys(Set.of("a", "c"), Optional.of(Set.of("a", "b")), "Map"));
+		assertTrue(exception.getMessage().contains("must contain required keys"));
 	}
 	
 	@Test
@@ -716,15 +619,13 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateForbiddenKeysWithNonePresent() {
-		Result<Void> result = ConstraintValidators.validateForbiddenKeys(Set.of("a", "b"), Optional.of(Set.of("c", "d")), "Map");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateForbiddenKeys(Set.of("a", "b"), Optional.of(Set.of("c", "d")), "Map"));
 	}
 	
 	@Test
 	void validateForbiddenKeysWithSomePresent() {
-		Result<Void> result = ConstraintValidators.validateForbiddenKeys(Set.of("a", "b", "c"), Optional.of(Set.of("c", "d")), "Map");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must not contain forbidden keys"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateForbiddenKeys(Set.of("a", "b", "c"), Optional.of(Set.of("c", "d")), "Map"));
+		assertTrue(exception.getMessage().contains("must not contain forbidden keys"));
 	}
 	
 	@Test
@@ -736,15 +637,13 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateAllowedKeysWithAllAllowed() {
-		Result<Void> result = ConstraintValidators.validateAllowedKeys(Set.of("a", "b"), Optional.of(Set.of("a", "b", "c")), "Map");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateAllowedKeys(Set.of("a", "b"), Optional.of(Set.of("a", "b", "c")), "Map"));
 	}
 	
 	@Test
 	void validateAllowedKeysWithDisallowed() {
-		Result<Void> result = ConstraintValidators.validateAllowedKeys(Set.of("a", "b", "d"), Optional.of(Set.of("a", "b", "c")), "Map");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("contains keys that are not allowed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateAllowedKeys(Set.of("a", "b", "d"), Optional.of(Set.of("a", "b", "c")), "Map"));
+		assertTrue(exception.getMessage().contains("contains keys that are not allowed"));
 	}
 	
 	@Test
@@ -756,23 +655,20 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateNestedConfigWithEmptyOptional() {
-		Result<Void> result = ConstraintValidators.validateNestedConfig("test", Optional.empty(), "field");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateNestedConfig("test", Optional.empty(), "field"));
 	}
 	
 	@Test
 	void validateNestedConfigWithPass() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
-		Result<Void> result = ConstraintValidators.validateNestedConfig(5, Optional.of(config), "value");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateNestedConfig(5, Optional.of(config), "value"));
 	}
 	
 	@Test
 	void validateNestedConfigWithFail() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(10);
-		Result<Void> result = ConstraintValidators.validateNestedConfig(5, Optional.of(config), "value");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateNestedConfig(5, Optional.of(config), "value"));
+		assertTrue(exception.getMessage().contains("constraint failed"));
 	}
 	
 	@Test
@@ -786,7 +682,7 @@ class ConstraintValidatorsTest {
 	void validateExtractedValueWithEmptyConfig() {
 		List<String> list = List.of("a", "b", "c");
 		Optional<SizeConstraintConfig> config = Optional.empty();
-		assertTrue(ConstraintValidators.validateExtractedValue(list, config, List::size, "size").isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateExtractedValue(list, config, List::size, "size"));
 	}
 	
 	@Test
@@ -794,7 +690,7 @@ class ConstraintValidatorsTest {
 		List<String> list = List.of("a", "b", "c");
 		SizeConstraintConfig sizeConfig = SizeConstraintConfig.UNCONSTRAINED.withMinSize(1).withMaxSize(5);
 		Optional<SizeConstraintConfig> config = Optional.of(sizeConfig);
-		assertTrue(ConstraintValidators.validateExtractedValue(list, config, List::size, "size").isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateExtractedValue(list, config, List::size, "size"));
 	}
 	
 	@Test
@@ -802,17 +698,16 @@ class ConstraintValidatorsTest {
 		List<String> list = List.of("a", "b", "c");
 		SizeConstraintConfig sizeConfig = SizeConstraintConfig.UNCONSTRAINED.withMinSize(5);
 		Optional<SizeConstraintConfig> config = Optional.of(sizeConfig);
-		Result<Void> result = ConstraintValidators.validateExtractedValue(list, config, List::size, "size");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("size constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateExtractedValue(list, config, List::size, "size"));
+		assertTrue(exception.getMessage().contains("size constraint failed"));
 	}
 	
 	@Test
 	void validateExtractedValueWithArrayLength() {
-		String[] array = new String[] { "a", "b" };
+		String[] array = { "a", "b" };
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(1).withMaxLength(3);
 		Optional<LengthConstraintConfig> config = Optional.of(lengthConfig);
-		assertTrue(ConstraintValidators.validateExtractedValue(array, config, arr -> arr.length, "length").isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateExtractedValue(array, config, arr -> arr.length, "length"));
 	}
 	
 	@Test
@@ -837,23 +732,20 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateNumericFieldWithEmptyOptional() {
-		Result<Void> result = ConstraintValidators.validateNumericField(5, Optional.empty(), "field");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateNumericField(5, Optional.empty(), "field"));
 	}
 	
 	@Test
 	void validateNumericFieldWithPass() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 10);
-		Result<Void> result = ConstraintValidators.validateNumericField(5, Optional.of(config), "field");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateNumericField(5, Optional.of(config), "field"));
 	}
 	
 	@Test
 	void validateNumericFieldWithFail() {
 		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(10, 20);
-		Result<Void> result = ConstraintValidators.validateNumericField(5, Optional.of(config), "field");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("constraint failed"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateNumericField(5, Optional.of(config), "field"));
+		assertTrue(exception.getMessage().contains("constraint failed"));
 	}
 	
 	@Test
@@ -864,25 +756,22 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateWithinLastWithEmptyOptional() {
-		Result<Void> result = ConstraintValidators.validateWithinLast(Instant.now(), Optional.empty(), Instant::now, (t, d) -> t.minus(d), "Instant");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateWithinLast(Instant.now(), Optional.empty(), Instant::now, (t, d) -> t.minus(d), "Instant"));
 	}
 	
 	@Test
 	void validateWithinLastWithPass() {
 		Instant now = Instant.now();
 		Instant recent = now.minusSeconds(30);
-		Result<Void> result = ConstraintValidators.validateWithinLast(recent, Optional.of(Duration.ofMinutes(1)), () -> now, (t, d) -> t.minus(d), "Instant");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateWithinLast(recent, Optional.of(Duration.ofMinutes(1)), () -> now, (t, d) -> t.minus(d), "Instant"));
 	}
 	
 	@Test
 	void validateWithinLastWithFail() {
 		Instant now = Instant.now();
 		Instant old = now.minusSeconds(120);
-		Result<Void> result = ConstraintValidators.validateWithinLast(old, Optional.of(Duration.ofMinutes(1)), () -> now, (t, d) -> t.minus(d), "Instant");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be within last"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateWithinLast(old, Optional.of(Duration.ofMinutes(1)), () -> now, (t, d) -> t.minus(d), "Instant"));
+		assertTrue(exception.getMessage().contains("must be within last"));
 	}
 	
 	@Test
@@ -895,25 +784,22 @@ class ConstraintValidatorsTest {
 	
 	@Test
 	void validateWithinNextWithEmptyOptional() {
-		Result<Void> result = ConstraintValidators.validateWithinNext(Instant.now(), Optional.empty(), Instant::now, (t, d) -> t.plus(d), "Instant");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateWithinNext(Instant.now(), Optional.empty(), Instant::now, (t, d) -> t.plus(d), "Instant"));
 	}
 	
 	@Test
 	void validateWithinNextWithPass() {
 		Instant now = Instant.now();
 		Instant future = now.plusSeconds(30);
-		Result<Void> result = ConstraintValidators.validateWithinNext(future, Optional.of(Duration.ofMinutes(1)), () -> now, (t, d) -> t.plus(d), "Instant");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> ConstraintValidators.validateWithinNext(future, Optional.of(Duration.ofMinutes(1)), () -> now, (t, d) -> t.plus(d), "Instant"));
 	}
 	
 	@Test
 	void validateWithinNextWithFail() {
 		Instant now = Instant.now();
 		Instant farFuture = now.plusSeconds(120);
-		Result<Void> result = ConstraintValidators.validateWithinNext(farFuture, Optional.of(Duration.ofMinutes(1)), () -> now, (t, d) -> t.plus(d), "Instant");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("must be within next"));
+		ConstraintViolateException exception = assertThrows(ConstraintViolateException.class, () -> ConstraintValidators.validateWithinNext(farFuture, Optional.of(Duration.ofMinutes(1)), () -> now, (t, d) -> t.plus(d), "Instant"));
+		assertTrue(exception.getMessage().contains("must be within next"));
 	}
 	
 	@Test
