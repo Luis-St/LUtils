@@ -157,7 +157,7 @@ class NullableCodecTest {
 	void decodeWithXmlNull() throws DecoderException {
 		XmlTypeProvider typeProvider = XmlTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
-		XmlElement xmlNull = typeProvider.createNull();
+		XmlElement xmlNull = typeProvider.createNull(RuntimeException::new);
 		
 		Integer result = codec.decode(typeProvider, typeProvider.empty(), xmlNull);
 		assertNull(result);

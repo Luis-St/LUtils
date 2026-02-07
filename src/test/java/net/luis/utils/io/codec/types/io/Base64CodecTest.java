@@ -144,7 +144,7 @@ class Base64CodecTest {
 		JsonArray value = new JsonArray();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), value));
-		assertTrue(exception.getMessage().contains("Unable to decode base 64 from a non-string value"));
+		assertTrue(exception.getMessage().contains("Json element '[]' is not a json primitive"));
 	}
 	
 	@Test

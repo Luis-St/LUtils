@@ -53,7 +53,7 @@ class UUIDCodecTest {
 		Codec<UUID> codec = new UUIDCodec();
 		
 		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to encode null as UUID"));
+		assertTrue(exception.getMessage().contains("Unable to encode null as uuid"));
 	}
 	
 	@Test
@@ -125,7 +125,7 @@ class UUIDCodecTest {
 		Codec<UUID> codec = new UUIDCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to decode null value as UUID"));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as uuid"));
 	}
 	
 	@Test
@@ -161,7 +161,7 @@ class UUIDCodecTest {
 		Codec<UUID> codec = new UUIDCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-uuid")));
-		assertTrue(exception.getMessage().contains("Unable to decode UUID"));
+		assertTrue(exception.getMessage().contains("Unable to decode uuid"));
 	}
 	
 	@Test
@@ -170,7 +170,7 @@ class UUIDCodecTest {
 		Codec<UUID> codec = new UUIDCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("550e8400-e29b-41d4-a716")));
-		assertTrue(exception.getMessage().contains("Unable to decode UUID"));
+		assertTrue(exception.getMessage().contains("Unable to decode uuid"));
 	}
 	
 	@Test
@@ -209,7 +209,7 @@ class UUIDCodecTest {
 		Codec<UUID> codec = new UUIDCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("invalid-uuid"));
-		assertTrue(exception.getMessage().contains("Unable to decode UUID from key"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'invalid-uuid' as uuid"));
 	}
 	
 	@Test
@@ -217,7 +217,7 @@ class UUIDCodecTest {
 		Codec<UUID> codec = new UUIDCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("550e8400-e29b-41d4-a716"));
-		assertTrue(exception.getMessage().contains("Unable to decode UUID from key"));
+		assertTrue(exception.getMessage().contains("Unable to decode key '550e8400-e29b-41d4-a716' as uuid"));
 	}
 	
 	@Test

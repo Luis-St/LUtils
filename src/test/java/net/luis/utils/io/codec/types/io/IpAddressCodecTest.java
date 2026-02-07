@@ -53,7 +53,7 @@ class IpAddressCodecTest {
 		Codec<IpAddress<?>> codec = new IpAddressCodec();
 		
 		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to encode null as IP address"));
+		assertTrue(exception.getMessage().contains("Unable to encode null as ip address"));
 	}
 	
 	@Test
@@ -126,7 +126,7 @@ class IpAddressCodecTest {
 		Codec<IpAddress<?>> codec = new IpAddressCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to decode null value as IP address"));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as ip address"));
 	}
 	
 	@Test
@@ -171,7 +171,7 @@ class IpAddressCodecTest {
 		Codec<IpAddress<?>> codec = new IpAddressCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("999.999.999.999")));
-		assertTrue(exception.getMessage().contains("Unable to decode IP address"));
+		assertTrue(exception.getMessage().contains("Unable to decode ip address"));
 	}
 	
 	@Test
@@ -210,7 +210,7 @@ class IpAddressCodecTest {
 		Codec<IpAddress<?>> codec = new IpAddressCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("999.999.999.999"));
-		assertTrue(exception.getMessage().contains("Unable to decode key '999.999.999.999' as IP address"));
+		assertTrue(exception.getMessage().contains("Unable to decode key '999.999.999.999' as ip address"));
 	}
 	
 	@Test

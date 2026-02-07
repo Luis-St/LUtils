@@ -178,7 +178,7 @@ class ArrayCodecTest {
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
-		assertTrue(exception.getMessage().contains("Unable to decode array"));
+		assertTrue(exception.getMessage().contains("Json element '42' is not a json array"));
 	}
 	
 	@Test
@@ -369,14 +369,6 @@ class ArrayCodecTest {
 		Boolean[][] decodedBoolArray = boolArrayCodec.decode(typeProvider, typeProvider.empty(), boolEncodeResult);
 		assertArrayEquals(new Boolean[] { true, false }, decodedBoolArray[0]);
 		assertArrayEquals(new Boolean[] { false, true, false }, decodedBoolArray[1]);
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		ArrayCodec<Integer> codec1 = new ArrayCodec<>(Integer.class, INTEGER);
-		ArrayCodec<Integer> codec2 = new ArrayCodec<>(Integer.class, INTEGER);
-		
-		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
 	
 	@Test

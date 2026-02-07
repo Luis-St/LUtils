@@ -91,7 +91,7 @@ class UnionCodecTest {
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
 		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), "invalid"));
-		assertTrue(exception.getMessage().contains("value is not in the set of valid values"));
+		assertTrue(exception.getMessage().contains("Value is not in the set of valid values"));
 		assertTrue(exception.getMessage().contains("invalid"));
 	}
 	
@@ -160,7 +160,7 @@ class UnionCodecTest {
 		Codec<String> codec = new UnionCodec(STRING, List.of("pending", "active", "completed"));
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid")));
-		assertTrue(exception.getMessage().contains("value is not in the set of valid values"));
+		assertTrue(exception.getMessage().contains("Value is not in the set of valid values"));
 		assertTrue(exception.getMessage().contains("invalid"));
 	}
 	

@@ -53,7 +53,7 @@ class MacAddressCodecTest {
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
 		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to encode null as MAC address"));
+		assertTrue(exception.getMessage().contains("Unable to encode null as mac address"));
 	}
 	
 	@Test
@@ -116,7 +116,7 @@ class MacAddressCodecTest {
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to decode null value as MAC address"));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as mac address"));
 	}
 	
 	@Test
@@ -170,7 +170,7 @@ class MacAddressCodecTest {
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-mac")));
-		assertTrue(exception.getMessage().contains("Unable to decode MAC address"));
+		assertTrue(exception.getMessage().contains("Unable to decode mac address"));
 	}
 	
 	@Test
@@ -179,7 +179,7 @@ class MacAddressCodecTest {
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00:1A:2B")));
-		assertTrue(exception.getMessage().contains("Unable to decode MAC address"));
+		assertTrue(exception.getMessage().contains("Unable to decode mac address"));
 	}
 	
 	@Test
@@ -210,7 +210,7 @@ class MacAddressCodecTest {
 		Codec<MacAddress> codec = new MacAddressCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("not-a-mac"));
-		assertTrue(exception.getMessage().contains("Unable to decode key 'not-a-mac' as MAC address"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'not-a-mac' as mac address"));
 	}
 	
 	@Test

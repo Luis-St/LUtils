@@ -101,7 +101,7 @@ class PathCodecTest {
 		Codec<Path> codec = new PathCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to decode null value as path"));
+		assertTrue(exception.getMessage().contains("Unable to decode null as path"));
 	}
 	
 	@Test

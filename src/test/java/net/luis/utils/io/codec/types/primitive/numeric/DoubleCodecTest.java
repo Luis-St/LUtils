@@ -166,7 +166,7 @@ class DoubleCodecTest {
 		Codec<Double> codec = new DoubleCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to decode null value as double"));
+		assertTrue(exception.getMessage().contains("Unable to decode null as double"));
 	}
 	
 	@Test

@@ -579,7 +579,7 @@ class CodecAutoMappingTest {
 		
 		private final String name;
 		private final int age;
-		private final String transientField = "transient";
+		private transient final String transientField = "transient";
 		
 		private ImplicitFieldsClass(@NonNull String name, int age) {
 			this.name = name;
@@ -602,11 +602,17 @@ class CodecAutoMappingTest {
 		}
 	}
 	
-	private record InvalidConstructorClass(@CodecField String name, @CodecField int age) {
+	private static final class InvalidConstructorClass {
+		
+		@CodecField
+		private final String name;
+		@CodecField
+		private final int age;
 		
 		@CodecConstructor
 		private InvalidConstructorClass(@NonNull String name, @NonNull String age) {
-			this(name, Integer.parseInt(age));
+			this.name = name;
+			this.age = Integer.parseInt(age);
 		}
 	}
 	//endregion

@@ -21,6 +21,7 @@ package net.luis.utils.io.codec.types.struct.collection;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonObject;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -80,7 +81,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).equalTo(Map.of("a", 1, "b", 2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("c", 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("c", 3)));
 	}
 	
 	@Test
@@ -103,7 +104,7 @@ class ConstrainedMapCodecTest {
 		JsonObject json = new JsonObject();
 		json.add("c", new JsonPrimitive(3));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -119,7 +120,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).notEqualTo(Map.of("a", 1, "b", 2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2)));
 	}
 	
 	@Test
@@ -142,7 +143,7 @@ class ConstrainedMapCodecTest {
 		json.add("a", new JsonPrimitive(1));
 		json.add("b", new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -158,7 +159,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).in(List.of(Map.of("a", 1), Map.of("b", 2)));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("c", 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("c", 3)));
 	}
 	
 	@Test
@@ -180,7 +181,7 @@ class ConstrainedMapCodecTest {
 		JsonObject json = new JsonObject();
 		json.add("c", new JsonPrimitive(3));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -196,7 +197,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).notIn(List.of(Map.of("a", 1), Map.of("b", 2)));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1)));
 	}
 	
 	@Test
@@ -218,7 +219,7 @@ class ConstrainedMapCodecTest {
 		JsonObject json = new JsonObject();
 		json.add("b", new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -234,7 +235,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(3));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2)));
 	}
 	
 	@Test
@@ -258,7 +259,7 @@ class ConstrainedMapCodecTest {
 		json.add("a", new JsonPrimitive(1));
 		json.add("b", new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -274,7 +275,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.maxSize(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3)));
 	}
 	
 	@Test
@@ -299,7 +300,7 @@ class ConstrainedMapCodecTest {
 		json.add("b", new JsonPrimitive(2));
 		json.add("c", new JsonPrimitive(3));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -315,7 +316,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.exactSize(3));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2)));
 	}
 	
 	@Test
@@ -339,7 +340,7 @@ class ConstrainedMapCodecTest {
 		json.add("a", new JsonPrimitive(1));
 		json.add("b", new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -355,7 +356,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.sizeBetween(3, 5));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2)));
 	}
 	
 	@Test
@@ -363,7 +364,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.sizeBetween(1, 2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2, "c", 3)));
 	}
 	
 	@Test
@@ -387,7 +388,7 @@ class ConstrainedMapCodecTest {
 		json.add("a", new JsonPrimitive(1));
 		json.add("b", new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -403,7 +404,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).requiredKey("a");
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("b", 2, "c", 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("b", 2, "c", 3)));
 	}
 	
 	@Test
@@ -427,7 +428,7 @@ class ConstrainedMapCodecTest {
 		json.add("b", new JsonPrimitive(2));
 		json.add("c", new JsonPrimitive(3));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -443,7 +444,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).requiredKeys(List.of("a", "b"));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "c", 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "c", 3)));
 	}
 	
 	@Test
@@ -459,7 +460,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).forbiddenKey("a");
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "b", 2)));
 	}
 	
 	@Test
@@ -483,7 +484,7 @@ class ConstrainedMapCodecTest {
 		json.add("a", new JsonPrimitive(1));
 		json.add("b", new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -499,7 +500,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).forbiddenKeys(List.of("a", "b"));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "c", 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "c", 3)));
 	}
 	
 	@Test
@@ -515,7 +516,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).allowedKeys(List.of("a", "b"));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "x", 2)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("a", 1, "x", 2)));
 	}
 	
 	@Test
@@ -539,7 +540,7 @@ class ConstrainedMapCodecTest {
 		json.add("a", new JsonPrimitive(1));
 		json.add("x", new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -559,7 +560,7 @@ class ConstrainedMapCodecTest {
 		map.put("a", 1);
 		map.put("b", 1);
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), map));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), map));
 	}
 	
 	@Test
@@ -583,7 +584,7 @@ class ConstrainedMapCodecTest {
 		json.add("a", new JsonPrimitive(1));
 		json.add("b", new JsonPrimitive(1));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -611,7 +612,7 @@ class ConstrainedMapCodecTest {
 		map.put("a", 1);
 		map.put("b", -2);
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), map));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), map));
 	}
 	
 	@Test
@@ -643,7 +644,7 @@ class ConstrainedMapCodecTest {
 		json.add("a", new JsonPrimitive(1));
 		json.add("b", new JsonPrimitive(-2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 	
 	@Test
@@ -659,7 +660,7 @@ class ConstrainedMapCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<String, Integer>> codec = new MapCodec<>(STRING, INTEGER).size(builder -> builder.minSize(2).maxSize(4)).requiredKey("a");
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("b", 2, "c", 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Map.of("b", 2, "c", 3)));
 	}
 	
 	@Test
@@ -683,6 +684,6 @@ class ConstrainedMapCodecTest {
 		json.add("a", new JsonPrimitive(1));
 		json.add("b", new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), json));
 	}
 }

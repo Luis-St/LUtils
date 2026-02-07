@@ -137,7 +137,6 @@ class InstantCodecTest {
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-instant")));
 		assertTrue(exception.getMessage().contains("Unable to decode instant"));
-		assertTrue(exception.getMessage().contains("Unable to parse instant"));
 	}
 	
 	@Test

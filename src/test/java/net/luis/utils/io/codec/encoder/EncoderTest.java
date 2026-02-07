@@ -23,6 +23,8 @@ import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+
 import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -101,8 +103,8 @@ class EncoderTest {
 	
 	@Test
 	void encodeKeyNotSupported() {
-		Encoder<Integer> encoder = INTEGER;
-		assertThrows(EncoderException.class, () -> encoder.encodeKey(42));
+		Encoder<Duration> encoder = DURATION;
+		assertThrows(EncoderException.class, () -> encoder.encodeKey(Duration.ofMillis(42)));
 	}
 	
 	@Test

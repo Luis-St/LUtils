@@ -86,7 +86,7 @@ class ConstrainedListCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withEqualTo(List.of(1, 2, 3)));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(4, 5)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(4, 5)));
 	}
 	
 	@Test
@@ -111,7 +111,7 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(4));
 		array.add(new JsonPrimitive(5));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
@@ -127,7 +127,7 @@ class ConstrainedListCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withNotEqualTo(List.of(1, 2, 3)));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
@@ -152,7 +152,7 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
@@ -168,7 +168,7 @@ class ConstrainedListCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withIn(List.of(List.of(1, 2), List.of(3, 4))));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(5, 6)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(5, 6)));
 	}
 	
 	@Test
@@ -192,7 +192,7 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(7));
 		array.add(new JsonPrimitive(8));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
@@ -208,7 +208,7 @@ class ConstrainedListCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withNotIn(List.of(List.of(1, 2), List.of(3, 4))));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
 	}
 	
 	@Test
@@ -232,7 +232,7 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(3));
 		array.add(new JsonPrimitive(4));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
@@ -248,7 +248,7 @@ class ConstrainedListCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(3));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
 	}
 	
 	@Test
@@ -272,7 +272,7 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
@@ -288,7 +288,7 @@ class ConstrainedListCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMaxSize(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
@@ -313,7 +313,7 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
@@ -329,7 +329,7 @@ class ConstrainedListCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withExactSize(3));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
 	}
 	
 	@Test
@@ -353,7 +353,7 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
@@ -369,7 +369,7 @@ class ConstrainedListCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withSizeBetween(3, 5));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
 	}
 	
 	@Test
@@ -377,7 +377,7 @@ class ConstrainedListCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withSizeBetween(1, 2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
@@ -401,7 +401,7 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
@@ -425,7 +425,7 @@ class ConstrainedListCodecTest {
 			}
 		}));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, -2, 3)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, -2, 3)));
 	}
 	
 	@Test
@@ -457,7 +457,7 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(-2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
@@ -473,7 +473,7 @@ class ConstrainedListCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(2).withMaxSize(4));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1)));
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1)));
 	}
 	
 	@Test
@@ -497,6 +497,6 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		assertThrows(ConstraintViolateException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 }

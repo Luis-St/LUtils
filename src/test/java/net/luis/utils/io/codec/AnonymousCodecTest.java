@@ -96,7 +96,7 @@ class AnonymousCodecTest {
 		Encoder<String> encoder = new Encoder<>() {
 			@Override
 			public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable String value) throws EncoderException {
-				return provider.createString("encoded:" + value);
+				return provider.createString("encoded:" + value, EncoderException::new);
 			}
 		};
 		Decoder<String> decoder = STRING;
@@ -112,7 +112,7 @@ class AnonymousCodecTest {
 		Encoder<String> encoder = new Encoder<>() {
 			@Override
 			public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable String value) throws EncoderException {
-				return provider.createString("");
+				return provider.createString("", EncoderException::new);
 			}
 			
 			@Override
@@ -138,7 +138,7 @@ class AnonymousCodecTest {
 				if (value == null) {
 					throw new DecoderException("null value");
 				}
-				String s = provider.getString(value);
+				String s = provider.getString(value, DecoderException::new);
 				return "decoded:" + s;
 			}
 		};
@@ -216,7 +216,7 @@ class AnonymousCodecTest {
 				if (value > 100) {
 					throw new EncoderException("Value exceeds upper bound of 100");
 				}
-				return provider.createInteger(value);
+				return provider.createInteger(value, EncoderException::new);
 			}
 		};
 		
@@ -226,7 +226,7 @@ class AnonymousCodecTest {
 				if (value == null) {
 					throw new DecoderException("Cannot decode null");
 				}
-				int i = provider.getInteger(value);
+				int i = provider.getInteger(value, DecoderException::new);
 				if (i < 0) {
 					throw new DecoderException("Value below lower bound of 0");
 				}

@@ -53,7 +53,7 @@ class URICodecTest {
 		Codec<URI> codec = new URICodec();
 		
 		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to encode null as URI"));
+		assertTrue(exception.getMessage().contains("Unable to encode null as uri"));
 	}
 	
 	@Test
@@ -110,7 +110,7 @@ class URICodecTest {
 		Codec<URI> codec = new URICodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to decode null value as URI"));
+		assertTrue(exception.getMessage().contains("Unable to decode null as uri"));
 	}
 	
 	@Test
@@ -155,8 +155,7 @@ class URICodecTest {
 		Codec<URI> codec = new URICodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("ht tp://invalid uri")));
-		assertTrue(exception.getMessage().contains("Unable to decode URI"));
-		assertTrue(exception.getMessage().contains("Unable to parse URI"));
+		assertTrue(exception.getMessage().contains("Unable to decode uri"));
 	}
 	
 	@Test

@@ -50,6 +50,7 @@ class CodecGroupTest {
 	@Test
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new CodecGroup<>(null, components -> new TestObject("", 0)));
+		assertThrows(NullPointerException.class, () -> new CodecGroup<>(Arrays.asList(null), components -> new TestObject("", 0)));
 		assertThrows(NullPointerException.class, () -> new CodecGroup<>(List.of(), null));
 		assertDoesNotThrow(() -> new CodecGroup<>(List.of(), components -> new TestObject("", 0)));
 	}
@@ -117,19 +118,6 @@ class CodecGroupTest {
 	}
 	
 	@Test
-	void encodeWithNullCodec() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		List<FieldCodec<?, TestObject>> codecs = Arrays.asList(
-			STRING.fieldOf("name", TestObject::name),
-			null
-		);
-		CodecGroup<TestObject> codec = new CodecGroup<>(codecs, components -> new TestObject("", 0));
-		TestObject testObject = new TestObject("test", 42);
-		
-		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, typeProvider.empty(), testObject));
-	}
-	
-	@Test
 	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		CodecGroup<TestObject> codec = createTestCodecGroup();
@@ -154,7 +142,7 @@ class CodecGroupTest {
 		
 		JsonPrimitive notAnObject = new JsonPrimitive("not-an-object");
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, notAnObject, notAnObject));
-		assertTrue(exception.getMessage().contains("Unable to decode"));
+		assertTrue(exception.getMessage().contains("Json element"));
 	}
 	
 	@Test
@@ -200,21 +188,6 @@ class CodecGroupTest {
 		TestObject obj = codec.decode(typeProvider, typeProvider.empty(), new JsonObject());
 		assertEquals("default", obj.name);
 		assertEquals(0, obj.value);
-	}
-	
-	@Test
-	void decodeWithNullCodec() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		List<FieldCodec<?, TestObject>> codecs = Arrays.asList(
-			STRING.fieldOf("name", TestObject::name),
-			null
-		);
-		CodecGroup<TestObject> codec = new CodecGroup<>(codecs, components -> new TestObject("", 0));
-		
-		JsonObject jsonObj = new JsonObject();
-		jsonObj.add("name", new JsonPrimitive("test"));
-		
-		assertThrows(NullPointerException.class, () -> codec.decode(typeProvider, jsonObj, jsonObj));
 	}
 	
 	@Test

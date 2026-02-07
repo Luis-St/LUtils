@@ -23,6 +23,8 @@ import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+
 import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -106,8 +108,8 @@ class DecoderTest {
 	
 	@Test
 	void decodeKeyNotSupported() {
-		Decoder<Integer> decoder = INTEGER;
-		assertThrows(DecoderException.class, () -> decoder.decodeKey("42"));
+		Decoder<Duration> decoder = DURATION;
+		assertThrows(DecoderException.class, () -> decoder.decodeKey("42d"));
 	}
 	
 	@Test

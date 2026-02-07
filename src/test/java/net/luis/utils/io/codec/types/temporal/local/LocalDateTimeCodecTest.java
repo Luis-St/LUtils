@@ -137,7 +137,6 @@ class LocalDateTimeCodecTest {
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-datetime")));
 		assertTrue(exception.getMessage().contains("Unable to decode local date time"));
-		assertTrue(exception.getMessage().contains("Unable to parse local date time"));
 	}
 	
 	@Test

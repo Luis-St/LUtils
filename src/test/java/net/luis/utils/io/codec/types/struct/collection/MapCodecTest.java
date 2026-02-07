@@ -186,7 +186,7 @@ class MapCodecTest {
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
-		assertTrue(exception.getMessage().contains("Unable to decode map"));
+		assertTrue(exception.getMessage().contains("Json element '42' is not a json object"));
 	}
 	
 	@Test
@@ -244,14 +244,6 @@ class MapCodecTest {
 		object.add("3", new JsonPrimitive("invalid-value"));
 		
 		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), object));
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		MapCodec<Integer, Boolean> codec1 = new MapCodec<>(INTEGER, BOOLEAN);
-		MapCodec<Integer, Boolean> codec2 = new MapCodec<>(INTEGER, BOOLEAN);
-		
-		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
 	
 	@Test

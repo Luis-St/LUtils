@@ -71,7 +71,7 @@ class AnyCodecTest {
 		Codec<Number> codec = new AnyCodec<>(INTEGER, DOUBLE);
 		
 		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to encode null value as any"));
+		assertTrue(exception.getMessage().contains("Unable to encode null as any"));
 	}
 	
 	@Test
@@ -129,7 +129,7 @@ class AnyCodecTest {
 		Codec<Number> codec = new AnyCodec<>(INTEGER, DOUBLE);
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to decode null value as any"));
+		assertTrue(exception.getMessage().contains("Unable to decode null as any"));
 	}
 	
 	@Test

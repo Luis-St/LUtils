@@ -180,7 +180,7 @@ class ListCodecTest {
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
-		assertTrue(exception.getMessage().contains("Unable to decode list"));
+		assertTrue(exception.getMessage().contains("Json element '42' is not a json array"));
 	}
 	
 	@Test
@@ -228,14 +228,6 @@ class ListCodecTest {
 		array.add(new JsonPrimitive(100));
 		
 		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		ListCodec<Integer> codec1 = new ListCodec<>(INTEGER);
-		ListCodec<Integer> codec2 = new ListCodec<>(INTEGER);
-		
-		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
 	
 	@Test

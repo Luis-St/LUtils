@@ -53,7 +53,7 @@ class IpNetworkCodecTest {
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
 		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to encode null as IP network"));
+		assertTrue(exception.getMessage().contains("Unable to encode null as ip network"));
 	}
 	
 	@Test
@@ -126,7 +126,7 @@ class IpNetworkCodecTest {
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to decode null value as IP network"));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as ip network"));
 	}
 	
 	@Test
@@ -171,7 +171,7 @@ class IpNetworkCodecTest {
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.0")));
-		assertTrue(exception.getMessage().contains("Unable to decode IP network"));
+		assertTrue(exception.getMessage().contains("Unable to decode ip network"));
 	}
 	
 	@Test
@@ -180,7 +180,7 @@ class IpNetworkCodecTest {
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.0/99")));
-		assertTrue(exception.getMessage().contains("Unable to decode IP network"));
+		assertTrue(exception.getMessage().contains("Unable to decode ip network"));
 	}
 	
 	@Test
@@ -211,7 +211,7 @@ class IpNetworkCodecTest {
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("192.168.1.0"));
-		assertTrue(exception.getMessage().contains("Unable to decode key '192.168.1.0' as IP network"));
+		assertTrue(exception.getMessage().contains("Unable to decode key '192.168.1.0' as ip network"));
 	}
 	
 	@Test

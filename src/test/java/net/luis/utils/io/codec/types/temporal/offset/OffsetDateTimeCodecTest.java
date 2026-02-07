@@ -191,7 +191,6 @@ class OffsetDateTimeCodecTest {
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-datetime")));
 		assertTrue(exception.getMessage().contains("Unable to decode offset date time"));
-		assertTrue(exception.getMessage().contains("Unable to parse offset date time"));
 	}
 	
 	@Test

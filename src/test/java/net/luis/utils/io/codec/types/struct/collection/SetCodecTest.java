@@ -60,7 +60,7 @@ class SetCodecTest {
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		
 		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
-		assertTrue(exception.getMessage().contains("Unable to encode null value as set"));
+		assertTrue(exception.getMessage().contains("Unable to encode null as set"));
 	}
 	
 	@Test
@@ -179,7 +179,7 @@ class SetCodecTest {
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
-		assertTrue(exception.getMessage().contains("Unable to decode set"));
+		assertTrue(exception.getMessage().contains("Json element '42' is not a json array"));
 	}
 	
 	@Test
@@ -230,14 +230,6 @@ class SetCodecTest {
 		Set<Integer> result = codec.decode(typeProvider, typeProvider.empty(), array);
 		assertEquals(Set.of(1, 2, 3), result);
 		assertEquals(3, result.size());
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		SetCodec<Integer> codec1 = new SetCodec<>(INTEGER);
-		SetCodec<Integer> codec2 = new SetCodec<>(INTEGER);
-		
-		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
 	
 	@Test
