@@ -18,18 +18,18 @@
 
 package net.luis.utils.io.codec.types.temporal.local;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.temporal.local.LocalDateTimeConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.temporal.local.LocalDateTimeConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for local date times.<br>
@@ -40,12 +40,16 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTimeConstraintConfig> implements LocalDateTimeConstraint<LocalDateTimeCodec> {
+public class LocalDateTimeCodec
+	extends AbstractConstrainableCodec<LocalDateTime, LocalDateTimeConstraintConfig, LocalDateTimeCodec>
+	implements LocalDateTimeConstraint<LocalDateTimeCodec> {
 	
 	/**
 	 * Constructs a new local date time codec.<br>
 	 */
-	public LocalDateTimeCodec() {}
+	public LocalDateTimeCodec() {
+		super(LocalDateTimeCodec::new, LocalDateTimeConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new local date time codec with the specified constraint configuration.<br>
@@ -54,92 +58,52 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 	 * @throws NullPointerException If the constraint config is null
 	 */
 	private LocalDateTimeCodec(@NonNull LocalDateTimeConstraintConfig constraintConfig) {
-		super(constraintConfig);
+		super(LocalDateTimeCodec::new, constraintConfig);
 	}
 	
 	@Override
-	public @NonNull LocalDateTimeCodec apply(@NonNull UnaryOperator<LocalDateTimeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new LocalDateTimeCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(LocalDateTimeConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalDateTime value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalDateTime value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as local date time using '" + this + "'");
+			throw new EncoderException("Unable to encode null as local date time", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(value.toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull LocalDateTime key) {
+	public @NonNull String encodeKey(@NonNull LocalDateTime key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key.toString());
+		return this.validateEncodeConstraints(key).toString();
 	}
 	
 	@Override
-	public <R> @NonNull Result<LocalDateTime> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull LocalDateTime decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as local date time using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as local date time", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			LocalDateTime dateTime = LocalDateTime.parse(string);
-			
-			Result<Void> constraintResult = this.checkConstraints(dateTime);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(dateTime);
+			return this.validateDecodeConstraints(dateTime);
 		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode local date time '" + string + "' using '" + this + "': Unable to parse local date time: " + e.getMessage());
+			throw new DecoderException("Unable to decode local date time '" + string + "': " + e.getMessage(), this, e);
 		}
 	}
 	
 	@Override
-	public @NonNull Result<LocalDateTime> decodeKey(@NonNull String key) {
+	public @NonNull LocalDateTime decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			LocalDateTime dateTime = LocalDateTime.parse(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(dateTime);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(dateTime);
+			return this.validateDecodeConstraints(dateTime);
 		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode key '" + key + "' as local date time using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode key '" + key + "' as local date time: " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedLocalDateTimeCodec[constraints=" + config + "]";
-		}).orElse("LocalDateTimeCodec");
 	}
 }

@@ -20,10 +20,11 @@ package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Year;
@@ -39,253 +40,230 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedYearCodecTest {
 	
 	@Test
-	void encodeStartWithValidAfterConstraint() {
+	void encodeWithValidAfterConstraint() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2020);
 		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		Year value = Year.of(2023);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(2023), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), value);
+		assertEquals(new JsonPrimitive(2023), result);
 	}
 	
 	@Test
-	void encodeStartWithValidBeforeConstraint() {
+	void encodeWithValidBeforeConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2025);
 		Codec<Year> codec = Codecs.YEAR.before(threshold);
 		Year value = Year.of(2023);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidBetweenConstraint() {
+	void encodeWithValidBetweenConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year after = Year.of(2020);
 		Year before = Year.of(2025);
 		Codec<Year> codec = Codecs.YEAR.between(after, before);
 		Year value = Year.of(2023);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidEqualToConstraint() {
+	void encodeWithValidEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year target = Year.of(2023);
 		Codec<Year> codec = Codecs.YEAR.equalTo(target);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), target);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), target));
 	}
 	
 	@Test
-	void encodeStartWithValidInConstraint() {
+	void encodeWithValidInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year value1 = Year.of(2023);
 		Year value2 = Year.of(2024);
 		Codec<Year> codec = Codecs.YEAR.in(Set.of(value1, value2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value1);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value1));
 	}
 	
 	@Test
-	void encodeStartWithValidNotEqualToConstraint() {
+	void encodeWithValidNotEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year excluded = Year.of(2023);
 		Year value = Year.of(2024);
 		Codec<Year> codec = Codecs.YEAR.notEqualTo(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidNotInConstraint() {
+	void encodeWithValidNotInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year excluded1 = Year.of(2023);
 		Year excluded2 = Year.of(2024);
 		Year value = Year.of(2025);
 		Codec<Year> codec = Codecs.YEAR.notIn(Set.of(excluded1, excluded2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidAfterOrEqualConstraint() {
+	void encodeWithValidAfterOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2023);
 		Codec<Year> codec = Codecs.YEAR.afterOrEqual(threshold);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), threshold));
 	}
 	
 	@Test
-	void encodeStartWithValidBeforeOrEqualConstraint() {
+	void encodeWithValidBeforeOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2023);
 		Codec<Year> codec = Codecs.YEAR.beforeOrEqual(threshold);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), threshold));
 	}
 	
 	@Test
-	void encodeStartWithValidBetweenOrEqualConstraint() {
+	void encodeWithValidBetweenOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year min = Year.of(2020);
 		Year max = Year.of(2023);
 		Codec<Year> codec = Codecs.YEAR.betweenOrEqual(min, max);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), min);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), min));
 		
-		Result<JsonElement> result2 = codec.encodeStart(typeProvider, typeProvider.empty(), max);
-		assertTrue(result2.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), max));
 	}
 	
 	@Test
-	void encodeKeyWithValidConstraint() {
+	void encodeKeyWithValidConstraint() throws EncoderException {
 		Year threshold = Year.of(2020);
 		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		Year value = Year.of(2023);
 		
-		Result<String> result = codec.encodeKey(value);
-		assertTrue(result.isSuccess());
-		assertEquals("2023", result.resultOrThrow());
+		String result = codec.encodeKey(value);
+		assertEquals("2023", result);
 	}
 	
 	@Test
-	void decodeStartWithValidConstraint() {
+	void decodeWithValidConstraint() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2020);
 		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		
-		Result<Year> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(2023));
-		assertTrue(result.isSuccess());
-		assertEquals(Year.of(2023), result.resultOrThrow());
+		Year result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(2023));
+		assertEquals(Year.of(2023), result);
 	}
 	
 	@Test
-	void decodeKeyWithValidConstraint() {
+	void decodeKeyWithValidConstraint() throws DecoderException {
 		Year threshold = Year.of(2020);
 		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		
-		Result<Year> result = codec.decodeKey("2023");
-		assertTrue(result.isSuccess());
-		assertEquals(Year.of(2023), result.resultOrThrow());
+		Year result = codec.decodeKey("2023");
+		assertEquals(Year.of(2023), result);
 	}
 	
 	@Test
-	void encodeStartWithCustomConstraint() {
+	void encodeWithCustomConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = Codecs.YEAR.custom(value -> {
 			if (value.getValue() % 4 == 0) {
-				return Result.success(null);
+				return;
 			}
-			return Result.error("Year must be divisible by 4 (leap year candidates)");
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Year must be divisible by 4 (leap year candidates)");
 		});
 		Year value = Year.of(2024);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartAfterConstraintViolation() {
+	void encodeAfterConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2020);
 		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		Year valueBefore = Year.of(2019);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueBefore);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueBefore));
 	}
 	
 	@Test
-	void encodeStartBeforeConstraintViolation() {
+	void encodeBeforeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2020);
 		Codec<Year> codec = Codecs.YEAR.before(threshold);
 		Year valueAfter = Year.of(2023);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueAfter);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueAfter));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintViolationTooEarly() {
+	void encodeBetweenConstraintViolationTooEarly() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year after = Year.of(2020);
 		Year before = Year.of(2025);
 		Codec<Year> codec = Codecs.YEAR.between(after, before);
 		Year valueTooEarly = Year.of(2019);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooEarly);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueTooEarly));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintViolationTooLate() {
+	void encodeBetweenConstraintViolationTooLate() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year after = Year.of(2020);
 		Year before = Year.of(2025);
 		Codec<Year> codec = Codecs.YEAR.between(after, before);
 		Year valueTooLate = Year.of(2026);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooLate);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueTooLate));
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year target = Year.of(2023);
 		Codec<Year> codec = Codecs.YEAR.equalTo(target);
 		Year differentValue = Year.of(2024);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), differentValue);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), differentValue));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year value1 = Year.of(2023);
 		Year value2 = Year.of(2024);
 		Codec<Year> codec = Codecs.YEAR.in(Set.of(value1, value2));
 		Year notInSet = Year.of(2025);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notInSet);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), notInSet));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year excluded = Year.of(2023);
 		Codec<Year> codec = Codecs.YEAR.notEqualTo(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year excluded1 = Year.of(2023);
 		Year excluded2 = Year.of(2024);
 		Codec<Year> codec = Codecs.YEAR.notIn(Set.of(excluded1, excluded2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded1);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded1));
 	}
 	
 	@Test
@@ -294,18 +272,16 @@ class ConstrainedYearCodecTest {
 		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		Year valueBefore = Year.of(2019);
 		
-		Result<String> result = codec.encodeKey(valueBefore);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(valueBefore));
 	}
 	
 	@Test
-	void decodeStartConstraintViolation() {
+	void decodeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Year threshold = Year.of(2020);
 		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		
-		Result<Year> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(2019));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(2019)));
 	}
 	
 	@Test
@@ -313,23 +289,21 @@ class ConstrainedYearCodecTest {
 		Year threshold = Year.of(2020);
 		Codec<Year> codec = Codecs.YEAR.after(threshold);
 		
-		Result<Year> result = codec.decodeKey("2019");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2019"));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = Codecs.YEAR.custom(value -> {
 			if (value.getValue() % 4 == 0) {
-				return Result.success(null);
+				return;
 			}
-			return Result.error("Year must be divisible by 4 (leap year candidates)");
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Year must be divisible by 4 (leap year candidates)");
 		});
 		Year value = Year.of(2023);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test

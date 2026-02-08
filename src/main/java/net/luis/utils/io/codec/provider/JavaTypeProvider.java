@@ -19,12 +19,13 @@
 package net.luis.utils.io.codec.provider;
 
 import com.google.common.collect.Maps;
-import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * Type provider that uses standard Java types.<br>
@@ -33,6 +34,18 @@ import java.util.Map;
  * @author Luis-St
  */
 public final class JavaTypeProvider implements TypeProvider<Object> {
+	
+	/**
+	 * An empty java element instance.<br>
+	 * Used for internal purposes only.<br>
+	 * The java element has no string representation.<br>
+	 */
+	private static final Object EMPTY_ELEMENT = new Object() {
+		@Override
+		public String toString() {
+			return "Empty java element has no string representation";
+		}
+	};
 	
 	/**
 	 * The singleton instance of this class.<br>
@@ -46,287 +59,340 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	
 	@Override
 	public @NonNull Object empty() {
-		return new Object();
+		return EMPTY_ELEMENT;
 	}
 	
 	@Override
-	public @NonNull Result<Object> createNull() {
-		return Result.success(null);
+	@SuppressWarnings({ "ReturnOfNull", "DataFlowIssue" })
+	public <X extends Exception> @NonNull Object createNull(@NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return null;
 	}
 	
 	@Override
-	public @NonNull Result<Object> createBoolean(boolean value) {
-		return Result.success(value);
+	public <X extends Exception> @NonNull Object createBoolean(boolean value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return value;
 	}
 	
 	@Override
-	public @NonNull Result<Object> createByte(byte value) {
-		return Result.success(value);
+	public <X extends Exception> @NonNull Object createByte(byte value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return value;
 	}
 	
 	@Override
-	public @NonNull Result<Object> createShort(short value) {
-		return Result.success(value);
+	public <X extends Exception> @NonNull Object createShort(short value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return value;
 	}
 	
 	@Override
-	public @NonNull Result<Object> createInteger(int value) {
-		return Result.success(value);
+	public <X extends Exception> @NonNull Object createInteger(int value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return value;
 	}
 	
 	@Override
-	public @NonNull Result<Object> createLong(long value) {
-		return Result.success(value);
+	public <X extends Exception> @NonNull Object createLong(long value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return value;
 	}
 	
 	@Override
-	public @NonNull Result<Object> createFloat(float value) {
-		return Result.success(value);
+	public <X extends Exception> @NonNull Object createFloat(float value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return value;
 	}
 	
 	@Override
-	public @NonNull Result<Object> createDouble(double value) {
-		return Result.success(value);
+	public <X extends Exception> @NonNull Object createDouble(double value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return value;
 	}
 	
 	@Override
-	public @NonNull Result<Object> createString(@Nullable String value) {
+	public <X extends Exception> @NonNull Object createString(@Nullable String value, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (value == null) {
-			return Result.error("Value 'null' is not a valid string");
+			throw exceptionConstructor.apply("Value 'null' is not a valid string");
 		}
-		return Result.success(value);
+		return value;
 	}
 	
 	@Override
-	public @NonNull Result<Object> createList(@Nullable List<?> values) {
-		if (values == null) {
-			return Result.error("Value 'null' is not a valid list");
-		}
-		return Result.success(values);
-	}
-	
-	@Override
-	public @NonNull Result<Object> createMap() {
-		return Result.success(Maps.newLinkedHashMap());
-	}
-	
-	@Override
-	public @NonNull Result<Object> createMap(@Nullable Map<String, ?> values) {
-		if (values == null) {
-			return Result.error("Value 'null' is not a valid map");
-		}
+	public <X extends Exception> @NonNull Object createList(@Nullable List<?> values, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
-		return Result.success(values);
+		if (values == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a valid list");
+		}
+		return values;
 	}
 	
 	@Override
-	public @NonNull Result<Object> getEmpty(@Nullable Object type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not an empty object");
-		}
+	public <X extends Exception> @NonNull Object createMap(@NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
-		if (type.getClass() == Object.class) {
-			return Result.success(type);
+		return Maps.newLinkedHashMap();
+	}
+	
+	@Override
+	public <X extends Exception> @NonNull Object createMap(@Nullable Map<String, ?> values, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		if (values == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
-		return Result.error("Object '" + type + "' is not an empty object");
+		return values;
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> isNull(@Nullable Object type) {
-		return Result.success(type == null);
-	}
-	
-	@Override
-	public @NonNull Result<Boolean> getBoolean(@Nullable Object type) {
+	public <X extends Exception> boolean isEmpty(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a boolean");
+			throw exceptionConstructor.apply("Value 'null' is not an empty object");
+		}
+		return type == EMPTY_ELEMENT;
+	}
+	
+	@Override
+	public <X extends Exception> boolean isNull(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return type == null;
+	}
+	
+	@Override
+	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a boolean");
 		}
 		
 		if (type instanceof Boolean booleanValue) {
-			return Result.success(booleanValue);
+			return booleanValue;
 		}
-		return Result.error("Object '" + type + "' is not a boolean");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a boolean");
 	}
 	
 	@Override
-	public @NonNull Result<Byte> getByte(@Nullable Object type) {
+	public <X extends Exception> @NonNull Byte getByte(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a byte");
+			throw exceptionConstructor.apply("Value 'null' is not a byte");
 		}
 		
 		if (type instanceof Byte byteValue) {
-			return Result.success(byteValue);
+			return byteValue;
 		}
-		return Result.error("Object '" + type + "' is not a byte");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a byte");
 	}
 	
 	@Override
-	public @NonNull Result<Short> getShort(@Nullable Object type) {
+	public <X extends Exception> @NonNull Short getShort(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a short");
+			throw exceptionConstructor.apply("Value 'null' is not a short");
 		}
 		
 		if (type instanceof Short shortValue) {
-			return Result.success(shortValue);
+			return shortValue;
 		}
-		return Result.error("Object '" + type + "' is not a short");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a short");
 	}
 	
 	@Override
-	public @NonNull Result<Integer> getInteger(@Nullable Object type) {
+	public <X extends Exception> @NonNull Integer getInteger(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not an integer");
+			throw exceptionConstructor.apply("Value 'null' is not an integer");
 		}
 		
 		if (type instanceof Integer intValue) {
-			return Result.success(intValue);
+			return intValue;
 		}
-		return Result.error("Object '" + type + "' is not an integer");
+		throw exceptionConstructor.apply("Object '" + type + "' is not an integer");
 	}
 	
 	@Override
-	public @NonNull Result<Long> getLong(@Nullable Object type) {
+	public <X extends Exception> @NonNull Long getLong(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a long");
+			throw exceptionConstructor.apply("Value 'null' is not a long");
 		}
 		
 		if (type instanceof Long longValue) {
-			return Result.success(longValue);
+			return longValue;
 		}
-		return Result.error("Object '" + type + "' is not a long");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a long");
 	}
 	
 	@Override
-	public @NonNull Result<Float> getFloat(@Nullable Object type) {
+	public <X extends Exception> @NonNull Float getFloat(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a float");
+			throw exceptionConstructor.apply("Value 'null' is not a float");
 		}
 		
 		if (type instanceof Float floatValue) {
-			return Result.success(floatValue);
+			return floatValue;
 		}
-		return Result.error("Object '" + type + "' is not a float");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a float");
 	}
 	
 	@Override
-	public @NonNull Result<Double> getDouble(@Nullable Object type) {
+	public <X extends Exception> @NonNull Double getDouble(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a double");
+			throw exceptionConstructor.apply("Value 'null' is not a double");
 		}
 		
 		if (type instanceof Double doubleValue) {
-			return Result.success(doubleValue);
+			return doubleValue;
 		}
-		return Result.error("Object '" + type + "' is not a double");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a double");
 	}
 	
 	@Override
-	public @NonNull Result<String> getString(@Nullable Object type) {
+	public <X extends Exception> @NonNull String getString(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a string");
+			throw exceptionConstructor.apply("Value 'null' is not a string");
 		}
 		
 		if (type instanceof String stringValue) {
-			return Result.success(stringValue);
+			return stringValue;
 		}
-		return Result.error("Object '" + type + "' is not a string");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a string");
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NonNull Result<List<Object>> getList(@Nullable Object type) {
+	public <X extends Exception> @NonNull List<Object> getList(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a list");
+			throw exceptionConstructor.apply("Value 'null' is not a list");
 		}
 		
 		if (type instanceof List<?> list) {
-			return Result.success((List<Object>) list);
+			return (List<Object>) list;
 		}
-		return Result.error("Object '" + type + "' is not a list");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a list");
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NonNull Result<Map<String, Object>> getMap(@Nullable Object type) {
+	public <X extends Exception> @NonNull Map<String, Object> getMap(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a map");
+			throw exceptionConstructor.apply("Value 'null' is not a map");
 		}
 		
 		if (type instanceof Map<?, ?> map) {
-			return Result.success((Map<String, Object>) map);
+			return (Map<String, Object>) map;
 		}
-		return Result.error("Object '" + type + "' is not a map");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a map");
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> has(@Nullable Object type, @Nullable String key) {
+	public <X extends Exception> boolean has(@Nullable Object type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a map");
+			throw exceptionConstructor.apply("Value 'null' is not a map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not a valid key");
+			throw exceptionConstructor.apply("Value 'null' is not a valid key");
 		}
 		
 		if (type instanceof Map<?, ?> map) {
-			return Result.success(map.containsKey(key));
+			return map.containsKey(key);
 		}
-		return Result.error("Object '" + type + "' is not a map");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a map");
 	}
 	
 	@Override
-	public @NonNull Result<Object> get(@Nullable Object type, @Nullable String key) {
+	public <X extends Exception> @NonNull Object get(@Nullable Object type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a map");
+			throw exceptionConstructor.apply("Value 'null' is not a map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not a valid key");
+			throw exceptionConstructor.apply("Value 'null' is not a valid key");
 		}
 		
 		if (type instanceof Map<?, ?> map) {
-			return Result.success(map.get(key));
+			return map.get(key);
 		}
-		return Result.error("Object '" + type + "' is not a map");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a map");
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NonNull Result<Object> set(@Nullable Object type, @Nullable String key, @Nullable Object value) {
+	public <X extends Exception> void set(@Nullable Object type, @Nullable String key, @Nullable Object value, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a map");
+			throw exceptionConstructor.apply("Value 'null' is not a map");
 		}
 		if (key == null) {
-			return Result.error("Value 'null' is not a valid key");
+			throw exceptionConstructor.apply("Value 'null' is not a valid key");
 		}
 		
 		if (type instanceof Map<?, ?> map) {
-			return Result.success(((Map<String, Object>) map).put(key, value));
+			((Map<String, Object>) map).put(key, value);
+			return;
 		}
-		return Result.error("Object '" + type + "' is not a map");
+		throw exceptionConstructor.apply("Object '" + type + "' is not a map");
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NonNull Result<Object> merge(@Nullable Object current, @Nullable Object value) {
+	public <X extends Exception> @UnknownNullability Object merge(@Nullable Object current, @Nullable Object value, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (current == null) {
-			return Result.success(value);
+			return value;
 		}
 		if (value == null) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current.getClass() == Object.class) {
-			return Result.success(value);
+			return value;
 		}
 		
 		if (current instanceof List<?> currentList && value instanceof List<?> valueList) {
 			((List<Object>) currentList).addAll(valueList);
-			return Result.success(currentList);
+			return currentList;
 		}
 		
 		if (current instanceof Map<?, ?> currentMap && value instanceof Map<?, ?> valueMap) {
 			((Map<String, Object>) currentMap).putAll((Map<String, Object>) valueMap);
-			return Result.success(currentMap);
+			return currentMap;
 		}
-		return Result.error("Unable to merge '" + current + "' with '" + value + "'");
+		throw exceptionConstructor.apply("Unable to merge '" + current + "' with '" + value + "'");
 	}
 }

@@ -20,13 +20,11 @@ package net.luis.utils.io.codec.constraint.config.temporal.offset;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.*;
@@ -156,6 +154,11 @@ public record OffsetDateTimeConstraintConfig(
 		if (withinNext.isPresent() && (withinNext.get().isNegative() || withinNext.get().isZero())) {
 			throw new IllegalArgumentException("Within next duration must be positive when present, but got " + withinNext.get());
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -478,29 +481,29 @@ public record OffsetDateTimeConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull OffsetDateTime value) {
+	public void validate(@NonNull OffsetDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.after, this.before),
-			() -> ConstraintMatchers.matchWithinLast(value, this.withinLast, OffsetDateTime::now, OffsetDateTime::minus, "Offset date time"),
-			() -> ConstraintMatchers.matchWithinNext(value, this.withinNext, OffsetDateTime::now, OffsetDateTime::plus, "Offset date time"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getDayOfWeek(), this.dayOfWeek, "Day of week"),
-			() -> ConstraintMatchers.matchNumericField(value.getDayOfMonth(), this.dayOfMonth, "day of month"),
-			() -> ConstraintMatchers.matchNumericField(value.getDayOfYear(), this.dayOfYear, "day of year"),
-			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfMonth()), this.weekOfMonth, "week of month"),
-			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfWeekBasedYear()), this.weekOfYear, "week of year"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getMonth(), this.month, "Month"),
-			() -> ConstraintMatchers.matchNumericField(value.getYear(), this.year, "year"),
-			() -> ConstraintMatchers.matchNumericField(value.getHour(), this.hour, "hour"),
-			() -> ConstraintMatchers.matchNumericField(value.getMinute(), this.minute, "minute"),
-			() -> ConstraintMatchers.matchNumericField(value.getSecond(), this.second, "second"),
-			() -> ConstraintMatchers.matchNumericField(value.getNano() / 1_000_000, this.millisecond, "millisecond"),
-			() -> ConstraintMatchers.matchNumericField(value.getNano(), this.nanosecond, "nanosecond"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getOffset(), this.offset, "Offset"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.after, this.before),
+			() -> ConstraintValidators.validateWithinLast(value, this.withinLast, OffsetDateTime::now, OffsetDateTime::minus, "Offset date time"),
+			() -> ConstraintValidators.validateWithinNext(value, this.withinNext, OffsetDateTime::now, OffsetDateTime::plus, "Offset date time"),
+			() -> ConstraintValidators.validateNestedConfig(value.getDayOfWeek(), this.dayOfWeek, "Day of week"),
+			() -> ConstraintValidators.validateNumericField(value.getDayOfMonth(), this.dayOfMonth, "day of month"),
+			() -> ConstraintValidators.validateNumericField(value.getDayOfYear(), this.dayOfYear, "day of year"),
+			() -> ConstraintValidators.validateNumericField(value.get(WeekFields.ISO.weekOfMonth()), this.weekOfMonth, "week of month"),
+			() -> ConstraintValidators.validateNumericField(value.get(WeekFields.ISO.weekOfWeekBasedYear()), this.weekOfYear, "week of year"),
+			() -> ConstraintValidators.validateNestedConfig(value.getMonth(), this.month, "Month"),
+			() -> ConstraintValidators.validateNumericField(value.getYear(), this.year, "year"),
+			() -> ConstraintValidators.validateNumericField(value.getHour(), this.hour, "hour"),
+			() -> ConstraintValidators.validateNumericField(value.getMinute(), this.minute, "minute"),
+			() -> ConstraintValidators.validateNumericField(value.getSecond(), this.second, "second"),
+			() -> ConstraintValidators.validateNumericField(value.getNano() / 1_000_000, this.millisecond, "millisecond"),
+			() -> ConstraintValidators.validateNumericField(value.getNano(), this.nanosecond, "nanosecond"),
+			() -> ConstraintValidators.validateNestedConfig(value.getOffset(), this.offset, "Offset"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

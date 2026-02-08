@@ -18,10 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -73,6 +72,11 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 */
 	public static <T extends Enum<T>> @NonNull EnumConstraintConfig<T> unconstrained() {
 		return new EnumConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty());
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.custom.isEmpty();
 	}
 	
 	//region With methods
@@ -139,13 +143,13 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull T value) {
+	public void validate(@NonNull T value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

@@ -18,18 +18,18 @@
 
 package net.luis.utils.io.codec.types.temporal.local;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.temporal.local.YearConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.temporal.local.YearConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.time.DateTimeException;
 import java.time.Year;
-import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for years.<br>
@@ -40,12 +40,16 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> implements YearConstraint<YearCodec> {
+public class YearCodec
+	extends AbstractConstrainableCodec<Year, YearConstraintConfig, YearCodec>
+	implements YearConstraint<YearCodec> {
 	
 	/**
 	 * Constructs a new year codec.<br>
 	 */
-	public YearCodec() {}
+	public YearCodec() {
+		super(YearCodec::new, YearConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new year codec with the specified constraint configuration.<br>
@@ -54,93 +58,52 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 	 * @throws NullPointerException If the constraint config is null
 	 */
 	private YearCodec(@NonNull YearConstraintConfig constraintConfig) {
-		super(constraintConfig);
+		super(YearCodec::new, constraintConfig);
 	}
 	
 	@Override
-	public @NonNull YearCodec apply(@NonNull UnaryOperator<YearConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new YearCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(YearConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Year value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Year value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as year using '" + this + "'");
+			throw new EncoderException("Unable to encode null as year", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createInteger(value.getValue());
+		return provider.createInteger(this.validateEncodeConstraints(value).getValue(), EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull Year key) {
+	public @NonNull String encodeKey(@NonNull Year key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(String.valueOf(key.getValue()));
+		return String.valueOf(this.validateEncodeConstraints(key).getValue());
 	}
 	
 	@Override
-	public <R> @NonNull Result<Year> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Year decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as year using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as year", this);
 		}
 		
-		Result<Integer> result = provider.getInteger(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		int yearValue = result.resultOrThrow();
+		int yearValue = provider.getInteger(value, DecoderException::new);
 		try {
 			Year year = Year.of(yearValue);
-			
-			Result<Void> constraintResult = this.checkConstraints(year);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			
-			return Result.success(year);
-		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode year '" + yearValue + "' using '" + this + "': " + e.getMessage());
+			return this.validateDecodeConstraints(year);
+		} catch (DateTimeException e) {
+			throw new DecoderException("Unable to decode year '" + yearValue + "': " + e.getMessage(), this, e);
 		}
 	}
 	
 	@Override
-	public @NonNull Result<Year> decodeKey(@NonNull String key) {
+	public @NonNull Year decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			Year year = Year.of(Integer.parseInt(key));
-			
-			Result<Void> constraintResult = this.checkConstraints(year);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(year);
-		} catch (NumberFormatException | DateTimeParseException e) {
-			return Result.error("Unable to decode key '" + key + "' as year using '" + this + "': " + e.getMessage());
+			return this.validateDecodeConstraints(year);
+		} catch (NumberFormatException | DateTimeException e) {
+			throw new DecoderException("Unable to decode key '" + key + "' as year: " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedYearCodec[constraints=" + config + "]";
-		}).orElse("YearCodec");
 	}
 }

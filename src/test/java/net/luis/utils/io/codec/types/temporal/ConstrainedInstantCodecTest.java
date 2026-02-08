@@ -20,10 +20,11 @@ package net.luis.utils.io.codec.types.temporal;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -39,239 +40,218 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedInstantCodecTest {
 	
 	@Test
-	void encodeStartWithValidAfterConstraint() {
+	void encodeWithValidAfterConstraint() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant threshold = Instant.parse("2020-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withAfter(threshold));
 		Instant value = Instant.parse("2023-06-15T12:30:00Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("2023-06-15T12:30:00Z"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), value);
+		assertEquals(new JsonPrimitive("2023-06-15T12:30:00Z"), result);
 	}
 	
 	@Test
-	void encodeStartWithValidBeforeConstraint() {
+	void encodeWithValidBeforeConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant threshold = Instant.parse("2025-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withBefore(threshold));
 		Instant value = Instant.parse("2023-06-15T12:30:00Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidBetweenConstraint() {
+	void encodeWithValidBetweenConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant after = Instant.parse("2020-01-01T00:00:00Z");
 		Instant before = Instant.parse("2025-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withBetween(after, before));
 		Instant value = Instant.parse("2023-06-15T12:30:00Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidEqualToConstraint() {
+	void encodeWithValidEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant target = Instant.parse("2023-06-15T12:30:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withEqualTo(target));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), target);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), target));
 	}
 	
 	@Test
-	void encodeStartWithValidInConstraint() {
+	void encodeWithValidInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant value1 = Instant.parse("2023-06-15T12:30:00Z");
 		Instant value2 = Instant.parse("2023-07-20T15:45:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withIn(Set.of(value1, value2)));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value1);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value1));
 	}
 	
 	@Test
-	void encodeStartWithValidNotEqualToConstraint() {
+	void encodeWithValidNotEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant excluded = Instant.parse("2023-06-15T12:30:00Z");
 		Instant value = Instant.parse("2023-07-20T15:45:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withNotEqualTo(excluded));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidNotInConstraint() {
+	void encodeWithValidNotInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant excluded1 = Instant.parse("2023-06-15T12:30:00Z");
 		Instant excluded2 = Instant.parse("2023-07-20T15:45:00Z");
 		Instant value = Instant.parse("2023-08-25T18:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidAfterOrEqualConstraint() {
+	void encodeWithValidAfterOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant threshold = Instant.parse("2023-06-15T12:30:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withAfterOrEqual(threshold));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), threshold));
 	}
 	
 	@Test
-	void encodeStartWithValidBeforeOrEqualConstraint() {
+	void encodeWithValidBeforeOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant threshold = Instant.parse("2023-06-15T12:30:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withBeforeOrEqual(threshold));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), threshold));
 	}
 	
 	@Test
-	void encodeKeyWithValidConstraint() {
+	void encodeKeyWithValidConstraint() throws EncoderException {
 		Instant threshold = Instant.parse("2020-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withAfter(threshold));
 		Instant value = Instant.parse("2023-06-15T12:30:00Z");
 		
-		Result<String> result = codec.encodeKey(value);
-		assertTrue(result.isSuccess());
-		assertEquals("2023-06-15T12:30:00Z", result.resultOrThrow());
+		String result = codec.encodeKey(value);
+		assertEquals("2023-06-15T12:30:00Z", result);
 	}
 	
 	@Test
-	void decodeStartWithValidConstraint() {
+	void decodeWithValidConstraint() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant threshold = Instant.parse("2020-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withAfter(threshold));
 		
-		Result<Instant> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:30:00Z"));
-		assertTrue(result.isSuccess());
-		assertEquals(Instant.parse("2023-06-15T12:30:00Z"), result.resultOrThrow());
+		Instant result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15T12:30:00Z"));
+		assertEquals(Instant.parse("2023-06-15T12:30:00Z"), result);
 	}
 	
 	@Test
-	void decodeKeyWithValidConstraint() {
+	void decodeKeyWithValidConstraint() throws DecoderException {
 		Instant threshold = Instant.parse("2020-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withAfter(threshold));
 		
-		Result<Instant> result = codec.decodeKey("2023-06-15T12:30:00Z");
-		assertTrue(result.isSuccess());
-		assertEquals(Instant.parse("2023-06-15T12:30:00Z"), result.resultOrThrow());
+		Instant result = codec.decodeKey("2023-06-15T12:30:00Z");
+		assertEquals(Instant.parse("2023-06-15T12:30:00Z"), result);
 	}
 	
 	@Test
-	void encodeStartWithCustomConstraint() {
+	void encodeWithCustomConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withCustom(value -> {
 			if (value.getEpochSecond() % 2 == 0) {
-				return Result.success(null);
+				return;
 			}
-			return Result.error("Instant epoch second must be even");
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Instant epoch second must be even");
 		}));
 		Instant value = Instant.ofEpochSecond(1000);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartAfterConstraintViolation() {
+	void encodeAfterConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant threshold = Instant.parse("2020-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withAfter(threshold));
 		Instant valueBefore = Instant.parse("2019-06-15T12:30:00Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueBefore);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueBefore));
 	}
 	
 	@Test
-	void encodeStartBeforeConstraintViolation() {
+	void encodeBeforeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant threshold = Instant.parse("2020-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withBefore(threshold));
 		Instant valueAfter = Instant.parse("2023-06-15T12:30:00Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueAfter);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueAfter));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintViolationTooEarly() {
+	void encodeBetweenConstraintViolationTooEarly() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant after = Instant.parse("2020-01-01T00:00:00Z");
 		Instant before = Instant.parse("2025-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withBetween(after, before));
 		Instant valueTooEarly = Instant.parse("2019-06-15T12:30:00Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooEarly);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueTooEarly));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintViolationTooLate() {
+	void encodeBetweenConstraintViolationTooLate() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant after = Instant.parse("2020-01-01T00:00:00Z");
 		Instant before = Instant.parse("2025-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withBetween(after, before));
 		Instant valueTooLate = Instant.parse("2026-06-15T12:30:00Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooLate);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueTooLate));
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant target = Instant.parse("2023-06-15T12:30:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withEqualTo(target));
 		Instant differentValue = Instant.parse("2023-07-20T15:45:00Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), differentValue);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), differentValue));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant value1 = Instant.parse("2023-06-15T12:30:00Z");
 		Instant value2 = Instant.parse("2023-07-20T15:45:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withIn(Set.of(value1, value2)));
 		Instant notInSet = Instant.parse("2023-08-25T18:00:00Z");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notInSet);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), notInSet));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant excluded = Instant.parse("2023-06-15T12:30:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withNotEqualTo(excluded));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant excluded1 = Instant.parse("2023-06-15T12:30:00Z");
 		Instant excluded2 = Instant.parse("2023-07-20T15:45:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withNotIn(Set.of(excluded1, excluded2)));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded1);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded1));
 	}
 	
 	@Test
@@ -280,18 +260,16 @@ class ConstrainedInstantCodecTest {
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withAfter(threshold));
 		Instant valueBefore = Instant.parse("2019-06-15T12:30:00Z");
 		
-		Result<String> result = codec.encodeKey(valueBefore);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(valueBefore));
 	}
 	
 	@Test
-	void decodeStartConstraintViolation() {
+	void decodeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Instant threshold = Instant.parse("2020-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withAfter(threshold));
 		
-		Result<Instant> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2019-06-15T12:30:00Z"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2019-06-15T12:30:00Z")));
 	}
 	
 	@Test
@@ -299,23 +277,21 @@ class ConstrainedInstantCodecTest {
 		Instant threshold = Instant.parse("2020-01-01T00:00:00Z");
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withAfter(threshold));
 		
-		Result<Instant> result = codec.decodeKey("2019-06-15T12:30:00Z");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2019-06-15T12:30:00Z"));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Instant> codec = Codecs.INSTANT.apply(config -> config.withCustom(value -> {
 			if (value.getEpochSecond() % 2 == 0) {
-				return Result.success(null);
+				return;
 			}
-			return Result.error("Instant epoch second must be even");
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Instant epoch second must be even");
 		}));
 		Instant value = Instant.ofEpochSecond(1001);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test

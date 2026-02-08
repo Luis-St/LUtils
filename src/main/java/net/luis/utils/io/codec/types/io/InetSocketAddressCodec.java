@@ -18,22 +18,24 @@
 
 package net.luis.utils.io.codec.types.io;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.io.InetSocketAddressConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.io.InetSocketAddressConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
+import net.luis.utils.io.network.address.IpAddress;
+import net.luis.utils.io.network.address.IpAddresses;
+import net.luis.utils.io.network.address.exception.IpParseException;
+import net.luis.utils.io.network.address.format.IpParseOptions;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
- * Internal codec implementation for inet socket addresses.<br>
+ * Internal codec implementation for network socket addresses.<br>
  * Uses the format "address:port" as an internal representation.<br>
  * Supports IPv4, IPv6, and domain names.<br>
  * <p>
@@ -42,46 +44,36 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, InetSocketAddressConstraintConfig> implements InetSocketAddressConstraint<InetSocketAddressCodec> {
+public class InetSocketAddressCodec
+	extends AbstractConstrainableCodec<InetSocketAddress, InetSocketAddressConstraintConfig, InetSocketAddressCodec>
+	implements InetSocketAddressConstraint<InetSocketAddressCodec> {
 	
 	/**
-	 * Constructs a new inet socket address codec.<br>
+	 * Constructs a new network socket address codec.<br>
 	 */
-	public InetSocketAddressCodec() {}
+	public InetSocketAddressCodec() {
+		super(InetSocketAddressCodec::new, InetSocketAddressConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
-	 * Constructs a new inet socket address codec with the given configuration.<br>
+	 * Constructs a new network socket address codec with the given configuration.<br>
 	 *
 	 * @param config The constraint configuration
 	 * @throws NullPointerException If the config is null
 	 */
 	private InetSocketAddressCodec(@NonNull InetSocketAddressConstraintConfig config) {
-		super(config);
+		super(InetSocketAddressCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull InetSocketAddressCodec apply(@NonNull UnaryOperator<InetSocketAddressConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new InetSocketAddressCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(InetSocketAddressConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable InetSocketAddress value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable InetSocketAddress value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as network socket address using '" + this + "'");
+			throw new EncoderException("Unable to encode null as network socket address", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		
-		String address = value.getAddress().getHostAddress();
+		String address = this.validateEncodeConstraints(value).getAddress().getHostAddress();
 		int port = value.getPort();
 		
 		String formatted;
@@ -90,69 +82,48 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Ine
 		} else {
 			formatted = address + ":" + port;
 		}
-		return provider.createString(formatted);
+		return provider.createString(formatted, EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull InetSocketAddress key) {
+	public @NonNull String encodeKey(@NonNull InetSocketAddress key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		
-		String address = key.getAddress().getHostAddress();
+		String address = this.validateEncodeConstraints(key).getAddress().getHostAddress();
 		int port = key.getPort();
 		
 		if (address.contains(":")) {
-			return Result.success("[" + address + "]:" + port);
+			return "[" + address + "]:" + port;
 		}
-		return Result.success(address + ":" + port);
+		return address + ":" + port;
 	}
 	
 	@Override
-	public <R> @NonNull Result<InetSocketAddress> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull InetSocketAddress decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as network socket address using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as network socket address", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
+		try {
+			InetSocketAddress socketAddress = this.parseSocketAddress(provider.getString(value, DecoderException::new));
+			return this.validateDecodeConstraints(socketAddress);
+		} catch (IpParseException e) {
+			throw new DecoderException("Unable to decode value as network socket address: " + e.getMessage(), this, e);
 		}
-		
-		String string = result.resultOrThrow();
-		Result<InetSocketAddress> parseResult = this.parseSocketAddress(string);
-		if (parseResult.isError()) {
-			return parseResult;
-		}
-		
-		InetSocketAddress socketAddress = parseResult.resultOrThrow();
-		Result<Void> constraintResult = this.checkConstraints(socketAddress);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(socketAddress);
 	}
 	
 	@Override
-	public @NonNull Result<InetSocketAddress> decodeKey(@NonNull String key) {
+	public @NonNull InetSocketAddress decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
-		Result<InetSocketAddress> parseResult = this.parseSocketAddress(key);
-		if (parseResult.isError()) {
-			return parseResult;
+		try {
+			InetSocketAddress socketAddress = this.parseSocketAddress(key);
+			return this.validateDecodeConstraints(socketAddress);
+		} catch (IpParseException e) {
+			throw new DecoderException("Unable to decode key '" + key + "' as network socket address: " + e.getMessage(), this, e);
 		}
-		
-		InetSocketAddress socketAddress = parseResult.resultOrThrow();
-		Result<Void> constraintResult = this.checkConstraints(socketAddress);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(socketAddress);
 	}
 	
 	/**
@@ -160,48 +131,39 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Ine
 	 * Supports formats: "address:port" and "[ipv6]:port"<br>
 	 *
 	 * @param string The string to parse
-	 * @return The result containing the socket address or an error
+	 * @return The socket address
+	 * @throws NullPointerException If the string is null
+	 * @throws DecoderException If the string could not be parsed
 	 */
-	private @NonNull Result<InetSocketAddress> parseSocketAddress(@NonNull String string) {
+	private @NonNull InetSocketAddress parseSocketAddress(@NonNull String string) throws DecoderException {
+		String addressPart;
+		int port;
 		try {
-			String address;
-			int port;
-			
 			if (string.startsWith("[")) {
 				int closeBracket = string.indexOf(']');
 				if (closeBracket == -1 || closeBracket + 2 >= string.length() || string.charAt(closeBracket + 1) != ':') {
-					return Result.error("Invalid IPv6 socket address format '" + string + "', expected '[ipv6]:port'");
+					throw new DecoderException("Invalid IPv6 socket address format '" + string + "', expected '[ipv6]:port'", this);
 				}
 				
-				address = string.substring(1, closeBracket);
+				addressPart = string.substring(1, closeBracket);
 				port = Integer.parseInt(string.substring(closeBracket + 2));
 			} else {
 				int lastColon = string.lastIndexOf(':');
 				if (lastColon == -1) {
-					return Result.error("Invalid network socket address format '" + string + "', expected 'address:port'");
+					throw new DecoderException("Invalid network socket address format '" + string + "', expected 'ipv4:port'", this);
 				}
 				
-				address = string.substring(0, lastColon);
+				addressPart = string.substring(0, lastColon);
 				port = Integer.parseInt(string.substring(lastColon + 1));
 			}
-			
-			if (port < 0 || port > 65535) {
-				return Result.error("Port number out of range: " + port);
-			}
-			
-			InetAddress inetAddress = InetAddress.getByName(address);
-			return Result.success(new InetSocketAddress(inetAddress, port));
-		} catch (IOException e) {
-			return Result.error("Unable to decode network socket address '" + string + "' using '" + this + "': " + e.getMessage());
 		} catch (NumberFormatException e) {
-			return Result.error("Invalid port number in '" + string + "': " + e.getMessage());
+			throw new DecoderException("Invalid port number in '" + string + "': " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedInetSocketAddressCodec[constraints=" + config + "]";
-		}).orElse("InetSocketAddressCodec");
+		
+		if (port < 0 || port > 65535) {
+			throw new DecoderException("Port number out of range: " + port, this);
+		}
+		IpAddress<?> address = IpAddresses.parse(addressPart, IpParseOptions.LENIENT);
+		return new InetSocketAddress(address.toInetAddress(), port);
 	}
 }

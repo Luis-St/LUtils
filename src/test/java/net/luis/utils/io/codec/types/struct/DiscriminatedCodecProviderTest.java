@@ -160,7 +160,6 @@ class DiscriminatedCodecProviderTest {
 	
 	@Test
 	void createWithComplexTypes() {
-		// Test with different codec types
 		Map<Integer, Codec<? extends CharSequence>> map = Map.of(
 			1, STRING,
 			2, STRING

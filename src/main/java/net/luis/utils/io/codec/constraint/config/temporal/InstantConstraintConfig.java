@@ -19,11 +19,9 @@
 package net.luis.utils.io.codec.constraint.config.temporal;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
@@ -111,6 +109,11 @@ public record InstantConstraintConfig(
 		if (withinNext.isPresent() && (withinNext.get().isNegative() || withinNext.get().isZero())) {
 			throw new IllegalArgumentException("Within next duration must be positive when present, but got " + withinNext.get());
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -277,16 +280,16 @@ public record InstantConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Instant value) {
+	public void validate(@NonNull Instant value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.after, this.before),
-			() -> ConstraintMatchers.matchWithinLast(value, this.withinLast, Instant::now, Instant::minus, "Instant"),
-			() -> ConstraintMatchers.matchWithinNext(value, this.withinNext, Instant::now, Instant::plus, "Instant"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.after, this.before),
+			() -> ConstraintValidators.validateWithinLast(value, this.withinLast, Instant::now, Instant::minus, "Instant"),
+			() -> ConstraintValidators.validateWithinNext(value, this.withinNext, Instant::now, Instant::plus, "Instant"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

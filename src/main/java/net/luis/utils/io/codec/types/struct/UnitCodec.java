@@ -20,7 +20,6 @@ package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -44,7 +43,7 @@ import java.util.function.Supplier;
  *
  * @param <C> The type of the unit value
  */
-public class UnitCodec<C> extends AbstractCodec<C, Object> {
+public class UnitCodec<C> extends AbstractCodec<C> {
 	
 	/**
 	 * The supplier used to create the unit value.<br>
@@ -62,14 +61,13 @@ public class UnitCodec<C> extends AbstractCodec<C, Object> {
 	}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@Nullable TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
-		Objects.requireNonNull(current, "Current value must not be null");
-		return Result.success(current);
+	public <R> @NonNull R encode(@Nullable TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
+		return Objects.requireNonNull(current, "Current value must not be null");
 	}
 	
 	@Override
-	public <R> @NonNull Result<C> decodeStart(@Nullable TypeProvider<R> provider, @Nullable R current, @Nullable R value) {
-		return Result.success(this.supplier.get());
+	public <R> @NonNull C decode(@Nullable TypeProvider<R> provider, @Nullable R current, @Nullable R value) {
+		return this.supplier.get();
 	}
 	
 	//region Object overrides

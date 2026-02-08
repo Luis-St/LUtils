@@ -20,8 +20,9 @@ package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -45,7 +46,7 @@ import java.util.Objects;
  *
  * @param <C> The type of the value that can be null
  */
-public class NullableCodec<C> extends AbstractCodec<C, Object> {
+public class NullableCodec<C> extends AbstractCodec<C> {
 	
 	/**
 	 * The codec used to encode and decode non-null values.<br>
@@ -68,29 +69,29 @@ public class NullableCodec<C> extends AbstractCodec<C, Object> {
 	}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return provider.createNull();
+			return provider.createNull(EncoderException::new);
 		}
 		
-		return this.codec.encodeStart(provider, current, value);
+		return this.codec.encode(provider, current, value);
 	}
 	
 	@Override
-	public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	@SuppressWarnings({ "ReturnOfNull", "DataFlowIssue" })
+	public <R> @NonNull C decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.success(null);
+			return null;
 		}
 		
-		Result<Boolean> isNull = provider.isNull(value);
-		if (isNull.isSuccess() && isNull.resultOrThrow()) {
-			return Result.success(null);
+		if (provider.isNull(value, DecoderException::new)) {
+			return null;
 		}
-		return this.codec.decodeStart(provider, current, value);
+		return this.codec.decode(provider, current, value);
 	}
 	
 	//region Object overrides

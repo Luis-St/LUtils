@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.config.io;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -83,6 +83,17 @@ class HostConstraintConfigTest {
 		assertTrue(config.ip().isEmpty());
 		assertTrue(config.domain().isEmpty());
 		assertTrue(config.custom().isEmpty());
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(HostConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		HostConstraintConfig config = HostConstraintConfig.UNCONSTRAINED.withEqualTo("example.com");
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -184,7 +195,7 @@ class HostConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		HostConstraintConfig config = HostConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		HostConstraintConfig config = HostConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -195,49 +206,49 @@ class HostConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() {
+	void validateUnconstrained() {
 		HostConstraintConfig config = HostConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches("example.com").isSuccess());
-		assertTrue(config.matches("192.168.1.1").isSuccess());
-		assertTrue(config.matches("any-string").isSuccess());
+		assertDoesNotThrow(() -> config.validate("example.com"));
+		assertDoesNotThrow(() -> config.validate("192.168.1.1"));
+		assertDoesNotThrow(() -> config.validate("any-string"));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> HostConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> HostConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() {
+	void validateEqualTo() {
 		HostConstraintConfig config = HostConstraintConfig.UNCONSTRAINED.withEqualTo("example.com");
 		
-		assertTrue(config.matches("example.com").isSuccess());
-		assertTrue(config.matches("other.com").isError());
+		assertDoesNotThrow(() -> config.validate("example.com"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("other.com"));
 	}
 	
 	@Test
-	void matchesNotEqualTo() {
+	void validateNotEqualTo() {
 		HostConstraintConfig config = HostConstraintConfig.UNCONSTRAINED.withNotEqualTo("blocked.com");
 		
-		assertTrue(config.matches("example.com").isSuccess());
-		assertTrue(config.matches("blocked.com").isError());
+		assertDoesNotThrow(() -> config.validate("example.com"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("blocked.com"));
 	}
 	
 	@Test
-	void matchesIn() {
+	void validateIn() {
 		HostConstraintConfig config = HostConstraintConfig.UNCONSTRAINED.withIn(List.of("example.com", "192.168.1.1"));
 		
-		assertTrue(config.matches("example.com").isSuccess());
-		assertTrue(config.matches("192.168.1.1").isSuccess());
-		assertTrue(config.matches("other.com").isError());
+		assertDoesNotThrow(() -> config.validate("example.com"));
+		assertDoesNotThrow(() -> config.validate("192.168.1.1"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("other.com"));
 	}
 	
 	@Test
-	void matchesNotIn() {
+	void validateNotIn() {
 		HostConstraintConfig config = HostConstraintConfig.UNCONSTRAINED.withNotIn(List.of("blocked.com"));
 		
-		assertTrue(config.matches("example.com").isSuccess());
-		assertTrue(config.matches("blocked.com").isError());
+		assertDoesNotThrow(() -> config.validate("example.com"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("blocked.com"));
 	}
 }

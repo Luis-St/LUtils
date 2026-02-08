@@ -19,12 +19,13 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.decoder.Decoder;
+import net.luis.utils.io.codec.decoder.DecoderException;
 import net.luis.utils.io.codec.encoder.Encoder;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -90,87 +91,83 @@ class AnonymousCodecTest {
 	}
 	
 	@Test
-	void encodeStartDelegatesToEncoder() {
+	void encodeDelegatesToEncoder() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Encoder<String> encoder = new Encoder<>() {
 			@Override
-			public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable String value) {
-				return provider.createString("encoded:" + value);
+			public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable String value) throws EncoderException {
+				return provider.createString("encoded:" + value, EncoderException::new);
 			}
 		};
 		Decoder<String> decoder = STRING;
 		
 		Codec<String> codec = Codec.of(String.class, encoder, decoder, "TestCodec");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), "test");
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("encoded:test"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), "test");
+		assertEquals(new JsonPrimitive("encoded:test"), result);
 	}
 	
 	@Test
-	void encodeKeyDelegatesToEncoder() {
+	void encodeKeyDelegatesToEncoder() throws Exception {
 		Encoder<String> encoder = new Encoder<>() {
 			@Override
-			public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable String value) {
-				return Result.success(null);
+			public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable String value) throws EncoderException {
+				return provider.createString("", EncoderException::new);
 			}
 			
 			@Override
-			public @NonNull Result<String> encodeKey(@NonNull String key) {
-				return Result.success("key:" + key);
+			public @NonNull String encodeKey(@NonNull String key) throws EncoderException {
+				return "key:" + key;
 			}
 		};
 		Decoder<String> decoder = STRING;
 		
 		Codec<String> codec = Codec.of(String.class, encoder, decoder, "TestCodec");
 		
-		Result<String> result = codec.encodeKey("test");
-		assertTrue(result.isSuccess());
-		assertEquals("key:test", result.resultOrThrow());
+		String result = codec.encodeKey("test");
+		assertEquals("key:test", result);
 	}
 	
 	@Test
-	void decodeStartDelegatesToDecoder() {
+	void decodeDelegatesToDecoder() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Encoder<String> encoder = STRING;
 		Decoder<String> decoder = new Decoder<>() {
 			@Override
-			public <R> @NonNull Result<String> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+			public <R> @NonNull String decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 				if (value == null) {
-					return Result.error("null value");
+					throw new DecoderException("null value");
 				}
-				Result<String> stringResult = provider.getString(value);
-				return stringResult.flatMap(s -> Result.success("decoded:" + s));
+				String s = provider.getString(value, DecoderException::new);
+				return "decoded:" + s;
 			}
 		};
 		
 		Codec<String> codec = Codec.of(String.class, encoder, decoder, "TestCodec");
 		
-		Result<String> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("test"));
-		assertTrue(result.isSuccess());
-		assertEquals("decoded:test", result.resultOrThrow());
+		String result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("test"));
+		assertEquals("decoded:test", result);
 	}
 	
 	@Test
-	void decodeKeyDelegatesToDecoder() {
+	void decodeKeyDelegatesToDecoder() throws Exception {
 		Encoder<String> encoder = STRING;
 		Decoder<String> decoder = new Decoder<>() {
 			@Override
-			public <R> @NonNull Result<String> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
-				return Result.success(null);
+			public <R> @NonNull String decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
+				return "";
 			}
 			
 			@Override
-			public @NonNull Result<String> decodeKey(@NonNull String key) {
-				return Result.success("decoded:" + key);
+			public @NonNull String decodeKey(@NonNull String key) throws DecoderException {
+				return "decoded:" + key;
 			}
 		};
 		
 		Codec<String> codec = Codec.of(String.class, encoder, decoder, "TestCodec");
 		
-		Result<String> result = codec.decodeKey("test");
-		assertTrue(result.isSuccess());
-		assertEquals("decoded:test", result.resultOrThrow());
+		String result = codec.decodeKey("test");
+		assertEquals("decoded:test", result);
 	}
 	
 	@Test
@@ -195,7 +192,7 @@ class AnonymousCodecTest {
 	}
 	
 	@Test
-	void roundTripEncodingAndDecoding() {
+	void roundTripEncodingAndDecoding() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = Codec.of(String.class, STRING, STRING, "TestCodec");
 		
@@ -207,53 +204,46 @@ class AnonymousCodecTest {
 	}
 	
 	@Test
-	void codecWrappingWithCustomBehavior() {
+	void codecWrappingWithCustomBehavior() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Encoder<Integer> upperBoundEncoder = new Encoder<>() {
 			@Override
-			public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Integer value) {
+			public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Integer value) throws EncoderException {
 				if (value == null) {
-					return Result.error("Cannot encode null");
+					throw new EncoderException("Cannot encode null");
 				}
 				if (value > 100) {
-					return Result.error("Value exceeds upper bound of 100");
+					throw new EncoderException("Value exceeds upper bound of 100");
 				}
-				return provider.createInteger(value);
+				return provider.createInteger(value, EncoderException::new);
 			}
 		};
 		
 		Decoder<Integer> lowerBoundDecoder = new Decoder<>() {
 			@Override
-			public <R> @NonNull Result<Integer> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+			public <R> @NonNull Integer decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 				if (value == null) {
-					return Result.error("Cannot decode null");
+					throw new DecoderException("Cannot decode null");
 				}
-				Result<Integer> intResult = provider.getInteger(value);
-				return intResult.flatMap(i -> {
-					if (i < 0) {
-						return Result.error("Value below lower bound of 0");
-					}
-					return Result.success(i);
-				});
+				int i = provider.getInteger(value, DecoderException::new);
+				if (i < 0) {
+					throw new DecoderException("Value below lower bound of 0");
+				}
+				return i;
 			}
 		};
 		
 		Codec<Integer> boundedCodec = Codec.of(Integer.class, upperBoundEncoder, lowerBoundDecoder, "BoundedIntegerCodec");
 		
-		Result<JsonElement> validEncode = boundedCodec.encodeStart(typeProvider, typeProvider.empty(), 50);
-		assertTrue(validEncode.isSuccess());
+		assertDoesNotThrow(() -> boundedCodec.encode(typeProvider, typeProvider.empty(), 50));
 		
-		Result<JsonElement> invalidEncode = boundedCodec.encodeStart(typeProvider, typeProvider.empty(), 150);
-		assertTrue(invalidEncode.isError());
-		assertTrue(invalidEncode.errorOrThrow().contains("exceeds upper bound"));
+		EncoderException encodeException = assertThrows(EncoderException.class, () -> boundedCodec.encode(typeProvider, typeProvider.empty(), 150));
+		assertTrue(encodeException.getMessage().contains("exceeds upper bound"));
 		
-		Result<Integer> validDecode = boundedCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(50));
-		assertTrue(validDecode.isSuccess());
-		assertEquals(50, validDecode.resultOrThrow());
+		assertEquals(50, boundedCodec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(50)));
 		
-		Result<Integer> invalidDecode = boundedCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-10));
-		assertTrue(invalidDecode.isError());
-		assertTrue(invalidDecode.errorOrThrow().contains("below lower bound"));
+		DecoderException decodeException = assertThrows(DecoderException.class, () -> boundedCodec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(-10)));
+		assertTrue(decodeException.getMessage().contains("below lower bound"));
 	}
 }

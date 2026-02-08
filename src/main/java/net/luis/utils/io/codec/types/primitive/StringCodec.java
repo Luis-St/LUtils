@@ -18,28 +18,32 @@
 
 package net.luis.utils.io.codec.types.primitive;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.StringConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for strings.<br>
  *
  * @author Luis-St
  */
-public class StringCodec extends AbstractCodec<String, StringConstraintConfig> implements StringConstraint<StringCodec> {
+public class StringCodec
+	extends AbstractConstrainableCodec<String, StringConstraintConfig, StringCodec>
+	implements StringConstraint<StringCodec> {
 	
 	/**
 	 * Constructs a new string codec.<br>
 	 */
-	public StringCodec() {}
+	public StringCodec() {
+		super(StringCodec::new, StringConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new string codec with the given configuration.<br>
@@ -48,78 +52,39 @@ public class StringCodec extends AbstractCodec<String, StringConstraintConfig> i
 	 * @throws NullPointerException If the config is null
 	 */
 	private StringCodec(@NonNull StringConstraintConfig config) {
-		super(config);
+		super(StringCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull StringCodec apply(@NonNull UnaryOperator<StringConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new StringCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(StringConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable String value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable String value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as string using '" + this + "'");
+			throw new EncoderException("Unable to encode null as string", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(value);
+		return provider.createString(this.validateEncodeConstraints(value), EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull String key) {
+	public @NonNull String encodeKey(@NonNull String key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key);
+		return this.validateEncodeConstraints(key);
 	}
 	
 	@Override
-	public <R> @NonNull Result<String> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull String decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as string using '" + this + "'");
+			throw new DecoderException("Unable to decode null as string", this);
 		}
 		
-		Result<String> stringResult = provider.getString(value);
-		if (stringResult.isError()) {
-			return stringResult;
-		}
-		
-		Result<Void> constraintResult = this.checkConstraints(stringResult.resultOrThrow());
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return stringResult;
+		return this.validateDecodeConstraints(provider.getString(value, DecoderException::new));
 	}
 	
 	@Override
-	public @NonNull Result<String> decodeKey(@NonNull String key) {
+	public @NonNull String decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key);
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedStringCodec[constraints=" + config + "]";
-		}).orElse("StringCodec");
+		return this.validateDecodeConstraints(key);
 	}
 }

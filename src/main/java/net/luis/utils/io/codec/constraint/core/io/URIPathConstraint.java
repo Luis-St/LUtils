@@ -18,7 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.core.io;
 
-import net.luis.utils.io.codec.constraint.core.*;
+import net.luis.utils.io.codec.constraint.core.ApplicableConstraint;
+import net.luis.utils.io.codec.constraint.core.BaseConstraint;
 import net.luis.utils.io.codec.constraint.merged.io.FilePathConstraint;
 
 /**

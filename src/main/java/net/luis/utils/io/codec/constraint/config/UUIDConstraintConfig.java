@@ -18,15 +18,13 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.UUIDConstraint;
 import net.luis.utils.io.codec.constraint.util.UUIDVariant;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -113,6 +111,11 @@ public record UUIDConstraintConfig(
 		if (nil.isPresent() && max.isPresent()) {
 			throw new IllegalArgumentException("Nil and max are mutually exclusive");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -239,18 +242,18 @@ public record UUIDConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull UUID value) {
+	public void validate(@NonNull UUID value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchNestedConfig(value.version(), this.version, "Version"),
-			() -> ConstraintMatchers.matchNestedConfig(UUIDVariant.from(value), this.variant, "Variant"),
-			() -> ConstraintMatchers.matchFlag(value, this.nil, u -> u.equals(NIL_UUID), "UUID '" + value + "' must be the nil UUID"),
-			() -> ConstraintMatchers.matchFlag(value, this.notNil, u -> !u.equals(NIL_UUID), "UUID '" + value + "' must not be the nil UUID"),
-			() -> ConstraintMatchers.matchFlag(value, this.max, u -> u.equals(MAX_UUID), "UUID '" + value + "' must be the max UUID"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateNestedConfig(value.version(), this.version, "Version"),
+			() -> ConstraintValidators.validateNestedConfig(UUIDVariant.from(value), this.variant, "Variant"),
+			() -> ConstraintValidators.validateFlag(value, this.nil, u -> u.equals(NIL_UUID), "UUID '" + value + "' must be the nil UUID"),
+			() -> ConstraintValidators.validateFlag(value, this.notNil, u -> !u.equals(NIL_UUID), "UUID '" + value + "' must not be the nil UUID"),
+			() -> ConstraintValidators.validateFlag(value, this.max, u -> u.equals(MAX_UUID), "UUID '" + value + "' must be the max UUID"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

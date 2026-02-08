@@ -19,12 +19,14 @@
 package net.luis.utils.io.codec.provider;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * A provider for a specific type.<br>
@@ -35,14 +37,13 @@ import java.util.Map;
  *     as long as a {@link TypeProvider TypeProvider} is provided for that type.
  * </p>
  * <p>
- *     The most methods in this interface return a {@link Result} object.<br>
- *     This is to provide a way to handle errors in the encoding and decoding process.<br>
- *     If the operation was successful, the {@link Result} will contain the result of the operation<br>
- *     or if the operation failed, the {@link Result} will contain an error message.
+ *     The most methods in this interface might fail.<br>
+ *     If a method fails, it should throw an exception.<br>
+ *     The exception type is determined by the caller of the method, as the caller provides a function to create the exception.<br>
  * </p>
  * <p>
  *     All methods of this interface must handle {@code null} values appropriately.<br>
- *     If a method does not accept {@code null} values, it must return an error {@link Result}.
+ *     If a method does not accept {@code null} values, it must throw an exception when a {@code null} value is passed.<br>
  * </p>
  *
  * @author Luis-St
@@ -59,189 +60,289 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates a null value of the type this provider is for.<br>
-	 * @return A result containing the null value
+	 *
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return The null value of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support null values or the creation failed
 	 */
-	@NonNull Result<T> createNull();
+	<X extends Exception> @NonNull T createNull(@NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Creates a boolean value of the type this provider is for using the given value.<br>
 	 *
 	 * @param value The value to create the boolean value from
-	 * @return A result containing the boolean value
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return The boolean value of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support boolean values or the creation failed
 	 */
-	@NonNull Result<T> createBoolean(boolean value);
+	<X extends Exception> @NonNull T createBoolean(boolean value, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Creates a byte value of the type this provider is for using the given value.<br>
 	 *
 	 * @param value The value to create the byte value from
-	 * @return A result containing the byte value
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return The byte value of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support byte values or the creation failed
 	 */
-	@NonNull Result<T> createByte(byte value);
+	<X extends Exception> @NonNull T createByte(byte value, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Creates a short value of the type this provider is for using the given value.<br>
 	 *
 	 * @param value The value to create the short value from
-	 * @return A result containing the short value
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return The short value of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support short values or the creation failed
 	 */
-	@NonNull Result<T> createShort(short value);
+	<X extends Exception> @NonNull T createShort(short value, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Creates an integer value of the type this provider is for using the given value.<br>
 	 *
 	 * @param value The value to create the integer value from
-	 * @return A result containing the integer value
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return The integer value of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support integer values or the creation failed
 	 */
-	@NonNull Result<T> createInteger(int value);
+	<X extends Exception> @NonNull T createInteger(int value, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Creates a long value of the type this provider is for using the given value.<br>
 	 *
 	 * @param value The value to create the long value from
-	 * @return A result containing the long value
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return The long value of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support long values or the creation failed
 	 */
-	@NonNull Result<T> createLong(long value);
+	<X extends Exception> @NonNull T createLong(long value, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Creates a float value of the type this provider is for using the given value.<br>
 	 *
 	 * @param value The value to create the float value from
-	 * @return A result containing the float value
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return The float value of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support float values or the creation failed
 	 */
-	@NonNull Result<T> createFloat(float value);
+	<X extends Exception> @NonNull T createFloat(float value, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Creates a double value of the type this provider is for using the given value.<br>
 	 *
 	 * @param value The value to create the double value from
-	 * @return A result containing the double value
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return The double value of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support double values or the creation failed
 	 */
-	@NonNull Result<T> createDouble(double value);
+	<X extends Exception> @NonNull T createDouble(double value, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Creates a string value of the type this provider is for using the given value.<br>
 	 *
 	 * @param value The value to create the string value from
-	 * @return A result containing the string value
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return The string value of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support string values or the creation failed
 	 */
-	@NonNull Result<T> createString(@Nullable String value);
+	<X extends Exception> @NonNull T createString(@Nullable String value, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Creates a list value of the type this provider is for using the given values.<br>
 	 *
 	 * @param values The values to create the list value from
-	 * @return A result containing the list value
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return A list of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support list values or the creation failed
 	 */
-	@NonNull Result<T> createList(@Nullable List<? extends T> values);
+	<X extends Exception> @NonNull T createList(@Nullable List<? extends T> values, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Creates an empty map value of the type this provider is for.<br>
-	 * @return A result containing the empty map value
+	 *
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return An empty map of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support map values or the creation failed
 	 */
-	@NonNull Result<T> createMap();
+	<X extends Exception> @NonNull T createMap(@NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Creates a map value of the type this provider is for using the given values.<br>
 	 *
 	 * @param values The values to create the map value from
-	 * @return A result containing the map value
+	 * @param exceptionConstructor A function to create an exception if the type does not support empty values or the check failed
+	 * @param <X> The type of the exception to throw
+	 * @return A map of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support map values or the creation failed
 	 */
-	@NonNull Result<T> createMap(@Nullable Map<String, ? extends T> values);
+	<X extends Exception> @NonNull T createMap(@Nullable Map<String, ? extends T> values, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
-	 * Gets the given value as an empty value of the type this provider is for.<br>
+	 * Checks if the given value is an empty value of the type this provider is for.<br>
 	 *
-	 * @param type The value to get as an empty value
-	 * @return A success result containing the empty value, or an error result if the given value is not an empty value
+	 * @param type The value to check
+	 * @param exceptionConstructor A function to create an exception if the type does not support empty values or the check failed
+	 * @param <X> The type of the exception to throw
+	 * @return True if the value is empty, false otherwise
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support empty values or the check failed
 	 */
-	@NonNull Result<T> getEmpty(@Nullable T type);
+	<X extends Exception> boolean isEmpty(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Checks if the given value is a null value of the type this provider is for.<br>
 	 *
 	 * @param type The value to check
-	 * @return A success result containing true if the value is null, false otherwise, or an error result if the check failed
+	 * @param exceptionConstructor A function to create an exception if the type does not support null values or the check failed
+	 * @param <X> The type of the exception to throw
+	 * @return True if the value is null, false otherwise
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support null values or the check failed
 	 */
-	@NonNull Result<Boolean> isNull(@Nullable T type);
+	<X extends Exception> boolean isNull(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Gets the given value as a boolean value of the type this provider is for.<br>
 	 *
 	 * @param type The value to get as a boolean value
-	 * @return A success result containing the boolean value, or an error result if the given value is not a boolean value
+	 * @param exceptionConstructor A function to create an exception if the type does not support boolean values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The boolean value
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support boolean values or the retrieval failed
 	 */
-	@NonNull Result<Boolean> getBoolean(@Nullable T type);
+	<X extends Exception> @NonNull Boolean getBoolean(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Gets the given value as a byte value of the type this provider is for.<br>
+	 *
 	 * @param type The value to get as a byte value
-	 * @return A success result containing the byte value, or an error result if the given value is not a byte value
+	 * @param exceptionConstructor A function to create an exception if the type does not support byte values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The byte value
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support byte values or the retrieval failed
 	 */
-	@NonNull Result<Byte> getByte(@Nullable T type);
+	<X extends Exception> @NonNull Byte getByte(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Gets the given value as a short value of the type this provider is for.<br>
 	 *
 	 * @param type The value to get as a short value
-	 * @return A success result containing the short value, or an error result if the given value is not a short value
+	 * @param exceptionConstructor A function to create an exception if the type does not support short values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The short value
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support short values or the retrieval failed
 	 */
-	@NonNull Result<Short> getShort(@Nullable T type);
+	<X extends Exception> @NonNull Short getShort(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Gets the given value as an integer value of the type this provider is for.<br>
 	 *
 	 * @param type The value to get as an integer value
-	 * @return A success result containing the integer value, or an error result if the given value is not an integer value
+	 * @param exceptionConstructor A function to create an exception if the type does not support integer values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The integer value
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support integer values or the retrieval failed
 	 */
-	@NonNull Result<Integer> getInteger(@Nullable T type);
+	<X extends Exception> @NonNull Integer getInteger(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Gets the given value as a long value of the type this provider is for.<br>
+	 *
 	 * @param type The value to get as a long value
-	 * @return A success result containing the long value, or an error result if the given value is not a long value
+	 * @param exceptionConstructor A function to create an exception if the type does not support long values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The long value
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support long values or the retrieval failed
 	 */
-	@NonNull Result<Long> getLong(@Nullable T type);
+	<X extends Exception> @NonNull Long getLong(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Gets the given value as a float value of the type this provider is for.<br>
 	 *
 	 * @param type The value to get as a float value
-	 * @return A success result containing the float value, or an error result if the given value is not a float value
+	 * @param exceptionConstructor A function to create an exception if the type does not support float values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The float value
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support float values or the retrieval failed
 	 */
-	@NonNull Result<Float> getFloat(@Nullable T type);
+	<X extends Exception> @NonNull Float getFloat(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Gets the given value as a double value of the type this provider is for.<br>
 	 *
 	 * @param type The value to get as a double value
-	 * @return A success result containing the double value, or an error result if the given value is not a double value
+	 * @param exceptionConstructor A function to create an exception if the type does not support double values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The double value
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support double values or the retrieval failed
 	 */
-	@NonNull Result<Double> getDouble(@Nullable T type);
+	<X extends Exception> @NonNull Double getDouble(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Gets the given value as a string value of the type this provider is for.<br>
 	 *
 	 * @param type The value to get as a string value
-	 * @return A success result containing the string value, or an error result if the given value is not a string value
+	 * @param exceptionConstructor A function to create an exception if the type does not support string values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The string value
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support string values or the retrieval failed
 	 */
-	@NonNull Result<String> getString(@Nullable T type);
+	<X extends Exception> @NonNull String getString(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Gets the given value as a list value of the type this provider is for.<br>
 	 *
 	 * @param type The value to get as a list value
-	 * @return A success result containing the list value, or an error result if the given value is not a list value
+	 * @param exceptionConstructor A function to create an exception if the type does not support list values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The list
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support list values or the retrieval failed
 	 */
-	@NonNull Result<List<T>> getList(@Nullable T type);
+	<X extends Exception> @NonNull List<T> getList(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Gets the given value as a map value of the type this provider is for.<br>
 	 *
 	 * @param type The value to get as a map value
-	 * @return A success result containing the map value, or an error result if the given value is not a map value
+	 * @param exceptionConstructor A function to create an exception if the type does not support map values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The map
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support map values or the retrieval failed
 	 */
-	@NonNull Result<Map<String, T>> getMap(@Nullable T type);
+	<X extends Exception> @NonNull Map<String, T> getMap(@Nullable T type, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Checks if the given value is a map and contains the given key.<br>
@@ -249,19 +350,31 @@ public interface TypeProvider<T> {
 	 *
 	 * @param type The value to check
 	 * @param key The key to check
-	 * @return A success result containing true if the map contains the key or false if not, or an error result if the given value is not a map
+	 * @param exceptionConstructor A function to create an exception if the type does not support map values or the check failed
+	 * @param <X> The type of the exception to throw
+	 * @return True if the map contains the key or false if not
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support map values or the check failed
 	 */
-	@NonNull Result<Boolean> has(@Nullable T type, @Nullable String key);
+	<X extends Exception> boolean has(@Nullable T type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Gets the value of the given key from the given value.<br>
 	 * The given type must be a map.<br>
+	 * <p>
+	 *     The returned value might be null if the key does not exist in the map.<br>
+	 *     This method is allowed to return null values to support optional values (which are represented as null).
+	 * </p>
 	 *
 	 * @param type The value to get the value from
 	 * @param key The key to get the value for
-	 * @return A success result containing the value for the key, or an error result if the given value is not a map
+	 * @param exceptionConstructor A function to create an exception if the type does not support map values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The value for the key
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support map values or the retrieval failed
 	 */
-	@NonNull Result<T> get(@Nullable T type, @Nullable String key);
+	<X extends Exception> @Nullable T get(@Nullable T type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Sets the value for the given key in the given value.<br>
@@ -270,38 +383,12 @@ public interface TypeProvider<T> {
 	 * @param type The value to set the value in
 	 * @param key The key to set the value for
 	 * @param value The value to set
-	 * @return A success result containing the result of the set operation, or an error result if the given value is not a map
+	 * @param exceptionConstructor A function to create an exception if the type does not support map values or the set operation failed
+	 * @param <X> The type of the exception to throw
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support map values or the set operation failed
 	 */
-	@NonNull Result<T> set(@Nullable T type, @Nullable String key, @Nullable T value);
-	
-	/**
-	 * Sets the value for the given key in the given value.<br>
-	 * This is an overloaded method to handle the value as a {@link Result}.<br>
-	 * If the given value is a success, the value will be set.<br>
-	 * If the given value is an error, the value will not be set and an error result will be returned.<br>
-	 *
-	 * @param type The value to set the value in
-	 * @param key The key to set the value for
-	 * @param value The value to set
-	 * @return A success result containing the result of the set operation, or an error result if the given value is not a map, or the given value is an error
-	 * @see #set(Object, String, Object)
-	 */
-	default @NonNull Result<T> set(@Nullable T type, @Nullable String key, @Nullable Result<T> value) {
-		if (type == null) {
-			return Result.error("Type 'null' is not a map");
-		}
-		if (key == null) {
-			return Result.error("Key 'null' is not valid");
-		}
-		if (value == null) {
-			return Result.error("Value 'null' is not valid");
-		}
-		
-		if (value.isSuccess()) {
-			return this.set(type, key, value.resultOrThrow());
-		}
-		return Result.error("Unable to set value for key '" + key + "' in '" + type + "': " + value.errorOrThrow());
-	}
+	<X extends Exception> void set(@Nullable T type, @Nullable String key, @Nullable T value, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Merges the given value with the current value.<br>
@@ -309,33 +396,11 @@ public interface TypeProvider<T> {
 	 *
 	 * @param current The current value
 	 * @param value The value to merge
-	 * @return A success result containing the result of the merge operation, or an error result if the merge operation failed
+	 * @param exceptionConstructor A function to create an exception if the type does not support merging or the merge operation failed
+	 * @param <X> The type of the exception to throw
+	 * @return The resulting merged value
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the type does not support merging or the merge operation failed
 	 */
-	@NonNull Result<T> merge(@Nullable T current, @Nullable T value);
-	
-	/**
-	 * Merges the given value with the current value.<br>
-	 * This is an overloaded method to handle the value as a {@link Result}.<br>
-	 * If the given value is a success, the value will be merged.<br>
-	 * If the given value is an error, the value will not be merged and an error result will be returned.<br>
-	 * The logic is specific to the type this provider is for.<br>
-	 *
-	 * @param current The current value
-	 * @param value The value to merge
-	 * @return A success result containing the result of the merge operation, or an error result if the merge operation failed, or the given value is an error
-	 * @see #merge(Object, Object)
-	 */
-	default @NonNull Result<T> merge(@Nullable T current, @Nullable Result<T> value) {
-		if (current == null) {
-			return Result.error("Current value 'null' is not valid");
-		}
-		if (value == null) {
-			return Result.error("Value 'null' is not valid");
-		}
-		
-		if (value.isSuccess()) {
-			return this.merge(current, value.resultOrThrow());
-		}
-		return Result.error("Unable to merge '" + current + "' with 'value': " + value.errorOrThrow());
-	}
+	<X extends Exception> @UnknownNullability T merge(@Nullable T current, @Nullable T value, @NotNull Function<String, X> exceptionConstructor) throws X;
 }

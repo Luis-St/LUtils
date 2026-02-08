@@ -20,11 +20,9 @@ package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -183,6 +181,11 @@ public record PrimitiveArrayConstraintConfig<A>(
 	}
 	//endregion
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.length.isEmpty() && this.custom.isEmpty();
+	}
+	
 	//region With methods
 	
 	/**
@@ -311,14 +314,14 @@ public record PrimitiveArrayConstraintConfig<A>(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull A value) {
+	public void validate(@NonNull A value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo, this.equalityFunction),
-			() -> ConstraintMatchers.matchIn(value, this.in, this.equalityFunction),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.length, v -> this.lengthExtractor.applyAsInt(v), "Length"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo, this.equalityFunction),
+			() -> ConstraintValidators.validateIn(value, this.in, this.equalityFunction),
+			() -> ConstraintValidators.validateExtractedValue(value, this.length, this.lengthExtractor::applyAsInt, "Length"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

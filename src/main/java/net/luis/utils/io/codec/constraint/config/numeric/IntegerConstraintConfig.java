@@ -19,11 +19,10 @@
 package net.luis.utils.io.codec.constraint.config.numeric;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -148,6 +147,11 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		);
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.min.isEmpty() && this.max.isEmpty() && this.positive.isEmpty() && this.negative.isEmpty() && this.zero.isEmpty() && this.percentage.isEmpty() && this.even.isEmpty() && this.odd.isEmpty() && this.divisibleBy.isEmpty() && this.powerOf.isEmpty() && this.custom.isEmpty();
 	}
 	
 	//region With methods
@@ -400,19 +404,19 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull T value) {
+	public void validate(@NonNull T value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
-			() -> ConstraintMatchers.matchSign(value, this.positive, this.negative, this.zero),
-			() -> ConstraintMatchers.matchPercentage(value, this.percentage),
-			() -> ConstraintMatchers.matchParity(value.longValue(), this.even, this.odd),
-			() -> ConstraintMatchers.matchDivisibleBy(value.longValue(), this.divisibleBy),
-			() -> ConstraintMatchers.matchPowerOf(value.longValue(), this.powerOf),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.min, this.max),
+			() -> ConstraintValidators.validateSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintValidators.validatePercentage(value, this.percentage),
+			() -> ConstraintValidators.validateParity(value.longValue(), this.even, this.odd),
+			() -> ConstraintValidators.validateDivisibleBy(value.longValue(), this.divisibleBy),
+			() -> ConstraintValidators.validatePowerOf(value.longValue(), this.powerOf),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

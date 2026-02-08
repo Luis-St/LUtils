@@ -22,7 +22,7 @@ import net.luis.utils.io.network.address.IpAddress;
 import net.luis.utils.io.network.address.IpAddresses;
 import org.jspecify.annotations.NonNull;
 
-import java.net.InetSocketAddress;
+import java.net.*;
 import java.util.Objects;
 
 /**
@@ -103,8 +103,8 @@ public record IpEndpoint(@NonNull IpAddress<?> address, int port) {
 	 * This method provides interoperability with the standard Java networking API.
 	 * <p>
 	 *     The returned socket address can be used with classes such as
-	 *     {@link java.net.Socket#connect(java.net.SocketAddress)} and
-	 *     {@link java.net.ServerSocket#bind(java.net.SocketAddress)}.
+	 *     {@link Socket#connect(SocketAddress)} and
+	 *     {@link ServerSocket#bind(SocketAddress)}.
 	 * </p>
 	 *
 	 * @return An {@link InetSocketAddress} representing this endpoint

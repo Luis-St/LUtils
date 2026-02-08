@@ -19,14 +19,13 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.io.network.address.IpNetwork;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -91,6 +90,11 @@ public record IpNetworkConstraintConfig(
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In constraint set must not be empty when present");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -208,17 +212,17 @@ public record IpNetworkConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull IpNetwork<?, ?> value) {
+	public void validate(@NonNull IpNetwork<?, ?> value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> IOMatchers.matchIpNetworkIpVersion(value, this.ipVersion),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.prefixLength, IpNetwork::prefixLength, "Prefix length"),
-			() -> ConstraintMatchers.matchFlag(value, this.canonical, IpNetwork::isCanonical, "Network must be in canonical form, but was: " + value.toCidrNotation()),
-			() -> ConstraintMatchers.matchNestedConfig(value.toString(), this.stringConstraint, "String representation"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> IOValidators.validateIpNetworkIpVersion(value, this.ipVersion),
+			() -> ConstraintValidators.validateExtractedValue(value, this.prefixLength, IpNetwork::prefixLength, "Prefix length"),
+			() -> ConstraintValidators.validateFlag(value, this.canonical, IpNetwork::isCanonical, "Network must be in canonical form, but was: " + value.toCidrNotation()),
+			() -> ConstraintValidators.validateNestedConfig(value.toString(), this.stringConstraint, "String representation"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

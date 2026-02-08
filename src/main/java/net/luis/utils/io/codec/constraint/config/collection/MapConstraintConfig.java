@@ -20,13 +20,11 @@ package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.collection.MapConstraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -160,6 +158,11 @@ public record MapConstraintConfig<K, V>(
 	 */
 	public static <K, V> @NonNull MapConstraintConfig<K, V> unconstrained() {
 		return new MapConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.size.isEmpty() && this.requiredKeys.isEmpty() && this.forbiddenKeys.isEmpty() && this.allowedKeys.isEmpty() && this.nonNullKeys.isEmpty() && this.uniqueValues.isEmpty() && this.nonNullValues.isEmpty() && this.custom.isEmpty();
 	}
 	
 	//region With methods
@@ -415,20 +418,20 @@ public record MapConstraintConfig<K, V>(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Map<K, V> value) {
+	public void validate(@NonNull Map<K, V> value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.size, Map::size, "Size"),
-			() -> ConstraintMatchers.matchRequiredKeys(value.keySet(), this.requiredKeys, "Map"),
-			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Map"),
-			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Map"),
-			() -> ConstraintMatchers.matchFlag(value, this.nonNullKeys, m -> m.keySet().stream().noneMatch(Objects::isNull), "Map keys must not contain null"),
-			() -> ConstraintMatchers.matchFlag(value, this.uniqueValues, m -> m.values().stream().distinct().count() == m.size(), "Map values must be unique"),
-			() -> ConstraintMatchers.matchFlag(value, this.nonNullValues, m -> m.values().stream().noneMatch(Objects::isNull), "Map values must not contain null"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateExtractedValue(value, this.size, Map::size, "Size"),
+			() -> ConstraintValidators.validateRequiredKeys(value.keySet(), this.requiredKeys, "Map"),
+			() -> ConstraintValidators.validateForbiddenKeys(value.keySet(), this.forbiddenKeys, "Map"),
+			() -> ConstraintValidators.validateAllowedKeys(value.keySet(), this.allowedKeys, "Map"),
+			() -> ConstraintValidators.validateFlag(value, this.nonNullKeys, m -> m.keySet().stream().noneMatch(Objects::isNull), "Map keys must not contain null"),
+			() -> ConstraintValidators.validateFlag(value, this.uniqueValues, m -> m.values().stream().distinct().count() == m.size(), "Map values must be unique"),
+			() -> ConstraintValidators.validateFlag(value, this.nonNullValues, m -> m.values().stream().noneMatch(Objects::isNull), "Map values must not contain null"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

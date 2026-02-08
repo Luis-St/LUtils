@@ -19,9 +19,11 @@
 package net.luis.utils.io.codec.types.struct.collection;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -37,23 +39,22 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedListCodecTest {
 	
 	@Test
-	void encodeStartWithValidConstrainedValue() {
+	void encodeWithValidConstrainedValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(1));
 		List<Integer> validList = List.of(1, 2, 3);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), validList);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), validList);
 		
 		JsonArray expected = new JsonArray();
 		expected.add(new JsonPrimitive(1));
 		expected.add(new JsonPrimitive(2));
 		expected.add(new JsonPrimitive(3));
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void decodeStartWithValidConstrainedValue() {
+	void decodeWithValidConstrainedValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(1));
 		
@@ -61,9 +62,8 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertEquals(List.of(1, 2), result.resultOrThrow());
+		List<Integer> result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertEquals(List.of(1, 2), result);
 	}
 	
 	@Test
@@ -74,25 +74,23 @@ class ConstrainedListCodecTest {
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintSuccess() {
+	void encodeEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withEqualTo(List.of(1, 2, 3)));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2, 3));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withEqualTo(List.of(1, 2, 3)));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(4, 5));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(4, 5)));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintSuccess() {
+	void decodeEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withEqualTo(List.of(1, 2, 3)));
 		
@@ -101,12 +99,11 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintViolation() {
+	void decodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withEqualTo(List.of(1, 2, 3)));
 		
@@ -114,30 +111,27 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(4));
 		array.add(new JsonPrimitive(5));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintSuccess() {
+	void encodeNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withNotEqualTo(List.of(1, 2, 3)));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(4, 5, 6));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), List.of(4, 5, 6)));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withNotEqualTo(List.of(1, 2, 3)));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2, 3));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintSuccess() {
+	void decodeNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withNotEqualTo(List.of(1, 2, 3)));
 		
@@ -145,12 +139,11 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(4));
 		array.add(new JsonPrimitive(5));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintViolation() {
+	void decodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withNotEqualTo(List.of(1, 2, 3)));
 		
@@ -159,30 +152,27 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartInConstraintSuccess() {
+	void encodeInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withIn(List.of(List.of(1, 2), List.of(3, 4))));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withIn(List.of(List.of(1, 2), List.of(3, 4))));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(5, 6));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(5, 6)));
 	}
 	
 	@Test
-	void decodeStartInConstraintSuccess() {
+	void decodeInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withIn(List.of(List.of(1, 2), List.of(3, 4))));
 		
@@ -190,12 +180,11 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(3));
 		array.add(new JsonPrimitive(4));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartInConstraintViolation() {
+	void decodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withIn(List.of(List.of(1, 2), List.of(3, 4))));
 		
@@ -203,30 +192,27 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(7));
 		array.add(new JsonPrimitive(8));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintSuccess() {
+	void encodeNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withNotIn(List.of(List.of(1, 2), List.of(3, 4))));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(5, 6));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), List.of(5, 6)));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withNotIn(List.of(List.of(1, 2), List.of(3, 4))));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintSuccess() {
+	void decodeNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withNotIn(List.of(List.of(1, 2), List.of(3, 4))));
 		
@@ -234,12 +220,11 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(7));
 		array.add(new JsonPrimitive(8));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintViolation() {
+	void decodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withNotIn(List.of(List.of(1, 2), List.of(3, 4))));
 		
@@ -247,30 +232,27 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(3));
 		array.add(new JsonPrimitive(4));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartMinSizeConstraintSuccess() {
+	void encodeMinSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2, 3));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
-	void encodeStartMinSizeConstraintViolation() {
+	void encodeMinSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(3));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
 	}
 	
 	@Test
-	void decodeStartMinSizeConstraintSuccess() {
+	void decodeMinSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(2));
 		
@@ -278,12 +260,11 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartMinSizeConstraintViolation() {
+	void decodeMinSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(3));
 		
@@ -291,30 +272,27 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartMaxSizeConstraintSuccess() {
+	void encodeMaxSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMaxSize(5));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2, 3));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
-	void encodeStartMaxSizeConstraintViolation() {
+	void encodeMaxSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMaxSize(2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2, 3));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
-	void decodeStartMaxSizeConstraintSuccess() {
+	void decodeMaxSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMaxSize(5));
 		
@@ -322,12 +300,11 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartMaxSizeConstraintViolation() {
+	void decodeMaxSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMaxSize(2));
 		
@@ -336,30 +313,27 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartExactSizeConstraintSuccess() {
+	void encodeExactSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withExactSize(3));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2, 3));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
-	void encodeStartExactSizeConstraintViolation() {
+	void encodeExactSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withExactSize(3));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
 	}
 	
 	@Test
-	void decodeStartExactSizeConstraintSuccess() {
+	void decodeExactSizeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withExactSize(2));
 		
@@ -367,12 +341,11 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartExactSizeConstraintViolation() {
+	void decodeExactSizeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withExactSize(3));
 		
@@ -380,39 +353,35 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartSizeBetweenConstraintSuccess() {
+	void encodeSizeBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withSizeBetween(2, 4));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2, 3));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
-	void encodeStartSizeBetweenConstraintViolationTooSmall() {
+	void encodeSizeBetweenConstraintViolationTooSmall() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withSizeBetween(3, 5));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2)));
 	}
 	
 	@Test
-	void encodeStartSizeBetweenConstraintViolationTooLarge() {
+	void encodeSizeBetweenConstraintViolationTooLarge() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withSizeBetween(1, 2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2, 3));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
-	void decodeStartSizeBetweenConstraintSuccess() {
+	void decodeSizeBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withSizeBetween(1, 3));
 		
@@ -420,12 +389,11 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartSizeBetweenConstraintViolation() {
+	void decodeSizeBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withSizeBetween(3, 5));
 		
@@ -433,94 +401,83 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintSuccess() {
+	void encodeCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withCustom(list -> {
-			if (list.stream().allMatch(i -> i > 0)) {
-				return Result.success(null);
+			if (!list.stream().allMatch(i -> i > 0)) {
+				throw new ConstraintViolateException("All elements must be positive");
 			}
-			return Result.error("All elements must be positive");
 		}));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2, 3));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withCustom(list -> {
-			if (list.stream().allMatch(i -> i > 0)) {
-				return Result.success(null);
+			if (!list.stream().allMatch(i -> i > 0)) {
+				throw new ConstraintViolateException("All elements must be positive");
 			}
-			return Result.error("All elements must be positive");
 		}));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, -2, 3));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, -2, 3)));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintSuccess() {
+	void decodeCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withCustom(list -> {
-			if (list.stream().allMatch(i -> i > 0)) {
-				return Result.success(null);
+			if (!list.stream().allMatch(i -> i > 0)) {
+				throw new ConstraintViolateException("All elements must be positive");
 			}
-			return Result.error("All elements must be positive");
 		}));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintViolation() {
+	void decodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withCustom(list -> {
-			if (list.stream().allMatch(i -> i > 0)) {
-				return Result.success(null);
+			if (!list.stream().allMatch(i -> i > 0)) {
+				throw new ConstraintViolateException("All elements must be positive");
 			}
-			return Result.error("All elements must be positive");
 		}));
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(-2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartCombinedConstraintsSuccess() {
+	void encodeCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(2).withMaxSize(4));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2, 3));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), List.of(1, 2, 3)));
 	}
 	
 	@Test
-	void encodeStartCombinedConstraintsViolation() {
+	void encodeCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(2).withMaxSize(4));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), List.of(1)));
 	}
 	
 	@Test
-	void decodeStartCombinedConstraintsSuccess() {
+	void decodeCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(1).withMaxSize(3));
 		
@@ -528,12 +485,11 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartCombinedConstraintsViolation() {
+	void decodeCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER).apply(config -> config.withMinSize(3).withMaxSize(5));
 		
@@ -541,7 +497,6 @@ class ConstrainedListCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 }

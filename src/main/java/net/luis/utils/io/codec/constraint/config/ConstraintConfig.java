@@ -18,9 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -34,20 +33,25 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <T> The type of the value to be validated
  */
-@FunctionalInterface
 public interface ConstraintConfig<T> {
+	
+	/**
+	 * Checks if there are no constraints configured.<br>
+	 * @return True if there are no constraints, false otherwise
+	 */
+	boolean isUnconstrained();
 	
 	/**
 	 * Validates the given value against all configured constraints.<br>
 	 * <p>
-	 *     If the value satisfies all constraints, a successful Result is returned.<br>
-	 *     If the value does not satisfy any constraint, a failed Result with an appropriate error message is returned.<br>
+	 *     If the value satisfies all constraints, the method completes successfully without throwing an exception.<br>
+	 *     If the value does not satisfy any constraint, a {@link ConstraintViolateException} with an appropriate error message is thrown.<br>
 	 *     The validation uses early-exit behavior, stopping at the first failed constraint.
 	 * </p>
 	 *
 	 * @param value The value to be validated
-	 * @return A result indicating success or failure of the validation
 	 * @throws NullPointerException If the value is null
+	 * @throws ConstraintViolateException If the value does not satisfy the configured constraints
 	 */
-	@NotNull Result<Void> matches(@NonNull T value);
+	void validate(@NonNull T value);
 }

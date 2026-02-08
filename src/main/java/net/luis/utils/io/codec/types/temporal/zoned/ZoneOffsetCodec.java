@@ -18,18 +18,18 @@
 
 package net.luis.utils.io.codec.types.temporal.zoned;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.temporal.zoned.ZoneOffsetConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.DateTimeException;
 import java.time.ZoneOffset;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for zone offsets.<br>
@@ -37,12 +37,16 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, ZoneOffsetConstraintConfig> implements ZoneOffsetConstraint<ZoneOffsetCodec> {
+public class ZoneOffsetCodec
+	extends AbstractConstrainableCodec<ZoneOffset, ZoneOffsetConstraintConfig, ZoneOffsetCodec>
+	implements ZoneOffsetConstraint<ZoneOffsetCodec> {
 	
 	/**
 	 * Constructs a new zone offset codec.<br>
 	 */
-	public ZoneOffsetCodec() {}
+	public ZoneOffsetCodec() {
+		super(ZoneOffsetCodec::new, ZoneOffsetConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new zone offset codec with the given configuration.<br>
@@ -51,92 +55,52 @@ public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, ZoneOffsetConstra
 	 * @throws NullPointerException If the config is null
 	 */
 	private ZoneOffsetCodec(@NonNull ZoneOffsetConstraintConfig config) {
-		super(config);
+		super(ZoneOffsetCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull ZoneOffsetCodec apply(@NonNull UnaryOperator<ZoneOffsetConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new ZoneOffsetCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(ZoneOffsetConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZoneOffset value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZoneOffset value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as zone offset using '" + this + "'");
+			throw new EncoderException("Unable to encode null as zone offset", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(value.getId());
+		return provider.createString(this.validateEncodeConstraints(value).getId(), EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull ZoneOffset key) {
+	public @NonNull String encodeKey(@NonNull ZoneOffset key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key.getId());
+		return this.validateEncodeConstraints(key).getId();
 	}
 	
 	@Override
-	public <R> @NonNull Result<ZoneOffset> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull ZoneOffset decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as zone offset using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as zone offset", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			ZoneOffset zoneOffset = ZoneOffset.of(string);
-			Result<Void> constraintResult = this.checkConstraints(zoneOffset);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			
-			return Result.success(zoneOffset);
+			return this.validateDecodeConstraints(zoneOffset);
 		} catch (DateTimeException e) {
-			return Result.error("Unable to decode zone offset '" + string + "' using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode zone offset '" + string + "': " + e.getMessage(), this, e);
 		}
 	}
 	
 	@Override
-	public @NonNull Result<ZoneOffset> decodeKey(@NonNull String key) {
+	public @NonNull ZoneOffset decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			ZoneOffset zoneOffset = ZoneOffset.of(key);
-			Result<Void> constraintResult = this.checkConstraints(zoneOffset);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			
-			return Result.success(zoneOffset);
+			return this.validateDecodeConstraints(zoneOffset);
 		} catch (DateTimeException e) {
-			return Result.error("Unable to decode key '" + key + "' as zone offset using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode key '" + key + "' as zone offset: " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedZoneOffsetCodec[constraints=" + config + "]";
-		}).orElse("ZoneOffsetCodec");
 	}
 }

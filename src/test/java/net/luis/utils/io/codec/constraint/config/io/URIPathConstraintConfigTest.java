@@ -19,9 +19,9 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -163,6 +163,17 @@ class URIPathConstraintConfigTest {
 		assertTrue(config.ancestorOf().isEmpty());
 		assertTrue(config.descendantOf().isEmpty());
 		assertTrue(config.custom().isEmpty());
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(URIPathConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withAbsolute();
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -353,7 +364,7 @@ class URIPathConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -364,184 +375,186 @@ class URIPathConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() {
+	void validateUnconstrained() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches("/home/user").isSuccess());
-		assertTrue(config.matches("relative/path").isSuccess());
-		assertTrue(config.matches("file.txt").isSuccess());
+		assertDoesNotThrow(() -> config.validate("/home/user"));
+		assertDoesNotThrow(() -> config.validate("relative/path"));
+		assertDoesNotThrow(() -> config.validate("file.txt"));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> URIPathConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> URIPathConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() {
+	void validateEqualTo() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withEqualTo("/home/user");
 		
-		assertTrue(config.matches("/home/user").isSuccess());
-		assertTrue(config.matches("/home/other").isError());
+		assertDoesNotThrow(() -> config.validate("/home/user"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home/other"));
 	}
 	
 	@Test
-	void matchesNotEqualTo() {
+	void validateNotEqualTo() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withNotEqualTo("/home/user");
 		
-		assertTrue(config.matches("/home/other").isSuccess());
-		assertTrue(config.matches("/home/user").isError());
+		assertDoesNotThrow(() -> config.validate("/home/other"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home/user"));
 	}
 	
 	@Test
-	void matchesIn() {
+	void validateIn() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withIn(List.of("/home", "/var"));
 		
-		assertTrue(config.matches("/home").isSuccess());
-		assertTrue(config.matches("/var").isSuccess());
-		assertTrue(config.matches("/tmp").isError());
+		assertDoesNotThrow(() -> config.validate("/home"));
+		assertDoesNotThrow(() -> config.validate("/var"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/tmp"));
 	}
 	
 	@Test
-	void matchesNotIn() {
+	void validateNotIn() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withNotIn(List.of("/tmp", "/var"));
 		
-		assertTrue(config.matches("/home").isSuccess());
-		assertTrue(config.matches("/tmp").isError());
-		assertTrue(config.matches("/var").isError());
+		assertDoesNotThrow(() -> config.validate("/home"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/tmp"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/var"));
 	}
 	
 	@Test
-	void matchesLength() {
+	void validateLength() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(5).withMaxLength(20);
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
 		
-		assertTrue(config.matches("/home/user").isSuccess());
-		assertTrue(config.matches("/a").isError());
-		assertTrue(config.matches("/home/user/very/long/path/name").isError());
+		assertDoesNotThrow(() -> config.validate("/home/user"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/a"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home/user/very/long/path/name"));
 	}
 	
 	@Test
-	void matchesDepth() {
+	void validateDepth() {
 		DepthConstraintConfig depthConfig = DepthConstraintConfig.UNCONSTRAINED.withMinDepth(2).withMaxDepth(4);
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withDepth(depthConfig);
 		
-		assertTrue(config.matches("/a/b").isSuccess());
-		assertTrue(config.matches("/a/b/c").isSuccess());
-		assertTrue(config.matches("/a/b/c/d").isSuccess());
-		assertTrue(config.matches("/a").isError());
-		assertTrue(config.matches("/a/b/c/d/e").isError());
+		assertDoesNotThrow(() -> config.validate("/a/b"));
+		assertDoesNotThrow(() -> config.validate("/a/b/c"));
+		assertDoesNotThrow(() -> config.validate("/a/b/c/d"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/a"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/a/b/c/d/e"));
 	}
 	
 	@Test
-	void matchesAbsolute() {
+	void validateAbsolute() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withAbsolute();
 		
-		assertTrue(config.matches("/home/user").isSuccess());
-		assertTrue(config.matches("/").isSuccess());
-		assertTrue(config.matches("relative/path").isError());
-		assertTrue(config.matches("file.txt").isError());
+		assertDoesNotThrow(() -> config.validate("/home/user"));
+		assertDoesNotThrow(() -> config.validate("/"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("relative/path"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("file.txt"));
 	}
 	
 	@Test
-	void matchesRelative() {
+	void validateRelative() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withRelative();
 		
-		assertTrue(config.matches("relative/path").isSuccess());
-		assertTrue(config.matches("file.txt").isSuccess());
-		assertTrue(config.matches("/home/user").isError());
-		assertTrue(config.matches("/").isError());
+		assertDoesNotThrow(() -> config.validate("relative/path"));
+		assertDoesNotThrow(() -> config.validate("file.txt"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home/user"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/"));
 	}
 	
 	@Test
-	void matchesNormalized() {
+	void validateNormalized() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withNormalized();
 		
-		assertTrue(config.matches("/home/user").isSuccess());
-		assertTrue(config.matches("relative/path").isSuccess());
-		assertTrue(config.matches("/home/./user").isError());
-		assertTrue(config.matches("/home/../other").isError());
-		assertTrue(config.matches("./file.txt").isError());
-		assertTrue(config.matches("../parent/file.txt").isError());
+		assertDoesNotThrow(() -> config.validate("/home/user"));
+		assertDoesNotThrow(() -> config.validate("relative/path"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home/./user"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home/../other"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("./file.txt"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("../parent/file.txt"));
 	}
 	
 	@Test
-	void matchesPath() {
+	void validatePath() {
 		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withStartsWith("/home");
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withPath(stringConfig);
 		
-		assertTrue(config.matches("/home/user").isSuccess());
-		assertTrue(config.matches("/home").isSuccess());
-		assertTrue(config.matches("/var/log").isError());
+		assertDoesNotThrow(() -> config.validate("/home/user"));
+		assertDoesNotThrow(() -> config.validate("/home"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/var/log"));
 	}
 	
 	@Test
-	void matchesSegment() {
+	void validateSegment() {
 		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withSegment(stringConfig);
 		
-		assertTrue(config.matches("/home/user").isSuccess());
-		assertTrue(config.matches("file.txt").isSuccess());
+		assertDoesNotThrow(() -> config.validate("/home/user"));
+		assertDoesNotThrow(() -> config.validate("file.txt"));
 	}
 	
 	@Test
-	void matchesFile() {
+	void validateFile() {
 		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withEndsWith(".txt");
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withFile(stringConfig);
 		
-		assertTrue(config.matches("/home/user/file.txt").isSuccess());
-		assertTrue(config.matches("document.txt").isSuccess());
-		assertTrue(config.matches("/home/user/file.md").isError());
+		assertDoesNotThrow(() -> config.validate("/home/user/file.txt"));
+		assertDoesNotThrow(() -> config.validate("document.txt"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home/user/file.md"));
 	}
 	
 	@Test
-	void matchesWithoutExtension() {
+	void validateWithoutExtension() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withWithoutExtension();
 		
-		assertTrue(config.matches("/home/user/file").isSuccess());
-		assertTrue(config.matches("directory").isSuccess());
-		assertTrue(config.matches("/home/user/file.txt").isError());
+		assertDoesNotThrow(() -> config.validate("/home/user/file"));
+		assertDoesNotThrow(() -> config.validate("directory"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home/user/file.txt"));
 	}
 	
 	@Test
-	void matchesExtension() {
+	void validateExtension() {
 		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withIn(List.of("txt", "md"));
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withExtension(stringConfig);
 		
-		assertTrue(config.matches("/home/user/file.txt").isSuccess());
-		assertTrue(config.matches("/home/user/file.md").isSuccess());
-		assertTrue(config.matches("/home/user/file.xml").isError());
+		assertDoesNotThrow(() -> config.validate("/home/user/file.txt"));
+		assertDoesNotThrow(() -> config.validate("/home/user/file.md"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home/user/file.xml"));
 	}
 	
 	@Test
-	void matchesAncestorOf() {
+	void validateAncestorOf() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withAncestorOf(List.of("/home/user/documents/file.txt"));
 		
-		assertTrue(config.matches("/home").isSuccess());
-		assertTrue(config.matches("/home/user").isSuccess());
-		assertTrue(config.matches("/home/user/documents").isSuccess());
-		assertTrue(config.matches("/var").isError());
-		assertTrue(config.matches("/home/other").isError());
+		assertDoesNotThrow(() -> config.validate("/home"));
+		assertDoesNotThrow(() -> config.validate("/home/user"));
+		assertDoesNotThrow(() -> config.validate("/home/user/documents"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/var"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home/other"));
 	}
 	
 	@Test
-	void matchesDescendantOf() {
+	void validateDescendantOf() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withDescendantOf(List.of("/home/user"));
 		
-		assertTrue(config.matches("/home/user/documents").isSuccess());
-		assertTrue(config.matches("/home/user/documents/file.txt").isSuccess());
-		assertTrue(config.matches("/home/user").isSuccess());
-		assertTrue(config.matches("/home").isError());
-		assertTrue(config.matches("/var").isError());
+		assertDoesNotThrow(() -> config.validate("/home/user/documents"));
+		assertDoesNotThrow(() -> config.validate("/home/user/documents/file.txt"));
+		assertDoesNotThrow(() -> config.validate("/home/user"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/var"));
 	}
 	
 	@Test
-	void matchesCustom() {
+	void validateCustom() {
 		URIPathConstraintConfig config = URIPathConstraintConfig.UNCONSTRAINED.withCustom(value ->
-			value.contains("allowed") ? Result.success() : Result.error("Path must contain 'allowed'")
+			{
+				if (!value.contains("allowed")) throw new ConstraintViolateException("Path must contain 'allowed'");
+			}
 		);
 		
-		assertTrue(config.matches("/home/allowed/file.txt").isSuccess());
-		assertTrue(config.matches("/home/forbidden/file.txt").isError());
+		assertDoesNotThrow(() -> config.validate("/home/allowed/file.txt"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("/home/forbidden/file.txt"));
 	}
 }

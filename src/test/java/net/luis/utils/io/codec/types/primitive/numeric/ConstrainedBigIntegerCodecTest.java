@@ -20,10 +20,12 @@ package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -39,41 +41,37 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedBigIntegerCodecTest {
 	
 	@Test
-	void encodeStartWithValidConstrainedValue() {
+	void encodeWithValidConstrainedValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(100));
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("100"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(100));
+		assertEquals(new JsonPrimitive("100"), result);
 	}
 	
 	@Test
-	void decodeStartWithValidConstrainedValue() {
+	void decodeWithValidConstrainedValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
-		assertTrue(result.isSuccess());
-		assertEquals(BigInteger.valueOf(100), result.resultOrThrow());
+		BigInteger result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
+		assertEquals(BigInteger.valueOf(100), result);
 	}
 	
 	@Test
-	void encodeKeyWithValidConstrainedValue() {
+	void encodeKeyWithValidConstrainedValue() throws EncoderException {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(100));
-		assertTrue(result.isSuccess());
-		assertEquals("100", result.resultOrThrow());
+		String result = codec.encodeKey(BigInteger.valueOf(100));
+		assertEquals("100", result);
 	}
 	
 	@Test
-	void decodeKeyWithValidConstrainedValue() {
+	void decodeKeyWithValidConstrainedValue() throws DecoderException {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<BigInteger> result = codec.decodeKey("100");
-		assertTrue(result.isSuccess());
-		assertEquals(BigInteger.valueOf(100), result.resultOrThrow());
+		BigInteger result = codec.decodeKey("100");
+		assertEquals(BigInteger.valueOf(100), result);
 	}
 	
 	@Test
@@ -90,1607 +88,1415 @@ class ConstrainedBigIntegerCodecTest {
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintSuccess() {
+	void encodeEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.equalTo(BigInteger.valueOf(42));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(42));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(42)));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintSuccess() {
+	void decodeEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.equalTo(BigInteger.valueOf(42));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("42")));
 	}
 	
 	@Test
 	void encodeKeyEqualToConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.equalTo(BigInteger.valueOf(42));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(42));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(42)));
 	}
 	
 	@Test
 	void decodeKeyEqualToConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.equalTo(BigInteger.valueOf(42));
 		
-		Result<BigInteger> result = codec.decodeKey("42");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("42"));
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.equalTo(BigInteger.valueOf(42));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(100));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(100)));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintViolation() {
+	void decodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.equalTo(BigInteger.valueOf(42));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("100")));
 	}
 	
 	@Test
 	void encodeKeyEqualToConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.equalTo(BigInteger.valueOf(42));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(100));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(100)));
 	}
 	
 	@Test
 	void decodeKeyEqualToConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.equalTo(BigInteger.valueOf(42));
 		
-		Result<BigInteger> result = codec.decodeKey("100");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("100"));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintSuccess() {
+	void encodeNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notEqualTo(BigInteger.valueOf(42));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(100));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(100)));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintSuccess() {
+	void decodeNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notEqualTo(BigInteger.valueOf(42));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("100")));
 	}
 	
 	@Test
 	void encodeKeyNotEqualToConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notEqualTo(BigInteger.valueOf(42));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(100));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(100)));
 	}
 	
 	@Test
 	void decodeKeyNotEqualToConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notEqualTo(BigInteger.valueOf(42));
 		
-		Result<BigInteger> result = codec.decodeKey("100");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("100"));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notEqualTo(BigInteger.valueOf(42));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(42));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(42)));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintViolation() {
+	void decodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notEqualTo(BigInteger.valueOf(42));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("42")));
 	}
 	
 	@Test
 	void encodeKeyNotEqualToConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notEqualTo(BigInteger.valueOf(42));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(42));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(42)));
 	}
 	
 	@Test
 	void decodeKeyNotEqualToConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notEqualTo(BigInteger.valueOf(42));
 		
-		Result<BigInteger> result = codec.decodeKey("42");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("42"));
 	}
 	
 	@Test
-	void encodeStartInConstraintSuccess() {
+	void encodeInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.in(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(20));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(20)));
 	}
 	
 	@Test
-	void decodeStartInConstraintSuccess() {
+	void decodeInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.in(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("20"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("20")));
 	}
 	
 	@Test
 	void encodeKeyInConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.in(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(20));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(20)));
 	}
 	
 	@Test
 	void decodeKeyInConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.in(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<BigInteger> result = codec.decodeKey("20");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("20"));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.in(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(50));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(50)));
 	}
 	
 	@Test
-	void decodeStartInConstraintViolation() {
+	void decodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.in(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("50"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("50")));
 	}
 	
 	@Test
 	void encodeKeyInConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.in(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(50));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(50)));
 	}
 	
 	@Test
 	void decodeKeyInConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.in(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<BigInteger> result = codec.decodeKey("50");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("50"));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintSuccess() {
+	void encodeNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notIn(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(50));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(50)));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintSuccess() {
+	void decodeNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notIn(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("50"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("50")));
 	}
 	
 	@Test
 	void encodeKeyNotInConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notIn(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(50));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(50)));
 	}
 	
 	@Test
 	void decodeKeyNotInConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notIn(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<BigInteger> result = codec.decodeKey("50");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("50"));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notIn(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(20));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(20)));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintViolation() {
+	void decodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notIn(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("20"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("20")));
 	}
 	
 	@Test
 	void encodeKeyNotInConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notIn(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(20));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(20)));
 	}
 	
 	@Test
 	void decodeKeyNotInConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.notIn(Set.of(BigInteger.valueOf(10), BigInteger.valueOf(20), BigInteger.valueOf(30)));
 		
-		Result<BigInteger> result = codec.decodeKey("20");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("20"));
 	}
 	
 	@Test
-	void encodeStartGreaterThanConstraintSuccess() {
+	void encodeGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThan(BigInteger.valueOf(50));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(100));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(100)));
 	}
 	
 	@Test
-	void decodeStartGreaterThanConstraintSuccess() {
+	void decodeGreaterThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThan(BigInteger.valueOf(50));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("100")));
 	}
 	
 	@Test
 	void encodeKeyGreaterThanConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThan(BigInteger.valueOf(50));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(100));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(100)));
 	}
 	
 	@Test
 	void decodeKeyGreaterThanConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThan(BigInteger.valueOf(50));
 		
-		Result<BigInteger> result = codec.decodeKey("100");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("100"));
 	}
 	
 	@Test
-	void encodeStartGreaterThanConstraintViolation() {
+	void encodeGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThan(BigInteger.valueOf(50));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(50));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(50)));
 	}
 	
 	@Test
-	void decodeStartGreaterThanConstraintViolation() {
+	void decodeGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThan(BigInteger.valueOf(50));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("50"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("50")));
 	}
 	
 	@Test
 	void encodeKeyGreaterThanConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThan(BigInteger.valueOf(50));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(50));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(50)));
 	}
 	
 	@Test
 	void decodeKeyGreaterThanConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThan(BigInteger.valueOf(50));
 		
-		Result<BigInteger> result = codec.decodeKey("50");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("50"));
 	}
 	
 	@Test
-	void encodeStartGreaterThanOrEqualConstraintSuccess() {
+	void encodeGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThanOrEqual(BigInteger.valueOf(50));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(50));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(50)));
 	}
 	
 	@Test
-	void decodeStartGreaterThanOrEqualConstraintSuccess() {
+	void decodeGreaterThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThanOrEqual(BigInteger.valueOf(50));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("50"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("50")));
 	}
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThanOrEqual(BigInteger.valueOf(50));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(50));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(50)));
 	}
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThanOrEqual(BigInteger.valueOf(50));
 		
-		Result<BigInteger> result = codec.decodeKey("50");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("50"));
 	}
 	
 	@Test
-	void encodeStartGreaterThanOrEqualConstraintViolation() {
+	void encodeGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThanOrEqual(BigInteger.valueOf(50));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(49));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(49)));
 	}
 	
 	@Test
-	void decodeStartGreaterThanOrEqualConstraintViolation() {
+	void decodeGreaterThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThanOrEqual(BigInteger.valueOf(50));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("49"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("49")));
 	}
 	
 	@Test
 	void encodeKeyGreaterThanOrEqualConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThanOrEqual(BigInteger.valueOf(50));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(49));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(49)));
 	}
 	
 	@Test
 	void decodeKeyGreaterThanOrEqualConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.greaterThanOrEqual(BigInteger.valueOf(50));
 		
-		Result<BigInteger> result = codec.decodeKey("49");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("49"));
 	}
 	
 	@Test
-	void encodeStartLessThanConstraintSuccess() {
+	void encodeLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThan(BigInteger.valueOf(100));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(50));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(50)));
 	}
 	
 	@Test
-	void decodeStartLessThanConstraintSuccess() {
+	void decodeLessThanConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThan(BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("50"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("50")));
 	}
 	
 	@Test
 	void encodeKeyLessThanConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThan(BigInteger.valueOf(100));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(50));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(50)));
 	}
 	
 	@Test
 	void decodeKeyLessThanConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThan(BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeKey("50");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("50"));
 	}
 	
 	@Test
-	void encodeStartLessThanConstraintViolation() {
+	void encodeLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThan(BigInteger.valueOf(100));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(100));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(100)));
 	}
 	
 	@Test
-	void decodeStartLessThanConstraintViolation() {
+	void decodeLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThan(BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("100")));
 	}
 	
 	@Test
 	void encodeKeyLessThanConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThan(BigInteger.valueOf(100));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(100));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(100)));
 	}
 	
 	@Test
 	void decodeKeyLessThanConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThan(BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeKey("100");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("100"));
 	}
 	
 	@Test
-	void encodeStartLessThanOrEqualConstraintSuccess() {
+	void encodeLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThanOrEqual(BigInteger.valueOf(100));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(100));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(100)));
 	}
 	
 	@Test
-	void decodeStartLessThanOrEqualConstraintSuccess() {
+	void decodeLessThanOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThanOrEqual(BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("100")));
 	}
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThanOrEqual(BigInteger.valueOf(100));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(100));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(100)));
 	}
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThanOrEqual(BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeKey("100");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("100"));
 	}
 	
 	@Test
-	void encodeStartLessThanOrEqualConstraintViolation() {
+	void encodeLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThanOrEqual(BigInteger.valueOf(100));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(101));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(101)));
 	}
 	
 	@Test
-	void decodeStartLessThanOrEqualConstraintViolation() {
+	void decodeLessThanOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThanOrEqual(BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("101"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("101")));
 	}
 	
 	@Test
 	void encodeKeyLessThanOrEqualConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThanOrEqual(BigInteger.valueOf(100));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(101));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(101)));
 	}
 	
 	@Test
 	void decodeKeyLessThanOrEqualConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.lessThanOrEqual(BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeKey("101");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("101"));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintSuccess() {
+	void encodeBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.between(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(50));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(50)));
 	}
 	
 	@Test
-	void decodeStartBetweenConstraintSuccess() {
+	void decodeBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.between(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("50"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("50")));
 	}
 	
 	@Test
 	void encodeKeyBetweenConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.between(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(50));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(50)));
 	}
 	
 	@Test
 	void decodeKeyBetweenConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.between(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeKey("50");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("50"));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintViolation() {
+	void encodeBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.between(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(10));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(10)));
 	}
 	
 	@Test
-	void decodeStartBetweenConstraintViolation() {
+	void decodeBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.between(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("100")));
 	}
 	
 	@Test
 	void encodeKeyBetweenConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.between(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(10));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(10)));
 	}
 	
 	@Test
 	void decodeKeyBetweenConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.between(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeKey("100");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("100"));
 	}
 	
 	@Test
-	void encodeStartBetweenOrEqualConstraintSuccess() {
+	void encodeBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.betweenOrEqual(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(10));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(10)));
 	}
 	
 	@Test
-	void decodeStartBetweenOrEqualConstraintSuccess() {
+	void decodeBetweenOrEqualConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.betweenOrEqual(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("100")));
 	}
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.betweenOrEqual(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(10));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(10)));
 	}
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.betweenOrEqual(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeKey("100");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("100"));
 	}
 	
 	@Test
-	void encodeStartBetweenOrEqualConstraintViolation() {
+	void encodeBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.betweenOrEqual(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(9));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(9)));
 	}
 	
 	@Test
-	void decodeStartBetweenOrEqualConstraintViolation() {
+	void decodeBetweenOrEqualConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.betweenOrEqual(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("101"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("101")));
 	}
 	
 	@Test
 	void encodeKeyBetweenOrEqualConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.betweenOrEqual(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(9));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(9)));
 	}
 	
 	@Test
 	void decodeKeyBetweenOrEqualConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.betweenOrEqual(BigInteger.valueOf(10), BigInteger.valueOf(100));
 		
-		Result<BigInteger> result = codec.decodeKey("101");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("101"));
 	}
 	
 	@Test
-	void encodeStartPositiveConstraintSuccess() {
+	void encodePositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(1));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(1)));
 	}
 	
 	@Test
-	void decodeStartPositiveConstraintSuccess() {
+	void decodePositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("1"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("1")));
 	}
 	
 	@Test
 	void encodeKeyPositiveConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(1));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(1)));
 	}
 	
 	@Test
 	void decodeKeyPositiveConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<BigInteger> result = codec.decodeKey("1");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("1"));
 	}
 	
 	@Test
-	void encodeStartPositiveConstraintViolation() {
+	void encodePositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.ZERO);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.ZERO));
 	}
 	
 	@Test
-	void decodeStartPositiveConstraintViolation() {
+	void decodePositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("0")));
 	}
 	
 	@Test
 	void encodeKeyPositiveConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<String> result = codec.encodeKey(BigInteger.ZERO);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.ZERO));
 	}
 	
 	@Test
 	void decodeKeyPositiveConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.positive();
 		
-		Result<BigInteger> result = codec.decodeKey("0");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("0"));
 	}
 	
 	@Test
-	void encodeStartNonPositiveConstraintSuccess() {
+	void encodeNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonPositive();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.ZERO);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.ZERO));
 	}
 	
 	@Test
-	void decodeStartNonPositiveConstraintSuccess() {
+	void decodeNonPositiveConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonPositive();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-5"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("-5")));
 	}
 	
 	@Test
 	void encodeKeyNonPositiveConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonPositive();
 		
-		Result<String> result = codec.encodeKey(BigInteger.ZERO);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.ZERO));
 	}
 	
 	@Test
 	void decodeKeyNonPositiveConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonPositive();
 		
-		Result<BigInteger> result = codec.decodeKey("-5");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("-5"));
 	}
 	
 	@Test
-	void encodeStartNonPositiveConstraintViolation() {
+	void encodeNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonPositive();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.ONE);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.ONE));
 	}
 	
 	@Test
-	void decodeStartNonPositiveConstraintViolation() {
+	void decodeNonPositiveConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonPositive();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("1")));
 	}
 	
 	@Test
 	void encodeKeyNonPositiveConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonPositive();
 		
-		Result<String> result = codec.encodeKey(BigInteger.ONE);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.ONE));
 	}
 	
 	@Test
 	void decodeKeyNonPositiveConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonPositive();
 		
-		Result<BigInteger> result = codec.decodeKey("1");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("1"));
 	}
 	
 	@Test
-	void encodeStartNegativeConstraintSuccess() {
+	void encodeNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.negative();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(-1));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(-1)));
 	}
 	
 	@Test
-	void decodeStartNegativeConstraintSuccess() {
+	void decodeNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.negative();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-1"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("-1")));
 	}
 	
 	@Test
 	void encodeKeyNegativeConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.negative();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(-1));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(-1)));
 	}
 	
 	@Test
 	void decodeKeyNegativeConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.negative();
 		
-		Result<BigInteger> result = codec.decodeKey("-1");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("-1"));
 	}
 	
 	@Test
-	void encodeStartNegativeConstraintViolation() {
+	void encodeNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.negative();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.ZERO);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.ZERO));
 	}
 	
 	@Test
-	void decodeStartNegativeConstraintViolation() {
+	void decodeNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.negative();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("0")));
 	}
 	
 	@Test
 	void encodeKeyNegativeConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.negative();
 		
-		Result<String> result = codec.encodeKey(BigInteger.ZERO);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.ZERO));
 	}
 	
 	@Test
 	void decodeKeyNegativeConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.negative();
 		
-		Result<BigInteger> result = codec.decodeKey("0");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("0"));
 	}
 	
 	@Test
-	void encodeStartNonNegativeConstraintSuccess() {
+	void encodeNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonNegative();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.ZERO);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.ZERO));
 	}
 	
 	@Test
-	void decodeStartNonNegativeConstraintSuccess() {
+	void decodeNonNegativeConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonNegative();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("5"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("5")));
 	}
 	
 	@Test
 	void encodeKeyNonNegativeConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonNegative();
 		
-		Result<String> result = codec.encodeKey(BigInteger.ZERO);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.ZERO));
 	}
 	
 	@Test
 	void decodeKeyNonNegativeConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonNegative();
 		
-		Result<BigInteger> result = codec.decodeKey("5");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("5"));
 	}
 	
 	@Test
-	void encodeStartNonNegativeConstraintViolation() {
+	void encodeNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonNegative();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(-1));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(-1)));
 	}
 	
 	@Test
-	void decodeStartNonNegativeConstraintViolation() {
+	void decodeNonNegativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonNegative();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("-1")));
 	}
 	
 	@Test
 	void encodeKeyNonNegativeConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonNegative();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(-1));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(-1)));
 	}
 	
 	@Test
 	void decodeKeyNonNegativeConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonNegative();
 		
-		Result<BigInteger> result = codec.decodeKey("-1");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("-1"));
 	}
 	
 	@Test
-	void encodeStartZeroConstraintSuccess() {
+	void encodeZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.zero();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.ZERO);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.ZERO));
 	}
 	
 	@Test
-	void decodeStartZeroConstraintSuccess() {
+	void decodeZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.zero();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("0")));
 	}
 	
 	@Test
 	void encodeKeyZeroConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.zero();
 		
-		Result<String> result = codec.encodeKey(BigInteger.ZERO);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.ZERO));
 	}
 	
 	@Test
 	void decodeKeyZeroConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.zero();
 		
-		Result<BigInteger> result = codec.decodeKey("0");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("0"));
 	}
 	
 	@Test
-	void encodeStartZeroConstraintViolation() {
+	void encodeZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.zero();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.ONE);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.ONE));
 	}
 	
 	@Test
-	void decodeStartZeroConstraintViolation() {
+	void decodeZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.zero();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("1")));
 	}
 	
 	@Test
 	void encodeKeyZeroConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.zero();
 		
-		Result<String> result = codec.encodeKey(BigInteger.ONE);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.ONE));
 	}
 	
 	@Test
 	void decodeKeyZeroConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.zero();
 		
-		Result<BigInteger> result = codec.decodeKey("1");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("1"));
 	}
 	
 	@Test
-	void encodeStartNonZeroConstraintSuccess() {
+	void encodeNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonZero();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.ONE);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.ONE));
 	}
 	
 	@Test
-	void decodeStartNonZeroConstraintSuccess() {
+	void decodeNonZeroConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonZero();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("1"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("1")));
 	}
 	
 	@Test
 	void encodeKeyNonZeroConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonZero();
 		
-		Result<String> result = codec.encodeKey(BigInteger.ONE);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.ONE));
 	}
 	
 	@Test
 	void decodeKeyNonZeroConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonZero();
 		
-		Result<BigInteger> result = codec.decodeKey("1");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("1"));
 	}
 	
 	@Test
-	void encodeStartNonZeroConstraintViolation() {
+	void encodeNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonZero();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.ZERO);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.ZERO));
 	}
 	
 	@Test
-	void decodeStartNonZeroConstraintViolation() {
+	void decodeNonZeroConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonZero();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("0")));
 	}
 	
 	@Test
 	void encodeKeyNonZeroConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonZero();
 		
-		Result<String> result = codec.encodeKey(BigInteger.ZERO);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.ZERO));
 	}
 	
 	@Test
 	void decodeKeyNonZeroConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.nonZero();
 		
-		Result<BigInteger> result = codec.decodeKey("0");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("0"));
 	}
 	
 	@Test
-	void encodeStartPercentageConstraintSuccess() {
+	void encodePercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.percentage();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(50));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(50)));
 	}
 	
 	@Test
-	void decodeStartPercentageConstraintSuccess() {
+	void decodePercentageConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.percentage();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("0")));
 	}
 	
 	@Test
 	void encodeKeyPercentageConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.percentage();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(100));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(100)));
 	}
 	
 	@Test
 	void decodeKeyPercentageConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.percentage();
 		
-		Result<BigInteger> result = codec.decodeKey("100");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("100"));
 	}
 	
 	@Test
-	void encodeStartPercentageConstraintViolation() {
+	void encodePercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.percentage();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(101));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(101)));
 	}
 	
 	@Test
-	void decodeStartPercentageConstraintViolation() {
+	void decodePercentageConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.percentage();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("-1")));
 	}
 	
 	@Test
 	void encodeKeyPercentageConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.percentage();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(101));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(101)));
 	}
 	
 	@Test
 	void decodeKeyPercentageConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.percentage();
 		
-		Result<BigInteger> result = codec.decodeKey("-1");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("-1"));
 	}
 	
 	@Test
-	void encodeStartEvenConstraintSuccess() {
+	void encodeEvenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.even();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(42));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(42)));
 	}
 	
 	@Test
-	void decodeStartEvenConstraintSuccess() {
+	void decodeEvenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.even();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("42")));
 	}
 	
 	@Test
 	void encodeKeyEvenConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.even();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(42));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(42)));
 	}
 	
 	@Test
 	void decodeKeyEvenConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.even();
 		
-		Result<BigInteger> result = codec.decodeKey("42");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("42"));
 	}
 	
 	@Test
-	void encodeStartEvenConstraintViolation() {
+	void encodeEvenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.even();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(43));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(43)));
 	}
 	
 	@Test
-	void decodeStartEvenConstraintViolation() {
+	void decodeEvenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.even();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("43"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("43")));
 	}
 	
 	@Test
 	void encodeKeyEvenConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.even();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(43));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(43)));
 	}
 	
 	@Test
 	void decodeKeyEvenConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.even();
 		
-		Result<BigInteger> result = codec.decodeKey("43");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("43"));
 	}
 	
 	@Test
-	void encodeStartOddConstraintSuccess() {
+	void encodeOddConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.odd();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(43));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(43)));
 	}
 	
 	@Test
-	void decodeStartOddConstraintSuccess() {
+	void decodeOddConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.odd();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("43"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("43")));
 	}
 	
 	@Test
 	void encodeKeyOddConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.odd();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(43));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(43)));
 	}
 	
 	@Test
 	void decodeKeyOddConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.odd();
 		
-		Result<BigInteger> result = codec.decodeKey("43");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("43"));
 	}
 	
 	@Test
-	void encodeStartOddConstraintViolation() {
+	void encodeOddConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.odd();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(42));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(42)));
 	}
 	
 	@Test
-	void decodeStartOddConstraintViolation() {
+	void decodeOddConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.odd();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("42"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("42")));
 	}
 	
 	@Test
 	void encodeKeyOddConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.odd();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(42));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(42)));
 	}
 	
 	@Test
 	void decodeKeyOddConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.odd();
 		
-		Result<BigInteger> result = codec.decodeKey("42");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("42"));
 	}
 	
 	@Test
-	void encodeStartDivisibleByConstraintSuccess() {
+	void encodeDivisibleByConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.divisibleBy(5);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(100));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(100)));
 	}
 	
 	@Test
-	void decodeStartDivisibleByConstraintSuccess() {
+	void decodeDivisibleByConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.divisibleBy(5);
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("100"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("100")));
 	}
 	
 	@Test
 	void encodeKeyDivisibleByConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.divisibleBy(5);
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(100));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(100)));
 	}
 	
 	@Test
 	void decodeKeyDivisibleByConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.divisibleBy(5);
 		
-		Result<BigInteger> result = codec.decodeKey("100");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("100"));
 	}
 	
 	@Test
-	void encodeStartDivisibleByConstraintViolation() {
+	void encodeDivisibleByConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.divisibleBy(5);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(101));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(101)));
 	}
 	
 	@Test
-	void decodeStartDivisibleByConstraintViolation() {
+	void decodeDivisibleByConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.divisibleBy(5);
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("101"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("101")));
 	}
 	
 	@Test
 	void encodeKeyDivisibleByConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.divisibleBy(5);
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(101));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(101)));
 	}
 	
 	@Test
 	void decodeKeyDivisibleByConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.divisibleBy(5);
 		
-		Result<BigInteger> result = codec.decodeKey("101");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("101"));
 	}
 	
 	@Test
-	void encodeStartPowerOfConstraintSuccess() {
+	void encodePowerOfConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOf(3);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(27));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(27)));
 	}
 	
 	@Test
-	void decodeStartPowerOfConstraintSuccess() {
+	void decodePowerOfConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOf(3);
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("27"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("27")));
 	}
 	
 	@Test
 	void encodeKeyPowerOfConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOf(3);
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(27));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(27)));
 	}
 	
 	@Test
 	void decodeKeyPowerOfConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOf(3);
 		
-		Result<BigInteger> result = codec.decodeKey("27");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("27"));
 	}
 	
 	@Test
-	void encodeStartPowerOfConstraintViolation() {
+	void encodePowerOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOf(3);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(28));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(28)));
 	}
 	
 	@Test
-	void decodeStartPowerOfConstraintViolation() {
+	void decodePowerOfConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOf(3);
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("28"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("28")));
 	}
 	
 	@Test
 	void encodeKeyPowerOfConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOf(3);
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(28));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(28)));
 	}
 	
 	@Test
 	void decodeKeyPowerOfConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOf(3);
 		
-		Result<BigInteger> result = codec.decodeKey("28");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("28"));
 	}
 	
 	@Test
-	void encodeStartPowerOfTwoConstraintSuccess() {
+	void encodePowerOfTwoConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOfTwo();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(64));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(64)));
 	}
 	
 	@Test
-	void decodeStartPowerOfTwoConstraintSuccess() {
+	void decodePowerOfTwoConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOfTwo();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("64"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("64")));
 	}
 	
 	@Test
 	void encodeKeyPowerOfTwoConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOfTwo();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(64));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(64)));
 	}
 	
 	@Test
 	void decodeKeyPowerOfTwoConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOfTwo();
 		
-		Result<BigInteger> result = codec.decodeKey("64");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("64"));
 	}
 	
 	@Test
-	void encodeStartPowerOfTwoConstraintViolation() {
+	void encodePowerOfTwoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOfTwo();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(65));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(65)));
 	}
 	
 	@Test
-	void decodeStartPowerOfTwoConstraintViolation() {
+	void decodePowerOfTwoConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOfTwo();
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("65"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("65")));
 	}
 	
 	@Test
 	void encodeKeyPowerOfTwoConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOfTwo();
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(65));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(65)));
 	}
 	
 	@Test
 	void decodeKeyPowerOfTwoConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.powerOfTwo();
 		
-		Result<BigInteger> result = codec.decodeKey("65");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("65"));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintSuccess() {
+	void encodeCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.custom(value -> {
-			if (value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
-				return Result.success();
+			if (!value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
+				throw new ConstraintViolateException("Value must be divisible by 7");
 			}
-			return Result.error("Value must be divisible by 7");
 		});
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(49));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(49)));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintSuccess() {
+	void decodeCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.custom(value -> {
-			if (value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
-				return Result.success();
+			if (!value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
+				throw new ConstraintViolateException("Value must be divisible by 7");
 			}
-			return Result.error("Value must be divisible by 7");
 		});
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("49"));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("49")));
 	}
 	
 	@Test
 	void encodeKeyCustomConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.custom(value -> {
-			if (value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
-				return Result.success();
+			if (!value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
+				throw new ConstraintViolateException("Value must be divisible by 7");
 			}
-			return Result.error("Value must be divisible by 7");
 		});
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(49));
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encodeKey(BigInteger.valueOf(49)));
 	}
 	
 	@Test
 	void decodeKeyCustomConstraintSuccess() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.custom(value -> {
-			if (value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
-				return Result.success();
+			if (!value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
+				throw new ConstraintViolateException("Value must be divisible by 7");
 			}
-			return Result.error("Value must be divisible by 7");
 		});
 		
-		Result<BigInteger> result = codec.decodeKey("49");
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decodeKey("49"));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.custom(value -> {
-			if (value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
-				return Result.success();
+			if (!value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
+				throw new ConstraintViolateException("Value must be divisible by 7");
 			}
-			return Result.error("Value must be divisible by 7");
 		});
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), BigInteger.valueOf(50));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), BigInteger.valueOf(50)));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintViolation() {
+	void decodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.custom(value -> {
-			if (value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
-				return Result.success();
+			if (!value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
+				throw new ConstraintViolateException("Value must be divisible by 7");
 			}
-			return Result.error("Value must be divisible by 7");
 		});
 		
-		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("50"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("50")));
 	}
 	
 	@Test
 	void encodeKeyCustomConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.custom(value -> {
-			if (value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
-				return Result.success();
+			if (!value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
+				throw new ConstraintViolateException("Value must be divisible by 7");
 			}
-			return Result.error("Value must be divisible by 7");
 		});
 		
-		Result<String> result = codec.encodeKey(BigInteger.valueOf(50));
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(BigInteger.valueOf(50)));
 	}
 	
 	@Test
 	void decodeKeyCustomConstraintViolation() {
 		Codec<BigInteger> codec = Codecs.BIG_INTEGER.custom(value -> {
-			if (value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
-				return Result.success();
+			if (!value.mod(BigInteger.valueOf(7)).equals(BigInteger.ZERO)) {
+				throw new ConstraintViolateException("Value must be divisible by 7");
 			}
-			return Result.error("Value must be divisible by 7");
 		});
 		
-		Result<BigInteger> result = codec.decodeKey("50");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("50"));
 	}
 	
 }

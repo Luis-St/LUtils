@@ -19,14 +19,12 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -160,6 +158,11 @@ public record IpConstraintConfig(
 		if (inAnySubnet.isPresent() && inAnySubnet.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In any subnet set must not be empty when present");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -550,26 +553,26 @@ public record IpConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull String value) {
+	public void validate(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.length, String::length, "Length"),
-			() -> ConstraintMatchers.matchStartsWith(value, this.startsWith),
-			() -> ConstraintMatchers.matchStartsWithAny(value, this.startsWithAny),
-			() -> ConstraintMatchers.matchContains(value, this.contains),
-			() -> ConstraintMatchers.matchContainsAny(value, this.containsAny),
-			() -> ConstraintMatchers.matchContainsAll(value, this.containsAll),
-			() -> ConstraintMatchers.matchContainsOnly(value, this.containsOnly),
-			() -> ConstraintMatchers.matchEndsWith(value, this.endsWith),
-			() -> ConstraintMatchers.matchEndsWithAny(value, this.endsWithAny),
-			() -> ConstraintMatchers.matchPattern(value, this.matches),
-			() -> IOMatchers.matchIpVersion(value, this.ipVersion),
-			() -> IOMatchers.matchIpType(value, this.ipType),
-			() -> IOMatchers.matchInAnySubnet(value, this.inAnySubnet),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateExtractedValue(value, this.length, String::length, "Length"),
+			() -> ConstraintValidators.validateStartsWith(value, this.startsWith),
+			() -> ConstraintValidators.validateStartsWithAny(value, this.startsWithAny),
+			() -> ConstraintValidators.validateContains(value, this.contains),
+			() -> ConstraintValidators.validateContainsAny(value, this.containsAny),
+			() -> ConstraintValidators.validateContainsAll(value, this.containsAll),
+			() -> ConstraintValidators.validateContainsOnly(value, this.containsOnly),
+			() -> ConstraintValidators.validateEndsWith(value, this.endsWith),
+			() -> ConstraintValidators.validateEndsWithAny(value, this.endsWithAny),
+			() -> ConstraintValidators.validatePattern(value, this.matches),
+			() -> IOValidators.validateIpVersion(value, this.ipVersion),
+			() -> IOValidators.validateIpType(value, this.ipType),
+			() -> IOValidators.validateInAnySubnet(value, this.inAnySubnet),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

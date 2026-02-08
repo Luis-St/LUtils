@@ -18,11 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.io.codec.constraint.util.PortRange;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -118,7 +117,7 @@ class EnumConstraintBuilderTest {
 	@Test
 	void customReturnsBuilder() {
 		EnumConstraintBuilder<TimeUnit> builder = new EnumConstraintBuilder<>();
-		Constraint<TimeUnit> constraint = value -> Result.success(null);
+		Constraint<TimeUnit> constraint = value -> {};
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
 	}

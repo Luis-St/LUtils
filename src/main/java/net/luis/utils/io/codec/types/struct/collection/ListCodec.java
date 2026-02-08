@@ -18,33 +18,38 @@
 
 package net.luis.utils.io.codec.types.struct.collection;
 
-import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.*;
 import net.luis.utils.io.codec.constraint.config.collection.ListConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.collection.ListConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
+import net.luis.utils.util.Either;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 /**
  * A codec for encoding and decoding lists of elements.<br>
  * This codec uses another codec to encode and decode the elements of the list.<br>
  *
- * @author Luis-St
- *
  * @param <C> The type of elements in the list
+ *
+ * @author Luis-St
  */
-public class ListCodec<C> extends AbstractCodec<List<C>, ListConstraintConfig<C>> implements ListConstraint<C, ListCodec<C>> {
+public class ListCodec<C>
+	extends AbstractConstrainableCodec<List<C>, ListConstraintConfig<C>, ListCodec<C>>
+	implements PartialCodec<ListCodec<C>>, ListConstraint<C, ListCodec<C>> {
 	
 	/**
 	 * The codec used to encode and decode the elements of the list.<br>
 	 */
 	private final Codec<C> codec;
+	/**
+	 * Whether this codec is partial.<br>
+	 */
+	private final boolean partial;
 	
 	/**
 	 * Constructs a new list codec using the given codec for the elements.<br>
@@ -53,28 +58,47 @@ public class ListCodec<C> extends AbstractCodec<List<C>, ListConstraintConfig<C>
 	 * @throws NullPointerException If the codec is null
 	 */
 	public ListCodec(@NonNull Codec<C> codec) {
-		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
+		this(codec, false, ListConstraintConfig.unconstrained());
 	}
 	
 	/**
 	 * Constructs a new list codec using the given codec for the elements and the given constraint configuration.<br>
 	 *
 	 * @param codec The codec for the elements
-	 * @param constraintConfig The constraint configuration
-	 * @throws NullPointerException If the codec is null
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the codec or the config is null
 	 */
-	private ListCodec(@NonNull Codec<C> codec, @NonNull ListConstraintConfig<C> constraintConfig) {
-		super(constraintConfig);
+	private ListCodec(@NonNull Codec<C> codec, @NonNull ListConstraintConfig<C> config) {
+		this(codec, false, config);
+	}
+	
+	/**
+	 * Constructs a new list codec using the given codec for the elements, the given partial flag and the given constraint configuration.<br>
+	 *
+	 * @param codec The codec for the elements
+	 * @param partial Whether this codec is partial
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the codec or the config is null
+	 */
+	private ListCodec(@NonNull Codec<C> codec, boolean partial, @NonNull ListConstraintConfig<C> config) {
+		super(newConfig -> new ListCodec<>(codec, newConfig), config);
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
+		this.partial = partial;
 	}
 	
 	@Override
-	public @NonNull ListCodec<C> apply(@NonNull UnaryOperator<ListConstraintConfig<C>> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new ListCodec<>(this.codec,
-			configModifier.apply(this.getConstraintConfig().orElse(ListConstraintConfig.unconstrained()))
-		);
+	public @NonNull ListCodec<C> partial() {
+		return new ListCodec<>(this.codec, true, this.config);
+	}
+	
+	@Override
+	public @NonNull ListCodec<C> strict() {
+		return new ListCodec<>(this.codec, false, this.config);
+	}
+	
+	@Override
+	public boolean isPartial() {
+		return this.partial;
 	}
 	
 	@Override
@@ -85,103 +109,52 @@ public class ListCodec<C> extends AbstractCodec<List<C>, ListConstraintConfig<C>
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable List<C> value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable List<C> value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null value as list using '" + this + "'");
+			throw new EncoderException("Unable to encode null value as list", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		
-		List<R> elements = new ArrayList<>();
-		List<String> errors = new ArrayList<>();
-		for (int i = 0; i < value.size(); i++) {
-			Result<R> result = this.codec.encodeStart(provider, provider.empty(), value.get(i));
-			
-			if (result.hasValue()) {
-				R encodedValue = result.resultOrThrow();
-				if (provider.getEmpty(encodedValue).isError()) {
-					elements.add(encodedValue);
+		List<Either<R, EncoderException>> partialElements = new ArrayList<>(value.size());
+		for (C element : this.validateEncodeConstraints(value)) {
+			try {
+				R encodedElement = this.codec.encode(provider, current, element);
+				
+				if (!provider.isEmpty(encodedElement, EncoderException::new)) {
+					partialElements.add(Either.left(encodedElement));
 				}
+			} catch (EncoderException e) {
+				partialElements.add(Either.right(e));
 			}
-			if (result.hasError()) {
-				errors.add("Index " + i + ": " + result.errorOrThrow());
-			}
 		}
-		
-		Result<R> merged = provider.merge(current, provider.createList(elements));
-		if (merged.isError()) {
-			return Result.error(merged.errorOrThrow());
-		}
-		if (errors.isEmpty()) {
-			return merged;
-		}
-		return Result.partial(merged.resultOrThrow(), "Encoded " + elements.size() + " of " + value.size() + " elements successfully:", errors);
+		return provider.merge(current, provider.createList(this.encode(partialElements), EncoderException::new), EncoderException::new);
 	}
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <R> @NonNull Result<List<C>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull List<C> decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as list using'" + this + "'");
+			throw new DecoderException("Unable to decode null value as list", this);
 		}
 		
-		Result<List<R>> decoded = provider.getList(value);
-		if (decoded.isError()) {
-			return Result.error("Unable to decode list using '" + this + "': " + decoded.errorOrThrow());
-		}
-		List<Result<C>> results = decoded.resultOrThrow().stream().map(element -> this.codec.decodeStart(provider, value, element)).toList();
-		
-		List<C> elements = new ArrayList<>();
-		List<String> errors = new ArrayList<>();
-		for (int i = 0; i < results.size(); i++) {
-			Result<C> result = results.get(i);
-			if (result.hasValue()) {
-				elements.add(result.resultOrThrow());
-			}
-			if (result.hasError()) {
-				errors.add("Index " + i + ": " + result.errorOrThrow());
+		List<Either<C, DecoderException>> partialElements = new ArrayList<>();
+		for (R element : provider.getList(value, DecoderException::new)) {
+			try {
+				C decodedElement = this.codec.decode(provider, current, element);
+				partialElements.add(Either.left(decodedElement));
+			} catch (DecoderException e) {
+				partialElements.add(Either.right(e));
 			}
 		}
-		
-		if (elements.isEmpty() && !errors.isEmpty()) {
-			return Result.error("Unable to decode any elements of the list using '" + this + "': " + errors.stream().collect(Collectors.joining("\n - ", "", "\n")));
-		}
-		Result<Void> constraintResult = this.checkConstraints(elements);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		
-		if (errors.isEmpty()) {
-			return Result.success(elements);
-		}
-		return Result.partial(elements, "Decoded " + elements.size() + " of " + results.size() + " elements successfully:", errors);
-	}
-	
-	//region Object overrides
-	@Override
-	public boolean equals(Object o) {
-		if (!(o instanceof ListCodec<?> listCodec)) return false;
-		
-		return this.codec.equals(listCodec.codec);
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(this.codec);
+		return this.validateDecodeConstraints(this.decode(partialElements));
 	}
 	
 	@Override
 	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedListCodec[" + this.codec + ",constraints=" + config + "]";
-		}).orElse("ListCodec[" + this.codec + "]");
+		String base = "ListCodec[" + this.codec + "]";
+		return this.config.isUnconstrained() ? base : "Constrained" + base + "[constraints=" + this.config + "]";
 	}
-	//endregion
 }

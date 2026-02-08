@@ -20,9 +20,10 @@ package net.luis.utils.io.codec.types.struct.collection;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -44,112 +45,102 @@ class ListCodecTest {
 	}
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		List<Integer> list = List.of(1, 2, 3);
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), list));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, list));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), list));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, list));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null value as list"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null value as list"));
 	}
 	
 	@Test
-	void encodeStartWithValidList() {
+	void encodeWithValidList() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		List<Integer> list = List.of(1, 2, 3);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), list);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), list);
 		
 		JsonArray expected = new JsonArray();
 		expected.add(new JsonPrimitive(1));
 		expected.add(new JsonPrimitive(2));
 		expected.add(new JsonPrimitive(3));
 		
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void encodeStartWithEmptyList() {
+	void encodeWithEmptyList() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		List<Integer> list = List.of();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), list);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonArray(), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), list);
+		assertEquals(new JsonArray(), result);
 	}
 	
 	@Test
-	void encodeStartWithSingleElement() {
+	void encodeWithSingleElement() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<String>> codec = new ListCodec<>(STRING);
 		List<String> list = List.of("hello");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), list);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), list);
 		
 		JsonArray expected = new JsonArray();
 		expected.add(new JsonPrimitive("hello"));
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void encodeStartWithDifferentTypes() {
+	void encodeWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<List<String>> stringCodec = new ListCodec<>(STRING);
-		Result<JsonElement> stringResult = stringCodec.encodeStart(typeProvider, typeProvider.empty(), List.of("a", "b"));
-		assertTrue(stringResult.isSuccess());
+		assertDoesNotThrow(() -> stringCodec.encode(typeProvider, typeProvider.empty(), List.of("a", "b")));
 		
 		Codec<List<Boolean>> boolCodec = new ListCodec<>(BOOLEAN);
-		Result<JsonElement> boolResult = boolCodec.encodeStart(typeProvider, typeProvider.empty(), List.of(true, false));
-		assertTrue(boolResult.isSuccess());
+		assertDoesNotThrow(() -> boolCodec.encode(typeProvider, typeProvider.empty(), List.of(true, false)));
 	}
 	
 	@Test
-	void encodeStartWithInvalidElements() {
+	void encodeWithInvalidElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		List<Integer> listWithNull = Lists.newArrayList(1, null, 3);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), listWithNull);
-		assertTrue(result.isPartial());
-		assertTrue(result.hasError());
-		assertTrue(result.hasValue());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), listWithNull));
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonArray()));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonArray()));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as list"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as list"));
 	}
 	
 	@Test
-	void decodeStartWithValidArray() {
+	void decodeWithValidArray() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
@@ -158,46 +149,42 @@ class ListCodecTest {
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertEquals(List.of(1, 2, 3), result.resultOrThrow());
+		List<Integer> result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertEquals(List.of(1, 2, 3), result);
 	}
 	
 	@Test
-	void decodeStartWithEmptyArray() {
+	void decodeWithEmptyArray() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonArray());
-		assertTrue(result.isSuccess());
-		assertTrue(result.resultOrThrow().isEmpty());
+		List<Integer> result = codec.decode(typeProvider, typeProvider.empty(), new JsonArray());
+		assertTrue(result.isEmpty());
 	}
 	
 	@Test
-	void decodeStartWithSingleElement() {
+	void decodeWithSingleElement() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<String>> codec = new ListCodec<>(STRING);
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive("hello"));
 		
-		Result<List<String>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertEquals(List.of("hello"), result.resultOrThrow());
+		List<String> result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertEquals(List.of("hello"), result);
 	}
 	
 	@Test
-	void decodeStartWithNonArray() {
+	void decodeWithNonArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode list"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
+		assertTrue(exception.getMessage().contains("Json element '42' is not a json array"));
 	}
 	
 	@Test
-	void decodeStartWithDifferentTypes() {
+	void decodeWithDifferentTypes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		JsonArray stringArray = new JsonArray();
@@ -205,22 +192,20 @@ class ListCodecTest {
 		stringArray.add(new JsonPrimitive("b"));
 		
 		Codec<List<String>> stringCodec = new ListCodec<>(STRING);
-		Result<List<String>> stringResult = stringCodec.decodeStart(typeProvider, typeProvider.empty(), stringArray);
-		assertTrue(stringResult.isSuccess());
-		assertEquals(List.of("a", "b"), stringResult.resultOrThrow());
+		List<String> stringResult = stringCodec.decode(typeProvider, typeProvider.empty(), stringArray);
+		assertEquals(List.of("a", "b"), stringResult);
 		
 		JsonArray boolArray = new JsonArray();
 		boolArray.add(new JsonPrimitive(true));
 		boolArray.add(new JsonPrimitive(false));
 		
 		Codec<List<Boolean>> boolCodec = new ListCodec<>(BOOLEAN);
-		Result<List<Boolean>> boolResult = boolCodec.decodeStart(typeProvider, typeProvider.empty(), boolArray);
-		assertTrue(boolResult.isSuccess());
-		assertEquals(List.of(true, false), boolResult.resultOrThrow());
+		List<Boolean> boolResult = boolCodec.decode(typeProvider, typeProvider.empty(), boolArray);
+		assertEquals(List.of(true, false), boolResult);
 	}
 	
 	@Test
-	void decodeStartWithInvalidElements() {
+	void decodeWithInvalidElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
@@ -229,14 +214,11 @@ class ListCodecTest {
 		array.add(new JsonPrimitive("not-a-number"));
 		array.add(new JsonPrimitive(3));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isPartial());
-		assertTrue(result.hasError());
-		assertTrue(result.hasValue());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartWithMixedValidInvalid() {
+	void decodeWithMixedValidInvalid() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
@@ -245,18 +227,7 @@ class ListCodecTest {
 		array.add(JsonNull.INSTANCE);
 		array.add(new JsonPrimitive(100));
 		
-		Result<List<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isPartial());
-		assertTrue(result.hasError());
-		assertTrue(result.hasValue());
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		ListCodec<Integer> codec1 = new ListCodec<>(INTEGER);
-		ListCodec<Integer> codec2 = new ListCodec<>(INTEGER);
-		
-		assertEquals(codec1.hashCode(), codec2.hashCode());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test

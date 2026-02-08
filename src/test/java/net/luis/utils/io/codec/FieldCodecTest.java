@@ -18,9 +18,10 @@
 
 package net.luis.utils.io.codec;
 
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -37,53 +38,48 @@ import static org.junit.jupiter.api.Assertions.*;
 class FieldCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", TestObject::name);
 		TestObject obj = new TestObject("test");
 		
-		assertThrows(NullPointerException.class, () -> fieldCodec.encodeStart(null, typeProvider.empty(), obj));
-		assertThrows(NullPointerException.class, () -> fieldCodec.encodeStart(typeProvider, null, obj));
+		assertThrows(NullPointerException.class, () -> fieldCodec.encode(null, typeProvider.empty(), obj));
+		assertThrows(NullPointerException.class, () -> fieldCodec.encode(typeProvider, null, obj));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", TestObject::name);
 		
-		Result<JsonElement> result = fieldCodec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode component because the component can not be retrieved from a null object"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> fieldCodec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode component because the component can not be retrieved from a null object"));
 	}
 	
 	@Test
-	void encodeStartWithValidObject() {
+	void encodeWithValidObject() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", TestObject::name);
 		TestObject obj = new TestObject("John");
 		
 		JsonObject current = new JsonObject();
-		Result<JsonElement> result = fieldCodec.encodeStart(typeProvider, current, obj);
-		assertTrue(result.isSuccess());
+		JsonElement result = fieldCodec.encode(typeProvider, current, obj);
 		
 		JsonObject expected = new JsonObject();
 		expected.add("name", new JsonPrimitive("John"));
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void encodeStartWithMultipleFields() {
+	void encodeWithMultipleFields() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObjectWithAge> nameCodec = STRING.fieldOf("name", TestObjectWithAge::name);
 		FieldCodec<Integer, TestObjectWithAge> ageCodec = INTEGER.fieldOf("age", TestObjectWithAge::age);
 		TestObjectWithAge obj = new TestObjectWithAge("John", 25);
 		
 		JsonObject current = new JsonObject();
-		Result<JsonElement> nameResult = nameCodec.encodeStart(typeProvider, current, obj);
-		assertTrue(nameResult.isSuccess());
-		
-		Result<JsonElement> ageResult = ageCodec.encodeStart(typeProvider, current, obj);
-		assertTrue(ageResult.isSuccess());
+		nameCodec.encode(typeProvider, current, obj);
+		ageCodec.encode(typeProvider, current, obj);
 		
 		JsonObject expected = new JsonObject();
 		expected.add("name", new JsonPrimitive("John"));
@@ -92,116 +88,104 @@ class FieldCodecTest {
 	}
 	
 	@Test
-	void encodeStartWithNullFieldValue() {
+	void encodeWithNullFieldValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObjectNullable> fieldCodec = STRING.fieldOf("name", TestObjectNullable::name);
 		TestObjectNullable obj = new TestObjectNullable(null);
 		
-		Result<JsonElement> result = fieldCodec.encodeStart(typeProvider, typeProvider.empty(), obj);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode named 'name'"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> fieldCodec.encode(typeProvider, typeProvider.empty(), obj));
+		assertTrue(exception.getMessage().contains("Unable to encode named 'name'"));
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", TestObject::name);
 		
 		JsonObject obj = new JsonObject();
 		obj.add("name", new JsonPrimitive("John"));
 		
-		assertThrows(NullPointerException.class, () -> fieldCodec.decodeStart(null, typeProvider.empty(), obj));
-		assertThrows(NullPointerException.class, () -> fieldCodec.decodeStart(typeProvider, null, obj));
+		assertThrows(NullPointerException.class, () -> fieldCodec.decode(null, typeProvider.empty(), obj));
+		assertThrows(NullPointerException.class, () -> fieldCodec.decode(typeProvider, null, obj));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", TestObject::name);
 		
-		Result<String> result = fieldCodec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode named 'name' null value"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> fieldCodec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode named 'name' null value"));
 	}
 	
 	@Test
-	void decodeStartWithValidObject() {
+	void decodeWithValidObject() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", TestObject::name);
 		
 		JsonObject obj = new JsonObject();
 		obj.add("name", new JsonPrimitive("John"));
 		
-		Result<String> result = fieldCodec.decodeStart(typeProvider, typeProvider.empty(), obj);
-		assertTrue(result.isSuccess());
-		assertEquals("John", result.resultOrThrow());
+		String result = fieldCodec.decode(typeProvider, typeProvider.empty(), obj);
+		assertEquals("John", result);
 	}
 	
 	@Test
-	void decodeStartWithMissingField() {
+	void decodeWithMissingField() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", TestObject::name);
 		
 		JsonObject obj = new JsonObject();
 		
-		Result<String> result = fieldCodec.decodeStart(typeProvider, typeProvider.empty(), obj);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Name 'name' not found"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> fieldCodec.decode(typeProvider, typeProvider.empty(), obj));
+		assertTrue(exception.getMessage().contains("Name 'name' not found"));
 	}
 	
 	@Test
-	void decodeStartWithAlias() {
+	void decodeWithAlias() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", "username", TestObject::name);
 		
 		JsonObject obj = new JsonObject();
 		obj.add("username", new JsonPrimitive("John"));
 		
-		Result<String> result = fieldCodec.decodeStart(typeProvider, typeProvider.empty(), obj);
-		assertTrue(result.isSuccess());
-		assertEquals("John", result.resultOrThrow());
+		String result = fieldCodec.decode(typeProvider, typeProvider.empty(), obj);
+		assertEquals("John", result);
 	}
 	
 	@Test
-	void decodeStartWithMultipleAliases() {
+	void decodeWithMultipleAliases() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", Set.of("username", "user", "displayName"), TestObject::name);
 		
 		JsonObject obj1 = new JsonObject();
 		obj1.add("username", new JsonPrimitive("John"));
-		Result<String> result1 = fieldCodec.decodeStart(typeProvider, typeProvider.empty(), obj1);
-		assertTrue(result1.isSuccess());
-		assertEquals("John", result1.resultOrThrow());
+		assertEquals("John", fieldCodec.decode(typeProvider, typeProvider.empty(), obj1));
 		
 		JsonObject obj2 = new JsonObject();
 		obj2.add("user", new JsonPrimitive("Jane"));
-		Result<String> result2 = fieldCodec.decodeStart(typeProvider, typeProvider.empty(), obj2);
-		assertTrue(result2.isSuccess());
-		assertEquals("Jane", result2.resultOrThrow());
+		assertEquals("Jane", fieldCodec.decode(typeProvider, typeProvider.empty(), obj2));
 		
 		JsonObject obj3 = new JsonObject();
 		obj3.add("displayName", new JsonPrimitive("Bob"));
-		Result<String> result3 = fieldCodec.decodeStart(typeProvider, typeProvider.empty(), obj3);
-		assertTrue(result3.isSuccess());
-		assertEquals("Bob", result3.resultOrThrow());
+		assertEquals("Bob", fieldCodec.decode(typeProvider, typeProvider.empty(), obj3));
 	}
 	
 	@Test
-	void decodeStartWithNoMatchingAlias() {
+	void decodeWithNoMatchingAlias() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", Set.of("username", "user"), TestObject::name);
 		
 		JsonObject obj = new JsonObject();
 		obj.add("other", new JsonPrimitive("John"));
 		
-		Result<String> result = fieldCodec.decodeStart(typeProvider, typeProvider.empty(), obj);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Name and aliases 'name'"));
-		assertTrue(result.errorOrThrow().contains("not found"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> fieldCodec.decode(typeProvider, typeProvider.empty(), obj));
+		assertTrue(exception.getMessage().contains("Name and aliases 'name'"));
+		assertTrue(exception.getMessage().contains("not found"));
 	}
 	
 	@Test
-	void decodeStartPrefersPrimaryName() {
+	void decodePrefersPrimaryName() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		FieldCodec<String, TestObject> fieldCodec = STRING.fieldOf("name", "username", TestObject::name);
 		
@@ -209,9 +193,8 @@ class FieldCodecTest {
 		obj.add("name", new JsonPrimitive("John"));
 		obj.add("username", new JsonPrimitive("Jane"));
 		
-		Result<String> result = fieldCodec.decodeStart(typeProvider, typeProvider.empty(), obj);
-		assertTrue(result.isSuccess());
-		assertEquals("John", result.resultOrThrow());
+		String result = fieldCodec.decode(typeProvider, typeProvider.empty(), obj);
+		assertEquals("John", result);
 	}
 	
 	@Test

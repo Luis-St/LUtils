@@ -215,22 +215,13 @@ class CodecComponentTest {
 	}
 	
 	//region Test Classes
-	private static class TestClass {
+	private record TestClass(String name, int age, double height) {
 		
-		private final String name;
-		private final int age;
-		private final double height;
-		
-		private TestClass(String name, int age, double height) {
-			this.name = name;
-			this.age = age;
-			this.height = height;
-		}
 	}
 	
 	private static class TestClassWithPrivateField {
 		
-		private String privateField = "private";
+		private final String privateField = "private";
 	}
 	
 	private static class AnnotatedTestClass {

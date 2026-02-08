@@ -30,11 +30,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class EncoderExceptionTest {
 	
 	@Test
-	void defaultConstructor() {
-		EncoderException exception = new EncoderException();
+	void constructorWithEncoder() {
+		EncoderException exception = new EncoderException((Encoder<?>) null);
 		
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getCodec());
 	}
 	
 	@Test
@@ -44,6 +45,7 @@ class EncoderExceptionTest {
 		
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getCodec());
 	}
 	
 	@Test
@@ -52,6 +54,7 @@ class EncoderExceptionTest {
 		
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getCodec());
 	}
 	
 	@Test
@@ -61,23 +64,17 @@ class EncoderExceptionTest {
 		
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getCodec());
 	}
 	
 	@Test
-	void constructorWithCause() {
-		RuntimeException cause = new RuntimeException("Root cause");
-		EncoderException exception = new EncoderException(cause);
+	void constructorWithMessageAndEncoder() {
+		String message = "Encoding failed";
+		EncoderException exception = new EncoderException(message, (Encoder<?>) null);
 		
-		assertEquals("java.lang.RuntimeException: Root cause", exception.getMessage());
-		assertSame(cause, exception.getCause());
-	}
-	
-	@Test
-	void constructorWithNullCause() {
-		EncoderException exception = new EncoderException((Throwable) null);
-		
-		assertNull(exception.getMessage());
+		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getCodec());
 	}
 	
 	@Test
@@ -88,39 +85,64 @@ class EncoderExceptionTest {
 		
 		assertEquals(message, exception.getMessage());
 		assertSame(cause, exception.getCause());
+		assertNull(exception.getCodec());
 	}
 	
 	@Test
 	void constructorWithNullMessageAndCause() {
 		RuntimeException cause = new RuntimeException("Root cause");
-		EncoderException exception = new EncoderException(null, cause);
+		EncoderException exception = new EncoderException((String) null, cause);
 		
 		assertNull(exception.getMessage());
 		assertSame(cause, exception.getCause());
+		assertNull(exception.getCodec());
 	}
 	
 	@Test
 	void constructorWithMessageAndNullCause() {
 		String message = "Encoding failed";
-		EncoderException exception = new EncoderException(message, null);
+		EncoderException exception = new EncoderException(message, (Throwable) null);
 		
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getCodec());
 	}
 	
 	@Test
 	void constructorWithNullMessageAndNullCause() {
-		EncoderException exception = new EncoderException(null, null);
+		EncoderException exception = new EncoderException((String) null, (Throwable) null);
 		
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getCodec());
 	}
 	
 	@Test
-	void isRuntimeException() {
+	void constructorWithMessageEncoderAndCause() {
+		String message = "Encoding failed";
+		RuntimeException cause = new RuntimeException("Root cause");
+		EncoderException exception = new EncoderException(message, null, cause);
+		
+		assertEquals(message, exception.getMessage());
+		assertNull(exception.getCodec());
+		assertSame(cause, exception.getCause());
+	}
+	
+	@Test
+	void constructorWithEncoderAndCause() {
+		RuntimeException cause = new RuntimeException("Root cause");
+		EncoderException exception = new EncoderException((Encoder<?>) null, cause);
+		
+		assertNull(exception.getCodec());
+		assertSame(cause, exception.getCause());
+	}
+	
+	@Test
+	void isCheckedException() {
 		EncoderException exception = new EncoderException("test");
 		
-		assertInstanceOf(RuntimeException.class, exception);
+		assertInstanceOf(Exception.class, exception);
+		assertFalse(RuntimeException.class.isAssignableFrom(EncoderException.class));
 	}
 	
 	@Test

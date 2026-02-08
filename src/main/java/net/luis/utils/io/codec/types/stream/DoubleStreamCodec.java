@@ -19,8 +19,9 @@
 package net.luis.utils.io.codec.types.stream;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -34,7 +35,7 @@ import java.util.stream.Stream;
  *
  * @author Luis-St
  */
-public class DoubleStreamCodec extends AbstractCodec<DoubleStream, Object> {
+public class DoubleStreamCodec extends AbstractCodec<DoubleStream> {
 	
 	/**
 	 * The internal codec that handles the conversion between a stream of boxed doubles and the unboxed version.<br>
@@ -47,29 +48,25 @@ public class DoubleStreamCodec extends AbstractCodec<DoubleStream, Object> {
 	public DoubleStreamCodec() {}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable DoubleStream value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable DoubleStream value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
-			return Result.error("Unable to encode null as double stream using '" + this + "'");
+			throw new EncoderException("Unable to encode null as double stream", this);
 		}
-		return this.internalCodec.encodeStart(provider, current, value.boxed());
+		
+		return this.internalCodec.encode(provider, current, value.boxed());
 	}
 	
 	@Override
-	public <R> @NonNull Result<DoubleStream> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull DoubleStream decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as double stream using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as double stream", this);
 		}
 		
-		Result<Stream<Double>> result = this.internalCodec.decodeStart(provider, current, value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		return Result.success(result.resultOrThrow().mapToDouble(Double::doubleValue));
+		return this.internalCodec.decode(provider, current, value).mapToDouble(Double::doubleValue);
 	}
 	
 	@Override

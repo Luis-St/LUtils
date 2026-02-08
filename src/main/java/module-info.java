@@ -49,12 +49,12 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.constraint.config;
 	exports net.luis.utils.io.codec.constraint.config.collection;
 	exports net.luis.utils.io.codec.constraint.config.io;
-	exports net.luis.utils.io.codec.constraint.config.matcher;
 	exports net.luis.utils.io.codec.constraint.config.numeric;
 	exports net.luis.utils.io.codec.constraint.config.temporal;
 	exports net.luis.utils.io.codec.constraint.config.temporal.local;
 	exports net.luis.utils.io.codec.constraint.config.temporal.offset;
 	exports net.luis.utils.io.codec.constraint.config.temporal.zoned;
+	exports net.luis.utils.io.codec.constraint.config.validator;
 	exports net.luis.utils.io.codec.constraint.core;
 	exports net.luis.utils.io.codec.constraint.core.io;
 	exports net.luis.utils.io.codec.constraint.core.temporal;

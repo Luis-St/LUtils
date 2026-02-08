@@ -21,13 +21,14 @@ package net.luis.utils.io.codec.provider;
 import com.google.common.collect.Maps;
 import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.ini.*;
-import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 /**
  * Type provider implementation for ini elements.<br>
@@ -51,12 +52,7 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	 * Used for internal purposes only.<br>
 	 * The ini element has no string representation and will throw an exception if {@link IniElement#toString(IniConfig)} is called.<br>
 	 */
-	private static final IniElement EMPTY_ELEMENT = new IniElement() {
-		@Override
-		public @NonNull String toString(@NonNull IniConfig config) {
-			return "Empty ini element has no string representation";
-		}
-	};
+	private static final IniElement EMPTY_ELEMENT = _ -> "Empty ini element has no string representation";
 	
 	/**
 	 * The prefix for generated section names.<br>
@@ -84,328 +80,365 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createNull() {
-		return Result.success(IniNull.INSTANCE);
+	public <X extends Exception> @NonNull IniElement createNull(@NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return IniNull.INSTANCE;
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createBoolean(boolean value) {
-		return Result.success(new IniValue(value));
+	public <X extends Exception> @NonNull IniElement createBoolean(boolean value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createByte(byte value) {
-		return Result.success(new IniValue(value));
+	public <X extends Exception> @NonNull IniElement createByte(byte value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createShort(short value) {
-		return Result.success(new IniValue(value));
+	public <X extends Exception> @NonNull IniElement createShort(short value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createInteger(int value) {
-		return Result.success(new IniValue(value));
+	public <X extends Exception> @NonNull IniElement createInteger(int value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createLong(long value) {
-		return Result.success(new IniValue(value));
+	public <X extends Exception> @NonNull IniElement createLong(long value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createFloat(float value) {
-		return Result.success(new IniValue(value));
+	public <X extends Exception> @NonNull IniElement createFloat(float value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createDouble(double value) {
-		return Result.success(new IniValue(value));
+	public <X extends Exception> @NonNull IniElement createDouble(double value, @NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createString(@Nullable String value) {
+	public <X extends Exception> @NonNull IniElement createString(@Nullable String value, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (value == null) {
-			return Result.error("Value 'null' is not a valid string");
+			throw exceptionConstructor.apply("Value 'null' is not a valid string");
 		}
-		return Result.success(new IniValue(value));
+		return new IniValue(value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createList(@Nullable List<? extends IniElement> values) {
-		return Result.error("Ini format does not support lists");
+	public <X extends Exception> @NonNull IniElement createList(@Nullable List<? extends IniElement> values, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		throw exceptionConstructor.apply("Ini format does not support lists");
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createMap() {
-		return Result.success(new IniSection(GENERATED_SECTION + COUNTER.getAndIncrement()));
+	public <X extends Exception> @NonNull IniElement createMap(@NotNull Function<String, X> exceptionConstructor) {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		return new IniSection(GENERATED_SECTION + COUNTER.getAndIncrement());
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> createMap(@Nullable Map<String, ? extends IniElement> values) {
+	public <X extends Exception> @NonNull IniElement createMap(@Nullable Map<String, ? extends IniElement> values, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (values == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
 		
 		IniSection section = new IniSection(GENERATED_SECTION + COUNTER.getAndIncrement());
 		section.addAll(values);
-		return Result.success(section);
+		return section;
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> getEmpty(@Nullable IniElement type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not empty");
-		}
+	public <X extends Exception> boolean isEmpty(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
-		if (type != EMPTY_ELEMENT) {
-			return Result.error("Ini element '" + type + "' is not an ini null");
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not empty");
 		}
-		return Result.success(type);
+		return type == EMPTY_ELEMENT;
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> isNull(@Nullable IniElement type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not ini null");
-		}
-		return Result.success(type.isIniNull());
-	}
-	
-	@Override
-	public @NonNull Result<Boolean> getBoolean(@Nullable IniElement type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not a boolean");
-		}
+	public <X extends Exception> boolean isNull(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not ini null");
+		}
+		return type.isIniNull();
+	}
+	
+	@Override
+	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a boolean");
+		}
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniBoolean()) {
-			return Result.error("Ini element '" + type + "' is not an ini boolean");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini boolean");
 		}
-		return Result.success(value.getAsBoolean());
+		return value.getAsBoolean();
 	}
 	
 	@Override
-	public @NonNull Result<Byte> getByte(@Nullable IniElement type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not a byte");
-		}
+	public <X extends Exception> @NonNull Byte getByte(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a byte");
+		}
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniNumber()) {
-			return Result.error("Ini element '" + type + "' is not an ini byte");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini byte");
 		}
-		return Result.success(value.getAsByte());
+		return value.getAsByte();
 	}
 	
 	@Override
-	public @NonNull Result<Short> getShort(@Nullable IniElement type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not a short");
-		}
+	public <X extends Exception> @NonNull Short getShort(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a short");
+		}
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniNumber()) {
-			return Result.error("Ini element '" + type + "' is not an ini short");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini short");
 		}
-		return Result.success(value.getAsShort());
+		return value.getAsShort();
 	}
 	
 	@Override
-	public @NonNull Result<Integer> getInteger(@Nullable IniElement type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not an integer");
-		}
+	public <X extends Exception> @NonNull Integer getInteger(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not an integer");
+		}
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniNumber()) {
-			return Result.error("Ini element '" + type + "' is not an ini integer");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini integer");
 		}
-		return Result.success(value.getAsInteger());
+		return value.getAsInteger();
 	}
 	
 	@Override
-	public @NonNull Result<Long> getLong(@Nullable IniElement type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not a long");
-		}
+	public <X extends Exception> @NonNull Long getLong(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a long");
+		}
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniNumber()) {
-			return Result.error("Ini element '" + type + "' is not an ini long");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini long");
 		}
-		return Result.success(value.getAsLong());
+		return value.getAsLong();
 	}
 	
 	@Override
-	public @NonNull Result<Float> getFloat(@Nullable IniElement type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not a float");
-		}
+	public <X extends Exception> @NonNull Float getFloat(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a float");
+		}
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (value.isIniString()) {
-			return Result.error("Ini element '" + type + "' is an ini string, not an ini float");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is an ini string, not an ini float");
 		}
-		return Result.success(value.getAsFloat());
+		return value.getAsFloat();
 	}
 	
 	@Override
-	public @NonNull Result<Double> getDouble(@Nullable IniElement type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not a double");
-		}
+	public <X extends Exception> @NonNull Double getDouble(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a double");
+		}
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniNumber()) {
-			return Result.error("Ini element '" + type + "' is not an ini double");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini double");
 		}
-		return Result.success(value.getAsDouble());
+		return value.getAsDouble();
 	}
 	
 	@Override
-	public @NonNull Result<String> getString(@Nullable IniElement type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not a string");
-		}
+	public <X extends Exception> @NonNull String getString(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a string");
+		}
 		if (!type.isIniValue()) {
-			return Result.error("Ini element '" + type + "' is not an ini value");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini value");
 		}
 		
 		IniValue value = type.getAsIniValue();
 		if (!value.isIniString()) {
-			return Result.error("Ini element '" + type + "' is not an ini string");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini string");
 		}
-		return Result.success(value.getAsString());
+		return value.getAsString();
 	}
 	
 	@Override
-	public @NonNull Result<List<IniElement>> getList(@Nullable IniElement type) {
-		return Result.error("Ini format does not support lists");
-	}
-	
-	@Override
-	public @NonNull Result<Map<String, IniElement>> getMap(@Nullable IniElement type) {
-		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
-		}
+	public <X extends Exception> @NonNull List<IniElement> getList(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		throw exceptionConstructor.apply("Ini format does not support lists");
+	}
+	
+	@Override
+	public <X extends Exception> @NonNull Map<String, IniElement> getMap(@Nullable IniElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a valid map");
+		}
 		if (!type.isIniSection()) {
-			return Result.error("Ini element '" + type + "' is not an ini section");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini section");
 		}
 		
 		Map<String, IniElement> map = Maps.newLinkedHashMap();
 		type.getAsIniSection().forEach(map::put);
-		return Result.success(map);
+		return map;
 	}
 	
 	@Override
-	public @NonNull Result<Boolean> has(@Nullable IniElement type, @Nullable String key) {
-		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
-		}
+	@SuppressWarnings("DuplicatedCode")
+	public <X extends Exception> boolean has(@Nullable IniElement type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a valid map");
+		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
 		
 		if (!type.isIniSection()) {
-			return Result.error("Ini element '" + type + "' is not an ini section");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini section");
 		}
-		return Result.success(type.getAsIniSection().containsKey(key));
+		return type.getAsIniSection().containsKey(key);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> get(@Nullable IniElement type, @Nullable String key) {
-		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
-		}
+	@SuppressWarnings("DuplicatedCode")
+	public <X extends Exception> @Nullable IniElement get(@Nullable IniElement type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a valid map");
+		}
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
 		
 		if (!type.isIniSection()) {
-			return Result.error("Ini element '" + type + "' is not an ini section");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini section");
 		}
-		return Result.success(type.getAsIniSection().get(key));
+		return type.getAsIniSection().get(key);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> set(@Nullable IniElement type, @Nullable String key, @Nullable IniElement value) {
+	@SuppressWarnings("DuplicatedCode")
+	public <X extends Exception> void set(@Nullable IniElement type, @Nullable String key, @Nullable IniElement value, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (type == null) {
-			return Result.error("Value 'null' is not a valid map");
+			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
-		
 		if (key == null) {
-			return Result.error("Value 'null' is not valid");
+			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
-		
 		if (value == null) {
-			return Result.error("Value 'null' is not valid");
+			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
 		
 		if (!type.isIniSection()) {
-			return Result.error("Ini element '" + type + "' is not an ini section");
+			throw exceptionConstructor.apply("Ini element '" + type + "' is not an ini section");
 		}
-		
-		IniSection section = type.getAsIniSection();
-		section.add(key, value);
-		return Result.success(section);
+		type.getAsIniSection().add(key, value);
 	}
 	
 	@Override
-	public @NonNull Result<IniElement> merge(@Nullable IniElement current, @Nullable IniElement value) {
+	public <X extends Exception> @UnknownNullability IniElement merge(@Nullable IniElement current, @Nullable IniElement value, @NotNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
 		if (current == null) {
-			return Result.success(value);
+			return value;
 		}
-		
 		if (value == null) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current == EMPTY_ELEMENT || current.isIniNull()) {
-			return Result.success(value);
+			return value;
 		}
-		
 		if (value == EMPTY_ELEMENT || value.isIniNull()) {
-			return Result.success(current);
+			return current;
 		}
 		
 		if (current.isIniSection() && value.isIniSection()) {
 			IniSection section = current.getAsIniSection();
 			section.addAll(value.getAsIniSection());
-			return Result.success(section);
+			return section;
 		}
-		return Result.error("Unable to merge '" + current + "' with '" + value + "'");
+		throw exceptionConstructor.apply("Unable to merge '" + current + "' with '" + value + "'");
 	}
 }

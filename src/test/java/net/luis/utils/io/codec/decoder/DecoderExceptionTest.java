@@ -30,11 +30,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class DecoderExceptionTest {
 	
 	@Test
-	void defaultConstructor() {
-		DecoderException exception = new DecoderException();
+	void constructorWithDecoder() {
+		DecoderException exception = new DecoderException((Decoder<?>) null);
 		
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getDecoder());
 	}
 	
 	@Test
@@ -44,6 +45,7 @@ class DecoderExceptionTest {
 		
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getDecoder());
 	}
 	
 	@Test
@@ -52,6 +54,7 @@ class DecoderExceptionTest {
 		
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getDecoder());
 	}
 	
 	@Test
@@ -61,23 +64,17 @@ class DecoderExceptionTest {
 		
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getDecoder());
 	}
 	
 	@Test
-	void constructorWithCause() {
-		RuntimeException cause = new RuntimeException("Root cause");
-		DecoderException exception = new DecoderException(cause);
+	void constructorWithMessageAndDecoder() {
+		String message = "Decoding failed";
+		DecoderException exception = new DecoderException(message, (Decoder<?>) null);
 		
-		assertEquals("java.lang.RuntimeException: Root cause", exception.getMessage());
-		assertSame(cause, exception.getCause());
-	}
-	
-	@Test
-	void constructorWithNullCause() {
-		DecoderException exception = new DecoderException((Throwable) null);
-		
-		assertNull(exception.getMessage());
+		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getDecoder());
 	}
 	
 	@Test
@@ -88,39 +85,64 @@ class DecoderExceptionTest {
 		
 		assertEquals(message, exception.getMessage());
 		assertSame(cause, exception.getCause());
+		assertNull(exception.getDecoder());
 	}
 	
 	@Test
 	void constructorWithNullMessageAndCause() {
 		RuntimeException cause = new RuntimeException("Root cause");
-		DecoderException exception = new DecoderException(null, cause);
+		DecoderException exception = new DecoderException((String) null, cause);
 		
 		assertNull(exception.getMessage());
 		assertSame(cause, exception.getCause());
+		assertNull(exception.getDecoder());
 	}
 	
 	@Test
 	void constructorWithMessageAndNullCause() {
 		String message = "Decoding failed";
-		DecoderException exception = new DecoderException(message, null);
+		DecoderException exception = new DecoderException(message, (Throwable) null);
 		
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getDecoder());
 	}
 	
 	@Test
 	void constructorWithNullMessageAndNullCause() {
-		DecoderException exception = new DecoderException(null, null);
+		DecoderException exception = new DecoderException((String) null, (Throwable) null);
 		
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
+		assertNull(exception.getDecoder());
 	}
 	
 	@Test
-	void isRuntimeException() {
+	void constructorWithMessageDecoderAndCause() {
+		String message = "Decoding failed";
+		RuntimeException cause = new RuntimeException("Root cause");
+		DecoderException exception = new DecoderException(message, null, cause);
+		
+		assertEquals(message, exception.getMessage());
+		assertNull(exception.getDecoder());
+		assertSame(cause, exception.getCause());
+	}
+	
+	@Test
+	void constructorWithDecoderAndCause() {
+		RuntimeException cause = new RuntimeException("Root cause");
+		DecoderException exception = new DecoderException((Decoder<?>) null, cause);
+		
+		assertNull(exception.getDecoder());
+		assertSame(cause, exception.getCause());
+	}
+	
+	@Test
+	void isCheckedException() {
 		DecoderException exception = new DecoderException("test");
 		
-		assertInstanceOf(RuntimeException.class, exception);
+		assertInstanceOf(Exception.class, exception);
+		assertFalse(RuntimeException.class.isAssignableFrom(DecoderException.class));
 	}
 	
 	@Test

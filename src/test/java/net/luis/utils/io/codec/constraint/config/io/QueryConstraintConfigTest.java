@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.config.io;
 
-import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -155,6 +155,17 @@ class QueryConstraintConfigTest {
 		assertTrue(config.singleValued().isEmpty());
 		assertTrue(config.multiValuedConstraints().isEmpty());
 		assertTrue(config.custom().isEmpty());
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(QueryConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withSize(SizeConstraintConfig.UNCONSTRAINED.withMinSize(1));
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -375,7 +386,7 @@ class QueryConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -386,101 +397,101 @@ class QueryConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() {
+	void validateUnconstrained() {
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches(Map.of()).isSuccess());
-		assertTrue(config.matches(Map.of("key", List.of("value"))).isSuccess());
-		assertTrue(config.matches(Map.of("a", List.of("1"), "b", List.of("2"))).isSuccess());
+		assertDoesNotThrow(() -> config.validate(Map.of()));
+		assertDoesNotThrow(() -> config.validate(Map.of("key", List.of("value"))));
+		assertDoesNotThrow(() -> config.validate(Map.of("a", List.of("1"), "b", List.of("2"))));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> QueryConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> QueryConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() {
+	void validateEqualTo() {
 		Map<String, List<String>> expected = Map.of("key", List.of("value"));
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withEqualTo(expected);
 		
-		assertTrue(config.matches(Map.of("key", List.of("value"))).isSuccess());
-		assertTrue(config.matches(Map.of("key", List.of("other"))).isError());
-		assertTrue(config.matches(Map.of("other", List.of("value"))).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("key", List.of("value"))));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("key", List.of("other"))));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("other", List.of("value"))));
 	}
 	
 	@Test
-	void matchesNotEqualTo() {
+	void validateNotEqualTo() {
 		Map<String, List<String>> excluded = Map.of("key", List.of("value"));
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withNotEqualTo(excluded);
 		
-		assertTrue(config.matches(Map.of("key", List.of("other"))).isSuccess());
-		assertTrue(config.matches(Map.of("other", List.of("value"))).isSuccess());
-		assertTrue(config.matches(Map.of("key", List.of("value"))).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("key", List.of("other"))));
+		assertDoesNotThrow(() -> config.validate(Map.of("other", List.of("value"))));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("key", List.of("value"))));
 	}
 	
 	@Test
-	void matchesIn() {
+	void validateIn() {
 		Map<String, List<String>> value1 = Map.of("key", List.of("a"));
 		Map<String, List<String>> value2 = Map.of("key", List.of("b"));
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withIn(List.of(value1, value2));
 		
-		assertTrue(config.matches(Map.of("key", List.of("a"))).isSuccess());
-		assertTrue(config.matches(Map.of("key", List.of("b"))).isSuccess());
-		assertTrue(config.matches(Map.of("key", List.of("c"))).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("key", List.of("a"))));
+		assertDoesNotThrow(() -> config.validate(Map.of("key", List.of("b"))));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("key", List.of("c"))));
 	}
 	
 	@Test
-	void matchesNotIn() {
+	void validateNotIn() {
 		Map<String, List<String>> excluded = Map.of("key", List.of("blocked"));
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withNotIn(List.of(excluded));
 		
-		assertTrue(config.matches(Map.of("key", List.of("allowed"))).isSuccess());
-		assertTrue(config.matches(Map.of("key", List.of("blocked"))).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("key", List.of("allowed"))));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("key", List.of("blocked"))));
 	}
 	
 	@Test
-	void matchesMinSize() {
+	void validateMinSize() {
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withSize(SizeConstraintConfig.UNCONSTRAINED.withMinSize(2));
 		
-		assertTrue(config.matches(Map.of("a", List.of("1"), "b", List.of("2"))).isSuccess());
-		assertTrue(config.matches(Map.of("a", List.of("1"), "b", List.of("2"), "c", List.of("3"))).isSuccess());
-		assertTrue(config.matches(Map.of("a", List.of("1"))).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", List.of("1"), "b", List.of("2"))));
+		assertDoesNotThrow(() -> config.validate(Map.of("a", List.of("1"), "b", List.of("2"), "c", List.of("3"))));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", List.of("1"))));
 	}
 	
 	@Test
-	void matchesMaxSize() {
+	void validateMaxSize() {
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withSize(SizeConstraintConfig.UNCONSTRAINED.withMaxSize(2));
 		
-		assertTrue(config.matches(Map.of()).isSuccess());
-		assertTrue(config.matches(Map.of("a", List.of("1"))).isSuccess());
-		assertTrue(config.matches(Map.of("a", List.of("1"), "b", List.of("2"))).isSuccess());
-		assertTrue(config.matches(Map.of("a", List.of("1"), "b", List.of("2"), "c", List.of("3"))).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of()));
+		assertDoesNotThrow(() -> config.validate(Map.of("a", List.of("1"))));
+		assertDoesNotThrow(() -> config.validate(Map.of("a", List.of("1"), "b", List.of("2"))));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", List.of("1"), "b", List.of("2"), "c", List.of("3"))));
 	}
 	
 	@Test
-	void matchesRequiredKeys() {
+	void validateRequiredKeys() {
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withRequiredKeys(List.of("name"));
 		
-		assertTrue(config.matches(Map.of("name", List.of("value"))).isSuccess());
-		assertTrue(config.matches(Map.of("name", List.of("value"), "extra", List.of("data"))).isSuccess());
-		assertTrue(config.matches(Map.of("other", List.of("value"))).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("name", List.of("value"))));
+		assertDoesNotThrow(() -> config.validate(Map.of("name", List.of("value"), "extra", List.of("data"))));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("other", List.of("value"))));
 	}
 	
 	@Test
-	void matchesForbiddenKeys() {
+	void validateForbiddenKeys() {
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withForbiddenKeys(List.of("secret"));
 		
-		assertTrue(config.matches(Map.of("name", List.of("value"))).isSuccess());
-		assertTrue(config.matches(Map.of("secret", List.of("value"))).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("name", List.of("value"))));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("secret", List.of("value"))));
 	}
 	
 	@Test
-	void matchesAllowedKeys() {
+	void validateAllowedKeys() {
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withAllowedKeys(List.of("name", "email"));
 		
-		assertTrue(config.matches(Map.of("name", List.of("value"))).isSuccess());
-		assertTrue(config.matches(Map.of("name", List.of("a"), "email", List.of("b"))).isSuccess());
-		assertTrue(config.matches(Map.of("other", List.of("value"))).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("name", List.of("value"))));
+		assertDoesNotThrow(() -> config.validate(Map.of("name", List.of("a"), "email", List.of("b"))));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("other", List.of("value"))));
 	}
 }

@@ -19,9 +19,9 @@
 package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;
@@ -44,90 +44,57 @@ class ZoneIdConstraintConfigTest {
 	
 	@Test
 	void constructWithNullEqualTo() {
-		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullIn() {
-		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullNormalized() {
-		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(
-			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullRegionBased() {
-		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullOffsetBased() {
-		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullFixedOffset() {
-		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullUtc() {
-		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullSystemDefault() {
-		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullAvailable() {
-		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullRegion() {
-		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty()
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty()));
 	}
 	
 	@Test
 	void constructWithNullCustom() {
-		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null
-		));
+		assertThrows(NullPointerException.class, () -> new ZoneIdConstraintConfig(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null));
 	}
 	
 	@Test
@@ -161,7 +128,18 @@ class ZoneIdConstraintConfigTest {
 		assertTrue(config.available().isEmpty());
 		assertTrue(config.region().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(UTC).isSuccess());
+		assertDoesNotThrow(() -> config.validate(UTC));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(ZoneIdConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withNormalized();
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -280,7 +258,9 @@ class ZoneIdConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withCustom(zone -> zone.getId().startsWith("Europe") ? Result.success() : Result.error("Zone must be European"));
+		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withCustom(zone -> {
+			if (!zone.getId().contains("Europe")) throw new ConstraintViolateException("Zone must be European");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -290,120 +270,122 @@ class ZoneIdConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withEqualTo(EUROPE_BERLIN);
-		assertTrue(config.matches(EUROPE_BERLIN).isSuccess());
-		assertTrue(config.matches(AMERICA_NEW_YORK).isError());
+		assertDoesNotThrow(() -> config.validate(EUROPE_BERLIN));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(AMERICA_NEW_YORK));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withNotEqualTo(EUROPE_BERLIN);
-		assertTrue(config.matches(AMERICA_NEW_YORK).isSuccess());
-		assertTrue(config.matches(EUROPE_BERLIN).isError());
+		assertDoesNotThrow(() -> config.validate(AMERICA_NEW_YORK));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(EUROPE_BERLIN));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withIn(List.of(EUROPE_BERLIN, AMERICA_NEW_YORK));
-		assertTrue(config.matches(EUROPE_BERLIN).isSuccess());
-		assertTrue(config.matches(AMERICA_NEW_YORK).isSuccess());
-		assertTrue(config.matches(ASIA_TOKYO).isError());
+		assertDoesNotThrow(() -> config.validate(EUROPE_BERLIN));
+		assertDoesNotThrow(() -> config.validate(AMERICA_NEW_YORK));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(ASIA_TOKYO));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withNotIn(List.of(EUROPE_BERLIN, AMERICA_NEW_YORK));
-		assertTrue(config.matches(ASIA_TOKYO).isSuccess());
-		assertTrue(config.matches(EUROPE_BERLIN).isError());
-		assertTrue(config.matches(AMERICA_NEW_YORK).isError());
+		assertDoesNotThrow(() -> config.validate(ASIA_TOKYO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(EUROPE_BERLIN));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(AMERICA_NEW_YORK));
 	}
 	
 	@Test
-	void matchesWithRegionBased() {
+	void validateWithRegionBased() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withRegionBased();
-		assertTrue(config.matches(EUROPE_BERLIN).isSuccess());
-		assertTrue(config.matches(AMERICA_NEW_YORK).isSuccess());
-		assertTrue(config.matches(ZoneOffset.UTC).isError());
-		assertTrue(config.matches(ZoneOffset.ofHours(2)).isError());
+		assertDoesNotThrow(() -> config.validate(EUROPE_BERLIN));
+		assertDoesNotThrow(() -> config.validate(AMERICA_NEW_YORK));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(ZoneOffset.UTC));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(ZoneOffset.ofHours(2)));
 	}
 	
 	@Test
-	void matchesWithOffsetBased() {
+	void validateWithOffsetBased() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withOffsetBased();
-		assertTrue(config.matches(ZoneOffset.UTC).isSuccess());
-		assertTrue(config.matches(ZoneOffset.ofHours(2)).isSuccess());
-		assertTrue(config.matches(EUROPE_BERLIN).isError());
-		assertTrue(config.matches(AMERICA_NEW_YORK).isError());
+		assertDoesNotThrow(() -> config.validate(ZoneOffset.UTC));
+		assertDoesNotThrow(() -> config.validate(ZoneOffset.ofHours(2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(EUROPE_BERLIN));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(AMERICA_NEW_YORK));
 	}
 	
 	@Test
-	void matchesWithFixedOffset() {
+	void validateWithFixedOffset() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withFixedOffset();
-		assertTrue(config.matches(ZoneOffset.UTC).isSuccess());
-		assertTrue(config.matches(ZoneOffset.ofHours(5)).isSuccess());
-		assertTrue(config.matches(EUROPE_BERLIN).isError());
+		assertDoesNotThrow(() -> config.validate(ZoneOffset.UTC));
+		assertDoesNotThrow(() -> config.validate(ZoneOffset.ofHours(5)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(EUROPE_BERLIN));
 	}
 	
 	@Test
-	void matchesWithUtc() {
+	void validateWithUtc() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withUtc();
-		assertTrue(config.matches(ZoneOffset.UTC).isSuccess());
-		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(EUROPE_BERLIN).isError());
-		assertTrue(config.matches(ZoneOffset.ofHours(2)).isError());
+		assertDoesNotThrow(() -> config.validate(ZoneOffset.UTC));
+		assertDoesNotThrow(() -> config.validate(UTC));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(EUROPE_BERLIN));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(ZoneOffset.ofHours(2)));
 	}
 	
 	@Test
-	void matchesWithSystemDefault() {
+	void validateWithSystemDefault() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withSystemDefault();
-		assertTrue(config.matches(ZoneId.systemDefault()).isSuccess());
+		assertDoesNotThrow(() -> config.validate(ZoneId.systemDefault()));
 		if (!ZoneId.systemDefault().equals(UTC)) {
-			assertTrue(config.matches(UTC).isError());
+			assertThrows(ConstraintViolateException.class, () -> config.validate(UTC));
 		}
 	}
 	
 	@Test
-	void matchesWithAvailable() {
+	void validateWithAvailable() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withAvailable();
-		assertTrue(config.matches(EUROPE_BERLIN).isSuccess());
-		assertTrue(config.matches(AMERICA_NEW_YORK).isSuccess());
-		assertTrue(config.matches(ASIA_TOKYO).isSuccess());
+		assertDoesNotThrow(() -> config.validate(EUROPE_BERLIN));
+		assertDoesNotThrow(() -> config.validate(AMERICA_NEW_YORK));
+		assertDoesNotThrow(() -> config.validate(ASIA_TOKYO));
 	}
 	
 	@Test
-	void matchesWithRegionConstraint() {
+	void validateWithRegionConstraint() {
 		StringConstraintConfig regionConfig = StringConstraintConfig.UNCONSTRAINED.withStartsWith("Europe/");
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withRegion(regionConfig);
-		assertTrue(config.matches(EUROPE_BERLIN).isSuccess());
-		assertTrue(config.matches(AMERICA_NEW_YORK).isError());
-		assertTrue(config.matches(ASIA_TOKYO).isError());
+		assertDoesNotThrow(() -> config.validate(EUROPE_BERLIN));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(AMERICA_NEW_YORK));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(ASIA_TOKYO));
 	}
 	
 	@Test
-	void matchesWithCustomConstraint() {
-		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withCustom(zone -> zone.getId().contains("Europe") ? Result.success() : Result.error("Zone must be European"));
-		assertTrue(config.matches(EUROPE_BERLIN).isSuccess());
-		assertTrue(config.matches(AMERICA_NEW_YORK).isError());
-		assertTrue(config.matches(ASIA_TOKYO).isError());
+	void validateWithCustomConstraint() {
+		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED.withCustom(zone -> {
+			if (!zone.getId().contains("Europe")) throw new ConstraintViolateException("Zone must be European");
+		});
+		assertDoesNotThrow(() -> config.validate(EUROPE_BERLIN));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(AMERICA_NEW_YORK));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(ASIA_TOKYO));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED
 			.withRegionBased()
 			.withAvailable()
 			.withNotIn(List.of(AMERICA_NEW_YORK));
 		
-		assertTrue(config.matches(EUROPE_BERLIN).isSuccess());
-		assertTrue(config.matches(ASIA_TOKYO).isSuccess());
-		assertTrue(config.matches(AMERICA_NEW_YORK).isError());
-		assertTrue(config.matches(ZoneOffset.UTC).isError());
+		assertDoesNotThrow(() -> config.validate(EUROPE_BERLIN));
+		assertDoesNotThrow(() -> config.validate(ASIA_TOKYO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(AMERICA_NEW_YORK));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(ZoneOffset.UTC));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		ZoneIdConstraintConfig config = ZoneIdConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

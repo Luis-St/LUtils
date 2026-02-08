@@ -19,13 +19,11 @@
 package net.luis.utils.io.codec.constraint.config.temporal;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.TemporalMatchers;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.TemporalValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
@@ -151,6 +149,11 @@ public record DurationConstraintConfig(
 		if (withinNext.isPresent() && (withinNext.get().isNegative() || withinNext.get().isZero())) {
 			throw new IllegalArgumentException("Within next duration must be positive when present, but got " + withinNext.get());
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -431,22 +434,22 @@ public record DurationConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Duration value) {
+	public void validate(@NonNull Duration value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
-			() -> TemporalMatchers.matchDurationSign(value, this.positive, this.negative, this.zero),
-			() -> TemporalMatchers.matchDurationWithinLast(value, this.withinLast),
-			() -> TemporalMatchers.matchDurationWithinNext(value, this.withinNext),
-			() -> ConstraintMatchers.matchNumericField((int) value.toHours(), this.hour, "hour"),
-			() -> ConstraintMatchers.matchNumericField((int) (value.toMinutes() % 60), this.minute, "minute"),
-			() -> ConstraintMatchers.matchNumericField((int) (value.getSeconds() % 60), this.second, "second"),
-			() -> ConstraintMatchers.matchNumericField((int) (value.toMillis() % 1000), this.millisecond, "millisecond"),
-			() -> ConstraintMatchers.matchNumericField(value.getNano(), this.nanosecond, "nanosecond"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.min, this.max),
+			() -> TemporalValidators.validateDurationSign(value, this.positive, this.negative, this.zero),
+			() -> TemporalValidators.validateDurationWithinLast(value, this.withinLast),
+			() -> TemporalValidators.validateDurationWithinNext(value, this.withinNext),
+			() -> ConstraintValidators.validateNumericField((int) value.toHours(), this.hour, "hour"),
+			() -> ConstraintValidators.validateNumericField((int) (value.toMinutes() % 60), this.minute, "minute"),
+			() -> ConstraintValidators.validateNumericField((int) (value.getSeconds() % 60), this.second, "second"),
+			() -> ConstraintValidators.validateNumericField((int) (value.toMillis() % 1000), this.millisecond, "millisecond"),
+			() -> ConstraintValidators.validateNumericField(value.getNano(), this.nanosecond, "nanosecond"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.core;
 
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -36,13 +35,13 @@ public interface Constraint<T> {
 	/**
 	 * Validates the given value against the constraint.<br>
 	 * <p>
-	 *     If the value satisfies the constraint, a successful Result is returned.<br>
-	 *     If the value does not satisfy the constraint, a failed Result with an appropriate error message is returned.
+	 *     If the value satisfies the constraint, allows the process to continue without throwing any exceptions.<br>
+	 *     If the value does not satisfy the constraint, a failed a {@link ConstraintViolateException} is thrown with a descriptive message.<br>
 	 * </p>
 	 *
 	 * @param value The value to be validated
-	 * @return A result indicating success or failure of the validation
 	 * @throws NullPointerException If the value is null
+	 * @throws ConstraintViolateException If the value does not satisfy the constraint
 	 */
-	@NotNull Result<Void> validate(@NonNull T value);
+	void validate(@NonNull T value);
 }

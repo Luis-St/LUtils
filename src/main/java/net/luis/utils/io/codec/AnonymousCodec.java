@@ -19,9 +19,10 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.decoder.Decoder;
+import net.luis.utils.io.codec.decoder.DecoderException;
 import net.luis.utils.io.codec.encoder.Encoder;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -83,25 +84,26 @@ record AnonymousCodec<C>(
 	}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
-		return this.encoder.encodeStart(provider, current, value);
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) throws EncoderException {
+		return this.encoder.encode(provider, current, value);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull C key) {
+	public @NonNull String encodeKey(@NonNull C key) throws EncoderException {
 		return this.encoder.encodeKey(key);
 	}
 	
 	@Override
-	public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
-		return this.decoder.decodeStart(provider, current, value);
+	public <R> @NonNull C decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
+		return this.decoder.decode(provider, current, value);
+	}
+	
+	@Override
+	public @NonNull C decodeKey(@NonNull String key) throws DecoderException {
+		return this.decoder.decodeKey(key);
 	}
 	
 	//region Object overrides
-	@Override
-	public @NonNull Result<C> decodeKey(@NonNull String key) {
-		return this.decoder.decodeKey(key);
-	}
 	
 	@Override
 	public boolean equals(Object object) {

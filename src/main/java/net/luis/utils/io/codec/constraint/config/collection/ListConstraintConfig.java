@@ -20,11 +20,10 @@ package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.collection.ListConstraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -91,6 +90,11 @@ public record ListConstraintConfig<T>(
 	 */
 	public static <T> @NonNull ListConstraintConfig<T> unconstrained() {
 		return new ListConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.size.isEmpty() && this.custom.isEmpty();
 	}
 	
 	//region With methods
@@ -227,14 +231,14 @@ public record ListConstraintConfig<T>(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull List<T> value) {
+	public void validate(@NonNull List<T> value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.size, List::size, "Size"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateExtractedValue(value, this.size, List::size, "Size"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

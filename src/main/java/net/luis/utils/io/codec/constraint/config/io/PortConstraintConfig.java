@@ -20,13 +20,11 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.PortRange;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -110,6 +108,11 @@ public record PortConstraintConfig(
 				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + inRange.get().getFirst().getFirst() + " > " + inRange.get().getFirst().getSecond());
 			}
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -206,15 +209,15 @@ public record PortConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Integer value) {
+	public void validate(@NonNull Integer value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> IOMatchers.matchPortRange(value, this.inRange),
-			() -> IOMatchers.matchPortType(value, this.type),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> IOValidators.validatePortRange(value, this.inRange),
+			() -> IOValidators.validatePortType(value, this.type),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

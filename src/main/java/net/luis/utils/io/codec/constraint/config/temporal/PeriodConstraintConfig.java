@@ -19,13 +19,11 @@
 package net.luis.utils.io.codec.constraint.config.temporal;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.TemporalMatchers;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.TemporalValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Period;
@@ -125,6 +123,11 @@ public record PeriodConstraintConfig(
 		if (positive.isPresent() && negative.isPresent()) {
 			throw new IllegalArgumentException("Positive and negative constraints are mutually exclusive");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -357,18 +360,18 @@ public record PeriodConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Period value) {
+	public void validate(@NonNull Period value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> TemporalMatchers.matchPeriodRange(value, this.min, this.max),
-			() -> TemporalMatchers.matchPeriodSign(value, this.positive, this.negative, this.zero),
-			() -> ConstraintMatchers.matchNestedConfig(value.getDays(), this.day, "Day"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getMonths(), this.month, "Month"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getYears(), this.year, "Year"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> TemporalValidators.validatePeriodRange(value, this.min, this.max),
+			() -> TemporalValidators.validatePeriodSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintValidators.validateNestedConfig(value.getDays(), this.day, "Day"),
+			() -> ConstraintValidators.validateNestedConfig(value.getMonths(), this.month, "Month"),
+			() -> ConstraintValidators.validateNestedConfig(value.getYears(), this.year, "Year"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

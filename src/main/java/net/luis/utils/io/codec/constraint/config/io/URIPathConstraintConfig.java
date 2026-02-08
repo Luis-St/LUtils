@@ -19,13 +19,11 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -143,6 +141,11 @@ public record URIPathConstraintConfig(
 		if (withoutExtension.isPresent() && extension.isPresent()) {
 			throw new IllegalArgumentException("Both without extension and extension constraints cannot be present at the same time");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -341,25 +344,25 @@ public record URIPathConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull String value) {
+	public void validate(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.length, String::length, "Length"),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.depth, IOMatchers::calculateUriPathDepth, "Depth"),
-			() -> ConstraintMatchers.matchFlag(value, this.absolute, p -> p.startsWith("/"), "URI path '" + value + "' must be absolute"),
-			() -> ConstraintMatchers.matchFlag(value, this.relative, p -> !p.startsWith("/"), "URI path '" + value + "' must be relative"),
-			() -> ConstraintMatchers.matchFlag(value, this.normalized, IOMatchers::isUriPathNormalized, "URI path '" + value + "' must be normalized"),
-			() -> IOMatchers.matchUriPathStringConfig(value, this.path),
-			() -> IOMatchers.matchUriPathSegmentConfig(value, this.segment),
-			() -> IOMatchers.matchUriPathFileNameConfig(value, this.file),
-			() -> IOMatchers.matchUriPathWithoutExtension(value, this.withoutExtension),
-			() -> IOMatchers.matchUriPathExtensionConfig(value, this.extension),
-			() -> IOMatchers.matchUriPathAncestorOf(value, this.ancestorOf),
-			() -> IOMatchers.matchUriPathDescendantOf(value, this.descendantOf),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateExtractedValue(value, this.length, String::length, "Length"),
+			() -> ConstraintValidators.validateExtractedValue(value, this.depth, IOValidators::calculateUriPathDepth, "Depth"),
+			() -> ConstraintValidators.validateFlag(value, this.absolute, p -> p.startsWith("/"), "URI path '" + value + "' must be absolute"),
+			() -> ConstraintValidators.validateFlag(value, this.relative, p -> !p.startsWith("/"), "URI path '" + value + "' must be relative"),
+			() -> ConstraintValidators.validateFlag(value, this.normalized, IOValidators::isUriPathNormalized, "URI path '" + value + "' must be normalized"),
+			() -> IOValidators.validateUriPathStringConfig(value, this.path),
+			() -> IOValidators.validateUriPathSegmentConfig(value, this.segment),
+			() -> IOValidators.validateUriPathFileNameConfig(value, this.file),
+			() -> IOValidators.validateUriPathWithoutExtension(value, this.withoutExtension),
+			() -> IOValidators.validateUriPathExtensionConfig(value, this.extension),
+			() -> IOValidators.validateUriPathAncestorOf(value, this.ancestorOf),
+			() -> IOValidators.validateUriPathDescendantOf(value, this.descendantOf),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

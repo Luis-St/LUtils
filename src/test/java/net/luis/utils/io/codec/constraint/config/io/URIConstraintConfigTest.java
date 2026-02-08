@@ -18,12 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.config.io;
 
-import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.*;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -217,6 +215,17 @@ class URIConstraintConfigTest {
 	}
 	
 	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(URIConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withAbsolute();
+		assertFalse(config.isUnconstrained());
+	}
+	
+	@Test
 	void withEqualTo() {
 		URI value = URI.create("https://example.com");
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withEqualTo(value);
@@ -360,7 +369,7 @@ class URIConstraintConfigTest {
 			LengthConstraintConfig.UNCONSTRAINED.withMinLength(1)
 		);
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withPath(pathConfig);
-
+		
 		assertTrue(config.path().isPresent());
 		assertTrue(config.withoutPath().isEmpty());
 	}
@@ -448,7 +457,7 @@ class URIConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -459,119 +468,119 @@ class URIConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() {
+	void validateUnconstrained() {
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches(URI.create("https://example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("http://localhost:8080/path")).isSuccess());
-		assertTrue(config.matches(URI.create("ftp://files.example.com/file.txt")).isSuccess());
-		assertTrue(config.matches(URI.create("relative/path")).isSuccess());
+		assertDoesNotThrow(() -> config.validate(URI.create("https://example.com")));
+		assertDoesNotThrow(() -> config.validate(URI.create("http://localhost:8080/path")));
+		assertDoesNotThrow(() -> config.validate(URI.create("ftp://files.example.com/file.txt")));
+		assertDoesNotThrow(() -> config.validate(URI.create("relative/path")));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> URIConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> URIConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() {
+	void validateEqualTo() {
 		URI expected = URI.create("https://example.com");
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withEqualTo(expected);
 		
-		assertTrue(config.matches(URI.create("https://example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("https://other.com")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("https://example.com")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("https://other.com")));
 	}
 	
 	@Test
-	void matchesNotEqualTo() {
+	void validateNotEqualTo() {
 		URI excluded = URI.create("https://blocked.com");
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withNotEqualTo(excluded);
 		
-		assertTrue(config.matches(URI.create("https://example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("https://blocked.com")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("https://example.com")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("https://blocked.com")));
 	}
 	
 	@Test
-	void matchesIn() {
+	void validateIn() {
 		URI uri1 = URI.create("https://example.com");
 		URI uri2 = URI.create("https://test.com");
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withIn(List.of(uri1, uri2));
 		
-		assertTrue(config.matches(URI.create("https://example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("https://test.com")).isSuccess());
-		assertTrue(config.matches(URI.create("https://other.com")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("https://example.com")));
+		assertDoesNotThrow(() -> config.validate(URI.create("https://test.com")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("https://other.com")));
 	}
 	
 	@Test
-	void matchesNotIn() {
+	void validateNotIn() {
 		URI excluded = URI.create("https://blocked.com");
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withNotIn(List.of(excluded));
 		
-		assertTrue(config.matches(URI.create("https://example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("https://blocked.com")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("https://example.com")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("https://blocked.com")));
 	}
 	
 	@Test
-	void matchesAbsolute() {
+	void validateAbsolute() {
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withAbsolute();
 		
-		assertTrue(config.matches(URI.create("https://example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("relative/path")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("https://example.com")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("relative/path")));
 	}
 	
 	@Test
-	void matchesRelative() {
+	void validateRelative() {
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withRelative();
 		
-		assertTrue(config.matches(URI.create("relative/path")).isSuccess());
-		assertTrue(config.matches(URI.create("https://example.com")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("relative/path")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("https://example.com")));
 	}
 	
 	@Test
-	void matchesWithoutFragment() {
+	void validateWithoutFragment() {
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withWithoutFragment();
 		
-		assertTrue(config.matches(URI.create("https://example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("https://example.com#section")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("https://example.com")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("https://example.com#section")));
 	}
 	
 	@Test
-	void matchesWithoutQuery() {
+	void validateWithoutQuery() {
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withWithoutQuery();
 		
-		assertTrue(config.matches(URI.create("https://example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("https://example.com?param=value")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("https://example.com")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("https://example.com?param=value")));
 	}
 	
 	@Test
-	void matchesWithoutPort() {
+	void validateWithoutPort() {
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withWithoutPort();
 		
-		assertTrue(config.matches(URI.create("https://example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("https://example.com:8080")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("https://example.com")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("https://example.com:8080")));
 	}
 	
 	@Test
-	void matchesWithoutPath() {
+	void validateWithoutPath() {
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withWithoutPath();
 		
-		assertTrue(config.matches(URI.create("https://example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("https://example.com/path")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("https://example.com")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("https://example.com/path")));
 	}
 	
 	@Test
-	void matchesHierarchical() {
+	void validateHierarchical() {
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withHierarchical();
 		
-		assertTrue(config.matches(URI.create("https://example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("mailto:user@example.com")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("https://example.com")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("mailto:user@example.com")));
 	}
 	
 	@Test
-	void matchesOpaque() {
+	void validateOpaque() {
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withOpaque();
 		
-		assertTrue(config.matches(URI.create("mailto:user@example.com")).isSuccess());
-		assertTrue(config.matches(URI.create("https://example.com")).isError());
+		assertDoesNotThrow(() -> config.validate(URI.create("mailto:user@example.com")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(URI.create("https://example.com")));
 	}
 }

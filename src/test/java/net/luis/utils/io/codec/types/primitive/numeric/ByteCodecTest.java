@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,73 +36,67 @@ import static org.junit.jupiter.api.Assertions.*;
 class ByteCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		Byte value = 42;
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), value));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, value));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), value));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, value));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as byte"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as byte"));
 	}
 	
 	@Test
-	void encodeStartWithPositiveValue() {
+	void encodeWithPositiveValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 42);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive((byte) 42), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), (byte) 42);
+		assertEquals(new JsonPrimitive((byte) 42), result);
 	}
 	
 	@Test
-	void encodeStartWithNegativeValue() {
+	void encodeWithNegativeValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) -42);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive((byte) -42), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), (byte) -42);
+		assertEquals(new JsonPrimitive((byte) -42), result);
 	}
 	
 	@Test
-	void encodeStartWithZero() {
+	void encodeWithZero() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), (byte) 0);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive((byte) 0), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), (byte) 0);
+		assertEquals(new JsonPrimitive((byte) 0), result);
 	}
 	
 	@Test
-	void encodeStartWithMaxValue() {
+	void encodeWithMaxValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Byte.MAX_VALUE);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Byte.MAX_VALUE), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Byte.MAX_VALUE);
+		assertEquals(new JsonPrimitive(Byte.MAX_VALUE), result);
 	}
 	
 	@Test
-	void encodeStartWithMinValue() {
+	void encodeWithMinValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Byte.MIN_VALUE);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(Byte.MIN_VALUE), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Byte.MIN_VALUE);
+		assertEquals(new JsonPrimitive(Byte.MIN_VALUE), result);
 	}
 	
 	@Test
@@ -113,90 +108,82 @@ class ByteCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithValue() {
+	void encodeKeyWithValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<String> result = codec.encodeKey((byte) 42);
-		assertTrue(result.isSuccess());
-		assertEquals("42", result.resultOrThrow());
+		String result = codec.encodeKey((byte) 42);
+		assertEquals("42", result);
 	}
 	
 	@Test
-	void encodeKeyWithNegativeValue() {
+	void encodeKeyWithNegativeValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<String> result = codec.encodeKey((byte) -42);
-		assertTrue(result.isSuccess());
-		assertEquals("-42", result.resultOrThrow());
+		String result = codec.encodeKey((byte) -42);
+		assertEquals("-42", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive((byte) 42)));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive((byte) 42)));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as byte"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as byte"));
 	}
 	
 	@Test
-	void decodeStartWithValidValue() {
+	void decodeWithValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 42));
-		assertTrue(result.isSuccess());
-		assertEquals((byte) 42, result.resultOrThrow());
+		Byte result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) 42));
+		assertEquals((byte) 42, result);
 	}
 	
 	@Test
-	void decodeStartWithNegativeValue() {
+	void decodeWithNegativeValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) -42));
-		assertTrue(result.isSuccess());
-		assertEquals((byte) -42, result.resultOrThrow());
+		Byte result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive((byte) -42));
+		assertEquals((byte) -42, result);
 	}
 	
 	@Test
-	void decodeStartWithMaxValue() {
+	void decodeWithMaxValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Byte.MAX_VALUE));
-		assertTrue(result.isSuccess());
-		assertEquals(Byte.MAX_VALUE, result.resultOrThrow());
+		Byte result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(Byte.MAX_VALUE));
+		assertEquals(Byte.MAX_VALUE, result);
 	}
 	
 	@Test
-	void decodeStartWithMinValue() {
+	void decodeWithMinValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Byte.MIN_VALUE));
-		assertTrue(result.isSuccess());
-		assertEquals(Byte.MIN_VALUE, result.resultOrThrow());
+		Byte result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(Byte.MIN_VALUE));
+		assertEquals(Byte.MIN_VALUE, result);
 	}
 	
 	@Test
-	void decodeStartWithNonNumber() {
+	void decodeWithNonNumber() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not a number"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not a number")));
 	}
 	
 	@Test
@@ -209,23 +196,21 @@ class ByteCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidValue() {
+	void decodeKeyWithValidValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeKey("42");
-		assertTrue(result.isSuccess());
-		assertEquals((byte) 42, result.resultOrThrow());
+		Byte result = codec.decodeKey("42");
+		assertEquals((byte) 42, result);
 	}
 	
 	@Test
-	void decodeKeyWithNegativeValue() {
+	void decodeKeyWithNegativeValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeKey("-42");
-		assertTrue(result.isSuccess());
-		assertEquals((byte) -42, result.resultOrThrow());
+		Byte result = codec.decodeKey("-42");
+		assertEquals((byte) -42, result);
 	}
 	
 	@Test
@@ -233,9 +218,8 @@ class ByteCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeKey("invalid");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as byte"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("invalid"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'invalid' as byte"));
 	}
 	
 	@Test
@@ -243,9 +227,8 @@ class ByteCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeKey("999");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key '999' as byte"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("999"));
+		assertTrue(exception.getMessage().contains("Unable to decode key '999' as byte"));
 	}
 	
 	@Test

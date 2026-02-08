@@ -19,12 +19,13 @@
 package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.io.network.address.IpAddresses;
 import net.luis.utils.io.network.address.IpNetwork;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,67 +38,62 @@ import static org.junit.jupiter.api.Assertions.*;
 class IpNetworkCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		IpNetwork<?, ?> network = IpAddresses.parseIpv4Network("192.168.0.0/24");
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), network));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, network));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), network));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, network));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as IP network"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as ip network"));
 	}
 	
 	@Test
-	void encodeStartWithIPv4Network() {
+	void encodeWithIPv4Network() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		IpNetwork<?, ?> network = IpAddresses.parseIpv4Network("192.168.0.0/24");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), network);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("192.168.0.0/24"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), network);
+		assertEquals(new JsonPrimitive("192.168.0.0/24"), result);
 	}
 	
 	@Test
-	void encodeStartWithIPv4PrivateClassA() {
+	void encodeWithIPv4PrivateClassA() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		IpNetwork<?, ?> network = IpAddresses.parseIpv4Network("10.0.0.0/8");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), network);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("10.0.0.0/8"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), network);
+		assertEquals(new JsonPrimitive("10.0.0.0/8"), result);
 	}
 	
 	@Test
-	void encodeStartWithIPv6Network() {
+	void encodeWithIPv6Network() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		IpNetwork<?, ?> network = IpAddresses.parseIpv6Network("2001:db8::/32");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), network);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("2001:db8::/32"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), network);
+		assertEquals(new JsonPrimitive("2001:db8::/32"), result);
 	}
 	
 	@Test
-	void encodeStartWithIPv6LinkLocal() {
+	void encodeWithIPv6LinkLocal() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		IpNetwork<?, ?> network = IpAddresses.parseIpv6Network("fe80::/10");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), network);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("fe80::/10"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), network);
+		assertEquals(new JsonPrimitive("fe80::/10"), result);
 	}
 	
 	@Test
@@ -108,100 +104,91 @@ class IpNetworkCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithIPv4Network() {
+	void encodeKeyWithIPv4Network() throws EncoderException {
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		IpNetwork<?, ?> network = IpAddresses.parseIpv4Network("192.168.0.0/24");
 		
-		Result<String> result = codec.encodeKey(network);
-		assertTrue(result.isSuccess());
-		assertEquals("192.168.0.0/24", result.resultOrThrow());
+		String result = codec.encodeKey(network);
+		assertEquals("192.168.0.0/24", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("192.168.0.0/24")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("192.168.0.0/24")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		Result<IpNetwork<?, ?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as IP network"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as ip network"));
 	}
 	
 	@Test
-	void decodeStartWithValidIPv4Network() {
+	void decodeWithValidIPv4Network() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		Result<IpNetwork<?, ?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.0.0/24"));
-		assertTrue(result.isSuccess());
-		assertEquals(IpAddresses.parseIpv4Network("192.168.0.0/24"), result.resultOrThrow());
+		IpNetwork<?, ?> result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.0.0/24"));
+		assertEquals(IpAddresses.parseIpv4Network("192.168.0.0/24"), result);
 	}
 	
 	@Test
-	void decodeStartWithIPv4PrivateClassC() {
+	void decodeWithIPv4PrivateClassC() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		Result<IpNetwork<?, ?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.0.0/16"));
-		assertTrue(result.isSuccess());
-		assertEquals(IpAddresses.parseIpv4Network("192.168.0.0/16"), result.resultOrThrow());
+		IpNetwork<?, ?> result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.0.0/16"));
+		assertEquals(IpAddresses.parseIpv4Network("192.168.0.0/16"), result);
 	}
 	
 	@Test
-	void decodeStartWithValidIPv6Network() {
+	void decodeWithValidIPv6Network() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		Result<IpNetwork<?, ?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2001:db8::/32"));
-		assertTrue(result.isSuccess());
-		assertEquals(IpAddresses.parseIpv6Network("2001:db8::/32"), result.resultOrThrow());
+		IpNetwork<?, ?> result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2001:db8::/32"));
+		assertEquals(IpAddresses.parseIpv6Network("2001:db8::/32"), result);
 	}
 	
 	@Test
-	void decodeStartWithIPv6Documentation() {
+	void decodeWithIPv6Documentation() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		Result<IpNetwork<?, ?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2001:db8::/32"));
-		assertTrue(result.isSuccess());
-		assertEquals(IpAddresses.IPV6_DOCUMENTATION_NETWORK, result.resultOrThrow());
+		IpNetwork<?, ?> result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2001:db8::/32"));
+		assertEquals(IpAddresses.IPV6_DOCUMENTATION_NETWORK, result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidCidr() {
+	void decodeWithInvalidCidr() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		Result<IpNetwork<?, ?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.0"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode IP network"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.0")));
+		assertTrue(exception.getMessage().contains("Unable to decode ip network"));
 	}
 	
 	@Test
-	void decodeStartWithInvalidPrefix() {
+	void decodeWithInvalidPrefix() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		Result<IpNetwork<?, ?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.0/99"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode IP network"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.0/99")));
+		assertTrue(exception.getMessage().contains("Unable to decode ip network"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		Result<IpNetwork<?, ?>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -212,21 +199,19 @@ class IpNetworkCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidIPv4Network() {
+	void decodeKeyWithValidIPv4Network() throws DecoderException {
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		Result<IpNetwork<?, ?>> result = codec.decodeKey("192.168.0.0/24");
-		assertTrue(result.isSuccess());
-		assertEquals(IpAddresses.parseIpv4Network("192.168.0.0/24"), result.resultOrThrow());
+		IpNetwork<?, ?> result = codec.decodeKey("192.168.0.0/24");
+		assertEquals(IpAddresses.parseIpv4Network("192.168.0.0/24"), result);
 	}
 	
 	@Test
 	void decodeKeyWithInvalidCidr() {
 		Codec<IpNetwork<?, ?>> codec = new IpNetworkCodec();
 		
-		Result<IpNetwork<?, ?>> result = codec.decodeKey("192.168.1.0");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key '192.168.1.0' as IP network"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("192.168.1.0"));
+		assertTrue(exception.getMessage().contains("Unable to decode key '192.168.1.0' as ip network"));
 	}
 	
 	@Test

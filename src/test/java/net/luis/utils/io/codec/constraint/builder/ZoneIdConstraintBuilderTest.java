@@ -20,7 +20,6 @@ package net.luis.utils.io.codec.constraint.builder;
 
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneIdConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;
@@ -122,7 +121,7 @@ class ZoneIdConstraintBuilderTest {
 	@Test
 	void customReturnsBuilder() {
 		ZoneIdConstraintBuilder builder = new ZoneIdConstraintBuilder();
-		Constraint<ZoneId> constraint = value -> Result.success(null);
+		Constraint<ZoneId> constraint = value -> {};
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
 	}

@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config.numeric;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
 import org.junit.jupiter.api.Test;
@@ -246,7 +247,18 @@ class BigDecimalConstraintConfigTest {
 		assertTrue(config.precisionMin().isEmpty());
 		assertTrue(config.precisionMax().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(new BigDecimal("3.14")).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("3.14")));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(BigDecimalConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withPositive();
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -471,222 +483,222 @@ class BigDecimalConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withEqualTo(new BigDecimal("3.14"));
-		assertTrue(config.matches(new BigDecimal("3.14")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("3.15")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("3.14")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("3.15")));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withNotEqualTo(new BigDecimal("3.14"));
-		assertTrue(config.matches(new BigDecimal("3.15")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("3.14")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("3.15")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("3.14")));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withIn(List.of(new BigDecimal("1"), new BigDecimal("2"), new BigDecimal("3")));
-		assertTrue(config.matches(new BigDecimal("1")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("2")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("4")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("1")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("2")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("4")));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withNotIn(List.of(new BigDecimal("1"), new BigDecimal("2"), new BigDecimal("3")));
-		assertTrue(config.matches(new BigDecimal("4")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("1")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("4")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("1")));
 	}
 	
 	@Test
-	void matchesWithGreaterThan() {
+	void validateWithGreaterThan() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withGreaterThan(new BigDecimal("5"));
-		assertTrue(config.matches(new BigDecimal("5.1")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("5")).isError());
-		assertTrue(config.matches(new BigDecimal("4.9")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("5.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("5")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("4.9")));
 	}
 	
 	@Test
-	void matchesWithGreaterThanOrEqual() {
+	void validateWithGreaterThanOrEqual() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(new BigDecimal("5"));
-		assertTrue(config.matches(new BigDecimal("5")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("5.1")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("4.9")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("5")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("5.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("4.9")));
 	}
 	
 	@Test
-	void matchesWithLessThan() {
+	void validateWithLessThan() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withLessThan(new BigDecimal("10"));
-		assertTrue(config.matches(new BigDecimal("9.9")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("10")).isError());
-		assertTrue(config.matches(new BigDecimal("10.1")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("9.9")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("10")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("10.1")));
 	}
 	
 	@Test
-	void matchesWithLessThanOrEqual() {
+	void validateWithLessThanOrEqual() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(new BigDecimal("10"));
-		assertTrue(config.matches(new BigDecimal("10")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("9.9")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("10.1")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("10")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("9.9")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("10.1")));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withBetween(new BigDecimal("1"), new BigDecimal("10"));
-		assertTrue(config.matches(new BigDecimal("5")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("1")).isError());
-		assertTrue(config.matches(new BigDecimal("10")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("5")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("10")));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(new BigDecimal("1"), new BigDecimal("10"));
-		assertTrue(config.matches(new BigDecimal("1")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("10")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("5")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("0.9")).isError());
-		assertTrue(config.matches(new BigDecimal("10.1")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("1")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("10")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("5")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("0.9")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("10.1")));
 	}
 	
 	@Test
-	void matchesWithPositive() {
+	void validateWithPositive() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withPositive();
-		assertTrue(config.matches(new BigDecimal("0.1")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("100")).isSuccess());
-		assertTrue(config.matches(BigDecimal.ZERO).isError());
-		assertTrue(config.matches(new BigDecimal("-0.1")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("0.1")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("100")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(BigDecimal.ZERO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("-0.1")));
 	}
 	
 	@Test
-	void matchesWithNonPositive() {
+	void validateWithNonPositive() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withNonPositive();
-		assertTrue(config.matches(BigDecimal.ZERO).isSuccess());
-		assertTrue(config.matches(new BigDecimal("-0.1")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("0.1")).isError());
+		assertDoesNotThrow(() -> config.validate(BigDecimal.ZERO));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("-0.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("0.1")));
 	}
 	
 	@Test
-	void matchesWithNegative() {
+	void validateWithNegative() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withNegative();
-		assertTrue(config.matches(new BigDecimal("-0.1")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("-100")).isSuccess());
-		assertTrue(config.matches(BigDecimal.ZERO).isError());
-		assertTrue(config.matches(new BigDecimal("0.1")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("-0.1")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("-100")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(BigDecimal.ZERO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("0.1")));
 	}
 	
 	@Test
-	void matchesWithNonNegative() {
+	void validateWithNonNegative() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withNonNegative();
-		assertTrue(config.matches(BigDecimal.ZERO).isSuccess());
-		assertTrue(config.matches(new BigDecimal("0.1")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("-0.1")).isError());
+		assertDoesNotThrow(() -> config.validate(BigDecimal.ZERO));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("0.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("-0.1")));
 	}
 	
 	@Test
-	void matchesWithZero() {
+	void validateWithZero() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withZero();
-		assertTrue(config.matches(BigDecimal.ZERO).isSuccess());
-		assertTrue(config.matches(new BigDecimal("0.1")).isError());
-		assertTrue(config.matches(new BigDecimal("-0.1")).isError());
+		assertDoesNotThrow(() -> config.validate(BigDecimal.ZERO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("0.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("-0.1")));
 	}
 	
 	@Test
-	void matchesWithNonZero() {
+	void validateWithNonZero() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withNonZero();
-		assertTrue(config.matches(new BigDecimal("0.1")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("-0.1")).isSuccess());
-		assertTrue(config.matches(BigDecimal.ZERO).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("0.1")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("-0.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(BigDecimal.ZERO));
 	}
 	
 	@Test
-	void matchesWithPercentage() {
+	void validateWithPercentage() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withPercentage();
-		assertTrue(config.matches(BigDecimal.ZERO).isSuccess());
-		assertTrue(config.matches(new BigDecimal("50")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("100")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("-0.1")).isError());
-		assertTrue(config.matches(new BigDecimal("100.1")).isError());
+		assertDoesNotThrow(() -> config.validate(BigDecimal.ZERO));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("50")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("100")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("-0.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("100.1")));
 	}
 	
 	@Test
-	void matchesWithIntegral() {
+	void validateWithIntegral() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withIntegral();
-		assertTrue(config.matches(new BigDecimal("1")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("42")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("-5")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("1.00")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("1.5")).isError());
-		assertTrue(config.matches(new BigDecimal("3.14")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("1")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("42")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("-5")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("1.00")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("1.5")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("3.14")));
 	}
 	
 	@Test
-	void matchesWithNormalized() {
+	void validateWithNormalized() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withNormalized();
-		assertTrue(config.matches(BigDecimal.ZERO).isSuccess());
-		assertTrue(config.matches(new BigDecimal("0.5")).isSuccess());
-		assertTrue(config.matches(BigDecimal.ONE).isSuccess());
-		assertTrue(config.matches(new BigDecimal("-0.1")).isError());
-		assertTrue(config.matches(new BigDecimal("1.1")).isError());
+		assertDoesNotThrow(() -> config.validate(BigDecimal.ZERO));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("0.5")));
+		assertDoesNotThrow(() -> config.validate(BigDecimal.ONE));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("-0.1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("1.1")));
 	}
 	
 	@Test
-	void matchesWithScale() {
+	void validateWithScale() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withScale(2);
-		assertTrue(config.matches(new BigDecimal("1.23")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("0.00")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("1.2")).isError());
-		assertTrue(config.matches(new BigDecimal("1.234")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("1.23")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("0.00")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("1.2")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("1.234")));
 	}
 	
 	@Test
-	void matchesWithScaleRange() {
+	void validateWithScaleRange() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withScaleBetween(2, 4);
-		assertTrue(config.matches(new BigDecimal("1.23")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("1.234")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("1.2345")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("1.2")).isError());
-		assertTrue(config.matches(new BigDecimal("1.23456")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("1.23")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("1.234")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("1.2345")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("1.2")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("1.23456")));
 	}
 	
 	@Test
-	void matchesWithPrecision() {
+	void validateWithPrecision() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withPrecision(3);
-		assertTrue(config.matches(new BigDecimal("123")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("1.23")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("12")).isError());
-		assertTrue(config.matches(new BigDecimal("1234")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("123")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("1.23")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("12")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("1234")));
 	}
 	
 	@Test
-	void matchesWithPrecisionRange() {
+	void validateWithPrecisionRange() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED.withPrecisionBetween(2, 4);
-		assertTrue(config.matches(new BigDecimal("12")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("123")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("1234")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("1")).isError());
-		assertTrue(config.matches(new BigDecimal("12345")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("12")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("123")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("1234")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("12345")));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED
 			.withPositive()
 			.withMaxScale(2)
 			.withLessThanOrEqual(new BigDecimal("100"));
 		
-		assertTrue(config.matches(new BigDecimal("0.01")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("50.50")).isSuccess());
-		assertTrue(config.matches(new BigDecimal("100")).isSuccess());
-		assertTrue(config.matches(BigDecimal.ZERO).isError());
-		assertTrue(config.matches(new BigDecimal("-1")).isError());
-		assertTrue(config.matches(new BigDecimal("1.123")).isError());
-		assertTrue(config.matches(new BigDecimal("100.01")).isError());
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("0.01")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("50.50")));
+		assertDoesNotThrow(() -> config.validate(new BigDecimal("100")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(BigDecimal.ZERO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("-1")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("1.123")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new BigDecimal("100.01")));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		BigDecimalConstraintConfig config = BigDecimalConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

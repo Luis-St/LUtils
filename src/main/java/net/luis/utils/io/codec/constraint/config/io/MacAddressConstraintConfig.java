@@ -20,13 +20,12 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.io.network.address.mac.MacAddress;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -109,6 +108,11 @@ public record MacAddressConstraintConfig(
 		if (universal.isPresent() && local.isPresent()) {
 			throw new IllegalArgumentException("Universal and local constraints are mutually exclusive");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -262,19 +266,19 @@ public record MacAddressConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull MacAddress value) {
+	public void validate(@NonNull MacAddress value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchFlag(value, this.unicast, MacAddress::isUnicast, "MAC address must be unicast, but was multicast: " + value),
-			() -> ConstraintMatchers.matchFlag(value, this.multicast, MacAddress::isMulticast, "MAC address must be multicast, but was unicast: " + value),
-			() -> ConstraintMatchers.matchFlag(value, this.universal, MacAddress::isUniversal, "MAC address must be universally administered, but was locally administered: " + value),
-			() -> ConstraintMatchers.matchFlag(value, this.local, MacAddress::isLocal, "MAC address must be locally administered, but was universally administered: " + value),
-			() -> IOMatchers.matchMacAddressBroadcast(value, this.broadcast),
-			() -> ConstraintMatchers.matchNestedConfig(value.toString(), this.stringConstraint, "String representation"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateFlag(value, this.unicast, MacAddress::isUnicast, "MAC address must be unicast, but was multicast: " + value),
+			() -> ConstraintValidators.validateFlag(value, this.multicast, MacAddress::isMulticast, "MAC address must be multicast, but was unicast: " + value),
+			() -> ConstraintValidators.validateFlag(value, this.universal, MacAddress::isUniversal, "MAC address must be universally administered, but was locally administered: " + value),
+			() -> ConstraintValidators.validateFlag(value, this.local, MacAddress::isLocal, "MAC address must be locally administered, but was universally administered: " + value),
+			() -> IOValidators.validateMacAddressBroadcast(value, this.broadcast),
+			() -> ConstraintValidators.validateNestedConfig(value.toString(), this.stringConstraint, "String representation"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

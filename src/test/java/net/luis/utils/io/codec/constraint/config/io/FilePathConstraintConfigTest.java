@@ -19,10 +19,10 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.Platform;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -89,6 +89,17 @@ class FilePathConstraintConfigTest {
 		assertTrue(config.absolute().isEmpty());
 		assertTrue(config.relative().isEmpty());
 		assertTrue(config.custom().isEmpty());
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(FilePathConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withAbsolute();
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -296,7 +307,7 @@ class FilePathConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -307,53 +318,53 @@ class FilePathConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() {
+	void validateUnconstrained() {
 		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches(Path.of("/home/user")).isSuccess());
-		assertTrue(config.matches(Path.of("relative/path")).isSuccess());
-		assertTrue(config.matches(Path.of("file.txt")).isSuccess());
+		assertDoesNotThrow(() -> config.validate(Path.of("/home/user")));
+		assertDoesNotThrow(() -> config.validate(Path.of("relative/path")));
+		assertDoesNotThrow(() -> config.validate(Path.of("file.txt")));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> FilePathConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> FilePathConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() {
+	void validateEqualTo() {
 		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withEqualTo(Path.of("/home/user"));
 		
-		assertTrue(config.matches(Path.of("/home/user")).isSuccess());
-		assertTrue(config.matches(Path.of("/home/other")).isError());
+		assertDoesNotThrow(() -> config.validate(Path.of("/home/user")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Path.of("/home/other")));
 	}
 	
 	@Test
-	void matchesIn() {
+	void validateIn() {
 		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withIn(List.of(Path.of("/home"), Path.of("/var")));
 		
-		assertTrue(config.matches(Path.of("/home")).isSuccess());
-		assertTrue(config.matches(Path.of("/var")).isSuccess());
-		assertTrue(config.matches(Path.of("/tmp")).isError());
+		assertDoesNotThrow(() -> config.validate(Path.of("/home")));
+		assertDoesNotThrow(() -> config.validate(Path.of("/var")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Path.of("/tmp")));
 	}
 	
 	@Test
-	void matchesLength() {
+	void validateLength() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(5).withMaxLength(20);
 		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
 		
-		assertTrue(config.matches(Path.of("/home/user")).isSuccess());
-		assertTrue(config.matches(Path.of("/a")).isError());
+		assertDoesNotThrow(() -> config.validate(Path.of("/home/user")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Path.of("/a")));
 	}
 	
 	@Test
-	void matchesDepth() {
+	void validateDepth() {
 		DepthConstraintConfig depthConfig = DepthConstraintConfig.UNCONSTRAINED.withMinDepth(2).withMaxDepth(4);
 		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withDepth(depthConfig);
 		
-		assertTrue(config.matches(Path.of("a/b")).isSuccess());
-		assertTrue(config.matches(Path.of("a/b/c")).isSuccess());
-		assertTrue(config.matches(Path.of("a")).isError());
-		assertTrue(config.matches(Path.of("a/b/c/d/e")).isError());
+		assertDoesNotThrow(() -> config.validate(Path.of("a/b")));
+		assertDoesNotThrow(() -> config.validate(Path.of("a/b/c")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Path.of("a")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Path.of("a/b/c/d/e")));
 	}
 }

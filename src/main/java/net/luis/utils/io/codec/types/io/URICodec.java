@@ -18,19 +18,18 @@
 
 package net.luis.utils.io.codec.types.io;
 
-import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.io.URIConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.io.URIConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for URIs.<br>
@@ -41,13 +40,17 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class URICodec extends AbstractCodec<URI, URIConstraintConfig> implements URIConstraint<URICodec> {
-
+public class URICodec
+	extends AbstractConstrainableCodec<URI, URIConstraintConfig, URICodec>
+	implements URIConstraint<URICodec> {
+	
 	/**
 	 * Constructs a new URI codec.<br>
 	 */
-	public URICodec() {}
-
+	public URICodec() {
+		super(URICodec::new, URIConstraintConfig.UNCONSTRAINED);
+	}
+	
 	/**
 	 * Constructs a new URI codec with the given configuration.<br>
 	 *
@@ -55,65 +58,34 @@ public class URICodec extends AbstractCodec<URI, URIConstraintConfig> implements
 	 * @throws NullPointerException If the config is null
 	 */
 	private URICodec(@NonNull URIConstraintConfig config) {
-		super(config);
-	}
-
-	@Override
-	public @NonNull URICodec apply(@NonNull UnaryOperator<URIConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-
-		return new URICodec(
-			configModifier.apply(this.getConstraintConfig().orElse(URIConstraintConfig.UNCONSTRAINED))
-		);
+		super(URICodec::new, config);
 	}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable URI value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable URI value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
-			return Result.error("Unable to encode null as URI using '" + this + "'");
+			throw new EncoderException("Unable to encode null as uri", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Codecs.STRING.encodeStart(provider, current, value.toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
-	public <R> @NonNull Result<URI> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull URI decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as URI using '" + this + "'");
+			throw new DecoderException("Unable to decode null as uri", this);
 		}
 		
-		Result<String> result = Codecs.STRING.decodeStart(provider, current, value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			URI uri = new URI(string);
-			
-			Result<Void> constraintResult = this.checkConstraints(uri);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(uri);
+			return this.validateDecodeConstraints(uri);
 		} catch (URISyntaxException e) {
-			return Result.error("Unable to decode URI '" + string + "' using '" + this + "': Unable to parse URI: " + e.getMessage());
+			throw new DecoderException("Unable to decode uri '" + string + "': Unable to parse uri: " + e.getMessage(), this);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedURICodec[constraints=" + config + "]";
-		}).orElse("URICodec");
 	}
 }

@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
@@ -37,67 +38,62 @@ import static org.junit.jupiter.api.Assertions.*;
 class DayOfWeekCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		DayOfWeek day = DayOfWeek.MONDAY;
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), day));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, day));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), day));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, day));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as day of week"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as day of week"));
 	}
 	
 	@Test
-	void encodeStartWithMonday() {
+	void encodeWithMonday() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		DayOfWeek day = DayOfWeek.MONDAY;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), day);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("MONDAY"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), day);
+		assertEquals(new JsonPrimitive("MONDAY"), result);
 	}
 	
 	@Test
-	void encodeStartWithTuesday() {
+	void encodeWithTuesday() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		DayOfWeek day = DayOfWeek.TUESDAY;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), day);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("TUESDAY"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), day);
+		assertEquals(new JsonPrimitive("TUESDAY"), result);
 	}
 	
 	@Test
-	void encodeStartWithWednesday() {
+	void encodeWithWednesday() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		DayOfWeek day = DayOfWeek.WEDNESDAY;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), day);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("WEDNESDAY"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), day);
+		assertEquals(new JsonPrimitive("WEDNESDAY"), result);
 	}
 	
 	@Test
-	void encodeStartWithSunday() {
+	void encodeWithSunday() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		DayOfWeek day = DayOfWeek.SUNDAY;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), day);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("SUNDAY"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), day);
+		assertEquals(new JsonPrimitive("SUNDAY"), result);
 	}
 	
 	@Test
@@ -109,101 +105,92 @@ class DayOfWeekCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithDay() {
+	void encodeKeyWithDay() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		DayOfWeek day = DayOfWeek.FRIDAY;
 		
-		Result<String> result = codec.encodeKey(day);
-		assertTrue(result.isSuccess());
-		assertEquals("FRIDAY", result.resultOrThrow());
+		String result = codec.encodeKey(day);
+		assertEquals("FRIDAY", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("MONDAY")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("MONDAY")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<DayOfWeek> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as day of week"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as day of week"));
 	}
 	
 	@Test
-	void decodeStartWithValidMonday() {
+	void decodeWithValidMonday() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<DayOfWeek> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("MONDAY"));
-		assertTrue(result.isSuccess());
-		assertEquals(DayOfWeek.MONDAY, result.resultOrThrow());
+		DayOfWeek result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("MONDAY"));
+		assertEquals(DayOfWeek.MONDAY, result);
 	}
 	
 	@Test
-	void decodeStartWithValidTuesday() {
+	void decodeWithValidTuesday() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<DayOfWeek> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("TUESDAY"));
-		assertTrue(result.isSuccess());
-		assertEquals(DayOfWeek.TUESDAY, result.resultOrThrow());
+		DayOfWeek result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("TUESDAY"));
+		assertEquals(DayOfWeek.TUESDAY, result);
 	}
 	
 	@Test
-	void decodeStartWithValidWednesday() {
+	void decodeWithValidWednesday() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<DayOfWeek> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("WEDNESDAY"));
-		assertTrue(result.isSuccess());
-		assertEquals(DayOfWeek.WEDNESDAY, result.resultOrThrow());
+		DayOfWeek result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("WEDNESDAY"));
+		assertEquals(DayOfWeek.WEDNESDAY, result);
 	}
 	
 	@Test
-	void decodeStartWithValidSunday() {
+	void decodeWithValidSunday() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<DayOfWeek> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("SUNDAY"));
-		assertTrue(result.isSuccess());
-		assertEquals(DayOfWeek.SUNDAY, result.resultOrThrow());
+		DayOfWeek result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("SUNDAY"));
+		assertEquals(DayOfWeek.SUNDAY, result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidDay() {
+	void decodeWithInvalidDay() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<DayOfWeek> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("INVALID_DAY"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode day of week"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("INVALID_DAY")));
+		assertTrue(exception.getMessage().contains("Unable to decode day of week"));
 	}
 	
 	@Test
-	void decodeStartWithLowercaseDay() {
+	void decodeWithLowercaseDay() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<DayOfWeek> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("monday"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode day of week"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("monday")));
+		assertTrue(exception.getMessage().contains("Unable to decode day of week"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<DayOfWeek> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -215,23 +202,21 @@ class DayOfWeekCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidDay() {
+	void decodeKeyWithValidDay() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<DayOfWeek> result = codec.decodeKey("FRIDAY");
-		assertTrue(result.isSuccess());
-		assertEquals(DayOfWeek.FRIDAY, result.resultOrThrow());
+		DayOfWeek result = codec.decodeKey("FRIDAY");
+		assertEquals(DayOfWeek.FRIDAY, result);
 	}
 	
 	@Test
-	void decodeKeyWithSaturday() {
+	void decodeKeyWithSaturday() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<DayOfWeek> result = codec.decodeKey("SATURDAY");
-		assertTrue(result.isSuccess());
-		assertEquals(DayOfWeek.SATURDAY, result.resultOrThrow());
+		DayOfWeek result = codec.decodeKey("SATURDAY");
+		assertEquals(DayOfWeek.SATURDAY, result);
 	}
 	
 	@Test
@@ -239,9 +224,8 @@ class DayOfWeekCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<DayOfWeek> codec = new DayOfWeekCodec();
 		
-		Result<DayOfWeek> result = codec.decodeKey("INVALID_DAY");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'INVALID_DAY' as day of week"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("INVALID_DAY"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'INVALID_DAY' as day of week"));
 	}
 	
 	@Test

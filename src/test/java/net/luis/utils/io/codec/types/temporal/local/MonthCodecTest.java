@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Month;
@@ -37,67 +38,62 @@ import static org.junit.jupiter.api.Assertions.*;
 class MonthCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		Month month = Month.JANUARY;
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), month));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, month));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), month));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, month));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as month"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as month"));
 	}
 	
 	@Test
-	void encodeStartWithJanuary() {
+	void encodeWithJanuary() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		Month month = Month.JANUARY;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), month);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("JANUARY"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), month);
+		assertEquals(new JsonPrimitive("JANUARY"), result);
 	}
 	
 	@Test
-	void encodeStartWithFebruary() {
+	void encodeWithFebruary() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		Month month = Month.FEBRUARY;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), month);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("FEBRUARY"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), month);
+		assertEquals(new JsonPrimitive("FEBRUARY"), result);
 	}
 	
 	@Test
-	void encodeStartWithJune() {
+	void encodeWithJune() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		Month month = Month.JUNE;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), month);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("JUNE"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), month);
+		assertEquals(new JsonPrimitive("JUNE"), result);
 	}
 	
 	@Test
-	void encodeStartWithDecember() {
+	void encodeWithDecember() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		Month month = Month.DECEMBER;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), month);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("DECEMBER"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), month);
+		assertEquals(new JsonPrimitive("DECEMBER"), result);
 	}
 	
 	@Test
@@ -109,101 +105,92 @@ class MonthCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithMonth() {
+	void encodeKeyWithMonth() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		Month month = Month.MARCH;
 		
-		Result<String> result = codec.encodeKey(month);
-		assertTrue(result.isSuccess());
-		assertEquals("MARCH", result.resultOrThrow());
+		String result = codec.encodeKey(month);
+		assertEquals("MARCH", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("JANUARY")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("JANUARY")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as month"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as month"));
 	}
 	
 	@Test
-	void decodeStartWithValidJanuary() {
+	void decodeWithValidJanuary() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("JANUARY"));
-		assertTrue(result.isSuccess());
-		assertEquals(Month.JANUARY, result.resultOrThrow());
+		Month result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("JANUARY"));
+		assertEquals(Month.JANUARY, result);
 	}
 	
 	@Test
-	void decodeStartWithValidFebruary() {
+	void decodeWithValidFebruary() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("FEBRUARY"));
-		assertTrue(result.isSuccess());
-		assertEquals(Month.FEBRUARY, result.resultOrThrow());
+		Month result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("FEBRUARY"));
+		assertEquals(Month.FEBRUARY, result);
 	}
 	
 	@Test
-	void decodeStartWithValidJune() {
+	void decodeWithValidJune() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("JUNE"));
-		assertTrue(result.isSuccess());
-		assertEquals(Month.JUNE, result.resultOrThrow());
+		Month result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("JUNE"));
+		assertEquals(Month.JUNE, result);
 	}
 	
 	@Test
-	void decodeStartWithValidDecember() {
+	void decodeWithValidDecember() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("DECEMBER"));
-		assertTrue(result.isSuccess());
-		assertEquals(Month.DECEMBER, result.resultOrThrow());
+		Month result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("DECEMBER"));
+		assertEquals(Month.DECEMBER, result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidMonth() {
+	void decodeWithInvalidMonth() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("INVALID_MONTH"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode month"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("INVALID_MONTH")));
+		assertTrue(exception.getMessage().contains("Unable to decode month"));
 	}
 	
 	@Test
-	void decodeStartWithLowercaseMonth() {
+	void decodeWithLowercaseMonth() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("january"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode month"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("january")));
+		assertTrue(exception.getMessage().contains("Unable to decode month"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -215,23 +202,21 @@ class MonthCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidMonth() {
+	void decodeKeyWithValidMonth() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<Month> result = codec.decodeKey("APRIL");
-		assertTrue(result.isSuccess());
-		assertEquals(Month.APRIL, result.resultOrThrow());
+		Month result = codec.decodeKey("APRIL");
+		assertEquals(Month.APRIL, result);
 	}
 	
 	@Test
-	void decodeKeyWithAugust() {
+	void decodeKeyWithAugust() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<Month> result = codec.decodeKey("AUGUST");
-		assertTrue(result.isSuccess());
-		assertEquals(Month.AUGUST, result.resultOrThrow());
+		Month result = codec.decodeKey("AUGUST");
+		assertEquals(Month.AUGUST, result);
 	}
 	
 	@Test
@@ -239,9 +224,8 @@ class MonthCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = new MonthCodec();
 		
-		Result<Month> result = codec.decodeKey("INVALID_MONTH");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'INVALID_MONTH' as month"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("INVALID_MONTH"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'INVALID_MONTH' as month"));
 	}
 	
 	@Test

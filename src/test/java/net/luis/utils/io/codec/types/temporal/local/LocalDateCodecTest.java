@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -37,124 +38,113 @@ import static org.junit.jupiter.api.Assertions.*;
 class LocalDateCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		LocalDate date = LocalDate.now();
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), date));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, date));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), date));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, date));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as local date"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as local date"));
 	}
 	
 	@Test
-	void encodeStartWithValidDate() {
+	void encodeWithValidDate() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		LocalDate date = LocalDate.parse("2025-01-15");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), date);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("2025-01-15"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), date);
+		assertEquals(new JsonPrimitive("2025-01-15"), result);
 	}
 	
 	@Test
-	void encodeStartWithEpoch() {
+	void encodeWithEpoch() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		LocalDate date = LocalDate.parse("1970-01-01");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), date);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("1970-01-01"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), date);
+		assertEquals(new JsonPrimitive("1970-01-01"), result);
 	}
 	
 	@Test
-	void encodeStartWithFutureDate() {
+	void encodeWithFutureDate() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		LocalDate date = LocalDate.parse("2030-12-31");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), date);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("2030-12-31"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), date);
+		assertEquals(new JsonPrimitive("2030-12-31"), result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("2025-01-15")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("2025-01-15")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		
-		Result<LocalDate> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as local date"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as local date"));
 	}
 	
 	@Test
-	void decodeStartWithValidString() {
+	void decodeWithValidString() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		
-		Result<LocalDate> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2025-01-15"));
-		assertTrue(result.isSuccess());
-		assertEquals(LocalDate.parse("2025-01-15"), result.resultOrThrow());
+		LocalDate result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2025-01-15"));
+		assertEquals(LocalDate.parse("2025-01-15"), result);
 	}
 	
 	@Test
-	void decodeStartWithEpoch() {
+	void decodeWithEpoch() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		
-		Result<LocalDate> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("1970-01-01"));
-		assertTrue(result.isSuccess());
-		assertEquals(LocalDate.parse("1970-01-01"), result.resultOrThrow());
+		LocalDate result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("1970-01-01"));
+		assertEquals(LocalDate.parse("1970-01-01"), result);
 	}
 	
 	@Test
-	void decodeStartWithFutureDate() {
+	void decodeWithFutureDate() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		
-		Result<LocalDate> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2030-12-31"));
-		assertTrue(result.isSuccess());
-		assertEquals(LocalDate.parse("2030-12-31"), result.resultOrThrow());
+		LocalDate result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2030-12-31"));
+		assertEquals(LocalDate.parse("2030-12-31"), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidFormat() {
+	void decodeWithInvalidFormat() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		
-		Result<LocalDate> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-date"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode local date"));
-		assertTrue(result.errorOrThrow().contains("Unable to parse local date"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-date")));
+		assertTrue(exception.getMessage().contains("Unable to decode local date"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = new LocalDateCodec();
 		
-		Result<LocalDate> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test

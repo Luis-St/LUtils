@@ -18,9 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
-import net.luis.utils.util.result.Result;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -114,7 +113,7 @@ class LengthConstraintBuilderTest {
 	@Test
 	void customReturnsBuilder() {
 		LengthConstraintBuilder builder = new LengthConstraintBuilder();
-		Constraint<Integer> constraint = value -> Result.success(null);
+		Constraint<Integer> constraint = value -> {};
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
 	}

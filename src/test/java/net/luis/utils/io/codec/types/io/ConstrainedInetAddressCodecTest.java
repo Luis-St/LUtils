@@ -23,10 +23,11 @@ import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -53,25 +54,23 @@ class ConstrainedInetAddressCodecTest {
 	}
 	
 	@Test
-	void encodeStartWithValidConstrainedValue() {
+	void encodeWithValidConstrainedValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		InetAddress expected = getAddress("192.168.1.1");
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.equalTo(expected);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), expected);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("192.168.1.1"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), expected);
+		assertEquals(new JsonPrimitive("192.168.1.1"), result);
 	}
 	
 	@Test
-	void decodeStartWithValidConstrainedValue() {
+	void decodeWithValidConstrainedValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		InetAddress expected = getAddress("192.168.1.1");
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.equalTo(expected);
 		
-		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
-		assertTrue(result.isSuccess());
-		assertEquals(expected, result.resultOrThrow());
+		InetAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
+		assertEquals(expected, result);
 	}
 	
 	@Test
@@ -82,240 +81,220 @@ class ConstrainedInetAddressCodecTest {
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		InetAddress expected = getAddress("192.168.1.1");
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.equalTo(expected);
 		InetAddress different = getAddress("10.0.0.1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), different);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), different));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintViolation() {
+	void decodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		InetAddress expected = getAddress("192.168.1.1");
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.equalTo(expected);
 		
-		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10.0.0.1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("10.0.0.1")));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		InetAddress excluded = getAddress("192.168.1.1");
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.notEqualTo(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintViolation() {
+	void decodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		InetAddress excluded = getAddress("192.168.1.1");
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.notEqualTo(excluded);
 		
-		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1")));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<InetAddress> allowed = List.of(getAddress("192.168.1.1"), getAddress("192.168.1.2"));
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.in(allowed);
 		InetAddress notAllowed = getAddress("10.0.0.1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notAllowed);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), notAllowed));
 	}
 	
 	@Test
-	void decodeStartInConstraintViolation() {
+	void decodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<InetAddress> allowed = List.of(getAddress("192.168.1.1"), getAddress("192.168.1.2"));
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.in(allowed);
 		
-		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10.0.0.1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("10.0.0.1")));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<InetAddress> excluded = List.of(getAddress("192.168.1.1"), getAddress("192.168.1.2"));
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.notIn(excluded);
 		InetAddress excludedValue = getAddress("192.168.1.1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excludedValue);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excludedValue));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintViolation() {
+	void decodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<InetAddress> excluded = List.of(getAddress("192.168.1.1"), getAddress("192.168.1.2"));
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.notIn(excluded);
 		
-		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1")));
 	}
 	
 	@Test
-	void encodeStartIpVersionConstraintViolation() {
+	void encodeIpVersionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.ipVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4));
 		InetAddress ipv6Address = getAddress("::1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), ipv6Address);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), ipv6Address));
 	}
 	
 	@Test
-	void decodeStartIpVersionConstraintViolation() {
+	void decodeIpVersionConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.ipVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4));
 		
-		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("::1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("::1")));
 	}
 	
 	@Test
-	void encodeStartIpVersionIPv6Success() {
+	void encodeIpVersionIPv6Success() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.ipVersion(EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6));
 		InetAddress ipv6Address = getAddress("2001:db8::1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), ipv6Address);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), ipv6Address));
 	}
 	
 	@Test
-	void encodeStartIpTypeConstraintViolation() {
+	void encodeIpTypeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.ipType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK));
 		InetAddress privateAddress = getAddress("192.168.1.1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), privateAddress);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), privateAddress));
 	}
 	
 	@Test
-	void decodeStartIpTypeConstraintViolation() {
+	void decodeIpTypeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.ipType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK));
 		
-		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1")));
 	}
 	
 	@Test
-	void encodeStartIpTypeLoopbackSuccess() {
+	void encodeIpTypeLoopbackSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.ipType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK));
 		InetAddress loopbackAddress = getAddress("127.0.0.1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), loopbackAddress);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), loopbackAddress));
 	}
 	
 	@Test
-	void encodeStartIpTypePrivateSuccess() {
+	void encodeIpTypePrivateSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.ipType(EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE));
 		InetAddress privateAddress = getAddress("192.168.1.1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), privateAddress);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), privateAddress));
 	}
 	
 	@Test
-	void encodeStartInAnySubnetConstraintViolation() {
+	void encodeInAnySubnetConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.inAnySubnet(Set.of("10.0.0.0/8"));
 		InetAddress outsideSubnet = getAddress("192.168.1.1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), outsideSubnet);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), outsideSubnet));
 	}
 	
 	@Test
-	void decodeStartInAnySubnetConstraintViolation() {
+	void decodeInAnySubnetConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.inAnySubnet(Set.of("10.0.0.0/8"));
 		
-		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1")));
 	}
 	
 	@Test
-	void encodeStartInAnySubnetSuccess() {
+	void encodeInAnySubnetSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.inAnySubnet(Set.of("10.0.0.0/8"));
 		InetAddress inSubnet = getAddress("10.1.2.3");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), inSubnet);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), inSubnet));
 	}
 	
 	@Test
-	void encodeStartNotInAnySubnetConstraintViolation() {
+	void encodeNotInAnySubnetConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.notInAnySubnet(Set.of("10.0.0.0/8"));
 		InetAddress inSubnet = getAddress("10.1.2.3");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), inSubnet);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), inSubnet));
 	}
 	
 	@Test
-	void decodeStartNotInAnySubnetConstraintViolation() {
+	void decodeNotInAnySubnetConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.notInAnySubnet(Set.of("10.0.0.0/8"));
 		
-		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("10.1.2.3"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("10.1.2.3")));
 	}
 	
 	@Test
-	void encodeStartNotInAnySubnetSuccess() {
+	void encodeNotInAnySubnetSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = Codecs.INET_ADDRESS.notInAnySubnet(Set.of("10.0.0.0/8"));
 		InetAddress outsideSubnet = getAddress("192.168.1.1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), outsideSubnet);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), outsideSubnet));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<InetAddress> codec = Codecs.INET_ADDRESS.custom(value -> Result.error("Custom validation failed"));
+		Codec<InetAddress> codec = Codecs.INET_ADDRESS.custom(value -> {
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Custom validation failed");
+		});
 		InetAddress address = getAddress("192.168.1.1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), address));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintViolation() {
+	void decodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<InetAddress> codec = Codecs.INET_ADDRESS.custom(value -> Result.error("Custom validation failed"));
+		Codec<InetAddress> codec = Codecs.INET_ADDRESS.custom(value -> {
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Custom validation failed");
+		});
 		
-		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1")));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintSuccess() {
+	void encodeCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<InetAddress> codec = Codecs.INET_ADDRESS.custom(value -> Result.success());
+		Codec<InetAddress> codec = Codecs.INET_ADDRESS.custom(value -> {});
 		InetAddress address = getAddress("192.168.1.1");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), address));
 	}
 }

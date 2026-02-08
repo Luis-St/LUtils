@@ -19,11 +19,12 @@
 package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.Either;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -46,193 +47,174 @@ class EitherCodecTest {
 	}
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		Either<Integer, Boolean> left = Either.left(1);
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), left));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, left));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), left));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, left));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null value as either"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null value as either"));
 	}
 	
 	@Test
-	void encodeStartWithLeftValue() {
+	void encodeWithLeftValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		Either<Integer, Boolean> left = Either.left(42);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), left);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(42), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), left);
+		assertEquals(new JsonPrimitive(42), result);
 	}
 	
 	@Test
-	void encodeStartWithRightValue() {
+	void encodeWithRightValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		Either<Integer, Boolean> right = Either.right(true);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), right);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(true), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), right);
+		assertEquals(new JsonPrimitive(true), result);
 	}
 	
 	@Test
-	void encodeStartWithDifferentTypes() {
+	void encodeWithDifferentTypes() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<String, Double>> codec = new EitherCodec<>(STRING, DOUBLE);
 		
 		Either<String, Double> leftString = Either.left("hello");
-		Result<JsonElement> leftResult = codec.encodeStart(typeProvider, typeProvider.empty(), leftString);
-		assertTrue(leftResult.isSuccess());
-		assertEquals(new JsonPrimitive("hello"), leftResult.resultOrThrow());
+		JsonElement leftResult = codec.encode(typeProvider, typeProvider.empty(), leftString);
+		assertEquals(new JsonPrimitive("hello"), leftResult);
 		
 		Either<String, Double> rightDouble = Either.right(3.14);
-		Result<JsonElement> rightResult = codec.encodeStart(typeProvider, typeProvider.empty(), rightDouble);
-		assertTrue(rightResult.isSuccess());
-		assertEquals(new JsonPrimitive(3.14), rightResult.resultOrThrow());
+		JsonElement rightResult = codec.encode(typeProvider, typeProvider.empty(), rightDouble);
+		assertEquals(new JsonPrimitive(3.14), rightResult);
 	}
 	
 	@Test
-	void encodeStartWithNullLeftValue() {
+	void encodeWithNullLeftValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Optional<Integer>, Boolean>> codec = new EitherCodec<>(INTEGER.optional(), BOOLEAN);
 		Either<Optional<Integer>, Boolean> left = Either.left(null);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), left);
-		assertTrue(result.isSuccess());
-		JsonElement element = result.resultOrThrow();
-		assertFalse(element.isJsonNull());
-		assertFalse(element.isJsonPrimitive());
-		assertFalse(element.isJsonArray());
-		assertFalse(element.isJsonObject());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), left);
+		assertFalse(result.isJsonNull());
+		assertFalse(result.isJsonPrimitive());
+		assertFalse(result.isJsonArray());
+		assertFalse(result.isJsonObject());
 	}
 	
 	@Test
-	void encodeStartWithNullRightValue() {
+	void encodeWithNullRightValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Integer, Optional<Boolean>>> codec = new EitherCodec<>(INTEGER, BOOLEAN.optional());
 		Either<Integer, Optional<Boolean>> right = Either.right(null);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), right);
-		assertTrue(result.isSuccess());
-		JsonElement element = result.resultOrThrow();
-		assertFalse(element.isJsonNull());
-		assertFalse(element.isJsonPrimitive());
-		assertFalse(element.isJsonArray());
-		assertFalse(element.isJsonObject());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), right);
+		assertFalse(result.isJsonNull());
+		assertFalse(result.isJsonPrimitive());
+		assertFalse(result.isJsonArray());
+		assertFalse(result.isJsonObject());
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive(1)));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive(1)));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
-		Result<Either<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as either"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as either"));
 	}
 	
 	@Test
-	void decodeStartWithFirstCodecMatch() {
+	void decodeWithFirstCodecMatch() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
-		Result<Either<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isSuccess());
-		assertEquals(Either.left(42), result.resultOrThrow());
+		Either<Integer, Boolean> result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
+		assertEquals(Either.left(42), result);
 	}
 	
 	@Test
-	void decodeStartWithSecondCodecMatch() {
+	void decodeWithSecondCodecMatch() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
-		Result<Either<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(true));
-		assertTrue(result.isSuccess());
-		assertEquals(Either.right(true), result.resultOrThrow());
+		Either<Integer, Boolean> result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(true));
+		assertEquals(Either.right(true), result);
 	}
 	
 	@Test
-	void decodeStartWithNoMatch() {
+	void decodeWithNoMatch() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
-		Result<Either<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not-int-or-bool"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode value as either"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not-int-or-bool")));
+		assertTrue(exception.getMessage().contains("Unable to decode value as either"));
 	}
 	
 	@Test
-	void decodeStartPrefersFirstCodec() {
+	void decodePrefersFirstCodec() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<String, String>> codec = new EitherCodec<>(STRING, STRING);
 		
-		Result<Either<String, String>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("hello"));
-		assertTrue(result.isSuccess());
-		assertTrue(result.resultOrThrow().isLeft());
-		assertEquals("hello", result.resultOrThrow().leftOrThrow());
+		Either<String, String> result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("hello"));
+		assertTrue(result.isLeft());
+		assertEquals("hello", result.leftOrThrow());
 	}
 	
 	@Test
-	void decodeStartWithDifferentTypes() {
+	void decodeWithDifferentTypes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<String, Double>> codec = new EitherCodec<>(STRING, DOUBLE);
 		
-		Result<Either<String, Double>> stringResult = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("text"));
-		assertTrue(stringResult.isSuccess());
-		assertTrue(stringResult.resultOrThrow().isLeft());
-		assertEquals("text", stringResult.resultOrThrow().leftOrThrow());
+		Either<String, Double> stringResult = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("text"));
+		assertTrue(stringResult.isLeft());
+		assertEquals("text", stringResult.leftOrThrow());
 		
-		Result<Either<String, Double>> doubleResult = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14));
-		assertTrue(doubleResult.isSuccess());
-		assertTrue(doubleResult.resultOrThrow().isRight());
-		assertEquals(3.14, doubleResult.resultOrThrow().rightOrThrow());
+		Either<String, Double> doubleResult = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(3.14));
+		assertTrue(doubleResult.isRight());
+		assertEquals(3.14, doubleResult.rightOrThrow());
 	}
 	
 	@Test
-	void decodeStartWithOverlappingTypes() {
+	void decodeWithOverlappingTypes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Double, Integer>> codec = new EitherCodec<>(DOUBLE, INTEGER);
 		
-		Result<Either<Double, Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isSuccess());
-		assertTrue(result.resultOrThrow().isLeft());
-		assertEquals(42.0, result.resultOrThrow().leftOrThrow());
+		Either<Double, Integer> result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
+		assertTrue(result.isLeft());
+		assertEquals(42.0, result.leftOrThrow());
 	}
 	
 	@Test
-	void decodeStartWithOptionalCodecs() {
+	void decodeWithOptionalCodecs() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Either<Optional<Integer>, String>> codec = new EitherCodec<>(INTEGER.optional(), STRING);
 		
-		Result<Either<Optional<Integer>, String>> intResult = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(intResult.isSuccess());
-		assertTrue(intResult.resultOrThrow().isLeft());
-		assertEquals(42, intResult.resultOrThrow().leftOrThrow().orElseThrow());
+		Either<Optional<Integer>, String> intResult = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
+		assertTrue(intResult.isLeft());
+		assertEquals(42, intResult.leftOrThrow().orElseThrow());
 		
-		Result<Either<Optional<Integer>, String>> stringResult = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("text"));
-		assertTrue(stringResult.isSuccess());
-		assertTrue(stringResult.resultOrThrow().isLeft());
-		assertTrue(stringResult.resultOrThrow().leftOrThrow().isEmpty());
+		Either<Optional<Integer>, String> stringResult = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("text"));
+		assertTrue(stringResult.isLeft());
+		assertTrue(stringResult.leftOrThrow().isEmpty());
 	}
 	
 	@Test

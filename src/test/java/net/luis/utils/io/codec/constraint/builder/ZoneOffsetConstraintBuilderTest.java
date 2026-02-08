@@ -20,7 +20,6 @@ package net.luis.utils.io.codec.constraint.builder;
 
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
@@ -121,7 +120,7 @@ class ZoneOffsetConstraintBuilderTest {
 	@Test
 	void customReturnsBuilder() {
 		ZoneOffsetConstraintBuilder builder = new ZoneOffsetConstraintBuilder();
-		Constraint<ZoneOffset> constraint = value -> Result.success(null);
+		Constraint<ZoneOffset> constraint = value -> {};
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
 	}

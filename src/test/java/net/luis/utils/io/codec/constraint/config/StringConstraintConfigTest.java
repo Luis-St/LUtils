@@ -18,12 +18,11 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,7 +44,7 @@ class StringConstraintConfigTest {
 			Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructWithNullIn() {
 		assertThrows(NullPointerException.class, () -> new StringConstraintConfig(
@@ -56,7 +55,7 @@ class StringConstraintConfigTest {
 			Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructWithEmptyInSet() {
 		assertThrows(IllegalArgumentException.class, () -> new StringConstraintConfig(
@@ -104,7 +103,18 @@ class StringConstraintConfigTest {
 		assertTrue(config.equalTo().isEmpty());
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.length().isEmpty());
-		assertTrue(config.matches("any string").isSuccess());
+		assertDoesNotThrow(() -> config.validate("any string"));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(StringConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("test");
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -138,7 +148,7 @@ class StringConstraintConfigTest {
 		assertEquals(Set.of("x", "y"), config.in().get().getFirst());
 		assertTrue(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withLength() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(2).withMaxLength(10);
@@ -205,147 +215,147 @@ class StringConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("hello");
-		assertTrue(config.matches("hello").isSuccess());
-		assertTrue(config.matches("world").isError());
+		assertDoesNotThrow(() -> config.validate("hello"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("world"));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNotEqualTo("forbidden");
-		assertTrue(config.matches("allowed").isSuccess());
-		assertTrue(config.matches("forbidden").isError());
+		assertDoesNotThrow(() -> config.validate("allowed"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("forbidden"));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withIn(List.of("a", "b", "c"));
-		assertTrue(config.matches("a").isSuccess());
-		assertTrue(config.matches("b").isSuccess());
-		assertTrue(config.matches("d").isError());
+		assertDoesNotThrow(() -> config.validate("a"));
+		assertDoesNotThrow(() -> config.validate("b"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("d"));
 	}
 	
 	@Test
-	void matchesWithLength() {
+	void validateWithLength() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withLength(LengthConstraintConfig.UNCONSTRAINED.withMinLength(2).withMaxLength(5));
-		assertTrue(config.matches("ab").isSuccess());
-		assertTrue(config.matches("abcde").isSuccess());
-		assertTrue(config.matches("a").isError());
-		assertTrue(config.matches("abcdef").isError());
+		assertDoesNotThrow(() -> config.validate("ab"));
+		assertDoesNotThrow(() -> config.validate("abcde"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("a"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("abcdef"));
 	}
 	
 	@Test
-	void matchesWithStartsWith() {
+	void validateWithStartsWith() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withStartsWith("pre");
-		assertTrue(config.matches("prefix").isSuccess());
-		assertTrue(config.matches("postfix").isError());
+		assertDoesNotThrow(() -> config.validate("prefix"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("postfix"));
 	}
 	
 	@Test
-	void matchesWithContains() {
+	void validateWithContains() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withContains("mid");
-		assertTrue(config.matches("amid").isSuccess());
-		assertTrue(config.matches("test").isError());
+		assertDoesNotThrow(() -> config.validate("amid"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("test"));
 	}
 	
 	@Test
-	void matchesWithEndsWith() {
+	void validateWithEndsWith() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEndsWith("suf");
-		assertTrue(config.matches("testsuf").isSuccess());
-		assertTrue(config.matches("suffix").isError());
+		assertDoesNotThrow(() -> config.validate("testsuf"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("suffix"));
 	}
 	
 	@Test
-	void matchesWithPattern() {
+	void validateWithPattern() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withMatches("[a-z]+");
-		assertTrue(config.matches("abc").isSuccess());
-		assertTrue(config.matches("ABC").isError());
-		assertTrue(config.matches("123").isError());
+		assertDoesNotThrow(() -> config.validate("abc"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("ABC"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("123"));
 	}
 	
 	@Test
-	void matchesWithTrimmed() {
+	void validateWithTrimmed() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withTrimmed();
-		assertTrue(config.matches("trimmed").isSuccess());
-		assertTrue(config.matches(" spaces ").isError());
+		assertDoesNotThrow(() -> config.validate("trimmed"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(" spaces "));
 	}
 	
 	@Test
-	void matchesWithBlank() {
+	void validateWithBlank() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withBlank();
-		assertTrue(config.matches("").isSuccess());
-		assertTrue(config.matches("   ").isSuccess());
-		assertTrue(config.matches("text").isError());
+		assertDoesNotThrow(() -> config.validate(""));
+		assertDoesNotThrow(() -> config.validate("   "));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("text"));
 	}
 	
 	@Test
-	void matchesWithNotBlank() {
+	void validateWithNotBlank() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
-		assertTrue(config.matches("text").isSuccess());
-		assertTrue(config.matches("").isError());
-		assertTrue(config.matches("   ").isError());
+		assertDoesNotThrow(() -> config.validate("text"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(""));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("   "));
 	}
 	
 	@Test
-	void matchesWithUpperCase() {
+	void validateWithUpperCase() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withUpperCase();
-		assertTrue(config.matches("HELLO").isSuccess());
-		assertTrue(config.matches("Hello").isError());
-		assertTrue(config.matches("hello").isError());
+		assertDoesNotThrow(() -> config.validate("HELLO"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("Hello"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("hello"));
 	}
 	
 	@Test
-	void matchesWithLowerCase() {
+	void validateWithLowerCase() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withLowerCase();
-		assertTrue(config.matches("hello").isSuccess());
-		assertTrue(config.matches("Hello").isError());
-		assertTrue(config.matches("HELLO").isError());
+		assertDoesNotThrow(() -> config.validate("hello"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("Hello"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("HELLO"));
 	}
 	
 	@Test
-	void matchesWithNumeric() {
+	void validateWithNumeric() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNumeric();
-		assertTrue(config.matches("12345").isSuccess());
-		assertTrue(config.matches("123a5").isError());
+		assertDoesNotThrow(() -> config.validate("12345"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("123a5"));
 	}
 	
 	@Test
-	void matchesWithAlphabetic() {
+	void validateWithAlphabetic() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withAlphabetic();
-		assertTrue(config.matches("hello").isSuccess());
-		assertTrue(config.matches("hello1").isError());
+		assertDoesNotThrow(() -> config.validate("hello"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("hello1"));
 	}
 	
 	@Test
-	void matchesWithAlphanumeric() {
+	void validateWithAlphanumeric() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withAlphanumeric();
-		assertTrue(config.matches("hello123").isSuccess());
-		assertTrue(config.matches("hello-123").isError());
+		assertDoesNotThrow(() -> config.validate("hello123"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("hello-123"));
 	}
 	
 	@Test
-	void matchesWithAscii() {
+	void validateWithAscii() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withAscii();
-		assertTrue(config.matches("hello").isSuccess());
-		assertTrue(config.matches("hello\u00E9").isError());
+		assertDoesNotThrow(() -> config.validate("hello"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("hello\u00E9"));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED
 			.withLength(LengthConstraintConfig.UNCONSTRAINED.withMinLength(3).withMaxLength(10))
 			.withStartsWith("a")
 			.withNotBlank();
 		
-		assertTrue(config.matches("abc").isSuccess());
-		assertTrue(config.matches("ab").isError());
-		assertTrue(config.matches("bcd").isError());
+		assertDoesNotThrow(() -> config.validate("abc"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("ab"));
+		assertThrows(ConstraintViolateException.class, () -> config.validate("bcd"));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

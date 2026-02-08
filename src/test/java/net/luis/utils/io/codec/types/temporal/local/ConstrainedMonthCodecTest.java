@@ -20,10 +20,11 @@ package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Month;
@@ -40,182 +41,160 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedMonthCodecTest {
 	
 	@Test
-	void encodeStartWithValidEqualToConstraint() {
+	void encodeWithValidEqualToConstraint() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = Codecs.MONTH.equalTo(Month.JUNE);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("JUNE"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), Month.JUNE);
+		assertEquals(new JsonPrimitive("JUNE"), result);
 	}
 	
 	@Test
-	void encodeStartWithValidInConstraint() {
+	void encodeWithValidInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> summerMonths = Set.of(Month.JUNE, Month.JULY, Month.AUGUST);
 		Codec<Month> codec = Codecs.MONTH.in(summerMonths);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), Month.JUNE));
 		
-		Result<JsonElement> result2 = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JULY);
-		assertTrue(result2.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), Month.JULY));
 		
-		Result<JsonElement> result3 = codec.encodeStart(typeProvider, typeProvider.empty(), Month.AUGUST);
-		assertTrue(result3.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), Month.AUGUST));
 	}
 	
 	@Test
-	void encodeStartWithValidNotEqualToConstraint() {
+	void encodeWithValidNotEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = Codecs.MONTH.notEqualTo(Month.JANUARY);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), Month.JUNE));
 	}
 	
 	@Test
-	void encodeStartWithValidNotInConstraint() {
+	void encodeWithValidNotInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> winterMonths = Set.of(Month.DECEMBER, Month.JANUARY, Month.FEBRUARY);
 		Codec<Month> codec = Codecs.MONTH.notIn(winterMonths);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), Month.JUNE));
 		
-		Result<JsonElement> result2 = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JULY);
-		assertTrue(result2.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), Month.JULY));
 	}
 	
 	@Test
-	void decodeStartWithValidConstraint() {
+	void decodeWithValidConstraint() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> summerMonths = Set.of(Month.JUNE, Month.JULY, Month.AUGUST);
 		Codec<Month> codec = Codecs.MONTH.in(summerMonths);
 		
-		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("JUNE"));
-		assertTrue(result.isSuccess());
-		assertEquals(Month.JUNE, result.resultOrThrow());
+		Month result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("JUNE"));
+		assertEquals(Month.JUNE, result);
 	}
 	
 	@Test
-	void encodeStartWithCustomConstraint() {
+	void encodeWithCustomConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = Codecs.MONTH.custom(value -> {
 			if (value.getValue() >= 4 && value.getValue() <= 9) {
-				return Result.success(null);
+				return;
 			}
-			return Result.error("Month must be in warm season (April to September)");
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Month must be in warm season (April to September)");
 		});
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), Month.JUNE));
 	}
 	
 	@Test
-	void encodeStartWithAllMonthsInConstraint() {
+	void encodeWithAllMonthsInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> allMonths = Set.of(Month.values());
 		Codec<Month> codec = Codecs.MONTH.in(allMonths);
 		
 		for (Month month : Month.values()) {
-			Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), month);
-			assertTrue(result.isSuccess());
+			assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), month));
 		}
 	}
 	
 	@Test
-	void encodeStartWithFirstQuarterConstraint() {
+	void encodeWithFirstQuarterConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> firstQuarter = Set.of(Month.JANUARY, Month.FEBRUARY, Month.MARCH);
 		Codec<Month> codec = Codecs.MONTH.in(firstQuarter);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), Month.JANUARY));
 		
-		Result<JsonElement> result2 = codec.encodeStart(typeProvider, typeProvider.empty(), Month.MARCH);
-		assertTrue(result2.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), Month.MARCH));
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = Codecs.MONTH.equalTo(Month.JUNE);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Month.JANUARY));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> summerMonths = Set.of(Month.JUNE, Month.JULY, Month.AUGUST);
 		Codec<Month> codec = Codecs.MONTH.in(summerMonths);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Month.JANUARY));
 		
-		Result<JsonElement> result2 = codec.encodeStart(typeProvider, typeProvider.empty(), Month.DECEMBER);
-		assertTrue(result2.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Month.DECEMBER));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = Codecs.MONTH.notEqualTo(Month.JANUARY);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Month.JANUARY));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> winterMonths = Set.of(Month.DECEMBER, Month.JANUARY, Month.FEBRUARY);
 		Codec<Month> codec = Codecs.MONTH.notIn(winterMonths);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Month.JANUARY));
 		
-		Result<JsonElement> result2 = codec.encodeStart(typeProvider, typeProvider.empty(), Month.DECEMBER);
-		assertTrue(result2.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Month.DECEMBER));
 	}
 	
 	@Test
-	void decodeStartConstraintViolation() {
+	void decodeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> summerMonths = Set.of(Month.JUNE, Month.JULY, Month.AUGUST);
 		Codec<Month> codec = Codecs.MONTH.in(summerMonths);
 		
-		Result<Month> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("JANUARY"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("JANUARY")));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Month> codec = Codecs.MONTH.custom(value -> {
 			if (value.getValue() >= 4 && value.getValue() <= 9) {
-				return Result.success(null);
+				return;
 			}
-			return Result.error("Month must be in warm season (April to September)");
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Month must be in warm season (April to September)");
 		});
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JANUARY);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Month.JANUARY));
 	}
 	
 	@Test
-	void encodeStartFirstQuarterConstraintViolation() {
+	void encodeFirstQuarterConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Set<Month> firstQuarter = Set.of(Month.JANUARY, Month.FEBRUARY, Month.MARCH);
 		Codec<Month> codec = Codecs.MONTH.in(firstQuarter);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Month.JUNE);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Month.JUNE));
 		
-		Result<JsonElement> result2 = codec.encodeStart(typeProvider, typeProvider.empty(), Month.DECEMBER);
-		assertTrue(result2.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), Month.DECEMBER));
 	}
 	
 	@Test

@@ -19,12 +19,10 @@
 package net.luis.utils.io.codec.constraint.config.temporal.local;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
@@ -134,6 +132,11 @@ public record LocalTimeConstraintConfig(
 		if (withinNext.isPresent() && (withinNext.get().isNegative() || withinNext.get().isZero())) {
 			throw new IllegalArgumentException("Within next duration must be positive when present, but got " + withinNext.get());
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -360,21 +363,21 @@ public record LocalTimeConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull LocalTime value) {
+	public void validate(@NonNull LocalTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.after, this.before),
-			() -> ConstraintMatchers.matchWithinLast(value, this.withinLast, LocalTime::now, LocalTime::minus, "Local time"),
-			() -> ConstraintMatchers.matchWithinNext(value, this.withinNext, LocalTime::now, LocalTime::plus, "Local time"),
-			() -> ConstraintMatchers.matchNumericField(value.getHour(), this.hour, "hour"),
-			() -> ConstraintMatchers.matchNumericField(value.getMinute(), this.minute, "minute"),
-			() -> ConstraintMatchers.matchNumericField(value.getSecond(), this.second, "second"),
-			() -> ConstraintMatchers.matchNumericField(value.getNano() / 1_000_000, this.millisecond, "millisecond"),
-			() -> ConstraintMatchers.matchNumericField(value.getNano(), this.nanosecond, "nanosecond"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.after, this.before),
+			() -> ConstraintValidators.validateWithinLast(value, this.withinLast, LocalTime::now, LocalTime::minus, "Local time"),
+			() -> ConstraintValidators.validateWithinNext(value, this.withinNext, LocalTime::now, LocalTime::plus, "Local time"),
+			() -> ConstraintValidators.validateNumericField(value.getHour(), this.hour, "hour"),
+			() -> ConstraintValidators.validateNumericField(value.getMinute(), this.minute, "minute"),
+			() -> ConstraintValidators.validateNumericField(value.getSecond(), this.second, "second"),
+			() -> ConstraintValidators.validateNumericField(value.getNano() / 1_000_000, this.millisecond, "millisecond"),
+			() -> ConstraintValidators.validateNumericField(value.getNano(), this.nanosecond, "nanosecond"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

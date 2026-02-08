@@ -20,8 +20,8 @@ package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.*;
@@ -290,7 +290,18 @@ class ZonedDateTimeConstraintConfigTest {
 		assertTrue(config.nanosecond().isEmpty());
 		assertTrue(config.zone().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(ZonedDateTimeConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withAfter(DT_2024_01_15_10_30);
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -634,7 +645,9 @@ class ZonedDateTimeConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withCustom(dt -> dt.getHour() < 12 ? Result.success() : Result.error("Time must be before noon"));
+		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withCustom(dt -> {
+			if (dt.getHour() >= 12) throw new ConstraintViolateException("Time must be before noon");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -644,129 +657,129 @@ class ZonedDateTimeConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withEqualTo(DT_2024_06_15_12_00);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_01_15_10_30).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_01_15_10_30));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withNotEqualTo(DT_2024_06_15_12_00);
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_06_15_12_00));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withIn(List.of(DT_2024_01_15_10_30, DT_2024_06_15_12_00));
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_12_25_14_30));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withNotIn(List.of(DT_2024_01_15_10_30, DT_2024_06_15_12_00));
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
-		assertTrue(config.matches(DT_2024_01_15_10_30).isError());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_01_15_10_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_06_15_12_00));
 	}
 	
 	@Test
-	void matchesWithAfter() {
+	void validateWithAfter() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withAfter(DT_2024_01_15_10_30);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_01_15_10_30).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_01_15_10_30));
 	}
 	
 	@Test
-	void matchesWithAfterOrEqual() {
+	void validateWithAfterOrEqual() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withAfterOrEqual(DT_2024_01_15_10_30);
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
 	}
 	
 	@Test
-	void matchesWithBefore() {
+	void validateWithBefore() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withBefore(DT_2025_01_01_00_00);
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
-		assertTrue(config.matches(DT_2025_01_01_00_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2025_01_01_00_00));
 	}
 	
 	@Test
-	void matchesWithBeforeOrEqual() {
+	void validateWithBeforeOrEqual() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withBeforeOrEqual(DT_2025_01_01_00_00);
-		assertTrue(config.matches(DT_2025_01_01_00_00).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
+		assertDoesNotThrow(() -> config.validate(DT_2025_01_01_00_00));
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withBetween(DT_2024_01_15_10_30, DT_2025_01_01_00_00);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
-		assertTrue(config.matches(DT_2024_01_15_10_30).isError());
-		assertTrue(config.matches(DT_2025_01_01_00_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_01_15_10_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2025_01_01_00_00));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(DT_2024_01_15_10_30, DT_2025_01_01_00_00);
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2025_01_01_00_00).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertDoesNotThrow(() -> config.validate(DT_2025_01_01_00_00));
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
 	}
 	
 	@Test
-	void matchesWithMonthConstraint() {
+	void validateWithMonthConstraint() {
 		EnumConstraintConfig<Month> monthConfig = EnumConstraintConfig.<Month>unconstrained().withIn(List.of(Month.JUNE, Month.DECEMBER));
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withMonth(monthConfig);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
-		assertTrue(config.matches(DT_2024_01_15_10_30).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_01_15_10_30));
 	}
 	
 	@Test
-	void matchesWithYearConstraint() {
+	void validateWithYearConstraint() {
 		NumericConstraintConfig yearConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(2024);
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withYear(yearConfig);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2025_01_01_00_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2025_01_01_00_00));
 	}
 	
 	@Test
-	void matchesWithHourConstraint() {
+	void validateWithHourConstraint() {
 		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 13);
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_12_25_14_30));
 	}
 	
 	@Test
-	void matchesWithZoneConstraint() {
+	void validateWithZoneConstraint() {
 		ZoneIdConstraintConfig zoneConfig = ZoneIdConstraintConfig.UNCONSTRAINED.withUtc();
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED.withZone(zoneConfig);
-		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
-		assertTrue(config.matches(ZonedDateTime.of(2024, 6, 15, 12, 0, 0, 0, ZoneId.of("Europe/Berlin"))).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_06_15_12_00));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(ZonedDateTime.of(2024, 6, 15, 12, 0, 0, 0, ZoneId.of("Europe/Berlin"))));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED
 			.withAfterOrEqual(DT_2024_01_15_10_30)
 			.withBeforeOrEqual(DT_2025_01_01_00_00)
 			.withNotIn(List.of(DT_2024_06_15_12_00));
 		
-		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
-		assertTrue(config.matches(DT_2024_12_25_14_30).isSuccess());
-		assertTrue(config.matches(DT_2024_06_15_12_00).isError());
+		assertDoesNotThrow(() -> config.validate(DT_2024_01_15_10_30));
+		assertDoesNotThrow(() -> config.validate(DT_2024_12_25_14_30));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(DT_2024_06_15_12_00));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		ZonedDateTimeConstraintConfig config = ZonedDateTimeConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

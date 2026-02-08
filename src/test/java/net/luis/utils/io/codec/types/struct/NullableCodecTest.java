@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.*;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.io.data.xml.XmlElement;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static net.luis.utils.io.codec.Codecs.*;
@@ -42,251 +43,221 @@ class NullableCodecTest {
 	}
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), 1));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, 1));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), 1));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, 1));
 	}
 	
 	@Test
-	void encodeStartWithNullValueJson() {
+	void encodeWithNullValueJson() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		JsonObject current = new JsonObject();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, current, null);
-		assertTrue(result.isSuccess());
-		assertEquals(JsonNull.INSTANCE, result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, current, null);
+		assertEquals(JsonNull.INSTANCE, result);
 	}
 	
 	@Test
-	void encodeStartWithNullValueXml() {
+	void encodeWithNullValueXml() throws EncoderException {
 		XmlTypeProvider typeProvider = XmlTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		XmlElement current = typeProvider.empty();
 		
-		Result<XmlElement> result = codec.encodeStart(typeProvider, current, null);
-		assertTrue(result.isSuccess());
-		assertTrue(result.resultOrThrow().isSelfClosing());
+		XmlElement result = codec.encode(typeProvider, current, null);
+		assertTrue(result.isSelfClosing());
 	}
 	
 	@Test
-	void encodeStartWithNullValueJava() {
+	void encodeWithNullValueJava() throws EncoderException {
 		JavaTypeProvider typeProvider = JavaTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		Object current = typeProvider.empty();
 		
-		Result<Object> result = codec.encodeStart(typeProvider, current, null);
-		assertTrue(result.isSuccess());
-		assertNull(result.resultOrThrow());
+		Object result = codec.encode(typeProvider, current, null);
+		assertNull(result);
 	}
 	
 	@Test
-	void encodeStartWithNonNullValueJson() {
+	void encodeWithNonNullValueJson() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		JsonObject current = new JsonObject();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, current, 42);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(42), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, current, 42);
+		assertEquals(new JsonPrimitive(42), result);
 	}
 	
 	@Test
-	void encodeStartWithNonNullValueXml() {
+	void encodeWithNonNullValueXml() throws EncoderException {
 		XmlTypeProvider typeProvider = XmlTypeProvider.INSTANCE;
 		Codec<String> codec = new NullableCodec<>(STRING);
 		XmlElement current = typeProvider.empty();
 		
-		Result<XmlElement> result = codec.encodeStart(typeProvider, current, "test");
-		assertTrue(result.isSuccess());
-		assertTrue(result.resultOrThrow().isXmlValue());
+		XmlElement result = codec.encode(typeProvider, current, "test");
+		assertTrue(result.isXmlValue());
 	}
 	
 	@Test
-	void encodeStartWithDifferentTypes() {
+	void encodeWithDifferentTypes() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		JsonObject current = new JsonObject();
 		
 		Codec<String> stringCodec = new NullableCodec<>(STRING);
-		Result<JsonElement> stringResult = stringCodec.encodeStart(typeProvider, current, "hello");
-		assertTrue(stringResult.isSuccess());
-		assertEquals(new JsonPrimitive("hello"), stringResult.resultOrThrow());
+		JsonElement stringResult = stringCodec.encode(typeProvider, current, "hello");
+		assertEquals(new JsonPrimitive("hello"), stringResult);
 		
 		Codec<Boolean> boolCodec = new NullableCodec<>(BOOLEAN);
-		Result<JsonElement> boolResult = boolCodec.encodeStart(typeProvider, current, true);
-		assertTrue(boolResult.isSuccess());
-		assertEquals(new JsonPrimitive(true), boolResult.resultOrThrow());
+		JsonElement boolResult = boolCodec.encode(typeProvider, current, true);
+		assertEquals(new JsonPrimitive(true), boolResult);
 		
-		Result<JsonElement> nullResult = stringCodec.encodeStart(typeProvider, current, null);
-		assertTrue(nullResult.isSuccess());
-		assertEquals(JsonNull.INSTANCE, nullResult.resultOrThrow());
+		JsonElement nullResult = stringCodec.encode(typeProvider, current, null);
+		assertEquals(JsonNull.INSTANCE, nullResult);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive(1)));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive(1)));
 	}
 	
 	@Test
-	void decodeStartWithNullValueJson() {
+	void decodeWithNullValueJson() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		
-		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isSuccess());
-		assertNull(result.resultOrThrow());
+		Integer result = codec.decode(typeProvider, typeProvider.empty(), null);
+		assertNull(result);
 	}
 	
 	@Test
-	void decodeStartWithNullValueJava() {
+	void decodeWithNullValueJava() throws DecoderException {
 		JavaTypeProvider typeProvider = JavaTypeProvider.INSTANCE;
 		Codec<String> codec = new NullableCodec<>(STRING);
 		
-		Result<String> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isSuccess());
-		assertNull(result.resultOrThrow());
+		String result = codec.decode(typeProvider, typeProvider.empty(), null);
+		assertNull(result);
 	}
 	
 	@Test
-	void decodeStartWithJsonNull() {
+	void decodeWithJsonNull() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		
-		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), JsonNull.INSTANCE);
-		assertTrue(result.isSuccess());
-		assertNull(result.resultOrThrow());
+		Integer result = codec.decode(typeProvider, typeProvider.empty(), JsonNull.INSTANCE);
+		assertNull(result);
 	}
 	
 	@Test
-	void decodeStartWithXmlNull() {
+	void decodeWithXmlNull() throws DecoderException {
 		XmlTypeProvider typeProvider = XmlTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
-		XmlElement xmlNull = typeProvider.createNull().resultOrThrow();
+		XmlElement xmlNull = typeProvider.createNull(RuntimeException::new);
 		
-		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), xmlNull);
-		assertTrue(result.isSuccess());
-		assertNull(result.resultOrThrow());
+		Integer result = codec.decode(typeProvider, typeProvider.empty(), xmlNull);
+		assertNull(result);
 	}
 	
 	@Test
-	void decodeStartWithValidValueJson() {
+	void decodeWithValidValueJson() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		
-		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isSuccess());
-		assertNotNull(result.resultOrThrow());
-		assertEquals(42, result.resultOrThrow());
+		Integer result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
+		assertNotNull(result);
+		assertEquals(42, result);
 	}
 	
 	@Test
-	void decodeStartWithValidValueJava() {
+	void decodeWithValidValueJava() throws DecoderException {
 		JavaTypeProvider typeProvider = JavaTypeProvider.INSTANCE;
 		Codec<String> codec = new NullableCodec<>(STRING);
 		
-		Result<String> result = codec.decodeStart(typeProvider, typeProvider.empty(), "test");
-		assertTrue(result.isSuccess());
-		assertNotNull(result.resultOrThrow());
-		assertEquals("test", result.resultOrThrow());
+		String result = codec.decode(typeProvider, typeProvider.empty(), "test");
+		assertNotNull(result);
+		assertEquals("test", result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidValue() {
+	void decodeWithInvalidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		
-		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number")));
 	}
 	
 	@Test
-	void decodeStartWithDifferentTypes() {
+	void decodeWithDifferentTypes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<String> stringCodec = new NullableCodec<>(STRING);
-		Result<String> stringResult = stringCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("hello"));
-		assertTrue(stringResult.isSuccess());
-		assertNotNull(stringResult.resultOrThrow());
-		assertEquals("hello", stringResult.resultOrThrow());
+		String stringResult = stringCodec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("hello"));
+		assertNotNull(stringResult);
+		assertEquals("hello", stringResult);
 		
 		Codec<Boolean> boolCodec = new NullableCodec<>(BOOLEAN);
-		Result<Boolean> boolResult = boolCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(true));
-		assertTrue(boolResult.isSuccess());
-		assertNotNull(boolResult.resultOrThrow());
-		assertTrue(boolResult.resultOrThrow());
+		Boolean boolResult = boolCodec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(true));
+		assertNotNull(boolResult);
+		assertTrue(boolResult);
 		
-		Result<String> nullResult = stringCodec.decodeStart(typeProvider, typeProvider.empty(), JsonNull.INSTANCE);
-		assertTrue(nullResult.isSuccess());
-		assertNull(nullResult.resultOrThrow());
+		String nullResult = stringCodec.decode(typeProvider, typeProvider.empty(), JsonNull.INSTANCE);
+		assertNull(nullResult);
 	}
 	
 	@Test
-	void roundTripEncodingAndDecodingJson() {
+	void roundTripEncodingAndDecodingJson() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		JsonObject current = new JsonObject();
 		
 		// Test with null value
-		Result<JsonElement> encodedNull = codec.encodeStart(typeProvider, current, null);
-		assertTrue(encodedNull.isSuccess());
-		Result<Integer> decodedNull = codec.decodeStart(typeProvider, typeProvider.empty(), encodedNull.resultOrThrow());
-		assertTrue(decodedNull.isSuccess());
-		assertNull(decodedNull.resultOrThrow());
+		JsonElement encodedNull = codec.encode(typeProvider, current, null);
+		Integer decodedNull = codec.decode(typeProvider, typeProvider.empty(), encodedNull);
+		assertNull(decodedNull);
 		
 		// Test with non-null value
-		Result<JsonElement> encodedValue = codec.encodeStart(typeProvider, current, 123);
-		assertTrue(encodedValue.isSuccess());
-		Result<Integer> decodedValue = codec.decodeStart(typeProvider, typeProvider.empty(), encodedValue.resultOrThrow());
-		assertTrue(decodedValue.isSuccess());
-		assertEquals(123, decodedValue.resultOrThrow());
+		JsonElement encodedValue = codec.encode(typeProvider, current, 123);
+		Integer decodedValue = codec.decode(typeProvider, typeProvider.empty(), encodedValue);
+		assertEquals(123, decodedValue);
 	}
 	
 	@Test
-	void roundTripEncodingAndDecodingXml() {
+	void roundTripEncodingAndDecodingXml() throws Exception {
 		XmlTypeProvider typeProvider = XmlTypeProvider.INSTANCE;
 		Codec<String> codec = new NullableCodec<>(STRING);
 		XmlElement current = typeProvider.empty();
 		
 		// Test with null value
-		Result<XmlElement> encodedNull = codec.encodeStart(typeProvider, current, null);
-		assertTrue(encodedNull.isSuccess());
-		Result<String> decodedNull = codec.decodeStart(typeProvider, typeProvider.empty(), encodedNull.resultOrThrow());
-		assertTrue(decodedNull.isSuccess());
-		assertNull(decodedNull.resultOrThrow());
+		XmlElement encodedNull = codec.encode(typeProvider, current, null);
+		String decodedNull = codec.decode(typeProvider, typeProvider.empty(), encodedNull);
+		assertNull(decodedNull);
 		
 		// Test with non-null value
-		Result<XmlElement> encodedValue = codec.encodeStart(typeProvider, current, "test");
-		assertTrue(encodedValue.isSuccess());
-		Result<String> decodedValue = codec.decodeStart(typeProvider, typeProvider.empty(), encodedValue.resultOrThrow());
-		assertTrue(decodedValue.isSuccess());
-		assertEquals("test", decodedValue.resultOrThrow());
+		XmlElement encodedValue = codec.encode(typeProvider, current, "test");
+		String decodedValue = codec.decode(typeProvider, typeProvider.empty(), encodedValue);
+		assertEquals("test", decodedValue);
 	}
 	
 	@Test
-	void roundTripEncodingAndDecodingJava() {
+	void roundTripEncodingAndDecodingJava() throws Exception {
 		JavaTypeProvider typeProvider = JavaTypeProvider.INSTANCE;
 		Codec<Boolean> codec = new NullableCodec<>(BOOLEAN);
 		Object current = typeProvider.empty();
 		
 		// Test with null value
-		Result<Object> encodedNull = codec.encodeStart(typeProvider, current, null);
-		assertTrue(encodedNull.isSuccess());
-		Result<Boolean> decodedNull = codec.decodeStart(typeProvider, typeProvider.empty(), encodedNull.resultOrThrow());
-		assertTrue(decodedNull.isSuccess());
-		assertNull(decodedNull.resultOrThrow());
+		Object encodedNull = codec.encode(typeProvider, current, null);
+		Boolean decodedNull = codec.decode(typeProvider, typeProvider.empty(), encodedNull);
+		assertNull(decodedNull);
 		
 		// Test with non-null value
-		Result<Object> encodedValue = codec.encodeStart(typeProvider, current, true);
-		assertTrue(encodedValue.isSuccess());
-		Result<Boolean> decodedValue = codec.decodeStart(typeProvider, typeProvider.empty(), encodedValue.resultOrThrow());
-		assertTrue(decodedValue.isSuccess());
-		assertTrue(decodedValue.resultOrThrow());
+		Object encodedValue = codec.encode(typeProvider, current, true);
+		Boolean decodedValue = codec.decode(typeProvider, typeProvider.empty(), encodedValue);
+		assertTrue(decodedValue);
 	}
 	
 	@Test

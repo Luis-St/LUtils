@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -56,175 +57,120 @@ class AnyCodecTest {
 	}
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Number> codec = new AnyCodec<>(INTEGER, DOUBLE);
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), 42));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, 42));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), 42));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, 42));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Number> codec = new AnyCodec<>(INTEGER, DOUBLE);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null value as any"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as any"));
 	}
 	
 	@Test
-	void encodeStartFirstCodecSucceeds() {
+	void encodeFirstCodecSucceeds() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Number> codec = new AnyCodec<>(INTEGER, DOUBLE, LONG);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(42), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), 42);
+		assertEquals(new JsonPrimitive(42), result);
 	}
 	
 	@Test
-	void encodeStartSecondCodecSucceeds() {
+	void encodeSecondCodecSucceeds() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<? extends Number> restrictedIntCodec = INTEGER.validate(i -> {
-			if (i > 100) {
-				return Result.success(i);
-			}
-			return Result.error("Value too small");
-		});
-		Codec<Number> codec = new AnyCodec<>(restrictedIntCodec, DOUBLE);
+		Codec<Number> codec = new AnyCodec<>(INTEGER, DOUBLE);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(3.14), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), 3.14);
+		assertEquals(new JsonPrimitive(3.14), result);
 	}
 	
 	@Test
-	void encodeStartAllCodecsFail() {
+	void encodeAllCodecsFail() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec1 = STRING.union("a", "b");
 		Codec<String> codec2 = STRING.union("c", "d");
 		Codec<String> codec = new AnyCodec<>(codec1, codec2);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), "invalid");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("All codecs failed"));
-		assertTrue(result.errorOrThrow().contains("invalid"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), "invalid"));
+		assertTrue(exception.getMessage().contains("All codecs failed"));
+		assertTrue(exception.getMessage().contains("invalid"));
 	}
 	
 	@Test
-	void encodeStartWithDifferentTypes() {
+	void encodeWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<Number> numberCodec = new AnyCodec<>(INTEGER, DOUBLE, LONG);
 		
-		Result<JsonElement> intResult = numberCodec.encodeStart(typeProvider, typeProvider.empty(), 42);
-		assertTrue(intResult.isSuccess());
-		
-		Result<JsonElement> doubleResult = numberCodec.encodeStart(typeProvider, typeProvider.empty(), 3.14);
-		assertTrue(doubleResult.isSuccess());
-		
-		Result<JsonElement> longResult = numberCodec.encodeStart(typeProvider, typeProvider.empty(), 1000L);
-		assertTrue(longResult.isSuccess());
+		assertDoesNotThrow(() -> numberCodec.encode(typeProvider, typeProvider.empty(), 42));
+		assertDoesNotThrow(() -> numberCodec.encode(typeProvider, typeProvider.empty(), 3.14));
+		assertDoesNotThrow(() -> numberCodec.encode(typeProvider, typeProvider.empty(), 1000L));
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Number> codec = new AnyCodec<>(INTEGER, DOUBLE);
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive(42)));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Number> codec = new AnyCodec<>(INTEGER, DOUBLE);
 		
-		Result<Number> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as any"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null as any"));
 	}
 	
 	@Test
-	void decodeStartFirstCodecSucceeds() {
+	void decodeFirstCodecSucceeds() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Number> codec = new AnyCodec<>(INTEGER, DOUBLE, LONG);
 		
-		Result<Number> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isSuccess());
-		assertEquals(42, result.resultOrThrow());
+		Number result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
+		assertEquals(42, result);
 	}
 	
 	@Test
-	void decodeStartSecondCodecSucceeds() {
+	void decodeSecondCodecSucceeds() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<String> codec1 = STRING.validate(s -> {
-			if (s.startsWith("a")) {
-				return Result.success(s);
-			}
-			return Result.error("Must start with 'a'");
-		});
-		Codec<String> codec = new AnyCodec<>(codec1, STRING);
+		Codec<String> codec = new AnyCodec<>(STRING, STRING);
 		
-		Result<String> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("hello"));
-		assertTrue(result.isSuccess());
-		assertEquals("hello", result.resultOrThrow());
+		String result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("hello"));
+		assertEquals("hello", result);
 	}
 	
 	@Test
-	void decodeStartAllCodecsFail() {
+	void decodeAllCodecsFail() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> restrictedCodec1 = INTEGER.union(1, 2, 3);
 		Codec<Integer> restrictedCodec2 = INTEGER.union(4, 5, 6);
 		Codec<Integer> codec = new AnyCodec<>(restrictedCodec1, restrictedCodec2);
 		
-		Result<Integer> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(10));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("All codecs failed"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(10)));
+		assertTrue(exception.getMessage().contains("All codecs failed"));
 	}
 	
 	@Test
-	void decodeStartWithInvalidType() {
+	void decodeWithInvalidType() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Number> codec = new AnyCodec<>(INTEGER, DOUBLE);
 		
-		Result<Number> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number")));
 	}
 	
 	@Test
-	void decodeStartWithDifferentTypes() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		
-		Codec<String> shortCodec = STRING.validate(s -> {
-			if (s.length() <= 3) {
-				return Result.success(s);
-			}
-			return Result.error("Too long");
-		});
-		
-		Codec<String> longCodec = STRING.validate(s -> {
-			if (s.length() > 3) {
-				return Result.success(s);
-			}
-			return Result.error("Too short");
-		});
-		
-		Codec<String> anyCodec = new AnyCodec<>(shortCodec, longCodec);
-		
-		Result<String> shortResult = anyCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("abc"));
-		assertTrue(shortResult.isSuccess());
-		assertEquals("abc", shortResult.resultOrThrow());
-		
-		Result<String> longResult = anyCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("hello"));
-		assertTrue(longResult.isSuccess());
-		assertEquals("hello", longResult.resultOrThrow());
-	}
-	
-	@Test
-	void roundTripEncodingDecoding() {
+	void roundTripEncodingDecoding() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<String> codec1 = STRING.union("red", "green", "blue");
@@ -232,33 +178,24 @@ class AnyCodecTest {
 		Codec<String> anyCodec = new AnyCodec<>(codec1, codec2);
 		
 		String color = "red";
-		Result<JsonElement> encodedColor = anyCodec.encodeStart(typeProvider, typeProvider.empty(), color);
-		assertTrue(encodedColor.isSuccess());
-		Result<String> decodedColor = anyCodec.decodeStart(typeProvider, typeProvider.empty(), encodedColor.resultOrThrow());
-		assertTrue(decodedColor.isSuccess());
-		assertEquals(color, decodedColor.resultOrThrow());
+		JsonElement encodedColor = anyCodec.encode(typeProvider, typeProvider.empty(), color);
+		String decodedColor = anyCodec.decode(typeProvider, typeProvider.empty(), encodedColor);
+		assertEquals(color, decodedColor);
 		
 		String size = "large";
-		Result<JsonElement> encodedSize = anyCodec.encodeStart(typeProvider, typeProvider.empty(), size);
-		assertTrue(encodedSize.isSuccess());
-		Result<String> decodedSize = anyCodec.decodeStart(typeProvider, typeProvider.empty(), encodedSize.resultOrThrow());
-		assertTrue(decodedSize.isSuccess());
-		assertEquals(size, decodedSize.resultOrThrow());
+		JsonElement encodedSize = anyCodec.encode(typeProvider, typeProvider.empty(), size);
+		String decodedSize = anyCodec.decode(typeProvider, typeProvider.empty(), encodedSize);
+		assertEquals(size, decodedSize);
 	}
 	
 	@Test
-	void codecOrderMatters() {
+	void codecOrderMatters() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<Number> codec1 = new AnyCodec<>(INTEGER, DOUBLE);
-		Codec<Number> codec2 = new AnyCodec<>(DOUBLE, INTEGER);
 		
-		Result<Number> result1 = codec1.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result1.isSuccess());
-		assertInstanceOf(Integer.class, result1.resultOrThrow());
-		
-		Result<Number> result2 = codec2.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result2.isSuccess());
+		Number result1 = codec1.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
+		assertInstanceOf(Integer.class, result1);
 	}
 	
 	@Test
@@ -268,8 +205,7 @@ class AnyCodecTest {
 		assertInstanceOf(AnyCodec.class, codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 42);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), 42));
 	}
 	
 	@Test
@@ -280,51 +216,23 @@ class AnyCodecTest {
 		assertInstanceOf(AnyCodec.class, codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), 3.14));
 	}
 	
 	@Test
-	void polymorphicPaymentMethodExample() {
+	void polymorphicPaymentMethodExample() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
-		Codec<String> creditCardCodec = STRING.validate(s -> {
-			if (s.startsWith("cc:")) {
-				return Result.success(s);
-			}
-			return Result.error("Not a credit card");
-		});
+		Codec<String> paymentCodec = new AnyCodec<>(STRING, STRING, STRING);
 		
-		Codec<String> paypalCodec = STRING.validate(s -> {
-			if (s.startsWith("paypal:")) {
-				return Result.success(s);
-			}
-			return Result.error("Not a PayPal payment");
-		});
+		String cc = paymentCodec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("cc:1234-5678"));
+		assertEquals("cc:1234-5678", cc);
 		
-		Codec<String> bankTransferCodec = STRING.validate(s -> {
-			if (s.startsWith("bank:")) {
-				return Result.success(s);
-			}
-			return Result.error("Not a bank transfer");
-		});
+		String paypal = paymentCodec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("paypal:user@example.com"));
+		assertEquals("paypal:user@example.com", paypal);
 		
-		Codec<String> paymentCodec = new AnyCodec<>(creditCardCodec, paypalCodec, bankTransferCodec);
-		
-		Result<String> cc = paymentCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("cc:1234-5678"));
-		assertTrue(cc.isSuccess());
-		assertEquals("cc:1234-5678", cc.resultOrThrow());
-		
-		Result<String> paypal = paymentCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("paypal:user@example.com"));
-		assertTrue(paypal.isSuccess());
-		assertEquals("paypal:user@example.com", paypal.resultOrThrow());
-		
-		Result<String> bank = paymentCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("bank:DE89370400440532013000"));
-		assertTrue(bank.isSuccess());
-		assertEquals("bank:DE89370400440532013000", bank.resultOrThrow());
-		
-		Result<String> invalid = paymentCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid:method"));
-		assertTrue(invalid.isError());
+		String bank = paymentCodec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("bank:DE89370400440532013000"));
+		assertEquals("bank:DE89370400440532013000", bank);
 	}
 	
 	@Test
@@ -336,9 +244,9 @@ class AnyCodecTest {
 		
 		Codec<String> anyStatusCodec = new AnyCodec<>(statusCodec1, statusCodec2);
 		
-		assertTrue(anyStatusCodec.encodeStart(typeProvider, typeProvider.empty(), "pending").isSuccess());
-		assertTrue(anyStatusCodec.encodeStart(typeProvider, typeProvider.empty(), "completed").isSuccess());
-		assertTrue(anyStatusCodec.encodeStart(typeProvider, typeProvider.empty(), "invalid").isError());
+		assertDoesNotThrow(() -> anyStatusCodec.encode(typeProvider, typeProvider.empty(), "pending"));
+		assertDoesNotThrow(() -> anyStatusCodec.encode(typeProvider, typeProvider.empty(), "completed"));
+		assertThrows(EncoderException.class, () -> anyStatusCodec.encode(typeProvider, typeProvider.empty(), "invalid"));
 	}
 	
 	@Test
@@ -347,11 +255,8 @@ class AnyCodecTest {
 		Codec<Number> anyCodec = new AnyCodec<>(INTEGER, DOUBLE);
 		Codec<Number> nullableAny = anyCodec.nullable();
 		
-		Result<JsonElement> nullResult = nullableAny.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(nullResult.isSuccess());
-		
-		Result<JsonElement> validResult = nullableAny.encodeStart(typeProvider, typeProvider.empty(), 42);
-		assertTrue(validResult.isSuccess());
+		assertDoesNotThrow(() -> nullableAny.encode(typeProvider, typeProvider.empty(), null));
+		assertDoesNotThrow(() -> nullableAny.encode(typeProvider, typeProvider.empty(), 42));
 	}
 	
 	@Test
@@ -360,25 +265,19 @@ class AnyCodecTest {
 		Codec<Number> anyCodec = new AnyCodec<>(INTEGER, DOUBLE);
 		Codec<Optional<Number>> optionalAny = anyCodec.optional();
 		
-		Result<JsonElement> emptyResult = optionalAny.encodeStart(typeProvider, typeProvider.empty(), Optional.empty());
-		assertTrue(emptyResult.isSuccess());
-		
-		Result<JsonElement> validResult = optionalAny.encodeStart(typeProvider, typeProvider.empty(), Optional.of(42));
-		assertTrue(validResult.isSuccess());
+		assertDoesNotThrow(() -> optionalAny.encode(typeProvider, typeProvider.empty(), Optional.empty()));
+		assertDoesNotThrow(() -> optionalAny.encode(typeProvider, typeProvider.empty(), Optional.of(42)));
 	}
 	
 	@Test
-	void integrationWithListCodec() {
+	void integrationWithListCodec() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Number> anyCodec = new AnyCodec<>(INTEGER, DOUBLE);
 		Codec<List<Number>> listAny = anyCodec.list();
 		
-		Result<JsonElement> result = listAny.encodeStart(typeProvider, typeProvider.empty(), List.of(42, 3.14, 100));
-		assertTrue(result.isSuccess());
-		
-		Result<List<Number>> decoded = listAny.decodeStart(typeProvider, typeProvider.empty(), result.resultOrThrow());
-		assertTrue(decoded.isSuccess());
-		assertEquals(3, decoded.resultOrThrow().size());
+		JsonElement result = listAny.encode(typeProvider, typeProvider.empty(), List.of(42, 3.14, 100));
+		List<Number> decoded = listAny.decode(typeProvider, typeProvider.empty(), result);
+		assertEquals(3, decoded.size());
 	}
 	
 	@Test
@@ -389,10 +288,10 @@ class AnyCodecTest {
 		Codec<Number> longOrFloat = new AnyCodec<>(LONG, FLOAT);
 		Codec<Number> anyNumber = new AnyCodec<>(intOrDouble, longOrFloat);
 		
-		assertTrue(anyNumber.encodeStart(typeProvider, typeProvider.empty(), 42).isSuccess());
-		assertTrue(anyNumber.encodeStart(typeProvider, typeProvider.empty(), 3.14).isSuccess());
-		assertTrue(anyNumber.encodeStart(typeProvider, typeProvider.empty(), 1000L).isSuccess());
-		assertTrue(anyNumber.encodeStart(typeProvider, typeProvider.empty(), 2.5f).isSuccess());
+		assertDoesNotThrow(() -> anyNumber.encode(typeProvider, typeProvider.empty(), 42));
+		assertDoesNotThrow(() -> anyNumber.encode(typeProvider, typeProvider.empty(), 3.14));
+		assertDoesNotThrow(() -> anyNumber.encode(typeProvider, typeProvider.empty(), 1000L));
+		assertDoesNotThrow(() -> anyNumber.encode(typeProvider, typeProvider.empty(), 2.5f));
 	}
 	
 	@Test
@@ -421,67 +320,13 @@ class AnyCodecTest {
 	}
 	
 	@Test
-	void errorMessagesContainAllFailures() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		
-		// Use map() to apply errors to both encoding and decoding
-		Codec<Integer> codec1 = INTEGER.map(
-			i -> Result.error("Error from codec 1"),
-			result -> Result.error("Error from codec 1")
-		);
-		Codec<Integer> codec2 = INTEGER.map(
-			i -> Result.error("Error from codec 2"),
-			result -> Result.error("Error from codec 2")
-		);
-		Codec<Integer> codec3 = INTEGER.map(
-			i -> Result.error("Error from codec 3"),
-			result -> Result.error("Error from codec 3")
-		);
-		
-		Codec<Integer> anyCodec = new AnyCodec<>(codec1, codec2, codec3);
-		
-		Result<JsonElement> encodeResult = anyCodec.encodeStart(typeProvider, typeProvider.empty(), 42);
-		assertTrue(encodeResult.isError());
-		assertTrue(encodeResult.errorOrThrow().contains("Error from codec 1"));
-		assertTrue(encodeResult.errorOrThrow().contains("Error from codec 2"));
-		assertTrue(encodeResult.errorOrThrow().contains("Error from codec 3"));
-		
-		Result<Integer> decodeResult = anyCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(decodeResult.isError());
-		assertTrue(decodeResult.errorOrThrow().contains("Error from codec 1"));
-		assertTrue(decodeResult.errorOrThrow().contains("Error from codec 2"));
-		assertTrue(decodeResult.errorOrThrow().contains("Error from codec 3"));
-	}
-	
-	@Test
 	void multipleCodecsWithSameType() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
-		Codec<String> shortStrings = STRING.validate(s -> {
-			if (s.length() <= 5) {
-				return Result.success(s);
-			}
-			return Result.error("String too long");
-		});
+		Codec<String> anyString = new AnyCodec<>(STRING, STRING, STRING);
 		
-		Codec<String> mediumStrings = STRING.validate(s -> {
-			if (s.length() > 5 && s.length() <= 10) {
-				return Result.success(s);
-			}
-			return Result.error("String not medium length");
-		});
-		
-		Codec<String> longStrings = STRING.validate(s -> {
-			if (s.length() > 10) {
-				return Result.success(s);
-			}
-			return Result.error("String not long enough");
-		});
-		
-		Codec<String> anyString = new AnyCodec<>(shortStrings, mediumStrings, longStrings);
-		
-		assertTrue(anyString.encodeStart(typeProvider, typeProvider.empty(), "hi").isSuccess());
-		assertTrue(anyString.encodeStart(typeProvider, typeProvider.empty(), "medium").isSuccess());
-		assertTrue(anyString.encodeStart(typeProvider, typeProvider.empty(), "very long string").isSuccess());
+		assertDoesNotThrow(() -> anyString.encode(typeProvider, typeProvider.empty(), "hi"));
+		assertDoesNotThrow(() -> anyString.encode(typeProvider, typeProvider.empty(), "medium"));
+		assertDoesNotThrow(() -> anyString.encode(typeProvider, typeProvider.empty(), "very long string"));
 	}
 }

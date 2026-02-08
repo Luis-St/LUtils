@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.i18n;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
@@ -37,78 +38,72 @@ import static org.junit.jupiter.api.Assertions.*;
 class LocaleCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		Locale locale = Locale.US;
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), locale));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, locale));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), locale));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, locale));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as locale"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as locale"));
 	}
 	
 	@Test
-	void encodeStartWithUS() {
+	void encodeWithUS() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		Locale locale = Locale.US;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), locale);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("en-US"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), locale);
+		assertEquals(new JsonPrimitive("en-US"), result);
 	}
 	
 	@Test
-	void encodeStartWithUK() {
+	void encodeWithUK() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		Locale locale = Locale.UK;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), locale);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("en-GB"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), locale);
+		assertEquals(new JsonPrimitive("en-GB"), result);
 	}
 	
 	@Test
-	void encodeStartWithGermany() {
+	void encodeWithGermany() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		Locale locale = Locale.GERMANY;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), locale);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("de-DE"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), locale);
+		assertEquals(new JsonPrimitive("de-DE"), result);
 	}
 	
 	@Test
-	void encodeStartWithFrance() {
+	void encodeWithFrance() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		Locale locale = Locale.FRANCE;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), locale);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("fr-FR"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), locale);
+		assertEquals(new JsonPrimitive("fr-FR"), result);
 	}
 	
 	@Test
-	void encodeStartWithRoot() {
+	void encodeWithRoot() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		Locale locale = Locale.ROOT;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), locale);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("und"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), locale);
+		assertEquals(new JsonPrimitive("und"), result);
 	}
 	
 	@Test
@@ -120,101 +115,92 @@ class LocaleCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithLocale() {
+	void encodeKeyWithLocale() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		Locale locale = Locale.JAPAN;
 		
-		Result<String> result = codec.encodeKey(locale);
-		assertTrue(result.isSuccess());
-		assertEquals("ja-JP", result.resultOrThrow());
+		String result = codec.encodeKey(locale);
+		assertEquals("ja-JP", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("en-US")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("en-US")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<Locale> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as locale"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as locale"));
 	}
 	
 	@Test
-	void decodeStartWithValidUS() {
+	void decodeWithValidUS() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<Locale> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("en-US"));
-		assertTrue(result.isSuccess());
-		assertEquals(Locale.US, result.resultOrThrow());
+		Locale result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("en-US"));
+		assertEquals(Locale.US, result);
 	}
 	
 	@Test
-	void decodeStartWithValidUK() {
+	void decodeWithValidUK() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<Locale> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("en-GB"));
-		assertTrue(result.isSuccess());
-		assertEquals(Locale.UK, result.resultOrThrow());
+		Locale result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("en-GB"));
+		assertEquals(Locale.UK, result);
 	}
 	
 	@Test
-	void decodeStartWithValidGermany() {
+	void decodeWithValidGermany() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<Locale> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("de-DE"));
-		assertTrue(result.isSuccess());
-		assertEquals(Locale.GERMANY, result.resultOrThrow());
+		Locale result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("de-DE"));
+		assertEquals(Locale.GERMANY, result);
 	}
 	
 	@Test
-	void decodeStartWithValidFrance() {
+	void decodeWithValidFrance() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<Locale> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("fr-FR"));
-		assertTrue(result.isSuccess());
-		assertEquals(Locale.FRANCE, result.resultOrThrow());
+		Locale result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("fr-FR"));
+		assertEquals(Locale.FRANCE, result);
 	}
 	
 	@Test
-	void decodeStartWithValidJapan() {
+	void decodeWithValidJapan() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<Locale> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("ja-JP"));
-		assertTrue(result.isSuccess());
-		assertEquals(Locale.JAPAN, result.resultOrThrow());
+		Locale result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("ja-JP"));
+		assertEquals(Locale.JAPAN, result);
 	}
 	
 	@Test
-	void decodeStartWithRoot() {
+	void decodeWithRoot() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<Locale> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("und"));
-		assertTrue(result.isSuccess());
-		assertEquals(Locale.ROOT, result.resultOrThrow());
+		Locale result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("und"));
+		assertEquals(Locale.ROOT, result);
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<Locale> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -226,33 +212,30 @@ class LocaleCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidLocale() {
+	void decodeKeyWithValidLocale() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<Locale> result = codec.decodeKey("en-US");
-		assertTrue(result.isSuccess());
-		assertEquals(Locale.US, result.resultOrThrow());
+		Locale result = codec.decodeKey("en-US");
+		assertEquals(Locale.US, result);
 	}
 	
 	@Test
-	void decodeKeyWithGermany() {
+	void decodeKeyWithGermany() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<Locale> result = codec.decodeKey("de-DE");
-		assertTrue(result.isSuccess());
-		assertEquals(Locale.GERMANY, result.resultOrThrow());
+		Locale result = codec.decodeKey("de-DE");
+		assertEquals(Locale.GERMANY, result);
 	}
 	
 	@Test
-	void decodeKeyWithJapan() {
+	void decodeKeyWithJapan() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Locale> codec = new LocaleCodec();
 		
-		Result<Locale> result = codec.decodeKey("ja-JP");
-		assertTrue(result.isSuccess());
-		assertEquals(Locale.JAPAN, result.resultOrThrow());
+		Locale result = codec.decodeKey("ja-JP");
+		assertEquals(Locale.JAPAN, result);
 	}
 	
 	@Test

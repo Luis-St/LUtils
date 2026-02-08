@@ -20,12 +20,10 @@ package net.luis.utils.io.codec.constraint.config.temporal.local;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.*;
@@ -144,6 +142,11 @@ public record LocalDateConstraintConfig(
 		if (withinNext.isPresent() && (withinNext.get().isNegative() || withinNext.get().isZero())) {
 			throw new IllegalArgumentException("Within next duration must be positive when present, but got " + withinNext.get());
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -394,23 +397,23 @@ public record LocalDateConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull LocalDate value) {
+	public void validate(@NonNull LocalDate value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.after, this.before, ChronoLocalDate::compareTo),
-			() -> ConstraintMatchers.matchWithinLast(value, this.withinLast, LocalDate::now, (t, d) -> t.minusDays(d.toDays()), "Local date"),
-			() -> ConstraintMatchers.matchWithinNext(value, this.withinNext, LocalDate::now, (t, d) -> t.plusDays(d.toDays()), "Local date"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getDayOfWeek(), this.dayOfWeek, "Day of week"),
-			() -> ConstraintMatchers.matchNumericField(value.getDayOfMonth(), this.dayOfMonth, "day of week"),
-			() -> ConstraintMatchers.matchNumericField(value.getDayOfYear(), this.dayOfYear, "dayOfYear"),
-			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfMonth()), this.weekOfMonth, "week of month"),
-			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfWeekBasedYear()), this.weekOfYear, "week of year"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getMonth(), this.month, "Month"),
-			() -> ConstraintMatchers.matchNumericField(value.getYear(), this.year, "year"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.after, this.before, ChronoLocalDate::compareTo),
+			() -> ConstraintValidators.validateWithinLast(value, this.withinLast, LocalDate::now, (t, d) -> t.minusDays(d.toDays()), "Local date"),
+			() -> ConstraintValidators.validateWithinNext(value, this.withinNext, LocalDate::now, (t, d) -> t.plusDays(d.toDays()), "Local date"),
+			() -> ConstraintValidators.validateNestedConfig(value.getDayOfWeek(), this.dayOfWeek, "Day of week"),
+			() -> ConstraintValidators.validateNumericField(value.getDayOfMonth(), this.dayOfMonth, "day of week"),
+			() -> ConstraintValidators.validateNumericField(value.getDayOfYear(), this.dayOfYear, "dayOfYear"),
+			() -> ConstraintValidators.validateNumericField(value.get(WeekFields.ISO.weekOfMonth()), this.weekOfMonth, "week of month"),
+			() -> ConstraintValidators.validateNumericField(value.get(WeekFields.ISO.weekOfWeekBasedYear()), this.weekOfYear, "week of year"),
+			() -> ConstraintValidators.validateNestedConfig(value.getMonth(), this.month, "Month"),
+			() -> ConstraintValidators.validateNumericField(value.getYear(), this.year, "year"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

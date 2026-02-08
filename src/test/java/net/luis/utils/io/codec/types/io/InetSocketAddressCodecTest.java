@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.net.*;
@@ -37,93 +38,86 @@ import static org.junit.jupiter.api.Assertions.*;
 class InetSocketAddressCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() throws UnknownHostException {
+	void encodeNullChecks() throws UnknownHostException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), address));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, address));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), address));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, address));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as network socket address"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as network socket address"));
 	}
 	
 	@Test
-	void encodeStartWithIPv4AndPort() throws UnknownHostException {
+	void encodeWithIPv4AndPort() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("192.168.1.1:8080"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), address);
+		assertEquals(new JsonPrimitive("192.168.1.1:8080"), result);
 	}
 	
 	@Test
-	void encodeStartWithLocalhost() throws UnknownHostException {
+	void encodeWithLocalhost() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 3000);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("127.0.0.1:3000"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), address);
+		assertEquals(new JsonPrimitive("127.0.0.1:3000"), result);
 	}
 	
 	@Test
-	void encodeStartWithIPv6AndPort() throws UnknownHostException {
+	void encodeWithIPv6AndPort() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("2001:db8::1"), 8080);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("[2001:db8:0:0:0:0:0:1]:8080"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), address);
+		assertEquals(new JsonPrimitive("[2001:db8:0:0:0:0:0:1]:8080"), result);
 	}
 	
 	@Test
-	void encodeStartWithIPv6Localhost() throws UnknownHostException {
+	void encodeWithIPv6Localhost() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("::1"), 9000);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("[0:0:0:0:0:0:0:1]:9000"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), address);
+		assertEquals(new JsonPrimitive("[0:0:0:0:0:0:0:1]:9000"), result);
 	}
 	
 	@Test
-	void encodeStartWithZeroPort() throws UnknownHostException {
+	void encodeWithZeroPort() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 0);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("192.168.1.1:0"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), address);
+		assertEquals(new JsonPrimitive("192.168.1.1:0"), result);
 	}
 	
 	@Test
-	void encodeStartWithMaxPort() throws UnknownHostException {
+	void encodeWithMaxPort() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 65535);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), address);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("192.168.1.1:65535"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), address);
+		assertEquals(new JsonPrimitive("192.168.1.1:65535"), result);
 	}
 	
 	@Test
-	void encodeKeyNullChecks() throws UnknownHostException {
+	void encodeKeyNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
@@ -131,152 +125,138 @@ class InetSocketAddressCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithIPv4() throws UnknownHostException {
+	void encodeKeyWithIPv4() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
 		
-		Result<String> result = codec.encodeKey(address);
-		assertTrue(result.isSuccess());
-		assertEquals("192.168.1.1:8080", result.resultOrThrow());
+		String result = codec.encodeKey(address);
+		assertEquals("192.168.1.1:8080", result);
 	}
 	
 	@Test
-	void encodeKeyWithIPv6() throws UnknownHostException {
+	void encodeKeyWithIPv6() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("2001:db8::1"), 8080);
 		
-		Result<String> result = codec.encodeKey(address);
-		assertTrue(result.isSuccess());
-		assertEquals("[2001:db8:0:0:0:0:0:1]:8080", result.resultOrThrow());
+		String result = codec.encodeKey(address);
+		assertEquals("[2001:db8:0:0:0:0:0:1]:8080", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("192.168.1.1:8080")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("192.168.1.1:8080")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as network socket address"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as network socket address"));
 	}
 	
 	@Test
-	void decodeStartWithValidIPv4() throws UnknownHostException {
+	void decodeWithValidIPv4() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1:8080"));
-		assertTrue(result.isSuccess());
-		assertEquals(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080), result.resultOrThrow());
+		InetSocketAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1:8080"));
+		assertEquals(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080), result);
 	}
 	
 	@Test
-	void decodeStartWithLocalhost() throws UnknownHostException {
+	void decodeWithLocalhost() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("127.0.0.1:3000"));
-		assertTrue(result.isSuccess());
-		assertEquals(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 3000), result.resultOrThrow());
+		InetSocketAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("127.0.0.1:3000"));
+		assertEquals(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 3000), result);
 	}
 	
 	@Test
-	void decodeStartWithValidIPv6() throws UnknownHostException {
+	void decodeWithValidIPv6() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("[2001:db8::1]:8080"));
-		assertTrue(result.isSuccess());
-		assertEquals(new InetSocketAddress(InetAddress.getByName("2001:db8::1"), 8080), result.resultOrThrow());
+		InetSocketAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("[2001:db8::1]:8080"));
+		assertEquals(new InetSocketAddress(InetAddress.getByName("2001:db8::1"), 8080), result);
 	}
 	
 	@Test
-	void decodeStartWithIPv6Localhost() throws UnknownHostException {
+	void decodeWithIPv6Localhost() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("[::1]:9000"));
-		assertTrue(result.isSuccess());
-		assertEquals(new InetSocketAddress(InetAddress.getByName("::1"), 9000), result.resultOrThrow());
+		InetSocketAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("[::1]:9000"));
+		assertEquals(new InetSocketAddress(InetAddress.getByName("::1"), 9000), result);
 	}
 	
 	@Test
-	void decodeStartWithZeroPort() throws UnknownHostException {
+	void decodeWithZeroPort() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1:0"));
-		assertTrue(result.isSuccess());
-		assertEquals(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 0), result.resultOrThrow());
+		InetSocketAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1:0"));
+		assertEquals(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 0), result);
 	}
 	
 	@Test
-	void decodeStartWithMaxPort() throws UnknownHostException {
+	void decodeWithMaxPort() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1:65535"));
-		assertTrue(result.isSuccess());
-		assertEquals(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 65535), result.resultOrThrow());
+		InetSocketAddress result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1:65535"));
+		assertEquals(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 65535), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidFormat() {
+	void decodeWithInvalidFormat() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Invalid network socket address format"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1")));
+		assertTrue(exception.getMessage().contains("Invalid network socket address format"));
 	}
 	
 	@Test
-	void decodeStartWithInvalidIPv6Format() {
+	void decodeWithInvalidIPv6Format() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("[2001:db8::1"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Invalid IPv6 socket address format"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("[2001:db8::1")));
+		assertTrue(exception.getMessage().contains("Invalid IPv6 socket address format"));
 	}
 	
 	@Test
-	void decodeStartWithInvalidPort() {
+	void decodeWithInvalidPort() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1:99999"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Port number out of range"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1:99999")));
+		assertTrue(exception.getMessage().contains("Port number out of range"));
 	}
 	
 	@Test
-	void decodeStartWithNegativePort() {
+	void decodeWithNegativePort() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1:-1"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Port number out of range"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1:-1")));
+		assertTrue(exception.getMessage().contains("Port number out of range"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -288,23 +268,21 @@ class InetSocketAddressCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidIPv4() throws UnknownHostException {
+	void decodeKeyWithValidIPv4() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeKey("192.168.1.1:8080");
-		assertTrue(result.isSuccess());
-		assertEquals(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080), result.resultOrThrow());
+		InetSocketAddress result = codec.decodeKey("192.168.1.1:8080");
+		assertEquals(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080), result);
 	}
 	
 	@Test
-	void decodeKeyWithValidIPv6() throws UnknownHostException {
+	void decodeKeyWithValidIPv6() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeKey("[2001:db8::1]:8080");
-		assertTrue(result.isSuccess());
-		assertEquals(new InetSocketAddress(InetAddress.getByName("2001:db8::1"), 8080), result.resultOrThrow());
+		InetSocketAddress result = codec.decodeKey("[2001:db8::1]:8080");
+		assertEquals(new InetSocketAddress(InetAddress.getByName("2001:db8::1"), 8080), result);
 	}
 	
 	@Test
@@ -312,9 +290,8 @@ class InetSocketAddressCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeKey("192.168.1.1");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Invalid network socket address format"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("192.168.1.1"));
+		assertTrue(exception.getMessage().contains("Invalid network socket address format"));
 	}
 	
 	@Test
@@ -322,9 +299,8 @@ class InetSocketAddressCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetSocketAddress> codec = new InetSocketAddressCodec();
 		
-		Result<InetSocketAddress> result = codec.decodeKey("192.168.1.1:99999");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Port number out of range"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("192.168.1.1:99999"));
+		assertTrue(exception.getMessage().contains("Port number out of range"));
 	}
 	
 	@Test

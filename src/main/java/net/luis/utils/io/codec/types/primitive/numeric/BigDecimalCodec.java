@@ -18,17 +18,17 @@
 
 package net.luis.utils.io.codec.types.primitive.numeric;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.numeric.BigDecimalConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.numeric.BigDecimalConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for big decimals.<br>
@@ -36,106 +36,70 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class BigDecimalCodec extends AbstractCodec<BigDecimal, BigDecimalConstraintConfig> implements BigDecimalConstraint<BigDecimalCodec> {
+public class BigDecimalCodec
+	extends AbstractConstrainableCodec<BigDecimal, BigDecimalConstraintConfig, BigDecimalCodec>
+	implements BigDecimalConstraint<BigDecimalCodec> {
 	
 	/**
 	 * Constructs a new big decimal codec.<br>
 	 */
-	public BigDecimalCodec() {}
+	public BigDecimalCodec() {
+		super(BigDecimalCodec::new, BigDecimalConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new big decimal codec with the specified big decimal constraint configuration.<br>
 	 *
-	 * @param constraintConfig The big decimal constraint configuration
+	 * @param config The big decimal constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	private BigDecimalCodec(@NonNull BigDecimalConstraintConfig constraintConfig) {
-		super(constraintConfig);
+	private BigDecimalCodec(@NonNull BigDecimalConstraintConfig config) {
+		super(BigDecimalCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull BigDecimalCodec apply(@NonNull UnaryOperator<BigDecimalConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new BigDecimalCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(BigDecimalConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable BigDecimal value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable BigDecimal value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as big decimal using '" + this + "'");
+			throw new EncoderException("Unable to encode null as big decimal", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(value.toPlainString());
+		return provider.createString(this.validateEncodeConstraints(value).toPlainString(), EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull BigDecimal key) {
+	public @NonNull String encodeKey(@NonNull BigDecimal key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key.toPlainString());
+		return this.validateEncodeConstraints(key).toPlainString();
 	}
 	
 	@Override
-	public <R> @NonNull Result<BigDecimal> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull BigDecimal decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as big decimal using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as big decimal", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			BigDecimal bigDecimal = new BigDecimal(string);
-			
-			Result<Void> constraintResult = this.checkConstraints(bigDecimal);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(bigDecimal);
+			return this.validateDecodeConstraints(bigDecimal);
 		} catch (NumberFormatException e) {
-			return Result.error("Unable to decode big decimal '" + string + "' using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode big decimal '" + string + "': " + e.getMessage(), this);
 		}
 	}
 	
 	@Override
-	public @NonNull Result<BigDecimal> decodeKey(@NonNull String key) {
+	public @NonNull BigDecimal decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			BigDecimal bigDecimal = new BigDecimal(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(bigDecimal);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(bigDecimal);
+			return this.validateDecodeConstraints(bigDecimal);
 		} catch (NumberFormatException e) {
-			return Result.error("Unable to decode key '" + key + "' as big decimal using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode key '" + key + "' as big decimal: " + e.getMessage(), this);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedBigDecimalCodec[constraints=" + config + "]";
-		}).orElse("BigDecimalCodec");
 	}
 }

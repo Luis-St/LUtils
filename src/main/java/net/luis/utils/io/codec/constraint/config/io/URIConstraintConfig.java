@@ -20,13 +20,11 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.net.URI;
@@ -176,6 +174,11 @@ public record URIConstraintConfig(
 		if (withoutFragment.isPresent() && fragment.isPresent()) {
 			throw new IllegalArgumentException("Both without fragment and fragment constraints cannot be present at the same time");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -407,29 +410,29 @@ public record URIConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull URI value) {
+	public void validate(@NonNull URI value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> IOMatchers.matchUriSchemeConfig(value, this.scheme),
-			() -> IOMatchers.matchUriHostConfig(value, this.host),
-			() -> ConstraintMatchers.matchFlag(value, this.withoutUserInfo, uri -> uri.getUserInfo() == null, "URI '" + value + "' must not have user info"),
-			() -> IOMatchers.matchUriUserInfoConfig(value, this.userInfo),
-			() -> ConstraintMatchers.matchFlag(value, this.withoutPort, uri -> uri.getPort() == -1, "URI '" + value + "' must not have a port"),
-			() -> IOMatchers.matchUriPortConfig(value, this.port),
-			() -> ConstraintMatchers.matchFlag(value, this.withoutPath, uri -> uri.getPath() == null || uri.getPath().isEmpty(), "URI '" + value + "' must not have a path"),
-			() -> IOMatchers.matchUriPathConfig(value, this.path),
-			() -> ConstraintMatchers.matchFlag(value, this.withoutQuery, uri -> uri.getQuery() == null, "URI '" + value + "' must not have a query"),
-			() -> IOMatchers.matchUriQueryConfig(value, this.query),
-			() -> ConstraintMatchers.matchFlag(value, this.withoutFragment, uri -> uri.getFragment() == null, "URI '" + value + "' must not have a fragment"),
-			() -> IOMatchers.matchUriFragmentConfig(value, this.fragment),
-			() -> ConstraintMatchers.matchFlag(value, this.absolute, URI::isAbsolute, "URI '" + value + "' must be absolute"),
-			() -> ConstraintMatchers.matchFlag(value, this.relative, uri -> !uri.isAbsolute(), "URI '" + value + "' must be relative"),
-			() -> ConstraintMatchers.matchFlag(value, this.opaque, URI::isOpaque, "URI '" + value + "' must be opaque"),
-			() -> ConstraintMatchers.matchFlag(value, this.hierarchical, uri -> !uri.isOpaque(), "URI '" + value + "' must be hierarchical"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> IOValidators.validateUriSchemeConfig(value, this.scheme),
+			() -> IOValidators.validateUriHostConfig(value, this.host),
+			() -> ConstraintValidators.validateFlag(value, this.withoutUserInfo, uri -> uri.getUserInfo() == null, "URI '" + value + "' must not have user info"),
+			() -> IOValidators.validateUriUserInfoConfig(value, this.userInfo),
+			() -> ConstraintValidators.validateFlag(value, this.withoutPort, uri -> uri.getPort() == -1, "URI '" + value + "' must not have a port"),
+			() -> IOValidators.validateUriPortConfig(value, this.port),
+			() -> ConstraintValidators.validateFlag(value, this.withoutPath, uri -> uri.getPath() == null || uri.getPath().isEmpty(), "URI '" + value + "' must not have a path"),
+			() -> IOValidators.validateUriPathConfig(value, this.path),
+			() -> ConstraintValidators.validateFlag(value, this.withoutQuery, uri -> uri.getQuery() == null, "URI '" + value + "' must not have a query"),
+			() -> IOValidators.validateUriQueryConfig(value, this.query),
+			() -> ConstraintValidators.validateFlag(value, this.withoutFragment, uri -> uri.getFragment() == null, "URI '" + value + "' must not have a fragment"),
+			() -> IOValidators.validateUriFragmentConfig(value, this.fragment),
+			() -> ConstraintValidators.validateFlag(value, this.absolute, URI::isAbsolute, "URI '" + value + "' must be absolute"),
+			() -> ConstraintValidators.validateFlag(value, this.relative, uri -> !uri.isAbsolute(), "URI '" + value + "' must be relative"),
+			() -> ConstraintValidators.validateFlag(value, this.opaque, URI::isOpaque, "URI '" + value + "' must be opaque"),
+			() -> ConstraintValidators.validateFlag(value, this.hierarchical, uri -> !uri.isOpaque(), "URI '" + value + "' must be hierarchical"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }
