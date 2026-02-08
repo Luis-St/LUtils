@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.SqlDialect;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 

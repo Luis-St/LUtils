@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.dialect.timescale;
 
-import net.luis.utils.io.database.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlDialect;
 
 /**
  * SQL dialect for TimescaleDB.<br>

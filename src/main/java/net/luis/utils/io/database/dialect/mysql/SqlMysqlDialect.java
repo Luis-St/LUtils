@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.dialect.mysql;
 
-import net.luis.utils.io.database.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlDialect;
 
 /**
  * SQL dialect for MySQL.<br>

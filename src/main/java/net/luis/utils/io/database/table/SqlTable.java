@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.table;
 
-import net.luis.utils.io.database.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.index.SqlIndexDefinition;
 import net.luis.utils.io.database.index.SqlIndexInfo;
 import net.luis.utils.io.database.query.*;

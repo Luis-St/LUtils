@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;

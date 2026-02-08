@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.table;
 
-import net.luis.utils.io.database.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlOrderable;
 import net.luis.utils.io.database.query.SqlSelectQuery;

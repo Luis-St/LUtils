@@ -16,18 +16,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database;
-
-import org.jspecify.annotations.NonNull;
+package net.luis.utils.io.database.dialect;
 
 /**
- * Registry for auto-detecting SQL dialects from JDBC URLs.<br>
+ * Interface representing the features supported by a SQL dialect.<br>
  *
  * @author Luis-St
  */
-public class SqlDialectRegistry {
+public interface SqlDialectFeatures {
 	
-	public static @NonNull SqlDialect<?, ?> detect(@NonNull String jdbcUrl) {
-		throw new UnsupportedOperationException();
-	}
+	boolean supportsReturning();
+	
+	boolean supportsSkipLocked();
+	
+	boolean supportsArrays();
+	
+	boolean supportsJsonb();
+	
+	boolean supportsPartialIndexes();
 }

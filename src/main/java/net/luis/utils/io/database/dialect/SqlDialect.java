@@ -16,9 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database;
+package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.dialect.*;
 import net.luis.utils.io.database.dialect.mysql.SqlMysqlDialect;
 import net.luis.utils.io.database.dialect.postgres.SqlPostgresDialect;
 import net.luis.utils.io.database.dialect.timescale.SqlTimescaleDialect;
