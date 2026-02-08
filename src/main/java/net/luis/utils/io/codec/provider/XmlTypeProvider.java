@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  */
 @Singleton
 public final class XmlTypeProvider implements TypeProvider<XmlElement> {
-
+	
 	/**
 	 * Pattern for valid xml element names.<br>
 	 */
@@ -101,299 +101,299 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * Constants for the name of map xml element type.<br>
 	 */
 	private static final String MAP = "map" + GENERATED;
-
+	
 	/**
 	 * The singleton instance of this class.<br>
 	 */
 	public static final XmlTypeProvider INSTANCE = new XmlTypeProvider();
-
+	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 */
 	private XmlTypeProvider() {}
-
+	
 	@Override
 	public @NonNull XmlElement empty() {
 		return new XmlElement(EMPTY);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createNull(@NotNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		return new XmlElement(NULL);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createBoolean(boolean value, @NotNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		return new XmlValue(BOOLEAN, value);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createByte(byte value, @NotNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		return new XmlValue(BYTE, value);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createShort(short value, @NotNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		return new XmlValue(SHORT, value);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createInteger(int value, @NotNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		return new XmlValue(INTEGER, value);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createLong(long value, @NotNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		return new XmlValue(LONG, value);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createFloat(float value, @NotNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		return new XmlValue(FLOAT, value);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createDouble(double value, @NotNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		return new XmlValue(DOUBLE, value);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createString(@Nullable String value, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (value == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid string");
 		}
 		return new XmlValue(STRING, value);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createList(@Nullable List<? extends XmlElement> values, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (values == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid list");
 		}
-
+		
 		List<XmlElement> elements = values.stream().map(element -> this.copyWithName(ELEMENT, element)).toList();
 		return new XmlContainer(LIST, new XmlElements(elements));
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createMap(@NotNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		return new XmlContainer(MAP);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull XmlElement createMap(@Nullable Map<String, ? extends XmlElement> values, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (values == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
 		return new XmlContainer(MAP, new XmlElements(values));
 	}
-
+	
 	@Override
 	public <X extends Exception> boolean isEmpty(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not empty");
 		}
 		return type.isSelfClosing();
 	}
-
+	
 	@Override
 	public <X extends Exception> boolean isNull(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not xml null");
 		}
 		return type.isSelfClosing() && type.getName().equals(NULL);
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a boolean");
 		}
 		if (!type.isXmlValue()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' must have a value to be a boolean");
 		}
-
+		
 		try {
 			return type.getAsXmlValue().getAsBoolean();
 		} catch (IllegalArgumentException e) {
 			throw exceptionConstructor.apply("Unable to parse xml value as boolean: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull Byte getByte(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a byte");
 		}
 		if (!type.isXmlValue()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' must have a value to be a byte");
 		}
-
+		
 		try {
 			return type.getAsXmlValue().getAsByte();
 		} catch (IllegalArgumentException e) {
 			throw exceptionConstructor.apply("Unable to parse xml value as byte: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull Short getShort(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a short");
 		}
 		if (!type.isXmlValue()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' must have a value to be a short");
 		}
-
+		
 		try {
 			return type.getAsXmlValue().getAsShort();
 		} catch (IllegalArgumentException e) {
 			throw exceptionConstructor.apply("Unable to parse xml value as short: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull Integer getInteger(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not an integer");
 		}
 		if (!type.isXmlValue()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' must have a value to be an integer");
 		}
-
+		
 		try {
 			return type.getAsXmlValue().getAsInteger();
 		} catch (IllegalArgumentException e) {
 			throw exceptionConstructor.apply("Unable to parse xml value as integer: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull Long getLong(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a long");
 		}
 		if (!type.isXmlValue()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' must have a value to be a long");
 		}
-
+		
 		try {
 			return type.getAsXmlValue().getAsLong();
 		} catch (IllegalArgumentException e) {
 			throw exceptionConstructor.apply("Unable to parse xml value as long: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull Float getFloat(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a float");
 		}
 		if (!type.isXmlValue()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' must have a value to be a float");
 		}
-
+		
 		try {
 			return type.getAsXmlValue().getAsFloat();
 		} catch (IllegalArgumentException e) {
 			throw exceptionConstructor.apply("Unable to parse xml value as float: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull Double getDouble(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a double");
 		}
 		if (!type.isXmlValue()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' must have a value to be a double");
 		}
-
+		
 		try {
 			return type.getAsXmlValue().getAsDouble();
 		} catch (IllegalArgumentException e) {
 			throw exceptionConstructor.apply("Unable to parse xml value as double: " + type.getAsXmlValue().getUnescapedValue());
 		}
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull String getString(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a string");
 		}
-
+		
 		if (!type.isXmlValue()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' must have a value to be a string");
 		}
 		return type.getAsXmlValue().getAsString();
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull List<XmlElement> getList(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid list");
 		}
-
+		
 		if (!type.isXmlContainer()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' is not a container");
 		}
-
+		
 		XmlContainer container = type.getAsXmlContainer();
 		if (container.isEmpty()) {
 			return List.of();
 		}
-
+		
 		XmlElements elements = container.getElements();
 		if (elements.isArray()) {
 			return elements.getAsArray();
 		}
-
+		
 		if (elements.isUndefined()) {
 			XmlElement element = elements.get(0);
 			if (element != null) {
@@ -403,30 +403,30 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		}
 		throw exceptionConstructor.apply("Xml element '" + type + "' is a container with non-array elements");
 	}
-
+	
 	@Override
 	public <X extends Exception> @NonNull Map<String, XmlElement> getMap(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
-
+		
 		if (!type.isXmlContainer()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' is not a container");
 		}
-
+		
 		XmlElements elements = type.getAsXmlContainer().getElements();
 		if (elements.isEmpty()) {
 			return Map.of();
 		}
-
+		
 		if (elements.isObject()) {
 			Map<String, XmlElement> map = Maps.newLinkedHashMap();
 			elements.getAsObject().forEach((key, value) -> map.put(this.unescapeName(key), value));
 			return map;
 		}
-
+		
 		if (elements.isUndefined()) {
 			XmlElement element = elements.get(0);
 			if (element != null) {
@@ -437,62 +437,63 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		}
 		throw exceptionConstructor.apply("Xml element '" + type + "' is a container with non-object elements");
 	}
-
+	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> boolean has(@Nullable XmlElement type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
 		if (key == null) {
 			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
-
+		
 		if (!type.isXmlContainer()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' is not a container");
 		}
-
+		
 		XmlElements elements = type.getAsXmlContainer().getElements();
 		if (elements.isEmpty()) {
 			return false;
 		}
 		return elements.containsName(this.escapeName(key));
 	}
-
+	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <X extends Exception> @NonNull XmlElement get(@Nullable XmlElement type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @Nullable XmlElement get(@Nullable XmlElement type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
 		if (key == null) {
 			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
-
+		
 		if (!type.isXmlContainer()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' is not a container");
 		}
-
+		
 		XmlElements elements = type.getAsXmlContainer().getElements();
 		if (elements.isArray()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' is a container with array elements");
 		}
-
+		
 		XmlElement element = elements.get(this.escapeName(key));
-		if (element == null) { // null is valid for unit codec
+		if (element == null) {
 			return null;
 		}
 		return this.copyWithName(this.escapeName(key), element);
 	}
-
+	
 	@Override
+	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> void set(@Nullable XmlElement type, @Nullable String key, @Nullable XmlElement value, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -502,40 +503,41 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		if (value == null) {
 			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
-
+		
 		if (!type.isXmlContainer()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' is not a container");
 		}
-
+		
 		XmlElements elements = type.getAsXmlContainer().getElements();
 		if (elements.isArray()) {
 			throw exceptionConstructor.apply("Xml element '" + type + "' is a container with array elements");
 		}
 		elements.add(this.copyWithName(this.escapeName(key), value));
 	}
-
+	
 	@Override
+	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> @UnknownNullability XmlElement merge(@Nullable XmlElement current, @Nullable XmlElement value, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-
+		
 		if (current == null) {
 			return value;
 		}
 		if (value == null) {
 			return current;
 		}
-
+		
 		if (current.isSelfClosing()) {
 			return value;
 		}
 		if (value.isSelfClosing()) {
 			return current;
 		}
-
+		
 		if (current.isXmlContainer() && value.isXmlContainer()) {
 			XmlContainer currentContainer = current.getAsXmlContainer();
 			XmlContainer valueContainer = value.getAsXmlContainer();
-
+			
 			if (currentContainer.isEmpty()) {
 				return value;
 			}
@@ -551,14 +553,14 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 			if (currentContainer.isUndefinedContainer() && valueContainer.isUndefinedContainer()) {
 				return this.mergeUndefined(currentContainer.getElements(), valueContainer.getElements(), exceptionConstructor);
 			}
-
+			
 			throw exceptionConstructor.apply("Unable to merge container of different types: '" + current + "' with '" + value + "'");
 		}
 		throw exceptionConstructor.apply("Unable to merge '" + current + "' with '" + value + "'");
 	}
-
+	
 	//region Helper methods
-
+	
 	/**
 	 * Escapes the given name if it is numeric.<br>
 	 * The name is escaped by adding an underscore in front of it.<br>
@@ -572,7 +574,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		Objects.requireNonNull(name, "Name must not be null");
 		return !XML_ELEMENT_NAME_PATTERN.matcher(name).matches() ? "_" + name : name;
 	}
-
+	
 	/**
 	 * Unescapes the given name if it is numeric.<br>
 	 * The name is unescaped by removing an underscore in front of it.<br>
@@ -584,13 +586,13 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 */
 	private @NonNull String unescapeName(@NonNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
-
+		
 		if (name.startsWith("_") && !XML_ELEMENT_NAME_PATTERN.matcher(name.substring(1)).matches()) {
 			return name.substring(1);
 		}
 		return name;
 	}
-
+	
 	/**
 	 * Copies the given xml element with the given name.<br>
 	 * The name is used as the new name for the copied element.<br>
@@ -605,7 +607,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	private @NonNull XmlElement copyWithName(@NonNull String name, @NonNull XmlElement value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		if (value.isSelfClosing()) {
 			return new XmlElement(name);
 		} else if (value.isXmlValue()) {
@@ -615,7 +617,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		}
 		throw new IllegalStateException("Unable to copy xml element '" + value + "' with name '" + name + "'");
 	}
-
+	
 	/**
 	 * Merges two arrays of xml elements.<br>
 	 * The elements of the current and value arrays are copied with the same name.<br>
@@ -630,14 +632,14 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	private @NonNull List<XmlElement> mergeArray(@NonNull XmlElements current, @NonNull XmlElements value) {
 		Objects.requireNonNull(current, "Current elements must not be null");
 		Objects.requireNonNull(value, "Value elements must not be null");
-
+		
 		String name = Objects.requireNonNull(current.get(0)).getName();
 		XmlElements elements = new XmlElements();
 		current.getAsArray().stream().map(element -> this.copyWithName(name, element)).forEach(elements::add);
 		value.getAsArray().stream().map(element -> this.copyWithName(name, element)).forEach(elements::add);
 		return elements.getAsArray();
 	}
-
+	
 	/**
 	 * Merges two objects of xml elements.<br>
 	 * The elements of the current and value objects are moved to a new object.<br>
@@ -651,13 +653,13 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	private @NonNull Map<String, XmlElement> mergeObject(@NonNull XmlElements current, @NonNull XmlElements value) {
 		Objects.requireNonNull(current, "Current elements must not be null");
 		Objects.requireNonNull(value, "Value elements must not be null");
-
+		
 		XmlElements elements = new XmlElements();
 		current.getAsObject().values().forEach(elements::add);
 		value.getAsObject().values().forEach(elements::add);
 		return elements.getAsObject();
 	}
-
+	
 	/**
 	 * Merges two undefined containers of xml elements.<br>
 	 * The elements of the current and value containers are moved to a new container.<br>
@@ -673,11 +675,11 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	private <X extends Exception> @NonNull XmlElement mergeUndefined(@NonNull XmlElements current, @NonNull XmlElements value, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(current, "Current elements must not be null");
 		Objects.requireNonNull(value, "Value elements must not be null");
-
+		
 		XmlElements elements = new XmlElements();
 		Optional.ofNullable(current.get(0)).ifPresent(elements::add);
 		Optional.ofNullable(value.get(0)).ifPresent(elements::add);
-
+		
 		if (elements.isArray()) {
 			return this.createList(elements.getAsArray(), exceptionConstructor);
 		} else if (elements.isObject()) {

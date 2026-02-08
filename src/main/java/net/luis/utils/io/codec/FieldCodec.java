@@ -159,11 +159,11 @@ public class FieldCodec<C, O> {
 		try {
 			R value = provider.get(map, this.name, DecoderException::new);
 			return this.codec.decode(provider, map, value);
-		} catch (DecoderException e) {
+		} catch (DecoderException rootException) {
 			try {
 				return this.decodeWithAlias(provider, map);
-			} catch (DecoderException inner) {
-				throw new DecoderException("Unable to decode named '" + this.name + "' from '" + map + "': " + inner.getMessage(), this.codec, inner);
+			} catch (DecoderException aliasException) {
+				throw new DecoderException("Unable to decode named '" + this.name + "' from '" + map + "': " + aliasException.getMessage(), this.codec, aliasException);
 			}
 		}
 	}

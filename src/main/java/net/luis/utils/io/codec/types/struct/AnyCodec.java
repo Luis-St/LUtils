@@ -121,8 +121,8 @@ public class AnyCodec<C> extends AbstractCodec<C> {
 		for (Codec<C> codec : this.codecs) {
 			try {
 				return codec.encode(provider, current, value);
-			} catch (EncoderException e) {
-				exceptions.add(e);
+			} catch (EncoderException | ClassCastException e) {
+				exceptions.add(e instanceof EncoderException ee ? ee : new EncoderException("Type mismatch: " + e.getMessage(), this));
 			}
 		}
 		
@@ -143,8 +143,8 @@ public class AnyCodec<C> extends AbstractCodec<C> {
 		for (Codec<C> codec : this.codecs) {
 			try {
 				return codec.decode(provider, current, value);
-			} catch (DecoderException e) {
-				exceptions.add(e);
+			} catch (DecoderException | ClassCastException e) {
+				exceptions.add(e instanceof DecoderException de ? de : new DecoderException("Type mismatch: " + e.getMessage(), this));
 			}
 		}
 		

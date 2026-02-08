@@ -365,7 +365,8 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull JsonElement get(@Nullable JsonElement type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+	@SuppressWarnings("DuplicatedCode")
+	public <X extends Exception> @Nullable JsonElement get(@Nullable JsonElement type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -378,15 +379,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		if (!type.isJsonObject()) {
 			throw exceptionConstructor.apply("Json element '" + type + "' is not a json object");
 		}
-		
-		JsonElement element = type.getAsJsonObject().get(key);
-		if (element == null) {
-			throw exceptionConstructor.apply("Key '" + key + "' does not exist in json object '" + type + "'");
-		}
-		return element;
+		return type.getAsJsonObject().get(key);
 	}
 	
 	@Override
+	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> void set(@Nullable JsonElement type, @Nullable String key, @Nullable JsonElement value, @NotNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		

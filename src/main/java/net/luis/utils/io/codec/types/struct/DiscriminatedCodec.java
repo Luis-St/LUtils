@@ -135,21 +135,26 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
 		
 		R discriminatorField;
 		try {
+			// TypeProvider#get returns null if the field is not found, do a pre-check
+			if (!provider.has(current, this.discriminatedField, EncoderException::new)) {
+				throw new EncoderException("Discriminator field '" + this.discriminatedField + "' not found", this);
+			}
+			
 			discriminatorField = provider.get(current, this.discriminatedField, EncoderException::new);
 		} catch (EncoderException e) {
-			throw new EncoderException("Unable to encode value as discriminated using '" + this + "': Discriminator field '" + this.discriminatedField + "' not found", this);
+			throw new EncoderException("Unable to encode value as discriminated: Discriminator field '" + this.discriminatedField + "' not found", this);
 		}
 		
 		T discriminator;
 		try {
 			discriminator = this.discriminatedCodec.decode(provider, current, discriminatorField);
 		} catch (DecoderException e) {
-			throw new EncoderException("Unable to encode value as discriminated using '" + this + "': Failed to decode discriminator field", this, e);
+			throw new EncoderException("Unable to encode value as discriminated: Failed to decode discriminator field", this, e);
 		}
 		
 		Codec<C> codec = this.provider.getCodec(discriminator);
 		if (codec == null) {
-			throw new EncoderException("Unable to encode value as discriminated using '" + this + "': No codec found for discriminator value '" + discriminator + "'", this);
+			throw new EncoderException("Unable to encode value as discriminated: No codec found for discriminator value '" + discriminator + "'", this);
 		}
 		return codec.encode(provider, current, value);
 	}
@@ -164,6 +169,11 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
 		
 		R discriminatorField;
 		try {
+			// TypeProvider#get returns null if the field is not found, do a pre-check
+			if (!provider.has(current, this.discriminatedField, DecoderException::new)) {
+				throw new DecoderException("Discriminator field '" + this.discriminatedField + "' not found", this);
+			}
+			
 			discriminatorField = provider.get(current, this.discriminatedField, DecoderException::new);
 		} catch (DecoderException e) {
 			throw new DecoderException("Unable to decode value as discriminated: Discriminator field '" + this.discriminatedField + "' not found", this);
@@ -173,7 +183,7 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
 		try {
 			discriminator = this.discriminatedCodec.decode(provider, current, discriminatorField);
 		} catch (DecoderException e) {
-			throw new DecoderException("Unable to decode value as discriminated using '" + this + "': Failed to decode discriminator field", this, e);
+			throw new DecoderException("Unable to decode value as discriminated: Failed to decode discriminator field", this, e);
 		}
 		
 		Codec<C> codec = this.provider.getCodec(discriminator);

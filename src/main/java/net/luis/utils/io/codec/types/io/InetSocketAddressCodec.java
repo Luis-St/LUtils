@@ -136,8 +136,7 @@ public class InetSocketAddressCodec
 	 * @throws DecoderException If the string could not be parsed
 	 */
 	private @NonNull InetSocketAddress parseSocketAddress(@NonNull String string) throws DecoderException {
-		IpAddress<?> address = IpAddresses.parse(string, IpParseOptions.LENIENT);
-		
+		String addressPart;
 		int port;
 		try {
 			if (string.startsWith("[")) {
@@ -146,6 +145,7 @@ public class InetSocketAddressCodec
 					throw new DecoderException("Invalid IPv6 socket address format '" + string + "', expected '[ipv6]:port'", this);
 				}
 				
+				addressPart = string.substring(1, closeBracket);
 				port = Integer.parseInt(string.substring(closeBracket + 2));
 			} else {
 				int lastColon = string.lastIndexOf(':');
@@ -153,6 +153,7 @@ public class InetSocketAddressCodec
 					throw new DecoderException("Invalid network socket address format '" + string + "', expected 'ipv4:port'", this);
 				}
 				
+				addressPart = string.substring(0, lastColon);
 				port = Integer.parseInt(string.substring(lastColon + 1));
 			}
 		} catch (NumberFormatException e) {
@@ -162,6 +163,7 @@ public class InetSocketAddressCodec
 		if (port < 0 || port > 65535) {
 			throw new DecoderException("Port number out of range: " + port, this);
 		}
+		IpAddress<?> address = IpAddresses.parse(addressPart, IpParseOptions.LENIENT);
 		return new InetSocketAddress(address.toInetAddress(), port);
 	}
 }

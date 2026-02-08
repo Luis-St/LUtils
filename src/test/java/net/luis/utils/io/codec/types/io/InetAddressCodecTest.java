@@ -58,7 +58,7 @@ class InetAddressCodecTest {
 	}
 	
 	@Test
-	void encodeWithIPv4() throws UnknownHostException, EncoderException {
+	void encodeWithIPv4() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = new InetAddressCodec();
 		InetAddress address = InetAddress.getByName("192.168.1.1");
@@ -68,7 +68,7 @@ class InetAddressCodecTest {
 	}
 	
 	@Test
-	void encodeWithLocalhost() throws UnknownHostException, EncoderException {
+	void encodeWithLocalhost() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = new InetAddressCodec();
 		InetAddress address = InetAddress.getByName("127.0.0.1");
@@ -78,7 +78,7 @@ class InetAddressCodecTest {
 	}
 	
 	@Test
-	void encodeWithIPv6() throws UnknownHostException, EncoderException {
+	void encodeWithIPv6() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = new InetAddressCodec();
 		InetAddress address = InetAddress.getByName("2001:db8::1");
@@ -88,7 +88,7 @@ class InetAddressCodecTest {
 	}
 	
 	@Test
-	void encodeWithIPv6Localhost() throws UnknownHostException, EncoderException {
+	void encodeWithIPv6Localhost() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = new InetAddressCodec();
 		InetAddress address = InetAddress.getByName("::1");
@@ -106,7 +106,7 @@ class InetAddressCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithIPv4() throws UnknownHostException, EncoderException {
+	void encodeKeyWithIPv4() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = new InetAddressCodec();
 		InetAddress address = InetAddress.getByName("192.168.1.1");
@@ -133,7 +133,7 @@ class InetAddressCodecTest {
 	}
 	
 	@Test
-	void decodeWithValidIPv4() throws UnknownHostException, DecoderException {
+	void decodeWithValidIPv4() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = new InetAddressCodec();
 		
@@ -142,7 +142,7 @@ class InetAddressCodecTest {
 	}
 	
 	@Test
-	void decodeWithLocalhost() throws UnknownHostException, DecoderException {
+	void decodeWithLocalhost() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = new InetAddressCodec();
 		
@@ -151,7 +151,7 @@ class InetAddressCodecTest {
 	}
 	
 	@Test
-	void decodeWithValidIPv6() throws UnknownHostException, DecoderException {
+	void decodeWithValidIPv6() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = new InetAddressCodec();
 		
@@ -160,7 +160,7 @@ class InetAddressCodecTest {
 	}
 	
 	@Test
-	void decodeWithIPv6Localhost() throws UnknownHostException, DecoderException {
+	void decodeWithIPv6Localhost() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = new InetAddressCodec();
 		
@@ -194,7 +194,7 @@ class InetAddressCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidIPv4() throws UnknownHostException, DecoderException {
+	void decodeKeyWithValidIPv4() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = new InetAddressCodec();
 		
@@ -203,7 +203,7 @@ class InetAddressCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithLocalhost() throws UnknownHostException, DecoderException {
+	void decodeKeyWithLocalhost() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<InetAddress> codec = new InetAddressCodec();
 		

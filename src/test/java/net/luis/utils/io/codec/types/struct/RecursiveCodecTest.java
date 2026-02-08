@@ -165,7 +165,7 @@ class RecursiveCodecTest {
 	}
 	
 	@Test
-	void roundTripLinkedList() throws DecoderException, EncoderException {
+	void roundTripLinkedList() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LinkedListNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(
@@ -233,7 +233,7 @@ class RecursiveCodecTest {
 	}
 	
 	@Test
-	void roundTripBinaryTree() throws DecoderException, EncoderException {
+	void roundTripBinaryTree() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<TreeNode> codec = Codecs.recursive(self ->
 			CodecBuilder.of(

@@ -151,4 +151,10 @@ public class SetCodec<C>
 		}
 		return this.validateDecodeConstraints(new LinkedHashSet<>(this.decode(partialElements)));
 	}
+	
+	@Override
+	public String toString() {
+		String base = "SetCodec[" + this.codec + "]";
+		return this.config.isUnconstrained() ? base : "Constrained" + base + "[constraints=" + this.config + "]";
+	}
 }

@@ -210,4 +210,10 @@ public class MapCodec<K, V>
 		V decodedValue = this.valueCodec.decode(provider, current, entry.getValue());
 		return new SimpleEntry<>(decodedKey, decodedValue);
 	}
+	
+	@Override
+	public String toString() {
+		String base = "MapCodec[" + this.keyCodec + ", " + this.valueCodec + "]";
+		return this.config.isUnconstrained() ? base : "Constrained" + base + "[constraints=" + this.config + "]";
+	}
 }

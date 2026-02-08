@@ -360,6 +360,10 @@ public interface TypeProvider<T> {
 	/**
 	 * Gets the value of the given key from the given value.<br>
 	 * The given type must be a map.<br>
+	 * <p>
+	 *     The returned value might be null if the key does not exist in the map.<br>
+	 *     This method is allowed to return null values to support optional values (which are represented as null).
+	 * </p>
 	 *
 	 * @param type The value to get the value from
 	 * @param key The key to get the value for
@@ -369,7 +373,7 @@ public interface TypeProvider<T> {
 	 * @throws NullPointerException If the exception constructor is null
 	 * @throws X If the type does not support map values or the retrieval failed
 	 */
-	<X extends Exception> @NonNull T get(@Nullable T type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X;
+	<X extends Exception> @Nullable T get(@Nullable T type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X;
 	
 	/**
 	 * Sets the value for the given key in the given value.<br>

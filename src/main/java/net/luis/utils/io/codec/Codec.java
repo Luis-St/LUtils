@@ -689,7 +689,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 		
 		return new FieldCodec<>(this.optional().map(Optional::ofNullable, either -> {
 			if (either.isRight()) {
-				throw new DecoderException("Failed to decode optional field '" + name + "'", this, either.rightOrThrow());
+				return defaultSupplier.get();
 			}
 			return either.leftOrThrow().orElseGet(defaultSupplier);
 		}).codec("OptionalFieldCodec[" + this + "]"), name, aliases, getter);

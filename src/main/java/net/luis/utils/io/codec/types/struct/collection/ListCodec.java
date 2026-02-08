@@ -151,4 +151,10 @@ public class ListCodec<C>
 		}
 		return this.validateDecodeConstraints(this.decode(partialElements));
 	}
+	
+	@Override
+	public String toString() {
+		String base = "ListCodec[" + this.codec + "]";
+		return this.config.isUnconstrained() ? base : "Constrained" + base + "[constraints=" + this.config + "]";
+	}
 }

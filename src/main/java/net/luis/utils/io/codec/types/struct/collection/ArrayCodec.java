@@ -179,4 +179,10 @@ public class ArrayCodec<C>
 		}
 		return this.validateDecodeConstraints((C[]) array);
 	}
+	
+	@Override
+	public String toString() {
+		String base = "ArrayCodec[" + this.codec + "]";
+		return this.config.isUnconstrained() ? base : "Constrained" + base + "[constraints=" + this.config + "]";
+	}
 }

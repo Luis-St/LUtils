@@ -148,7 +148,7 @@ class Base64CodecTest {
 	}
 	
 	@Test
-	void roundTripEncoding() throws DecoderException, EncoderException {
+	void roundTripEncoding() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<byte[]> codec = new Base64Codec();
 		byte[] original = { 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100 };
