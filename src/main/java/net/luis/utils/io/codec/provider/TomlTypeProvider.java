@@ -45,7 +45,7 @@ public final class TomlTypeProvider implements TypeProvider<TomlElement> {
 	 */
 	private static final TomlElement EMPTY_ELEMENT = _ -> "Empty toml element has no string representation";
 	
-	/*
+	/**
 	 * The singleton instance of this class.<br>
 	 */
 	public static final TomlTypeProvider INSTANCE = new TomlTypeProvider();

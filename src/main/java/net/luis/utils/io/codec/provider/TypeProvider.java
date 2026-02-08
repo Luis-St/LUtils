@@ -192,6 +192,7 @@ public interface TypeProvider<T> {
 	 * Creates a map value of the type this provider is for using the given values.<br>
 	 *
 	 * @param values The values to create the map value from
+	 * @param exceptionConstructor A function to create an exception if the type does not support empty values or the check failed
 	 * @param <X> The type of the exception to throw
 	 * @return A map of the type
 	 * @throws NullPointerException If the exception constructor is null

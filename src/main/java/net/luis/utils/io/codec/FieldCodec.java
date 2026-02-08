@@ -178,6 +178,7 @@ public class FieldCodec<C, O> {
 	 * @return The decoded value
 	 * @param <R> The type to decode from
 	 * @throws NullPointerException If the provider, map or error is null
+	 * @throws DecoderException If an error occurs during decoding or no alias is present in the map
 	 */
 	private <R> @NonNull C decodeWithAlias(@NonNull TypeProvider<R> provider, @NonNull R map) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
