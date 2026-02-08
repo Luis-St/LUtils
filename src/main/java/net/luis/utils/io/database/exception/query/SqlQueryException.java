@@ -16,44 +16,45 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.query;
 
+import net.luis.utils.io.database.exception.SqlDatabaseException;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Exception thrown when a SQL relationship is not loaded.<br>
+ * Exception thrown when a SQL query error occurs.<br>
  *
  * @author Luis-St
  */
-public class SqlRelationshipNotLoadedException extends SqlEntityException {
+public class SqlQueryException extends SqlDatabaseException {
 	
 	/**
-	 * Constructs a new SQL relationship not loaded exception with no details.<br>
+	 * Constructs a new SQL query exception with no details.<br>
 	 */
-	public SqlRelationshipNotLoadedException() {}
+	public SqlQueryException() {}
 	
 	/**
-	 * Constructs a new SQL relationship not loaded exception with the specified message.<br>
+	 * Constructs a new SQL query exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public SqlRelationshipNotLoadedException(@Nullable String message) {
+	public SqlQueryException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new SQL relationship not loaded exception with the specified message and cause.<br>
+	 * Constructs a new SQL query exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public SqlRelationshipNotLoadedException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlQueryException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new SQL relationship not loaded exception with the specified cause.<br>
+	 * Constructs a new SQL query exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public SqlRelationshipNotLoadedException(@Nullable Throwable cause) {
+	public SqlQueryException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

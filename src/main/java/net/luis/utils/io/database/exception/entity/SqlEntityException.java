@@ -16,44 +16,45 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.entity;
 
+import net.luis.utils.io.database.exception.SqlDatabaseException;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Exception thrown when a SQL check constraint is violated.<br>
+ * Base exception for SQL entity-related errors.<br>
  *
  * @author Luis-St
  */
-public class SqlCheckConstraintViolationException extends SqlConstraintViolationException {
+public class SqlEntityException extends SqlDatabaseException {
 	
 	/**
-	 * Constructs a new SQL check constraint violation exception with no details.<br>
+	 * Constructs a new SQL entity exception with no details.<br>
 	 */
-	public SqlCheckConstraintViolationException() {}
+	public SqlEntityException() {}
 	
 	/**
-	 * Constructs a new SQL check constraint violation exception with the specified message.<br>
+	 * Constructs a new SQL entity exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public SqlCheckConstraintViolationException(@Nullable String message) {
+	public SqlEntityException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new SQL check constraint violation exception with the specified message and cause.<br>
+	 * Constructs a new SQL entity exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public SqlCheckConstraintViolationException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlEntityException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new SQL check constraint violation exception with the specified cause.<br>
+	 * Constructs a new SQL entity exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public SqlCheckConstraintViolationException(@Nullable Throwable cause) {
+	public SqlEntityException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

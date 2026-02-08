@@ -16,44 +16,44 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.constraint;
 
 import org.jspecify.annotations.Nullable;
 
 /**
- * Base exception for SQL constraint violations.<br>
+ * Exception thrown when a SQL check constraint is violated.<br>
  *
  * @author Luis-St
  */
-public class SqlConstraintViolationException extends SqlDatabaseException {
+public class SqlCheckConstraintViolationException extends SqlConstraintViolationException {
 	
 	/**
-	 * Constructs a new SQL constraint violation exception with no details.<br>
+	 * Constructs a new SQL check constraint violation exception with no details.<br>
 	 */
-	public SqlConstraintViolationException() {}
+	public SqlCheckConstraintViolationException() {}
 	
 	/**
-	 * Constructs a new SQL constraint violation exception with the specified message.<br>
+	 * Constructs a new SQL check constraint violation exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public SqlConstraintViolationException(@Nullable String message) {
+	public SqlCheckConstraintViolationException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new SQL constraint violation exception with the specified message and cause.<br>
+	 * Constructs a new SQL check constraint violation exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public SqlConstraintViolationException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlCheckConstraintViolationException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new SQL constraint violation exception with the specified cause.<br>
+	 * Constructs a new SQL check constraint violation exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public SqlConstraintViolationException(@Nullable Throwable cause) {
+	public SqlCheckConstraintViolationException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

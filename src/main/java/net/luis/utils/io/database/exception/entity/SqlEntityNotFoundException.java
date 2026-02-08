@@ -16,44 +16,44 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.entity;
 
 import org.jspecify.annotations.Nullable;
 
 /**
- * Exception thrown when a SQL not null constraint is violated.<br>
+ * Exception thrown when a SQL entity is not found.<br>
  *
  * @author Luis-St
  */
-public class SqlNotNullViolationException extends SqlConstraintViolationException {
+public class SqlEntityNotFoundException extends SqlEntityException {
 	
 	/**
-	 * Constructs a new SQL not null violation exception with no details.<br>
+	 * Constructs a new SQL entity not found exception with no details.<br>
 	 */
-	public SqlNotNullViolationException() {}
+	public SqlEntityNotFoundException() {}
 	
 	/**
-	 * Constructs a new SQL not null violation exception with the specified message.<br>
+	 * Constructs a new SQL entity not found exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public SqlNotNullViolationException(@Nullable String message) {
+	public SqlEntityNotFoundException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new SQL not null violation exception with the specified message and cause.<br>
+	 * Constructs a new SQL entity not found exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public SqlNotNullViolationException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlEntityNotFoundException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new SQL not null violation exception with the specified cause.<br>
+	 * Constructs a new SQL entity not found exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public SqlNotNullViolationException(@Nullable Throwable cause) {
+	public SqlEntityNotFoundException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

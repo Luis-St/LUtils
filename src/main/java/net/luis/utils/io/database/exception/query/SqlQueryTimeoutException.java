@@ -16,44 +16,44 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.query;
 
 import org.jspecify.annotations.Nullable;
 
 /**
- * Exception thrown when a SQL deadlock is detected.<br>
+ * Exception thrown when a SQL query timeout occurs.<br>
  *
  * @author Luis-St
  */
-public class SqlDeadlockException extends SqlLockingException {
+public class SqlQueryTimeoutException extends SqlQueryException {
 	
 	/**
-	 * Constructs a new SQL deadlock exception with no details.<br>
+	 * Constructs a new SQL query timeout exception with no details.<br>
 	 */
-	public SqlDeadlockException() {}
+	public SqlQueryTimeoutException() {}
 	
 	/**
-	 * Constructs a new SQL deadlock exception with the specified message.<br>
+	 * Constructs a new SQL query timeout exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public SqlDeadlockException(@Nullable String message) {
+	public SqlQueryTimeoutException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new SQL deadlock exception with the specified message and cause.<br>
+	 * Constructs a new SQL query timeout exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public SqlDeadlockException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlQueryTimeoutException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new SQL deadlock exception with the specified cause.<br>
+	 * Constructs a new SQL query timeout exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public SqlDeadlockException(@Nullable Throwable cause) {
+	public SqlQueryTimeoutException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

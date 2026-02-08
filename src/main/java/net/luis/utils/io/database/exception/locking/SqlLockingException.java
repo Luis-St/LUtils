@@ -16,44 +16,45 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.locking;
 
+import net.luis.utils.io.database.exception.SqlDatabaseException;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Exception thrown when a SQL query timeout occurs.<br>
+ * Base exception for SQL locking errors.<br>
  *
  * @author Luis-St
  */
-public class SqlQueryTimeoutException extends SqlQueryException {
+public class SqlLockingException extends SqlDatabaseException {
 	
 	/**
-	 * Constructs a new SQL query timeout exception with no details.<br>
+	 * Constructs a new SQL locking exception with no details.<br>
 	 */
-	public SqlQueryTimeoutException() {}
+	public SqlLockingException() {}
 	
 	/**
-	 * Constructs a new SQL query timeout exception with the specified message.<br>
+	 * Constructs a new SQL locking exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public SqlQueryTimeoutException(@Nullable String message) {
+	public SqlLockingException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new SQL query timeout exception with the specified message and cause.<br>
+	 * Constructs a new SQL locking exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public SqlQueryTimeoutException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlLockingException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new SQL query timeout exception with the specified cause.<br>
+	 * Constructs a new SQL locking exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public SqlQueryTimeoutException(@Nullable Throwable cause) {
+	public SqlLockingException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

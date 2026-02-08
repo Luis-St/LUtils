@@ -16,44 +16,45 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.constraint;
 
+import net.luis.utils.io.database.exception.SqlDatabaseException;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Base exception for SQL entity-related errors.<br>
+ * Base exception for SQL constraint violations.<br>
  *
  * @author Luis-St
  */
-public class SqlEntityException extends SqlDatabaseException {
+public class SqlConstraintViolationException extends SqlDatabaseException {
 	
 	/**
-	 * Constructs a new SQL entity exception with no details.<br>
+	 * Constructs a new SQL constraint violation exception with no details.<br>
 	 */
-	public SqlEntityException() {}
+	public SqlConstraintViolationException() {}
 	
 	/**
-	 * Constructs a new SQL entity exception with the specified message.<br>
+	 * Constructs a new SQL constraint violation exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public SqlEntityException(@Nullable String message) {
+	public SqlConstraintViolationException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new SQL entity exception with the specified message and cause.<br>
+	 * Constructs a new SQL constraint violation exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public SqlEntityException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlConstraintViolationException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new SQL entity exception with the specified cause.<br>
+	 * Constructs a new SQL constraint violation exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public SqlEntityException(@Nullable Throwable cause) {
+	public SqlConstraintViolationException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

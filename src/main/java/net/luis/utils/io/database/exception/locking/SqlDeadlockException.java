@@ -16,44 +16,44 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.locking;
 
 import org.jspecify.annotations.Nullable;
 
 /**
- * Exception thrown when a SQL lock is not available.<br>
+ * Exception thrown when a SQL deadlock is detected.<br>
  *
  * @author Luis-St
  */
-public class SqlLockNotAvailableException extends SqlLockingException {
+public class SqlDeadlockException extends SqlLockingException {
 	
 	/**
-	 * Constructs a new SQL lock not available exception with no details.<br>
+	 * Constructs a new SQL deadlock exception with no details.<br>
 	 */
-	public SqlLockNotAvailableException() {}
+	public SqlDeadlockException() {}
 	
 	/**
-	 * Constructs a new SQL lock not available exception with the specified message.<br>
+	 * Constructs a new SQL deadlock exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public SqlLockNotAvailableException(@Nullable String message) {
+	public SqlDeadlockException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new SQL lock not available exception with the specified message and cause.<br>
+	 * Constructs a new SQL deadlock exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public SqlLockNotAvailableException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlDeadlockException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new SQL lock not available exception with the specified cause.<br>
+	 * Constructs a new SQL deadlock exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public SqlLockNotAvailableException(@Nullable Throwable cause) {
+	public SqlDeadlockException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

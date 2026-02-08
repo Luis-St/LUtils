@@ -16,44 +16,44 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.entity;
 
 import org.jspecify.annotations.Nullable;
 
 /**
- * Exception thrown when a SQL query error occurs.<br>
+ * Exception thrown when a SQL relationship is not loaded.<br>
  *
  * @author Luis-St
  */
-public class SqlQueryException extends SqlDatabaseException {
+public class SqlRelationshipNotLoadedException extends SqlEntityException {
 	
 	/**
-	 * Constructs a new SQL query exception with no details.<br>
+	 * Constructs a new SQL relationship not loaded exception with no details.<br>
 	 */
-	public SqlQueryException() {}
+	public SqlRelationshipNotLoadedException() {}
 	
 	/**
-	 * Constructs a new SQL query exception with the specified message.<br>
+	 * Constructs a new SQL relationship not loaded exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public SqlQueryException(@Nullable String message) {
+	public SqlRelationshipNotLoadedException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new SQL query exception with the specified message and cause.<br>
+	 * Constructs a new SQL relationship not loaded exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public SqlQueryException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlRelationshipNotLoadedException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new SQL query exception with the specified cause.<br>
+	 * Constructs a new SQL relationship not loaded exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public SqlQueryException(@Nullable Throwable cause) {
+	public SqlRelationshipNotLoadedException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

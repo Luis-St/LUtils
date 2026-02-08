@@ -16,45 +16,47 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.constraint;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
+
 /**
- * Exception thrown when a SQL foreign key constraint is violated.<br>
+ * Exception thrown when a SQL unique constraint is violated.<br>
  *
  * @author Luis-St
  */
-public class SqlForeignKeyViolationException extends SqlConstraintViolationException {
+public class SqlUniqueConstraintViolationException extends SqlConstraintViolationException {
 	
 	/**
-	 * Constructs a new SQL foreign key violation exception with no details.<br>
+	 * Constructs a new SQL unique constraint violation exception with no details.<br>
 	 */
-	public SqlForeignKeyViolationException() {}
+	public SqlUniqueConstraintViolationException() {}
 	
 	/**
-	 * Constructs a new SQL foreign key violation exception with the specified message.<br>
+	 * Constructs a new SQL unique constraint violation exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public SqlForeignKeyViolationException(@Nullable String message) {
+	public SqlUniqueConstraintViolationException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new SQL foreign key violation exception with the specified message and cause.<br>
+	 * Constructs a new SQL unique constraint violation exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public SqlForeignKeyViolationException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlUniqueConstraintViolationException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new SQL foreign key violation exception with the specified cause.<br>
+	 * Constructs a new SQL unique constraint violation exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public SqlForeignKeyViolationException(@Nullable Throwable cause) {
+	public SqlUniqueConstraintViolationException(@Nullable Throwable cause) {
 		super(cause);
 	}
 	
@@ -62,11 +64,11 @@ public class SqlForeignKeyViolationException extends SqlConstraintViolationExcep
 		throw new UnsupportedOperationException();
 	}
 	
-	public @NonNull String getReferencedTableName() {
+	public @NonNull List<String> getColumnNames() {
 		throw new UnsupportedOperationException();
 	}
 	
-	public @Nullable Object getMissingKeyValue() {
+	public @Nullable Object getDuplicateValue() {
 		throw new UnsupportedOperationException();
 	}
 }
