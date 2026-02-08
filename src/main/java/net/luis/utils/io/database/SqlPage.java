@@ -25,8 +25,9 @@ import java.util.List;
 /**
  * Interface representing a page of SQL query results.<br>
  *
- * @param <T> The type of the content
  * @author Luis-St
+ *
+ * @param <T> The type of the content
  */
 public interface SqlPage<T> {
 

@@ -16,24 +16,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.audit;
+package net.luis.utils.io.database.dialect.timescale;
 
-import org.jspecify.annotations.NonNull;
+import net.luis.utils.io.database.dialect.postgres.SqlPostgresTable;
 
 /**
- * Interface representing a SQL audit entry.<br>
+ * Interface representing a TimescaleDB-specific table.<br>
+ * TimescaleDB is built on PostgreSQL, so this extends {@link SqlPostgresTable}.<br>
  *
+ * @param <T> The type of the entity
  * @author Luis-St
- *
- * @param <T> The type of the audited entity
  */
-public interface SqlAuditEntry<T> {
-
-	static <T> @NonNull SqlAuditEntry<T> forCreate(@NonNull T entity) {
-		throw new UnsupportedOperationException();
-	}
-
-	static <T> @NonNull SqlAuditEntry<T> forUpdate(@NonNull T entity) {
-		throw new UnsupportedOperationException();
-	}
-}
+public interface SqlTimescaleTable<T> extends SqlPostgresTable<T> {}

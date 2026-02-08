@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.table;
 
+import net.luis.utils.io.database.SqlDialect;
 import net.luis.utils.io.database.index.SqlIndexDefinition;
 import net.luis.utils.io.database.index.SqlIndexInfo;
 import net.luis.utils.io.database.query.*;
@@ -30,14 +31,17 @@ import java.util.function.Function;
 /**
  * Interface representing a SQL table.<br>
  *
- * @param <T> The type of the entity
  * @author Luis-St
+ *
+ * @param <T> The type of the entity
  */
 public interface SqlTable<T> {
 
 	static <T> @NonNull SqlTable<T> of(@NonNull String name, @NonNull Class<T> type) {
 		throw new UnsupportedOperationException();
 	}
+
+	<TT, CC> @NonNull TT dialect(@NonNull SqlDialect<TT, CC> dialect);
 
 	<C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull Class<C> type);
 

@@ -28,9 +28,10 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Interface representing a SQL foreign key relationship.<br>
  *
+ * @author Luis-St
+ *
  * @param <K> The type of the key
  * @param <V> The type of the referenced value
- * @author Luis-St
  */
 public interface SqlForeignKey<K, V> {
 

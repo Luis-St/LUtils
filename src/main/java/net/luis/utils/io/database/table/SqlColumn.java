@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.table;
 
+import net.luis.utils.io.database.SqlDialect;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlOrderable;
 import net.luis.utils.io.database.query.SqlSelectQuery;
@@ -29,11 +30,14 @@ import java.util.List;
 /**
  * Interface representing a SQL column.<br>
  *
- * @param <T> The type of the column value
  * @author Luis-St
+ *
+ * @param <T> The type of the column value
  */
 public interface SqlColumn<T> extends SqlOrderable {
-
+	
+	<TT, CC> @NonNull CC dialect(@NonNull SqlDialect<TT, CC> dialect);
+	
 	@NonNull SqlCondition equalTo(@NonNull T value);
 
 	@NonNull SqlCondition notEqualTo(@NonNull T value);

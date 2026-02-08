@@ -18,30 +18,19 @@
 
 package net.luis.utils.io.database.table;
 
-import net.luis.utils.io.database.condition.SqlCondition;
 import org.jspecify.annotations.NonNull;
 
 /**
  * Interface representing a SQL foreign key column.<br>
  *
+ * @author Luis-St
+ *
  * @param <T> The type of the column value
  * @param <R> The type of the referenced entity
- * @author Luis-St
  */
-public interface SqlForeignColumn<T, R> {
+public interface SqlForeignColumn<T, R> extends SqlColumn<T> {
 
 	@NonNull SqlTable<R> referencedTable();
 
 	@NonNull SqlColumn<?> referencedColumn();
-
-	@NonNull SqlCondition equalTo(@NonNull T value);
-
-	@NonNull SqlCondition notEqualTo(@NonNull T value);
-
-	@NonNull SqlCondition isNull();
-
-	@NonNull SqlCondition isNotNull();
-
-	@SuppressWarnings("unchecked")
-	@NonNull SqlCondition in(T @NonNull ... values);
 }

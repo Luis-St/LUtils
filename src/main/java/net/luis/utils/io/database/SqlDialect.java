@@ -18,21 +18,30 @@
 
 package net.luis.utils.io.database;
 
+import net.luis.utils.io.database.dialect.*;
+import net.luis.utils.io.database.dialect.mysql.SqlMysqlDialect;
+import net.luis.utils.io.database.dialect.postgres.SqlPostgresDialect;
+import net.luis.utils.io.database.dialect.timescale.SqlTimescaleDialect;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Enum representing the supported SQL dialects.<br>
+ * Abstract class representing the supported SQL dialects.<br>
  *
  * @author Luis-St
+ *
+ * @param <T> The type returned by {@link SqlTable#dialect(SqlDialect)}
+ * @param <C> The type returned by {@link SqlColumn#dialect(SqlDialect)}
  */
-public enum SqlDialect {
+public abstract class SqlDialect<T, C> {
 
-	POSTGRES,
-	TIMESCALE,
-	MYSQL,
-	SQLITE,
-	H2,
-	DEFAULT;
+	public static final SqlPostgresDialect POSTGRES = new SqlPostgresDialect();
+	public static final SqlTimescaleDialect TIMESCALE = new SqlTimescaleDialect();
+	public static final SqlMysqlDialect MYSQL = new SqlMysqlDialect();
+	public static final SqlSqliteDialect SQLITE = new SqlSqliteDialect();
+	public static final SqlH2Dialect H2 = new SqlH2Dialect();
+	public static final SqlDefaultDialect DEFAULT = new SqlDefaultDialect();
 
 	public @NonNull String getId() {
 		throw new UnsupportedOperationException();

@@ -16,24 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.audit;
+package net.luis.utils.io.database.dialect.mysql;
 
-import org.jspecify.annotations.NonNull;
+import net.luis.utils.io.database.SqlDialect;
 
 /**
- * Interface representing a SQL audit entry.<br>
+ * SQL dialect for MySQL.<br>
  *
  * @author Luis-St
- *
- * @param <T> The type of the audited entity
  */
-public interface SqlAuditEntry<T> {
-
-	static <T> @NonNull SqlAuditEntry<T> forCreate(@NonNull T entity) {
-		throw new UnsupportedOperationException();
-	}
-
-	static <T> @NonNull SqlAuditEntry<T> forUpdate(@NonNull T entity) {
-		throw new UnsupportedOperationException();
-	}
-}
+public final class SqlMysqlDialect extends SqlDialect<SqlMysqlTable<?>, SqlMysqlColumn<?>> {}

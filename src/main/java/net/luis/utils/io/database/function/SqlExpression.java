@@ -25,8 +25,9 @@ import org.jspecify.annotations.NonNull;
 /**
  * Interface representing a SQL expression that can be used in selects, conditions, and ordering.<br>
  *
- * @param <T> The type of the expression result
  * @author Luis-St
+ *
+ * @param <T> The type of the expression result
  */
 public interface SqlExpression<T> extends SqlOrderable {
 

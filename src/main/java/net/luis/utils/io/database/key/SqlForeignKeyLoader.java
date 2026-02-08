@@ -24,9 +24,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * Functional interface for loading foreign key values.<br>
  *
+ * @author Luis-St
+ *
  * @param <K> The type of the key
  * @param <V> The type of the value
- * @author Luis-St
  */
 @FunctionalInterface
 public interface SqlForeignKeyLoader<K, V> {

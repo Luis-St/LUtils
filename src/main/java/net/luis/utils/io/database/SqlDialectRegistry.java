@@ -27,7 +27,7 @@ import org.jspecify.annotations.NonNull;
  */
 public class SqlDialectRegistry {
 
-	public static @NonNull SqlDialect detect(@NonNull String jdbcUrl) {
+	public static @NonNull SqlDialect<?, ?> detect(@NonNull String jdbcUrl) {
 		throw new UnsupportedOperationException();
 	}
 }

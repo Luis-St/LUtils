@@ -16,24 +16,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.audit;
+package net.luis.utils.io.database.dialect.mysql;
 
+import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.function.SqlExpression;
+import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Interface representing a SQL audit entry.<br>
+ * Interface representing a MySQL-specific column.<br>
  *
+ * @param <T> The type of the column value
  * @author Luis-St
- *
- * @param <T> The type of the audited entity
  */
-public interface SqlAuditEntry<T> {
+public interface SqlMysqlColumn<T> extends SqlColumn<T> {
 
-	static <T> @NonNull SqlAuditEntry<T> forCreate(@NonNull T entity) {
-		throw new UnsupportedOperationException();
-	}
+	@NonNull SqlCondition matchAgainst(@NonNull String searchTerms);
 
-	static <T> @NonNull SqlAuditEntry<T> forUpdate(@NonNull T entity) {
-		throw new UnsupportedOperationException();
-	}
+	@NonNull SqlExpression<?> groupConcat(@NonNull String separator);
 }

@@ -36,5 +36,5 @@ public interface SqlSchemaDiff {
 
 	@NonNull List<SqlTableDiff> getModifiedTables();
 
-	@NonNull String toSql(@NonNull SqlDialect dialect);
+	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }
