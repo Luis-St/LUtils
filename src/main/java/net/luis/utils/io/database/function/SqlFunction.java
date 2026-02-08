@@ -20,7 +20,6 @@ package net.luis.utils.io.database.function;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Static utility class for general SQL functions.<br>
@@ -29,31 +28,31 @@ import org.jspecify.annotations.Nullable;
  */
 public class SqlFunction {
 
-	public static @NonNull Object coalesce(@NonNull Object... values) {
+	public static @NonNull SqlExpression<Object> coalesce(@NonNull SqlExpression<?>... values) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object nullif(@NonNull Object value1, @Nullable Object value2) {
+	public static <T> @NonNull SqlExpression<T> nullif(@NonNull SqlExpression<T> value1, @NonNull T value2) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static <T> @NonNull Object cast(@NonNull Object value, @NonNull Class<T> type) {
+	public static <T> @NonNull SqlExpression<T> cast(@NonNull SqlExpression<?> value, @NonNull Class<T> type) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object greatest(Object @NonNull ... values) {
+	public static @NonNull SqlExpression<Object> greatest(SqlExpression<?> @NonNull ... values) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object least(Object @NonNull ... values) {
+	public static @NonNull SqlExpression<Object> least(SqlExpression<?> @NonNull ... values) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object caseWhen(@NonNull SqlCondition condition, @NonNull Object thenValue, @NonNull Object elseValue) {
+	public static @NonNull SqlExpression<Object> caseWhen(@NonNull SqlCondition condition, @NonNull Object thenValue, @NonNull Object elseValue) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object of(@NonNull String functionName, @NonNull Object... args) {
+	public static <T> @NonNull SqlExpression<T> of(@NonNull String functionName, @NonNull Class<T> resultType, SqlExpression<?> @NonNull ... args) {
 		throw new UnsupportedOperationException();
 	}
 }

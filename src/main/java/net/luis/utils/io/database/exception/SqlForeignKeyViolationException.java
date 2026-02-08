@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.exception;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -25,7 +26,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @author Luis-St
  */
-public class SqlForeignKeyViolationException extends SqlDatabaseException {
+public class SqlForeignKeyViolationException extends SqlConstraintViolationException {
 
 	/**
 	 * Constructs a new SQL foreign key violation exception with no details.<br>
@@ -55,5 +56,17 @@ public class SqlForeignKeyViolationException extends SqlDatabaseException {
 	 */
 	public SqlForeignKeyViolationException(@Nullable Throwable cause) {
 		super(cause);
+	}
+
+	public @NonNull String getConstraintName() {
+		throw new UnsupportedOperationException();
+	}
+
+	public @NonNull String getReferencedTableName() {
+		throw new UnsupportedOperationException();
+	}
+
+	public @Nullable Object getMissingKeyValue() {
+		throw new UnsupportedOperationException();
 	}
 }

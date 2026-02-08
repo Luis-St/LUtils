@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @author Luis-St
  */
-public class SqlLockNotAvailableException extends SqlDatabaseException {
+public class SqlLockNotAvailableException extends SqlLockingException {
 
 	/**
 	 * Constructs a new SQL lock not available exception with no details.<br>

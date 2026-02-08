@@ -18,7 +18,11 @@
 
 package net.luis.utils.io.database.exception;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Base exception for SQL database operations.<br>
@@ -55,5 +59,21 @@ public class SqlDatabaseException extends RuntimeException {
 	 */
 	public SqlDatabaseException(@Nullable Throwable cause) {
 		super(cause);
+	}
+
+	public @Nullable String getSqlState() {
+		throw new UnsupportedOperationException();
+	}
+
+	public int getVendorCode() {
+		throw new UnsupportedOperationException();
+	}
+
+	public @NonNull Optional<String> getSql() {
+		throw new UnsupportedOperationException();
+	}
+
+	public @NonNull List<Object> getParameters() {
+		throw new UnsupportedOperationException();
 	}
 }

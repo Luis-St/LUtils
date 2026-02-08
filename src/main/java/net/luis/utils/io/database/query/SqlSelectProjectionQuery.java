@@ -20,6 +20,7 @@ package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlOrderable;
+import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -35,6 +36,10 @@ import java.util.stream.Stream;
 public interface SqlSelectProjectionQuery<T> {
 
 	@NonNull SqlSelectProjectionQuery<T> where(@NonNull SqlCondition condition);
+
+	@NonNull SqlSelectProjectionQuery<T> groupBy(SqlColumn<?> @NonNull ... columns);
+
+	@NonNull SqlSelectProjectionQuery<T> having(@NonNull SqlCondition condition);
 
 	@NonNull SqlSelectProjectionQuery<T> orderBy(SqlOrderable @NonNull ... orderables);
 

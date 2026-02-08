@@ -46,4 +46,6 @@ public interface SqlUpdateQuery<T> {
 	@NonNull List<T> returning();
 
 	@NonNull CompletableFuture<Integer> executeAsync();
+
+	@NonNull CompletableFuture<List<T>> returningAsync();
 }

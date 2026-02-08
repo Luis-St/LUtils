@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @author Luis-St
  */
-public class SqlStaleEntityException extends SqlDatabaseException {
+public class SqlStaleEntityException extends SqlEntityException {
 
 	/**
 	 * Constructs a new SQL stale entity exception with no details.<br>

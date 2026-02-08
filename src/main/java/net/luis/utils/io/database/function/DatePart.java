@@ -16,24 +16,19 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query;
-
-import net.luis.utils.io.database.condition.SqlCondition;
-import org.jspecify.annotations.NonNull;
-
-import java.util.concurrent.CompletableFuture;
+package net.luis.utils.io.database.function;
 
 /**
- * Interface representing a SQL delete query.<br>
+ * Enum representing a date part for SQL date functions.<br>
  *
- * @param <T> The type of the entity
  * @author Luis-St
  */
-public interface SqlDeleteQuery<T> {
+public enum DatePart {
 
-	@NonNull SqlDeleteQuery<T> where(@NonNull SqlCondition condition);
-
-	int execute();
-
-	@NonNull CompletableFuture<Integer> executeAsync();
+	YEAR,
+	MONTH,
+	DAY,
+	HOUR,
+	MINUTE,
+	SECOND
 }

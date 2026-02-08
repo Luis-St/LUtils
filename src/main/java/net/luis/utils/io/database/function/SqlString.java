@@ -28,31 +28,31 @@ import org.jspecify.annotations.NonNull;
  */
 public class SqlString {
 
-	public static @NonNull Object lower(@NonNull SqlColumn<String> column) {
+	public static @NonNull SqlExpression<String> lower(@NonNull SqlColumn<String> column) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object upper(@NonNull SqlColumn<String> column) {
+	public static @NonNull SqlExpression<String> upper(@NonNull SqlColumn<String> column) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object trim(@NonNull SqlColumn<String> column) {
+	public static @NonNull SqlExpression<String> trim(@NonNull SqlColumn<String> column) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object length(@NonNull SqlColumn<String> column) {
+	public static @NonNull SqlExpression<Integer> length(@NonNull SqlColumn<String> column) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object substring(@NonNull SqlColumn<String> column, int start, int length) {
+	public static @NonNull SqlExpression<String> substring(@NonNull SqlColumn<String> column, int start, int length) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object concat(Object @NonNull ... values) {
+	public static @NonNull SqlExpression<String> concat(SqlExpression<?> @NonNull ... values) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object replace(@NonNull SqlColumn<String> column, @NonNull String search, @NonNull String replacement) {
+	public static @NonNull SqlExpression<String> replace(@NonNull SqlColumn<String> column, @NonNull String search, @NonNull String replacement) {
 		throw new UnsupportedOperationException();
 	}
 }

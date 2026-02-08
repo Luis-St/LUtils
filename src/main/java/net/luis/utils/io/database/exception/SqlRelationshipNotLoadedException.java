@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @author Luis-St
  */
-public class SqlRelationshipNotLoadedException extends SqlDatabaseException {
+public class SqlRelationshipNotLoadedException extends SqlEntityException {
 
 	/**
 	 * Constructs a new SQL relationship not loaded exception with no details.<br>

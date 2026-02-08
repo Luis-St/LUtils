@@ -27,11 +27,11 @@ import org.jspecify.annotations.NonNull;
  */
 public interface SqlCondition {
 
-	static @NonNull SqlCondition and(@NonNull SqlCondition... conditions) {
+	static @NonNull SqlCondition and(SqlCondition @NonNull ... conditions) {
 		throw new UnsupportedOperationException();
 	}
 
-	static @NonNull SqlCondition or(@NonNull SqlCondition... conditions) {
+	static @NonNull SqlCondition or(SqlCondition @NonNull ... conditions) {
 		throw new UnsupportedOperationException();
 	}
 

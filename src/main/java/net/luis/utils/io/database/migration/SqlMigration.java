@@ -31,7 +31,7 @@ import java.util.List;
  */
 public interface SqlMigration {
 
-	static @NonNull SqlSchemaDiff diff(@NonNull Object currentSchema, @NonNull Object targetSchema) {
+	static @NonNull SqlSchemaDiff diff(@NonNull SqlSchema currentSchema, @NonNull SqlSchema targetSchema) {
 		throw new UnsupportedOperationException();
 	}
 

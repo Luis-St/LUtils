@@ -29,39 +29,39 @@ import org.jspecify.annotations.NonNull;
  */
 public class SqlWindow {
 
-	public static @NonNull Object rowNumber() {
+	public static @NonNull SqlExpression<Long> rowNumber() {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object rank() {
+	public static @NonNull SqlExpression<Long> rank() {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object denseRank() {
+	public static @NonNull SqlExpression<Long> denseRank() {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object ntile(int buckets) {
+	public static @NonNull SqlExpression<Long> ntile(int buckets) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object lag(@NonNull SqlColumn<?> column) {
+	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object lead(@NonNull SqlColumn<?> column) {
+	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object over(@NonNull SqlWindow window) {
+	public static @NonNull SqlExpression<?> over(@NonNull SqlExpression<?> expression) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object partitionBy(SqlColumn<?> @NonNull ... columns) {
+	public static @NonNull SqlExpression<?> partitionBy(SqlColumn<?> @NonNull ... columns) {
 		throw new UnsupportedOperationException();
 	}
 
-	public static @NonNull Object orderBy(SqlOrderable@NonNull ... orderables) {
+	public static @NonNull SqlExpression<?> orderBy(SqlOrderable @NonNull ... orderables) {
 		throw new UnsupportedOperationException();
 	}
 }

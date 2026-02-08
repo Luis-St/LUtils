@@ -20,6 +20,7 @@ package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlOrderable;
+import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.SqlPage;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -43,11 +44,17 @@ public interface SqlSelectQuery<T> {
 
 	@NonNull SqlSelectQuery<T> whereNotExists(@NonNull SqlSelectQuery<?> subquery);
 
+	@NonNull SqlSelectQuery<T> groupBy(SqlColumn<?> @NonNull ... columns);
+
+	@NonNull SqlSelectQuery<T> having(@NonNull SqlCondition condition);
+
 	@NonNull SqlSelectQuery<T> orderBy(SqlOrderable @NonNull ... orderables);
 
 	@NonNull SqlSelectQuery<T> limit(int limit);
 
 	@NonNull SqlSelectQuery<T> offset(long offset);
+
+	@NonNull SqlSelectQuery<T> distinct();
 
 	@NonNull List<T> fetch();
 
@@ -66,6 +73,10 @@ public interface SqlSelectQuery<T> {
 	@NonNull SqlPage<T> fetchPage(int page, int pageSize);
 
 	@NonNull SqlSelectQuery<T> forUpdate();
+
+	@NonNull SqlSelectQuery<T> skipLocked();
+
+	@NonNull SqlSelectQuery<T> noWait();
 
 	@NonNull CompletableFuture<List<T>> fetchAsync();
 

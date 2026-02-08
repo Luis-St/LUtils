@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @author Luis-St
  */
-public class SqlNotNullViolationException extends SqlDatabaseException {
+public class SqlNotNullViolationException extends SqlConstraintViolationException {
 
 	/**
 	 * Constructs a new SQL not null violation exception with no details.<br>

@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @author Luis-St
  */
-public class SqlCheckConstraintViolationException extends SqlDatabaseException {
+public class SqlCheckConstraintViolationException extends SqlConstraintViolationException {
 
 	/**
 	 * Constructs a new SQL check constraint violation exception with no details.<br>

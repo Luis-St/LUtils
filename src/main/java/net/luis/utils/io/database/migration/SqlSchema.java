@@ -16,36 +16,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query;
+package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.condition.SqlOrderable;
 import org.jspecify.annotations.NonNull;
 
-import java.util.List;
-import java.util.Optional;
+import java.io.File;
 
 /**
- * Interface representing a SQL join builder.<br>
+ * Interface representing a SQL schema for migration purposes.<br>
  *
- * @param <T> The type of the result entity
  * @author Luis-St
  */
-public interface SqlJoinBuilder<T> {
+public interface SqlSchema {
 
-	@NonNull SqlJoinBuilder<T> on(@NonNull SqlCondition condition);
-
-	@NonNull SqlJoinBuilder<T> where(@NonNull SqlCondition condition);
-
-	@NonNull SqlJoinBuilder<T> orderBy(SqlOrderable @NonNull ... orderables);
-
-	@NonNull SqlJoinBuilder<T> limit(int limit);
-
-	@NonNull SqlJoinBuilder<T> offset(long offset);
-
-	@NonNull List<T> fetch();
-
-	@NonNull Optional<T> fetchFirst();
-
-	<R> @NonNull List<R> selectAs(@NonNull Class<R> resultType);
+	static @NonNull SqlSchema fromYaml(@NonNull File schemaDir) {
+		throw new UnsupportedOperationException();
+	}
 }

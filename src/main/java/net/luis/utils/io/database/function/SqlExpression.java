@@ -16,32 +16,49 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.table;
+package net.luis.utils.io.database.function;
 
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.condition.SqlOrderable;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Interface representing a SQL foreign key column.<br>
+ * Interface representing a SQL expression that can be used in selects, conditions, and ordering.<br>
  *
- * @param <T> The type of the column value
- * @param <R> The type of the referenced entity
+ * @param <T> The type of the expression result
  * @author Luis-St
  */
-public interface SqlForeignColumn<T, R> {
-
-	@NonNull SqlTable<R> referencedTable();
-
-	@NonNull SqlColumn<?> referencedColumn();
+public interface SqlExpression<T> extends SqlOrderable {
 
 	@NonNull SqlCondition equalTo(@NonNull T value);
 
 	@NonNull SqlCondition notEqualTo(@NonNull T value);
 
+	@NonNull SqlCondition greaterThan(@NonNull T value);
+
+	@NonNull SqlCondition greaterThanOrEqualTo(@NonNull T value);
+
+	@NonNull SqlCondition lessThan(@NonNull T value);
+
+	@NonNull SqlCondition lessThanOrEqualTo(@NonNull T value);
+
+	@NonNull SqlCondition between(@NonNull T start, @NonNull T end);
+
 	@NonNull SqlCondition isNull();
 
 	@NonNull SqlCondition isNotNull();
 
-	@SuppressWarnings("unchecked")
-	@NonNull SqlCondition in(T @NonNull ... values);
+	@NonNull SqlExpression<T> as(@NonNull String alias);
+
+	@Override
+	@NonNull SqlExpression<T> asc();
+
+	@Override
+	@NonNull SqlExpression<T> desc();
+
+	@Override
+	@NonNull SqlExpression<T> nullsFirst();
+
+	@Override
+	@NonNull SqlExpression<T> nullsLast();
 }

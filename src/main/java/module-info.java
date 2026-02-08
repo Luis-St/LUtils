@@ -28,6 +28,7 @@ module net.luis.utils {
 	requires org.apache.logging.log4j;
 	requires org.jetbrains.annotations;
 	requires org.apache.logging.log4j.core;
+	requires java.sql;
 	
 	exports net.luis.utils.annotation;
 	exports net.luis.utils.annotation.type;
@@ -101,6 +102,19 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.types.temporal.offset;
 	exports net.luis.utils.io.codec.types.temporal.zoned;
 	
+	exports net.luis.utils.io.database;
+	exports net.luis.utils.io.database.audit;
+	exports net.luis.utils.io.database.condition;
+	exports net.luis.utils.io.database.exception;
+	exports net.luis.utils.io.database.function;
+	exports net.luis.utils.io.database.index;
+	exports net.luis.utils.io.database.key;
+	exports net.luis.utils.io.database.migration;
+	exports net.luis.utils.io.database.query;
+	exports net.luis.utils.io.database.sequence;
+	exports net.luis.utils.io.database.table;
+	exports net.luis.utils.io.database.transaction;
+
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;
 	exports net.luis.utils.io.data.json;

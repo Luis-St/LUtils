@@ -16,44 +16,18 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.transaction;
+package net.luis.utils.io.database;
 
-import net.luis.utils.io.database.SqlIsolationLevel;
 import org.jspecify.annotations.NonNull;
 
-import java.time.Duration;
-import java.util.Optional;
-
 /**
- * Interface representing a SQL transaction.<br>
+ * Registry for auto-detecting SQL dialects from JDBC URLs.<br>
  *
  * @author Luis-St
  */
-public interface SqlTransaction {
+public class SqlDialectRegistry {
 
-	static boolean isInTransaction() {
+	public static @NonNull SqlDialect detect(@NonNull String jdbcUrl) {
 		throw new UnsupportedOperationException();
 	}
-
-	static @NonNull Optional<SqlTransaction> current() {
-		throw new UnsupportedOperationException();
-	}
-
-	static void requireActive() {
-		throw new UnsupportedOperationException();
-	}
-
-	void commit();
-
-	void rollback();
-
-	void rollbackTo(@NonNull SqlSavepoint savepoint);
-
-	@NonNull SqlSavepoint savepoint(@NonNull String name);
-
-	@NonNull SqlTransaction readOnly();
-
-	@NonNull SqlTransaction timeout(@NonNull Duration timeout);
-
-	@NonNull SqlTransaction isolation(@NonNull SqlIsolationLevel level);
 }

@@ -30,11 +30,11 @@ import java.util.List;
  */
 public interface SqlSchemaDiff {
 
-	@NonNull List<String> getAddedTables();
+	@NonNull List<SqlTableDiff> getAddedTables();
 
-	@NonNull List<String> getRemovedTables();
+	@NonNull List<SqlTableDiff> getRemovedTables();
 
-	@NonNull List<String> getModifiedTables();
+	@NonNull List<SqlTableDiff> getModifiedTables();
 
 	@NonNull String toSql(@NonNull SqlDialect dialect);
 }

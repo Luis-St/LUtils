@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @author Luis-St
  */
-public class SqlEntityNotFoundException extends SqlDatabaseException {
+public class SqlEntityNotFoundException extends SqlEntityException {
 
 	/**
 	 * Constructs a new SQL entity not found exception with no details.<br>

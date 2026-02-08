@@ -16,44 +16,32 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.transaction;
+package net.luis.utils.io.database;
 
-import net.luis.utils.io.database.SqlIsolationLevel;
+import net.luis.utils.io.database.audit.SqlTimestampSource;
 import org.jspecify.annotations.NonNull;
 
-import java.time.Duration;
-import java.util.Optional;
+import java.time.Clock;
+import java.util.concurrent.Executor;
 
 /**
- * Interface representing a SQL transaction.<br>
+ * Interface representing a SQL database configuration builder.<br>
  *
  * @author Luis-St
  */
-public interface SqlTransaction {
+public interface SqlDatabaseConfig {
 
-	static boolean isInTransaction() {
+	static @NonNull SqlDatabaseConfig builder() {
 		throw new UnsupportedOperationException();
 	}
 
-	static @NonNull Optional<SqlTransaction> current() {
-		throw new UnsupportedOperationException();
-	}
+	@NonNull SqlDatabaseConfig asyncExecutor(@NonNull Executor executor);
 
-	static void requireActive() {
-		throw new UnsupportedOperationException();
-	}
+	@NonNull SqlDatabaseConfig asyncConnectionPoolSize(int size);
 
-	void commit();
+	@NonNull SqlDatabaseConfig auditTimestampSource(@NonNull SqlTimestampSource source);
 
-	void rollback();
+	@NonNull SqlDatabaseConfig auditClock(@NonNull Clock clock);
 
-	void rollbackTo(@NonNull SqlSavepoint savepoint);
-
-	@NonNull SqlSavepoint savepoint(@NonNull String name);
-
-	@NonNull SqlTransaction readOnly();
-
-	@NonNull SqlTransaction timeout(@NonNull Duration timeout);
-
-	@NonNull SqlTransaction isolation(@NonNull SqlIsolationLevel level);
+	@NonNull SqlDatabaseConfig build();
 }

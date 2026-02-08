@@ -21,39 +21,39 @@ package net.luis.utils.io.database.exception;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Exception thrown when a SQL deadlock is detected.<br>
+ * Base exception for SQL entity-related errors.<br>
  *
  * @author Luis-St
  */
-public class SqlDeadlockException extends SqlLockingException {
+public class SqlEntityException extends SqlDatabaseException {
 
 	/**
-	 * Constructs a new SQL deadlock exception with no details.<br>
+	 * Constructs a new SQL entity exception with no details.<br>
 	 */
-	public SqlDeadlockException() {}
+	public SqlEntityException() {}
 
 	/**
-	 * Constructs a new SQL deadlock exception with the specified message.<br>
+	 * Constructs a new SQL entity exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public SqlDeadlockException(@Nullable String message) {
+	public SqlEntityException(@Nullable String message) {
 		super(message);
 	}
 
 	/**
-	 * Constructs a new SQL deadlock exception with the specified message and cause.<br>
+	 * Constructs a new SQL entity exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public SqlDeadlockException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlEntityException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 
 	/**
-	 * Constructs a new SQL deadlock exception with the specified cause.<br>
+	 * Constructs a new SQL entity exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public SqlDeadlockException(@Nullable Throwable cause) {
+	public SqlEntityException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

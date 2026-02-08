@@ -18,8 +18,14 @@
 
 package net.luis.utils.io.database.table;
 
+import net.luis.utils.io.database.index.SqlIndexDefinition;
+import net.luis.utils.io.database.index.SqlIndexInfo;
 import net.luis.utils.io.database.query.*;
+import net.luis.utils.io.database.sequence.SqlSequenceDefinition;
 import org.jspecify.annotations.NonNull;
+
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * Interface representing a SQL table.<br>
@@ -29,21 +35,54 @@ import org.jspecify.annotations.NonNull;
  */
 public interface SqlTable<T> {
 
+	static <T> @NonNull SqlTable<T> of(@NonNull String name, @NonNull Class<T> type) {
+		throw new UnsupportedOperationException();
+	}
+
 	<C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull Class<C> type);
 
 	<C, R> @NonNull SqlForeignColumn<C, R> foreignColumn(@NonNull String name, @NonNull Class<C> type, @NonNull SqlTable<R> referencedTable);
 
 	@NonNull SqlSelectQuery<T> select();
 
+	@NonNull SqlSelectProjectionQuery<T> select(SqlColumn<?> @NonNull ... columns);
+
 	@NonNull SqlInsertQuery<T> insert();
+
+	@NonNull T insert(@NonNull T entity);
+
+	@SuppressWarnings("unchecked")
+	@NonNull List<T> insert(T @NonNull ... entities);
+
+	@NonNull T upsert(@NonNull T entity, @NonNull SqlColumn<?> conflictColumn, @NonNull Function<T, T> onConflict);
+
+	void insertOrIgnore(@NonNull T entity, SqlColumn<?> @NonNull ... conflictColumns);
 
 	@NonNull SqlUpdateQuery<T> update();
 
+	void update(@NonNull T entity);
+
 	@NonNull SqlDeleteQuery<T> delete();
 
-	@NonNull SqlJoinBuilder<T> join(@NonNull SqlTable<?> other);
+	void delete(@NonNull T entity);
 
-	@NonNull SqlJoinBuilder<T> leftJoin(@NonNull SqlTable<?> other);
+	@NonNull SqlSelectQuery<?> subquery(SqlColumn<?> @NonNull ... columns);
+
+	void createIndex(@NonNull String name, SqlColumn<?> @NonNull ... columns);
+
+	void createIndex(@NonNull SqlIndexDefinition definition);
+
+	void dropIndex(@NonNull String name);
+
+	@NonNull List<SqlIndexInfo> listIndexes();
+
+	void createSequence(@NonNull SqlSequenceDefinition definition);
+
+	long nextSequenceValue(@NonNull String name);
+
+	@NonNull String generateCreateSql();
+
+	@NonNull String generateDropSql();
 
 	void create();
 

@@ -16,24 +16,24 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query;
+package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.condition.SqlCondition;
 import org.jspecify.annotations.NonNull;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 
 /**
- * Interface representing a SQL delete query.<br>
+ * Interface representing a SQL table diff for migration purposes.<br>
  *
- * @param <T> The type of the entity
  * @author Luis-St
  */
-public interface SqlDeleteQuery<T> {
+public interface SqlTableDiff {
 
-	@NonNull SqlDeleteQuery<T> where(@NonNull SqlCondition condition);
+	@NonNull String tableName();
 
-	int execute();
+	@NonNull List<String> addedColumns();
 
-	@NonNull CompletableFuture<Integer> executeAsync();
+	@NonNull List<String> removedColumns();
+
+	@NonNull List<String> modifiedColumns();
 }

@@ -18,14 +18,17 @@
 
 package net.luis.utils.io.database.exception;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * Exception thrown when a SQL unique constraint is violated.<br>
  *
  * @author Luis-St
  */
-public class SqlUniqueConstraintViolationException extends SqlDatabaseException {
+public class SqlUniqueConstraintViolationException extends SqlConstraintViolationException {
 
 	/**
 	 * Constructs a new SQL unique constraint violation exception with no details.<br>
@@ -55,5 +58,17 @@ public class SqlUniqueConstraintViolationException extends SqlDatabaseException 
 	 */
 	public SqlUniqueConstraintViolationException(@Nullable Throwable cause) {
 		super(cause);
+	}
+
+	public @NonNull String getConstraintName() {
+		throw new UnsupportedOperationException();
+	}
+
+	public @NonNull List<String> getColumnNames() {
+		throw new UnsupportedOperationException();
+	}
+
+	public @Nullable Object getDuplicateValue() {
+		throw new UnsupportedOperationException();
 	}
 }
