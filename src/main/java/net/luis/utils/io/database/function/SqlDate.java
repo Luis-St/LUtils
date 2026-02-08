@@ -21,8 +21,8 @@ package net.luis.utils.io.database.function;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
-import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Static utility class for SQL date functions.<br>
@@ -30,39 +30,39 @@ import java.time.LocalDate;
  * @author Luis-St
  */
 public class SqlDate {
-
+	
 	public static @NonNull SqlExpression<LocalDateTime> now() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<LocalDate> currentDate() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Integer> year(@NonNull SqlColumn<?> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Integer> month(@NonNull SqlColumn<?> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Integer> day(@NonNull SqlColumn<?> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<LocalDateTime> dateTrunc(@NonNull SqlColumn<?> column, @NonNull String unit) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<LocalDateTime> addDays(@NonNull SqlColumn<?> column, int days) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Long> dateDiff(@NonNull DatePart part, @NonNull SqlColumn<?> column1, @NonNull SqlColumn<?> column2) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<String> toChar(@NonNull SqlColumn<?> column, @NonNull String format) {
 		throw new UnsupportedOperationException();
 	}

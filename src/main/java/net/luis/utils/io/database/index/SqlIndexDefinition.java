@@ -31,14 +31,14 @@ import java.util.List;
  * @author Luis-St
  */
 public interface SqlIndexDefinition {
-
+	
 	@NonNull String name();
-
+	
 	@NonNull List<SqlColumn<?>> columns();
-
+	
 	boolean unique();
-
+	
 	@Nullable SqlCondition where();
-
+	
 	@NonNull SqlIndexMethod method();
 }

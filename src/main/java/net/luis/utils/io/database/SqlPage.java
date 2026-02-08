@@ -30,16 +30,16 @@ import java.util.List;
  * @param <T> The type of the content
  */
 public interface SqlPage<T> {
-
+	
 	@NonNull List<T> content();
-
+	
 	long totalElements();
-
+	
 	int totalPages();
-
+	
 	int currentPage();
-
+	
 	boolean hasNext();
-
+	
 	boolean hasPrevious();
 }

@@ -28,14 +28,14 @@ import java.util.List;
  * @author Luis-St
  */
 public interface SqlIndexInfo {
-
+	
 	@NonNull String name();
-
+	
 	@NonNull String tableName();
-
+	
 	@NonNull List<String> columns();
-
+	
 	boolean isUnique();
-
+	
 	@NonNull SqlIndexMethod method();
 }

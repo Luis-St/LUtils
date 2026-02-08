@@ -35,34 +35,34 @@ import org.jspecify.annotations.NonNull;
  * @param <C> The type returned by {@link SqlColumn#dialect(SqlDialect)}
  */
 public abstract class SqlDialect<T, C> {
-
+	
 	public static final SqlPostgresDialect POSTGRES = new SqlPostgresDialect();
 	public static final SqlTimescaleDialect TIMESCALE = new SqlTimescaleDialect();
 	public static final SqlMysqlDialect MYSQL = new SqlMysqlDialect();
 	public static final SqlSqliteDialect SQLITE = new SqlSqliteDialect();
 	public static final SqlH2Dialect H2 = new SqlH2Dialect();
 	public static final SqlDefaultDialect DEFAULT = new SqlDefaultDialect();
-
+	
 	public @NonNull String getId() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public @NonNull String getName() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public @NonNull SqlDialectFeatures getFeatures() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public @NonNull String quoteIdentifier(@NonNull String identifier) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public @NonNull String nowFunction() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public @NonNull String uuidFunction() {
 		throw new UnsupportedOperationException();
 	}

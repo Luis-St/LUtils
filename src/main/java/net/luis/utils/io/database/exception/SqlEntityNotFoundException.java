@@ -26,12 +26,12 @@ import org.jspecify.annotations.Nullable;
  * @author Luis-St
  */
 public class SqlEntityNotFoundException extends SqlEntityException {
-
+	
 	/**
 	 * Constructs a new SQL entity not found exception with no details.<br>
 	 */
 	public SqlEntityNotFoundException() {}
-
+	
 	/**
 	 * Constructs a new SQL entity not found exception with the specified message.<br>
 	 * @param message The message of the exception
@@ -39,7 +39,7 @@ public class SqlEntityNotFoundException extends SqlEntityException {
 	public SqlEntityNotFoundException(@Nullable String message) {
 		super(message);
 	}
-
+	
 	/**
 	 * Constructs a new SQL entity not found exception with the specified message and cause.<br>
 	 * @param message The message of the exception
@@ -48,7 +48,7 @@ public class SqlEntityNotFoundException extends SqlEntityException {
 	public SqlEntityNotFoundException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	/**
 	 * Constructs a new SQL entity not found exception with the specified cause.<br>
 	 * @param cause The cause of the exception

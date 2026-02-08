@@ -28,14 +28,14 @@ import java.time.Duration;
  * @author Luis-St
  */
 public interface SqlLoadOptions {
-
+	
 	static @NonNull SqlLoadOptions builder() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	@NonNull SqlLoadOptions forUpdate();
-
+	
 	@NonNull SqlLoadOptions timeout(@NonNull Duration timeout);
-
+	
 	@NonNull SqlLoadOptions build();
 }

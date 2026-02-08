@@ -33,14 +33,14 @@ import java.time.Instant;
  * @author Luis-St
  */
 public interface SqlTimescaleColumn<T> extends SqlPostgresColumn<T> {
-
+	
 	@NonNull SqlExpression<?> timeBucket(@NonNull String interval);
-
+	
 	@NonNull SqlExpression<?> timeBucketGapfill(@NonNull String interval, @NonNull Instant start, @NonNull Instant end);
-
+	
 	@NonNull SqlExpression<?> first(@NonNull SqlColumn<?> timeColumn);
-
+	
 	@NonNull SqlExpression<?> last(@NonNull SqlColumn<?> timeColumn);
-
+	
 	@NonNull SqlExpression<?> locf();
 }

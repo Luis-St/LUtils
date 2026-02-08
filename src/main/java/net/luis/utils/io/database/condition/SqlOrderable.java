@@ -26,12 +26,12 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlOrderable {
-
+	
 	@NonNull SqlOrderable asc();
-
+	
 	@NonNull SqlOrderable desc();
-
+	
 	@NonNull SqlOrderable nullsFirst();
-
+	
 	@NonNull SqlOrderable nullsLast();
 }

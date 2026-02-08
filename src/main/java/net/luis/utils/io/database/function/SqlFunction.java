@@ -27,31 +27,31 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlFunction {
-
+	
 	public static @NonNull SqlExpression<Object> coalesce(@NonNull SqlExpression<?>... values) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static <T> @NonNull SqlExpression<T> nullif(@NonNull SqlExpression<T> value1, @NonNull T value2) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static <T> @NonNull SqlExpression<T> cast(@NonNull SqlExpression<?> value, @NonNull Class<T> type) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Object> greatest(SqlExpression<?> @NonNull ... values) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Object> least(SqlExpression<?> @NonNull ... values) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Object> caseWhen(@NonNull SqlCondition condition, @NonNull Object thenValue, @NonNull Object elseValue) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static <T> @NonNull SqlExpression<T> of(@NonNull String functionName, @NonNull Class<T> resultType, SqlExpression<?> @NonNull ... args) {
 		throw new UnsupportedOperationException();
 	}

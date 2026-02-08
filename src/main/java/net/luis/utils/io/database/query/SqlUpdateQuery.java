@@ -32,20 +32,20 @@ import java.util.concurrent.CompletableFuture;
  * @author Luis-St
  */
 public interface SqlUpdateQuery<T> {
-
+	
 	<V> @NonNull SqlUpdateQuery<T> set(@NonNull SqlColumn<V> column, @NonNull V value);
-
+	
 	@NonNull SqlUpdateQuery<T> increment(@NonNull SqlColumn<? extends Number> column, @NonNull Number amount);
-
+	
 	@NonNull SqlUpdateQuery<T> setNow(@NonNull SqlColumn<?> column);
-
+	
 	@NonNull SqlUpdateQuery<T> where(@NonNull SqlCondition condition);
-
+	
 	int execute();
-
+	
 	@NonNull List<T> returning();
-
+	
 	@NonNull CompletableFuture<Integer> executeAsync();
-
+	
 	@NonNull CompletableFuture<List<T>> returningAsync();
 }

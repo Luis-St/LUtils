@@ -24,7 +24,7 @@ package net.luis.utils.io.database;
  * @author Luis-St
  */
 public enum SqlIsolationLevel {
-
+	
 	SERIALIZABLE,
 	REPEATABLE_READ,
 	READ_COMMITTED,

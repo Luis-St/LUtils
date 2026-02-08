@@ -29,12 +29,12 @@ import java.util.List;
  * @author Luis-St
  */
 public interface SqlSchemaDiff {
-
+	
 	@NonNull List<SqlTableDiff> getAddedTables();
-
+	
 	@NonNull List<SqlTableDiff> getRemovedTables();
-
+	
 	@NonNull List<SqlTableDiff> getModifiedTables();
-
+	
 	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }

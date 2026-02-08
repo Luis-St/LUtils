@@ -30,12 +30,12 @@ import java.util.function.Function;
  * @author Luis-St
  */
 public interface SqlDatabase {
-
+	
 	@NonNull SqlTransaction beginTransaction();
-
+	
 	@NonNull SqlTransaction beginTransaction(@NonNull SqlIsolationLevel isolationLevel);
-
+	
 	<T> T inTransaction(@NonNull Function<SqlTransaction, T> action);
-
+	
 	<T> @NonNull CompletableFuture<T> inTransactionAsync(@NonNull Function<SqlTransaction, T> action);
 }

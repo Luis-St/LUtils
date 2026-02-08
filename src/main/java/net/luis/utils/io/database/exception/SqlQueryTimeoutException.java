@@ -26,12 +26,12 @@ import org.jspecify.annotations.Nullable;
  * @author Luis-St
  */
 public class SqlQueryTimeoutException extends SqlQueryException {
-
+	
 	/**
 	 * Constructs a new SQL query timeout exception with no details.<br>
 	 */
 	public SqlQueryTimeoutException() {}
-
+	
 	/**
 	 * Constructs a new SQL query timeout exception with the specified message.<br>
 	 * @param message The message of the exception
@@ -39,7 +39,7 @@ public class SqlQueryTimeoutException extends SqlQueryException {
 	public SqlQueryTimeoutException(@Nullable String message) {
 		super(message);
 	}
-
+	
 	/**
 	 * Constructs a new SQL query timeout exception with the specified message and cause.<br>
 	 * @param message The message of the exception
@@ -48,7 +48,7 @@ public class SqlQueryTimeoutException extends SqlQueryException {
 	public SqlQueryTimeoutException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	/**
 	 * Constructs a new SQL query timeout exception with the specified cause.<br>
 	 * @param cause The cause of the exception

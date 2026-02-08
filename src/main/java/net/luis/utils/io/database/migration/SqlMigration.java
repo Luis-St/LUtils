@@ -30,18 +30,18 @@ import java.util.List;
  * @author Luis-St
  */
 public interface SqlMigration {
-
+	
 	static @NonNull SqlSchemaDiff diff(@NonNull SqlSchema currentSchema, @NonNull SqlSchema targetSchema) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	static @NonNull List<SqlMigration> pending(@NonNull DataSource dataSource, @NonNull File migrationsDir) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	@NonNull String version();
-
+	
 	@NonNull String description();
-
+	
 	@NonNull String sql();
 }

@@ -24,7 +24,7 @@ package net.luis.utils.io.database.audit;
  * @author Luis-St
  */
 public enum SqlTimestampSource {
-
+	
 	APPLICATION,
 	DATABASE
 }

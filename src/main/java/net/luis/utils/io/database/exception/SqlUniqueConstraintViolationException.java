@@ -29,12 +29,12 @@ import java.util.List;
  * @author Luis-St
  */
 public class SqlUniqueConstraintViolationException extends SqlConstraintViolationException {
-
+	
 	/**
 	 * Constructs a new SQL unique constraint violation exception with no details.<br>
 	 */
 	public SqlUniqueConstraintViolationException() {}
-
+	
 	/**
 	 * Constructs a new SQL unique constraint violation exception with the specified message.<br>
 	 * @param message The message of the exception
@@ -42,7 +42,7 @@ public class SqlUniqueConstraintViolationException extends SqlConstraintViolatio
 	public SqlUniqueConstraintViolationException(@Nullable String message) {
 		super(message);
 	}
-
+	
 	/**
 	 * Constructs a new SQL unique constraint violation exception with the specified message and cause.<br>
 	 * @param message The message of the exception
@@ -51,7 +51,7 @@ public class SqlUniqueConstraintViolationException extends SqlConstraintViolatio
 	public SqlUniqueConstraintViolationException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	/**
 	 * Constructs a new SQL unique constraint violation exception with the specified cause.<br>
 	 * @param cause The cause of the exception
@@ -59,15 +59,15 @@ public class SqlUniqueConstraintViolationException extends SqlConstraintViolatio
 	public SqlUniqueConstraintViolationException(@Nullable Throwable cause) {
 		super(cause);
 	}
-
+	
 	public @NonNull String getConstraintName() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public @NonNull List<String> getColumnNames() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public @Nullable Object getDuplicateValue() {
 		throw new UnsupportedOperationException();
 	}

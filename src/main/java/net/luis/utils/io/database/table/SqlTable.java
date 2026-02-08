@@ -36,67 +36,67 @@ import java.util.function.Function;
  * @param <T> The type of the entity
  */
 public interface SqlTable<T> {
-
+	
 	static <T> @NonNull SqlTable<T> of(@NonNull String name, @NonNull Class<T> type) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	<TT, CC> @NonNull TT dialect(@NonNull SqlDialect<TT, CC> dialect);
-
+	
 	<C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull Class<C> type);
-
+	
 	<C, R> @NonNull SqlForeignColumn<C, R> foreignColumn(@NonNull String name, @NonNull Class<C> type, @NonNull SqlTable<R> referencedTable);
-
+	
 	@NonNull SqlSelectQuery<T> select();
-
+	
 	@NonNull SqlSelectProjectionQuery<T> select(SqlColumn<?> @NonNull ... columns);
-
+	
 	@NonNull SqlInsertQuery<T> insert();
-
+	
 	@NonNull T insert(@NonNull T entity);
-
+	
 	@SuppressWarnings("unchecked")
 	@NonNull List<T> insert(T @NonNull ... entities);
-
+	
 	@NonNull T upsert(@NonNull T entity, @NonNull SqlColumn<?> conflictColumn, @NonNull Function<T, T> onConflict);
-
+	
 	void insertOrIgnore(@NonNull T entity, SqlColumn<?> @NonNull ... conflictColumns);
-
+	
 	@NonNull SqlUpdateQuery<T> update();
-
+	
 	void update(@NonNull T entity);
-
+	
 	@NonNull SqlDeleteQuery<T> delete();
-
+	
 	void delete(@NonNull T entity);
-
+	
 	@NonNull SqlSelectQuery<?> subquery(SqlColumn<?> @NonNull ... columns);
-
+	
 	void createIndex(@NonNull String name, SqlColumn<?> @NonNull ... columns);
-
+	
 	void createIndex(@NonNull SqlIndexDefinition definition);
-
+	
 	void dropIndex(@NonNull String name);
-
+	
 	@NonNull List<SqlIndexInfo> listIndexes();
-
+	
 	void createSequence(@NonNull SqlSequenceDefinition definition);
-
+	
 	long nextSequenceValue(@NonNull String name);
-
+	
 	@NonNull String generateCreateSql();
-
+	
 	@NonNull String generateDropSql();
-
+	
 	void create();
-
+	
 	void createIfNotExists();
-
+	
 	void drop();
-
+	
 	void dropIfExists();
-
+	
 	void truncate();
-
+	
 	boolean exists();
 }

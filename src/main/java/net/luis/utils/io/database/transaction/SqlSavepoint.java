@@ -26,8 +26,8 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlSavepoint {
-
+	
 	@NonNull String name();
-
+	
 	void release();
 }

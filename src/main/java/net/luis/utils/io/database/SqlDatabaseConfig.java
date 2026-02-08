@@ -30,18 +30,18 @@ import java.util.concurrent.Executor;
  * @author Luis-St
  */
 public interface SqlDatabaseConfig {
-
+	
 	static @NonNull SqlDatabaseConfig builder() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	@NonNull SqlDatabaseConfig asyncExecutor(@NonNull Executor executor);
-
+	
 	@NonNull SqlDatabaseConfig asyncConnectionPoolSize(int size);
-
+	
 	@NonNull SqlDatabaseConfig auditTimestampSource(@NonNull SqlTimestampSource source);
-
+	
 	@NonNull SqlDatabaseConfig auditClock(@NonNull Clock clock);
-
+	
 	@NonNull SqlDatabaseConfig build();
 }

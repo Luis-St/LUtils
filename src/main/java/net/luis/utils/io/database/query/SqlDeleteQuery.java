@@ -30,10 +30,10 @@ import java.util.concurrent.CompletableFuture;
  * @author Luis-St
  */
 public interface SqlDeleteQuery<T> {
-
+	
 	@NonNull SqlDeleteQuery<T> where(@NonNull SqlCondition condition);
-
+	
 	int execute();
-
+	
 	@NonNull CompletableFuture<Integer> executeAsync();
 }

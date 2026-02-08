@@ -27,27 +27,27 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlAgg {
-
+	
 	public static @NonNull SqlExpression<Long> count() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Number> sum(@NonNull SqlColumn<? extends Number> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Number> avg(@NonNull SqlColumn<? extends Number> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static <T extends Comparable<T>> @NonNull SqlExpression<T> min(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static <T extends Comparable<T>> @NonNull SqlExpression<T> max(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Long> countDistinct(@NonNull SqlColumn<?> column) {
 		throw new UnsupportedOperationException();
 	}

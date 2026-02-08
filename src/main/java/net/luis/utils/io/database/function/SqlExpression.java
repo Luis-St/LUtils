@@ -30,36 +30,36 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the expression result
  */
 public interface SqlExpression<T> extends SqlOrderable {
-
+	
 	@NonNull SqlCondition equalTo(@NonNull T value);
-
+	
 	@NonNull SqlCondition notEqualTo(@NonNull T value);
-
+	
 	@NonNull SqlCondition greaterThan(@NonNull T value);
-
+	
 	@NonNull SqlCondition greaterThanOrEqualTo(@NonNull T value);
-
+	
 	@NonNull SqlCondition lessThan(@NonNull T value);
-
+	
 	@NonNull SqlCondition lessThanOrEqualTo(@NonNull T value);
-
+	
 	@NonNull SqlCondition between(@NonNull T start, @NonNull T end);
-
+	
 	@NonNull SqlCondition isNull();
-
+	
 	@NonNull SqlCondition isNotNull();
-
+	
 	@NonNull SqlExpression<T> as(@NonNull String alias);
-
+	
 	@Override
 	@NonNull SqlExpression<T> asc();
-
+	
 	@Override
 	@NonNull SqlExpression<T> desc();
-
+	
 	@Override
 	@NonNull SqlExpression<T> nullsFirst();
-
+	
 	@Override
 	@NonNull SqlExpression<T> nullsLast();
 }

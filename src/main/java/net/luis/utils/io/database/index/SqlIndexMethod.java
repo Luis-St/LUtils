@@ -24,7 +24,7 @@ package net.luis.utils.io.database.index;
  * @author Luis-St
  */
 public enum SqlIndexMethod {
-
+	
 	BTREE,
 	HASH,
 	GIN,

@@ -28,12 +28,12 @@ import java.util.List;
  * @author Luis-St
  */
 public interface SqlTableDiff {
-
+	
 	@NonNull String tableName();
-
+	
 	@NonNull List<String> addedColumns();
-
+	
 	@NonNull List<String> removedColumns();
-
+	
 	@NonNull List<String> modifiedColumns();
 }

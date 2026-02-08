@@ -27,12 +27,12 @@ import org.jspecify.annotations.Nullable;
  * @author Luis-St
  */
 public class SqlForeignKeyViolationException extends SqlConstraintViolationException {
-
+	
 	/**
 	 * Constructs a new SQL foreign key violation exception with no details.<br>
 	 */
 	public SqlForeignKeyViolationException() {}
-
+	
 	/**
 	 * Constructs a new SQL foreign key violation exception with the specified message.<br>
 	 * @param message The message of the exception
@@ -40,7 +40,7 @@ public class SqlForeignKeyViolationException extends SqlConstraintViolationExcep
 	public SqlForeignKeyViolationException(@Nullable String message) {
 		super(message);
 	}
-
+	
 	/**
 	 * Constructs a new SQL foreign key violation exception with the specified message and cause.<br>
 	 * @param message The message of the exception
@@ -49,7 +49,7 @@ public class SqlForeignKeyViolationException extends SqlConstraintViolationExcep
 	public SqlForeignKeyViolationException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	/**
 	 * Constructs a new SQL foreign key violation exception with the specified cause.<br>
 	 * @param cause The cause of the exception
@@ -57,15 +57,15 @@ public class SqlForeignKeyViolationException extends SqlConstraintViolationExcep
 	public SqlForeignKeyViolationException(@Nullable Throwable cause) {
 		super(cause);
 	}
-
+	
 	public @NonNull String getConstraintName() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public @NonNull String getReferencedTableName() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public @Nullable Object getMissingKeyValue() {
 		throw new UnsupportedOperationException();
 	}

@@ -26,12 +26,12 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlSequenceDefinition {
-
+	
 	@NonNull String name();
-
+	
 	long startWith();
-
+	
 	long incrementBy();
-
+	
 	int cache();
 }

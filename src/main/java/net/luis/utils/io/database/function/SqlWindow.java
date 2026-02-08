@@ -28,39 +28,39 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlWindow {
-
+	
 	public static @NonNull SqlExpression<Long> rowNumber() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Long> rank() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Long> denseRank() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Long> ntile(int buckets) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<?> over(@NonNull SqlExpression<?> expression) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<?> partitionBy(SqlColumn<?> @NonNull ... columns) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<?> orderBy(SqlOrderable @NonNull ... orderables) {
 		throw new UnsupportedOperationException();
 	}

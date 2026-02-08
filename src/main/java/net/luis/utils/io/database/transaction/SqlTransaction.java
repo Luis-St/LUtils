@@ -30,30 +30,30 @@ import java.util.Optional;
  * @author Luis-St
  */
 public interface SqlTransaction {
-
+	
 	static boolean isInTransaction() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	static @NonNull Optional<SqlTransaction> current() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	static void requireActive() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	void commit();
-
+	
 	void rollback();
-
+	
 	void rollbackTo(@NonNull SqlSavepoint savepoint);
-
+	
 	@NonNull SqlSavepoint savepoint(@NonNull String name);
-
+	
 	@NonNull SqlTransaction readOnly();
-
+	
 	@NonNull SqlTransaction timeout(@NonNull Duration timeout);
-
+	
 	@NonNull SqlTransaction isolation(@NonNull SqlIsolationLevel level);
 }

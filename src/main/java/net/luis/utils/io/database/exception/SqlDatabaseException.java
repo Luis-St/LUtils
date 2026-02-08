@@ -30,12 +30,12 @@ import java.util.Optional;
  * @author Luis-St
  */
 public class SqlDatabaseException extends RuntimeException {
-
+	
 	/**
 	 * Constructs a new SQL database exception with no details.<br>
 	 */
 	public SqlDatabaseException() {}
-
+	
 	/**
 	 * Constructs a new SQL database exception with the specified message.<br>
 	 * @param message The message of the exception
@@ -43,7 +43,7 @@ public class SqlDatabaseException extends RuntimeException {
 	public SqlDatabaseException(@Nullable String message) {
 		super(message);
 	}
-
+	
 	/**
 	 * Constructs a new SQL database exception with the specified message and cause.<br>
 	 * @param message The message of the exception
@@ -52,7 +52,7 @@ public class SqlDatabaseException extends RuntimeException {
 	public SqlDatabaseException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	/**
 	 * Constructs a new SQL database exception with the specified cause.<br>
 	 * @param cause The cause of the exception
@@ -60,19 +60,19 @@ public class SqlDatabaseException extends RuntimeException {
 	public SqlDatabaseException(@Nullable Throwable cause) {
 		super(cause);
 	}
-
+	
 	public @Nullable String getSqlState() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public int getVendorCode() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public @NonNull Optional<String> getSql() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public @NonNull List<Object> getParameters() {
 		throw new UnsupportedOperationException();
 	}

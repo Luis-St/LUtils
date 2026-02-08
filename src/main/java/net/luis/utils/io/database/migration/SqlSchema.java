@@ -28,7 +28,7 @@ import java.io.File;
  * @author Luis-St
  */
 public interface SqlSchema {
-
+	
 	static @NonNull SqlSchema fromYaml(@NonNull File schemaDir) {
 		throw new UnsupportedOperationException();
 	}

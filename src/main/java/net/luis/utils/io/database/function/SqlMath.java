@@ -27,35 +27,35 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlMath {
-
+	
 	public static @NonNull SqlExpression<Number> abs(@NonNull SqlColumn<? extends Number> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Number> round(@NonNull SqlColumn<? extends Number> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Number> ceil(@NonNull SqlColumn<? extends Number> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Number> floor(@NonNull SqlColumn<? extends Number> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Number> mod(@NonNull SqlColumn<? extends Number> column, @NonNull Number divisor) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Number> power(@NonNull SqlColumn<? extends Number> column, @NonNull Number exponent) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Number> sqrt(@NonNull SqlColumn<? extends Number> column) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static @NonNull SqlExpression<Number> random() {
 		throw new UnsupportedOperationException();
 	}

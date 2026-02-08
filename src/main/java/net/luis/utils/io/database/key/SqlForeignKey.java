@@ -34,39 +34,39 @@ import java.util.concurrent.CompletableFuture;
  * @param <V> The type of the referenced value
  */
 public interface SqlForeignKey<K, V> {
-
+	
 	static <K, V> @NonNull SqlForeignKey<K, V> of(@NonNull K key) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	static <K, V> @NonNull SqlForeignKey<K, V> of(@NonNull K key, @Nullable V value) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	static <K, V> @NonNull SqlForeignKey<K, V> withLoader(@NonNull K key, @NonNull SqlForeignKeyLoader<K, V> loader) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	static <K, V> void loadAll(@NonNull Collection<SqlForeignKey<K, V>> keys) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	static <K, V> @NonNull CompletableFuture<Void> loadAllAsync(@NonNull Collection<SqlForeignKey<K, V>> keys) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	@NonNull K key();
-
+	
 	boolean isLoaded();
-
+	
 	@NonNull V value();
-
+	
 	@NonNull V requireValue();
-
+	
 	@NonNull Optional<V> valueOptional();
-
+	
 	@NonNull V load();
-
+	
 	@NonNull CompletableFuture<V> loadAsync();
 	
 	@NonNull V load(@NonNull SqlLoadOptions options);
@@ -76,8 +76,8 @@ public interface SqlForeignKey<K, V> {
 	@NonNull V reload();
 	
 	@NonNull CompletableFuture<V> reloadAsync();
-
+	
 	@NonNull V loadIfAbsent();
-
+	
 	@NonNull SqlForeignKey<K, V> withValue(@Nullable V value);
 }

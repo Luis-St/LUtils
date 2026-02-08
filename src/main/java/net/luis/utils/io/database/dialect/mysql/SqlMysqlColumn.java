@@ -30,8 +30,8 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlMysqlColumn<T> extends SqlColumn<T> {
-
+	
 	@NonNull SqlCondition matchAgainst(@NonNull String searchTerms);
-
+	
 	@NonNull SqlExpression<?> groupConcat(@NonNull String separator);
 }

@@ -29,13 +29,13 @@ import java.util.function.Supplier;
  * @author Luis-St
  */
 public interface SqlRetry {
-
+	
 	static @NonNull SqlRetry withBackoff(int maxRetries, @NonNull Duration initialDelay) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	@NonNull SqlRetry retryOn(Class<? extends Throwable> @NonNull ... exceptions);
-
+	
 	<T> T execute(@NonNull Supplier<T> action);
 }

@@ -29,19 +29,19 @@ import java.util.function.Supplier;
  * @author Luis-St
  */
 public class SqlAuditContext {
-
-	public static void setCurrentUser(@NonNull String user) {
-		throw new UnsupportedOperationException();
-	}
-
+	
 	public static @Nullable String getCurrentUser() {
 		throw new UnsupportedOperationException();
 	}
-
+	
+	public static void setCurrentUser(@NonNull String user) {
+		throw new UnsupportedOperationException();
+	}
+	
 	public static void clear() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static <T> T withUser(@NonNull String user, @NonNull Supplier<T> action) {
 		throw new UnsupportedOperationException();
 	}

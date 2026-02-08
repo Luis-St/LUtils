@@ -24,14 +24,14 @@ package net.luis.utils.io.database;
  * @author Luis-St
  */
 public interface SqlDialectFeatures {
-
+	
 	boolean supportsReturning();
-
+	
 	boolean supportsSkipLocked();
-
+	
 	boolean supportsArrays();
-
+	
 	boolean supportsJsonb();
-
+	
 	boolean supportsPartialIndexes();
 }

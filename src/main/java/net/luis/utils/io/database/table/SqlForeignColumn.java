@@ -29,8 +29,8 @@ import org.jspecify.annotations.NonNull;
  * @param <R> The type of the referenced entity
  */
 public interface SqlForeignColumn<T, R> extends SqlColumn<T> {
-
+	
 	@NonNull SqlTable<R> referencedTable();
-
+	
 	@NonNull SqlColumn<?> referencedColumn();
 }

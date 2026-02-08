@@ -32,22 +32,22 @@ import java.util.function.Function;
  * @author Luis-St
  */
 public interface SqlInsertQuery<T> {
-
+	
 	@NonNull SqlInsertQuery<T> insert(@NonNull T entity);
-
+	
 	@SuppressWarnings("unchecked")
 	@NonNull SqlInsertQuery<T> insert(T @NonNull ... entities);
-
+	
 	@NonNull SqlInsertQuery<T> upsert(@NonNull T entity, @NonNull SqlColumn<?> conflictColumn, @NonNull Function<T, T> onConflict);
-
+	
 	@NonNull SqlInsertQuery<T> insertOrIgnore(@NonNull T entity, SqlColumn<?> @NonNull ... conflictColumns);
-
+	
 	int execute();
-
+	
 	@NonNull List<T> returning();
-
+	
 	@NonNull List<T> fetchInserted();
-
+	
 	@NonNull CompletableFuture<Integer> executeAsync();
 	
 	@NonNull CompletableFuture<List<T>> returningAsync();

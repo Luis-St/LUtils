@@ -32,20 +32,20 @@ import java.util.List;
  * @author Luis-St
  */
 public interface SqlPostgresColumn<T> extends SqlColumn<T> {
-
+	
 	@NonNull SqlCondition ilike(@NonNull String pattern);
-
+	
 	@NonNull SqlCondition notIlike(@NonNull String pattern);
-
+	
 	@NonNull SqlCondition arrayContains(@NonNull T element);
-
+	
 	@NonNull SqlCondition arrayOverlaps(@NonNull List<T> elements);
-
+	
 	@NonNull SqlExpression<?> arrayAgg();
-
+	
 	<R> @NonNull SqlExpression<R> jsonExtract(@NonNull String path, @NonNull Class<R> type);
-
+	
 	@NonNull SqlCondition jsonExists(@NonNull String path);
-
+	
 	@NonNull SqlCondition fullTextSearch(@NonNull String query);
 }

@@ -31,6 +31,6 @@ import org.jspecify.annotations.Nullable;
  */
 @FunctionalInterface
 public interface SqlForeignKeyLoader<K, V> {
-
+	
 	@Nullable V load(@NonNull K key, @NonNull SqlLoadOptions options);
 }

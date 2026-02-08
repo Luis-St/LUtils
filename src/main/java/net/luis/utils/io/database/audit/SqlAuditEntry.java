@@ -28,11 +28,11 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the audited entity
  */
 public interface SqlAuditEntry<T> {
-
+	
 	static <T> @NonNull SqlAuditEntry<T> forCreate(@NonNull T entity) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	static <T> @NonNull SqlAuditEntry<T> forUpdate(@NonNull T entity) {
 		throw new UnsupportedOperationException();
 	}

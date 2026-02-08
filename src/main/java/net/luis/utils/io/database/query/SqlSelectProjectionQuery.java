@@ -34,28 +34,28 @@ import java.util.stream.Stream;
  * @author Luis-St
  */
 public interface SqlSelectProjectionQuery<T> {
-
+	
 	@NonNull SqlSelectProjectionQuery<T> where(@NonNull SqlCondition condition);
-
+	
 	@NonNull SqlSelectProjectionQuery<T> groupBy(SqlColumn<?> @NonNull ... columns);
-
+	
 	@NonNull SqlSelectProjectionQuery<T> having(@NonNull SqlCondition condition);
-
+	
 	@NonNull SqlSelectProjectionQuery<T> orderBy(SqlOrderable @NonNull ... orderables);
-
+	
 	@NonNull SqlSelectProjectionQuery<T> limit(int limit);
-
+	
 	@NonNull SqlSelectProjectionQuery<T> offset(long offset);
-
+	
 	@NonNull List<T> fetch();
-
+	
 	@NonNull Optional<T> fetchFirst();
-
+	
 	@NonNull T fetchOne();
-
+	
 	long count();
-
+	
 	@NonNull Stream<T> stream();
-
+	
 	@NonNull String toSql();
 }
