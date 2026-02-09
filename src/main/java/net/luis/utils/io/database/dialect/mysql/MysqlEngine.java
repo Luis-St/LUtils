@@ -18,11 +18,16 @@
 
 package net.luis.utils.io.database.dialect.mysql;
 
-import net.luis.utils.io.database.dialect.SqlDialect;
-
 /**
- * SQL dialect for MySQL.<br>
+ * Enum representing MySQL storage engines.<br>
  *
  * @author Luis-St
  */
-public final class SqlMysqlDialect extends SqlDialect<SqlMysqlTable<?>, SqlMysqlColumn<?>> {}
+public enum MysqlEngine {
+	
+	INNODB,
+	MYISAM,
+	MEMORY,
+	CSV,
+	ARCHIVE
+}

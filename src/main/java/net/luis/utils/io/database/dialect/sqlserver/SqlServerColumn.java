@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.mysql;
+package net.luis.utils.io.database.dialect.sqlserver;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.function.SqlExpression;
@@ -24,14 +24,27 @@ import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Interface representing a MySQL-specific column.<br>
+ * Interface representing a SQL Server-specific column.<br>
+ *
+ * @author Luis-St
  *
  * @param <T> The type of the column value
- * @author Luis-St
  */
-public interface SqlMysqlColumn<T> extends SqlColumn<T> {
+public interface SqlServerColumn<T> extends SqlColumn<T> {
 	
-	@NonNull SqlCondition matchAgainst(@NonNull String searchTerms);
+	@NonNull SqlCondition freeText(@NonNull String searchTerms);
 	
-	@NonNull SqlExpression<?> groupConcat(@NonNull String separator);
+	@NonNull SqlCondition containsText(@NonNull String searchTerms);
+	
+	@NonNull SqlExpression<?> jsonValue(@NonNull String path);
+	
+	@NonNull SqlCondition isJsonPath(@NonNull String path);
+	
+	@NonNull SqlExpression<?> isNull(@NonNull T defaultValue);
+	
+	@NonNull SqlExpression<?> tryConvert(@NonNull Class<?> targetType);
+	
+	@NonNull SqlExpression<?> formatDate(@NonNull String format);
+	
+	@NonNull SqlExpression<?> stringAgg(@NonNull String separator);
 }

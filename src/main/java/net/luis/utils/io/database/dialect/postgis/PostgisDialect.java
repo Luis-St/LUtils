@@ -16,14 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect;
+package net.luis.utils.io.database.dialect.postgis;
 
-import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.dialect.postgres.AbstractSqlPostgresDialect;
 
 /**
- * SQL dialect for H2.<br>
+ * SQL dialect for PostGIS (PostgreSQL with spatial extensions).<br>
  *
  * @author Luis-St
  */
-public final class SqlH2Dialect extends SqlDialect<SqlTable<?>, SqlColumn<?>> {}
+public final class PostgisDialect extends AbstractSqlPostgresDialect<PostgisTable<?>, PostgisColumn<?>> {}

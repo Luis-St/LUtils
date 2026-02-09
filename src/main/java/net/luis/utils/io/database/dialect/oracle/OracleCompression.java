@@ -16,24 +16,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.index;
+package net.luis.utils.io.database.dialect.oracle;
 
 /**
- * Enum representing the SQL index methods.<br>
+ * Enum representing Oracle table compression types.<br>
  *
  * @author Luis-St
  */
-public enum SqlIndexMethod {
+public enum OracleCompression {
 	
-	BTREE,
-	HASH,
-	GIN,
-	GIST,
-	BRIN,
-	SPGIST,
-	FULLTEXT,
-	CLUSTERED,
-	NONCLUSTERED,
-	COLUMNSTORE,
-	BITMAP
+	NONE,
+	BASIC,
+	OLTP,
+	QUERY_LOW,
+	QUERY_HIGH,
+	ARCHIVE_LOW,
+	ARCHIVE_HIGH
 }

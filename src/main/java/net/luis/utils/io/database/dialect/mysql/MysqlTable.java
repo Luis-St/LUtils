@@ -16,24 +16,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.index;
+package net.luis.utils.io.database.dialect.mysql;
+
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
+import org.jspecify.annotations.NonNull;
 
 /**
- * Enum representing the SQL index methods.<br>
+ * Interface representing a MySQL-specific table.<br>
  *
  * @author Luis-St
+ *
+ * @param <T> The type of the entity
  */
-public enum SqlIndexMethod {
+public interface MysqlTable<T> extends SqlTable<T> {
 	
-	BTREE,
-	HASH,
-	GIN,
-	GIST,
-	BRIN,
-	SPGIST,
-	FULLTEXT,
-	CLUSTERED,
-	NONCLUSTERED,
-	COLUMNSTORE,
-	BITMAP
+	void setEngine(@NonNull MysqlEngine engine);
+	
+	void setCharset(@NonNull String charset);
+	
+	void setCollation(@NonNull String collation);
+	
+	void setAutoIncrement(long value);
+	
+	void setComment(@NonNull String comment);
+	
+	void addFullTextIndex(@NonNull String name, SqlColumn<?> @NonNull ... columns);
 }

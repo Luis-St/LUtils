@@ -28,6 +28,21 @@ import org.jspecify.annotations.NonNull;
 public class SqlDialectRegistry {
 	
 	public static @NonNull SqlDialect<?, ?> detect(@NonNull String jdbcUrl) {
-		throw new UnsupportedOperationException();
+		if (jdbcUrl.startsWith("jdbc:postgresql:")) {
+			return SqlDialect.POSTGRES;
+		} else if (jdbcUrl.startsWith("jdbc:mysql:")) {
+			return SqlDialect.MYSQL;
+		} else if (jdbcUrl.startsWith("jdbc:mariadb:")) {
+			return SqlDialect.MARIA;
+		} else if (jdbcUrl.startsWith("jdbc:sqlite:")) {
+			return SqlDialect.SQLITE;
+		} else if (jdbcUrl.startsWith("jdbc:h2:")) {
+			return SqlDialect.H2;
+		} else if (jdbcUrl.startsWith("jdbc:sqlserver:")) {
+			return SqlDialect.SQL_SERVER;
+		} else if (jdbcUrl.startsWith("jdbc:oracle:")) {
+			return SqlDialect.ORACLE;
+		}
+		return SqlDialect.DEFAULT;
 	}
 }

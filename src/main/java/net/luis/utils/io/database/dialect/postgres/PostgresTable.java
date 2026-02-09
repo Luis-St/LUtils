@@ -16,24 +16,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.index;
+package net.luis.utils.io.database.dialect.postgres;
+
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
+import org.jspecify.annotations.NonNull;
 
 /**
- * Enum representing the SQL index methods.<br>
+ * Interface representing a PostgreSQL-specific table.<br>
  *
  * @author Luis-St
+ *
+ * @param <T> The type of the entity
  */
-public enum SqlIndexMethod {
+public interface PostgresTable<T> extends SqlTable<T> {
 	
-	BTREE,
-	HASH,
-	GIN,
-	GIST,
-	BRIN,
-	SPGIST,
-	FULLTEXT,
-	CLUSTERED,
-	NONCLUSTERED,
-	COLUMNSTORE,
-	BITMAP
+	void setUnlogged(boolean unlogged);
+	
+	void setTablespace(@NonNull String tablespace);
+	
+	void partitionByRange(SqlColumn<?> @NonNull ... columns);
+	
+	void partitionByList(@NonNull SqlColumn<?> column);
+	
+	void partitionByHash(SqlColumn<?> @NonNull ... columns);
+	
+	void enableRowLevelSecurity();
 }

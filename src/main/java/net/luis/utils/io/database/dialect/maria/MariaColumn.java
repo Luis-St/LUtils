@@ -16,15 +16,26 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.timescale;
+package net.luis.utils.io.database.dialect.maria;
 
-import net.luis.utils.io.database.dialect.postgres.SqlPostgresTable;
+import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.mysql.MysqlColumn;
+import net.luis.utils.io.database.function.SqlExpression;
+import org.jspecify.annotations.NonNull;
 
 /**
- * Interface representing a TimescaleDB-specific table.<br>
- * TimescaleDB is built on PostgreSQL, so this extends {@link SqlPostgresTable}.<br>
+ * Interface representing a MariaDB-specific column.<br>
+ * Extends MySQL column with MariaDB additions.<br>
  *
- * @param <T> The type of the entity
  * @author Luis-St
+ *
+ * @param <T> The type of the column value
  */
-public interface SqlTimescaleTable<T> extends SqlPostgresTable<T> {}
+public interface MariaColumn<T> extends MysqlColumn<T> {
+	
+	@NonNull SqlCondition ilike(@NonNull String pattern);
+	
+	@NonNull SqlExpression<?> jsonValue(@NonNull String path);
+	
+	@NonNull SqlExpression<?> nextSequenceValue(@NonNull String sequence);
+}

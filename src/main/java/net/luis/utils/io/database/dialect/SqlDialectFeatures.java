@@ -34,4 +34,42 @@ public interface SqlDialectFeatures {
 	boolean supportsJsonb();
 	
 	boolean supportsPartialIndexes();
+	
+	boolean supportsSequences();
+	
+	boolean supportsCte();
+	
+	boolean supportsWindowFunctions();
+	
+	boolean supportsBooleanType();
+	
+	boolean supportsUpsert();
+	
+	boolean supportsSchemas();
+	
+	boolean supportsGeneratedColumns();
+	
+	boolean supportsMerge();
+	
+	boolean supportsLateral();
+	
+	boolean supportsJson();
+	
+	boolean supportsMaterializedViews();
+	
+	boolean supportsTruncateCascade();
+	
+	boolean supportsTableInheritance();
+	
+	boolean supportsOutputClause();
+	
+	boolean supportsRowId();
+	
+	boolean supportsTopClause();
+	
+	boolean supportsConnectBy();
+	
+	boolean supportsFullTextSearch();
+	
+	boolean supportsIdentityColumns();
 }

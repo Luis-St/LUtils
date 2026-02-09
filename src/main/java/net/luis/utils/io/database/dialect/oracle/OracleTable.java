@@ -16,31 +16,34 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.timescale;
+package net.luis.utils.io.database.dialect.oracle;
 
-import net.luis.utils.io.database.dialect.postgres.SqlPostgresColumn;
-import net.luis.utils.io.database.function.SqlExpression;
 import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
-import java.time.Instant;
-
 /**
- * Interface representing a TimescaleDB-specific column.<br>
- * TimescaleDB is built on PostgreSQL, so this extends {@link SqlPostgresColumn}.<br>
+ * Interface representing an Oracle-specific table.<br>
  *
- * @param <T> The type of the column value
  * @author Luis-St
+ *
+ * @param <T> The type of the entity
  */
-public interface SqlTimescaleColumn<T> extends SqlPostgresColumn<T> {
+public interface OracleTable<T> extends SqlTable<T> {
 	
-	@NonNull SqlExpression<?> timeBucket(@NonNull String interval);
+	void setTablespace(@NonNull String tablespace);
 	
-	@NonNull SqlExpression<?> timeBucketGapfill(@NonNull String interval, @NonNull Instant start, @NonNull Instant end);
+	void enableRowMovement();
 	
-	@NonNull SqlExpression<?> first(@NonNull SqlColumn<?> timeColumn);
+	void partitionByRange(@NonNull SqlColumn<?> column);
 	
-	@NonNull SqlExpression<?> last(@NonNull SqlColumn<?> timeColumn);
+	void partitionByList(@NonNull SqlColumn<?> column);
 	
-	@NonNull SqlExpression<?> locf();
+	void partitionByHash(@NonNull SqlColumn<?> column, int partitions);
+	
+	void enableFlashback();
+	
+	void setCompression(@NonNull OracleCompression compression);
+	
+	void createMaterializedView(@NonNull String name, @NonNull String query);
 }

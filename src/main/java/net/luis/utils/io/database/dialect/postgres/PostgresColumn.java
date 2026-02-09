@@ -1,0 +1,51 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.database.dialect.postgres;
+
+import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.function.SqlExpression;
+import net.luis.utils.io.database.table.SqlColumn;
+import org.jspecify.annotations.NonNull;
+
+import java.util.List;
+
+/**
+ * Interface representing a PostgreSQL-specific column.<br>
+ *
+ * @param <T> The type of the column value
+ * @author Luis-St
+ */
+public interface PostgresColumn<T> extends SqlColumn<T> {
+	
+	@NonNull SqlCondition ilike(@NonNull String pattern);
+	
+	@NonNull SqlCondition notIlike(@NonNull String pattern);
+	
+	@NonNull SqlCondition arrayContains(@NonNull T element);
+	
+	@NonNull SqlCondition arrayOverlaps(@NonNull List<T> elements);
+	
+	@NonNull SqlExpression<?> arrayAgg();
+	
+	<R> @NonNull SqlExpression<R> jsonExtract(@NonNull String path, @NonNull Class<R> type);
+	
+	@NonNull SqlCondition jsonExists(@NonNull String path);
+	
+	@NonNull SqlCondition fullTextSearch(@NonNull String query);
+}

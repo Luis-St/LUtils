@@ -16,14 +16,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.postgres;
+package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 
 /**
- * Interface representing a PostgreSQL-specific table.<br>
+ * SQL dialect for SQLite.<br>
  *
- * @param <T> The type of the entity
  * @author Luis-St
  */
-public interface SqlPostgresTable<T> extends SqlTable<T> {}
+public final class SqliteDialect extends SqlDialect<SqlTable<?>, SqlColumn<?>> {}

@@ -16,24 +16,17 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.index;
+package net.luis.utils.io.database.dialect.postgres;
+
+import net.luis.utils.io.database.dialect.SqlDialect;
 
 /**
- * Enum representing the SQL index methods.<br>
+ * Abstract base class for PostgreSQL-based SQL dialects.<br>
+ * Extended by PostgreSQL, TimescaleDB, and PostGIS dialects.<br>
  *
  * @author Luis-St
+ *
+ * @param <T> The type returned by table dialect operations
+ * @param <C> The type returned by column dialect operations
  */
-public enum SqlIndexMethod {
-	
-	BTREE,
-	HASH,
-	GIN,
-	GIST,
-	BRIN,
-	SPGIST,
-	FULLTEXT,
-	CLUSTERED,
-	NONCLUSTERED,
-	COLUMNSTORE,
-	BITMAP
-}
+public abstract class AbstractSqlPostgresDialect<T extends PostgresTable<?>, C extends PostgresColumn<?>> extends SqlDialect<T, C> {}

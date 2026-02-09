@@ -18,9 +18,13 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.dialect.mysql.SqlMysqlDialect;
-import net.luis.utils.io.database.dialect.postgres.SqlPostgresDialect;
-import net.luis.utils.io.database.dialect.timescale.SqlTimescaleDialect;
+import net.luis.utils.io.database.dialect.maria.MariaDialect;
+import net.luis.utils.io.database.dialect.mysql.MysqlDialect;
+import net.luis.utils.io.database.dialect.oracle.OracleDialect;
+import net.luis.utils.io.database.dialect.postgis.PostgisDialect;
+import net.luis.utils.io.database.dialect.postgres.PostgresDialect;
+import net.luis.utils.io.database.dialect.sqlserver.SqlServerDialect;
+import net.luis.utils.io.database.dialect.timescale.TimescaleDialect;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
@@ -35,11 +39,15 @@ import org.jspecify.annotations.NonNull;
  */
 public abstract class SqlDialect<T, C> {
 	
-	public static final SqlPostgresDialect POSTGRES = new SqlPostgresDialect();
-	public static final SqlTimescaleDialect TIMESCALE = new SqlTimescaleDialect();
-	public static final SqlMysqlDialect MYSQL = new SqlMysqlDialect();
-	public static final SqlSqliteDialect SQLITE = new SqlSqliteDialect();
-	public static final SqlH2Dialect H2 = new SqlH2Dialect();
+	public static final PostgresDialect POSTGRES = new PostgresDialect();
+	public static final TimescaleDialect TIMESCALE = new TimescaleDialect();
+	public static final PostgisDialect POSTGIS = new PostgisDialect();
+	public static final MysqlDialect MYSQL = new MysqlDialect();
+	public static final MariaDialect MARIA = new MariaDialect();
+	public static final SqlServerDialect SQL_SERVER = new SqlServerDialect();
+	public static final OracleDialect ORACLE = new OracleDialect();
+	public static final SqliteDialect SQLITE = new SqliteDialect();
+	public static final H2Dialect H2 = new H2Dialect();
 	public static final SqlDefaultDialect DEFAULT = new SqlDefaultDialect();
 	
 	public @NonNull String getId() {
@@ -63,6 +71,50 @@ public abstract class SqlDialect<T, C> {
 	}
 	
 	public @NonNull String uuidFunction() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public @NonNull String mapColumnType(@NonNull SqlColumnType type) {
+		throw new UnsupportedOperationException();
+	}
+	
+	public @NonNull SqlColumnType mapJavaType(@NonNull Class<?> javaType) {
+		throw new UnsupportedOperationException();
+	}
+	
+	public @NonNull String autoIncrementSyntax() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public @NonNull String createTableSuffix() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public boolean supportsIfNotExists() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public @NonNull String limitOffsetSyntax(int limit, int offset) {
+		throw new UnsupportedOperationException();
+	}
+	
+	public @NonNull String upsertSyntax() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public @NonNull String returningSyntax(@NonNull String columns) {
+		throw new UnsupportedOperationException();
+	}
+	
+	public @NonNull String booleanLiteral(boolean value) {
+		throw new UnsupportedOperationException();
+	}
+	
+	public @NonNull String stringConcatOperator() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public @NonNull String parameterPlaceholder(int index) {
 		throw new UnsupportedOperationException();
 	}
 }

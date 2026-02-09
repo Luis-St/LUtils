@@ -16,36 +16,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.postgres;
+package net.luis.utils.io.database.dialect.mysql;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.function.SqlExpression;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
-import java.util.List;
-
 /**
- * Interface representing a PostgreSQL-specific column.<br>
+ * Interface representing a MySQL-specific column.<br>
+ *
+ * @author Luis-St
  *
  * @param <T> The type of the column value
- * @author Luis-St
  */
-public interface SqlPostgresColumn<T> extends SqlColumn<T> {
+public interface MysqlColumn<T> extends SqlColumn<T> {
 	
-	@NonNull SqlCondition ilike(@NonNull String pattern);
+	@NonNull SqlCondition matchAgainst(@NonNull String searchTerms);
 	
-	@NonNull SqlCondition notIlike(@NonNull String pattern);
+	@NonNull SqlExpression<?> groupConcat(@NonNull String separator);
 	
-	@NonNull SqlCondition arrayContains(@NonNull T element);
+	@NonNull SqlExpression<?> jsonExtract(@NonNull String path);
 	
-	@NonNull SqlCondition arrayOverlaps(@NonNull List<T> elements);
+	@NonNull SqlCondition jsonContains(@NonNull String value);
 	
-	@NonNull SqlExpression<?> arrayAgg();
+	@NonNull SqlExpression<?> ifNull(@NonNull T defaultValue);
 	
-	<R> @NonNull SqlExpression<R> jsonExtract(@NonNull String path, @NonNull Class<R> type);
+	@NonNull SqlCondition regexp(@NonNull String pattern);
 	
-	@NonNull SqlCondition jsonExists(@NonNull String path);
-	
-	@NonNull SqlCondition fullTextSearch(@NonNull String query);
+	@NonNull SqlExpression<?> findInSet(@NonNull String value);
 }

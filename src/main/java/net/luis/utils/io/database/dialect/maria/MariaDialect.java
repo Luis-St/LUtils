@@ -16,24 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.index;
+package net.luis.utils.io.database.dialect.maria;
+
+import net.luis.utils.io.database.dialect.mysql.AbstractSqlMysqlDialect;
 
 /**
- * Enum representing the SQL index methods.<br>
+ * SQL dialect for MariaDB.<br>
  *
  * @author Luis-St
  */
-public enum SqlIndexMethod {
-	
-	BTREE,
-	HASH,
-	GIN,
-	GIST,
-	BRIN,
-	SPGIST,
-	FULLTEXT,
-	CLUSTERED,
-	NONCLUSTERED,
-	COLUMNSTORE,
-	BITMAP
-}
+public final class MariaDialect extends AbstractSqlMysqlDialect<MariaTable<?>, MariaColumn<?>> {}

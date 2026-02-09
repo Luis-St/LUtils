@@ -16,24 +16,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.index;
+package net.luis.utils.io.database.dialect.sqlserver;
+
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
+import org.jspecify.annotations.NonNull;
 
 /**
- * Enum representing the SQL index methods.<br>
+ * Interface representing a SQL Server-specific table.<br>
  *
  * @author Luis-St
+ *
+ * @param <T> The type of the entity
  */
-public enum SqlIndexMethod {
+public interface SqlServerTable<T> extends SqlTable<T> {
 	
-	BTREE,
-	HASH,
-	GIN,
-	GIST,
-	BRIN,
-	SPGIST,
-	FULLTEXT,
-	CLUSTERED,
-	NONCLUSTERED,
-	COLUMNSTORE,
-	BITMAP
+	void setFilegroup(@NonNull String filegroup);
+	
+	void setClusteredIndex(@NonNull SqlColumn<?>... columns);
+	
+	void enableChangeTracking();
+	
+	void enableTemporalTable(@NonNull String historyTable);
+	
+	void withNoLock();
+	
+	void addColumnStoreIndex(@NonNull String name, SqlColumn<?> @NonNull ... columns);
 }

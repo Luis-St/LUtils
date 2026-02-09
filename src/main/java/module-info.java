@@ -106,8 +106,12 @@ module net.luis.utils {
 	exports net.luis.utils.io.database.audit;
 	exports net.luis.utils.io.database.condition;
 	exports net.luis.utils.io.database.dialect;
+	exports net.luis.utils.io.database.dialect.maria;
 	exports net.luis.utils.io.database.dialect.mysql;
+	exports net.luis.utils.io.database.dialect.oracle;
+	exports net.luis.utils.io.database.dialect.postgis;
 	exports net.luis.utils.io.database.dialect.postgres;
+	exports net.luis.utils.io.database.dialect.sqlserver;
 	exports net.luis.utils.io.database.dialect.timescale;
 	exports net.luis.utils.io.database.exception;
 	exports net.luis.utils.io.database.function;

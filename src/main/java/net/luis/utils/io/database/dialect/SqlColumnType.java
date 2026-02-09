@@ -16,13 +16,34 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.timescale;
-
-import net.luis.utils.io.database.dialect.SqlDialect;
+package net.luis.utils.io.database.dialect;
 
 /**
- * SQL dialect for TimescaleDB.<br>
+ * Enum representing abstract SQL column types that each dialect maps to concrete SQL strings.<br>
  *
  * @author Luis-St
  */
-public final class SqlTimescaleDialect extends SqlDialect<SqlTimescaleTable<?>, SqlTimescaleColumn<?>> {}
+public enum SqlColumnType {
+	
+	VARCHAR,
+	TEXT,
+	CHAR,
+	BOOLEAN,
+	SMALLINT,
+	INTEGER,
+	BIGINT,
+	REAL,
+	DOUBLE,
+	DECIMAL,
+	UUID,
+	DATE,
+	TIME,
+	TIMESTAMP,
+	TIMESTAMP_TZ,
+	BLOB,
+	BYTEA,
+	JSON,
+	JSONB,
+	ARRAY,
+	XML
+}

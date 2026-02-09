@@ -16,13 +16,24 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.postgres;
+package net.luis.utils.io.database.dialect.maria;
 
-import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.dialect.mysql.MysqlTable;
+import net.luis.utils.io.database.sequence.SqlSequenceDefinition;
+import org.jspecify.annotations.NonNull;
 
 /**
- * SQL dialect for PostgreSQL.<br>
+ * Interface representing a MariaDB-specific table.<br>
+ * Extends MySQL table with MariaDB additions.<br>
  *
  * @author Luis-St
+ *
+ * @param <T> The type of the entity
  */
-public final class SqlPostgresDialect extends SqlDialect<SqlPostgresTable<?>, SqlPostgresColumn<?>> {}
+public interface MariaTable<T> extends MysqlTable<T> {
+	
+	void setSystemVersioned(boolean versioned);
+	
+	@Override
+	void createSequence(@NonNull SqlSequenceDefinition definition);
+}

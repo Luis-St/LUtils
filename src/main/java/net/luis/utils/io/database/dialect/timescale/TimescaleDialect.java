@@ -16,24 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.index;
+package net.luis.utils.io.database.dialect.timescale;
+
+import net.luis.utils.io.database.dialect.postgres.AbstractSqlPostgresDialect;
 
 /**
- * Enum representing the SQL index methods.<br>
+ * SQL dialect for TimescaleDB.<br>
  *
  * @author Luis-St
  */
-public enum SqlIndexMethod {
-	
-	BTREE,
-	HASH,
-	GIN,
-	GIST,
-	BRIN,
-	SPGIST,
-	FULLTEXT,
-	CLUSTERED,
-	NONCLUSTERED,
-	COLUMNSTORE,
-	BITMAP
-}
+public final class TimescaleDialect extends AbstractSqlPostgresDialect<TimescaleTable<?>, TimescaleColumn<?>> {}

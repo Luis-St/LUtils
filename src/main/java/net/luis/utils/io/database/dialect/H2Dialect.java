@@ -22,8 +22,8 @@ import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 
 /**
- * SQL dialect for SQLite.<br>
+ * SQL dialect for H2.<br>
  *
  * @author Luis-St
  */
-public final class SqlSqliteDialect extends SqlDialect<SqlTable<?>, SqlColumn<?>> {}
+public final class H2Dialect extends SqlDialect<SqlTable<?>, SqlColumn<?>> {}

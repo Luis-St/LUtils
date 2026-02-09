@@ -16,14 +16,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.mysql;
+package net.luis.utils.io.database.dialect.postgis;
 
-import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.dialect.postgres.PostgresTable;
+import net.luis.utils.io.database.table.SqlColumn;
+import org.jspecify.annotations.NonNull;
 
 /**
- * Interface representing a MySQL-specific table.<br>
+ * Interface representing a PostGIS-specific table with spatial operations.<br>
+ *
+ * @author Luis-St
  *
  * @param <T> The type of the entity
- * @author Luis-St
  */
-public interface SqlMysqlTable<T> extends SqlTable<T> {}
+public interface PostgisTable<T> extends PostgresTable<T> {
+	
+	void createSpatialIndex(@NonNull String name, @NonNull SqlColumn<?> geometryColumn);
+}
