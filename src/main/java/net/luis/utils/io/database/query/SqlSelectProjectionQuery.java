@@ -52,7 +52,7 @@ import java.util.stream.Stream;
  * @see SqlSelectQuery
  */
 public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSelectProjectionQuery<T>> {
-
+	
 	/**
 	 * Executes the query and maps all results to the specified type.<br>
 	 * <p>
@@ -65,7 +65,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return A list of all matching results mapped to the target type
 	 */
 	<R> @NonNull List<R> fetchAs(@NonNull Class<R> type);
-
+	
 	/**
 	 * Executes the query and maps the first result to the specified type.<br>
 	 *
@@ -74,7 +74,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return An optional containing the first result mapped to the target type, or empty if none found
 	 */
 	<R> @NonNull Optional<R> fetchFirstAs(@NonNull Class<R> type);
-
+	
 	/**
 	 * Executes the query and maps exactly one result to the specified type.<br>
 	 *
@@ -85,7 +85,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @throws SqlQueryException If more than one result is found
 	 */
 	<R> @NonNull R fetchOneAs(@NonNull Class<R> type);
-
+	
 	/**
 	 * Executes the query and maps one result to the specified type, or returns null.<br>
 	 *
@@ -95,7 +95,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @throws SqlQueryException If more than one result is found
 	 */
 	<R> @Nullable R fetchOneOrNullAs(@NonNull Class<R> type);
-
+	
 	/**
 	 * Executes the query and returns results as a stream mapped to the specified type.<br>
 	 *
@@ -105,7 +105,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return A stream of matching results mapped to the target type
 	 */
 	<R> @NonNull Stream<R> streamAs(@NonNull Class<R> type);
-
+	
 	/**
 	 * Executes the query with pagination and maps results to the specified type.<br>
 	 *
@@ -116,7 +116,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return A page containing the results mapped to the target type and pagination metadata
 	 */
 	<R> @NonNull SqlPage<R> fetchPageAs(int page, int pageSize, @NonNull Class<R> type);
-
+	
 	/**
 	 * Asynchronously executes the query and maps all results to the specified type.<br>
 	 *
@@ -125,7 +125,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return A future that completes with all matching results mapped to the target type
 	 */
 	<R> @NonNull CompletableFuture<List<R>> fetchAsAsync(@NonNull Class<R> type);
-
+	
 	/**
 	 * Asynchronously executes the query and maps the first result to the specified type.<br>
 	 *
@@ -134,7 +134,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return A future that completes with an optional containing the first result mapped to the target type
 	 */
 	<R> @NonNull CompletableFuture<Optional<R>> fetchFirstAsAsync(@NonNull Class<R> type);
-
+	
 	/**
 	 * Asynchronously executes the query and maps exactly one result to the specified type.<br>
 	 *
@@ -143,7 +143,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return A future that completes with the single matching result mapped to the target type
 	 */
 	<R> @NonNull CompletableFuture<R> fetchOneAsAsync(@NonNull Class<R> type);
-
+	
 	/**
 	 * Asynchronously executes the query and maps one result to the specified type, or returns null.<br>
 	 *
@@ -152,7 +152,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return A future that completes with the single result mapped to the target type or null
 	 */
 	<R> @NonNull CompletableFuture<@Nullable R> fetchOneOrNullAsAsync(@NonNull Class<R> type);
-
+	
 	/**
 	 * Asynchronously executes the query with pagination and maps results to the specified type.<br>
 	 *

@@ -35,7 +35,7 @@ import org.jspecify.annotations.NonNull;
  * @see SqlSelectProjectionQuery
  */
 public interface SqlSelectQuery<T> extends SqlSelectQueryBase<T, SqlSelectQuery<T>> {
-
+	
 	/**
 	 * Adds {@code FOR UPDATE} clause to lock selected rows.<br>
 	 * Prevents other transactions from modifying or locking the rows until this transaction completes.<br>
@@ -43,7 +43,7 @@ public interface SqlSelectQuery<T> extends SqlSelectQueryBase<T, SqlSelectQuery<
 	 * @return This query for method chaining
 	 */
 	@NonNull SqlSelectQuery<T> forUpdate();
-
+	
 	/**
 	 * Adds {@code SKIP LOCKED} modifier to skip rows that are already locked.<br>
 	 * Must be used in combination with {@link #forUpdate()}.<br>
@@ -52,7 +52,7 @@ public interface SqlSelectQuery<T> extends SqlSelectQueryBase<T, SqlSelectQuery<
 	 * @return This query for method chaining
 	 */
 	@NonNull SqlSelectQuery<T> skipLocked();
-
+	
 	/**
 	 * Adds NOWAIT modifier to fail immediately if rows are locked.<br>
 	 * Must be used in combination with {@link #forUpdate()}.<br>
