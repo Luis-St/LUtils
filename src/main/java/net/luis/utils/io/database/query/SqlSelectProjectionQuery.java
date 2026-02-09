@@ -18,44 +18,24 @@
 
 package net.luis.utils.io.database.query;
 
-import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.condition.SqlOrderable;
-import net.luis.utils.io.database.table.SqlColumn;
-import org.jspecify.annotations.NonNull;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
 /**
- * Interface representing a SQL select query with projection.<br>
+ * Interface representing a SQL select query with column projection.<br>
+ * <p>
+ *     This interface is used when selecting specific columns rather than full entities,
+ *     returning results as {@code Row2}, {@code Row3}, etc. or single column values.<br>
+ * </p>
+ * <p>
+ *     All common query functionality is inherited from {@link SqlSelectQueryBase}.<br>
+ *     Unlike {@link SqlSelectQuery}, this interface does not support row-level locking
+ *     as projection queries are typically read-only operations.<br>
+ * </p>
  *
- * @param <T> The type of the projection result
+ * @param <T> The type of the projection result (e.g., Row2, Row3, or single column type)
  * @author Luis-St
+ *
+ * @see SqlSelectQueryBase
+ * @see SqlSelectQuery
  */
-public interface SqlSelectProjectionQuery<T> {
-	
-	@NonNull SqlSelectProjectionQuery<T> where(@NonNull SqlCondition condition);
-	
-	@NonNull SqlSelectProjectionQuery<T> groupBy(SqlColumn<?> @NonNull ... columns);
-	
-	@NonNull SqlSelectProjectionQuery<T> having(@NonNull SqlCondition condition);
-	
-	@NonNull SqlSelectProjectionQuery<T> orderBy(SqlOrderable @NonNull ... orderables);
-	
-	@NonNull SqlSelectProjectionQuery<T> limit(int limit);
-	
-	@NonNull SqlSelectProjectionQuery<T> offset(long offset);
-	
-	@NonNull List<T> fetch();
-	
-	@NonNull Optional<T> fetchFirst();
-	
-	@NonNull T fetchOne();
-	
-	long count();
-	
-	@NonNull Stream<T> stream();
-	
-	@NonNull String toSql();
+public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSelectProjectionQuery<T>> {
+
 }

@@ -18,77 +18,47 @@
 
 package net.luis.utils.io.database.query;
 
-import net.luis.utils.io.database.SqlPage;
-import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.condition.SqlOrderable;
-import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.exception.locking.SqlLockNotAvailableException;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 /**
- * Interface representing a SQL select query.<br>
+ * Interface representing a SQL select query for entities.<br>
+ * <p>
+ *     This interface extends {@link SqlSelectQueryBase} with entity-specific
+ *     locking methods for pessimistic concurrency control.<br>
+ * </p>
  *
  * @param <T> The type of the result entity
  * @author Luis-St
+ *
+ * @see SqlSelectQueryBase
+ * @see SqlSelectProjectionQuery
  */
-public interface SqlSelectQuery<T> {
-	
-	@NonNull SqlSelectQuery<T> where(@NonNull SqlCondition condition);
-	
-	@NonNull SqlSelectQuery<T> whereExists(@NonNull SqlSelectQuery<?> subquery);
-	
-	@NonNull SqlSelectQuery<T> whereNotExists(@NonNull SqlSelectQuery<?> subquery);
-	
-	@NonNull SqlSelectQuery<T> groupBy(SqlColumn<?> @NonNull ... columns);
-	
-	@NonNull SqlSelectQuery<T> having(@NonNull SqlCondition condition);
-	
-	@NonNull SqlSelectQuery<T> orderBy(SqlOrderable @NonNull ... orderables);
-	
-	@NonNull SqlSelectQuery<T> limit(int limit);
-	
-	@NonNull SqlSelectQuery<T> offset(long offset);
-	
-	@NonNull SqlSelectQuery<T> distinct();
-	
-	@NonNull List<T> fetch();
-	
-	@NonNull Optional<T> fetchFirst();
-	
-	@NonNull T fetchOne();
-	
-	@Nullable T fetchOneOrNull();
-	
-	long count();
-	
-	boolean exists();
-	
-	@NonNull Stream<T> stream();
-	
-	@NonNull SqlPage<T> fetchPage(int page, int pageSize);
-	
+public interface SqlSelectQuery<T> extends SqlSelectQueryBase<T, SqlSelectQuery<T>> {
+
+	/**
+	 * Adds {@code FOR UPDATE} clause to lock selected rows.<br>
+	 * Prevents other transactions from modifying or locking the rows until this transaction completes.<br>
+	 *
+	 * @return This query for method chaining
+	 */
 	@NonNull SqlSelectQuery<T> forUpdate();
-	
+
+	/**
+	 * Adds {@code SKIP LOCKED} modifier to skip rows that are already locked.<br>
+	 * Must be used in combination with {@link #forUpdate()}.<br>
+	 * Useful for job queue patterns where multiple workers process available rows.<br>
+	 *
+	 * @return This query for method chaining
+	 */
 	@NonNull SqlSelectQuery<T> skipLocked();
-	
+
+	/**
+	 * Adds NOWAIT modifier to fail immediately if rows are locked.<br>
+	 * Must be used in combination with {@link #forUpdate()}.<br>
+	 * Throws {@link SqlLockNotAvailableException} if rows are locked.<br>
+	 *
+	 * @return This query for method chaining
+	 */
 	@NonNull SqlSelectQuery<T> noWait();
-	
-	@NonNull CompletableFuture<List<T>> fetchAsync();
-	
-	@NonNull CompletableFuture<Optional<T>> fetchFirstAsync();
-	
-	@NonNull CompletableFuture<T> fetchOneAsync();
-	
-	@NonNull CompletableFuture<Long> countAsync();
-	
-	@NonNull String toSql();
-	
-	@NonNull List<Object> getParameters();
-	
-	@NonNull String explain();
 }
