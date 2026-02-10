@@ -228,7 +228,7 @@ SqlMath.sqrt(col)   SqlMath.random()
 ```java
 SqlDate.now()                  SqlDate.currentDate()
 SqlDate.year(col)              SqlDate.month(col)
-SqlDate.day(col)               SqlDate.dateTrunc("day", col)
+SqlDate.day(col)               SqlDate.dateTrunc(col, DatePart.DAY)
 SqlDate.addDays(col, 7)        SqlDate.dateDiff(DatePart.DAY, start, end)
 SqlDate.toChar(col, "YYYY-MM-DD")
 ```
@@ -257,7 +257,7 @@ UserTable.TABLE.dialect(SqlDialect.POSTGRES).select()
 UserTable.ROLES.dialect(SqlDialect.POSTGRES).arrayContains("admin")
 
 // TimescaleDB time bucket
-SensorTable.RECORDED_AT.dialect(SqlDialect.TIMESCALE).timeBucket("1 hour")
+SensorTable.RECORDED_AT.dialect(SqlDialect.TIMESCALE).timeBucket(Duration.ofHours(1))
 ```
 
 ## Subqueries

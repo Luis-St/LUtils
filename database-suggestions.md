@@ -268,7 +268,7 @@ UserTable.NAME.string().startsWith("John")      // inherited from SqlStringOps
 // TimescaleDB temporal ops
 // SensorTable.RECORDED_AT is a TimescaleColumn<Instant> (generated)
 // .temporal() returns TimescaleTemporalOps which extends SqlTemporalOps
-SensorTable.RECORDED_AT.temporal().timeBucket("1 hour")
+SensorTable.RECORDED_AT.temporal().timeBucket(Duration.ofHours(1))
 
 // Generic SqlColumn (e.g., dynamic/runtime context) - only base ops
 SqlColumn<String> col = ...;

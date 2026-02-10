@@ -51,7 +51,7 @@ public class SqlDate {
 		throw new UnsupportedOperationException();
 	}
 	
-	public static @NonNull SqlExpression<LocalDateTime> dateTrunc(@NonNull SqlColumn<?> column, @NonNull String unit) {
+	public static @NonNull SqlExpression<LocalDateTime> dateTrunc(@NonNull SqlColumn<?> column, @NonNull DatePart unit) {
 		throw new UnsupportedOperationException();
 	}
 	

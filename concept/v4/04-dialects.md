@@ -39,7 +39,7 @@ UserTable.TABLE.dialect(SqlDialect.POSTGRES).select()
 
 // TimescaleDB
 SensorTable.TABLE.dialect(SqlDialect.TIMESCALE).select(
-    SensorTable.TIME.dialect(SqlDialect.TIMESCALE).timeBucket("1 hour"),
+    SensorTable.TIME.dialect(SqlDialect.TIMESCALE).timeBucket(Duration.ofHours(1)),
     SqlAgg.avg(SensorTable.VALUE)
 ).groupBy(1).fetch();
 
@@ -71,8 +71,8 @@ col.dialect(SqlDialect.POSTGRES).fullTextSearch("query & terms")
 
 ```java
 // Time bucket
-col.dialect(SqlDialect.TIMESCALE).timeBucket("1 hour")
-col.dialect(SqlDialect.TIMESCALE).timeBucketGapfill("1 hour", start, end)
+col.dialect(SqlDialect.TIMESCALE).timeBucket(Duration.ofHours(1))
+col.dialect(SqlDialect.TIMESCALE).timeBucketGapfill(Duration.ofHours(1), start, end)
 
 // First/last
 col.dialect(SqlDialect.TIMESCALE).first(timeCol)
