@@ -25,9 +25,121 @@ SqlDatabaseConfig.builder()
     .build();
 ```
 
-## 2. Ad-Hoc JOIN Support (High)
+## 2. Database Context & Connection Wiring (High)
 
-Add manual join methods to allow joins between entities without declared YAML relationships, self-joins, and many-to-many joins. Provides `innerJoin()`, `leftJoin()`, `rightJoin()`, and `fullJoin()` methods that take a table and a join condition as parameters and return a new query object:
+The API currently has no mechanism for tables, queries, and operations to obtain a JDBC connection. 
+`SqlTable.TABLE` instances are static constants, but terminal operations (`fetch()`, `execute()`, `insert()`, etc.) need a connection. 
+This applies to all operations: queries, inserts, updates, deletes, DDL, page navigation, and transactions.
+
+**Approach: Hybrid — thread-local default + explicit `from()` override.**
+
+### Connection Resolution Order
+
+When a terminal operation needs a connection, it resolves in this order:
+
+1. Explicit `from()` override (if called on the table/query)
+2. Thread-local `SqlTransaction` (if inside `inTransaction()`)
+3. Thread-local `SqlDatabase` (if `setDefault()` was called)
+4. Throw `SqlConnectionException` (no context available)
+
+### Setup & Default Database
+
+```java
+// Create database and set as thread-local default
+SqlDatabase db = SqlDatabase.create(config);
+SqlDatabase.setDefault(db);
+// or in one call:
+SqlDatabase.createAndSetDefault(config);
+
+// All operations implicitly use the default database
+List<User> users = UserTable.TABLE.select().fetch();
+UserTable.TABLE.insert(user);
+UserTable.TABLE.update().set(UserTable.STATUS, ACTIVE).execute();
+UserTable.TABLE.delete().where(UserTable.STATUS.equalTo(DELETED)).execute();
+```
+
+### Explicit Override via `from()`
+
+`from()` is available on `SqlTable` and overrides the thread-local for that operation chain:
+
+```java
+SqlDatabase analyticsDb = SqlDatabase.create(analyticsConfig);
+
+// Explicit database — ignores thread-local
+List<User> users = UserTable.TABLE.from(analyticsDb).select().fetch();
+UserTable.TABLE.from(analyticsDb).insert(user);
+```
+
+### Transaction Context
+
+Transactions follow the same hybrid pattern. `inTransaction()` sets a thread-local transaction — all operations within the lambda automatically use the transaction's connection:
+
+```java
+// Thread-local transaction (default)
+User saved = db.inTransaction(tx -> {
+    User user = UserTable.TABLE.insert(newUser);     // uses tx's connection
+    OrderTable.TABLE.insert(order);                  // uses tx's connection
+    return user;
+});
+// Auto-commit on success, auto-rollback on exception (ThrowableFunction/ThrowableConsumer)
+
+// Explicit transaction override via from()
+SqlTransaction tx = db.beginTransaction();
+UserTable.TABLE.withIn(tx).insert(user);               // explicit
+tx.commit();
+```
+
+### Multi-Database Support
+
+Multiple databases are supported. One can be the default (thread-local), others are accessed via `from()`:
+
+```java
+SqlDatabase primary = SqlDatabase.createAndSetDefault(primaryConfig);
+SqlDatabase analytics = SqlDatabase.create(analyticsConfig);
+
+// Uses primary (thread-local default)
+UserTable.TABLE.select().fetch();
+
+// Uses analytics (explicit override)
+AnalyticsTable.TABLE.from(analytics).select().fetch();
+
+// Cross-database in one transaction is NOT supported — each from() uses its own database's connection
+```
+
+### Async Context Propagation
+
+The `asyncExecutor` configured in `SqlDatabaseConfig` is automatically wrapped to capture and propagate the thread-local context (both database and transaction) to async threads:
+
+```java
+// Context propagates to async thread automatically
+CompletableFuture<List<User>> future = UserTable.TABLE.select().fetchAsync();
+
+// Explicit override also works with async
+CompletableFuture<List<User>> future = UserTable.TABLE.from(analyticsDb).select().fetchAsync();
+
+// Inside inTransaction — async operations share the transaction context
+db.inTransaction(tx -> {
+    CompletableFuture<List<User>> users = UserTable.TABLE.select().fetchAsync(); // uses tx
+    return users.join();
+});
+```
+
+### Affected Operations
+
+This wiring applies to all terminal operations across the system:
+
+- **Queries:** `fetch()`, `fetchOne()`, `count()`, `exists()`, `stream()`, `fetchPage()`, and all async variants
+- **Inserts:** `insert(entity)`, `insert(entities...)`, `insert(Collection)`, `SqlInsertQuery.execute()`
+- **Updates:** `update(entity)`, `SqlUpdateQuery.execute()`, `SqlUpdateQuery.returning()`
+- **Deletes:** `delete(entity)`, `SqlDeleteQuery.execute()`
+- **DDL:** `create()`, `drop()`, `truncate()`, `exists()`, `createIndex()`, `dropIndex()`
+- **Sequences:** `nextSequenceValue()`
+- **Page navigation:** `SqlPage.fetchNext()`, `SqlPage.fetchPrevious()`
+
+## 3. Ad-Hoc JOIN Support (High)
+
+Add manual join methods to allow joins between entities without declared YAML relationships, self-joins, and many-to-many joins. 
+Provides `innerJoin()`, `leftJoin()`, `rightJoin()`, and `fullJoin()` methods that take a table and a join condition as parameters and return a new query object:
 
 ```java
 // Ad-hoc join
@@ -49,7 +161,7 @@ UserTable.TABLE.select()
 
 These complement the generated relationship joins (e.g., `UserTable.TABLE.joinAddress()`).
 
-## 3. Optimistic Locking / Version Column (High)
+## 4. Optimistic Locking / Version Column (High)
 
 Standalone feature, separate from audit. Configurable similarly to the audit feature.
 
@@ -63,7 +175,7 @@ columns:
   version: { type: Long, optimisticLock: true }
 ```
 
-## 4. CTE (WITH Clause) Support (High)
+## 5. CTE (WITH Clause) Support (High)
 
 Add `CommonTableExpression` class and `with()` method on select queries. The CTE expression can be set either in the factory method or in the `with()` call:
 
@@ -85,9 +197,10 @@ UserTable.TABLE.select()
     .fetch();
 ```
 
-The `with(cte)` method must validate that the `CommonTableExpression` has its expression set and throw an exception if it is not. Supports recursive CTEs for tree/hierarchy traversal.
+The `with(cte)` method must validate that the `CommonTableExpression` has its expression set and throw an exception if it is not. 
+Supports recursive CTEs for tree/hierarchy traversal.
 
-## 5. INSERT ... SELECT (Medium)
+## 6. INSERT ... SELECT (Medium)
 
 Add support for inserting from a query result:
 
@@ -100,7 +213,7 @@ ArchiveTable.TABLE.insert()
 
 Useful for archival, data migration, and bulk operations.
 
-## 6. Expression-Based SET in Updates (Medium)
+## 7. Expression-Based SET in Updates (Medium)
 
 Add `set(SqlColumn<V>, SqlExpression<V>)` overload alongside existing `set(SqlColumn<V>, V)` to support setting columns from other columns or function expressions:
 
@@ -120,7 +233,7 @@ UserTable.TABLE.update()
 
 The existing `increment()` and `setNow()` are special cases of this pattern.
 
-## 7. Type-Specific Column Operations (Medium)
+## 8. Type-Specific Column Operations (Medium)
 
 Use composition to provide type-safe column operations without class explosion across dialects. Instead of typed column subclasses, provide accessor objects:
 
@@ -138,9 +251,10 @@ UserTable.AGE.numeric().between(18, 65)
 UserTable.CREATED_AT.temporal().withinLast(Duration.ofDays(7))
 ```
 
-This gives compile-time safety (`UserTable.AGE.string().startsWith("x")` would not compile) without needing type-specific column subclasses for every dialect. Remove `like()`, `startsWith()`, `contains()`, `endsWith()`, `lengthGreaterThan()`, `withinLast()`, and `equalToIgnoreCase()` from the base `SqlColumn` interface.
+This gives compile-time safety (`UserTable.AGE.string().startsWith("x")` would not compile) without needing type-specific column subclasses for every dialect. 
+Remove `like()`, `startsWith()`, `contains()`, `endsWith()`, `lengthGreaterThan()`, `withinLast()`, and `equalToIgnoreCase()` from the base `SqlColumn` interface.
 
-## 8. Batch Insert Controls (Medium)
+## 9. Batch Insert Controls (Medium)
 
 Add collection-based insert overloads with optional batch size control:
 
@@ -154,7 +268,7 @@ UserTable.TABLE.insert(userList, 1000); // process in batches of 1000
 
 Adds `insert(Collection<T>)` and `insert(Collection<T>, int batchSize)` to `SqlTable`.
 
-## 9. SqlDatabase Lifecycle Methods (Medium)
+## 10. SqlDatabase Lifecycle Methods (Medium)
 
 Add lifecycle methods to `SqlDatabase`:
 
@@ -162,7 +276,7 @@ Add lifecycle methods to `SqlDatabase`:
 - `getDialect()` — expose the active dialect so user code can branch on capabilities
 - `health()` / `ping()` — connection validation for health checks
 
-## 10. UNION / INTERSECT / EXCEPT (Low)
+## 11. UNION / INTERSECT / EXCEPT (Low)
 
 Add set operations to combine query results:
 
@@ -173,7 +287,7 @@ query1.intersect(query2).fetch();
 query1.except(query2).fetch();
 ```
 
-## 11. SqlPage Navigation (Low)
+## 12. SqlPage Navigation (Low)
 
 Add navigation methods to `SqlPage`:
 
@@ -184,7 +298,7 @@ SqlPage<User> prev = currentPage.fetchPrevious();
 
 Offset-based pagination only, no cursor-based pagination.
 
-## 12. Event / Listener Hooks (Low)
+## 13. Event / Listener Hooks (Low)
 
 Add entity lifecycle hooks:
 
@@ -194,7 +308,7 @@ Add entity lifecycle hooks:
 
 Useful for validation beyond constraints, computed fields, cache invalidation, and custom logic (e.g., "send email on status change").
 
-## 13. Dialect Access Verbosity (Low)
+## 14. Dialect Access Verbosity (Low)
 
 Keep the `dialect(SqlDialect)` method but reduce verbosity by propagating the dialect context within a query. When a query is started via a dialect-specific table, columns within that query should not require their own `.dialect()` call:
 
@@ -205,12 +319,16 @@ UserTable.TABLE.dialect(SqlDialect.POSTGRES).select()
     .fetch();
 
 // Improved - dialect propagates from table to columns in the query
-UserTable.TABLE.dialect(SqlDialect.POSTGRES).select()
+// The dialect is know in generation, so no need to specify it on every column
+// The columns are defined as PostgresColumns, so they know how to generate the correct SQL for the dialect without needing a hint
+// The table is defined as a PostgresTable, so it knows how to generate the correct SQL for the dialect without needing a hint
+// The .dialect() method is still available for explicit overrides, but in most cases the dialect will be known from the table and does not need to be specified on every column
+UserTable.TABLE.select()
     .where(UserTable.EMAIL.ilike("%@GMAIL.COM"))
     .fetch();
 ```
 
-## 14. DISTINCT ON (Low)
+## 15. DISTINCT ON (Low)
 
 Implement `DISTINCT ON` as a PostgreSQL-specific extension of the select query, only available through PostgreSQL table classes:
 
@@ -223,7 +341,7 @@ UserTable.TABLE.dialect(SqlDialect.POSTGRES).select()
 
 Not available on the base `SqlSelectQuery` interface — only on the PostgreSQL-specific select query type.
 
-## 15. Dialect-Specific Feature Migration Strategy (Low)
+## 16. Dialect-Specific Feature Migration Strategy (Low)
 
 General strategy: move features that are specific to a single dialect into dialect-specific interfaces/classes rather than the base API. Candidates:
 
@@ -237,11 +355,11 @@ General strategy: move features that are specific to a single dialect into diale
 
 This keeps the base API clean and ensures dialect-specific features are only available when targeting the correct dialect.
 
-## 16. Remove EXPLAIN / Query Plan Methods (Low)
+## 17. Remove EXPLAIN / Query Plan Methods (Low)
 
 Remove `explain()` from `SqlSelectQueryBase` and do not add `explainAnalyze()`. Query plan analysis should be done outside the library using database-specific tooling or directly via `SqlDatabase.getConnection()`.
 
-## 17. SqlCondition Composition Ergonomics (Low)
+## 18. SqlCondition Composition Ergonomics (Low)
 
 Add varargs overloads to instance methods for consistency with static methods:
 
