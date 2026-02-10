@@ -235,7 +235,10 @@ The existing `increment()` and `setNow()` are special cases of this pattern.
 
 ## 8. Type-Specific Column Operations (Medium)
 
-Use composition to provide type-safe column operations without class explosion across dialects. Instead of typed column subclasses, provide accessor objects:
+Use composition to provide type-safe column operations without class explosion across dialects. 
+Instead of typed column subclasses, provide accessor objects that return type-specific operation holders.
+
+### Base Operations (all dialects)
 
 ```java
 // String operations - only available via .string()
@@ -243,6 +246,7 @@ UserTable.NAME.string().startsWith("John")
 UserTable.NAME.string().contains("doe")
 UserTable.NAME.string().like("%@gmail.com")
 UserTable.NAME.string().lengthGreaterThan(5)
+UserTable.NAME.string().equalToIgnoreCase("JOHN")
 
 // Numeric operations - only available via .numeric()
 UserTable.AGE.numeric().between(18, 65)
@@ -251,7 +255,62 @@ UserTable.AGE.numeric().between(18, 65)
 UserTable.CREATED_AT.temporal().withinLast(Duration.ofDays(7))
 ```
 
-This gives compile-time safety (`UserTable.AGE.string().startsWith("x")` would not compile) without needing type-specific column subclasses for every dialect. 
+### Dialect-Aware Operations
+
+Since generated code uses dialect-specific column types, `.string()` / `.numeric()` / `.temporal()` return dialect-specific ops when the column is dialect-specific:
+
+```java
+// UserTable.NAME is a PostgresColumn<String> (generated for PostgreSQL target)
+// .string() returns PostgresStringOps which extends SqlStringOps
+UserTable.NAME.string().ilike("%@GMAIL.COM")    // PostgreSQL-specific
+UserTable.NAME.string().startsWith("John")      // inherited from SqlStringOps
+
+// TimescaleDB temporal ops
+// SensorTable.RECORDED_AT is a TimescaleColumn<Instant> (generated)
+// .temporal() returns TimescaleTemporalOps which extends SqlTemporalOps
+SensorTable.RECORDED_AT.temporal().timeBucket("1 hour")
+
+// Generic SqlColumn (e.g., dynamic/runtime context) - only base ops
+SqlColumn<String> col = ...;
+col.string().like("%test%")    // works - base SqlStringOps
+col.string().ilike(...)        // compile error - not on SqlStringOps
+```
+
+### Dialect-Specific Type Accessors
+
+Dialect-specific column types also provide typed accessors for non-standard types like arrays and JSON:
+
+```java
+// PostgreSQL arrays
+// UserTable.TAGS is a PostgresColumn<List<String>> (generated)
+UserTable.TAGS.array().contains("admin")
+UserTable.TAGS.array().overlaps(List.of("admin", "editor"))
+UserTable.TAGS.array().length()
+
+// PostgreSQL / MySQL JSON
+// UserTable.METADATA is a PostgresColumn<JsonNode> (generated)
+UserTable.METADATA.json().get("key")
+UserTable.METADATA.json().hasKey("email")
+UserTable.METADATA.json().getAsText("name")
+```
+
+### Class Hierarchy
+
+```
+SqlStringOps                    <- base string operations (like, startsWith, contains, ...)
+  PostgresStringOps             <- adds ilike, similarTo, posixRegex
+  MysqlStringOps                <- adds regexp
+
+SqlNumericOps                   <- base numeric operations
+SqlTemporalOps                  <- base temporal operations (withinLast, ...)
+  TimescaleTemporalOps          <- adds timeBucket
+
+SqlArrayOps                     <- PostgreSQL array operations
+SqlJsonOps                      <- JSON operations
+  PostgresJsonOps               <- PostgreSQL-specific JSON (->>, @>, ...)
+  MysqlJsonOps                  <- MySQL-specific JSON (JSON_EXTRACT, ...)
+```
+
 Remove `like()`, `startsWith()`, `contains()`, `endsWith()`, `lengthGreaterThan()`, `withinLast()`, and `equalToIgnoreCase()` from the base `SqlColumn` interface.
 
 ## 9. Batch Insert Controls (Medium)
