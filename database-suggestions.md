@@ -2,33 +2,24 @@
 
 ## 1. Connection Pool Management (High)
 
-There is no `SqlConnectionPool` or `SqlDataSource` abstraction. `SqlDatabaseConfig.asyncConnectionPoolSize()` exists but there's no actual pool interface. Before transactions or queries can work, you need:
+Support `javax.sql.DataSource` with two built-in implementations:
+- A single connection implementation (for simple use cases / testing)
+- A pool connection implementation (for production use)
 
-- A connection pool interface (acquire/release connections)
-- Health checks / connection validation (idle test queries)
-- Idle timeout and max lifetime settings
-- Min/max pool size configuration
-- Connection leak detection (connections not returned within a threshold)
+This allows users to bring their own pool (HikariCP, Apache DBCP, etc.) while also working without external dependencies.
 
-Consider:
 ```java
+// Built-in single connection
 SqlDatabaseConfig.builder()
-    .connectionPool(SqlConnectionPool.builder()
-        .jdbcUrl("jdbc:postgresql://localhost/mydb")
-        .username("user")
-        .password("pass")
-        .minIdle(5)
-        .maxSize(20)
-        .idleTimeout(Duration.ofMinutes(10))
-        .maxLifetime(Duration.ofMinutes(30))
-        .connectionTestQuery("SELECT 1")
-        .leakDetectionThreshold(Duration.ofSeconds(30))
-        .build())
+    .dataSource(new SqlSingleConnectionDataSource("jdbc:..."))
     .build();
-```
 
-Alternatively, accept a `javax.sql.DataSource` to allow users to bring their own pool (HikariCP, etc.):
-```java
+// Built-in pooled connection
+SqlDatabaseConfig.builder()
+    .dataSource(new SqlPooledDataSource(...))
+    .build();
+
+// User-provided pool (e.g., HikariCP)
 SqlDatabaseConfig.builder()
     .dataSource(hikariDataSource)
     .build();
@@ -36,156 +27,193 @@ SqlDatabaseConfig.builder()
 
 ## 2. Ad-Hoc JOIN Support (High)
 
-Joins are pre-generated from YAML relationships only. There's no way to do:
+Add manual join methods to allow joins between entities without declared YAML relationships, self-joins, and many-to-many joins. Provides `innerJoin()`, `leftJoin()`, `rightJoin()`, and `fullJoin()` methods that take a table and a join condition as parameters and return a new query object:
 
-- Joins between entities without a declared relationship
-- Self-joins (e.g., employee → manager on the same table)
-- Joins on non-FK conditions (e.g., range-based: `ON a.date BETWEEN b.start AND b.end`)
-- Cross joins
-
-The concept says "Many-to-Many: Not supported — Use manual join table." But there's no manual join API. Consider a low-level `join()` alongside the generated ones:
 ```java
+// Ad-hoc join
 UserTable.TABLE.select()
-    .join(AddressTable.TABLE, UserTable.ADDRESS_ID.equalTo(AddressTable.ID))
+    .innerJoin(AddressTable.TABLE, UserTable.ADDRESS_ID.equalTo(AddressTable.ID))
+    .fetch();
+
+// Self-join (employee -> manager)
+UserTable.TABLE.select()
+    .innerJoin(UserTable.TABLE, UserTable.MANAGER_ID.equalTo(UserTable.ID))
+    .fetch();
+
+// Many-to-many via join table
+UserTable.TABLE.select()
+    .innerJoin(UserRoleTable.TABLE, UserTable.ID.equalTo(UserRoleTable.USER_ID))
+    .innerJoin(RoleTable.TABLE, UserRoleTable.ROLE_ID.equalTo(RoleTable.ID))
     .fetch();
 ```
 
-## 3. Soft Delete Specification (High)
+These complement the generated relationship joins (e.g., `UserTable.TABLE.joinAddress()`).
 
-Mentioned in `02-query-api.md` (`hardDelete()`) but never fully defined:
+## 3. Optimistic Locking / Version Column (High)
 
-- How is soft delete configured in YAML? (e.g., `softDelete: { column: deleted_at, type: Instant }`)
-- Are soft-deleted rows automatically excluded from `select()`? (global filter)
-- Can you query soft-deleted rows? (e.g., `withDeleted()` or `onlyDeleted()`)
-- How does soft delete interact with unique constraints? (deleted + active row with same email)
-
-This needs a dedicated section in the schema doc.
-
-## 4. Optimistic Locking / Version Column (High)
-
-`SqlStaleEntityException` exists in the exception hierarchy, but the concept never explains how it's triggered. Missing:
+Standalone feature, separate from audit. Configurable similarly to the audit feature.
 
 - Version field in YAML schema (e.g., `version: { type: Long, optimisticLock: true }`)
 - Automatic `WHERE version = ?` on updates
 - Automatic version increment on write
+- Throws `SqlStaleEntityException` on version mismatch
 
-Without this, `SqlStaleEntityException` can never actually be thrown.
+```yaml
+columns:
+  version: { type: Long, optimisticLock: true }
+```
 
-## 5. CTE (WITH Clause) Support (High)
+## 4. CTE (WITH Clause) Support (High)
 
-`SqlDialectFeatures.supportsCte()` exists and the feature matrix shows all dialects support CTEs, but there's no API to build them. CTEs are essential for recursive queries (tree structures, hierarchies) and complex multi-step queries:
+Add `CommonTableExpression` class and `with()` method on select queries. The CTE expression can be set either in the factory method or in the `with()` call:
+
 ```java
+// Option 1: Expression set in with()
+CommonTableExpression activeUsers = CommonTableExpression.of("active_users");
 UserTable.TABLE.select()
-    .with("active_users", UserTable.TABLE.subquery()
+    .with(activeUsers, UserTable.TABLE.subquery()
         .where(UserTable.STATUS.equalTo(ACTIVE)))
-    .where(UserTable.ID.in(cte("active_users")))
+    .where(UserTable.ID.in(activeUsers))
+    .fetch();
+
+// Option 2: Expression set in of()
+CommonTableExpression activeUsers = CommonTableExpression.of("active_users",
+    UserTable.TABLE.subquery().where(UserTable.STATUS.equalTo(ACTIVE)));
+UserTable.TABLE.select()
+    .with(activeUsers)
+    .where(UserTable.ID.in(activeUsers))
     .fetch();
 ```
 
-## 6. INSERT ... SELECT (Medium)
+The `with(cte)` method must validate that the `CommonTableExpression` has its expression set and throw an exception if it is not. Supports recursive CTEs for tree/hierarchy traversal.
 
-The insert API only accepts entity instances. There's no way to insert from a query:
+## 5. INSERT ... SELECT (Medium)
+
+Add support for inserting from a query result:
+
 ```java
 ArchiveTable.TABLE.insert()
     .fromSelect(UserTable.TABLE.select()
         .where(UserTable.STATUS.equalTo(DELETED)))
     .execute();
 ```
-Common for archival, data migration, and bulk operations.
 
-## 7. Expression-Based SET in Updates (Medium)
+Useful for archival, data migration, and bulk operations.
 
-`set(column, value)` and `increment()` exist, but there's no way to:
+## 6. Expression-Based SET in Updates (Medium)
 
-- Set a column from another column: `SET email = backup_email`
-- Set from an expression: `SET name = UPPER(name)`
-- Set from a subquery: `SET status = (SELECT ...)`
+Add `set(SqlColumn<V>, SqlExpression<V>)` overload alongside existing `set(SqlColumn<V>, V)` to support setting columns from other columns or function expressions:
 
-Consider: `set(column, expression)` alongside `set(column, value)`.
-
-## 8. Type-Specific Column Classes (Medium)
-
-`SqlColumn` exposes `like()`, `startsWith()`, `contains()`, `lengthGreaterThan()` on all columns including numeric and date ones. With code generation, you could generate type-specific column classes:
-
-- `SqlStringColumn<T>` with string operations
-- `SqlNumericColumn<T>` with numeric operations
-- `SqlTemporalColumn<T>` with `withinLast()`, temporal comparisons
-
-This gives compile-time safety — `UserTable.AGE.startsWith("x")` would be a compile error instead of a runtime SQL error.
-
-## 9. Batch Insert Controls (Medium)
-
-`UserTable.TABLE.insert(user1, user2, user3)` exists but there's no control over batch behavior:
-
-- Chunk size for large collections (inserting 100K rows)
-- Whether to use multi-value INSERT or JDBC batch
-- Progress/error reporting for partial failures
-
-Consider:
 ```java
-UserTable.TABLE.insert(largeList)
-    .batchSize(1000)
-    .onError(BatchErrorStrategy.CONTINUE) // or ABORT
+// Set from another column: SET email = backup_email
+UserTable.TABLE.update()
+    .set(UserTable.EMAIL, UserTable.BACKUP_EMAIL)
+    .where(UserTable.EMAIL.isNull())
+    .execute();
+
+// Set from expression: SET name = UPPER(name)
+UserTable.TABLE.update()
+    .set(UserTable.NAME, SqlString.upper(UserTable.NAME))
+    .where(UserTable.ID.equalTo(userId))
     .execute();
 ```
 
-## 10. SqlDatabase Lifecycle Methods (Medium)
+The existing `increment()` and `setNow()` are special cases of this pattern.
 
-Even with generated table classes, `SqlDatabase` should expose more:
+## 7. Type-Specific Column Operations (Medium)
+
+Use composition to provide type-safe column operations without class explosion across dialects. Instead of typed column subclasses, provide accessor objects:
+
+```java
+// String operations - only available via .string()
+UserTable.NAME.string().startsWith("John")
+UserTable.NAME.string().contains("doe")
+UserTable.NAME.string().like("%@gmail.com")
+UserTable.NAME.string().lengthGreaterThan(5)
+
+// Numeric operations - only available via .numeric()
+UserTable.AGE.numeric().between(18, 65)
+
+// Temporal operations - only available via .temporal()
+UserTable.CREATED_AT.temporal().withinLast(Duration.ofDays(7))
+```
+
+This gives compile-time safety (`UserTable.AGE.string().startsWith("x")` would not compile) without needing type-specific column subclasses for every dialect. Remove `like()`, `startsWith()`, `contains()`, `endsWith()`, `lengthGreaterThan()`, `withinLast()`, and `equalToIgnoreCase()` from the base `SqlColumn` interface.
+
+## 8. Batch Insert Controls (Medium)
+
+Add collection-based insert overloads with optional batch size control:
+
+```java
+// Insert a collection
+UserTable.TABLE.insert(userList);
+
+// Insert with batch size control
+UserTable.TABLE.insert(userList, 1000); // process in batches of 1000
+```
+
+Adds `insert(Collection<T>)` and `insert(Collection<T>, int batchSize)` to `SqlTable`.
+
+## 9. SqlDatabase Lifecycle Methods (Medium)
+
+Add lifecycle methods to `SqlDatabase`:
 
 - `close()` / `AutoCloseable` — resource cleanup for the connection pool
 - `getDialect()` — expose the active dialect so user code can branch on capabilities
 - `health()` / `ping()` — connection validation for health checks
-- `raw(String sql)` — escape hatch for edge cases the API can't express
 
-## 11. UNION / INTERSECT / EXCEPT (Low)
+## 10. UNION / INTERSECT / EXCEPT (Low)
 
-No way to combine query results. These are standard SQL operations:
+Add set operations to combine query results:
+
 ```java
 query1.union(query2).fetch();
 query1.unionAll(query2).fetch();
 query1.intersect(query2).fetch();
+query1.except(query2).fetch();
 ```
 
-## 12. SqlPage Navigation (Low)
+## 11. SqlPage Navigation (Low)
 
-`SqlPage` has `hasNext()` / `hasPrevious()` but no way to actually fetch the next page. Consider:
+Add navigation methods to `SqlPage`:
+
 ```java
 SqlPage<User> next = currentPage.fetchNext();
 SqlPage<User> prev = currentPage.fetchPrevious();
 ```
 
-Also, offset-based pagination degrades on large datasets. Consider offering keyset (cursor) pagination:
+Offset-based pagination only, no cursor-based pagination.
+
+## 12. Event / Listener Hooks (Low)
+
+Add entity lifecycle hooks:
+
+- `beforeInsert()`, `afterInsert()`
+- `beforeUpdate()`, `afterUpdate()`
+- `beforeDelete()`, `afterDelete()`
+
+Useful for validation beyond constraints, computed fields, cache invalidation, and custom logic (e.g., "send email on status change").
+
+## 13. Dialect Access Verbosity (Low)
+
+Keep the `dialect(SqlDialect)` method but reduce verbosity by propagating the dialect context within a query. When a query is started via a dialect-specific table, columns within that query should not require their own `.dialect()` call:
+
 ```java
-SqlCursorPage<User> page = query.fetchCursorPage(pageSize, afterCursor);
-```
-
-## 13. Event / Listener Hooks (Low)
-
-No way to hook into entity lifecycle events:
-
-- `beforeInsert`, `afterInsert`, `beforeUpdate`, `afterUpdate`, `beforeDelete`
-- Useful for: validation beyond constraints, computed fields, cache invalidation, custom audit logging
-
-The audit system handles `createdAt`/`updatedBy` automatically, but custom logic (e.g., "send email on status change") has no hook point.
-
-## 14. Dialect Access Verbosity (Low)
-
-The `.dialect(SqlDialect.POSTGRES)` pattern is functional but verbose:
-```java
+// Current (verbose) - two .dialect() calls
 UserTable.TABLE.dialect(SqlDialect.POSTGRES).select()
     .where(UserTable.EMAIL.dialect(SqlDialect.POSTGRES).ilike("%@GMAIL.COM"))
     .fetch();
+
+// Improved - dialect propagates from table to columns in the query
+UserTable.TABLE.dialect(SqlDialect.POSTGRES).select()
+    .where(UserTable.EMAIL.ilike("%@GMAIL.COM"))
+    .fetch();
 ```
 
-Two `.dialect()` calls in one query. Consider:
+## 14. DISTINCT ON (Low)
 
-- A scoped dialect context: `database.withDialect(POSTGRES, () -> { ... })`
-- Generating dialect-specific table classes: `UserTable.POSTGRES.select()...` (since the dialect is known at config/generation time)
+Implement `DISTINCT ON` as a PostgreSQL-specific extension of the select query, only available through PostgreSQL table classes:
 
-## 15. DISTINCT ON — PostgreSQL (Low)
-
-The concept has `distinct()` but no `DISTINCT ON(columns)`, which is a powerful PostgreSQL feature for getting the first row per group:
 ```java
 UserTable.TABLE.dialect(SqlDialect.POSTGRES).select()
     .distinctOn(UserTable.STATUS)
@@ -193,49 +221,36 @@ UserTable.TABLE.dialect(SqlDialect.POSTGRES).select()
     .fetch();
 ```
 
-## 16. LATERAL JOIN Support (Low)
+Not available on the base `SqlSelectQuery` interface — only on the PostgreSQL-specific select query type.
 
-`SqlDialectFeatures.supportsLateral()` exists but there's no API. Lateral joins are powerful for "top-N per group" queries and are supported by PostgreSQL and MySQL 8.0+.
+## 15. Dialect-Specific Feature Migration Strategy (Low)
 
-## 17. Schema Validation at Startup (Low)
+General strategy: move features that are specific to a single dialect into dialect-specific interfaces/classes rather than the base API. Candidates:
 
-The Gradle plugin has `validateSchema`, but there's no runtime validation. Consider validating the YAML-defined schema against the actual database on startup:
+- `DISTINCT ON` — PostgreSQL select query
+- `RETURNING` clause differences — PostgreSQL vs SQL Server `OUTPUT`
+- `MERGE` statement — SQL Server / Oracle
+- Array operations — PostgreSQL
+- JSON operators — PostgreSQL (`->`, `->>`) vs MySQL (`JSON_EXTRACT`)
+- `CONNECT BY` — Oracle
+- Table inheritance — PostgreSQL
+
+This keeps the base API clean and ensures dialect-specific features are only available when targeting the correct dialect.
+
+## 16. Remove EXPLAIN / Query Plan Methods (Low)
+
+Remove `explain()` from `SqlSelectQueryBase` and do not add `explainAnalyze()`. Query plan analysis should be done outside the library using database-specific tooling or directly via `SqlDatabase.getConnection()`.
+
+## 17. SqlCondition Composition Ergonomics (Low)
+
+Add varargs overloads to instance methods for consistency with static methods:
+
 ```java
-SqlDatabaseConfig.builder()
-    .validateSchemaOnConnect(true)
-    .build();
+// Static (already exists)
+SqlCondition.and(c1, c2, c3)
+SqlCondition.or(c1, c2, c3)
+
+// Instance (new - varargs)
+c1.and(c2, c3)
+c1.or(c2, c3)
 ```
-
-## 18. EXPLAIN ANALYZE (Low)
-
-`query.explain()` exists, but there's no `query.explainAnalyze()` which actually executes the query and returns real execution stats — essential for debugging performance beyond estimated plans.
-
-## 19. SqlCondition Composition Ergonomics (Low)
-
-Static methods accept multiple conditions: `SqlCondition.and(c1, c2, c3)`. But instance methods only chain one at a time: `c1.and(c2).and(c3)`. For consistency, instance methods could accept varargs too.
-
----
-
-## Priority Summary
-
-| Priority | # | Suggestion |
-|----------|---|-----------|
-| **High** | 1 | Connection pool management |
-| **High** | 2 | Ad-hoc JOIN support |
-| **High** | 3 | Soft delete specification |
-| **High** | 4 | Optimistic locking / version column |
-| **High** | 5 | CTE support |
-| **Medium** | 6 | INSERT ... SELECT |
-| **Medium** | 7 | Expression-based SET in updates |
-| **Medium** | 8 | Type-specific column classes |
-| **Medium** | 9 | Batch insert controls |
-| **Medium** | 10 | SqlDatabase lifecycle methods |
-| **Low** | 11 | UNION / INTERSECT / EXCEPT |
-| **Low** | 12 | SqlPage navigation |
-| **Low** | 13 | Event / listener hooks |
-| **Low** | 14 | Dialect access verbosity |
-| **Low** | 15 | DISTINCT ON (PostgreSQL) |
-| **Low** | 16 | LATERAL JOIN support |
-| **Low** | 17 | Schema validation at startup |
-| **Low** | 18 | EXPLAIN ANALYZE |
-| **Low** | 19 | SqlCondition composition ergonomics |

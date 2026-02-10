@@ -183,10 +183,6 @@ UserTable.TABLE.delete(user);
 int count = UserTable.TABLE.delete()
     .where(UserTable.STATUS.equalTo(UserStatus.DELETED))
     .execute();
-
-// Soft delete (if configured) - sets deleted_at
-// Hard delete (bypass soft delete)
-UserTable.TABLE.hardDelete().where(...).execute();
 ```
 
 ## Locking
