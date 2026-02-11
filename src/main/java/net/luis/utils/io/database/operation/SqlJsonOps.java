@@ -37,7 +37,7 @@ public interface SqlJsonOps {
 	 * @return The JSON value expression
 	 */
 	@NonNull SqlExpression<?> get(@NonNull String key);
-
+	
 	/**
 	 * Creates a condition that checks if the JSON contains the given key.<br>
 	 * Generates SQL: {@code column ? 'key'}.<br>
@@ -46,7 +46,7 @@ public interface SqlJsonOps {
 	 * @return The has-key condition
 	 */
 	@NonNull SqlCondition hasKey(@NonNull String key);
-
+	
 	/**
 	 * Returns the JSON value at the given key as text.<br>
 	 * Generates SQL: {@code column->>'key'}.<br>

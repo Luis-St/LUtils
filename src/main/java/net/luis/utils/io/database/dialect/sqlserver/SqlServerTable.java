@@ -30,7 +30,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the entity
  */
 public interface SqlServerTable<T> extends SqlTable<T> {
-
+	
 	/**
 	 * Sets the filegroup for this table.<br>
 	 * Generates SQL: {@code ON filegroup}.<br>
@@ -42,7 +42,7 @@ public interface SqlServerTable<T> extends SqlTable<T> {
 	 * @param filegroup The name of the target filegroup
 	 */
 	void setFilegroup(@NonNull String filegroup);
-
+	
 	/**
 	 * Creates a clustered index on the specified columns.<br>
 	 * Generates SQL: {@code CREATE CLUSTERED INDEX ... ON table (column1, column2, ...)}.<br>
@@ -55,14 +55,14 @@ public interface SqlServerTable<T> extends SqlTable<T> {
 	 * @param columns The columns to include in the clustered index
 	 */
 	void setClusteredIndex(@NonNull SqlColumn<?>... columns);
-
+	
 	/**
 	 * Enables change tracking on this table.<br>
 	 * Generates SQL: {@code ALTER TABLE ... ENABLE CHANGE_TRACKING}.
 	 * @see <a href="https://learn.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-tracking">Change Tracking</a>
 	 */
 	void enableChangeTracking();
-
+	
 	/**
 	 * Enables system-versioned temporal table support with the specified history table.<br>
 	 * Generates SQL: {@code ALTER TABLE ... SET (SYSTEM_VERSIONING = ON (HISTORY_TABLE = historyTable))}.<br>
@@ -74,7 +74,7 @@ public interface SqlServerTable<T> extends SqlTable<T> {
 	 * @param historyTable The name of the history table to store row versions
 	 */
 	void enableTemporalTable(@NonNull String historyTable);
-
+	
 	/**
 	 * Applies the {@code WITH (NOLOCK)} table hint to queries on this table.<br>
 	 * Generates SQL: {@code SELECT ... FROM table WITH (NOLOCK)}.<br>
@@ -84,7 +84,7 @@ public interface SqlServerTable<T> extends SqlTable<T> {
 	 * </p>
 	 */
 	void withNoLock();
-
+	
 	/**
 	 * Creates a columnstore index on the specified columns.<br>
 	 * Generates SQL: {@code CREATE NONCLUSTERED COLUMNSTORE INDEX name ON table (column1, column2, ...)}.<br>

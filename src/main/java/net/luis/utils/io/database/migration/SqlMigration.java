@@ -58,13 +58,13 @@ public interface SqlMigration {
 	 * @return The migration version
 	 */
 	@NonNull String version();
-
+	
 	/**
 	 * Returns the description of this migration.<br>
 	 * @return The migration description
 	 */
 	@NonNull String description();
-
+	
 	/**
 	 * Returns the SQL migration string to execute.<br>
 	 * @return The SQL migration string

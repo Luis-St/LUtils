@@ -30,7 +30,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the entity
  */
 public interface OracleTable<T> extends SqlTable<T> {
-
+	
 	/**
 	 * Assigns this table to the specified tablespace.<br>
 	 * Generates SQL: {@code TABLESPACE tablespace}.<br>
@@ -42,7 +42,7 @@ public interface OracleTable<T> extends SqlTable<T> {
 	 * @param tablespace The name of the target tablespace
 	 */
 	void setTablespace(@NonNull String tablespace);
-
+	
 	/**
 	 * Enables row movement on this table.<br>
 	 * Generates SQL: {@code ALTER TABLE ... ENABLE ROW MOVEMENT}.<br>
@@ -52,7 +52,7 @@ public interface OracleTable<T> extends SqlTable<T> {
 	 * </p>
 	 */
 	void enableRowMovement();
-
+	
 	/**
 	 * Configures range partitioning on this table using the specified column.<br>
 	 * Generates SQL: {@code PARTITION BY RANGE (column)}.<br>
@@ -64,7 +64,7 @@ public interface OracleTable<T> extends SqlTable<T> {
 	 * @param column The column to partition by
 	 */
 	void partitionByRange(@NonNull SqlColumn<?> column);
-
+	
 	/**
 	 * Configures list partitioning on this table using the specified column.<br>
 	 * Generates SQL: {@code PARTITION BY LIST (column)}.<br>
@@ -76,7 +76,7 @@ public interface OracleTable<T> extends SqlTable<T> {
 	 * @param column The column to partition by
 	 */
 	void partitionByList(@NonNull SqlColumn<?> column);
-
+	
 	/**
 	 * Configures hash partitioning on this table using the specified column.<br>
 	 * Generates SQL: {@code PARTITION BY HASH (column) PARTITIONS n}.<br>
@@ -90,7 +90,7 @@ public interface OracleTable<T> extends SqlTable<T> {
 	 * @param partitions The number of hash partitions to create
 	 */
 	void partitionByHash(@NonNull SqlColumn<?> column, int partitions);
-
+	
 	/**
 	 * Enables flashback on this table.<br>
 	 * Generates SQL: {@code ALTER TABLE ... FLASHBACK ARCHIVE}.<br>
@@ -100,7 +100,7 @@ public interface OracleTable<T> extends SqlTable<T> {
 	 * </p>
 	 */
 	void enableFlashback();
-
+	
 	/**
 	 * Sets the compression mode for this table.<br>
 	 * Generates SQL: {@code ALTER TABLE ... COMPRESS ...} or {@code ALTER TABLE ... NOCOMPRESS}.<br>
@@ -112,7 +112,7 @@ public interface OracleTable<T> extends SqlTable<T> {
 	 * @param compression The compression mode to apply
 	 */
 	void setCompression(@NonNull OracleCompression compression);
-
+	
 	/**
 	 * Creates a materialized view based on the specified query.<br>
 	 * Generates SQL: {@code CREATE MATERIALIZED VIEW name AS query}.<br>

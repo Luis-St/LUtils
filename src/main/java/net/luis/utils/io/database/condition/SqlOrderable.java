@@ -34,7 +34,7 @@ public interface SqlOrderable {
 	 * @return This orderable with ascending order
 	 */
 	@NonNull SqlOrderable asc();
-
+	
 	/**
 	 * Sets the sort order to descending.<br>
 	 * Generates SQL: {@code DESC}.<br>
@@ -42,7 +42,7 @@ public interface SqlOrderable {
 	 * @return This orderable with descending order
 	 */
 	@NonNull SqlOrderable desc();
-
+	
 	/**
 	 * Sets null values to appear first in the sort order.<br>
 	 * Generates SQL: {@code NULLS FIRST}.<br>
@@ -50,7 +50,7 @@ public interface SqlOrderable {
 	 * @return This orderable with nulls first
 	 */
 	@NonNull SqlOrderable nullsFirst();
-
+	
 	/**
 	 * Sets null values to appear last in the sort order.<br>
 	 * Generates SQL: {@code NULLS LAST}.<br>

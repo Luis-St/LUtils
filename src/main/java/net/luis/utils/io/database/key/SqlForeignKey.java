@@ -101,43 +101,43 @@ public interface SqlForeignKey<K, V> {
 	 * @return The key value
 	 */
 	@NonNull K key();
-
+	
 	/**
 	 * Returns whether the referenced value has been loaded.<br>
 	 * @return Whether the value is loaded
 	 */
 	boolean isLoaded();
-
+	
 	/**
 	 * Returns the loaded value of this foreign key.<br>
 	 * @return The referenced value
 	 */
 	@NonNull V value();
-
+	
 	/**
 	 * Returns the loaded value, throwing an exception if not loaded.<br>
 	 * @return The referenced value
 	 */
 	@NonNull V requireValue();
-
+	
 	/**
 	 * Returns the loaded value as an optional.<br>
 	 * @return An optional containing the referenced value, or empty if not loaded
 	 */
 	@NonNull Optional<V> valueOptional();
-
+	
 	/**
 	 * Loads the referenced value using a {@code SELECT} query.<br>
 	 * @return The loaded value
 	 */
 	@NonNull V load();
-
+	
 	/**
 	 * Asynchronously loads the referenced value using a {@code SELECT} query.<br>
 	 * @return A future containing the loaded value
 	 */
 	@NonNull CompletableFuture<V> loadAsync();
-
+	
 	/**
 	 * Loads the referenced value using a {@code SELECT} query with the given options.<br>
 	 *
@@ -145,7 +145,7 @@ public interface SqlForeignKey<K, V> {
 	 * @return The loaded value
 	 */
 	@NonNull V load(@NonNull SqlLoadOptions options);
-
+	
 	/**
 	 * Asynchronously loads the referenced value using a {@code SELECT} query with the given options.<br>
 	 *
@@ -153,25 +153,25 @@ public interface SqlForeignKey<K, V> {
 	 * @return A future containing the loaded value
 	 */
 	@NonNull CompletableFuture<V> loadAsync(@NonNull SqlLoadOptions options);
-
+	
 	/**
 	 * Reloads the referenced value, discarding any cached value.<br>
 	 * @return The reloaded value
 	 */
 	@NonNull V reload();
-
+	
 	/**
 	 * Asynchronously reloads the referenced value, discarding any cached value.<br>
 	 * @return A future containing the reloaded value
 	 */
 	@NonNull CompletableFuture<V> reloadAsync();
-
+	
 	/**
 	 * Loads the referenced value only if it has not been loaded yet.<br>
 	 * @return The loaded value
 	 */
 	@NonNull V loadIfAbsent();
-
+	
 	/**
 	 * Returns a new foreign key with the given value set.<br>
 	 *

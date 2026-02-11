@@ -37,25 +37,25 @@ public interface SqlIndexDefinition {
 	 * @return The index name
 	 */
 	@NonNull String name();
-
+	
 	/**
 	 * Returns the columns included in the index.<br>
 	 * @return The list of indexed columns
 	 */
 	@NonNull List<SqlColumn<?>> columns();
-
+	
 	/**
 	 * Returns whether the index enforces uniqueness.<br>
 	 * @return Whether the index is unique
 	 */
 	boolean unique();
-
+	
 	/**
 	 * Returns the partial index condition, if any.<br>
 	 * @return The where condition or {@code null} if the index is not partial
 	 */
 	@Nullable SqlCondition where();
-
+	
 	/**
 	 * Returns the index method used.<br>
 	 * @return The index method

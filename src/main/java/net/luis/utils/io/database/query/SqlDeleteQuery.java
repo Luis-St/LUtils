@@ -39,7 +39,7 @@ public interface SqlDeleteQuery<T> {
 	 * @return This delete query
 	 */
 	@NonNull SqlDeleteQuery<T> where(@NonNull SqlCondition condition);
-
+	
 	/**
 	 * Executes the delete query.<br>
 	 * Generates SQL: {@code DELETE FROM table WHERE ...}.<br>
@@ -47,7 +47,7 @@ public interface SqlDeleteQuery<T> {
 	 * @return The number of rows deleted
 	 */
 	int execute();
-
+	
 	/**
 	 * Asynchronously executes the delete query.<br>
 	 * Generates SQL: {@code DELETE FROM table WHERE ...}.<br>

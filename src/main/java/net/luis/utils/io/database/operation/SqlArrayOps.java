@@ -41,7 +41,7 @@ public interface SqlArrayOps<T> {
 	 * @return The contains condition
 	 */
 	@NonNull SqlCondition contains(@NonNull T element);
-
+	
 	/**
 	 * Creates a condition that checks if the array overlaps with the given elements.<br>
 	 * Generates SQL: {@code column && ARRAY[...]}.<br>
@@ -50,7 +50,7 @@ public interface SqlArrayOps<T> {
 	 * @return The overlaps condition
 	 */
 	@NonNull SqlCondition overlaps(@NonNull List<T> elements);
-
+	
 	/**
 	 * Returns the length of the array column.<br>
 	 * Generates SQL: {@code ARRAY_LENGTH(column)}.<br>

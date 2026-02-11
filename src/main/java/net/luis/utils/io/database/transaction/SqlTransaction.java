@@ -59,13 +59,13 @@ public interface SqlTransaction {
 	 * Executes SQL: {@code COMMIT}.<br>
 	 */
 	void commit();
-
+	
 	/**
 	 * Rolls back the current transaction.<br>
 	 * Executes SQL: {@code ROLLBACK}.<br>
 	 */
 	void rollback();
-
+	
 	/**
 	 * Rolls back the current transaction to the given savepoint.<br>
 	 * Executes SQL: {@code ROLLBACK TO SAVEPOINT name}.<br>
@@ -73,7 +73,7 @@ public interface SqlTransaction {
 	 * @param savepoint The savepoint to roll back to
 	 */
 	void rollbackTo(@NonNull SqlSavepoint savepoint);
-
+	
 	/**
 	 * Creates a savepoint with the given name.<br>
 	 * Executes SQL: {@code SAVEPOINT name}.<br>
@@ -82,7 +82,7 @@ public interface SqlTransaction {
 	 * @return The created savepoint
 	 */
 	@NonNull SqlSavepoint savepoint(@NonNull String name);
-
+	
 	/**
 	 * Sets the transaction to read-only mode.<br>
 	 * Executes SQL: {@code SET TRANSACTION READ ONLY}.<br>
@@ -90,7 +90,7 @@ public interface SqlTransaction {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction readOnly();
-
+	
 	/**
 	 * Sets the timeout for the transaction.<br>
 	 *
@@ -98,7 +98,7 @@ public interface SqlTransaction {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction timeout(@NonNull Duration timeout);
-
+	
 	/**
 	 * Sets the isolation level for the transaction.<br>
 	 * Executes SQL: {@code SET TRANSACTION ISOLATION LEVEL ...}.<br>

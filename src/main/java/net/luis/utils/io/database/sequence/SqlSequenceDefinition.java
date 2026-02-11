@@ -32,19 +32,19 @@ public interface SqlSequenceDefinition {
 	 * @return The sequence name
 	 */
 	@NonNull String name();
-
+	
 	/**
 	 * Returns the starting value of the sequence.<br>
 	 * @return The start value
 	 */
 	long startWith();
-
+	
 	/**
 	 * Returns the increment value of the sequence.<br>
 	 * @return The increment value
 	 */
 	long incrementBy();
-
+	
 	/**
 	 * Returns the number of sequence values to cache.<br>
 	 * @return The cache size

@@ -35,19 +35,19 @@ public interface SqlSchemaDiff {
 	 * @return The list of added table diffs
 	 */
 	@NonNull List<SqlTableDiff> getAddedTables();
-
+	
 	/**
 	 * Returns the tables that were removed from the current schema.<br>
 	 * @return The list of removed table diffs
 	 */
 	@NonNull List<SqlTableDiff> getRemovedTables();
-
+	
 	/**
 	 * Returns the tables that were modified between schemas.<br>
 	 * @return The list of modified table diffs
 	 */
 	@NonNull List<SqlTableDiff> getModifiedTables();
-
+	
 	/**
 	 * Generates the migration SQL for the given dialect.<br>
 	 * @param dialect The SQL dialect to generate SQL for

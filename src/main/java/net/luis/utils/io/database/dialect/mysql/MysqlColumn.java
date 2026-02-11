@@ -19,11 +19,11 @@
 package net.luis.utils.io.database.dialect.mysql;
 
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.dialect.mysql.operation.MysqlJsonOps;
-import net.luis.utils.io.database.dialect.mysql.operation.MysqlStringOps;
 import net.luis.utils.io.database.function.SqlExpression;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
+
+import java.util.regex.Pattern;
 
 /**
  * Interface representing a MySQL-specific column.<br>
@@ -33,16 +33,22 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the column value
  */
 public interface MysqlColumn<T> extends SqlColumn<T> {
-
-	@Override
-	@NonNull MysqlStringOps string();
-
+	
 	/**
 	 * Returns MySQL-specific JSON operations for this column.<br>
 	 * @return JSON operations accessor
 	 */
 	@NonNull MysqlJsonOps json();
-
+	
+	/**
+	 * Creates a condition that matches the column against a regular expression pattern.<br>
+	 * Generates SQL: {@code column REGEXP 'pattern'}.<br>
+	 *
+	 * @param pattern The regular expression pattern to match
+	 * @return The regexp condition
+	 */
+	@NonNull SqlCondition regexp(@NonNull Pattern pattern);
+	
 	/**
 	 * Creates a fulltext search condition using {@code MATCH(...) AGAINST(...)}.<br>
 	 * Generates SQL: {@code MATCH(column) AGAINST('searchTerms')}.<br>
@@ -50,8 +56,9 @@ public interface MysqlColumn<T> extends SqlColumn<T> {
 	 * @param searchTerms The search terms to match against
 	 * @return The fulltext match condition
 	 */
+	// Can be configured, this could be improved with a builder for the search terms to allow for more complex queries (e.g. boolean mode, natural language mode, etc.)
 	@NonNull SqlCondition matchAgainst(@NonNull String searchTerms);
-
+	
 	/**
 	 * Creates a {@code GROUP_CONCAT} expression that concatenates grouped values with the given separator.<br>
 	 * Generates SQL: {@code GROUP_CONCAT(column SEPARATOR 'separator')}.<br>
@@ -59,17 +66,9 @@ public interface MysqlColumn<T> extends SqlColumn<T> {
 	 * @param separator The separator used between concatenated values
 	 * @return The group concat expression
 	 */
+	// Can be configured, this could be improved with a builder to allow for more complex group concat expressions (e.g. ordering, distinct values, etc.)
 	@NonNull SqlExpression<?> groupConcat(@NonNull String separator);
-
-	/**
-	 * Creates an {@code IFNULL} expression that returns the column value or a default if null.<br>
-	 * Generates SQL: {@code IFNULL(column, defaultValue)}.<br>
-	 *
-	 * @param defaultValue The default value to use when the column is null
-	 * @return The ifnull expression
-	 */
-	@NonNull SqlExpression<?> ifNull(@NonNull T defaultValue);
-
+	
 	/**
 	 * Creates a {@code FIND_IN_SET} expression that searches for a value in a comma-separated list.<br>
 	 * Generates SQL: {@code FIND_IN_SET('value', column)}.<br>

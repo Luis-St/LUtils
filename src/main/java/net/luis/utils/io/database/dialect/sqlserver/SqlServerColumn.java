@@ -31,7 +31,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the column value
  */
 public interface SqlServerColumn<T> extends SqlColumn<T> {
-
+	
 	/**
 	 * Creates a full-text search condition using {@code FREETEXT}.<br>
 	 * Generates SQL: {@code FREETEXT(column, 'searchTerms')}.<br>
@@ -45,7 +45,7 @@ public interface SqlServerColumn<T> extends SqlColumn<T> {
 	 * @return A condition representing the full-text search predicate
 	 */
 	@NonNull SqlCondition freeText(@NonNull String searchTerms);
-
+	
 	/**
 	 * Creates a full-text search condition using {@code CONTAINS}.<br>
 	 * Generates SQL: {@code CONTAINS(column, 'searchTerms')}.<br>
@@ -58,7 +58,7 @@ public interface SqlServerColumn<T> extends SqlColumn<T> {
 	 * @return A condition representing the contains search predicate
 	 */
 	@NonNull SqlCondition containsText(@NonNull String searchTerms);
-
+	
 	/**
 	 * Extracts a scalar value from a JSON string using the specified JSON path.<br>
 	 * Generates SQL: {@code JSON_VALUE(column, 'path')}.
@@ -67,7 +67,7 @@ public interface SqlServerColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the extracted JSON value
 	 */
 	@NonNull SqlExpression<?> jsonValue(@NonNull String path);
-
+	
 	/**
 	 * Creates a condition that tests whether a JSON path exists in this column's value.<br>
 	 * Generates SQL: {@code JSON_PATH_EXISTS(column, 'path')}.
@@ -76,7 +76,7 @@ public interface SqlServerColumn<T> extends SqlColumn<T> {
 	 * @return A condition that evaluates to true if the path exists in the JSON
 	 */
 	@NonNull SqlCondition isJsonPath(@NonNull String path);
-
+	
 	/**
 	 * Returns the column value if it is not null, otherwise returns the specified default.<br>
 	 * Generates SQL: {@code ISNULL(column, defaultValue)}.
@@ -85,7 +85,7 @@ public interface SqlServerColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the null-coalesced value
 	 */
 	@NonNull SqlExpression<?> isNull(@NonNull T defaultValue);
-
+	
 	/**
 	 * Attempts to convert this column's value to the specified target type.<br>
 	 * Generates SQL: {@code TRY_CONVERT(targetType, column)}.<br>
@@ -98,7 +98,7 @@ public interface SqlServerColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the attempted conversion
 	 */
 	@NonNull SqlExpression<?> tryConvert(@NonNull Class<?> targetType);
-
+	
 	/**
 	 * Formats a date or time column using the specified format string.<br>
 	 * Generates SQL: {@code FORMAT(column, 'format')}.
@@ -107,7 +107,7 @@ public interface SqlServerColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the formatted date value
 	 */
 	@NonNull SqlExpression<?> formatDate(@NonNull String format);
-
+	
 	/**
 	 * Aggregates string values from grouped rows, separated by the specified separator.<br>
 	 * Generates SQL: {@code STRING_AGG(column, 'separator')}.<br>

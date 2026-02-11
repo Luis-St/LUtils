@@ -32,7 +32,7 @@ public interface SqlSavepoint {
 	 * @return The savepoint name
 	 */
 	@NonNull String name();
-
+	
 	/**
 	 * Releases this savepoint.<br>
 	 * Executes SQL: {@code RELEASE SAVEPOINT name}.<br>

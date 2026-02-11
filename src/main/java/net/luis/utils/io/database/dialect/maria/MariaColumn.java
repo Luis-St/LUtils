@@ -41,7 +41,7 @@ public interface MariaColumn<T> extends MysqlColumn<T> {
 	 * @return The case-insensitive like condition
 	 */
 	@NonNull SqlCondition ilike(@NonNull String pattern);
-
+	
 	/**
 	 * Extracts a value from a JSON document at the specified path.<br>
 	 * Generates SQL: {@code JSON_VALUE(column, 'path')}.<br>
@@ -50,7 +50,7 @@ public interface MariaColumn<T> extends MysqlColumn<T> {
 	 * @return The extracted JSON value expression
 	 */
 	@NonNull SqlExpression<?> jsonValue(@NonNull String path);
-
+	
 	/**
 	 * Returns the next value from the specified sequence.<br>
 	 * Generates SQL: {@code NEXT VALUE FOR sequence}.<br>

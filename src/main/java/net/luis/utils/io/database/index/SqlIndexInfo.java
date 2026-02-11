@@ -34,25 +34,25 @@ public interface SqlIndexInfo {
 	 * @return The index name
 	 */
 	@NonNull String name();
-
+	
 	/**
 	 * Returns the name of the table the index belongs to.<br>
 	 * @return The table name
 	 */
 	@NonNull String tableName();
-
+	
 	/**
 	 * Returns the column names included in the index.<br>
 	 * @return The list of column names
 	 */
 	@NonNull List<String> columns();
-
+	
 	/**
 	 * Returns whether the index enforces uniqueness.<br>
 	 * @return Whether the index is unique
 	 */
 	boolean isUnique();
-
+	
 	/**
 	 * Returns the index method used.<br>
 	 * @return The index method

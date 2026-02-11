@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.postgres.operation;
+package net.luis.utils.io.database.dialect.postgres;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.function.SqlExpression;

@@ -41,7 +41,7 @@ public interface PostgisColumn<T> extends PostgresColumn<T> {
 	 * @return The spatial contains condition
 	 */
 	@NonNull SqlCondition stContains(@NonNull T geometry);
-
+	
 	/**
 	 * Creates a condition that checks if this geometry is within the given geometry.<br>
 	 * Generates SQL: {@code ST_Within(column, geometry)}.<br>
@@ -50,7 +50,7 @@ public interface PostgisColumn<T> extends PostgresColumn<T> {
 	 * @return The spatial within condition
 	 */
 	@NonNull SqlCondition stWithin(@NonNull T geometry);
-
+	
 	/**
 	 * Creates a condition that checks if this geometry intersects the given geometry.<br>
 	 * Generates SQL: {@code ST_Intersects(column, geometry)}.<br>
@@ -59,7 +59,7 @@ public interface PostgisColumn<T> extends PostgresColumn<T> {
 	 * @return The spatial intersects condition
 	 */
 	@NonNull SqlCondition stIntersects(@NonNull T geometry);
-
+	
 	/**
 	 * Creates an expression that calculates the distance between this geometry and another column.<br>
 	 * Generates SQL: {@code ST_Distance(column, other)}.<br>
@@ -68,7 +68,7 @@ public interface PostgisColumn<T> extends PostgresColumn<T> {
 	 * @return The spatial distance expression
 	 */
 	@NonNull SqlExpression<?> stDistance(@NonNull SqlColumn<?> other);
-
+	
 	/**
 	 * Creates an expression that returns a geometry buffered by the given radius.<br>
 	 * Generates SQL: {@code ST_Buffer(column, radius)}.<br>
@@ -77,21 +77,21 @@ public interface PostgisColumn<T> extends PostgresColumn<T> {
 	 * @return The buffered geometry expression
 	 */
 	@NonNull SqlExpression<?> stBuffer(double radius);
-
+	
 	/**
 	 * Creates an expression that calculates the area of this geometry.<br>
 	 * Generates SQL: {@code ST_Area(column)}.<br>
 	 * @return The spatial area expression
 	 */
 	@NonNull SqlExpression<?> stArea();
-
+	
 	/**
 	 * Creates an expression that returns the centroid of this geometry.<br>
 	 * Generates SQL: {@code ST_Centroid(column)}.<br>
 	 * @return The spatial centroid expression
 	 */
 	@NonNull SqlExpression<?> stCentroid();
-
+	
 	/**
 	 * Creates an expression that transforms this geometry to a different spatial reference system.<br>
 	 * Generates SQL: {@code ST_Transform(column, srid)}.<br>
@@ -100,7 +100,7 @@ public interface PostgisColumn<T> extends PostgresColumn<T> {
 	 * @return The transformed geometry expression
 	 */
 	@NonNull SqlExpression<?> stTransform(int srid);
-
+	
 	/**
 	 * Creates a condition that checks if this geometry is within a given distance of another column.<br>
 	 * Generates SQL: {@code ST_DWithin(column, other, distance)}.<br>

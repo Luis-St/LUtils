@@ -96,7 +96,7 @@ public interface SqlDatabase extends AutoCloseable {
 	 * @return The new transaction
 	 */
 	@NonNull SqlTransaction beginTransaction();
-
+	
 	/**
 	 * Begins a new transaction with the given isolation level.<br>
 	 * Executes the SQL statements {@code SET TRANSACTION ISOLATION LEVEL ...} and {@code START TRANSACTION}.<br>
@@ -115,7 +115,7 @@ public interface SqlDatabase extends AutoCloseable {
 	 * @return The result of the action
 	 */
 	<T> T inTransaction(@NonNull Function<SqlTransaction, T> action);
-
+	
 	/**
 	 * Asynchronously executes the given action within an auto-managed transaction.<br>
 	 * The transaction is automatically committed on success or rolled back on failure.<br>

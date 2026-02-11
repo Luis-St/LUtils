@@ -33,7 +33,7 @@ import java.time.Duration;
  * @param <T> The type of the entity
  */
 public interface TimescaleTable<T> extends PostgresTable<T> {
-
+	
 	/**
 	 * Converts this table into a TimescaleDB hypertable partitioned by the specified time column.<br>
 	 * Generates SQL: {@code SELECT create_hypertable('table', 'timeColumn')}.
@@ -41,7 +41,7 @@ public interface TimescaleTable<T> extends PostgresTable<T> {
 	 * @param timeColumn The column to use as the time dimension for partitioning
 	 */
 	void createHypertable(@NonNull SqlColumn<?> timeColumn);
-
+	
 	/**
 	 * Converts this table into a TimescaleDB hypertable with a custom chunk interval.<br>
 	 * Generates SQL: {@code SELECT create_hypertable('table', 'timeColumn', chunk_time_interval => 'interval')}.<br>
@@ -54,7 +54,7 @@ public interface TimescaleTable<T> extends PostgresTable<T> {
 	 * @param chunkInterval The time interval for each chunk
 	 */
 	void createHypertable(@NonNull SqlColumn<?> timeColumn, @NonNull Duration chunkInterval);
-
+	
 	/**
 	 * Changes the chunk time interval for this hypertable.<br>
 	 * Generates SQL: {@code SELECT set_chunk_time_interval('table', 'interval')}.
@@ -62,13 +62,13 @@ public interface TimescaleTable<T> extends PostgresTable<T> {
 	 * @param interval The new chunk time interval
 	 */
 	void setChunkInterval(@NonNull Duration interval);
-
+	
 	/**
 	 * Enables native compression on this hypertable.<br>
 	 * Generates SQL: {@code ALTER TABLE ... SET (timescaledb.compress)}.
 	 */
 	void enableCompression();
-
+	
 	/**
 	 * Adds an automatic compression policy to this hypertable.<br>
 	 * Generates SQL: {@code SELECT add_compression_policy('table', 'compressAfter')}.<br>
@@ -80,7 +80,7 @@ public interface TimescaleTable<T> extends PostgresTable<T> {
 	 * @param compressAfter The age after which chunks are automatically compressed
 	 */
 	void addCompressionPolicy(@NonNull Duration compressAfter);
-
+	
 	/**
 	 * Adds a data retention policy to this hypertable.<br>
 	 * Generates SQL: {@code SELECT add_retention_policy('table', 'dropAfter')}.<br>
@@ -92,7 +92,7 @@ public interface TimescaleTable<T> extends PostgresTable<T> {
 	 * @param dropAfter The age after which chunks are automatically dropped
 	 */
 	void addRetentionPolicy(@NonNull Duration dropAfter);
-
+	
 	/**
 	 * Adds a refresh policy for a continuous aggregate on this hypertable.<br>
 	 * Generates SQL: {@code SELECT add_continuous_aggregate_policy('table', 'startOffset', 'endOffset', 'scheduleInterval')}.<br>

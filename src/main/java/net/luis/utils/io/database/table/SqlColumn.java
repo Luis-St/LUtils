@@ -21,10 +21,11 @@ package net.luis.utils.io.database.table;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.function.SqlExpression;
-import net.luis.utils.io.database.operation.*;
 import net.luis.utils.io.database.query.SqlSelectQuery;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -80,22 +81,67 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	@NonNull SqlCondition isNotNull();
 	
 	/**
-	 * Returns string-specific operations for this column.<br>
-	 * @return String operations accessor
+	 * Creates a condition using a SQL {@code LIKE} pattern.<br>
+	 * Generates SQL: {@code column LIKE pattern}.<br>
+	 *
+	 * @param pattern The like pattern
+	 * @return The like condition
 	 */
-	@NonNull SqlStringOps string();
+	@NonNull SqlCondition like(@NonNull String pattern);
 	
 	/**
-	 * Returns numeric-specific operations for this column.<br>
-	 * @return Numeric operations accessor
+	 * Creates a condition that checks if the column starts with the given prefix.<br>
+	 * Generates SQL: {@code column LIKE 'prefix%'}.<br>
+	 *
+	 * @param prefix The prefix to check for
+	 * @return The starts-with condition
 	 */
-	@NonNull SqlNumericOps numeric();
+	@NonNull SqlCondition startsWith(@NonNull String prefix);
 	
 	/**
-	 * Returns temporal-specific operations for this column.<br>
-	 * @return Temporal operations accessor
+	 * Creates a condition that checks if the column contains the given substring.<br>
+	 * Generates SQL: {@code column LIKE '%substring%'}.<br>
+	 *
+	 * @param substring The substring to check for
+	 * @return The contains condition
 	 */
-	@NonNull SqlTemporalOps temporal();
+	@NonNull SqlCondition contains(@NonNull String substring);
+	
+	/**
+	 * Creates a condition that checks if the column ends with the given suffix.<br>
+	 * Generates SQL: {@code column LIKE '%suffix'}.<br>
+	 *
+	 * @param suffix The suffix to check for
+	 * @return The ends-with condition
+	 */
+	@NonNull SqlCondition endsWith(@NonNull String suffix);
+	
+	/**
+	 * Creates a condition that checks if the column length is greater than the given value.<br>
+	 * Generates SQL: {@code LENGTH(column) > length}.<br>
+	 *
+	 * @param length The length to compare against
+	 * @return The length condition
+	 */
+	@NonNull SqlCondition lengthGreaterThan(int length);
+	
+	/**
+	 * Creates a condition that checks if the column is equal to the given value ignoring case.<br>
+	 * Generates SQL: {@code LOWER(column) = LOWER(value)}.<br>
+	 *
+	 * @param value The value to compare to
+	 * @return The case-insensitive equality condition
+	 */
+	@NonNull SqlCondition equalToIgnoreCase(@NonNull String value);
+	
+	/**
+	 * Creates a condition that checks if the column value is within the last given duration.<br>
+	 * Generates SQL: {@code column >= NOW() - INTERVAL 'duration'}.<br>
+	 *
+	 * @param duration The duration to check within
+	 * @return The within-last condition
+	 */
+	@NonNull SqlCondition withinLast(@NonNull Duration duration);
 	
 	/**
 	 * Creates an IN condition with the specified values.<br>
@@ -138,6 +184,24 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * @return A condition for NOT IN comparison
 	 */
 	@NonNull SqlCondition notIn(@NonNull List<T> values);
+	
+	/**
+	 * Creates a NOT IN condition with a subquery.<br>
+	 * Generates SQL: {@code column NOT IN (subquery)}.<br>
+	 *
+	 * @param subquery The subquery providing values to exclude
+	 * @return A condition for NOT IN comparison with subquery
+	 */
+	@NotNull SqlCondition notIn(@NonNull SqlSelectQuery<?> subquery);
+	
+	/**
+	 * Creates an {@code IFNULL} expression that returns the column value or a default if null.<br>
+	 * Generates SQL: {@code IFNULL(column, defaultValue)} if supported by the dialect, otherwise uses a {@code COALESCE(column, defaultValue)}.<br>
+	 *
+	 * @param defaultValue The default value to use when the column is null
+	 * @return The ifnull expression
+	 */
+	@NonNull SqlExpression<?> ifNull(@NonNull T defaultValue);
 	
 	/**
 	 * Creates an aliased version of this column for use in SELECT projections.<br>

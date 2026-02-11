@@ -35,7 +35,7 @@ public interface SqlForeignColumn<T, R> extends SqlColumn<T> {
 	 * @return The referenced table
 	 */
 	@NonNull SqlTable<R> referencedTable();
-
+	
 	/**
 	 * Returns the column referenced by this foreign key column.<br>
 	 * @return The referenced column

@@ -31,7 +31,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the column value
  */
 public interface OracleColumn<T> extends SqlColumn<T> {
-
+	
 	/**
 	 * Returns the column value if it is not null, otherwise returns the specified default.<br>
 	 * Generates SQL: {@code NVL(column, defaultValue)}.
@@ -40,7 +40,7 @@ public interface OracleColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the null-coalesced value
 	 */
 	@NonNull SqlExpression<?> nvl(@NonNull T defaultValue);
-
+	
 	/**
 	 * Returns one value if the column is not null, and another if it is null.<br>
 	 * Generates SQL: {@code NVL2(column, ifNotNull, ifNull)}.<br>
@@ -54,7 +54,7 @@ public interface OracleColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the conditional null check
 	 */
 	@NonNull SqlExpression<?> nvl2(@NonNull T ifNotNull, @NonNull T ifNull);
-
+	
 	/**
 	 * Evaluates the column against a series of search-result pairs and returns the matching result.<br>
 	 * Generates SQL: {@code DECODE(column, search1, result1, search2, result2, ..., default)}.<br>
@@ -67,7 +67,7 @@ public interface OracleColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the decoded value
 	 */
 	@NonNull SqlExpression<?> decode(Object @NonNull ... searchResults);
-
+	
 	/**
 	 * Converts this column's value to a character string using the specified format.<br>
 	 * Generates SQL: {@code TO_CHAR(column, 'format')}.
@@ -76,7 +76,7 @@ public interface OracleColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the formatted string value
 	 */
 	@NonNull SqlExpression<?> toChar(@NonNull String format);
-
+	
 	/**
 	 * Converts this column's string value to a date using the specified format.<br>
 	 * Generates SQL: {@code TO_DATE(column, 'format')}.
@@ -85,7 +85,7 @@ public interface OracleColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the parsed date value
 	 */
 	@NonNull SqlExpression<?> toDate(@NonNull String format);
-
+	
 	/**
 	 * Creates a condition that matches the column value against a regular expression pattern.<br>
 	 * Generates SQL: {@code REGEXP_LIKE(column, 'pattern')}.
@@ -94,7 +94,7 @@ public interface OracleColumn<T> extends SqlColumn<T> {
 	 * @return A condition representing the regular expression match
 	 */
 	@NonNull SqlCondition regexpLike(@NonNull String pattern);
-
+	
 	/**
 	 * Creates a hierarchical query expression using this column as the prior reference.<br>
 	 * Generates SQL: {@code CONNECT BY PRIOR column}.<br>
@@ -106,7 +106,7 @@ public interface OracleColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the hierarchical prior reference
 	 */
 	@NonNull SqlExpression<?> connectByPrior();
-
+	
 	/**
 	 * Returns the path from the root to the current node in a hierarchical query.<br>
 	 * Generates SQL: {@code SYS_CONNECT_BY_PATH(column, 'separator')}.<br>
@@ -120,7 +120,7 @@ public interface OracleColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the hierarchical path
 	 */
 	@NonNull SqlExpression<?> sysConnectByPath(@NonNull String separator);
-
+	
 	/**
 	 * Aggregates string values from grouped rows into a single string, separated by the specified separator.<br>
 	 * Generates SQL: {@code LISTAGG(column, 'separator') WITHIN GROUP (ORDER BY column)}.<br>
@@ -133,7 +133,7 @@ public interface OracleColumn<T> extends SqlColumn<T> {
 	 * @return An expression representing the aggregated string
 	 */
 	@NonNull SqlExpression<?> listagg(@NonNull String separator);
-
+	
 	/**
 	 * Extracts a scalar value from a JSON document using the specified JSON path.<br>
 	 * Generates SQL: {@code JSON_VALUE(column, 'path')}.

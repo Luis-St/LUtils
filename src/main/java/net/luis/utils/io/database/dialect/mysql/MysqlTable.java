@@ -30,7 +30,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the entity
  */
 public interface MysqlTable<T> extends SqlTable<T> {
-
+	
 	/**
 	 * Sets the storage engine for this table.<br>
 	 * Generates SQL: {@code ENGINE=engine}.<br>
@@ -38,7 +38,7 @@ public interface MysqlTable<T> extends SqlTable<T> {
 	 * @param engine The MySQL storage engine to use
 	 */
 	void setEngine(@NonNull MysqlEngine engine);
-
+	
 	/**
 	 * Sets the default character set for this table.<br>
 	 * Generates SQL: {@code DEFAULT CHARSET=charset}.<br>
@@ -46,7 +46,7 @@ public interface MysqlTable<T> extends SqlTable<T> {
 	 * @param charset The character set name
 	 */
 	void setCharset(@NonNull String charset);
-
+	
 	/**
 	 * Sets the collation for this table.<br>
 	 * Generates SQL: {@code COLLATE=collation}.<br>
@@ -54,7 +54,7 @@ public interface MysqlTable<T> extends SqlTable<T> {
 	 * @param collation The collation name
 	 */
 	void setCollation(@NonNull String collation);
-
+	
 	/**
 	 * Sets the auto-increment starting value for this table.<br>
 	 * Generates SQL: {@code AUTO_INCREMENT=value}.<br>
@@ -62,7 +62,7 @@ public interface MysqlTable<T> extends SqlTable<T> {
 	 * @param value The auto-increment starting value
 	 */
 	void setAutoIncrement(long value);
-
+	
 	/**
 	 * Sets a comment for this table.<br>
 	 * Generates SQL: {@code COMMENT='comment'}.<br>
@@ -70,7 +70,7 @@ public interface MysqlTable<T> extends SqlTable<T> {
 	 * @param comment The table comment
 	 */
 	void setComment(@NonNull String comment);
-
+	
 	/**
 	 * Adds a fulltext index on the specified columns.<br>
 	 * Generates SQL: {@code CREATE FULLTEXT INDEX name ON table(columns)}.<br>

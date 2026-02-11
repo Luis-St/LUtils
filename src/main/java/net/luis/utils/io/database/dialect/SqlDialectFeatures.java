@@ -30,139 +30,139 @@ public interface SqlDialectFeatures {
 	 * @return Whether {@code RETURNING} is supported
 	 */
 	boolean supportsReturning();
-
+	
 	/**
 	 * Returns whether the dialect supports {@code SKIP LOCKED}.<br>
 	 * @return Whether {@code SKIP LOCKED} is supported
 	 */
 	boolean supportsSkipLocked();
-
+	
 	/**
 	 * Returns whether the dialect supports array column types.<br>
 	 * @return Whether arrays are supported
 	 */
 	boolean supportsArrays();
-
+	
 	/**
 	 * Returns whether the dialect supports the {@code JSONB} data type.<br>
 	 * @return Whether {@code JSONB} is supported
 	 */
 	boolean supportsJsonb();
-
+	
 	/**
 	 * Returns whether the dialect supports partial indexes.<br>
 	 * @return Whether partial indexes are supported
 	 */
 	boolean supportsPartialIndexes();
-
+	
 	/**
 	 * Returns whether the dialect supports sequences.<br>
 	 * @return Whether sequences are supported
 	 */
 	boolean supportsSequences();
-
+	
 	/**
 	 * Returns whether the dialect supports Common Table Expressions (CTEs).<br>
 	 * @return Whether CTEs are supported
 	 */
 	boolean supportsCte();
-
+	
 	/**
 	 * Returns whether the dialect supports window functions.<br>
 	 * @return Whether window functions are supported
 	 */
 	boolean supportsWindowFunctions();
-
+	
 	/**
 	 * Returns whether the dialect supports a native boolean type.<br>
 	 * @return Whether the boolean type is supported
 	 */
 	boolean supportsBooleanType();
-
+	
 	/**
 	 * Returns whether the dialect supports upsert operations.<br>
 	 * @return Whether upsert is supported
 	 */
 	boolean supportsUpsert();
-
+	
 	/**
 	 * Returns whether the dialect supports database schemas.<br>
 	 * @return Whether schemas are supported
 	 */
 	boolean supportsSchemas();
-
+	
 	/**
 	 * Returns whether the dialect supports generated columns.<br>
 	 * @return Whether generated columns are supported
 	 */
 	boolean supportsGeneratedColumns();
-
+	
 	/**
 	 * Returns whether the dialect supports the {@code MERGE} statement.<br>
 	 * @return Whether {@code MERGE} is supported
 	 */
 	boolean supportsMerge();
-
+	
 	/**
 	 * Returns whether the dialect supports {@code LATERAL} joins.<br>
 	 * @return Whether {@code LATERAL} is supported
 	 */
 	boolean supportsLateral();
-
+	
 	/**
 	 * Returns whether the dialect supports JSON operations.<br>
 	 * @return Whether JSON is supported
 	 */
 	boolean supportsJson();
-
+	
 	/**
 	 * Returns whether the dialect supports materialized views.<br>
 	 * @return Whether materialized views are supported
 	 */
 	boolean supportsMaterializedViews();
-
+	
 	/**
 	 * Returns whether the dialect supports {@code TRUNCATE ... CASCADE}.<br>
 	 * @return Whether truncate cascade is supported
 	 */
 	boolean supportsTruncateCascade();
-
+	
 	/**
 	 * Returns whether the dialect supports table inheritance.<br>
 	 * @return Whether table inheritance is supported
 	 */
 	boolean supportsTableInheritance();
-
+	
 	/**
 	 * Returns whether the dialect supports the {@code OUTPUT} clause.<br>
 	 * @return Whether the {@code OUTPUT} clause is supported
 	 */
 	boolean supportsOutputClause();
-
+	
 	/**
 	 * Returns whether the dialect supports {@code ROWID}.<br>
 	 * @return Whether {@code ROWID} is supported
 	 */
 	boolean supportsRowId();
-
+	
 	/**
 	 * Returns whether the dialect supports the {@code TOP} clause.<br>
 	 * @return Whether {@code TOP} is supported
 	 */
 	boolean supportsTopClause();
-
+	
 	/**
 	 * Returns whether the dialect supports {@code CONNECT BY} queries.<br>
 	 * @return Whether {@code CONNECT BY} is supported
 	 */
 	boolean supportsConnectBy();
-
+	
 	/**
 	 * Returns whether the dialect supports full-text search.<br>
 	 * @return Whether full-text search is supported
 	 */
 	boolean supportsFullTextSearch();
-
+	
 	/**
 	 * Returns whether the dialect supports identity columns.<br>
 	 * @return Whether identity columns are supported

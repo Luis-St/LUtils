@@ -19,7 +19,6 @@
 package net.luis.utils.io.database.dialect.timescale;
 
 import net.luis.utils.io.database.dialect.postgres.PostgresColumn;
-import net.luis.utils.io.database.dialect.timescale.operation.TimescaleTemporalOps;
 import net.luis.utils.io.database.function.SqlExpression;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
@@ -36,10 +35,7 @@ import java.time.Instant;
  * @param <T> The type of the column value
  */
 public interface TimescaleColumn<T> extends PostgresColumn<T> {
-
-	@Override
-	@NonNull TimescaleTemporalOps temporal();
-
+	
 	/**
 	 * Groups time values into buckets of the specified interval.<br>
 	 * Generates SQL: {@code time_bucket('interval', column)}.
@@ -48,7 +44,7 @@ public interface TimescaleColumn<T> extends PostgresColumn<T> {
 	 * @return An expression representing the time bucket boundary
 	 */
 	@NonNull SqlExpression<?> timeBucket(@NonNull Duration interval);
-
+	
 	/**
 	 * Groups time values into buckets with gap-filling for missing intervals.<br>
 	 * Generates SQL: {@code time_bucket_gapfill('interval', column, 'start', 'end')}.<br>
@@ -64,7 +60,7 @@ public interface TimescaleColumn<T> extends PostgresColumn<T> {
 	 * @return An expression representing the gap-filled time bucket
 	 */
 	@NonNull SqlExpression<?> timeBucketGapfill(@NonNull Duration interval, @NonNull Instant start, @NonNull Instant end);
-
+	
 	/**
 	 * Returns the first value of this column ordered by the specified time column.<br>
 	 * Generates SQL: {@code first(column, timeColumn)}.
@@ -73,7 +69,7 @@ public interface TimescaleColumn<T> extends PostgresColumn<T> {
 	 * @return An expression representing the first value in time order
 	 */
 	@NonNull SqlExpression<?> first(@NonNull SqlColumn<?> timeColumn);
-
+	
 	/**
 	 * Returns the last value of this column ordered by the specified time column.<br>
 	 * Generates SQL: {@code last(column, timeColumn)}.
@@ -82,7 +78,7 @@ public interface TimescaleColumn<T> extends PostgresColumn<T> {
 	 * @return An expression representing the last value in time order
 	 */
 	@NonNull SqlExpression<?> last(@NonNull SqlColumn<?> timeColumn);
-
+	
 	/**
 	 * Fills missing values by carrying the last observed value forward.<br>
 	 * Generates SQL: {@code locf(column)}.<br>

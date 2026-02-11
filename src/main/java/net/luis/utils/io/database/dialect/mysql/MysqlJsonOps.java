@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.mysql.operation;
+package net.luis.utils.io.database.dialect.mysql;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.function.SqlExpression;
@@ -29,7 +29,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface MysqlJsonOps extends SqlJsonOps {
-
+	
 	/**
 	 * Creates a condition that checks if the JSON column contains the given value.<br>
 	 * Generates SQL: {@code JSON_CONTAINS(column, 'value')}.<br>
@@ -38,7 +38,7 @@ public interface MysqlJsonOps extends SqlJsonOps {
 	 * @return The json-contains condition
 	 */
 	@NonNull SqlCondition jsonContains(@NonNull String value);
-
+	
 	/**
 	 * Extracts a value from the JSON column at the given path.<br>
 	 * Generates SQL: {@code JSON_EXTRACT(column, 'path')}.<br>
@@ -47,4 +47,13 @@ public interface MysqlJsonOps extends SqlJsonOps {
 	 * @return The extracted JSON value expression
 	 */
 	@NonNull SqlExpression<?> jsonExtract(@NonNull String path);
+	
+	/**
+	 * Extracts a value from the JSON column at the given path and unquotes it if it's a string.<br>
+	 * Generates SQL: {@code JSON_UNQUOTE(JSON_EXTRACT(column, 'path'))}.<br>
+	 *
+	 * @param path The JSON path expression
+	 * @return The extracted and unquoted JSON value expression
+	 */
+	@NonNull SqlExpression<?> jsonExtractUnqouted(@NonNull String path);
 }
