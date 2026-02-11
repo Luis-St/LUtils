@@ -42,4 +42,8 @@ public interface SqlPage<T> {
 	boolean hasNext();
 	
 	boolean hasPrevious();
+	
+	@NonNull SqlPage<T> fetchNext();
+	
+	@NonNull SqlPage<T> fetchPrevious();
 }

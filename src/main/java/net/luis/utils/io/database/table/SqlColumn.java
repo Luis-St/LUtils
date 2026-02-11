@@ -21,10 +21,10 @@ package net.luis.utils.io.database.table;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.function.SqlExpression;
+import net.luis.utils.io.database.operation.*;
 import net.luis.utils.io.database.query.SqlSelectQuery;
 import org.jspecify.annotations.NonNull;
 
-import java.time.Duration;
 import java.util.List;
 
 /**
@@ -80,61 +80,22 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	@NonNull SqlCondition isNotNull();
 	
 	/**
-	 * Creates a case-insensitive equality condition.<br>
-	 *
-	 * @param value The value to compare (case-insensitive)
-	 * @return A condition for case-insensitive equality
+	 * Returns string-specific operations for this column.<br>
+	 * @return String operations accessor
 	 */
-	@NonNull SqlCondition equalToIgnoreCase(@NonNull String value);
+	@NonNull SqlStringOps string();
 	
 	/**
-	 * Creates a condition checking if the column value is within the specified duration from now.<br>
-	 * Useful for temporal columns to check recent records.<br>
-	 *
-	 * @param duration The duration to check within
-	 * @return A condition for temporal comparison
+	 * Returns numeric-specific operations for this column.<br>
+	 * @return Numeric operations accessor
 	 */
-	@NonNull SqlCondition withinLast(@NonNull Duration duration);
+	@NonNull SqlNumericOps numeric();
 	
 	/**
-	 * Creates a LIKE condition with the specified pattern.<br>
-	 *
-	 * @param pattern The LIKE pattern (use % for wildcards)
-	 * @return A condition for pattern matching
+	 * Returns temporal-specific operations for this column.<br>
+	 * @return Temporal operations accessor
 	 */
-	@NonNull SqlCondition like(@NonNull String pattern);
-	
-	/**
-	 * Creates a condition checking if the column value starts with the specified prefix.<br>
-	 *
-	 * @param prefix The prefix to check
-	 * @return A condition for prefix matching
-	 */
-	@NonNull SqlCondition startsWith(@NonNull String prefix);
-	
-	/**
-	 * Creates a condition checking if the column value contains the specified substring.<br>
-	 *
-	 * @param substring The substring to check
-	 * @return A condition for substring matching
-	 */
-	@NonNull SqlCondition contains(@NonNull String substring);
-	
-	/**
-	 * Creates a condition checking if the column value ends with the specified suffix.<br>
-	 *
-	 * @param suffix The suffix to check
-	 * @return A condition for suffix matching
-	 */
-	@NonNull SqlCondition endsWith(@NonNull String suffix);
-	
-	/**
-	 * Creates a condition checking if the column value length is greater than the specified length.<br>
-	 *
-	 * @param length The minimum length
-	 * @return A condition for length comparison
-	 */
-	@NonNull SqlCondition lengthGreaterThan(int length);
+	@NonNull SqlTemporalOps temporal();
 	
 	/**
 	 * Creates an IN condition with the specified values.<br>

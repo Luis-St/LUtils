@@ -21,6 +21,7 @@ package net.luis.utils.io.database;
 import net.luis.utils.io.database.audit.SqlTimestampSource;
 import org.jspecify.annotations.NonNull;
 
+import javax.sql.DataSource;
 import java.time.Clock;
 import java.util.concurrent.Executor;
 
@@ -34,6 +35,8 @@ public interface SqlDatabaseConfig {
 	static @NonNull SqlDatabaseConfig builder() {
 		throw new UnsupportedOperationException();
 	}
+	
+	@NonNull SqlDatabaseConfig dataSource(@NonNull DataSource dataSource);
 	
 	@NonNull SqlDatabaseConfig asyncExecutor(@NonNull Executor executor);
 	

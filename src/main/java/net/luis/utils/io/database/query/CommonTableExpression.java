@@ -16,28 +16,38 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.condition;
+package net.luis.utils.io.database.query;
 
 import org.jspecify.annotations.NonNull;
 
 /**
- * Interface representing a SQL condition.<br>
+ * Represents a Common Table Expression (CTE) for use in SQL queries.<br>
  *
  * @author Luis-St
  */
-public interface SqlCondition {
+public class CommonTableExpression {
 	
-	static @NonNull SqlCondition and(SqlCondition @NonNull ... conditions) {
+	public static @NonNull CommonTableExpression of(@NonNull String name) {
 		throw new UnsupportedOperationException();
 	}
 	
-	static @NonNull SqlCondition or(SqlCondition @NonNull ... conditions) {
+	public static @NonNull CommonTableExpression of(@NonNull String name, @NonNull SqlSelectQuery<?> query) {
 		throw new UnsupportedOperationException();
 	}
 	
-	@NonNull SqlCondition and(@NonNull SqlCondition first, SqlCondition @NonNull ... rest);
+	public static @NonNull CommonTableExpression recursive(@NonNull String name) {
+		throw new UnsupportedOperationException();
+	}
 	
-	@NonNull SqlCondition or(@NonNull SqlCondition first, SqlCondition @NonNull ... rest);
+	public static @NonNull CommonTableExpression recursive(@NonNull String name, @NonNull SqlSelectQuery<?> query) {
+		throw new UnsupportedOperationException();
+	}
 	
-	@NonNull SqlCondition not();
+	public @NonNull String name() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public boolean isRecursive() {
+		throw new UnsupportedOperationException();
+	}
 }

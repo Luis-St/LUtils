@@ -16,34 +16,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.mysql;
+package net.luis.utils.io.database.dialect.postgres;
 
-import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.dialect.mysql.operation.MysqlJsonOps;
-import net.luis.utils.io.database.dialect.mysql.operation.MysqlStringOps;
-import net.luis.utils.io.database.function.SqlExpression;
+import net.luis.utils.io.database.query.SqlSelectQuery;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Interface representing a MySQL-specific column.<br>
+ * Interface representing a PostgreSQL-specific select query with DISTINCT ON support.<br>
  *
  * @author Luis-St
  *
- * @param <T> The type of the column value
+ * @param <T> The type of the result entity
  */
-public interface MysqlColumn<T> extends SqlColumn<T> {
+public interface PostgresSelectQuery<T> extends SqlSelectQuery<T> {
 	
-	@Override
-	@NonNull MysqlStringOps string();
-	
-	@NonNull MysqlJsonOps json();
-	
-	@NonNull SqlCondition matchAgainst(@NonNull String searchTerms);
-	
-	@NonNull SqlExpression<?> groupConcat(@NonNull String separator);
-	
-	@NonNull SqlExpression<?> ifNull(@NonNull T defaultValue);
-	
-	@NonNull SqlExpression<?> findInSet(@NonNull String value);
+	@NonNull PostgresSelectQuery<T> distinctOn(SqlColumn<?> @NonNull ... columns);
 }

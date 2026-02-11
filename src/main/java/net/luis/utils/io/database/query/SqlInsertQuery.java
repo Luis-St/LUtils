@@ -42,6 +42,8 @@ public interface SqlInsertQuery<T> {
 	
 	@NonNull SqlInsertQuery<T> insertOrIgnore(@NonNull T entity, SqlColumn<?> @NonNull ... conflictColumns);
 	
+	@NonNull SqlInsertQuery<T> fromSelect(@NonNull SqlSelectQuery<?> query);
+	
 	int execute();
 	
 	@NonNull List<T> returning();

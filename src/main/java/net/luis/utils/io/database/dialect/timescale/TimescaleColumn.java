@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.dialect.timescale;
 
 import net.luis.utils.io.database.dialect.postgres.PostgresColumn;
+import net.luis.utils.io.database.dialect.timescale.operation.TimescaleTemporalOps;
 import net.luis.utils.io.database.function.SqlExpression;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
@@ -35,6 +36,9 @@ import java.time.Instant;
  * @param <T> The type of the column value
  */
 public interface TimescaleColumn<T> extends PostgresColumn<T> {
+	
+	@Override
+	@NonNull TimescaleTemporalOps temporal();
 	
 	@NonNull SqlExpression<?> timeBucket(@NonNull Duration interval);
 	

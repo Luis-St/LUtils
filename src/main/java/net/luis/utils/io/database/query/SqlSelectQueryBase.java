@@ -24,6 +24,7 @@ import net.luis.utils.io.database.condition.SqlOrderable;
 import net.luis.utils.io.database.exception.entity.SqlEntityNotFoundException;
 import net.luis.utils.io.database.exception.query.SqlQueryException;
 import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -41,6 +42,23 @@ import java.util.stream.Stream;
  * @author Luis-St
  */
 public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> {
+	
+	/**
+	 * Adds a Common Table Expression (CTE) to the query.<br>
+	 *
+	 * @param cte The common table expression to add
+	 * @return This query for method chaining
+	 */
+	@NonNull Q with(@NonNull CommonTableExpression cte);
+	
+	/**
+	 * Adds a Common Table Expression (CTE) with the specified query to the query.<br>
+	 *
+	 * @param cte The common table expression to add
+	 * @param query The query for the CTE
+	 * @return This query for method chaining
+	 */
+	@NonNull Q with(@NonNull CommonTableExpression cte, @NonNull SqlSelectQuery<?> query);
 	
 	/**
 	 * Adds a {@code WHERE} condition to the query.<br>
@@ -66,6 +84,42 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> {
 	 * @return This query for method chaining
 	 */
 	@NonNull Q whereNotExists(@NonNull SqlSelectQuery<?> subquery);
+	
+	/**
+	 * Adds an {@code INNER JOIN} clause to the query.<br>
+	 *
+	 * @param table The table to join
+	 * @param on The join condition
+	 * @return This query for method chaining
+	 */
+	@NonNull Q innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	/**
+	 * Adds a {@code LEFT JOIN} clause to the query.<br>
+	 *
+	 * @param table The table to join
+	 * @param on The join condition
+	 * @return This query for method chaining
+	 */
+	@NonNull Q leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	/**
+	 * Adds a {@code RIGHT JOIN} clause to the query.<br>
+	 *
+	 * @param table The table to join
+	 * @param on The join condition
+	 * @return This query for method chaining
+	 */
+	@NonNull Q rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	/**
+	 * Adds a {@code FULL JOIN} clause to the query.<br>
+	 *
+	 * @param table The table to join
+	 * @param on The join condition
+	 * @return This query for method chaining
+	 */
+	@NonNull Q fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
 	
 	/**
 	 * Adds a {@code GROUP BY} clause to the query.<br>
@@ -113,6 +167,38 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> {
 	 * @return This query for method chaining
 	 */
 	@NonNull Q distinct();
+	
+	/**
+	 * Combines this query with another using {@code UNION} (removes duplicates).<br>
+	 *
+	 * @param other The other query to combine with
+	 * @return This query for method chaining
+	 */
+	@NonNull Q union(@NonNull SqlSelectQueryBase<T, ?> other);
+	
+	/**
+	 * Combines this query with another using {@code UNION ALL} (keeps duplicates).<br>
+	 *
+	 * @param other The other query to combine with
+	 * @return This query for method chaining
+	 */
+	@NonNull Q unionAll(@NonNull SqlSelectQueryBase<T, ?> other);
+	
+	/**
+	 * Combines this query with another using {@code INTERSECT} (common rows only).<br>
+	 *
+	 * @param other The other query to combine with
+	 * @return This query for method chaining
+	 */
+	@NonNull Q intersect(@NonNull SqlSelectQueryBase<T, ?> other);
+	
+	/**
+	 * Combines this query with another using {@code EXCEPT} (rows in this but not other).<br>
+	 *
+	 * @param other The other query to combine with
+	 * @return This query for method chaining
+	 */
+	@NonNull Q except(@NonNull SqlSelectQueryBase<T, ?> other);
 	
 	/**
 	 * Executes the query and returns all results as a list.<br>
@@ -227,10 +313,4 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> {
 	 * @return A list of parameter values in order
 	 */
 	@NonNull List<Object> getParameters();
-	
-	/**
-	 * Returns the execution plan for this query.<br>
-	 * @return The EXPLAIN output from the database
-	 */
-	@NonNull String explain();
 }

@@ -16,28 +16,29 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.condition;
+package net.luis.utils.io.database.listener;
 
 import org.jspecify.annotations.NonNull;
 
 /**
- * Interface representing a SQL condition.<br>
+ * Interface for entity lifecycle hooks.<br>
+ * All methods have default empty implementations, so listeners can override only the events they care about.<br>
  *
  * @author Luis-St
+ *
+ * @param <T> The type of the entity
  */
-public interface SqlCondition {
+public interface SqlEntityListener<T> {
 	
-	static @NonNull SqlCondition and(SqlCondition @NonNull ... conditions) {
-		throw new UnsupportedOperationException();
-	}
+	default void beforeInsert(@NonNull T entity) {}
 	
-	static @NonNull SqlCondition or(SqlCondition @NonNull ... conditions) {
-		throw new UnsupportedOperationException();
-	}
+	default void afterInsert(@NonNull T entity) {}
 	
-	@NonNull SqlCondition and(@NonNull SqlCondition first, SqlCondition @NonNull ... rest);
+	default void beforeUpdate(@NonNull T entity) {}
 	
-	@NonNull SqlCondition or(@NonNull SqlCondition first, SqlCondition @NonNull ... rest);
+	default void afterUpdate(@NonNull T entity) {}
 	
-	@NonNull SqlCondition not();
+	default void beforeDelete(@NonNull T entity) {}
+	
+	default void afterDelete(@NonNull T entity) {}
 }

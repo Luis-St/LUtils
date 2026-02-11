@@ -16,34 +16,27 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.mysql;
+package net.luis.utils.io.database.operation;
 
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.dialect.mysql.operation.MysqlJsonOps;
-import net.luis.utils.io.database.dialect.mysql.operation.MysqlStringOps;
-import net.luis.utils.io.database.function.SqlExpression;
-import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Interface representing a MySQL-specific column.<br>
+ * Interface providing string-specific column operations.<br>
  *
  * @author Luis-St
- *
- * @param <T> The type of the column value
  */
-public interface MysqlColumn<T> extends SqlColumn<T> {
+public interface SqlStringOps {
 	
-	@Override
-	@NonNull MysqlStringOps string();
+	@NonNull SqlCondition like(@NonNull String pattern);
 	
-	@NonNull MysqlJsonOps json();
+	@NonNull SqlCondition startsWith(@NonNull String prefix);
 	
-	@NonNull SqlCondition matchAgainst(@NonNull String searchTerms);
+	@NonNull SqlCondition contains(@NonNull String substring);
 	
-	@NonNull SqlExpression<?> groupConcat(@NonNull String separator);
+	@NonNull SqlCondition endsWith(@NonNull String suffix);
 	
-	@NonNull SqlExpression<?> ifNull(@NonNull T defaultValue);
+	@NonNull SqlCondition lengthGreaterThan(int length);
 	
-	@NonNull SqlExpression<?> findInSet(@NonNull String value);
+	@NonNull SqlCondition equalToIgnoreCase(@NonNull String value);
 }

@@ -16,34 +16,26 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.mysql;
+package net.luis.utils.io.database.operation;
 
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.dialect.mysql.operation.MysqlJsonOps;
-import net.luis.utils.io.database.dialect.mysql.operation.MysqlStringOps;
 import net.luis.utils.io.database.function.SqlExpression;
-import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
+import java.util.List;
+
 /**
- * Interface representing a MySQL-specific column.<br>
+ * Interface providing array-specific column operations.<br>
  *
  * @author Luis-St
  *
- * @param <T> The type of the column value
+ * @param <T> The element type of the array
  */
-public interface MysqlColumn<T> extends SqlColumn<T> {
+public interface SqlArrayOps<T> {
 	
-	@Override
-	@NonNull MysqlStringOps string();
+	@NonNull SqlCondition contains(@NonNull T element);
 	
-	@NonNull MysqlJsonOps json();
+	@NonNull SqlCondition overlaps(@NonNull List<T> elements);
 	
-	@NonNull SqlCondition matchAgainst(@NonNull String searchTerms);
-	
-	@NonNull SqlExpression<?> groupConcat(@NonNull String separator);
-	
-	@NonNull SqlExpression<?> ifNull(@NonNull T defaultValue);
-	
-	@NonNull SqlExpression<?> findInSet(@NonNull String value);
+	@NonNull SqlExpression<Integer> length();
 }

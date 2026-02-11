@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database;
 
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
 
@@ -29,7 +30,32 @@ import java.util.function.Function;
  *
  * @author Luis-St
  */
-public interface SqlDatabase {
+public interface SqlDatabase extends AutoCloseable {
+	
+	static @NonNull SqlDatabase create(@NonNull SqlDatabaseConfig config) {
+		throw new UnsupportedOperationException();
+	}
+	
+	static @NonNull SqlDatabase createAndSetDefault(@NonNull SqlDatabaseConfig config) {
+		throw new UnsupportedOperationException();
+	}
+	
+	static @NonNull SqlDatabase getDefault() {
+		throw new UnsupportedOperationException();
+	}
+	
+	static void setDefault(@NonNull SqlDatabase database) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	void close();
+	
+	@NonNull SqlDialect<?, ?> getDialect();
+	
+	boolean health();
+	
+	boolean ping();
 	
 	@NonNull SqlTransaction beginTransaction();
 	

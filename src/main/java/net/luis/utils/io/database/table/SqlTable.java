@@ -18,16 +18,20 @@
 
 package net.luis.utils.io.database.table;
 
+import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlDatabaseException;
 import net.luis.utils.io.database.function.SqlAgg;
 import net.luis.utils.io.database.function.SqlExpression;
 import net.luis.utils.io.database.index.SqlIndexDefinition;
 import net.luis.utils.io.database.index.SqlIndexInfo;
+import net.luis.utils.io.database.listener.SqlEntityListener;
 import net.luis.utils.io.database.query.*;
 import net.luis.utils.io.database.sequence.SqlSequenceDefinition;
+import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
@@ -51,6 +55,22 @@ public interface SqlTable<T> {
 	static <T> @NonNull SqlTable<T> of(@NonNull String name, @NonNull Class<T> type) {
 		throw new UnsupportedOperationException();
 	}
+	
+	/**
+	 * Returns a view of this table bound to the specified database.<br>
+	 *
+	 * @param database The database to use
+	 * @return A table reference bound to the database
+	 */
+	@NonNull SqlTable<T> from(@NonNull SqlDatabase database);
+	
+	/**
+	 * Returns a view of this table bound to the specified transaction.<br>
+	 *
+	 * @param transaction The transaction to use
+	 * @return A table reference bound to the transaction
+	 */
+	@NonNull SqlTable<T> withIn(@NonNull SqlTransaction transaction);
 	
 	/**
 	 * Returns a dialect-specific view of this table.<br>
@@ -133,6 +153,23 @@ public interface SqlTable<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	@NonNull List<T> insert(T @NonNull ... entities);
+	
+	/**
+	 * Inserts a collection of entities into this table.<br>
+	 *
+	 * @param entities The collection of entities to insert
+	 * @return The inserted entities (with generated values populated)
+	 */
+	@NonNull List<T> insert(@NonNull Collection<T> entities);
+	
+	/**
+	 * Inserts a collection of entities into this table in batches.<br>
+	 *
+	 * @param entities The collection of entities to insert
+	 * @param batchSize The number of entities per batch
+	 * @return The inserted entities (with generated values populated)
+	 */
+	@NonNull List<T> insert(@NonNull Collection<T> entities, int batchSize);
 	
 	/**
 	 * Inserts or updates an entity based on conflict detection.<br>
@@ -259,4 +296,18 @@ public interface SqlTable<T> {
 	 * @return True if the table exists, false otherwise
 	 */
 	boolean exists();
+	
+	/**
+	 * Adds an entity lifecycle listener to this table.<br>
+	 *
+	 * @param listener The listener to add
+	 */
+	void addListener(@NonNull SqlEntityListener<T> listener);
+	
+	/**
+	 * Removes an entity lifecycle listener from this table.<br>
+	 *
+	 * @param listener The listener to remove
+	 */
+	void removeListener(@NonNull SqlEntityListener<T> listener);
 }

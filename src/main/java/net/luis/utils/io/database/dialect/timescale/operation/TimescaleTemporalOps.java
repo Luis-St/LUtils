@@ -16,34 +16,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.mysql;
+package net.luis.utils.io.database.dialect.timescale.operation;
 
-import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.dialect.mysql.operation.MysqlJsonOps;
-import net.luis.utils.io.database.dialect.mysql.operation.MysqlStringOps;
 import net.luis.utils.io.database.function.SqlExpression;
-import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.operation.SqlTemporalOps;
 import org.jspecify.annotations.NonNull;
 
+import java.time.Duration;
+
 /**
- * Interface representing a MySQL-specific column.<br>
+ * Interface providing TimescaleDB-specific temporal column operations.<br>
  *
  * @author Luis-St
- *
- * @param <T> The type of the column value
  */
-public interface MysqlColumn<T> extends SqlColumn<T> {
+public interface TimescaleTemporalOps extends SqlTemporalOps {
 	
-	@Override
-	@NonNull MysqlStringOps string();
-	
-	@NonNull MysqlJsonOps json();
-	
-	@NonNull SqlCondition matchAgainst(@NonNull String searchTerms);
-	
-	@NonNull SqlExpression<?> groupConcat(@NonNull String separator);
-	
-	@NonNull SqlExpression<?> ifNull(@NonNull T defaultValue);
-	
-	@NonNull SqlExpression<?> findInSet(@NonNull String value);
+	@NonNull SqlExpression<?> timeBucket(@NonNull Duration interval);
 }

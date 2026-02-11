@@ -31,6 +31,9 @@ import org.jspecify.annotations.NonNull;
  */
 public interface PostgresTable<T> extends SqlTable<T> {
 	
+	@Override
+	@NonNull PostgresSelectQuery<T> select();
+	
 	void setUnlogged(boolean unlogged);
 	
 	void setTablespace(@NonNull String tablespace);

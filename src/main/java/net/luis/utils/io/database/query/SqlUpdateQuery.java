@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.function.SqlExpression;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
@@ -34,6 +35,8 @@ import java.util.concurrent.CompletableFuture;
 public interface SqlUpdateQuery<T> {
 	
 	<V> @NonNull SqlUpdateQuery<T> set(@NonNull SqlColumn<V> column, @NonNull V value);
+	
+	<V> @NonNull SqlUpdateQuery<T> set(@NonNull SqlColumn<V> column, @NonNull SqlExpression<V> expression);
 	
 	@NonNull SqlUpdateQuery<T> increment(@NonNull SqlColumn<? extends Number> column, @NonNull Number amount);
 	

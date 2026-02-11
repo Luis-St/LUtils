@@ -19,7 +19,10 @@
 package net.luis.utils.io.database.dialect.postgres;
 
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.postgres.operation.PostgresJsonOps;
+import net.luis.utils.io.database.dialect.postgres.operation.PostgresStringOps;
 import net.luis.utils.io.database.function.SqlExpression;
+import net.luis.utils.io.database.operation.SqlArrayOps;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
@@ -32,6 +35,13 @@ import java.util.List;
  * @author Luis-St
  */
 public interface PostgresColumn<T> extends SqlColumn<T> {
+	
+	@Override
+	@NonNull PostgresStringOps string();
+	
+	@NonNull SqlArrayOps<T> array();
+	
+	@NonNull PostgresJsonOps json();
 	
 	@NonNull SqlCondition ilike(@NonNull String pattern);
 	
