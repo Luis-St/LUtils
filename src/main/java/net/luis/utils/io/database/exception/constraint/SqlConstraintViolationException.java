@@ -43,6 +43,7 @@ public class SqlConstraintViolationException extends SqlDatabaseException {
 	
 	/**
 	 * Constructs a new SQL constraint violation exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */

@@ -35,49 +35,148 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface SqlForeignKey<K, V> {
 	
+	/**
+	 * Creates a foreign key with the given key and no loaded value.<br>
+	 *
+	 * @param key The key value
+	 * @param <K> The type of the key
+	 * @param <V> The type of the referenced value
+	 * @return The foreign key
+	 */
 	static <K, V> @NonNull SqlForeignKey<K, V> of(@NonNull K key) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Creates a foreign key with the given key and pre-loaded value.<br>
+	 *
+	 * @param key The key value
+	 * @param value The pre-loaded referenced value
+	 * @param <K> The type of the key
+	 * @param <V> The type of the referenced value
+	 * @return The foreign key
+	 */
 	static <K, V> @NonNull SqlForeignKey<K, V> of(@NonNull K key, @Nullable V value) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Creates a foreign key with the given key and a custom loader.<br>
+	 *
+	 * @param key The key value
+	 * @param loader The loader used to fetch the referenced value
+	 * @param <K> The type of the key
+	 * @param <V> The type of the referenced value
+	 * @return The foreign key
+	 */
 	static <K, V> @NonNull SqlForeignKey<K, V> withLoader(@NonNull K key, @NonNull SqlForeignKeyLoader<K, V> loader) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Loads all referenced values for the given foreign keys in a batch {@code SELECT} query.<br>
+	 *
+	 * @param keys The foreign keys to load
+	 * @param <K> The type of the key
+	 * @param <V> The type of the referenced value
+	 */
 	static <K, V> void loadAll(@NonNull Collection<SqlForeignKey<K, V>> keys) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Asynchronously loads all referenced values for the given foreign keys in a batch {@code SELECT} query.<br>
+	 *
+	 * @param keys The foreign keys to load
+	 * @param <K> The type of the key
+	 * @param <V> The type of the referenced value
+	 * @return A future that completes when all values are loaded
+	 */
 	static <K, V> @NonNull CompletableFuture<Void> loadAllAsync(@NonNull Collection<SqlForeignKey<K, V>> keys) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the key value of this foreign key.<br>
+	 * @return The key value
+	 */
 	@NonNull K key();
-	
+
+	/**
+	 * Returns whether the referenced value has been loaded.<br>
+	 * @return Whether the value is loaded
+	 */
 	boolean isLoaded();
-	
+
+	/**
+	 * Returns the loaded value of this foreign key.<br>
+	 * @return The referenced value
+	 */
 	@NonNull V value();
-	
+
+	/**
+	 * Returns the loaded value, throwing an exception if not loaded.<br>
+	 * @return The referenced value
+	 */
 	@NonNull V requireValue();
-	
+
+	/**
+	 * Returns the loaded value as an optional.<br>
+	 * @return An optional containing the referenced value, or empty if not loaded
+	 */
 	@NonNull Optional<V> valueOptional();
-	
+
+	/**
+	 * Loads the referenced value using a {@code SELECT} query.<br>
+	 * @return The loaded value
+	 */
 	@NonNull V load();
-	
+
+	/**
+	 * Asynchronously loads the referenced value using a {@code SELECT} query.<br>
+	 * @return A future containing the loaded value
+	 */
 	@NonNull CompletableFuture<V> loadAsync();
-	
+
+	/**
+	 * Loads the referenced value using a {@code SELECT} query with the given options.<br>
+	 *
+	 * @param options The load options
+	 * @return The loaded value
+	 */
 	@NonNull V load(@NonNull SqlLoadOptions options);
-	
+
+	/**
+	 * Asynchronously loads the referenced value using a {@code SELECT} query with the given options.<br>
+	 *
+	 * @param options The load options
+	 * @return A future containing the loaded value
+	 */
 	@NonNull CompletableFuture<V> loadAsync(@NonNull SqlLoadOptions options);
-	
+
+	/**
+	 * Reloads the referenced value, discarding any cached value.<br>
+	 * @return The reloaded value
+	 */
 	@NonNull V reload();
-	
+
+	/**
+	 * Asynchronously reloads the referenced value, discarding any cached value.<br>
+	 * @return A future containing the reloaded value
+	 */
 	@NonNull CompletableFuture<V> reloadAsync();
-	
+
+	/**
+	 * Loads the referenced value only if it has not been loaded yet.<br>
+	 * @return The loaded value
+	 */
 	@NonNull V loadIfAbsent();
-	
+
+	/**
+	 * Returns a new foreign key with the given value set.<br>
+	 *
+	 * @param value The value to set
+	 * @return A new foreign key with the given value
+	 */
 	@NonNull SqlForeignKey<K, V> withValue(@Nullable V value);
 }

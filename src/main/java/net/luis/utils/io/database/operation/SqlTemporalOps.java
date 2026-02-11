@@ -30,5 +30,12 @@ import java.time.Duration;
  */
 public interface SqlTemporalOps {
 	
+	/**
+	 * Creates a condition that checks if the column value is within the last given duration.<br>
+	 * Generates SQL: {@code column >= NOW() - INTERVAL 'duration'}.<br>
+	 *
+	 * @param duration The duration to check within
+	 * @return The within-last condition
+	 */
 	@NonNull SqlCondition withinLast(@NonNull Duration duration);
 }

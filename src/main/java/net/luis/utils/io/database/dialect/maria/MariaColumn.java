@@ -33,9 +33,30 @@ import org.jspecify.annotations.NonNull;
  */
 public interface MariaColumn<T> extends MysqlColumn<T> {
 	
+	/**
+	 * Creates a case-insensitive pattern matching condition.<br>
+	 * Generates SQL: {@code column LIKE pattern} with case-insensitive collation.<br>
+	 *
+	 * @param pattern The pattern to match against
+	 * @return The case-insensitive like condition
+	 */
 	@NonNull SqlCondition ilike(@NonNull String pattern);
-	
+
+	/**
+	 * Extracts a value from a JSON document at the specified path.<br>
+	 * Generates SQL: {@code JSON_VALUE(column, 'path')}.<br>
+	 *
+	 * @param path The JSON path to extract the value from
+	 * @return The extracted JSON value expression
+	 */
 	@NonNull SqlExpression<?> jsonValue(@NonNull String path);
-	
+
+	/**
+	 * Returns the next value from the specified sequence.<br>
+	 * Generates SQL: {@code NEXT VALUE FOR sequence}.<br>
+	 *
+	 * @param sequence The name of the sequence
+	 * @return The next sequence value expression
+	 */
 	@NonNull SqlExpression<?> nextSequenceValue(@NonNull String sequence);
 }

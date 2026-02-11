@@ -33,9 +33,29 @@ import java.util.List;
  */
 public interface SqlArrayOps<T> {
 	
+	/**
+	 * Creates a condition that checks if the array contains the given element.<br>
+	 * Generates SQL: {@code element = ANY(column)}.<br>
+	 *
+	 * @param element The element to check for
+	 * @return The contains condition
+	 */
 	@NonNull SqlCondition contains(@NonNull T element);
-	
+
+	/**
+	 * Creates a condition that checks if the array overlaps with the given elements.<br>
+	 * Generates SQL: {@code column && ARRAY[...]}.<br>
+	 *
+	 * @param elements The elements to check overlap with
+	 * @return The overlaps condition
+	 */
 	@NonNull SqlCondition overlaps(@NonNull List<T> elements);
-	
+
+	/**
+	 * Returns the length of the array column.<br>
+	 * Generates SQL: {@code ARRAY_LENGTH(column)}.<br>
+	 *
+	 * @return The array length expression
+	 */
 	@NonNull SqlExpression<Integer> length();
 }

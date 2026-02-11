@@ -27,11 +27,35 @@ import org.jspecify.annotations.NonNull;
  */
 public interface SqlOrderable {
 	
+	/**
+	 * Sets the sort order to ascending.<br>
+	 * Generates SQL: {@code ASC}.<br>
+	 *
+	 * @return This orderable with ascending order
+	 */
 	@NonNull SqlOrderable asc();
-	
+
+	/**
+	 * Sets the sort order to descending.<br>
+	 * Generates SQL: {@code DESC}.<br>
+	 *
+	 * @return This orderable with descending order
+	 */
 	@NonNull SqlOrderable desc();
-	
+
+	/**
+	 * Sets null values to appear first in the sort order.<br>
+	 * Generates SQL: {@code NULLS FIRST}.<br>
+	 *
+	 * @return This orderable with nulls first
+	 */
 	@NonNull SqlOrderable nullsFirst();
-	
+
+	/**
+	 * Sets null values to appear last in the sort order.<br>
+	 * Generates SQL: {@code NULLS LAST}.<br>
+	 *
+	 * @return This orderable with nulls last
+	 */
 	@NonNull SqlOrderable nullsLast();
 }

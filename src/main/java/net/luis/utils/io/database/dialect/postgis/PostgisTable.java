@@ -31,5 +31,12 @@ import org.jspecify.annotations.NonNull;
  */
 public interface PostgisTable<T> extends PostgresTable<T> {
 	
+	/**
+	 * Creates a spatial index on the specified geometry column.<br>
+	 * Generates SQL: {@code CREATE INDEX name ON table USING GIST (geometryColumn)}.<br>
+	 *
+	 * @param name The name of the spatial index
+	 * @param geometryColumn The geometry column to index
+	 */
 	void createSpatialIndex(@NonNull String name, @NonNull SqlColumn<?> geometryColumn);
 }

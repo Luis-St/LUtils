@@ -30,15 +30,39 @@ import org.jspecify.annotations.NonNull;
  */
 public interface SqlEntityListener<T> {
 	
+	/**
+	 * Called before an entity is inserted.<br>
+	 * @param entity The entity about to be inserted
+	 */
 	default void beforeInsert(@NonNull T entity) {}
-	
+
+	/**
+	 * Called after an entity is inserted.<br>
+	 * @param entity The entity that was inserted
+	 */
 	default void afterInsert(@NonNull T entity) {}
-	
+
+	/**
+	 * Called before an entity is updated.<br>
+	 * @param entity The entity about to be updated
+	 */
 	default void beforeUpdate(@NonNull T entity) {}
-	
+
+	/**
+	 * Called after an entity is updated.<br>
+	 * @param entity The entity that was updated
+	 */
 	default void afterUpdate(@NonNull T entity) {}
-	
+
+	/**
+	 * Called before an entity is deleted.<br>
+	 * @param entity The entity about to be deleted
+	 */
 	default void beforeDelete(@NonNull T entity) {}
-	
+
+	/**
+	 * Called after an entity is deleted.<br>
+	 * @param entity The entity that was deleted
+	 */
 	default void afterDelete(@NonNull T entity) {}
 }

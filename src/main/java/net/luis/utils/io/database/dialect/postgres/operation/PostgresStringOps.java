@@ -29,9 +29,38 @@ import org.jspecify.annotations.NonNull;
  */
 public interface PostgresStringOps extends SqlStringOps {
 	
+	/**
+	 * Creates a case-insensitive pattern matching condition.<br>
+	 * Generates SQL: {@code column ILIKE pattern}.<br>
+	 *
+	 * @param pattern The pattern to match against
+	 * @return The case-insensitive like condition
+	 */
 	@NonNull SqlCondition ilike(@NonNull String pattern);
 	
+	/**
+	 * Creates a condition using the SQL {@code SIMILAR TO} operator.<br>
+	 * Generates SQL: {@code column SIMILAR TO pattern}.<br>
+	 * <p>
+	 *     The {@code SIMILAR TO} operator combines SQL {@code LIKE} syntax with POSIX regular expression syntax.<br>
+	 *     It supports patterns like {@code %}, {@code _}, {@code |}, {@code *}, and {@code +}.<br>
+	 * </p>
+	 *
+	 * @param pattern The SIMILAR TO pattern to match against
+	 * @return The SIMILAR TO condition
+	 */
 	@NonNull SqlCondition similarTo(@NonNull String pattern);
 	
+	/**
+	 * Creates a condition using a POSIX regular expression match.<br>
+	 * Generates SQL: {@code column ~ pattern}.<br>
+	 * <p>
+	 *     POSIX regular expressions provide more powerful pattern matching than {@code LIKE} or {@code SIMILAR TO}.<br>
+	 *     The {@code ~} operator performs a case-sensitive match against the given regex pattern.<br>
+	 * </p>
+	 *
+	 * @param pattern The POSIX regular expression pattern
+	 * @return The POSIX regex condition
+	 */
 	@NonNull SqlCondition posixRegex(@NonNull String pattern);
 }

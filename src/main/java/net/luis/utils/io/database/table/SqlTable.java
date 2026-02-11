@@ -126,6 +126,7 @@ public interface SqlTable<T> {
 	 * <p>
 	 *     Subqueries can be used in IN conditions or EXISTS checks.<br>
 	 * </p>
+	 *
 	 * @param expressions The expressions to select
 	 * @return A select query for use as a subquery
 	 */
@@ -247,6 +248,7 @@ public interface SqlTable<T> {
 	
 	/**
 	 * Returns the next value from the specified sequence.<br>
+	 *
 	 * @param name The sequence name
 	 * @return The next sequence value
 	 */
@@ -299,14 +301,12 @@ public interface SqlTable<T> {
 	
 	/**
 	 * Adds an entity lifecycle listener to this table.<br>
-	 *
 	 * @param listener The listener to add
 	 */
 	void addListener(@NonNull SqlEntityListener<T> listener);
 	
 	/**
 	 * Removes an entity lifecycle listener from this table.<br>
-	 *
 	 * @param listener The listener to remove
 	 */
 	void removeListener(@NonNull SqlEntityListener<T> listener);

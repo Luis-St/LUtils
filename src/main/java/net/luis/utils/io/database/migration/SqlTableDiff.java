@@ -29,11 +29,27 @@ import java.util.List;
  */
 public interface SqlTableDiff {
 	
+	/**
+	 * Returns the name of the table.<br>
+	 * @return The table name
+	 */
 	@NonNull String tableName();
-	
+
+	/**
+	 * Returns the names of columns added to the table.<br>
+	 * @return The list of added column names
+	 */
 	@NonNull List<String> addedColumns();
-	
+
+	/**
+	 * Returns the names of columns removed from the table.<br>
+	 * @return The list of removed column names
+	 */
 	@NonNull List<String> removedColumns();
-	
+
+	/**
+	 * Returns the names of columns modified in the table.<br>
+	 * @return The list of modified column names
+	 */
 	@NonNull List<String> modifiedColumns();
 }

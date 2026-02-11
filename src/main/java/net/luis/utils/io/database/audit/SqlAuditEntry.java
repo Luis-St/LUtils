@@ -29,10 +29,24 @@ import org.jspecify.annotations.NonNull;
  */
 public interface SqlAuditEntry<T> {
 	
+	/**
+	 * Creates an audit entry for an {@code INSERT} operation.<br>
+	 *
+	 * @param entity The entity being inserted
+	 * @param <T> The type of the audited entity
+	 * @return The audit entry
+	 */
 	static <T> @NonNull SqlAuditEntry<T> forCreate(@NonNull T entity) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Creates an audit entry for an {@code UPDATE} operation.<br>
+	 *
+	 * @param entity The entity being updated
+	 * @param <T> The type of the audited entity
+	 * @return The audit entry
+	 */
 	static <T> @NonNull SqlAuditEntry<T> forUpdate(@NonNull T entity) {
 		throw new UnsupportedOperationException();
 	}

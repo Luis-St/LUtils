@@ -27,6 +27,12 @@ import org.jspecify.annotations.NonNull;
  */
 public class SqlDialectRegistry {
 	
+	/**
+	 * Detects the SQL dialect from the given JDBC URL prefix.<br>
+	 *
+	 * @param jdbcUrl The JDBC URL to detect the dialect from
+	 * @return The detected dialect, or the default dialect if no match is found
+	 */
 	public static @NonNull SqlDialect<?, ?> detect(@NonNull String jdbcUrl) {
 		if (jdbcUrl.startsWith("jdbc:postgresql:")) {
 			return SqlDialect.POSTGRES;

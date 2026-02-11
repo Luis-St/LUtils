@@ -28,5 +28,13 @@ import org.jspecify.annotations.NonNull;
  */
 public interface SqlNumericOps {
 	
+	/**
+	 * Creates a condition that checks if the column value is between the given range.<br>
+	 * Generates SQL: {@code column BETWEEN start AND end}.<br>
+	 *
+	 * @param start The start of the range
+	 * @param end The end of the range
+	 * @return The between condition
+	 */
 	@NonNull SqlCondition between(@NonNull Number start, @NonNull Number end);
 }

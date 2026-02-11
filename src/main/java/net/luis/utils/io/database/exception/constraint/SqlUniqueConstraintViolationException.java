@@ -45,6 +45,7 @@ public class SqlUniqueConstraintViolationException extends SqlConstraintViolatio
 	
 	/**
 	 * Constructs a new SQL unique constraint violation exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
@@ -60,14 +61,26 @@ public class SqlUniqueConstraintViolationException extends SqlConstraintViolatio
 		super(cause);
 	}
 	
+	/**
+	 * Returns the name of the violated unique constraint.<br>
+	 * @return The constraint name
+	 */
 	public @NonNull String getConstraintName() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the names of the columns involved in the constraint violation.<br>
+	 * @return The list of column names
+	 */
 	public @NonNull List<String> getColumnNames() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the duplicate value that caused the violation.<br>
+	 * @return The duplicate value or {@code null} if not available
+	 */
 	public @Nullable Object getDuplicateValue() {
 		throw new UnsupportedOperationException();
 	}

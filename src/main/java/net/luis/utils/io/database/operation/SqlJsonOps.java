@@ -29,9 +29,30 @@ import org.jspecify.annotations.NonNull;
  */
 public interface SqlJsonOps {
 	
+	/**
+	 * Returns the JSON value at the given key.<br>
+	 * Generates SQL: {@code column->'key'}.<br>
+	 *
+	 * @param key The JSON key
+	 * @return The JSON value expression
+	 */
 	@NonNull SqlExpression<?> get(@NonNull String key);
-	
+
+	/**
+	 * Creates a condition that checks if the JSON contains the given key.<br>
+	 * Generates SQL: {@code column ? 'key'}.<br>
+	 *
+	 * @param key The JSON key to check for
+	 * @return The has-key condition
+	 */
 	@NonNull SqlCondition hasKey(@NonNull String key);
-	
+
+	/**
+	 * Returns the JSON value at the given key as text.<br>
+	 * Generates SQL: {@code column->>'key'}.<br>
+	 *
+	 * @param key The JSON key
+	 * @return The JSON text value expression
+	 */
 	@NonNull SqlExpression<String> getAsText(@NonNull String key);
 }

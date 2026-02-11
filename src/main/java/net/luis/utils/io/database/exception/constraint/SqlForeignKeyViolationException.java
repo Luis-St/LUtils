@@ -43,6 +43,7 @@ public class SqlForeignKeyViolationException extends SqlConstraintViolationExcep
 	
 	/**
 	 * Constructs a new SQL foreign key violation exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
@@ -58,14 +59,26 @@ public class SqlForeignKeyViolationException extends SqlConstraintViolationExcep
 		super(cause);
 	}
 	
+	/**
+	 * Returns the name of the violated foreign key constraint.<br>
+	 * @return The constraint name
+	 */
 	public @NonNull String getConstraintName() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the name of the referenced table.<br>
+	 * @return The referenced table name
+	 */
 	public @NonNull String getReferencedTableName() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the missing key value that caused the violation.<br>
+	 * @return The missing key value or {@code null} if not available
+	 */
 	public @Nullable Object getMissingKeyValue() {
 		throw new UnsupportedOperationException();
 	}

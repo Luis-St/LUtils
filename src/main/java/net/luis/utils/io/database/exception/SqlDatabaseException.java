@@ -46,6 +46,7 @@ public class SqlDatabaseException extends RuntimeException {
 	
 	/**
 	 * Constructs a new SQL database exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
@@ -61,18 +62,34 @@ public class SqlDatabaseException extends RuntimeException {
 		super(cause);
 	}
 	
+	/**
+	 * Returns the SQL state code.<br>
+	 * @return The SQL state or {@code null} if not available
+	 */
 	public @Nullable String getSqlState() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the vendor-specific error code.<br>
+	 * @return The vendor error code
+	 */
 	public int getVendorCode() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the SQL statement that caused the exception, if available.<br>
+	 * @return An optional containing the SQL statement
+	 */
 	public @NonNull Optional<String> getSql() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the parameters that were bound to the SQL statement.<br>
+	 * @return The list of parameters
+	 */
 	public @NonNull List<Object> getParameters() {
 		throw new UnsupportedOperationException();
 	}

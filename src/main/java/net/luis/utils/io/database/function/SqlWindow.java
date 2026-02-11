@@ -29,38 +29,100 @@ import org.jspecify.annotations.NonNull;
  */
 public class SqlWindow {
 	
+	/**
+	 * Returns the row number of each row within a result set partition.<br>
+	 * Generates SQL: {@code ROW_NUMBER()}.<br>
+	 *
+	 * @return The row number expression
+	 */
 	public static @NonNull SqlExpression<Long> rowNumber() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the rank of each row within a result set partition with gaps.<br>
+	 * Generates SQL: {@code RANK()}.<br>
+	 *
+	 * @return The rank expression
+	 */
 	public static @NonNull SqlExpression<Long> rank() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the rank of each row within a result set partition without gaps.<br>
+	 * Generates SQL: {@code DENSE_RANK()}.<br>
+	 *
+	 * @return The dense rank expression
+	 */
 	public static @NonNull SqlExpression<Long> denseRank() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Distributes rows into the specified number of groups.<br>
+	 * Generates SQL: {@code NTILE(buckets)}.<br>
+	 *
+	 * @param buckets The number of groups
+	 * @return The ntile expression
+	 */
 	public static @NonNull SqlExpression<Long> ntile(int buckets) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the value from the previous row in the result set.<br>
+	 * Generates SQL: {@code LAG(column)}.<br>
+	 *
+	 * @param column The column to access
+	 * @param <T> The type of the column
+	 * @return The lag expression
+	 */
 	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the value from the next row in the result set.<br>
+	 * Generates SQL: {@code LEAD(column)}.<br>
+	 *
+	 * @param column The column to access
+	 * @param <T> The type of the column
+	 * @return The lead expression
+	 */
 	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Applies a window specification to the given expression.<br>
+	 * Generates SQL: {@code expression OVER(...)}.<br>
+	 *
+	 * @param expression The expression to apply the window to
+	 * @return The windowed expression
+	 */
 	public static @NonNull SqlExpression<?> over(@NonNull SqlExpression<?> expression) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Partitions the window by the given columns.<br>
+	 * Generates SQL: {@code PARTITION BY col1, col2}.<br>
+	 *
+	 * @param columns The columns to partition by
+	 * @return The partition expression
+	 */
 	public static @NonNull SqlExpression<?> partitionBy(SqlColumn<?> @NonNull ... columns) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Orders the window by the given orderables.<br>
+	 * Generates SQL: {@code ORDER BY col1 ASC, col2 DESC}.<br>
+	 *
+	 * @param orderables The orderable expressions
+	 * @return The order-by expression
+	 */
 	public static @NonNull SqlExpression<?> orderBy(SqlOrderable @NonNull ... orderables) {
 		throw new UnsupportedOperationException();
 	}

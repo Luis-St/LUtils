@@ -30,12 +30,32 @@ import java.util.function.Supplier;
  */
 public interface SqlRetry {
 	
+	/**
+	 * Creates a new retry instance with exponential backoff.<br>
+	 *
+	 * @param maxRetries The maximum number of retries
+	 * @param initialDelay The initial delay between retries
+	 * @return The new retry instance
+	 */
 	static @NonNull SqlRetry withBackoff(int maxRetries, @NonNull Duration initialDelay) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Configures the exception types to retry on.<br>
+	 *
+	 * @param exceptions The exception types that should trigger a retry
+	 * @return This retry instance
+	 */
 	@SuppressWarnings("unchecked")
 	@NonNull SqlRetry retryOn(Class<? extends Throwable> @NonNull ... exceptions);
 	
+	/**
+	 * Executes the given action with retry logic.<br>
+	 *
+	 * @param action The action to execute
+	 * @param <T> The return type of the action
+	 * @return The result of the action
+	 */
 	<T> T execute(@NonNull Supplier<T> action);
 }

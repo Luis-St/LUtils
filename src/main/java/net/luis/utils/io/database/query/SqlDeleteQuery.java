@@ -31,9 +31,28 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface SqlDeleteQuery<T> {
 	
+	/**
+	 * Sets the condition for the delete query.<br>
+	 * Generates SQL: {@code WHERE condition}.<br>
+	 *
+	 * @param condition The condition for the delete
+	 * @return This delete query
+	 */
 	@NonNull SqlDeleteQuery<T> where(@NonNull SqlCondition condition);
-	
+
+	/**
+	 * Executes the delete query.<br>
+	 * Generates SQL: {@code DELETE FROM table WHERE ...}.<br>
+	 *
+	 * @return The number of rows deleted
+	 */
 	int execute();
-	
+
+	/**
+	 * Asynchronously executes the delete query.<br>
+	 * Generates SQL: {@code DELETE FROM table WHERE ...}.<br>
+	 *
+	 * @return A future containing the number of rows deleted
+	 */
 	@NonNull CompletableFuture<Integer> executeAsync();
 }

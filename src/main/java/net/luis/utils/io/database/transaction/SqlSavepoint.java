@@ -27,7 +27,15 @@ import org.jspecify.annotations.NonNull;
  */
 public interface SqlSavepoint {
 	
+	/**
+	 * Returns the name of this savepoint.<br>
+	 * @return The savepoint name
+	 */
 	@NonNull String name();
-	
+
+	/**
+	 * Releases this savepoint.<br>
+	 * Executes SQL: {@code RELEASE SAVEPOINT name}.<br>
+	 */
 	void release();
 }

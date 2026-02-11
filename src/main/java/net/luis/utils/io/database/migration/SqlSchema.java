@@ -29,6 +29,12 @@ import java.io.File;
  */
 public interface SqlSchema {
 	
+	/**
+	 * Loads a SQL schema from a YAML file.<br>
+	 *
+	 * @param schemaDir The directory containing the YAML schema files
+	 * @return The loaded schema
+	 */
 	static @NonNull SqlSchema fromYaml(@NonNull File schemaDir) {
 		throw new UnsupportedOperationException();
 	}

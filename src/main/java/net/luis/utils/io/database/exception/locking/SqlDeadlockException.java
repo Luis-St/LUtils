@@ -42,6 +42,7 @@ public class SqlDeadlockException extends SqlLockingException {
 	
 	/**
 	 * Constructs a new SQL deadlock exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */

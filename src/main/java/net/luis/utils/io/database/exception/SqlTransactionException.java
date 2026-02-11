@@ -42,6 +42,7 @@ public class SqlTransactionException extends SqlDatabaseException {
 	
 	/**
 	 * Constructs a new SQL transaction exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */

@@ -31,24 +31,93 @@ import org.jspecify.annotations.NonNull;
  */
 public interface SqlExpression<T> extends SqlOrderable {
 	
+	/**
+	 * Creates a condition that checks if this expression is equal to the given value.<br>
+	 * Generates SQL: {@code column = value}.<br>
+	 *
+	 * @param value The value to compare to
+	 * @return The equality condition
+	 */
 	@NonNull SqlCondition equalTo(@NonNull T value);
-	
+
+	/**
+	 * Creates a condition that checks if this expression is not equal to the given value.<br>
+	 * Generates SQL: {@code column <> value}.<br>
+	 *
+	 * @param value The value to compare to
+	 * @return The inequality condition
+	 */
 	@NonNull SqlCondition notEqualTo(@NonNull T value);
-	
+
+	/**
+	 * Creates a condition that checks if this expression is greater than the given value.<br>
+	 * Generates SQL: {@code column > value}.<br>
+	 *
+	 * @param value The value to compare to
+	 * @return The greater-than condition
+	 */
 	@NonNull SqlCondition greaterThan(@NonNull T value);
-	
+
+	/**
+	 * Creates a condition that checks if this expression is greater than or equal to the given value.<br>
+	 * Generates SQL: {@code column >= value}.<br>
+	 *
+	 * @param value The value to compare to
+	 * @return The greater-than-or-equal condition
+	 */
 	@NonNull SqlCondition greaterThanOrEqualTo(@NonNull T value);
-	
+
+	/**
+	 * Creates a condition that checks if this expression is less than the given value.<br>
+	 * Generates SQL: {@code column < value}.<br>
+	 *
+	 * @param value The value to compare to
+	 * @return The less-than condition
+	 */
 	@NonNull SqlCondition lessThan(@NonNull T value);
-	
+
+	/**
+	 * Creates a condition that checks if this expression is less than or equal to the given value.<br>
+	 * Generates SQL: {@code column <= value}.<br>
+	 *
+	 * @param value The value to compare to
+	 * @return The less-than-or-equal condition
+	 */
 	@NonNull SqlCondition lessThanOrEqualTo(@NonNull T value);
-	
+
+	/**
+	 * Creates a condition that checks if this expression is between the given values.<br>
+	 * Generates SQL: {@code column BETWEEN start AND end}.<br>
+	 *
+	 * @param start The start value of the range
+	 * @param end The end value of the range
+	 * @return The between condition
+	 */
 	@NonNull SqlCondition between(@NonNull T start, @NonNull T end);
-	
+
+	/**
+	 * Creates a condition that checks if this expression is null.<br>
+	 * Generates SQL: {@code column IS NULL}.<br>
+	 *
+	 * @return The is-null condition
+	 */
 	@NonNull SqlCondition isNull();
-	
+
+	/**
+	 * Creates a condition that checks if this expression is not null.<br>
+	 * Generates SQL: {@code column IS NOT NULL}.<br>
+	 *
+	 * @return The is-not-null condition
+	 */
 	@NonNull SqlCondition isNotNull();
-	
+
+	/**
+	 * Aliases this expression with the given name.<br>
+	 * Generates SQL: {@code expression AS alias}.<br>
+	 *
+	 * @param alias The alias name
+	 * @return This expression with the alias applied
+	 */
 	@NonNull SqlExpression<T> as(@NonNull String alias);
 	
 	@Override

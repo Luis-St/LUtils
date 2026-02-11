@@ -27,17 +27,53 @@ import org.jspecify.annotations.NonNull;
  */
 public interface SqlCondition {
 	
+	/**
+	 * Creates a combined condition using {@code AND}.<br>
+	 * Generates SQL: {@code cond1 AND cond2 AND ...}.<br>
+	 *
+	 * @param conditions The conditions to combine
+	 * @return The combined condition
+	 */
 	static @NonNull SqlCondition and(SqlCondition @NonNull ... conditions) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Creates a combined condition using {@code OR}.<br>
+	 * Generates SQL: {@code cond1 OR cond2 OR ...}.<br>
+	 *
+	 * @param conditions The conditions to combine
+	 * @return The combined condition
+	 */
 	static @NonNull SqlCondition or(SqlCondition @NonNull ... conditions) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Combines this condition with the given conditions using {@code AND}.<br>
+	 * Generates SQL: {@code this AND first AND ...}.<br>
+	 *
+	 * @param first The first condition to combine with
+	 * @param rest The remaining conditions to combine with
+	 * @return The combined condition
+	 */
 	@NonNull SqlCondition and(@NonNull SqlCondition first, SqlCondition @NonNull ... rest);
 	
+	/**
+	 * Combines this condition with the given conditions using {@code OR}.<br>
+	 * Generates SQL: {@code this OR first OR ...}.<br>
+	 *
+	 * @param first The first condition to combine with
+	 * @param rest The remaining conditions to combine with
+	 * @return The combined condition
+	 */
 	@NonNull SqlCondition or(@NonNull SqlCondition first, SqlCondition @NonNull ... rest);
 	
+	/**
+	 * Negates this condition.<br>
+	 * Generates SQL: {@code NOT (condition)}.<br>
+	 *
+	 * @return The negated condition
+	 */
 	@NonNull SqlCondition not();
 }

@@ -30,6 +30,18 @@ import java.time.Duration;
  * @author Luis-St
  */
 public interface TimescaleTemporalOps extends SqlTemporalOps {
-	
+
+	/**
+	 * Groups time values into buckets of the specified interval.<br>
+	 * Generates SQL: {@code time_bucket('interval', column)}.<br>
+	 * <p>
+	 *     The {@code time_bucket} function is TimescaleDB's primary mechanism for grouping<br>
+	 *     time-series data into fixed-size intervals. It is similar to PostgreSQL's<br>
+	 *     {@code date_trunc} but supports arbitrary interval sizes.
+	 * </p>
+	 *
+	 * @param interval The bucket interval duration
+	 * @return An expression representing the time bucket boundary
+	 */
 	@NonNull SqlExpression<?> timeBucket(@NonNull Duration interval);
 }

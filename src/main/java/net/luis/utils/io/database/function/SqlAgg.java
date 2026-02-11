@@ -28,26 +28,69 @@ import org.jspecify.annotations.NonNull;
  */
 public class SqlAgg {
 	
+	/**
+	 * Counts the number of rows.<br>
+	 * Generates SQL: {@code COUNT(*)}.<br>
+	 *
+	 * @return The count expression
+	 */
 	public static @NonNull SqlExpression<Long> count() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Calculates the sum of a numeric column.<br>
+	 * Generates SQL: {@code SUM(column)}.<br>
+	 *
+	 * @param column The column to sum
+	 * @return The sum expression
+	 */
 	public static @NonNull SqlExpression<Number> sum(@NonNull SqlColumn<? extends Number> column) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Calculates the average of a numeric column.<br>
+	 * Generates SQL: {@code AVG(column)}.<br>
+	 *
+	 * @param column The column to average
+	 * @return The average expression
+	 */
 	public static @NonNull SqlExpression<Number> avg(@NonNull SqlColumn<? extends Number> column) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the minimum value of a column.<br>
+	 * Generates SQL: {@code MIN(column)}.<br>
+	 *
+	 * @param column The column to evaluate
+	 * @param <T> The type of the column
+	 * @return The min expression
+	 */
 	public static <T extends Comparable<T>> @NonNull SqlExpression<T> min(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the maximum value of a column.<br>
+	 * Generates SQL: {@code MAX(column)}.<br>
+	 *
+	 * @param column The column to evaluate
+	 * @param <T> The type of the column
+	 * @return The max expression
+	 */
 	public static <T extends Comparable<T>> @NonNull SqlExpression<T> max(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Counts the number of distinct values in a column.<br>
+	 * Generates SQL: {@code COUNT(DISTINCT column)}.<br>
+	 *
+	 * @param column The column to count distinct values of
+	 * @return The count-distinct expression
+	 */
 	public static @NonNull SqlExpression<Long> countDistinct(@NonNull SqlColumn<?> column) {
 		throw new UnsupportedOperationException();
 	}

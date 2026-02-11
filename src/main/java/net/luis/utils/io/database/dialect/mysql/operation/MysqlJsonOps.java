@@ -29,8 +29,22 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface MysqlJsonOps extends SqlJsonOps {
-	
+
+	/**
+	 * Creates a condition that checks if the JSON column contains the given value.<br>
+	 * Generates SQL: {@code JSON_CONTAINS(column, 'value')}.<br>
+	 *
+	 * @param value The JSON value to check for
+	 * @return The json-contains condition
+	 */
 	@NonNull SqlCondition jsonContains(@NonNull String value);
-	
+
+	/**
+	 * Extracts a value from the JSON column at the given path.<br>
+	 * Generates SQL: {@code JSON_EXTRACT(column, 'path')}.<br>
+	 *
+	 * @param path The JSON path expression
+	 * @return The extracted JSON value expression
+	 */
 	@NonNull SqlExpression<?> jsonExtract(@NonNull String path);
 }

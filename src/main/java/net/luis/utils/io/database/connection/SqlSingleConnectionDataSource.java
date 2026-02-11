@@ -32,10 +32,21 @@ import java.util.logging.Logger;
  */
 public class SqlSingleConnectionDataSource implements DataSource {
 	
+	/**
+	 * Constructs a new single-connection data source with the given JDBC URL.<br>
+	 * @param jdbcUrl The JDBC connection URL
+	 */
 	public SqlSingleConnectionDataSource(@NonNull String jdbcUrl) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Constructs a new single-connection data source with the given JDBC URL and credentials.<br>
+	 *
+	 * @param jdbcUrl The JDBC connection URL
+	 * @param username The database username
+	 * @param password The database password
+	 */
 	public SqlSingleConnectionDataSource(@NonNull String jdbcUrl, @NonNull String username, @NonNull String password) {
 		throw new UnsupportedOperationException();
 	}

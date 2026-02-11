@@ -30,7 +30,15 @@ import org.jspecify.annotations.NonNull;
  */
 public interface SqlForeignColumn<T, R> extends SqlColumn<T> {
 	
+	/**
+	 * Returns the table referenced by this foreign key column.<br>
+	 * @return The referenced table
+	 */
 	@NonNull SqlTable<R> referencedTable();
-	
+
+	/**
+	 * Returns the column referenced by this foreign key column.<br>
+	 * @return The referenced column
+	 */
 	@NonNull SqlColumn<?> referencedColumn();
 }

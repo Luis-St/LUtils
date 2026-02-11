@@ -223,6 +223,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> {
 	
 	/**
 	 * Executes the query and returns one result or null.<br>
+	 *
 	 * @return The single matching result, or null if none found
 	 * @throws SqlQueryException If more than one result is found
 	 */

@@ -32,5 +32,12 @@ import org.jspecify.annotations.Nullable;
 @FunctionalInterface
 public interface SqlForeignKeyLoader<K, V> {
 	
+	/**
+	 * Loads the referenced value for the given key using the specified options.<br>
+	 *
+	 * @param key The key to load the value for
+	 * @param options The load options
+	 * @return The loaded value or {@code null} if not found
+	 */
 	@Nullable V load(@NonNull K key, @NonNull SqlLoadOptions options);
 }

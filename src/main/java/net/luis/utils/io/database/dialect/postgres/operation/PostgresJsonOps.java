@@ -30,9 +30,28 @@ import org.jspecify.annotations.NonNull;
  */
 public interface PostgresJsonOps extends SqlJsonOps {
 	
+	/**
+	 * Creates a condition that checks if the JSON column contains another JSON value.<br>
+	 * Generates SQL: {@code column @> value}.<br>
+	 *
+	 * @return The JSON containment condition
+	 */
 	@NonNull SqlCondition containsJson();
 	
+	/**
+	 * Creates a condition that checks if the JSON column is contained by another JSON value.<br>
+	 * Generates SQL: {@code column <@ value}.<br>
+	 *
+	 * @return The JSON contained-by condition
+	 */
 	@NonNull SqlCondition containedBy();
 	
+	/**
+	 * Queries the JSON column using a path expression.<br>
+	 * Generates SQL: {@code jsonb_path_query(column, 'path')}.<br>
+	 *
+	 * @param path The JSON path expression
+	 * @return The JSON path query expression
+	 */
 	@NonNull SqlExpression<?> getPath(@NonNull String path);
 }

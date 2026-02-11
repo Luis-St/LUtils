@@ -31,17 +31,43 @@ import java.util.List;
  */
 public interface SqlMigration {
 	
+	/**
+	 * Computes the diff between the current and target schema.<br>
+	 *
+	 * @param currentSchema The current schema
+	 * @param targetSchema The target schema
+	 * @return The schema diff
+	 */
 	static @NonNull SqlSchemaDiff diff(@NonNull SqlSchema currentSchema, @NonNull SqlSchema targetSchema) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the list of pending migrations that have not yet been applied.<br>
+	 *
+	 * @param dataSource The data source to check against
+	 * @param migrationsDir The directory containing migration files
+	 * @return The list of pending migrations
+	 */
 	static @NonNull List<SqlMigration> pending(@NonNull DataSource dataSource, @NonNull File migrationsDir) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the version of this migration.<br>
+	 * @return The migration version
+	 */
 	@NonNull String version();
-	
+
+	/**
+	 * Returns the description of this migration.<br>
+	 * @return The migration description
+	 */
 	@NonNull String description();
-	
+
+	/**
+	 * Returns the SQL migration string to execute.<br>
+	 * @return The SQL migration string
+	 */
 	@NonNull String sql();
 }

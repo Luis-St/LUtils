@@ -30,18 +30,38 @@ import java.util.function.Supplier;
  */
 public class SqlAuditContext {
 	
+	/**
+	 * Returns the current audit user.<br>
+	 * @return The current audit user or {@code null} if not set
+	 */
 	public static @Nullable String getCurrentUser() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Sets the current audit user.<br>
+	 * @param user The audit user to set
+	 */
 	public static void setCurrentUser(@NonNull String user) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Clears the current audit context.<br>
+	 */
 	public static void clear() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Executes the given action with the specified audit user set.<br>
+	 * The audit context is cleared after the action completes.<br>
+	 *
+	 * @param user The audit user to set
+	 * @param action The action to execute
+	 * @param <T> The return type of the action
+	 * @return The result of the action
+	 */
 	public static <T> T withUser(@NonNull String user, @NonNull Supplier<T> action) {
 		throw new UnsupportedOperationException();
 	}

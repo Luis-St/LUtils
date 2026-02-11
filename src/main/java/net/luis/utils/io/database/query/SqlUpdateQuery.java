@@ -34,21 +34,83 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface SqlUpdateQuery<T> {
 	
+	/**
+	 * Sets a column to the given value.<br>
+	 * Generates SQL: {@code SET column = value}.<br>
+	 *
+	 * @param column The column to set
+	 * @param value The value to set
+	 * @param <V> The type of the column value
+	 * @return This update query
+	 */
 	<V> @NonNull SqlUpdateQuery<T> set(@NonNull SqlColumn<V> column, @NonNull V value);
-	
+
+	/**
+	 * Sets a column to the result of the given expression.<br>
+	 * Generates SQL: {@code SET column = expression}.<br>
+	 *
+	 * @param column The column to set
+	 * @param expression The expression to evaluate
+	 * @param <V> The type of the column value
+	 * @return This update query
+	 */
 	<V> @NonNull SqlUpdateQuery<T> set(@NonNull SqlColumn<V> column, @NonNull SqlExpression<V> expression);
-	
+
+	/**
+	 * Increments a numeric column by the given amount.<br>
+	 * Generates SQL: {@code SET column = column + amount}.<br>
+	 *
+	 * @param column The column to increment
+	 * @param amount The amount to increment by
+	 * @return This update query
+	 */
 	@NonNull SqlUpdateQuery<T> increment(@NonNull SqlColumn<? extends Number> column, @NonNull Number amount);
-	
+
+	/**
+	 * Sets a column to the current timestamp.<br>
+	 * Generates SQL: {@code SET column = NOW()}.<br>
+	 *
+	 * @param column The column to set
+	 * @return This update query
+	 */
 	@NonNull SqlUpdateQuery<T> setNow(@NonNull SqlColumn<?> column);
-	
+
+	/**
+	 * Sets the condition for the update query.<br>
+	 * Generates SQL: {@code WHERE condition}.<br>
+	 *
+	 * @param condition The condition for the update
+	 * @return This update query
+	 */
 	@NonNull SqlUpdateQuery<T> where(@NonNull SqlCondition condition);
-	
+
+	/**
+	 * Executes the update query.<br>
+	 * Generates SQL: {@code UPDATE table SET ... WHERE ...}.<br>
+	 *
+	 * @return The number of rows updated
+	 */
 	int execute();
-	
+
+	/**
+	 * Executes the update query and returns the updated entities.<br>
+	 * Generates SQL: {@code UPDATE table SET ... WHERE ... RETURNING *}.<br>
+	 *
+	 * @return The list of updated entities
+	 */
 	@NonNull List<T> returning();
-	
+
+	/**
+	 * Asynchronously executes the update query.<br>
+	 * @return A future containing the number of rows updated
+	 */
 	@NonNull CompletableFuture<Integer> executeAsync();
-	
+
+	/**
+	 * Asynchronously executes the update query and returns the updated entities.<br>
+	 * Generates SQL: {@code UPDATE table SET ... WHERE ... RETURNING *}.<br>
+	 *
+	 * @return A future containing the list of updated entities
+	 */
 	@NonNull CompletableFuture<List<T>> returningAsync();
 }

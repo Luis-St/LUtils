@@ -31,29 +31,80 @@ import java.util.Optional;
  */
 public interface SqlTransaction {
 	
+	/**
+	 * Returns whether the current thread is in a transaction.<br>
+	 * @return Whether a transaction is active
+	 */
 	static boolean isInTransaction() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the current transaction, if any.<br>
+	 * @return An optional containing the current transaction
+	 */
 	static @NonNull Optional<SqlTransaction> current() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Throws an exception if no transaction is currently active.<br>
+	 */
 	static void requireActive() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Commits the current transaction.<br>
+	 * Executes SQL: {@code COMMIT}.<br>
+	 */
 	void commit();
-	
+
+	/**
+	 * Rolls back the current transaction.<br>
+	 * Executes SQL: {@code ROLLBACK}.<br>
+	 */
 	void rollback();
-	
+
+	/**
+	 * Rolls back the current transaction to the given savepoint.<br>
+	 * Executes SQL: {@code ROLLBACK TO SAVEPOINT name}.<br>
+	 *
+	 * @param savepoint The savepoint to roll back to
+	 */
 	void rollbackTo(@NonNull SqlSavepoint savepoint);
-	
+
+	/**
+	 * Creates a savepoint with the given name.<br>
+	 * Executes SQL: {@code SAVEPOINT name}.<br>
+	 *
+	 * @param name The name of the savepoint
+	 * @return The created savepoint
+	 */
 	@NonNull SqlSavepoint savepoint(@NonNull String name);
-	
+
+	/**
+	 * Sets the transaction to read-only mode.<br>
+	 * Executes SQL: {@code SET TRANSACTION READ ONLY}.<br>
+	 *
+	 * @return This transaction
+	 */
 	@NonNull SqlTransaction readOnly();
-	
+
+	/**
+	 * Sets the timeout for the transaction.<br>
+	 *
+	 * @param timeout The maximum duration for the transaction
+	 * @return This transaction
+	 */
 	@NonNull SqlTransaction timeout(@NonNull Duration timeout);
-	
+
+	/**
+	 * Sets the isolation level for the transaction.<br>
+	 * Executes SQL: {@code SET TRANSACTION ISOLATION LEVEL ...}.<br>
+	 *
+	 * @param level The isolation level
+	 * @return This transaction
+	 */
 	@NonNull SqlTransaction isolation(@NonNull SqlIsolationLevel level);
 }

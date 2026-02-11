@@ -27,26 +27,64 @@ import org.jspecify.annotations.NonNull;
  */
 public class CommonTableExpression {
 	
+	/**
+	 * Creates a new CTE with the given name.<br>
+	 * Generates SQL: {@code WITH name AS (...)}.<br>
+	 *
+	 * @param name The name of the CTE
+	 * @return The CTE
+	 */
 	public static @NonNull CommonTableExpression of(@NonNull String name) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Creates a new CTE with the given name and query.<br>
+	 * Generates SQL: {@code WITH name AS (...)}.<br>
+	 *
+	 * @param name The name of the CTE
+	 * @param query The select query for the CTE
+	 * @return The CTE
+	 */
 	public static @NonNull CommonTableExpression of(@NonNull String name, @NonNull SqlSelectQuery<?> query) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Creates a new recursive CTE with the given name.<br>
+	 * Generates SQL: {@code WITH RECURSIVE name AS (...)}.<br>
+	 *
+	 * @param name The name of the CTE
+	 * @return The recursive CTE
+	 */
 	public static @NonNull CommonTableExpression recursive(@NonNull String name) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Creates a new recursive CTE with the given name and query.<br>
+	 * Generates SQL: {@code WITH RECURSIVE name AS (...)}.<br>
+	 *
+	 * @param name The name of the CTE
+	 * @param query The select query for the CTE
+	 * @return The recursive CTE
+	 */
 	public static @NonNull CommonTableExpression recursive(@NonNull String name, @NonNull SqlSelectQuery<?> query) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns the name of this CTE.<br>
+	 * @return The CTE name
+	 */
 	public @NonNull String name() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Returns whether this CTE is recursive.<br>
+	 * @return Whether the CTE is recursive
+	 */
 	public boolean isRecursive() {
 		throw new UnsupportedOperationException();
 	}

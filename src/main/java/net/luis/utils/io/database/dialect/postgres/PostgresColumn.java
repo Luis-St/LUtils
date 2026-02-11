@@ -39,23 +39,88 @@ public interface PostgresColumn<T> extends SqlColumn<T> {
 	@Override
 	@NonNull PostgresStringOps string();
 	
+	/**
+	 * Returns array-specific operations for this column.<br>
+	 * @return Array operations accessor
+	 */
 	@NonNull SqlArrayOps<T> array();
 	
+	/**
+	 * Returns PostgreSQL-specific JSON operations for this column.<br>
+	 * @return JSON operations accessor
+	 */
 	@NonNull PostgresJsonOps json();
 	
+	/**
+	 * Creates a case-insensitive pattern matching condition.<br>
+	 * Generates SQL: {@code column ILIKE pattern}.<br>
+	 *
+	 * @param pattern The pattern to match against
+	 * @return The case-insensitive like condition
+	 */
 	@NonNull SqlCondition ilike(@NonNull String pattern);
 	
+	/**
+	 * Creates a negated case-insensitive pattern matching condition.<br>
+	 * Generates SQL: {@code column NOT ILIKE pattern}.<br>
+	 *
+	 * @param pattern The pattern to match against
+	 * @return The negated case-insensitive like condition
+	 */
 	@NonNull SqlCondition notIlike(@NonNull String pattern);
 	
+	/**
+	 * Creates a condition that checks if the array column contains the given element.<br>
+	 * Generates SQL: {@code element = ANY(column)}.<br>
+	 *
+	 * @param element The element to check for
+	 * @return The array contains condition
+	 */
 	@NonNull SqlCondition arrayContains(@NonNull T element);
 	
+	/**
+	 * Creates a condition that checks if the array column overlaps with the given elements.<br>
+	 * Generates SQL: {@code column && ARRAY[...]}.<br>
+	 *
+	 * @param elements The elements to check overlap with
+	 * @return The array overlaps condition
+	 */
 	@NonNull SqlCondition arrayOverlaps(@NonNull List<T> elements);
 	
+	/**
+	 * Creates an aggregate expression that collects all values into an array.<br>
+	 * Generates SQL: {@code ARRAY_AGG(column)}.<br>
+	 *
+	 * @return The array aggregate expression
+	 */
 	@NonNull SqlExpression<?> arrayAgg();
 	
+	/**
+	 * Extracts a JSON value at the specified path and casts it to the given type.<br>
+	 * Generates SQL: {@code column #>> '{path}'}.<br>
+	 *
+	 * @param path The JSON path to extract
+	 * @param type The target type to cast the extracted value to
+	 * @param <R> The result type
+	 * @return The extracted JSON value expression
+	 */
 	<R> @NonNull SqlExpression<R> jsonExtract(@NonNull String path, @NonNull Class<R> type);
 	
+	/**
+	 * Creates a condition that checks if a JSON path exists in the column.<br>
+	 * Generates SQL: {@code jsonb_path_exists(column, 'path')}.<br>
+	 *
+	 * @param path The JSON path to check
+	 * @return The JSON path exists condition
+	 */
 	@NonNull SqlCondition jsonExists(@NonNull String path);
 	
+	/**
+	 * Creates a full-text search condition on this column.<br>
+	 * Generates SQL: {@code to_tsvector(column) @@ to_tsquery('query')}.<br>
+	 *
+	 * @param query The full-text search query
+	 * @return The full-text search condition
+	 */
 	@NonNull SqlCondition fullTextSearch(@NonNull String query);
 }

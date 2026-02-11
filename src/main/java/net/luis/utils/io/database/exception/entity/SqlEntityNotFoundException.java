@@ -42,6 +42,7 @@ public class SqlEntityNotFoundException extends SqlEntityException {
 	
 	/**
 	 * Constructs a new SQL entity not found exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */

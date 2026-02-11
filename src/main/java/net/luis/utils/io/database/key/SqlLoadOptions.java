@@ -29,13 +29,33 @@ import java.time.Duration;
  */
 public interface SqlLoadOptions {
 	
+	/**
+	 * Creates a new load options builder.<br>
+	 * @return The new builder
+	 */
 	static @NonNull SqlLoadOptions builder() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Acquires a row-level lock on the loaded entity.<br>
+	 * Generates SQL: {@code FOR UPDATE}.<br>
+	 *
+	 * @return This load options builder
+	 */
 	@NonNull SqlLoadOptions forUpdate();
 	
+	/**
+	 * Sets the timeout for the load operation.<br>
+	 *
+	 * @param timeout The maximum duration to wait
+	 * @return This load options builder
+	 */
 	@NonNull SqlLoadOptions timeout(@NonNull Duration timeout);
 	
+	/**
+	 * Builds the load options.<br>
+	 * @return The built load options
+	 */
 	@NonNull SqlLoadOptions build();
 }

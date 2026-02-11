@@ -32,10 +32,26 @@ import java.util.logging.Logger;
  */
 public class SqlPooledDataSource implements DataSource {
 	
+	/**
+	 * Constructs a new pooled data source with the given JDBC URL and pool bounds.<br>
+	 *
+	 * @param jdbcUrl The JDBC connection URL
+	 * @param minConnections The minimum number of connections in the pool
+	 * @param maxConnections The maximum number of connections in the pool
+	 */
 	public SqlPooledDataSource(@NonNull String jdbcUrl, int minConnections, int maxConnections) {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Constructs a new pooled data source with the given JDBC URL, credentials, and pool bounds.<br>
+	 *
+	 * @param jdbcUrl The JDBC connection URL
+	 * @param username The database username
+	 * @param password The database password
+	 * @param minConnections The minimum number of connections in the pool
+	 * @param maxConnections The maximum number of connections in the pool
+	 */
 	public SqlPooledDataSource(@NonNull String jdbcUrl, @NonNull String username, @NonNull String password, int minConnections, int maxConnections) {
 		throw new UnsupportedOperationException();
 	}

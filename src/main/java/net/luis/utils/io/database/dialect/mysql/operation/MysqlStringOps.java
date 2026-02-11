@@ -28,6 +28,13 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface MysqlStringOps extends SqlStringOps {
-	
+
+	/**
+	 * Creates a condition that matches the column against a regular expression pattern.<br>
+	 * Generates SQL: {@code column REGEXP 'pattern'}.<br>
+	 *
+	 * @param pattern The regular expression pattern to match
+	 * @return The regexp condition
+	 */
 	@NonNull SqlCondition regexp(@NonNull String pattern);
 }

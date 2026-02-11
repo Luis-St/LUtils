@@ -32,6 +32,16 @@ import org.jspecify.annotations.NonNull;
  */
 public interface MariaTable<T> extends MysqlTable<T> {
 	
+	/**
+	 * Sets whether this table uses system-versioned (temporal) rows.<br>
+	 * Generates SQL: {@code ALTER TABLE ... ADD SYSTEM VERSIONING} or {@code ALTER TABLE ... DROP SYSTEM VERSIONING}.<br>
+	 * <p>
+	 *     System-versioned tables automatically track the history of row changes,<br>
+	 *     allowing temporal queries to retrieve past states of the data.
+	 * </p>
+	 *
+	 * @param versioned Whether the table should be system-versioned
+	 */
 	void setSystemVersioned(boolean versioned);
 	
 	@Override

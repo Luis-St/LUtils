@@ -32,19 +32,57 @@ import java.util.concurrent.Executor;
  */
 public interface SqlDatabaseConfig {
 	
+	/**
+	 * Creates a new database configuration builder.<br>
+	 * @return The new configuration builder
+	 */
 	static @NonNull SqlDatabaseConfig builder() {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Sets the data source for the database connection.<br>
+	 *
+	 * @param dataSource The data source to use
+	 * @return This configuration builder
+	 */
 	@NonNull SqlDatabaseConfig dataSource(@NonNull DataSource dataSource);
 	
+	/**
+	 * Sets the executor for asynchronous operations.<br>
+	 *
+	 * @param executor The executor to use for async operations
+	 * @return This configuration builder
+	 */
 	@NonNull SqlDatabaseConfig asyncExecutor(@NonNull Executor executor);
 	
+	/**
+	 * Sets the connection pool size for asynchronous operations.<br>
+	 *
+	 * @param size The pool size
+	 * @return This configuration builder
+	 */
 	@NonNull SqlDatabaseConfig asyncConnectionPoolSize(int size);
 	
+	/**
+	 * Sets the timestamp source for audit operations.<br>
+	 *
+	 * @param source The audit timestamp source
+	 * @return This configuration builder
+	 */
 	@NonNull SqlDatabaseConfig auditTimestampSource(@NonNull SqlTimestampSource source);
 	
+	/**
+	 * Sets the clock used for audit timestamps.<br>
+	 *
+	 * @param clock The clock to use
+	 * @return This configuration builder
+	 */
 	@NonNull SqlDatabaseConfig auditClock(@NonNull Clock clock);
 	
+	/**
+	 * Builds the database configuration.<br>
+	 * @return The built configuration
+	 */
 	@NonNull SqlDatabaseConfig build();
 }

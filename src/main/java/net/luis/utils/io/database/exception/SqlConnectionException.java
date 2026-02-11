@@ -42,6 +42,7 @@ public class SqlConnectionException extends SqlDatabaseException {
 	
 	/**
 	 * Constructs a new SQL connection exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */

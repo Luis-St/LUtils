@@ -31,5 +31,16 @@ import org.jspecify.annotations.NonNull;
  */
 public interface PostgresSelectQuery<T> extends SqlSelectQuery<T> {
 	
+	/**
+	 * Applies {@code DISTINCT ON} to the select query using the specified columns.<br>
+	 * Generates SQL: {@code SELECT DISTINCT ON (column1, column2, ...) ...}.<br>
+	 * <p>
+	 *     Unlike standard {@code DISTINCT}, PostgreSQL's {@code DISTINCT ON} keeps only the first row<br>
+	 *     for each unique combination of the specified columns. The result depends on the {@code ORDER BY} clause.<br>
+	 * </p>
+	 *
+	 * @param columns The columns to apply DISTINCT ON to
+	 * @return This query for method chaining
+	 */
 	@NonNull PostgresSelectQuery<T> distinctOn(SqlColumn<?> @NonNull ... columns);
 }
