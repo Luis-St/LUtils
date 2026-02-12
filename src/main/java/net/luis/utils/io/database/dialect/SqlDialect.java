@@ -41,7 +41,6 @@ public abstract class SqlDialect<T, C> {
 	public static final MysqlDialect MYSQL = new MysqlDialect();
 	public static final MariaDialect MARIA = new MariaDialect();
 	public static final SqliteDialect SQLITE = new SqliteDialect();
-	public static final H2Dialect H2 = new H2Dialect();
 	public static final SqlDefaultDialect DEFAULT = new SqlDefaultDialect();
 	
 	/**

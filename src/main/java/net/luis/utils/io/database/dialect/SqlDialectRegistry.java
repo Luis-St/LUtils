@@ -42,8 +42,6 @@ public class SqlDialectRegistry {
 			return SqlDialect.MARIA;
 		} else if (jdbcUrl.startsWith("jdbc:sqlite:")) {
 			return SqlDialect.SQLITE;
-		} else if (jdbcUrl.startsWith("jdbc:h2:")) {
-			return SqlDialect.H2;
 		}
 		return SqlDialect.DEFAULT;
 	}
