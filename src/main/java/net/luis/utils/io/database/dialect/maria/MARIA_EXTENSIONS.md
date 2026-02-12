@@ -306,89 +306,9 @@ Generates SQL: `NTILE(buckets) OVER (...)`
 
 Divides rows into the specified number of approximately equal-sized buckets.
 
-### Invisible Columns
-
-#### setInvisible
-```java
-void setInvisible(boolean invisible);
-```
-Generates SQL: `ALTER TABLE ... ALTER COLUMN column SET INVISIBLE` or `SET VISIBLE`
-
-Makes a column invisible (excluded from `SELECT *`) or visible. MariaDB 10.3+.
-
 ---
 
 ## MariaTable Extensions (beyond MySQL)
-
-### System Versioning
-
-#### setSystemVersionedWithPeriod
-```java
-void setSystemVersionedWithPeriod(@NonNull SqlColumn<?> startColumn, @NonNull SqlColumn<?> endColumn);
-```
-Generates SQL: `ALTER TABLE ... ADD PERIOD FOR SYSTEM_TIME (start, end), ADD SYSTEM VERSIONING`
-
-Enables system versioning with explicit period columns for tracking row validity.
-
-#### addHistoryPartition
-```java
-void addHistoryPartition(@NonNull String partitionName, @NonNull String until);
-```
-Generates SQL: `ALTER TABLE ... ADD PARTITION (PARTITION partitionName HISTORY BEFORE 'until')`
-
-Adds a history partition for system-versioned tables. Allows partitioning historical data by time.
-
-#### dropHistoryBefore
-```java
-void dropHistoryBefore(@NonNull String timestamp);
-```
-Generates SQL: `DELETE HISTORY FROM table BEFORE SYSTEM_TIME 'timestamp'`
-
-Deletes historical rows older than the specified timestamp. Only works on system-versioned tables.
-
-### Application-Time Periods
-
-#### addPeriod
-```java
-void addPeriod(@NonNull String name, @NonNull SqlColumn<?> startColumn, @NonNull SqlColumn<?> endColumn);
-```
-Generates SQL: `ALTER TABLE ... ADD PERIOD FOR name (start, end)`
-
-Defines an application-time period. Allows temporal queries based on application-defined time ranges.
-
-#### addWithoutOverlaps
-```java
-void addUniqueWithoutOverlaps(@NonNull String name, @NonNull SqlColumn<?> column, @NonNull String periodName);
-```
-Generates SQL: `ALTER TABLE ... ADD UNIQUE (column, periodName WITHOUT OVERLAPS)`
-
-Adds a unique constraint that prevents overlapping periods for the same key value.
-
-### Storage Options
-
-#### setPageCompressed
-```java
-void setPageCompressed(boolean enabled);
-```
-Generates SQL: `ALTER TABLE ... PAGE_COMPRESSED=1` or `PAGE_COMPRESSED=0`
-
-Enables or disables page-level compression. MariaDB-specific alternative to InnoDB compression.
-
-#### setPageCompressionLevel
-```java
-void setPageCompressionLevel(int level);
-```
-Generates SQL: `ALTER TABLE ... PAGE_COMPRESSION_LEVEL=level`
-
-Sets the page compression level (1-9). Higher values give better compression but use more CPU.
-
-#### setTransactional
-```java
-void setTransactional(boolean transactional);
-```
-Generates SQL: `ALTER TABLE ... TRANSACTIONAL=1` or `TRANSACTIONAL=0`
-
-Enables transactional support for Aria engine tables.
 
 ### Sequences
 
@@ -400,14 +320,6 @@ Generates SQL: `CREATE OR REPLACE SEQUENCE ...`
 
 Creates a sequence, replacing it if it already exists. MariaDB supports this atomic operation.
 
-#### alterSequenceRestart
-```java
-void alterSequenceRestart(@NonNull String sequenceName, long value);
-```
-Generates SQL: `ALTER SEQUENCE sequenceName RESTART WITH value`
-
-Restarts a sequence at the specified value.
-
 ### Table Operations
 
 #### createOrReplace
@@ -417,22 +329,6 @@ void createOrReplace();
 Generates SQL: `CREATE OR REPLACE TABLE ...`
 
 Creates the table, atomically dropping and recreating it if it already exists.
-
-#### addCheckConstraint
-```java
-void addCheckConstraint(@NonNull String name, @NonNull SqlCondition condition);
-```
-Generates SQL: `ALTER TABLE ... ADD CONSTRAINT name CHECK (condition)`
-
-Adds a named check constraint. MariaDB has supported named check constraints since 10.2.
-
-#### setTableComment
-```java
-void setTableComment(@NonNull String comment);
-```
-Generates SQL: `ALTER TABLE ... COMMENT='comment'`
-
-Sets or updates the table comment.
 
 ### Partitioning (MariaDB-specific extensions)
 
@@ -451,30 +347,6 @@ void partitionBySystemTimeInterval(@NonNull String interval);
 Generates SQL: `PARTITION BY SYSTEM_TIME INTERVAL interval`
 
 Partitions by system time using automatic time-based intervals.
-
-#### addPartition
-```java
-void addPartition(@NonNull String name, @NonNull String definition);
-```
-Generates SQL: `ALTER TABLE ... ADD PARTITION (PARTITION name definition)`
-
-Adds a new partition to the table.
-
-#### dropPartition
-```java
-void dropPartition(@NonNull String name);
-```
-Generates SQL: `ALTER TABLE ... DROP PARTITION name`
-
-Drops a partition and its data.
-
-#### reorganizePartition
-```java
-void reorganizePartition(@NonNull String name, @NonNull String newDefinition);
-```
-Generates SQL: `ALTER TABLE ... REORGANIZE PARTITION name INTO (newDefinition)`
-
-Reorganizes an existing partition into a new layout.
 
 ---
 

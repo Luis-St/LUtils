@@ -260,30 +260,6 @@ Generates SQL: `SELECT create_distributed_hypertable('table', 'timeColumn', 'par
 
 Creates a distributed hypertable with a specified replication factor.
 
-#### addDimension
-```java
-void addDimension(@NonNull SqlColumn<?> column, int numPartitions);
-```
-Generates SQL: `SELECT add_dimension('table', 'column', number_partitions => n)`
-
-Adds a space dimension to the hypertable. Data is partitioned across this dimension using hashing.
-
-#### addDimensionByRange
-```java
-void addDimensionByRange(@NonNull SqlColumn<?> column, long rangeSize);
-```
-Generates SQL: `SELECT add_dimension('table', 'column', chunk_time_interval => rangeSize)`
-
-Adds a range-based dimension to the hypertable (e.g., for partitioning by a non-time column).
-
-#### setIntegerNowFunc
-```java
-void setIntegerNowFunc(@NonNull String functionName);
-```
-Generates SQL: `SELECT set_integer_now_func('table', 'functionName')`
-
-Sets the function used to determine "now" for hypertables with integer time columns.
-
 ### Chunk Management
 
 #### showChunks
@@ -302,122 +278,6 @@ Generates SQL: `SELECT show_chunks('table', older_than => 'interval')`
 
 Returns chunks older than the specified duration.
 
-#### dropChunks
-```java
-void dropChunks(@NonNull Duration olderThan);
-```
-Generates SQL: `SELECT drop_chunks('table', older_than => 'interval')`
-
-Drops all chunks older than the specified duration.
-
-#### dropChunksNewerThan
-```java
-void dropChunksNewerThan(@NonNull Duration newerThan);
-```
-Generates SQL: `SELECT drop_chunks('table', newer_than => 'interval')`
-
-Drops all chunks newer than the specified duration.
-
-#### moveChunk
-```java
-void moveChunk(@NonNull String chunkName, @NonNull String targetTablespace);
-```
-Generates SQL: `SELECT move_chunk('chunkName', destination_tablespace => 'target')`
-
-Moves a chunk to a different tablespace. Useful for tiered storage.
-
-#### moveChunkWithIndex
-```java
-void moveChunk(@NonNull String chunkName, @NonNull String targetTablespace, @NonNull String indexTablespace);
-```
-Generates SQL: `SELECT move_chunk('chunkName', destination_tablespace => 'target', index_destination_tablespace => 'indexTarget')`
-
-Moves a chunk and its indexes to different tablespaces.
-
-#### reorderChunk
-```java
-void reorderChunk(@NonNull String chunkName, @NonNull String indexName);
-```
-Generates SQL: `SELECT reorder_chunk('chunkName', index => 'indexName')`
-
-Reorders a chunk's data according to the specified index. Improves query performance.
-
-#### decompressChunk
-```java
-void decompressChunk(@NonNull String chunkName);
-```
-Generates SQL: `SELECT decompress_chunk('chunkName')`
-
-Decompresses a previously compressed chunk.
-
-### Compression Configuration
-
-#### setCompressionSegmentBy
-```java
-void setCompressionSegmentBy(SqlColumn<?> @NonNull ... columns);
-```
-Generates SQL: `ALTER TABLE ... SET (timescaledb.compress, timescaledb.compress_segmentby = 'columns')`
-
-Configures compression with segment-by columns. Data within each segment is compressed separately. Choose columns used in WHERE clauses.
-
-#### setCompressionOrderBy
-```java
-void setCompressionOrderBy(SqlColumn<?> @NonNull ... columns);
-```
-Generates SQL: `ALTER TABLE ... SET (timescaledb.compress, timescaledb.compress_orderby = 'columns')`
-
-Configures the order in which data is stored within compressed segments.
-
-#### setCompressionChunkTimeInterval
-```java
-void setCompressionChunkTimeInterval(@NonNull Duration interval);
-```
-Generates SQL: `ALTER TABLE ... SET (timescaledb.compress, timescaledb.compress_chunk_time_interval = 'interval')`
-
-Sets the time interval for merging small chunks during compression.
-
-### Policy Management
-
-#### removeCompressionPolicy
-```java
-void removeCompressionPolicy();
-```
-Generates SQL: `SELECT remove_compression_policy('table')`
-
-Removes the automatic compression policy.
-
-#### removeRetentionPolicy
-```java
-void removeRetentionPolicy();
-```
-Generates SQL: `SELECT remove_retention_policy('table')`
-
-Removes the automatic data retention policy.
-
-#### removeContinuousAggregatePolicy
-```java
-void removeContinuousAggregatePolicy(@NonNull String viewName);
-```
-Generates SQL: `SELECT remove_continuous_aggregate_policy('viewName')`
-
-Removes the continuous aggregate refresh policy.
-
-#### addReorderPolicy
-```java
-void addReorderPolicy(@NonNull String indexName);
-```
-Generates SQL: `SELECT add_reorder_policy('table', 'indexName')`
-
-Adds an automatic reorder policy that reorders newly created chunks.
-
-#### removeReorderPolicy
-```java
-void removeReorderPolicy();
-```
-Generates SQL: `SELECT remove_reorder_policy('table')`
-
-Removes the automatic reorder policy.
-
 ### Continuous Aggregates
 
 #### createContinuousAggregate
@@ -435,38 +295,6 @@ void createContinuousAggregateNoData(@NonNull String name, @NonNull String query
 Generates SQL: `CREATE MATERIALIZED VIEW name WITH (timescaledb.continuous) AS query WITH NO DATA`
 
 Creates a continuous aggregate without initially populating it.
-
-#### refreshContinuousAggregate
-```java
-void refreshContinuousAggregate(@NonNull String name, @NonNull Instant start, @NonNull Instant end);
-```
-Generates SQL: `CALL refresh_continuous_aggregate('name', 'start', 'end')`
-
-Manually refreshes a continuous aggregate for the specified time range.
-
-#### dropContinuousAggregate
-```java
-void dropContinuousAggregate(@NonNull String name);
-```
-Generates SQL: `DROP MATERIALIZED VIEW name`
-
-Drops a continuous aggregate.
-
-#### enableContinuousAggregateRealtime
-```java
-void enableContinuousAggregateRealtime(@NonNull String name);
-```
-Generates SQL: `ALTER MATERIALIZED VIEW name SET (timescaledb.materialized_only = false)`
-
-Enables real-time aggregation that combines materialized data with recent unmaterialized data.
-
-#### disableContinuousAggregateRealtime
-```java
-void disableContinuousAggregateRealtime(@NonNull String name);
-```
-Generates SQL: `ALTER MATERIALIZED VIEW name SET (timescaledb.materialized_only = true)`
-
-Disables real-time aggregation. Only returns materialized data.
 
 ### Diagnostics
 

@@ -650,44 +650,6 @@ Generates SQL: `DROP VIEW IF EXISTS name`
 
 Drops a view.
 
-### Constraints
-
-#### addCheckConstraint
-```java
-void addCheckConstraint(@NonNull String name, @NonNull SqlCondition condition);
-```
-Generates SQL: `ALTER TABLE ... ADD CONSTRAINT name CHECK (condition)`
-
-Adds a named check constraint.
-
-### Computed Columns
-
-#### addGeneratedColumn
-```java
-void addGeneratedColumn(@NonNull String name, @NonNull SqlColumnType type, @NonNull String expression);
-```
-Generates SQL: `ALTER TABLE ... ADD name type GENERATED ALWAYS AS (expression)`
-
-Adds a generated (computed) column.
-
-### Table Maintenance
-
-#### analyze
-```java
-void analyze();
-```
-Generates SQL: `ANALYZE TABLE table`
-
-Updates table statistics for the query optimizer.
-
-#### setReadOnly
-```java
-void setReadOnly(boolean readOnly);
-```
-Generates SQL: `ALTER TABLE ... SET REFERENTIAL_INTEGRITY readOnly`
-
-Controls read-only mode.
-
 ### Database Settings
 
 #### setMode

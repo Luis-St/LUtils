@@ -739,38 +739,6 @@ Enables foreign key constraint enforcement (disabled by default in SQLite).
 
 ### Maintenance
 
-#### vacuum
-```java
-void vacuum();
-```
-Generates SQL: `VACUUM`
-
-Rebuilds the database file, reclaiming unused space and defragmenting.
-
-#### vacuumInto
-```java
-void vacuumInto(@NonNull String filepath);
-```
-Generates SQL: `VACUUM INTO 'filepath'`
-
-Creates a vacuumed copy of the database at the specified path. Available since SQLite 3.27.0.
-
-#### analyze
-```java
-void analyze();
-```
-Generates SQL: `ANALYZE table`
-
-Updates the statistics used by the query planner.
-
-#### reindex
-```java
-void reindex();
-```
-Generates SQL: `REINDEX table`
-
-Rebuilds all indexes on the table.
-
 #### integrityCheck
 ```java
 @NonNull String integrityCheck();
