@@ -295,6 +295,47 @@ Note: PostgreSQL uses `DECODE` with `'hex'` format. SQLite's `UNHEX` is availabl
 
 ---
 
+## String Aggregation
+
+### Group Concat
+
+Concatenates values from grouped rows into a single string with the specified separator.
+
+| Dialect    | Method Name                | Generated SQL                                        |
+|------------|----------------------------|------------------------------------------------------|
+| PostgreSQL | `groupConcat(separator)`   | `STRING_AGG(column, 'separator')`                    |
+| MySQL      | `groupConcat(separator)`   | `GROUP_CONCAT(column SEPARATOR 'separator')`         |
+| MariaDB    | `groupConcat(separator)`   | `GROUP_CONCAT(column SEPARATOR 'separator')`         |
+| SQLite     | `groupConcat(separator)`   | `GROUP_CONCAT(column, 'separator')`                  |
+
+Note: PostgreSQL uses the `STRING_AGG` function. MySQL and MariaDB use `GROUP_CONCAT` with a `SEPARATOR` clause. SQLite uses `GROUP_CONCAT` with the separator as a second argument. Without explicit ordering, the concatenation order is non-deterministic across all dialects.
+
+### Group Concat Distinct
+
+Concatenates only distinct values from grouped rows into a single string with the specified separator.
+
+| Dialect    | Method Name                        | Generated SQL                                                |
+|------------|------------------------------------|--------------------------------------------------------------|
+| PostgreSQL | `groupConcatDistinct(separator)`   | `STRING_AGG(DISTINCT column, 'separator')`                   |
+| MySQL      | `groupConcatDistinct(separator)`   | `GROUP_CONCAT(DISTINCT column SEPARATOR 'separator')`        |
+| MariaDB    | `groupConcatDistinct(separator)`   | `GROUP_CONCAT(DISTINCT column SEPARATOR 'separator')`        |
+| SQLite     | `groupConcatDistinct(separator)`   | `GROUP_CONCAT(DISTINCT column, 'separator')`                 |
+
+### Group Concat Ordered
+
+Concatenates values from grouped rows with explicit ordering of the aggregated elements.
+
+| Dialect    | Method Name                               | Generated SQL                                                     |
+|------------|-------------------------------------------|-------------------------------------------------------------------|
+| PostgreSQL | `groupConcatOrdered(separator, orderBy)`  | `STRING_AGG(column, 'separator' ORDER BY orderBy)`                |
+| MySQL      | `groupConcatOrdered(separator, orderBy)`  | `GROUP_CONCAT(column ORDER BY orderBy SEPARATOR 'separator')`     |
+| MariaDB    | `groupConcatOrdered(separator, orderBy)`  | `GROUP_CONCAT(column ORDER BY orderBy SEPARATOR 'separator')`     |
+| SQLite     | —                                         | Not available (`GROUP_CONCAT` has no `ORDER BY` support)          |
+
+Note: Without explicit ordering, the concatenation order depends on the internal row processing order, which is non-deterministic. SQLite does not support ordering within `GROUP_CONCAT`; use a subquery with `ORDER BY` as a workaround.
+
+---
+
 ## Key Differences & Limitations
 
 ### SQLite Limitations

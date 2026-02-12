@@ -205,6 +205,56 @@ Note: All dialects also support `PI()` as a constant (no column argument). SQLit
 
 ---
 
+## Bitwise Operations
+
+### Bitwise AND
+
+Returns the bitwise AND of the column value and the mask.
+
+| Dialect    | Method Name     | Generated SQL      |
+|------------|-----------------|---------------------|
+| PostgreSQL | `bitAnd(mask)`  | `column & mask`    |
+| MySQL      | `bitAnd(mask)`  | `column & mask`    |
+| MariaDB    | `bitAnd(mask)`  | `column & mask`    |
+| SQLite     | `bitAnd(mask)`  | `column & mask`    |
+
+### Bitwise OR
+
+Returns the bitwise OR of the column value and the mask.
+
+| Dialect    | Method Name    | Generated SQL       |
+|------------|----------------|---------------------|
+| PostgreSQL | `bitOr(mask)`  | `column \| mask`    |
+| MySQL      | `bitOr(mask)`  | `column \| mask`    |
+| MariaDB    | `bitOr(mask)`  | `column \| mask`    |
+| SQLite     | `bitOr(mask)`  | `column \| mask`    |
+
+### Bitwise XOR
+
+Returns the bitwise exclusive OR of the column value and the mask.
+
+| Dialect    | Method Name     | Generated SQL                            |
+|------------|-----------------|------------------------------------------|
+| PostgreSQL | `bitXor(mask)`  | `column # mask`                          |
+| MySQL      | `bitXor(mask)`  | `column ^ mask`                          |
+| MariaDB    | `bitXor(mask)`  | `column ^ mask`                          |
+| SQLite     | `bitXor(mask)`  | `(column \| mask) - (column & mask)`     |
+
+Note: PostgreSQL uses `#` for bitwise XOR, while MySQL and MariaDB use `^`. SQLite has no dedicated XOR operator; the workaround combines OR and AND to achieve the same result.
+
+### Bitwise NOT
+
+Returns the bitwise complement (all bits inverted) of the column value.
+
+| Dialect    | Method Name  | Generated SQL   |
+|------------|--------------|-----------------|
+| PostgreSQL | `bitNot()`   | `~column`       |
+| MySQL      | `bitNot()`   | `~column`       |
+| MariaDB    | `bitNot()`   | `~column`       |
+| SQLite     | `bitNot()`   | `~column`       |
+
+---
+
 ## Key Differences & Limitations
 
 ### Version Requirements
