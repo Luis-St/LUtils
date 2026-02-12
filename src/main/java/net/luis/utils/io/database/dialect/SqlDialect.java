@@ -20,10 +20,7 @@ package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.io.database.dialect.maria.MariaDialect;
 import net.luis.utils.io.database.dialect.mysql.MysqlDialect;
-import net.luis.utils.io.database.dialect.oracle.OracleDialect;
-import net.luis.utils.io.database.dialect.postgis.PostgisDialect;
 import net.luis.utils.io.database.dialect.postgres.PostgresDialect;
-import net.luis.utils.io.database.dialect.sqlserver.SqlServerDialect;
 import net.luis.utils.io.database.dialect.timescale.TimescaleDialect;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
@@ -41,11 +38,8 @@ public abstract class SqlDialect<T, C> {
 	
 	public static final PostgresDialect POSTGRES = new PostgresDialect();
 	public static final TimescaleDialect TIMESCALE = new TimescaleDialect();
-	public static final PostgisDialect POSTGIS = new PostgisDialect();
 	public static final MysqlDialect MYSQL = new MysqlDialect();
 	public static final MariaDialect MARIA = new MariaDialect();
-	public static final SqlServerDialect SQL_SERVER = new SqlServerDialect();
-	public static final OracleDialect ORACLE = new OracleDialect();
 	public static final SqliteDialect SQLITE = new SqliteDialect();
 	public static final H2Dialect H2 = new H2Dialect();
 	public static final SqlDefaultDialect DEFAULT = new SqlDefaultDialect();

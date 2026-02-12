@@ -44,10 +44,6 @@ public class SqlDialectRegistry {
 			return SqlDialect.SQLITE;
 		} else if (jdbcUrl.startsWith("jdbc:h2:")) {
 			return SqlDialect.H2;
-		} else if (jdbcUrl.startsWith("jdbc:sqlserver:")) {
-			return SqlDialect.SQL_SERVER;
-		} else if (jdbcUrl.startsWith("jdbc:oracle:")) {
-			return SqlDialect.ORACLE;
 		}
 		return SqlDialect.DEFAULT;
 	}
