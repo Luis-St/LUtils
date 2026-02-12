@@ -1,9 +1,26 @@
-# Common Null Handling & Conditional Functions Across Dialects
+# Common Conditional & Null Handling Functions Across Dialects
 
-Null handling and conditional expression functions shared across PostgreSQL, MySQL, MariaDB, and SQLite.
-These follow the SQL standard and are available in all dialects, though some null-safe comparison operators differ in syntax.
+Conditional expressions and null handling functions shared across PostgreSQL, MySQL, MariaDB, and SQLite.
+These follow the SQL standard and are available in all dialects, though some conditional functions and null-safe comparison operators differ in syntax.
 
-The base `SqlColumn<T>` interface already provides `isNull()`, `isNotNull()`, and `ifNull(value)` (two-argument null substitution). The functions below cover multi-value null handling, null-safe comparisons, and conditional min/max expressions.
+The base `SqlColumn<T>` interface already provides `isNull()`, `isNotNull()`, and `ifNull(value)` (two-argument null substitution). The functions below cover conditional branching, multi-value null handling, null-safe comparisons, and conditional min/max expressions.
+
+---
+
+## Conditional Expressions
+
+### If Expression
+
+Evaluates a condition and returns one of two values depending on whether the condition is true or false.
+
+| Dialect    | Method Name                              | Generated SQL                                       |
+|------------|------------------------------------------|-----------------------------------------------------|
+| PostgreSQL | `ifExpression(condition, ifTrue, ifFalse)` | `CASE WHEN condition THEN ifTrue ELSE ifFalse END` |
+| MySQL      | `ifExpression(condition, ifTrue, ifFalse)` | `IF(condition, ifTrue, ifFalse)`                    |
+| MariaDB    | `ifExpression(condition, ifTrue, ifFalse)` | `IF(condition, ifTrue, ifFalse)`                    |
+| SQLite     | `ifExpression(condition, ifTrue, ifFalse)` | `IIF(condition, ifTrue, ifFalse)`                   |
+
+Note: MySQL and MariaDB have a built-in `IF(condition, true_value, false_value)` function. SQLite 3.32.0+ provides `IIF(condition, true_value, false_value)` modeled after the same concept. PostgreSQL has no `IF` or `IIF` function in SQL (only in PL/pgSQL); it uses the SQL standard `CASE WHEN ... THEN ... ELSE ... END` expression instead. All four dialects support the `CASE WHEN` form, but `IF`/`IIF` are more concise where available. The condition must evaluate to a boolean; the `ifTrue` and `ifFalse` values must be of compatible types.
 
 ---
 
@@ -125,10 +142,14 @@ GREATEST(COALESCE(a, 0), COALESCE(b, 0), COALESCE(c, 0))
 
 | Dialect    | Feature                    | Minimum Version      |
 |------------|----------------------------|-----------------------|
+| PostgreSQL | `CASE WHEN`                | 7.0+ (all versions)   |
 | PostgreSQL | `IS DISTINCT FROM`         | 8.4+                  |
 | PostgreSQL | `GREATEST` / `LEAST`       | 8.1+                  |
+| MySQL      | `IF()`                     | 3.23+                 |
 | MySQL      | `<=>` operator             | 3.23+                 |
+| MariaDB    | `IF()`                     | 5.1+                  |
 | MariaDB    | `<=>` operator             | 5.1+                  |
+| SQLite     | `IIF()`                    | 3.32.0 (2020)         |
 | SQLite     | `IS` / `IS NOT` for values | 3.39.0 (2022)         |
 | SQLite     | Multi-argument `MAX`/`MIN` | 3.34.0 (2020)         |
 
@@ -147,6 +168,10 @@ GREATEST(COALESCE(a, 0), COALESCE(b, 0), COALESCE(c, 0))
 | `IS DISTINCT FROM`     | SQL:1999    | Yes        | No    | No      | Yes*   |
 | `IS NOT DISTINCT FROM` | SQL:1999    | Yes        | No    | No      | Yes*   |
 | `GREATEST` / `LEAST`   | No          | Yes        | Yes   | Yes     | No**   |
+| `CASE WHEN`            | SQL:1992    | Yes        | Yes   | Yes     | Yes    |
+| `IF()`                 | No          | No         | Yes   | Yes     | No     |
+| `IIF()`                | No          | No         | No    | No      | Yes*** |
 
 \* SQLite supports the standard syntax since 3.39.0. Earlier versions use `IS` / `IS NOT`.
 \** SQLite uses multi-argument `MAX()` / `MIN()` instead.
+\*** SQLite's `IIF()` is modeled after the same function in Microsoft SQL Server and was added in 3.32.0.
