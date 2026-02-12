@@ -8,55 +8,7 @@ Summary of what already exists.
 
 ### Pattern Matching & Regular Expressions
 
-#### regexpReplace
-```java
-@NonNull SqlExpression<String> regexpReplace(@NonNull Pattern pattern, @NonNull String replacement);
-```
-Generates SQL: `REGEXP_REPLACE(column, 'pattern', 'replacement')`
-
-Replaces all substrings matching the regular expression with the replacement string. Available since MySQL 8.0.
-
-#### regexpInstr
-```java
-@NonNull SqlExpression<Integer> regexpInstr(@NonNull Pattern pattern);
-```
-Generates SQL: `REGEXP_INSTR(column, 'pattern')`
-
-Returns the starting position of the first match of the pattern (1-based), or 0 if no match. Available since MySQL 8.0.
-
-#### regexpSubstr
-```java
-@NonNull SqlExpression<String> regexpSubstr(@NonNull Pattern pattern);
-```
-Generates SQL: `REGEXP_SUBSTR(column, 'pattern')`
-
-Returns the substring matching the regular expression, or null if no match. Available since MySQL 8.0.
-
-#### regexpLike
-```java
-@NonNull SqlCondition regexpLike(@NonNull Pattern pattern);
-```
-Generates SQL: `REGEXP_LIKE(column, 'pattern')`
-
-Function form of the REGEXP operator. Supports optional match type parameter. Available since MySQL 8.0.
-
-#### soundsLike
-```java
-@NonNull SqlCondition soundsLike(@NonNull String value);
-```
-Generates SQL: `column SOUNDS LIKE 'value'`
-
-Phonetic comparison using the SOUNDEX algorithm. Returns true if both sides produce the same SOUNDEX string.
-
 ### Full-Text Search
-
-#### matchAgainstBoolean
-```java
-@NonNull SqlCondition matchAgainstBoolean(@NonNull String searchTerms);
-```
-Generates SQL: `MATCH(column) AGAINST('searchTerms' IN BOOLEAN MODE)`
-
-Full-text search in boolean mode. Supports operators: `+` (must include), `-` (must exclude), `*` (wildcard), `"..."` (phrase), `>` / `<` (relevance modifier).
 
 #### matchAgainstExpansion
 ```java
@@ -65,14 +17,6 @@ Full-text search in boolean mode. Supports operators: `+` (must include), `-` (m
 Generates SQL: `MATCH(column) AGAINST('searchTerms' WITH QUERY EXPANSION)`
 
 Full-text search with automatic query expansion. Performs the search twice: first normally, then again with the most relevant words from the first search added to the query.
-
-#### matchAgainstNaturalLanguage
-```java
-@NonNull SqlExpression<Double> matchAgainstRelevance(@NonNull String searchTerms);
-```
-Generates SQL: `MATCH(column) AGAINST('searchTerms' IN NATURAL LANGUAGE MODE)`
-
-Returns the relevance score of the full-text search match. Can be used in SELECT and ORDER BY.
 
 ### Conditional Functions
 
@@ -83,14 +27,6 @@ Returns the relevance score of the full-text search match. Can be used in SELECT
 Generates SQL: `IF(condition, ifTrue, ifFalse)`
 
 MySQL-specific conditional function. Returns `ifTrue` if the condition is true, otherwise `ifFalse`.
-
-#### nullIf
-```java
-@NonNull SqlExpression<?> nullIf(@NonNull T value);
-```
-Generates SQL: `NULLIF(column, value)`
-
-Returns null if the column equals the given value, otherwise returns the column value.
 
 #### fieldIndex
 ```java
@@ -202,23 +138,7 @@ Generates SQL: `BIT_COUNT(column)`
 
 Returns the number of set bits in the value.
 
-### Encryption & Hashing
-
-#### hex
-```java
-@NonNull SqlExpression<String> hex();
-```
-Generates SQL: `HEX(column)`
-
-Returns the hexadecimal representation of the column value.
-
-#### unhex
-```java
-@NonNull SqlExpression<?> unhex();
-```
-Generates SQL: `UNHEX(column)`
-
-Converts a hexadecimal string back to binary.
+### Hashing
 
 #### md5
 ```java
@@ -295,96 +215,6 @@ Converts an IPv6 or IPv4 address string to a binary representation.
 Generates SQL: `INET6_NTOA(column)`
 
 Converts a binary representation back to an IP address string.
-
----
-
-Note: JSON operations are documented in `JSON_COMMON.md`. Array operations are documented in `ARRAY_COMMON.md`.
-
-## MysqlTable Extensions
-
-### Partitioning
-
-#### partitionByRange
-```java
-void partitionByRange(@NonNull SqlColumn<?> column);
-```
-Generates SQL: `PARTITION BY RANGE (column)`
-
-Configures range partitioning on this table.
-
-#### partitionByRangeColumns
-```java
-void partitionByRangeColumns(SqlColumn<?> @NonNull ... columns);
-```
-Generates SQL: `PARTITION BY RANGE COLUMNS (columns)`
-
-Configures multi-column range partitioning. Supports non-integer columns directly.
-
-#### partitionByList
-```java
-void partitionByList(@NonNull SqlColumn<?> column);
-```
-Generates SQL: `PARTITION BY LIST (column)`
-
-Configures list partitioning on this table.
-
-#### partitionByListColumns
-```java
-void partitionByListColumns(SqlColumn<?> @NonNull ... columns);
-```
-Generates SQL: `PARTITION BY LIST COLUMNS (columns)`
-
-Configures multi-column list partitioning.
-
-#### partitionByHash
-```java
-void partitionByHash(@NonNull SqlColumn<?> column, int partitions);
-```
-Generates SQL: `PARTITION BY HASH (column) PARTITIONS n`
-
-Configures hash partitioning with the specified number of partitions.
-
-#### partitionByKey
-```java
-void partitionByKey(int partitions, SqlColumn<?> @NonNull ... columns);
-```
-Generates SQL: `PARTITION BY KEY (columns) PARTITIONS n`
-
-Configures key partitioning. Similar to hash but uses MySQL's internal hash function.
-
-### Index Types
-
-#### addSpatialIndex
-```java
-void addSpatialIndex(@NonNull String name, SqlColumn<?> @NonNull ... columns);
-```
-Generates SQL: `CREATE SPATIAL INDEX name ON table (columns)`
-
-Creates a spatial index for geometry columns. Requires MyISAM or InnoDB engine.
-
-#### addDescendingIndex
-```java
-void addDescendingIndex(@NonNull String name, SqlColumn<?> @NonNull ... columns);
-```
-Generates SQL: `CREATE INDEX name ON table (column1 DESC, column2 DESC, ...)`
-
-Creates an index with descending key parts. Available since MySQL 8.0.
-
-#### addFunctionalIndex
-```java
-void addFunctionalIndex(@NonNull String name, @NonNull String expression);
-```
-Generates SQL: `CREATE INDEX name ON table ((expression))`
-
-Creates an index on an expression (e.g., `CAST(json->>'$.key' AS UNSIGNED)`). Available since MySQL 8.0.
-
-#### addInvisibleIndex
-```java
-void addInvisibleIndex(@NonNull String name, SqlColumn<?> @NonNull ... columns);
-```
-Generates SQL: `CREATE INDEX name ON table (columns) INVISIBLE`
-
-Creates an invisible index. The optimizer ignores it, useful for testing index removal impact. Available since MySQL 8.0.
 
 ---
 

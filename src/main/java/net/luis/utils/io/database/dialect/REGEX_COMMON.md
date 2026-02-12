@@ -83,7 +83,7 @@ Note: PostgreSQL has a dedicated `~*` operator for case-insensitive matching. My
 
 | Operation              | PostgreSQL | MySQL | MariaDB | SQLite |
 |------------------------|-----------|-------|---------|--------|
-| Regex match            | `~`       | Yes   | Yes     | Yes    |
+| Regex match            | `~`       | Yes   | Yes     | Yes*   |
 | Negated regex match    | `!~`      | Yes   | Yes     | No     |
 | Case-insensitive match | `~*`      | Yes   | Yes     | No     |
 | Regex replace (first)  | Yes       | No    | No      | No     |
@@ -93,13 +93,13 @@ Note: PostgreSQL has a dedicated `~*` operator for case-insensitive matching. My
 
 ### SQLite Limitations
 
-SQLite's `REGEXP` operator is not built-in. It requires a user-defined function (e.g., via `sqlite3_create_function`). Many SQLite distributions and wrappers include a PCRE-based implementation, but availability is not guaranteed. The `GLOB` operator (documented in `SQLITE_EXTENSIONS.md`) is a built-in alternative for simpler pattern matching.
+SQLite's `REGEXP` operator is not built-in. It requires a user-defined function (e.g., via `sqlite3_create_function`). Many SQLite distributions and wrappers include a PCRE-based implementation, but availability is not guaranteed. 
 
 ### Version Requirements
 
 | Dialect    | Minimum Version   | Notes                                                            |
 |------------|-------------------|------------------------------------------------------------------|
-| PostgreSQL | 7.4 (2003)        | POSIX regex has been available since early versions               |
+| PostgreSQL | 7.4 (2003)        | POSIX regex has been available since early versions              |
 | MySQL      | 8.0 (2018)        | `REGEXP_LIKE`, `REGEXP_REPLACE`, `REGEXP_INSTR`, `REGEXP_SUBSTR` |
 | MariaDB    | 10.0.5 (2014)     | PCRE-based regex; `REGEXP_REPLACE` since 10.0.11                 |
-| SQLite     | Any               | Requires user-defined `REGEXP` function                          |
+| SQLite     | Any               | Requires user-defined `REGEXP` function for regex                |
