@@ -50,31 +50,7 @@ Generates SQL: `FOR SYSTEM_TIME BETWEEN 'start' AND 'end'`
 
 Queries all versions of rows that overlapped with the specified period (inclusive on both ends).
 
-### Window Functions (MariaDB additions)
-
-#### percentRank
-```java
-@NonNull SqlExpression<Double> percentRank();
-```
-Generates SQL: `PERCENT_RANK() OVER (...)`
-
-Returns the relative rank as a percentage (0 to 1).
-
-#### cumeDist
-```java
-@NonNull SqlExpression<Double> cumeDist();
-```
-Generates SQL: `CUME_DIST() OVER (...)`
-
-Returns the cumulative distribution (fraction of rows with values less than or equal to the current row).
-
-#### ntile
-```java
-@NonNull SqlExpression<Integer> ntile(int buckets);
-```
-Generates SQL: `NTILE(buckets) OVER (...)`
-
-Divides rows into the specified number of approximately equal-sized buckets.
+Note: Window functions are documented in `WINDOW_COMMON.md`.
 
 ---
 
