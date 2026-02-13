@@ -16,8 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.function;
+package net.luis.utils.io.database.function.scalar;
 
+import net.luis.utils.io.database.function.SqlWindowExpression;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 

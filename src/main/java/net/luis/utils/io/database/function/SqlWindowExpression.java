@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.function;
 
+import net.luis.utils.io.database.function.window.SqlWindowClause;
 import org.jspecify.annotations.NonNull;
 
 /**

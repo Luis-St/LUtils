@@ -16,9 +16,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.function;
+package net.luis.utils.io.database.function.scalar;
 
 import net.luis.utils.io.database.condition.SqlOrderable;
+import net.luis.utils.io.database.function.SqlExpression;
 import org.jspecify.annotations.NonNull;
 
 /**

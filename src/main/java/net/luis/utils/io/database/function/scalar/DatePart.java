@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.function;
+package net.luis.utils.io.database.function.scalar;
 
 /**
  * Enum representing a date part for SQL date functions.<br>

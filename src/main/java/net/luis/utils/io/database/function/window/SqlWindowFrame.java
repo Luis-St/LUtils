@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.function;
+package net.luis.utils.io.database.function.window;
 
 import net.luis.utils.io.database.SqlRenderable;
 import org.jspecify.annotations.NonNull;
