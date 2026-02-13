@@ -18,10 +18,6 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.dialect.maria.MariaDialect;
-import net.luis.utils.io.database.dialect.mysql.MysqlDialect;
-import net.luis.utils.io.database.dialect.postgres.PostgresDialect;
-import net.luis.utils.io.database.dialect.timescale.TimescaleDialect;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
@@ -37,7 +33,6 @@ import org.jspecify.annotations.NonNull;
 public abstract class SqlDialect<T, C> {
 	
 	public static final PostgresDialect POSTGRES = new PostgresDialect();
-	public static final TimescaleDialect TIMESCALE = new TimescaleDialect();
 	public static final MysqlDialect MYSQL = new MysqlDialect();
 	public static final MariaDialect MARIA = new MariaDialect();
 	public static final SqliteDialect SQLITE = new SqliteDialect();

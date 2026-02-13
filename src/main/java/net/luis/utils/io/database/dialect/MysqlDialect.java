@@ -16,17 +16,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.postgres;
+package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 
 /**
- * Abstract base class for PostgreSQL-based SQL dialects.<br>
- * Extended by PostgreSQL, TimescaleDB, and PostGIS dialects.<br>
+ * SQL dialect for MySQL.<br>
  *
  * @author Luis-St
- *
- * @param <T> The type returned by table dialect operations
- * @param <C> The type returned by column dialect operations
  */
-public abstract class AbstractSqlPostgresDialect<T extends PostgresTable<?>, C extends PostgresColumn<?>> extends SqlDialect<T, C> {}
+public class MysqlDialect extends SqlDialect<SqlTable<?>, SqlColumn<?>> {}

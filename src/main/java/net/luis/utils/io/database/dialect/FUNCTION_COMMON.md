@@ -1,9 +1,9 @@
-# Common Conditional & Null Handling Functions Across Dialects
+# Common Conditional, Null Handling & Type Casting Functions Across Dialects
 
-Conditional expressions and null handling functions shared across PostgreSQL, MySQL, MariaDB, and SQLite.
-These follow the SQL standard and are available in all dialects, though some conditional functions and null-safe comparison operators differ in syntax.
+Conditional expressions, null handling and type casting functions shared across PostgreSQL, MySQL, MariaDB, and SQLite.
+These follow the SQL standard and are available in all dialects, though some conditional functions, null-safe comparison operators, and cast target types differ in syntax.
 
-The base `SqlColumn<T>` interface already provides `isNull()`, `isNotNull()`, and `ifNull(value)` (two-argument null substitution). The functions below cover conditional branching, multi-value null handling, null-safe comparisons, and conditional min/max expressions.
+The base `SqlColumn<T>` interface already provides `isNull()`, `isNotNull()`, and `ifNull(value)` (two-argument null substitution). The functions below cover conditional branching, multi-value null handling, null-safe comparisons, conditional min/max expressions, and type casting.
 
 ---
 
@@ -121,6 +121,42 @@ Note: SQLite uses the multi-argument `MIN()` function for this purpose.
 
 ---
 
+## Type Casting
+
+### Cast As
+
+Converts the column value to a different data type. Uses the SQL standard `CAST(expression AS type)` syntax, which is supported by all dialects.
+
+| Dialect    | Method Name      | Generated SQL              |
+|------------|------------------|----------------------------|
+| PostgreSQL | `castAs(type)`   | `CAST(column AS type)`     |
+| MySQL      | `castAs(type)`   | `CAST(column AS type)`     |
+| MariaDB    | `castAs(type)`   | `CAST(column AS type)`     |
+| SQLite     | `castAs(type)`   | `CAST(column AS type)`     |
+
+Note: All four dialects support the SQL standard `CAST` syntax, but the set of available target types differs significantly. PostgreSQL additionally supports the shorthand `column::type` operator, but the common API generates the portable `CAST` form. If the conversion fails, PostgreSQL and SQLite raise an error, while MySQL and MariaDB return a zero value, a truncated value, or `NULL` depending on the target type (with a warning). The `type` parameter should be provided as a dialect-aware type enum so that the correct type name is generated per dialect.
+
+#### Supported Cast Target Types
+
+The target types available in `CAST` vary by dialect. The table below maps common logical types to their dialect-specific equivalents:
+
+| Logical Type | PostgreSQL                    | MySQL                | MariaDB                      | SQLite    |
+|--------------|-------------------------------|----------------------|------------------------------|-----------|
+| Integer      | `INTEGER`                     | `SIGNED` / `UNSIGNED`| `SIGNED` / `UNSIGNED` / `INTEGER` | `INTEGER` |
+| Float        | `REAL` / `DOUBLE PRECISION`   | `FLOAT` / `DOUBLE`   | `FLOAT` / `DOUBLE`          | `REAL`    |
+| Decimal      | `NUMERIC(p,s)` / `DECIMAL(p,s)` | `DECIMAL(p,s)`    | `DECIMAL(p,s)`               | `NUMERIC` |
+| String       | `TEXT` / `VARCHAR(n)`         | `CHAR(n)`            | `CHAR(n)`                    | `TEXT`    |
+| Boolean      | `BOOLEAN`                     | `SIGNED`             | `SIGNED`                     | `NUMERIC` |
+| Date         | `DATE`                        | `DATE`               | `DATE`                       | `TEXT`    |
+| Time         | `TIME`                        | `TIME`               | `TIME`                       | `TEXT`    |
+| Timestamp    | `TIMESTAMP`                   | `DATETIME`           | `DATETIME`                   | `TEXT`    |
+| Binary       | `BYTEA`                       | `BINARY(n)`          | `BINARY(n)`                  | `BLOB`   |
+| JSON         | `JSON` / `JSONB`              | `JSON`               | `JSON`                       | `TEXT`    |
+
+Note: MySQL does not support `CAST(... AS BOOLEAN)` directly; use `CAST(... AS SIGNED)` and compare against `0`. SQLite lacks dedicated date/time types; date and time values are stored and cast as `TEXT` (ISO 8601), `REAL` (Julian day), or `INTEGER` (Unix timestamp). MariaDB added `CAST(... AS INTEGER)` in version 10.4.5; earlier versions require `SIGNED` or `UNSIGNED`. MySQL added `CAST(... AS FLOAT)` and `CAST(... AS DOUBLE)` in version 8.0.17; earlier versions require `DECIMAL` for floating-point casts.
+
+---
+
 ## Key Differences & Limitations
 
 ### Null Handling in GREATEST / LEAST
@@ -152,6 +188,12 @@ GREATEST(COALESCE(a, 0), COALESCE(b, 0), COALESCE(c, 0))
 | SQLite     | `IIF()`                    | 3.32.0 (2020)         |
 | SQLite     | `IS` / `IS NOT` for values | 3.39.0 (2022)         |
 | SQLite     | Multi-argument `MAX`/`MIN` | 3.34.0 (2020)         |
+| PostgreSQL | `CAST`                     | 7.0+ (all versions)   |
+| MySQL      | `CAST`                     | 4.0.2+                |
+| MySQL      | `CAST(... AS FLOAT/DOUBLE)`| 8.0.17+               |
+| MariaDB    | `CAST`                     | 5.1+                  |
+| MariaDB    | `CAST(... AS INTEGER)`     | 10.4.5+               |
+| SQLite     | `CAST`                     | 3.0+ (all versions)   |
 
 ### Type Coercion in GREATEST / LEAST
 
@@ -171,6 +213,7 @@ GREATEST(COALESCE(a, 0), COALESCE(b, 0), COALESCE(c, 0))
 | `CASE WHEN`            | SQL:1992    | Yes        | Yes   | Yes     | Yes    |
 | `IF()`                 | No          | No         | Yes   | Yes     | No     |
 | `IIF()`                | No          | No         | No    | No      | Yes*** |
+| `CAST`                 | SQL:1992    | Yes        | Yes   | Yes     | Yes    |
 
 \* SQLite supports the standard syntax since 3.39.0. Earlier versions use `IS` / `IS NOT`.
 \** SQLite uses multi-argument `MAX()` / `MIN()` instead.

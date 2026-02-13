@@ -16,13 +16,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.timescale;
+package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.dialect.postgres.AbstractSqlPostgresDialect;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 
 /**
- * SQL dialect for TimescaleDB.<br>
+ * SQL dialect for PostgreSQL.<br>
  *
  * @author Luis-St
  */
-public final class TimescaleDialect extends AbstractSqlPostgresDialect<TimescaleTable<?>, TimescaleColumn<?>> {}
+public final class PostgresDialect extends SqlDialect<SqlTable<?>, SqlColumn<?>> {}

@@ -169,6 +169,18 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> {
 	@NonNull Q distinct();
 	
 	/**
+	 * Adds {@code DISTINCT ON} to the query to eliminate duplicate rows based on specified columns.<br>
+	 * <p>
+	 *     This is only natively supported in PostgreSQL.<br>
+	 *     For all other databases, this will be achieved by using a window function.
+	 * </p>
+	 *
+	 * @param columns The columns to determine distinctness
+	 * @return This query for method chaining
+	 */
+	@NonNull Q distinctOn(SqlColumn<?> @NonNull ... columns);
+	
+	/**
 	 * Combines this query with another using {@code UNION} (removes duplicates).<br>
 	 *
 	 * @param other The other query to combine with

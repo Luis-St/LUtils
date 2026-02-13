@@ -16,18 +16,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect.mysql;
+package net.luis.utils.io.database.dialect;
+
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 
 /**
- * Enum representing MySQL storage engines.<br>
+ * SQL dialect for MariaDB.<br>
  *
  * @author Luis-St
  */
-public enum MysqlEngine {
-	
-	INNODB,
-	MYISAM,
-	MEMORY,
-	CSV,
-	ARCHIVE
-}
+public final class MariaDialect extends SqlDialect<SqlTable<?>, SqlColumn<?>> {}
