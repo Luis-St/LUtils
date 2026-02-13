@@ -158,12 +158,6 @@ public interface SqlDialectFeatures {
 	boolean supportsConnectBy();
 	
 	/**
-	 * Returns whether the dialect supports full-text search.<br>
-	 * @return Whether full-text search is supported
-	 */
-	boolean supportsFullTextSearch();
-	
-	/**
 	 * Returns whether the dialect supports identity columns.<br>
 	 * @return Whether identity columns are supported
 	 */

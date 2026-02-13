@@ -31,7 +31,6 @@ public enum SqlIndexMethod {
 	GIST,
 	BRIN,
 	SPGIST,
-	FULLTEXT,
 	CLUSTERED,
 	NONCLUSTERED,
 	COLUMNSTORE,
