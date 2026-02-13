@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.condition;
 
-import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.SqlRenderable;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -26,7 +26,7 @@ import org.jspecify.annotations.NonNull;
  *
  * @author Luis-St
  */
-public interface SqlOrderable {
+public interface SqlOrderable extends SqlRenderable {
 	
 	/**
 	 * Sets the sort order to ascending.<br>
@@ -60,11 +60,4 @@ public interface SqlOrderable {
 	 */
 	@NonNull SqlOrderable nullsLast();
 	
-	/**
-	 * Generates the SQL representation of this orderable element for the given dialect.<br>
-	 *
-	 * @param dialect The SQL dialect to generate SQL for
-	 * @return The dialect-specific SQL string
-	 */
-	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }

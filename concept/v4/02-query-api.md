@@ -126,8 +126,8 @@ List<Row2<User, Long>> ranked = UserTable.TABLE
     .select(
         UserTable.ALL_COLUMNS,
         SqlWindow.rowNumber()
-            .over(SqlWindow.partitionBy(UserTable.STATUS)
-                          .orderBy(UserTable.CREATED_AT.desc()))
+            .over(SqlWindowClause.partitionBy(UserTable.STATUS)
+                               .orderBy(UserTable.CREATED_AT.desc()))
             .as("rank")
     )
     .fetch();

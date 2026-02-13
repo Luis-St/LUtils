@@ -16,36 +16,24 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.migration;
+package net.luis.utils.io.database;
 
-import net.luis.utils.io.database.SqlRenderable;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import org.jspecify.annotations.NonNull;
 
-import java.util.List;
-
 /**
- * Interface representing a SQL schema diff.<br>
+ * Interface for SQL elements that can be rendered to a dialect-specific SQL string.<br>
  *
  * @author Luis-St
  */
-public interface SqlSchemaDiff extends SqlRenderable {
+@FunctionalInterface
+public interface SqlRenderable {
 	
 	/**
-	 * Returns the tables that were added in the target schema.<br>
-	 * @return The list of added table diffs
+	 * Generates the SQL representation of this element for the given dialect.<br>
+	 *
+	 * @param dialect The SQL dialect to generate SQL for
+	 * @return The dialect-specific SQL string
 	 */
-	@NonNull List<SqlTableDiff> getAddedTables();
-	
-	/**
-	 * Returns the tables that were removed from the current schema.<br>
-	 * @return The list of removed table diffs
-	 */
-	@NonNull List<SqlTableDiff> getRemovedTables();
-	
-	/**
-	 * Returns the tables that were modified between schemas.<br>
-	 * @return The list of modified table diffs
-	 */
-	@NonNull List<SqlTableDiff> getModifiedTables();
-	
+	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }

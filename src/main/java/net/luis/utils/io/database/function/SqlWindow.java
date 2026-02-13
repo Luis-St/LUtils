@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.database.function;
 
-import net.luis.utils.io.database.condition.SqlOrderable;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
@@ -35,7 +34,7 @@ public class SqlWindow {
 	 *
 	 * @return The row number expression
 	 */
-	public static @NonNull SqlExpression<Long> rowNumber() {
+	public static @NonNull SqlWindowExpression<Long> rowNumber() {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -45,7 +44,7 @@ public class SqlWindow {
 	 *
 	 * @return The rank expression
 	 */
-	public static @NonNull SqlExpression<Long> rank() {
+	public static @NonNull SqlWindowExpression<Long> rank() {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -55,7 +54,7 @@ public class SqlWindow {
 	 *
 	 * @return The dense rank expression
 	 */
-	public static @NonNull SqlExpression<Long> denseRank() {
+	public static @NonNull SqlWindowExpression<Long> denseRank() {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -66,7 +65,7 @@ public class SqlWindow {
 	 * @param buckets The number of groups
 	 * @return The ntile expression
 	 */
-	public static @NonNull SqlExpression<Long> ntile(int buckets) {
+	public static @NonNull SqlWindowExpression<Long> ntile(int buckets) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -78,7 +77,7 @@ public class SqlWindow {
 	 * @param <T> The type of the column
 	 * @return The lag expression
 	 */
-	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column) {
+	public static <T> @NonNull SqlWindowExpression<T> lag(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -90,41 +89,7 @@ public class SqlWindow {
 	 * @param <T> The type of the column
 	 * @return The lead expression
 	 */
-	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column) {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Applies a window specification to the given expression.<br>
-	 * Generates SQL: {@code expression OVER(...)}.<br>
-	 *
-	 * @param expression The expression to apply the window to
-	 * @param <T> The type of the expression
-	 * @return The windowed expression of the same type
-	 */
-	public static <T> @NonNull SqlExpression<T> over(@NonNull SqlExpression<T> expression) {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Partitions the window by the given columns.<br>
-	 * Generates SQL: {@code PARTITION BY col1, col2}.<br>
-	 *
-	 * @param columns The columns to partition by
-	 * @return The partition expression
-	 */
-	public static @NonNull SqlExpression<?> partitionBy(SqlColumn<?> @NonNull ... columns) {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Orders the window by the given orderables.<br>
-	 * Generates SQL: {@code ORDER BY col1 ASC, col2 DESC}.<br>
-	 *
-	 * @param orderables The orderable expressions
-	 * @return The order-by expression
-	 */
-	public static @NonNull SqlExpression<?> orderBy(SqlOrderable @NonNull ... orderables) {
+	public static <T> @NonNull SqlWindowExpression<T> lead(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -134,7 +99,7 @@ public class SqlWindow {
 	 *
 	 * @return The percent rank expression
 	 */
-	public static @NonNull SqlExpression<Double> percentRank() {
+	public static @NonNull SqlWindowExpression<Double> percentRank() {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -144,7 +109,7 @@ public class SqlWindow {
 	 *
 	 * @return The cumulative distribution expression
 	 */
-	public static @NonNull SqlExpression<Double> cumeDist() {
+	public static @NonNull SqlWindowExpression<Double> cumeDist() {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -157,7 +122,7 @@ public class SqlWindow {
 	 * @param <T> The type of the column
 	 * @return The lag expression
 	 */
-	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column, int offset) {
+	public static <T> @NonNull SqlWindowExpression<T> lag(@NonNull SqlColumn<T> column, int offset) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -171,7 +136,7 @@ public class SqlWindow {
 	 * @param <T> The type of the column
 	 * @return The lag expression
 	 */
-	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column, int offset, @NonNull T defaultValue) {
+	public static <T> @NonNull SqlWindowExpression<T> lag(@NonNull SqlColumn<T> column, int offset, @NonNull T defaultValue) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -184,7 +149,7 @@ public class SqlWindow {
 	 * @param <T> The type of the column
 	 * @return The lead expression
 	 */
-	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column, int offset) {
+	public static <T> @NonNull SqlWindowExpression<T> lead(@NonNull SqlColumn<T> column, int offset) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -198,7 +163,7 @@ public class SqlWindow {
 	 * @param <T> The type of the column
 	 * @return The lead expression
 	 */
-	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column, int offset, @NonNull T defaultValue) {
+	public static <T> @NonNull SqlWindowExpression<T> lead(@NonNull SqlColumn<T> column, int offset, @NonNull T defaultValue) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -210,7 +175,7 @@ public class SqlWindow {
 	 * @param <T> The type of the column
 	 * @return The first value expression
 	 */
-	public static <T> @NonNull SqlExpression<T> firstValue(@NonNull SqlColumn<T> column) {
+	public static <T> @NonNull SqlWindowExpression<T> firstValue(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -222,7 +187,7 @@ public class SqlWindow {
 	 * @param <T> The type of the column
 	 * @return The last value expression
 	 */
-	public static <T> @NonNull SqlExpression<T> lastValue(@NonNull SqlColumn<T> column) {
+	public static <T> @NonNull SqlWindowExpression<T> lastValue(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -235,7 +200,7 @@ public class SqlWindow {
 	 * @param <T> The type of the column
 	 * @return The nth value expression
 	 */
-	public static <T> @NonNull SqlExpression<T> nthValue(@NonNull SqlColumn<T> column, int n) {
+	public static <T> @NonNull SqlWindowExpression<T> nthValue(@NonNull SqlColumn<T> column, int n) {
 		throw new UnsupportedOperationException();
 	}
 }

@@ -34,7 +34,7 @@ public class SqlAgg {
 	 *
 	 * @return The count expression
 	 */
-	public static @NonNull SqlExpression<Long> count() {
+	public static @NonNull SqlWindowExpression<Long> count() {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -46,7 +46,7 @@ public class SqlAgg {
 	 * @param <T> The numeric type of the column
 	 * @return The sum expression of the same type
 	 */
-	public static <T extends Number> @NonNull SqlExpression<T> sum(@NonNull SqlColumn<T> column) {
+	public static <T extends Number> @NonNull SqlWindowExpression<T> sum(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -57,7 +57,7 @@ public class SqlAgg {
 	 * @param column The column to average
 	 * @return The average expression as a double
 	 */
-	public static @NonNull SqlExpression<Double> avg(@NonNull SqlColumn<? extends Number> column) {
+	public static @NonNull SqlWindowExpression<Double> avg(@NonNull SqlColumn<? extends Number> column) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -69,7 +69,7 @@ public class SqlAgg {
 	 * @param <T> The type of the column
 	 * @return The min expression
 	 */
-	public static <T extends Comparable<T>> @NonNull SqlExpression<T> min(@NonNull SqlColumn<T> column) {
+	public static <T extends Comparable<T>> @NonNull SqlWindowExpression<T> min(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -81,7 +81,7 @@ public class SqlAgg {
 	 * @param <T> The type of the column
 	 * @return The max expression
 	 */
-	public static <T extends Comparable<T>> @NonNull SqlExpression<T> max(@NonNull SqlColumn<T> column) {
+	public static <T extends Comparable<T>> @NonNull SqlWindowExpression<T> max(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -92,7 +92,7 @@ public class SqlAgg {
 	 * @param column The column to count distinct values of
 	 * @return The count-distinct expression
 	 */
-	public static @NonNull SqlExpression<Long> countDistinct(@NonNull SqlColumn<?> column) {
+	public static @NonNull SqlWindowExpression<Long> countDistinct(@NonNull SqlColumn<?> column) {
 		throw new UnsupportedOperationException();
 	}
 }

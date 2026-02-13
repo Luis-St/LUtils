@@ -20,7 +20,6 @@ package net.luis.utils.io.database.function;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlOrderable;
-import net.luis.utils.io.database.dialect.SqlDialect;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -132,7 +131,4 @@ public interface SqlExpression<T> extends SqlOrderable {
 	
 	@Override
 	@NonNull SqlExpression<T> nullsLast();
-	
-	@Override
-	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }
