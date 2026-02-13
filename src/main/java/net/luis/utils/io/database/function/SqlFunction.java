@@ -27,7 +27,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlFunction {
-	
+
 	/**
 	 * Returns the first non-null value from the given expressions.<br>
 	 * Generates SQL: {@code COALESCE(val1, val2, ...)}.<br>
@@ -111,6 +111,45 @@ public class SqlFunction {
 	 * @return The function expression
 	 */
 	public static <T> @NonNull SqlExpression<T> of(@NonNull String functionName, @NonNull Class<T> resultType, SqlExpression<?> @NonNull ... args) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Creates an IF expression that returns one of two values based on a condition.<br>
+	 * Generates SQL: {@code IF(condition, ifTrue, ifFalse)} or {@code CASE WHEN condition THEN ifTrue ELSE ifFalse END} depending on the dialect.<br>
+	 *
+	 * @param condition The condition to evaluate
+	 * @param ifTrue The value to return if the condition is true
+	 * @param ifFalse The value to return if the condition is false
+	 * @return The conditional expression
+	 */
+	public static @NonNull SqlExpression<Object> ifExpression(@NonNull SqlCondition condition, @NonNull Object ifTrue, @NonNull Object ifFalse) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Creates a condition that checks if the expression is distinct from the given value.<br>
+	 * Unlike {@code <>}, this treats {@code NULL} as a comparable value.<br>
+	 * Generates SQL: {@code expression IS DISTINCT FROM value} or dialect equivalent.<br>
+	 *
+	 * @param expr The expression to compare
+	 * @param value The value to compare to
+	 * @return The is-distinct-from condition
+	 */
+	public static @NonNull SqlCondition isDistinctFrom(@NonNull SqlExpression<?> expr, @NonNull Object value) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Creates a condition that checks if the expression is not distinct from the given value.<br>
+	 * Unlike {@code =}, this treats {@code NULL} as a comparable value.<br>
+	 * Generates SQL: {@code expression IS NOT DISTINCT FROM value} or dialect equivalent.<br>
+	 *
+	 * @param expr The expression to compare
+	 * @param value The value to compare to
+	 * @return The is-not-distinct-from condition
+	 */
+	public static @NonNull SqlCondition isNotDistinctFrom(@NonNull SqlExpression<?> expr, @NonNull Object value) {
 		throw new UnsupportedOperationException();
 	}
 }

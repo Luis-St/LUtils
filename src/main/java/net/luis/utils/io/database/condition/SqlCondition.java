@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.condition;
 
+import net.luis.utils.io.database.dialect.SqlDialect;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -26,6 +27,14 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlCondition {
+	
+	/**
+	 * Generates the SQL representation of this condition for the given dialect.<br>
+	 *
+	 * @param dialect The SQL dialect to generate SQL for
+	 * @return The dialect-specific SQL string
+	 */
+	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 	
 	/**
 	 * Creates a combined condition using {@code AND}.<br>

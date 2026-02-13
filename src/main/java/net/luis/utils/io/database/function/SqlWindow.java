@@ -28,7 +28,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlWindow {
-	
+
 	/**
 	 * Returns the row number of each row within a result set partition.<br>
 	 * Generates SQL: {@code ROW_NUMBER()}.<br>
@@ -38,7 +38,7 @@ public class SqlWindow {
 	public static @NonNull SqlExpression<Long> rowNumber() {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Returns the rank of each row within a result set partition with gaps.<br>
 	 * Generates SQL: {@code RANK()}.<br>
@@ -48,7 +48,7 @@ public class SqlWindow {
 	public static @NonNull SqlExpression<Long> rank() {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Returns the rank of each row within a result set partition without gaps.<br>
 	 * Generates SQL: {@code DENSE_RANK()}.<br>
@@ -58,7 +58,7 @@ public class SqlWindow {
 	public static @NonNull SqlExpression<Long> denseRank() {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Distributes rows into the specified number of groups.<br>
 	 * Generates SQL: {@code NTILE(buckets)}.<br>
@@ -69,7 +69,7 @@ public class SqlWindow {
 	public static @NonNull SqlExpression<Long> ntile(int buckets) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Returns the value from the previous row in the result set.<br>
 	 * Generates SQL: {@code LAG(column)}.<br>
@@ -81,7 +81,7 @@ public class SqlWindow {
 	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Returns the value from the next row in the result set.<br>
 	 * Generates SQL: {@code LEAD(column)}.<br>
@@ -93,7 +93,7 @@ public class SqlWindow {
 	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Applies a window specification to the given expression.<br>
 	 * Generates SQL: {@code expression OVER(...)}.<br>
@@ -104,7 +104,7 @@ public class SqlWindow {
 	public static @NonNull SqlExpression<?> over(@NonNull SqlExpression<?> expression) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Partitions the window by the given columns.<br>
 	 * Generates SQL: {@code PARTITION BY col1, col2}.<br>
@@ -115,7 +115,7 @@ public class SqlWindow {
 	public static @NonNull SqlExpression<?> partitionBy(SqlColumn<?> @NonNull ... columns) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Orders the window by the given orderables.<br>
 	 * Generates SQL: {@code ORDER BY col1 ASC, col2 DESC}.<br>
@@ -124,6 +124,117 @@ public class SqlWindow {
 	 * @return The order-by expression
 	 */
 	public static @NonNull SqlExpression<?> orderBy(SqlOrderable @NonNull ... orderables) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns the relative rank of each row within a result set partition as a value between 0 and 1.<br>
+	 * Generates SQL: {@code PERCENT_RANK()}.<br>
+	 *
+	 * @return The percent rank expression
+	 */
+	public static @NonNull SqlExpression<Double> percentRank() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns the cumulative distribution of a value within a result set partition.<br>
+	 * Generates SQL: {@code CUME_DIST()}.<br>
+	 *
+	 * @return The cumulative distribution expression
+	 */
+	public static @NonNull SqlExpression<Double> cumeDist() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns the value from the row at the specified offset before the current row.<br>
+	 * Generates SQL: {@code LAG(column, offset)}.<br>
+	 *
+	 * @param column The column to access
+	 * @param offset The number of rows before the current row
+	 * @param <T> The type of the column
+	 * @return The lag expression
+	 */
+	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column, int offset) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns the value from the row at the specified offset before the current row, with a default value for out-of-range rows.<br>
+	 * Generates SQL: {@code LAG(column, offset, defaultValue)}.<br>
+	 *
+	 * @param column The column to access
+	 * @param offset The number of rows before the current row
+	 * @param defaultValue The default value if the offset goes out of range
+	 * @param <T> The type of the column
+	 * @return The lag expression
+	 */
+	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column, int offset, @NonNull T defaultValue) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns the value from the row at the specified offset after the current row.<br>
+	 * Generates SQL: {@code LEAD(column, offset)}.<br>
+	 *
+	 * @param column The column to access
+	 * @param offset The number of rows after the current row
+	 * @param <T> The type of the column
+	 * @return The lead expression
+	 */
+	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column, int offset) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns the value from the row at the specified offset after the current row, with a default value for out-of-range rows.<br>
+	 * Generates SQL: {@code LEAD(column, offset, defaultValue)}.<br>
+	 *
+	 * @param column The column to access
+	 * @param offset The number of rows after the current row
+	 * @param defaultValue The default value if the offset goes out of range
+	 * @param <T> The type of the column
+	 * @return The lead expression
+	 */
+	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column, int offset, @NonNull T defaultValue) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns the first value in an ordered partition.<br>
+	 * Generates SQL: {@code FIRST_VALUE(column)}.<br>
+	 *
+	 * @param column The column to access
+	 * @param <T> The type of the column
+	 * @return The first value expression
+	 */
+	public static <T> @NonNull SqlExpression<T> firstValue(@NonNull SqlColumn<T> column) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns the last value in an ordered partition.<br>
+	 * Generates SQL: {@code LAST_VALUE(column)}.<br>
+	 *
+	 * @param column The column to access
+	 * @param <T> The type of the column
+	 * @return The last value expression
+	 */
+	public static <T> @NonNull SqlExpression<T> lastValue(@NonNull SqlColumn<T> column) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns the nth value in an ordered partition.<br>
+	 * Generates SQL: {@code NTH_VALUE(column, n)}.<br>
+	 *
+	 * @param column The column to access
+	 * @param n The position of the value to return (1-based)
+	 * @param <T> The type of the column
+	 * @return The nth value expression
+	 */
+	public static <T> @NonNull SqlExpression<T> nthValue(@NonNull SqlColumn<T> column, int n) {
 		throw new UnsupportedOperationException();
 	}
 }

@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.database.function;
 
-import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -27,83 +26,83 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlMath {
-	
+
 	/**
-	 * Returns the absolute value of a numeric column.<br>
-	 * Generates SQL: {@code ABS(column)}.<br>
+	 * Returns the absolute value of a numeric expression.<br>
+	 * Generates SQL: {@code ABS(expression)}.<br>
 	 *
-	 * @param column The column to evaluate
+	 * @param expr The expression to evaluate
 	 * @return The absolute value expression
 	 */
-	public static @NonNull SqlExpression<Number> abs(@NonNull SqlColumn<? extends Number> column) {
+	public static @NonNull SqlExpression<Number> abs(@NonNull SqlExpression<? extends Number> expr) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
-	 * Rounds a numeric column to the nearest integer.<br>
-	 * Generates SQL: {@code ROUND(column)}.<br>
+	 * Rounds a numeric expression to the nearest integer.<br>
+	 * Generates SQL: {@code ROUND(expression)}.<br>
 	 *
-	 * @param column The column to round
+	 * @param expr The expression to round
 	 * @return The rounded expression
 	 */
-	public static @NonNull SqlExpression<Number> round(@NonNull SqlColumn<? extends Number> column) {
+	public static @NonNull SqlExpression<Number> round(@NonNull SqlExpression<? extends Number> expr) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
-	 * Returns the smallest integer greater than or equal to the column value.<br>
-	 * Generates SQL: {@code CEIL(column)}.<br>
+	 * Returns the smallest integer greater than or equal to the expression value.<br>
+	 * Generates SQL: {@code CEIL(expression)}.<br>
 	 *
-	 * @param column The column to evaluate
+	 * @param expr The expression to evaluate
 	 * @return The ceiling expression
 	 */
-	public static @NonNull SqlExpression<Number> ceil(@NonNull SqlColumn<? extends Number> column) {
+	public static @NonNull SqlExpression<Number> ceil(@NonNull SqlExpression<? extends Number> expr) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
-	 * Returns the largest integer less than or equal to the column value.<br>
-	 * Generates SQL: {@code FLOOR(column)}.<br>
+	 * Returns the largest integer less than or equal to the expression value.<br>
+	 * Generates SQL: {@code FLOOR(expression)}.<br>
 	 *
-	 * @param column The column to evaluate
+	 * @param expr The expression to evaluate
 	 * @return The floor expression
 	 */
-	public static @NonNull SqlExpression<Number> floor(@NonNull SqlColumn<? extends Number> column) {
+	public static @NonNull SqlExpression<Number> floor(@NonNull SqlExpression<? extends Number> expr) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
-	 * Returns the remainder of the column value divided by the given divisor.<br>
-	 * Generates SQL: {@code MOD(column, divisor)}.<br>
+	 * Returns the remainder of the expression value divided by the given divisor.<br>
+	 * Generates SQL: {@code MOD(expression, divisor)}.<br>
 	 *
-	 * @param column The column to evaluate
+	 * @param expr The expression to evaluate
 	 * @param divisor The divisor
 	 * @return The modulo expression
 	 */
-	public static @NonNull SqlExpression<Number> mod(@NonNull SqlColumn<? extends Number> column, @NonNull Number divisor) {
+	public static @NonNull SqlExpression<Number> mod(@NonNull SqlExpression<? extends Number> expr, @NonNull Number divisor) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
-	 * Raises the column value to the given power.<br>
-	 * Generates SQL: {@code POWER(column, exponent)}.<br>
+	 * Raises the expression value to the given power.<br>
+	 * Generates SQL: {@code POWER(expression, exponent)}.<br>
 	 *
-	 * @param column The column to evaluate
+	 * @param expr The expression to evaluate
 	 * @param exponent The exponent
 	 * @return The power expression
 	 */
-	public static @NonNull SqlExpression<Number> power(@NonNull SqlColumn<? extends Number> column, @NonNull Number exponent) {
+	public static @NonNull SqlExpression<Number> power(@NonNull SqlExpression<? extends Number> expr, @NonNull Number exponent) {
 		throw new UnsupportedOperationException();
 	}
 	
 	/**
-	 * Returns the square root of a numeric column.<br>
-	 * Generates SQL: {@code SQRT(column)}.<br>
+	 * Returns the square root of a numeric expression.<br>
+	 * Generates SQL: {@code SQRT(expression)}.<br>
 	 *
-	 * @param column The column to evaluate
+	 * @param expr The expression to evaluate
 	 * @return The square root expression
 	 */
-	public static @NonNull SqlExpression<Number> sqrt(@NonNull SqlColumn<? extends Number> column) {
+	public static @NonNull SqlExpression<Number> sqrt(@NonNull SqlExpression<? extends Number> expr) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -114,6 +113,242 @@ public class SqlMath {
 	 * @return The random expression
 	 */
 	public static @NonNull SqlExpression<Number> random() {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the sign of a numeric expression (-1, 0, or 1).<br>
+	 * Generates SQL: {@code SIGN(expression)}.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The sign expression
+	 */
+	public static @NonNull SqlExpression<Number> sign(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Rounds a numeric expression to the specified number of decimal places.<br>
+	 * Generates SQL: {@code ROUND(expression, decimals)}.<br>
+	 *
+	 * @param expr The expression to round
+	 * @param decimals The number of decimal places
+	 * @return The rounded expression
+	 */
+	public static @NonNull SqlExpression<Number> round(@NonNull SqlExpression<? extends Number> expr, int decimals) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Truncates a numeric expression to the specified number of decimal places.<br>
+	 * Generates SQL: {@code TRUNCATE(expression, decimals)} or {@code TRUNC(expression, decimals)} depending on the dialect.<br>
+	 *
+	 * @param expr The expression to truncate
+	 * @param decimals The number of decimal places
+	 * @return The truncated expression
+	 */
+	public static @NonNull SqlExpression<Number> truncate(@NonNull SqlExpression<? extends Number> expr, int decimals) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the exponential value of a numeric expression (e^x).<br>
+	 * Generates SQL: {@code EXP(expression)}.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The exponential expression
+	 */
+	public static @NonNull SqlExpression<Number> exp(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the natural logarithm of a numeric expression.<br>
+	 * Generates SQL: {@code LN(expression)}.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The natural logarithm expression
+	 */
+	public static @NonNull SqlExpression<Number> ln(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the base-10 logarithm of a numeric expression.<br>
+	 * Generates SQL: {@code LOG10(expression)} or {@code LOG(10, expression)} depending on the dialect.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The base-10 logarithm expression
+	 */
+	public static @NonNull SqlExpression<Number> log10(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the base-2 logarithm of a numeric expression.<br>
+	 * Generates SQL: {@code LOG2(expression)} or dialect equivalent.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The base-2 logarithm expression
+	 */
+	public static @NonNull SqlExpression<Number> log2(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the sine of a numeric expression (in radians).<br>
+	 * Generates SQL: {@code SIN(expression)}.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The sine expression
+	 */
+	public static @NonNull SqlExpression<Number> sin(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the cosine of a numeric expression (in radians).<br>
+	 * Generates SQL: {@code COS(expression)}.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The cosine expression
+	 */
+	public static @NonNull SqlExpression<Number> cos(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the tangent of a numeric expression (in radians).<br>
+	 * Generates SQL: {@code TAN(expression)}.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The tangent expression
+	 */
+	public static @NonNull SqlExpression<Number> tan(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the arc sine of a numeric expression.<br>
+	 * Generates SQL: {@code ASIN(expression)}.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The arc sine expression
+	 */
+	public static @NonNull SqlExpression<Number> asin(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the arc cosine of a numeric expression.<br>
+	 * Generates SQL: {@code ACOS(expression)}.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The arc cosine expression
+	 */
+	public static @NonNull SqlExpression<Number> acos(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the arc tangent of a numeric expression.<br>
+	 * Generates SQL: {@code ATAN(expression)}.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The arc tangent expression
+	 */
+	public static @NonNull SqlExpression<Number> atan(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the arc tangent of y/x, using the signs to determine the quadrant.<br>
+	 * Generates SQL: {@code ATAN2(y, x)}.<br>
+	 *
+	 * @param y The y-coordinate expression
+	 * @param x The x-coordinate
+	 * @return The arc tangent expression
+	 */
+	public static @NonNull SqlExpression<Number> atan2(@NonNull SqlExpression<? extends Number> y, @NonNull Number x) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Converts a numeric expression from degrees to radians.<br>
+	 * Generates SQL: {@code RADIANS(expression)}.<br>
+	 *
+	 * @param expr The expression in degrees
+	 * @return The radians expression
+	 */
+	public static @NonNull SqlExpression<Number> radians(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Converts a numeric expression from radians to degrees.<br>
+	 * Generates SQL: {@code DEGREES(expression)}.<br>
+	 *
+	 * @param expr The expression in radians
+	 * @return The degrees expression
+	 */
+	public static @NonNull SqlExpression<Number> degrees(@NonNull SqlExpression<? extends Number> expr) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns the value of pi.<br>
+	 * Generates SQL: {@code PI()}.<br>
+	 *
+	 * @return The pi expression
+	 */
+	public static @NonNull SqlExpression<Number> pi() {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Performs a bitwise AND operation between the expression and the given mask.<br>
+	 * Generates SQL: {@code expression & mask} or dialect equivalent.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @param mask The bitmask
+	 * @return The bitwise AND expression
+	 */
+	public static @NonNull SqlExpression<Number> bitAnd(@NonNull SqlExpression<? extends Number> expr, long mask) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Performs a bitwise OR operation between the expression and the given mask.<br>
+	 * Generates SQL: {@code expression | mask} or dialect equivalent.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @param mask The bitmask
+	 * @return The bitwise OR expression
+	 */
+	public static @NonNull SqlExpression<Number> bitOr(@NonNull SqlExpression<? extends Number> expr, long mask) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Performs a bitwise XOR operation between the expression and the given mask.<br>
+	 * Generates SQL: {@code expression ^ mask} or dialect equivalent.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @param mask The bitmask
+	 * @return The bitwise XOR expression
+	 */
+	public static @NonNull SqlExpression<Number> bitXor(@NonNull SqlExpression<? extends Number> expr, long mask) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Performs a bitwise NOT operation on the expression.<br>
+	 * Generates SQL: {@code ~expression} or dialect equivalent.<br>
+	 *
+	 * @param expr The expression to evaluate
+	 * @return The bitwise NOT expression
+	 */
+	public static @NonNull SqlExpression<Number> bitNot(@NonNull SqlExpression<? extends Number> expr) {
 		throw new UnsupportedOperationException();
 	}
 }

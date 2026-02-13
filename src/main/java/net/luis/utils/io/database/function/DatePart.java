@@ -30,5 +30,9 @@ public enum DatePart {
 	DAY,
 	HOUR,
 	MINUTE,
-	SECOND
+	SECOND,
+	QUARTER,
+	WEEK,
+	DAY_OF_WEEK,
+	DAY_OF_YEAR
 }
