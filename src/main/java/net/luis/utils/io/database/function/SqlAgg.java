@@ -43,9 +43,10 @@ public class SqlAgg {
 	 * Generates SQL: {@code SUM(column)}.<br>
 	 *
 	 * @param column The column to sum
-	 * @return The sum expression
+	 * @param <T> The numeric type of the column
+	 * @return The sum expression of the same type
 	 */
-	public static @NonNull SqlExpression<Number> sum(@NonNull SqlColumn<? extends Number> column) {
+	public static <T extends Number> @NonNull SqlExpression<T> sum(@NonNull SqlColumn<T> column) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -54,9 +55,9 @@ public class SqlAgg {
 	 * Generates SQL: {@code AVG(column)}.<br>
 	 *
 	 * @param column The column to average
-	 * @return The average expression
+	 * @return The average expression as a double
 	 */
-	public static @NonNull SqlExpression<Number> avg(@NonNull SqlColumn<? extends Number> column) {
+	public static @NonNull SqlExpression<Double> avg(@NonNull SqlColumn<? extends Number> column) {
 		throw new UnsupportedOperationException();
 	}
 	

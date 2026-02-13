@@ -29,43 +29,43 @@ import java.util.List;
  * @author Luis-St
  */
 public class SqlArray {
-
+	
 	/**
 	 * Appends an element to the end of an array expression.<br>
 	 * Generates SQL: {@code ARRAY_APPEND(expression, element)} or dialect equivalent.<br>
 	 *
 	 * @param expr The array expression
 	 * @param element The element to append
-	 * @param <T> The type of the element
-	 * @return The modified array expression
+	 * @param <T> The type of the array elements
+	 * @return The modified array expression of the same type
 	 */
-	public static <T> @NonNull SqlExpression<Object> append(@NonNull SqlExpression<?> expr, @NonNull T element) {
+	public static <T> @NonNull SqlExpression<List<T>> append(@NonNull SqlExpression<List<T>> expr, @NonNull T element) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Prepends an element to the beginning of an array expression.<br>
 	 * Generates SQL: {@code ARRAY_PREPEND(element, expression)} or dialect equivalent.<br>
 	 *
 	 * @param expr The array expression
 	 * @param element The element to prepend
-	 * @param <T> The type of the element
-	 * @return The modified array expression
+	 * @param <T> The type of the array elements
+	 * @return The modified array expression of the same type
 	 */
-	public static <T> @NonNull SqlExpression<Object> prepend(@NonNull SqlExpression<?> expr, @NonNull T element) {
+	public static <T> @NonNull SqlExpression<List<T>> prepend(@NonNull SqlExpression<List<T>> expr, @NonNull T element) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Removes all occurrences of an element from an array expression.<br>
 	 * Generates SQL: {@code ARRAY_REMOVE(expression, element)} or dialect equivalent.<br>
 	 *
 	 * @param expr The array expression
 	 * @param element The element to remove
-	 * @param <T> The type of the element
-	 * @return The modified array expression
+	 * @param <T> The type of the array elements
+	 * @return The modified array expression of the same type
 	 */
-	public static <T> @NonNull SqlExpression<Object> remove(@NonNull SqlExpression<?> expr, @NonNull T element) {
+	public static <T> @NonNull SqlExpression<List<T>> remove(@NonNull SqlExpression<List<T>> expr, @NonNull T element) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -76,10 +76,10 @@ public class SqlArray {
 	 * @param expr The array expression
 	 * @param oldElement The element to replace
 	 * @param newElement The replacement element
-	 * @param <T> The type of the elements
-	 * @return The modified array expression
+	 * @param <T> The type of the array elements
+	 * @return The modified array expression of the same type
 	 */
-	public static <T> @NonNull SqlExpression<Object> replace(@NonNull SqlExpression<?> expr, @NonNull T oldElement, @NonNull T newElement) {
+	public static <T> @NonNull SqlExpression<List<T>> replace(@NonNull SqlExpression<List<T>> expr, @NonNull T oldElement, @NonNull T newElement) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -89,12 +89,13 @@ public class SqlArray {
 	 *
 	 * @param expr The first array expression
 	 * @param other The second array expression
-	 * @return The concatenated array expression
+	 * @param <T> The type of the array elements
+	 * @return The concatenated array expression of the same type
 	 */
-	public static @NonNull SqlExpression<Object> cat(@NonNull SqlExpression<?> expr, @NonNull SqlExpression<?> other) {
+	public static <T> @NonNull SqlExpression<List<T>> cat(@NonNull SqlExpression<List<T>> expr, @NonNull SqlExpression<List<T>> other) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the length of an array expression.<br>
 	 * Generates SQL: {@code ARRAY_LENGTH(expression, 1)} or {@code CARDINALITY(expression)} depending on the dialect.<br>
@@ -105,7 +106,7 @@ public class SqlArray {
 	public static @NonNull SqlExpression<Integer> length(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the position of an element in an array expression.<br>
 	 * Generates SQL: {@code ARRAY_POSITION(expression, element)} or dialect equivalent.<br>
@@ -118,7 +119,7 @@ public class SqlArray {
 	public static <T> @NonNull SqlExpression<Integer> position(@NonNull SqlExpression<?> expr, @NonNull T element) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Creates a condition that checks if an array expression contains the given element.<br>
 	 * Generates SQL: {@code element = ANY(expression)} or dialect equivalent.<br>
@@ -131,7 +132,7 @@ public class SqlArray {
 	public static <T> @NonNull SqlCondition contains(@NonNull SqlExpression<?> expr, @NonNull T element) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Creates a condition that checks if an array expression contains all of the given elements.<br>
 	 * Generates SQL: {@code expression @> ARRAY[elements]} or dialect equivalent.<br>
@@ -144,7 +145,7 @@ public class SqlArray {
 	public static <T> @NonNull SqlCondition containsAll(@NonNull SqlExpression<?> expr, @NonNull List<T> elements) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Creates a condition that checks if an array expression overlaps with the given elements.<br>
 	 * Generates SQL: {@code expression && ARRAY[elements]} or dialect equivalent.<br>
@@ -170,15 +171,16 @@ public class SqlArray {
 	public static <T> @NonNull SqlCondition isContainedBy(@NonNull SqlExpression<?> expr, @NonNull List<T> elements) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns an array expression with duplicate elements removed.<br>
 	 * Generates SQL: dialect-specific array distinct operation.<br>
 	 *
 	 * @param expr The array expression
-	 * @return The distinct array expression
+	 * @param <T> The type of the array elements
+	 * @return The distinct array expression of the same type
 	 */
-	public static @NonNull SqlExpression<Object> distinct(@NonNull SqlExpression<?> expr) {
+	public static <T> @NonNull SqlExpression<List<T>> distinct(@NonNull SqlExpression<List<T>> expr) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -187,12 +189,13 @@ public class SqlArray {
 	 * Generates SQL: dialect-specific array sort operation.<br>
 	 *
 	 * @param expr The array expression
-	 * @return The sorted array expression
+	 * @param <T> The type of the array elements
+	 * @return The sorted array expression of the same type
 	 */
-	public static @NonNull SqlExpression<Object> sort(@NonNull SqlExpression<?> expr) {
+	public static <T> @NonNull SqlExpression<List<T>> sort(@NonNull SqlExpression<List<T>> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Converts an array expression to a string with the given delimiter.<br>
 	 * Generates SQL: {@code ARRAY_TO_STRING(expression, delimiter)} or dialect equivalent.<br>

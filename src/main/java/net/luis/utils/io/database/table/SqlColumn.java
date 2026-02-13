@@ -199,9 +199,9 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * Generates SQL: {@code IFNULL(column, defaultValue)} if supported by the dialect, otherwise uses a {@code COALESCE(column, defaultValue)}.<br>
 	 *
 	 * @param defaultValue The default value to use when the column is null
-	 * @return The ifnull expression
+	 * @return The if-null expression of the same type as the column
 	 */
-	@NonNull SqlExpression<?> ifNull(@NonNull T defaultValue);
+	@NonNull SqlExpression<T> ifNull(@NonNull T defaultValue);
 	
 	/**
 	 * Creates an aliased version of this column for use in SELECT projections.<br>

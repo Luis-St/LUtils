@@ -28,7 +28,7 @@ import java.time.*;
  * @author Luis-St
  */
 public class SqlDate {
-
+	
 	/**
 	 * Returns the current timestamp.<br>
 	 * Generates SQL: {@code NOW()} or {@code CURRENT_TIMESTAMP} depending on the dialect.<br>
@@ -38,7 +38,7 @@ public class SqlDate {
 	public static @NonNull SqlExpression<LocalDateTime> now() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the current date.<br>
 	 * Generates SQL: {@code CURRENT_DATE}.<br>
@@ -48,7 +48,7 @@ public class SqlDate {
 	public static @NonNull SqlExpression<LocalDate> currentDate() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Extracts the year from a date or timestamp expression.<br>
 	 * Generates SQL: {@code EXTRACT(YEAR FROM expression)}.<br>
@@ -59,7 +59,7 @@ public class SqlDate {
 	public static @NonNull SqlExpression<Integer> year(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Extracts the month from a date or timestamp expression.<br>
 	 * Generates SQL: {@code EXTRACT(MONTH FROM expression)}.<br>
@@ -70,7 +70,7 @@ public class SqlDate {
 	public static @NonNull SqlExpression<Integer> month(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Extracts the day from a date or timestamp expression.<br>
 	 * Generates SQL: {@code EXTRACT(DAY FROM expression)}.<br>
@@ -81,7 +81,7 @@ public class SqlDate {
 	public static @NonNull SqlExpression<Integer> day(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Truncates a timestamp expression to the specified unit.<br>
 	 * Generates SQL: {@code DATE_TRUNC('unit', expression)}.<br>
@@ -93,7 +93,7 @@ public class SqlDate {
 	public static @NonNull SqlExpression<LocalDateTime> dateTrunc(@NonNull SqlExpression<?> expr, @NonNull DatePart unit) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Adds the specified number of days to a date or timestamp expression.<br>
 	 * Generates SQL: {@code expression + INTERVAL 'n DAYS'}.<br>

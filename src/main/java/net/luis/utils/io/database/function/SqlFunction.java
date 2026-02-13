@@ -27,15 +27,17 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlFunction {
-
+	
 	/**
 	 * Returns the first non-null value from the given expressions.<br>
 	 * Generates SQL: {@code COALESCE(val1, val2, ...)}.<br>
 	 *
 	 * @param values The expressions to evaluate
-	 * @return The coalesce expression
+	 * @param <T> The type of the expressions
+	 * @return The coalesce expression of the same type
 	 */
-	public static @NonNull SqlExpression<Object> coalesce(SqlExpression<?> @NonNull ... values) {
+	@SafeVarargs
+	public static <T> @NonNull SqlExpression<T> coalesce(@NonNull SqlExpression<T> @NonNull ... values) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -70,9 +72,11 @@ public class SqlFunction {
 	 * Generates SQL: {@code GREATEST(val1, val2, ...)}.<br>
 	 *
 	 * @param values The expressions to evaluate
-	 * @return The greatest expression
+	 * @param <T> The comparable type of the expressions
+	 * @return The greatest expression of the same type
 	 */
-	public static @NonNull SqlExpression<Object> greatest(SqlExpression<?> @NonNull ... values) {
+	@SafeVarargs
+	public static <T extends Comparable<T>> @NonNull SqlExpression<T> greatest(@NonNull SqlExpression<T> @NonNull ... values) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -81,9 +85,11 @@ public class SqlFunction {
 	 * Generates SQL: {@code LEAST(val1, val2, ...)}.<br>
 	 *
 	 * @param values The expressions to evaluate
-	 * @return The least expression
+	 * @param <T> The comparable type of the expressions
+	 * @return The least expression of the same type
 	 */
-	public static @NonNull SqlExpression<Object> least(SqlExpression<?> @NonNull ... values) {
+	@SafeVarargs
+	public static <T extends Comparable<T>> @NonNull SqlExpression<T> least(@NonNull SqlExpression<T> @NonNull ... values) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -94,9 +100,10 @@ public class SqlFunction {
 	 * @param condition The condition to evaluate
 	 * @param thenValue The value to return if the condition is true
 	 * @param elseValue The value to return if the condition is false
-	 * @return The case-when expression
+	 * @param <T> The type of the values
+	 * @return The case-when expression of the same type
 	 */
-	public static @NonNull SqlExpression<Object> caseWhen(@NonNull SqlCondition condition, @NonNull Object thenValue, @NonNull Object elseValue) {
+	public static <T> @NonNull SqlExpression<T> caseWhen(@NonNull SqlCondition condition, @NonNull T thenValue, @NonNull T elseValue) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -121,9 +128,10 @@ public class SqlFunction {
 	 * @param condition The condition to evaluate
 	 * @param ifTrue The value to return if the condition is true
 	 * @param ifFalse The value to return if the condition is false
-	 * @return The conditional expression
+	 * @param <T> The type of the values
+	 * @return The conditional expression of the same type
 	 */
-	public static @NonNull SqlExpression<Object> ifExpression(@NonNull SqlCondition condition, @NonNull Object ifTrue, @NonNull Object ifFalse) {
+	public static <T> @NonNull SqlExpression<T> ifExpression(@NonNull SqlCondition condition, @NonNull T ifTrue, @NonNull T ifFalse) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -134,9 +142,10 @@ public class SqlFunction {
 	 *
 	 * @param expr The expression to compare
 	 * @param value The value to compare to
+	 * @param <T> The type of the expression and value
 	 * @return The is-distinct-from condition
 	 */
-	public static @NonNull SqlCondition isDistinctFrom(@NonNull SqlExpression<?> expr, @NonNull Object value) {
+	public static <T> @NonNull SqlCondition isDistinctFrom(@NonNull SqlExpression<T> expr, @NonNull T value) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -147,9 +156,10 @@ public class SqlFunction {
 	 *
 	 * @param expr The expression to compare
 	 * @param value The value to compare to
+	 * @param <T> The type of the expression and value
 	 * @return The is-not-distinct-from condition
 	 */
-	public static @NonNull SqlCondition isNotDistinctFrom(@NonNull SqlExpression<?> expr, @NonNull Object value) {
+	public static <T> @NonNull SqlCondition isNotDistinctFrom(@NonNull SqlExpression<T> expr, @NonNull T value) {
 		throw new UnsupportedOperationException();
 	}
 }

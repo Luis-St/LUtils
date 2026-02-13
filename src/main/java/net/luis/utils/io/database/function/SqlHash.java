@@ -26,7 +26,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlHash {
-
+	
 	/**
 	 * Computes the MD5 hash of the given expression.<br>
 	 * Generates SQL: {@code MD5(expression)} or dialect equivalent.<br>
@@ -37,7 +37,7 @@ public class SqlHash {
 	public static @NonNull SqlExpression<String> md5(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Computes the SHA-1 hash of the given expression.<br>
 	 * Generates SQL: {@code SHA1(expression)} or dialect equivalent.<br>
@@ -48,7 +48,7 @@ public class SqlHash {
 	public static @NonNull SqlExpression<String> sha1(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Computes the SHA-224 hash of the given expression.<br>
 	 * Generates SQL: {@code SHA224(expression)} or dialect equivalent.<br>
@@ -59,7 +59,7 @@ public class SqlHash {
 	public static @NonNull SqlExpression<String> sha224(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Computes the SHA-256 hash of the given expression.<br>
 	 * Generates SQL: {@code SHA256(expression)} or dialect equivalent.<br>
@@ -70,7 +70,7 @@ public class SqlHash {
 	public static @NonNull SqlExpression<String> sha256(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Computes the SHA-384 hash of the given expression.<br>
 	 * Generates SQL: {@code SHA384(expression)} or dialect equivalent.<br>
@@ -81,7 +81,7 @@ public class SqlHash {
 	public static @NonNull SqlExpression<String> sha384(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Computes the SHA-512 hash of the given expression.<br>
 	 * Generates SQL: {@code SHA512(expression)} or dialect equivalent.<br>
@@ -92,7 +92,7 @@ public class SqlHash {
 	public static @NonNull SqlExpression<String> sha512(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Computes the CRC32 checksum of the given expression.<br>
 	 * Generates SQL: {@code CRC32(expression)} or dialect equivalent.<br>

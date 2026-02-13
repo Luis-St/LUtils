@@ -27,7 +27,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlString {
-
+	
 	/**
 	 * Converts a string expression to lowercase.<br>
 	 * Generates SQL: {@code LOWER(expression)}.<br>
@@ -38,7 +38,7 @@ public class SqlString {
 	public static @NonNull SqlExpression<String> lower(@NonNull SqlExpression<String> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Converts a string expression to uppercase.<br>
 	 * Generates SQL: {@code UPPER(expression)}.<br>
@@ -49,7 +49,7 @@ public class SqlString {
 	public static @NonNull SqlExpression<String> upper(@NonNull SqlExpression<String> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Removes leading and trailing whitespace from a string expression.<br>
 	 * Generates SQL: {@code TRIM(expression)}.<br>
@@ -60,7 +60,7 @@ public class SqlString {
 	public static @NonNull SqlExpression<String> trim(@NonNull SqlExpression<String> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the length of a string expression.<br>
 	 * Generates SQL: {@code LENGTH(expression)}.<br>
@@ -71,7 +71,7 @@ public class SqlString {
 	public static @NonNull SqlExpression<Integer> length(@NonNull SqlExpression<String> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Extracts a substring from a string expression.<br>
 	 * Generates SQL: {@code SUBSTRING(expression FROM start FOR length)}.<br>

@@ -27,7 +27,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlRegex {
-
+	
 	/**
 	 * Creates a condition that checks if the expression matches the given regex pattern.<br>
 	 * Generates SQL: {@code expression ~ pattern} or dialect equivalent.<br>
@@ -39,7 +39,7 @@ public class SqlRegex {
 	public static @NonNull SqlCondition matches(@NonNull SqlExpression<String> expr, @NonNull String pattern) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Creates a condition that checks if the expression does not match the given regex pattern.<br>
 	 * Generates SQL: {@code expression !~ pattern} or dialect equivalent.<br>
@@ -51,7 +51,7 @@ public class SqlRegex {
 	public static @NonNull SqlCondition notMatches(@NonNull SqlExpression<String> expr, @NonNull String pattern) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Creates a condition that checks if the expression matches the given regex pattern, ignoring case.<br>
 	 * Generates SQL: {@code expression ~* pattern} or dialect equivalent.<br>
@@ -63,7 +63,7 @@ public class SqlRegex {
 	public static @NonNull SqlCondition matchesIgnoreCase(@NonNull SqlExpression<String> expr, @NonNull String pattern) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Replaces all occurrences of a regex pattern in the expression with the given replacement.<br>
 	 * Generates SQL: {@code REGEXP_REPLACE(expression, pattern, replacement)} or dialect equivalent.<br>

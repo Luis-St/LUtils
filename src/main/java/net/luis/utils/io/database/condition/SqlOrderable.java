@@ -29,14 +29,6 @@ import org.jspecify.annotations.NonNull;
 public interface SqlOrderable {
 	
 	/**
-	 * Generates the SQL representation of this orderable element for the given dialect.<br>
-	 *
-	 * @param dialect The SQL dialect to generate SQL for
-	 * @return The dialect-specific SQL string
-	 */
-	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
-	
-	/**
 	 * Sets the sort order to ascending.<br>
 	 * Generates SQL: {@code ASC}.<br>
 	 *
@@ -67,4 +59,12 @@ public interface SqlOrderable {
 	 * @return This orderable with nulls last
 	 */
 	@NonNull SqlOrderable nullsLast();
+	
+	/**
+	 * Generates the SQL representation of this orderable element for the given dialect.<br>
+	 *
+	 * @param dialect The SQL dialect to generate SQL for
+	 * @return The dialect-specific SQL string
+	 */
+	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }

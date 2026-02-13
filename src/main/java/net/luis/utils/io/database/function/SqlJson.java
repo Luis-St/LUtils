@@ -26,7 +26,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlJson {
-
+	
 	/**
 	 * Sets the value at the specified JSON path.<br>
 	 * Generates SQL: {@code JSON_SET(expression, path, value)} or dialect equivalent.<br>
@@ -39,7 +39,7 @@ public class SqlJson {
 	public static @NonNull SqlExpression<String> set(@NonNull SqlExpression<?> expr, @NonNull String path, @NonNull Object value) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Inserts a value at the specified JSON path if it does not already exist.<br>
 	 * Generates SQL: {@code JSON_INSERT(expression, path, value)} or dialect equivalent.<br>
@@ -52,7 +52,7 @@ public class SqlJson {
 	public static @NonNull SqlExpression<String> insert(@NonNull SqlExpression<?> expr, @NonNull String path, @NonNull Object value) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Replaces the value at the specified JSON path if it already exists.<br>
 	 * Generates SQL: {@code JSON_REPLACE(expression, path, value)} or dialect equivalent.<br>
@@ -65,7 +65,7 @@ public class SqlJson {
 	public static @NonNull SqlExpression<String> replace(@NonNull SqlExpression<?> expr, @NonNull String path, @NonNull Object value) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Removes the value at the specified JSON path.<br>
 	 * Generates SQL: {@code JSON_REMOVE(expression, path)} or dialect equivalent.<br>
@@ -77,7 +77,7 @@ public class SqlJson {
 	public static @NonNull SqlExpression<String> remove(@NonNull SqlExpression<?> expr, @NonNull String path) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Merges the given JSON string into the expression using RFC 7396 merge patch semantics.<br>
 	 * Generates SQL: {@code JSON_MERGE_PATCH(expression, json)} or dialect equivalent.<br>
@@ -89,7 +89,7 @@ public class SqlJson {
 	public static @NonNull SqlExpression<String> mergePatch(@NonNull SqlExpression<?> expr, @NonNull String json) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the JSON type of the value at the top level or specified path.<br>
 	 * Generates SQL: {@code JSON_TYPE(expression)} or dialect equivalent.<br>
@@ -100,7 +100,7 @@ public class SqlJson {
 	public static @NonNull SqlExpression<String> typeOf(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the length of a JSON array expression.<br>
 	 * Generates SQL: {@code JSON_ARRAY_LENGTH(expression)} or dialect equivalent.<br>
@@ -111,7 +111,7 @@ public class SqlJson {
 	public static @NonNull SqlExpression<Integer> arrayLength(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the keys of a JSON object expression.<br>
 	 * Generates SQL: {@code JSON_OBJECT_KEYS(expression)} or dialect equivalent.<br>

@@ -29,14 +29,6 @@ import org.jspecify.annotations.NonNull;
 public interface SqlCondition {
 	
 	/**
-	 * Generates the SQL representation of this condition for the given dialect.<br>
-	 *
-	 * @param dialect The SQL dialect to generate SQL for
-	 * @return The dialect-specific SQL string
-	 */
-	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
-	
-	/**
 	 * Creates a combined condition using {@code AND}.<br>
 	 * Generates SQL: {@code cond1 AND cond2 AND ...}.<br>
 	 *
@@ -57,6 +49,14 @@ public interface SqlCondition {
 	static @NonNull SqlCondition or(SqlCondition @NonNull ... conditions) {
 		throw new UnsupportedOperationException();
 	}
+	
+	/**
+	 * Generates the SQL representation of this condition for the given dialect.<br>
+	 *
+	 * @param dialect The SQL dialect to generate SQL for
+	 * @return The dialect-specific SQL string
+	 */
+	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 	
 	/**
 	 * Combines this condition with the given conditions using {@code AND}.<br>

@@ -33,15 +33,6 @@ import org.jspecify.annotations.NonNull;
 public interface SqlExpression<T> extends SqlOrderable {
 	
 	/**
-	 * Generates the SQL representation of this expression for the given dialect.<br>
-	 *
-	 * @param dialect The SQL dialect to generate SQL for
-	 * @return The dialect-specific SQL string
-	 */
-	@Override
-	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
-	
-	/**
 	 * Creates a condition that checks if this expression is equal to the given value.<br>
 	 * Generates SQL: {@code column = value}.<br>
 	 *
@@ -141,4 +132,7 @@ public interface SqlExpression<T> extends SqlOrderable {
 	
 	@Override
 	@NonNull SqlExpression<T> nullsLast();
+	
+	@Override
+	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }
