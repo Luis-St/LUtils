@@ -18,7 +18,9 @@
 
 package net.luis.utils.io.database.query;
 
+import net.luis.utils.io.database.SqlRenderable;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.function.SqlExpression;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
@@ -33,7 +35,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * @param <T> The type of the entity
  */
-public interface SqlUpdateQuery<T> {
+public interface SqlUpdateQuery<T> extends SqlRenderable {
 	
 	/**
 	 * Sets a column to the given value.<br>
@@ -114,4 +116,7 @@ public interface SqlUpdateQuery<T> {
 	 * @return A future containing the list of updated entities
 	 */
 	@NonNull CompletableFuture<List<T>> returningAsync();
+	
+	@Override
+	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }

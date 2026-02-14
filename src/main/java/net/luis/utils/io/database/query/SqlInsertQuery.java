@@ -18,12 +18,12 @@
 
 package net.luis.utils.io.database.query;
 
-import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.SqlRenderable;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 
 /**
  * Interface representing a SQL insert query.<br>
@@ -32,56 +32,7 @@ import java.util.function.Function;
  *
  * @param <T> The type of the entity
  */
-public interface SqlInsertQuery<T> {
-	
-	/**
-	 * Adds an entity to be inserted.<br>
-	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...)}.<br>
-	 *
-	 * @param entity The entity to insert
-	 * @return This insert query
-	 */
-	@NonNull SqlInsertQuery<T> insert(@NonNull T entity);
-	
-	/**
-	 * Adds multiple entities to be inserted.<br>
-	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...), (...)}.<br>
-	 *
-	 * @param entities The entities to insert
-	 * @return This insert query
-	 */
-	@SuppressWarnings("unchecked")
-	@NonNull SqlInsertQuery<T> insert(T @NonNull ... entities);
-	
-	/**
-	 * Adds an entity to be upserted.<br>
-	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...) ON CONFLICT (column) DO UPDATE SET ...}.<br>
-	 *
-	 * @param entity The entity to upsert
-	 * @param conflictColumn The column that may cause a conflict
-	 * @param onConflict The function to apply on conflict
-	 * @return This insert query
-	 */
-	@NonNull SqlInsertQuery<T> upsert(@NonNull T entity, @NonNull SqlColumn<?> conflictColumn, @NonNull Function<T, T> onConflict);
-	
-	/**
-	 * Adds an entity to be inserted, ignoring conflicts.<br>
-	 * Generates SQL: {@code INSERT OR IGNORE INTO table (...) VALUES (...)}.<br>
-	 *
-	 * @param entity The entity to insert
-	 * @param conflictColumns The columns that may cause a conflict
-	 * @return This insert query
-	 */
-	@NonNull SqlInsertQuery<T> insertOrIgnore(@NonNull T entity, SqlColumn<?> @NonNull ... conflictColumns);
-	
-	/**
-	 * Inserts data from a select query.<br>
-	 * Generates SQL: {@code INSERT INTO table (...) SELECT ...}.<br>
-	 *
-	 * @param query The select query to insert from
-	 * @return This insert query
-	 */
-	@NonNull SqlInsertQuery<T> fromSelect(@NonNull SqlSelectQuery<?> query);
+public interface SqlInsertQuery<T> extends SqlRenderable {
 	
 	/**
 	 * Executes the insert query.<br>
@@ -122,4 +73,7 @@ public interface SqlInsertQuery<T> {
 	 * @return A future containing the list of inserted entities
 	 */
 	@NonNull CompletableFuture<List<T>> fetchInsertedAsync();
+	
+	@Override
+	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }

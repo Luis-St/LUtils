@@ -19,8 +19,10 @@
 package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.SqlPage;
+import net.luis.utils.io.database.SqlRenderable;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlOrderable;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.entity.SqlEntityNotFoundException;
 import net.luis.utils.io.database.exception.query.SqlQueryException;
 import net.luis.utils.io.database.table.SqlColumn;
@@ -42,7 +44,7 @@ import java.util.stream.Stream;
  * @param <T> The type of the result
  * @param <Q> The self-referencing query type for fluent API support
  */
-public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> {
+public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> extends SqlRenderable {
 	
 	/**
 	 * Adds a Common Table Expression (CTE) to the query.<br>
@@ -317,14 +319,11 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> {
 	@NonNull CompletableFuture<SqlPage<T>> fetchPageAsync(int page, int pageSize);
 	
 	/**
-	 * Returns the SQL string representation of this query.<br>
-	 * @return The generated SQL string
-	 */
-	@NonNull String toSql();
-	
-	/**
 	 * Returns the parameter values for this query.<br>
 	 * @return A list of parameter values in order
 	 */
 	@NonNull List<Object> getParameters();
+	
+	@Override
+	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }

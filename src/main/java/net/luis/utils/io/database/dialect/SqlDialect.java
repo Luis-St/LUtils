@@ -32,12 +32,6 @@ import org.jspecify.annotations.NonNull;
  */
 public abstract class SqlDialect<T, C> {
 	
-	public static final PostgresDialect POSTGRES = new PostgresDialect();
-	public static final MysqlDialect MYSQL = new MysqlDialect();
-	public static final MariaDialect MARIA = new MariaDialect();
-	public static final SqliteDialect SQLITE = new SqliteDialect();
-	public static final SqlDefaultDialect DEFAULT = new SqlDefaultDialect();
-	
 	/**
 	 * Returns the identifier of this dialect.<br>
 	 * @return The dialect identifier

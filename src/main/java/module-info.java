@@ -116,7 +116,6 @@ module net.luis.utils {
 	exports net.luis.utils.io.database.function.scalar;
 	exports net.luis.utils.io.database.function.window;
 	exports net.luis.utils.io.database.index;
-	exports net.luis.utils.io.database.key;
 	exports net.luis.utils.io.database.listener;
 	exports net.luis.utils.io.database.migration;
 	exports net.luis.utils.io.database.operation;

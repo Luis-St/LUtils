@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.transaction;
 
 import net.luis.utils.io.database.SqlIsolationLevel;
+import net.luis.utils.io.database.audit.SqlAuditContext;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
@@ -107,4 +108,13 @@ public interface SqlTransaction {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction isolation(@NonNull SqlIsolationLevel level);
+	
+	/**
+	 * Sets the audit context for this transaction.<br>
+	 * The audit context can be used to track metadata about the transaction for auditing purposes, such as the user performing the transaction, the reason for the transaction, or any relevant tags.<br>
+	 *
+	 * @param context The audit context to set for this transaction
+	 * @return This transaction
+	 */
+	@NonNull SqlTransaction auditContext(@NonNull SqlAuditContext context);
 }

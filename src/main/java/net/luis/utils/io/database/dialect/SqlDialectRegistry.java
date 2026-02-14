@@ -28,6 +28,27 @@ import org.jspecify.annotations.NonNull;
 public class SqlDialectRegistry {
 	
 	/**
+	 * Sql dialect for PostgreSQL databases.<br>
+	 */
+	public static final PostgresDialect POSTGRES = new PostgresDialect();
+	/**
+	 * Sql dialect for MySQL databases.<br>
+	 */
+	public static final MysqlDialect MYSQL = new MysqlDialect();
+	/**
+	 * Sql dialect for MariaDB databases.<br>
+	 */
+	public static final MariaDialect MARIA = new MariaDialect();
+	/**
+	 * Sql dialect for SQLite databases.<br>
+	 */
+	public static final SqliteDialect SQLITE = new SqliteDialect();
+	/**
+	 * Default SQL dialect for unknown databases.<br>
+	 */
+	public static final SqlDefaultDialect DEFAULT = new SqlDefaultDialect();
+	
+	/**
 	 * Detects the SQL dialect from the given JDBC URL prefix.<br>
 	 *
 	 * @param jdbcUrl The JDBC URL to detect the dialect from
@@ -35,14 +56,14 @@ public class SqlDialectRegistry {
 	 */
 	public static @NonNull SqlDialect<?, ?> detect(@NonNull String jdbcUrl) {
 		if (jdbcUrl.startsWith("jdbc:postgresql:")) {
-			return SqlDialect.POSTGRES;
+			return POSTGRES;
 		} else if (jdbcUrl.startsWith("jdbc:mysql:")) {
-			return SqlDialect.MYSQL;
+			return MYSQL;
 		} else if (jdbcUrl.startsWith("jdbc:mariadb:")) {
-			return SqlDialect.MARIA;
+			return MARIA;
 		} else if (jdbcUrl.startsWith("jdbc:sqlite:")) {
-			return SqlDialect.SQLITE;
+			return SQLITE;
 		}
-		return SqlDialect.DEFAULT;
+		return DEFAULT;
 	}
 }

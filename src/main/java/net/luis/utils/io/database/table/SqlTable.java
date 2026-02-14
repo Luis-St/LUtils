@@ -18,22 +18,15 @@
 
 package net.luis.utils.io.database.table;
 
-import net.luis.utils.io.database.SqlDatabase;
-import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlDatabaseException;
-import net.luis.utils.io.database.function.SqlExpression;
-import net.luis.utils.io.database.function.scalar.SqlAgg;
 import net.luis.utils.io.database.index.SqlIndexDefinition;
 import net.luis.utils.io.database.index.SqlIndexInfo;
 import net.luis.utils.io.database.listener.SqlEntityListener;
-import net.luis.utils.io.database.query.*;
+import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.sequence.SqlSequenceDefinition;
-import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Interface representing a SQL table.<br>
@@ -42,7 +35,7 @@ import java.util.function.Function;
  *
  * @param <T> The type of the entity
  */
-public interface SqlTable<T> {
+public interface SqlTable<T> extends SqlQueryProvider<T> {
 	
 	/**
 	 * Creates a new table reference for the specified table name and entity type.<br>
@@ -55,44 +48,6 @@ public interface SqlTable<T> {
 	static <T> @NonNull SqlTable<T> of(@NonNull String name, @NonNull Class<T> type) {
 		throw new UnsupportedOperationException();
 	}
-	
-	/**
-	 * Returns a view of this table bound to the specified database.<br>
-	 *
-	 * @param database The database to use
-	 * @return A table reference bound to the database
-	 */
-	@NonNull SqlTable<T> from(@NonNull SqlDatabase database);
-	
-	/**
-	 * Returns a view of this table bound to the specified transaction.<br>
-	 *
-	 * @param transaction The transaction to use
-	 * @return A table reference bound to the transaction
-	 */
-	@NonNull SqlTable<T> withIn(@NonNull SqlTransaction transaction);
-	
-	/**
-	 * Returns a scoped view of this table where automatic version checks are suppressed.<br>
-	 * <p>
-	 *     Entity-level {@link #update(Object)} and {@link #delete(Object)} on the returned view<br>
-	 *     will not add automatic {@code WHERE version = ?} and {@code SET version = version + 1} clauses.<br>
-	 *     Composable with {@link #from(SqlDatabase)} and {@link #withIn(SqlTransaction)}.
-	 * </p>
-	 *
-	 * @return A table view with version checking disabled
-	 */
-	@NonNull SqlTable<T> skipVersionCheck();
-	
-	/**
-	 * Returns a dialect-specific view of this table.<br>
-	 *
-	 * @param dialect The SQL dialect to use
-	 * @param <TT> The dialect table type
-	 * @param <CC> The dialect column type
-	 * @return The dialect-specific table
-	 */
-	<TT, CC> @NonNull TT dialect(@NonNull SqlDialect<TT, CC> dialect);
 	
 	/**
 	 * Returns a column reference for the specified column name and type.<br>
@@ -126,112 +81,6 @@ public interface SqlTable<T> {
 	 * @return A version column reference
 	 */
 	<V> @NonNull SqlVersionColumn<T, V> versionColumn(@NonNull String name, @NonNull Class<V> type);
-	
-	/**
-	 * Creates a select query for all columns of this table.<br>
-	 * @return A select query returning full entities
-	 */
-	@NonNull SqlSelectQuery<T> select();
-	
-	/**
-	 * Creates a select query for the specified expressions (columns, aggregates, functions).<br>
-	 * Supports columns, aliased columns via {@link SqlColumn#as(String)}, and SQL expressions like aggregates ({@link SqlAgg}).<br>
-	 *
-	 * @param expressions The expressions to select
-	 * @return A projection query returning the selected values
-	 */
-	@NonNull SqlSelectProjectionQuery<?> select(SqlExpression<?> @NonNull ... expressions);
-	
-	/**
-	 * Creates a subquery selecting the specified expressions.<br>
-	 * Subqueries can be used in IN conditions or EXISTS checks.<br>
-	 *
-	 * @param expressions The expressions to select
-	 * @return A select query for use as a subquery
-	 */
-	@NonNull SqlSelectQuery<?> subquery(SqlExpression<?> @NonNull ... expressions);
-	
-	/**
-	 * Creates an insert query builder for this table.<br>
-	 * @return An insert query builder
-	 */
-	@NonNull SqlInsertQuery<T> insert();
-	
-	/**
-	 * Inserts an entity into this table.<br>
-	 *
-	 * @param entity The entity to insert
-	 * @return The inserted entity (with generated values populated)
-	 */
-	@NonNull T insert(@NonNull T entity);
-	
-	/**
-	 * Inserts multiple entities into this table.<br>
-	 *
-	 * @param entities The entities to insert
-	 * @return The inserted entities (with generated values populated)
-	 */
-	@SuppressWarnings("unchecked")
-	@NonNull List<T> insert(T @NonNull ... entities);
-	
-	/**
-	 * Inserts a collection of entities into this table.<br>
-	 *
-	 * @param entities The collection of entities to insert
-	 * @return The inserted entities (with generated values populated)
-	 */
-	@NonNull List<T> insert(@NonNull Collection<T> entities);
-	
-	/**
-	 * Inserts a collection of entities into this table in batches.<br>
-	 *
-	 * @param entities The collection of entities to insert
-	 * @param batchSize The number of entities per batch
-	 * @return The inserted entities (with generated values populated)
-	 */
-	@NonNull List<T> insert(@NonNull Collection<T> entities, int batchSize);
-	
-	/**
-	 * Inserts or updates an entity based on conflict detection.<br>
-	 *
-	 * @param entity The entity to insert or update
-	 * @param conflictColumn The column to detect conflicts on
-	 * @param onConflict Function to apply on conflict, receives existing entity
-	 * @return The resulting entity
-	 */
-	@NonNull T upsert(@NonNull T entity, @NonNull SqlColumn<?> conflictColumn, @NonNull Function<T, T> onConflict);
-	
-	/**
-	 * Inserts an entity, ignoring if a conflict occurs.<br>
-	 *
-	 * @param entity The entity to insert
-	 * @param conflictColumns The columns to detect conflicts on
-	 */
-	void insertOrIgnore(@NonNull T entity, SqlColumn<?> @NonNull ... conflictColumns);
-	
-	/**
-	 * Creates an update query builder for this table.<br>
-	 * @return An update query builder
-	 */
-	@NonNull SqlUpdateQuery<T> update();
-	
-	/**
-	 * Updates an entity in this table.<br>
-	 * @param entity The entity to update
-	 */
-	void update(@NonNull T entity);
-	
-	/**
-	 * Creates a delete query builder for this table.<br>
-	 * @return A delete query builder
-	 */
-	@NonNull SqlDeleteQuery<T> delete();
-	
-	/**
-	 * Deletes an entity from this table.<br>
-	 * @param entity The entity to delete
-	 */
-	void delete(@NonNull T entity);
 	
 	/**
 	 * Creates an index on the specified columns.<br>
@@ -272,18 +121,6 @@ public interface SqlTable<T> {
 	 * @return The next sequence value
 	 */
 	long nextSequenceValue(@NonNull String name);
-	
-	/**
-	 * Generates the CREATE TABLE SQL for this table.<br>
-	 * @return The CREATE TABLE SQL string
-	 */
-	@NonNull String generateCreateSql();
-	
-	/**
-	 * Generates the DROP TABLE SQL for this table.<br>
-	 * @return The DROP TABLE SQL string
-	 */
-	@NonNull String generateDropSql();
 	
 	/**
 	 * Creates this table in the database.<br>

@@ -18,58 +18,18 @@
 
 package net.luis.utils.io.database;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.database.audit.SqlAuditContext;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 
 /**
  * Interface representing a SQL database connection.<br>
  *
  * @author Luis-St
  */
-public interface SqlDatabase extends AutoCloseable {
-	
-	/**
-	 * Creates a new database connection from the given configuration.<br>
-	 *
-	 * @param config The database configuration
-	 * @return The created database connection
-	 */
-	static @NonNull SqlDatabase create(@NonNull SqlDatabaseConfig config) {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Creates a new database connection from the given configuration and sets it as the default.<br>
-	 *
-	 * @param config The database configuration
-	 * @return The created database connection
-	 */
-	static @NonNull SqlDatabase createAndSetDefault(@NonNull SqlDatabaseConfig config) {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Returns the default database connection.<br>
-	 * @return The default database connection
-	 */
-	static @NonNull SqlDatabase getDefault() {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Sets the default database connection.<br>
-	 * @param database The database connection to set as default
-	 */
-	static void setDefault(@NonNull SqlDatabase database) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	void close();
+public interface SqlDatabase {
 	
 	/**
 	 * Returns the SQL dialect used by this database.<br>
@@ -98,15 +58,6 @@ public interface SqlDatabase extends AutoCloseable {
 	@NonNull SqlTransaction beginTransaction();
 	
 	/**
-	 * Begins a new transaction with the given isolation level.<br>
-	 * Executes the SQL statements {@code SET TRANSACTION ISOLATION LEVEL ...} and {@code START TRANSACTION}.<br>
-	 *
-	 * @param isolationLevel The isolation level for the transaction
-	 * @return The new transaction
-	 */
-	@NonNull SqlTransaction beginTransaction(@NonNull SqlIsolationLevel isolationLevel);
-	
-	/**
 	 * Executes the given action within an auto-managed transaction.<br>
 	 * The transaction is automatically committed on success or rolled back on failure.<br>
 	 *
@@ -114,15 +65,11 @@ public interface SqlDatabase extends AutoCloseable {
 	 * @param <T> The return type of the action
 	 * @return The result of the action
 	 */
-	<T> T inTransaction(@NonNull Function<SqlTransaction, T> action);
+	<T> T inTransaction(@NonNull ThrowableFunction<SqlTransaction, T, Exception> action);
 	
 	/**
-	 * Asynchronously executes the given action within an auto-managed transaction.<br>
-	 * The transaction is automatically committed on success or rolled back on failure.<br>
-	 *
-	 * @param action The action to execute within the transaction
-	 * @param <T> The return type of the action
-	 * @return A future containing the result of the action
+	 * Returns the audit context for this database.<br>
+	 * @return The audit context
 	 */
-	<T> @NonNull CompletableFuture<T> inTransactionAsync(@NonNull Function<SqlTransaction, T> action);
+	@NonNull SqlAuditContext getAuditContext();
 }

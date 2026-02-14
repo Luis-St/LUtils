@@ -24,45 +24,52 @@ import org.jspecify.annotations.Nullable;
 import java.util.function.Supplier;
 
 /**
- * Class for managing SQL audit context.<br>
+ * Interface for managing SQL audit context.<br>
+ * Provides methods to track the current user performing database operations for auditing purposes.<br>
  *
  * @author Luis-St
  */
-public class SqlAuditContext {
+public interface SqlAuditContext {
 	
 	/**
 	 * Returns the current audit user.<br>
 	 * @return The current audit user or {@code null} if not set
 	 */
-	public static @Nullable String getCurrentUser() {
-		throw new UnsupportedOperationException();
-	}
+	@Nullable String getCurrentUser();
 	
 	/**
 	 * Sets the current audit user.<br>
 	 * @param user The audit user to set
 	 */
-	public static void setCurrentUser(@NonNull String user) {
-		throw new UnsupportedOperationException();
-	}
+	void setCurrentUser(@NonNull String user);
 	
 	/**
 	 * Clears the current audit context.<br>
 	 */
-	public static void clear() {
-		throw new UnsupportedOperationException();
-	}
+	void clear();
 	
 	/**
 	 * Executes the given action with the specified audit user set.<br>
-	 * The audit context is cleared after the action completes.<br>
+	 * The audit context is restored to its previous state after the action completes.<br>
 	 *
 	 * @param user The audit user to set
 	 * @param action The action to execute
 	 * @param <T> The return type of the action
 	 * @return The result of the action
 	 */
-	public static <T> T withUser(@NonNull String user, @NonNull Supplier<T> action) {
-		throw new UnsupportedOperationException();
+	default <T> T withUser(@NonNull String user, @NonNull Supplier<T> action) {
+		String previous = this.getCurrentUser();
+		
+		this.setCurrentUser(user);
+		
+		try {
+			return action.get();
+		} finally {
+			if (previous != null) {
+				this.setCurrentUser(previous);
+			} else {
+				this.clear();
+			}
+		}
 	}
 }

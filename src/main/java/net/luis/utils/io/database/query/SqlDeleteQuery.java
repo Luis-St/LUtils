@@ -18,7 +18,9 @@
 
 package net.luis.utils.io.database.query;
 
+import net.luis.utils.io.database.SqlRenderable;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import org.jspecify.annotations.NonNull;
 
 import java.util.concurrent.CompletableFuture;
@@ -30,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * @param <T> The type of the entity
  */
-public interface SqlDeleteQuery<T> {
+public interface SqlDeleteQuery<T> extends SqlRenderable {
 	
 	/**
 	 * Sets the condition for the delete query.<br>
@@ -56,4 +58,7 @@ public interface SqlDeleteQuery<T> {
 	 * @return A future containing the number of rows deleted
 	 */
 	@NonNull CompletableFuture<Integer> executeAsync();
+	
+	@Override
+	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }
