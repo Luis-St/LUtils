@@ -73,6 +73,18 @@ public interface SqlTable<T> {
 	@NonNull SqlTable<T> withIn(@NonNull SqlTransaction transaction);
 	
 	/**
+	 * Returns a scoped view of this table where automatic version checks are suppressed.<br>
+	 * <p>
+	 *     Entity-level {@link #update(Object)} and {@link #delete(Object)} on the returned view<br>
+	 *     will not add automatic {@code WHERE version = ?} and {@code SET version = version + 1} clauses.<br>
+	 *     Composable with {@link #from(SqlDatabase)} and {@link #withIn(SqlTransaction)}.
+	 * </p>
+	 *
+	 * @return A table view with version checking disabled
+	 */
+	@NonNull SqlTable<T> skipVersionCheck();
+	
+	/**
 	 * Returns a dialect-specific view of this table.<br>
 	 *
 	 * @param dialect The SQL dialect to use
@@ -105,6 +117,17 @@ public interface SqlTable<T> {
 	<C, R> @NonNull SqlForeignColumn<C, R> foreignColumn(@NonNull String name, @NonNull Class<C> type, @NonNull SqlTable<R> referencedTable);
 	
 	/**
+	 * Returns a version column reference for the specified column name and type.<br>
+	 * Version columns are recognized by query builders to apply automatic optimistic locking checks during updates and deletes.
+	 *
+	 * @param name The column name
+	 * @param type The version value type
+	 * @param <V> The version type (e.g., {@link Long} or {@link Integer})
+	 * @return A version column reference
+	 */
+	<V> @NonNull SqlVersionColumn<T, V> versionColumn(@NonNull String name, @NonNull Class<V> type);
+	
+	/**
 	 * Creates a select query for all columns of this table.<br>
 	 * @return A select query returning full entities
 	 */
@@ -112,9 +135,7 @@ public interface SqlTable<T> {
 	
 	/**
 	 * Creates a select query for the specified expressions (columns, aggregates, functions).<br>
-	 * <p>
-	 *     Supports columns, aliased columns via {@link SqlColumn#as(String)}, and SQL expressions like aggregates ({@link SqlAgg}).<br>
-	 * </p>
+	 * Supports columns, aliased columns via {@link SqlColumn#as(String)}, and SQL expressions like aggregates ({@link SqlAgg}).<br>
 	 *
 	 * @param expressions The expressions to select
 	 * @return A projection query returning the selected values
@@ -123,9 +144,7 @@ public interface SqlTable<T> {
 	
 	/**
 	 * Creates a subquery selecting the specified expressions.<br>
-	 * <p>
-	 *     Subqueries can be used in IN conditions or EXISTS checks.<br>
-	 * </p>
+	 * Subqueries can be used in IN conditions or EXISTS checks.<br>
 	 *
 	 * @param expressions The expressions to select
 	 * @return A select query for use as a subquery
