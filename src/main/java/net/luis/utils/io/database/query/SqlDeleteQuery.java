@@ -26,8 +26,9 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Interface representing a SQL delete query.<br>
  *
- * @param <T> The type of the entity
  * @author Luis-St
+ *
+ * @param <T> The type of the entity
  */
 public interface SqlDeleteQuery<T> {
 	

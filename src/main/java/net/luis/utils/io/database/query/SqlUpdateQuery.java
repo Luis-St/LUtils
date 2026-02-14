@@ -29,8 +29,9 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Interface representing a SQL update query.<br>
  *
- * @param <T> The type of the entity
  * @author Luis-St
+ *
+ * @param <T> The type of the entity
  */
 public interface SqlUpdateQuery<T> {
 	

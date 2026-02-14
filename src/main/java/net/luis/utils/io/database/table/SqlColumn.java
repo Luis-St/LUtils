@@ -30,16 +30,13 @@ import java.util.List;
 
 /**
  * Interface representing a SQL column.<br>
- * <p>
- *     Extends {@link SqlExpression} to support aliasing via {@link #as(String)}
- *     and usage in conditions and ordering.<br>
- * </p>
+ * Extends {@link SqlExpression} to support aliasing via {@link #as(String)} and usage in conditions and ordering.<br>
+ *
+ * @see SqlExpression
  *
  * @author Luis-St
  *
  * @param <T> The type of the column value
- *
- * @see SqlExpression
  */
 public interface SqlColumn<T> extends SqlExpression<T> {
 	

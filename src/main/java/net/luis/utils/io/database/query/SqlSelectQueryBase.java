@@ -37,9 +37,10 @@ import java.util.stream.Stream;
  * Base interface for SQL select queries providing common functionality
  * for both entity queries and projection queries.<br>
  *
+ * @author Luis-St
+ *
  * @param <T> The type of the result
  * @param <Q> The self-referencing query type for fluent API support
- * @author Luis-St
  */
 public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> {
 	

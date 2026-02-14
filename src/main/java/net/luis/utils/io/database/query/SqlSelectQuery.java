@@ -24,15 +24,15 @@ import org.jspecify.annotations.NonNull;
 /**
  * Interface representing a SQL select query for entities.<br>
  * <p>
- *     This interface extends {@link SqlSelectQueryBase} with entity-specific
- *     locking methods for pessimistic concurrency control.<br>
+ *     This interface extends {@link SqlSelectQueryBase} with entity-specific locking methods for pessimistic concurrency control.<br>
  * </p>
- *
- * @param <T> The type of the result entity
- * @author Luis-St
  *
  * @see SqlSelectQueryBase
  * @see SqlSelectProjectionQuery
+ *
+ * @author Luis-St
+ *
+ * @param <T> The type of the result entity
  */
 public interface SqlSelectQuery<T> extends SqlSelectQueryBase<T, SqlSelectQuery<T>> {
 	
@@ -56,9 +56,9 @@ public interface SqlSelectQuery<T> extends SqlSelectQueryBase<T, SqlSelectQuery<
 	/**
 	 * Adds NOWAIT modifier to fail immediately if rows are locked.<br>
 	 * Must be used in combination with {@link #forUpdate()}.<br>
-	 * Throws {@link SqlLockNotAvailableException} if rows are locked.<br>
 	 *
 	 * @return This query for method chaining
+	 * @throws SqlLockNotAvailableException If the rows are locked by another transaction
 	 */
 	@NonNull SqlSelectQuery<T> noWait();
 }

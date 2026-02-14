@@ -32,32 +32,30 @@ import java.util.stream.Stream;
 /**
  * Interface representing a SQL select query with column projection.<br>
  * <p>
- *     This interface is used when selecting specific columns rather than full entities,
- *     returning results as {@code Row2}, {@code Row3}, etc. or single column values.<br>
+ *     This interface is used when selecting specific columns rather than full entities,<br>
+ *     returning results as {@code Row2}, {@code Row3}, etc. or single column values.
  * </p>
  * <p>
  *     All common query functionality is inherited from {@link SqlSelectQueryBase}.<br>
- *     Unlike {@link SqlSelectQuery}, this interface does not support row-level locking
- *     as projection queries are typically read-only operations.<br>
+ *     Unlike {@link SqlSelectQuery}, this interface does not support row-level locking as projection queries are typically read-only operations.
  * </p>
  * <p>
- *     This interface provides additional {@code fetchAs} methods to map projection results
- *     to custom data structures (records, DTOs, or interfaces).<br>
+ *     This interface provides additional {@code fetchAs} methods to map projection results to custom data structures (records, DTOs, or interfaces).<br>
  * </p>
- *
- * @param <T> The type of the projection result (e.g., Row2, Row3, or single column type)
- * @author Luis-St
  *
  * @see SqlSelectQueryBase
  * @see SqlSelectQuery
+ *
+ * @author Luis-St
+ *
+ * @param <T> The type of the projection result (e.g., Row2, Row3, or single column type)
  */
 public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSelectProjectionQuery<T>> {
 	
 	/**
 	 * Executes the query and maps all results to the specified type.<br>
 	 * <p>
-	 *     The target type must have a constructor or factory method that matches
-	 *     the projected columns in order and type.<br>
+	 *     The target type must have a constructor or factory method that matches the projected columns in order and type.<br>
 	 * </p>
 	 *
 	 * @param type The class to map results to

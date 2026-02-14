@@ -116,12 +116,6 @@ public interface SqlDialectFeatures {
 	boolean supportsJson();
 	
 	/**
-	 * Returns whether the dialect supports materialized views.<br>
-	 * @return Whether materialized views are supported
-	 */
-	boolean supportsMaterializedViews();
-	
-	/**
 	 * Returns whether the dialect supports {@code TRUNCATE ... CASCADE}.<br>
 	 * @return Whether truncate cascade is supported
 	 */

@@ -27,7 +27,8 @@ import org.jspecify.annotations.NonNull;
  * Interface representing a full SQL window specification for use in {@code OVER(...)} clauses.<br>
  * Supports partition, ordering, and frame specifications with a fluent chaining API.<br>
  * <p>
- * Use static factory methods as entry points, then chain instance methods to build the specification:
+ *     Use static factory methods as entry points, then chain instance methods to build the specification:
+ * </p>
  * <pre>{@code
  * SqlWindowClause.partitionBy(col).orderBy(col.desc()).rows(start, end)
  * }</pre>

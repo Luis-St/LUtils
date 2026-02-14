@@ -28,8 +28,9 @@ import java.util.function.Function;
 /**
  * Interface representing a SQL insert query.<br>
  *
- * @param <T> The type of the entity
  * @author Luis-St
+ *
+ * @param <T> The type of the entity
  */
 public interface SqlInsertQuery<T> {
 	
