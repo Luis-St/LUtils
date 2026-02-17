@@ -47,5 +47,4 @@ public interface SqlSchemaDiff extends SqlRenderable {
 	 * @return The list of modified table diffs
 	 */
 	@NonNull List<SqlTableDiff> getModifiedTables();
-	
 }

@@ -18,6 +18,8 @@
 
 package net.luis.utils.io.database.migration;
 
+import net.luis.utils.io.database.SqlRenderable;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
@@ -29,7 +31,7 @@ import java.util.List;
  *
  * @author Luis-St
  */
-public interface SqlMigration {
+public interface SqlMigration extends SqlRenderable {
 	
 	/**
 	 * Computes the diff between the current and target schema.<br>
@@ -65,9 +67,6 @@ public interface SqlMigration {
 	 */
 	@NonNull String description();
 	
-	/**
-	 * Returns the SQL migration string to execute.<br>
-	 * @return The SQL migration string
-	 */
-	@NonNull String sql();
+	@Override
+	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }

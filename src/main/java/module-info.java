@@ -118,7 +118,6 @@ module net.luis.utils {
 	exports net.luis.utils.io.database.index;
 	exports net.luis.utils.io.database.listener;
 	exports net.luis.utils.io.database.migration;
-	exports net.luis.utils.io.database.operation;
 	exports net.luis.utils.io.database.query;
 	exports net.luis.utils.io.database.sequence;
 	exports net.luis.utils.io.database.table;
