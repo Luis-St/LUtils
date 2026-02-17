@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.table;
 
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlDatabaseException;
 import net.luis.utils.io.database.index.SqlIndexDefinition;
 import net.luis.utils.io.database.index.SqlIndexInfo;
@@ -48,6 +49,12 @@ public interface SqlTable<T> extends SqlQueryProvider<T> {
 	static <T> @NonNull SqlTable<T> of(@NonNull String name, @NonNull Class<T> type) {
 		throw new UnsupportedOperationException();
 	}
+	
+	/**
+	 * Gets the SQL dialect associated with this table.<br>
+	 * @return The SQL dialect
+	 */
+	@NonNull SqlDialect<?, ?> getDialect();
 	
 	/**
 	 * Returns a column reference for the specified column name and type.<br>

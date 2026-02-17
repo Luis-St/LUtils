@@ -41,14 +41,13 @@ import java.util.List;
 public interface SqlColumn<T> extends SqlExpression<T> {
 	
 	/**
-	 * Returns a dialect-specific view of this column.<br>
+	 * Gets the SQL dialect associated with this column.<br>
 	 *
-	 * @param dialect The SQL dialect to use
-	 * @param <TT> The dialect table type
-	 * @param <CC> The dialect column type
-	 * @return The dialect-specific column
+	 * @param <TT> The type of the dialect specific table
+	 * @param <CC> The type of the dialect specific column
+	 * @return The SQL dialect for this column
 	 */
-	<TT, CC> @NonNull CC dialect(@NonNull SqlDialect<TT, CC> dialect);
+	<TT, CC> @NonNull SqlDialect<TT, CC> getDialect();
 	
 	@Override
 	@NonNull SqlCondition equalTo(@NonNull T value);

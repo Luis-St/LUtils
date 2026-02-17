@@ -32,7 +32,7 @@ import org.jspecify.annotations.NonNull;
 public interface SqlDatabase {
 	
 	/**
-	 * Returns the SQL dialect used by this database.<br>
+	 * Gets the SQL dialect associated with this database.<br>
 	 * @return The SQL dialect
 	 */
 	@NonNull SqlDialect<?, ?> getDialect();
