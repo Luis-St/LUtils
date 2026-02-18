@@ -96,6 +96,8 @@ module net.luis.utils {
 	exports net.luis.utils.io.data.property.exception;
 	exports net.luis.utils.io.data.toml;
 	exports net.luis.utils.io.data.toml.exception;
+	exports net.luis.utils.io.data.toon;
+	exports net.luis.utils.io.data.toon.exception;
 	exports net.luis.utils.io.data.xml;
 	exports net.luis.utils.io.data.xml.exception;
 	exports net.luis.utils.io.data.yaml;
