@@ -21,7 +21,7 @@ package net.luis.utils.io.data.toml.exception;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Thrown when an index is out of bounds for a TOML array.<br>
+ * Thrown when an index is out of bounds for a toml array.<br>
  * The exception message will contain the details about the invalid index.<br>
  *
  * @author Luis-St
@@ -29,12 +29,12 @@ import org.jspecify.annotations.Nullable;
 public class TomlArrayIndexOutOfBoundsException extends IndexOutOfBoundsException {
 	
 	/**
-	 * Constructs a new TOML array index out of bounds exception with no details.<br>
+	 * Constructs a new toml array index out of bounds exception with no details.<br>
 	 */
 	public TomlArrayIndexOutOfBoundsException() {}
 	
 	/**
-	 * Constructs a new TOML array index out of bounds exception with the specified index.<br>
+	 * Constructs a new toml array index out of bounds exception with the specified index.<br>
 	 * @param index The invalid index
 	 */
 	public TomlArrayIndexOutOfBoundsException(int index) {
@@ -42,7 +42,7 @@ public class TomlArrayIndexOutOfBoundsException extends IndexOutOfBoundsExceptio
 	}
 	
 	/**
-	 * Constructs a new TOML array index out of bounds exception with the specified message.<br>
+	 * Constructs a new toml array index out of bounds exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
 	public TomlArrayIndexOutOfBoundsException(@Nullable String message) {

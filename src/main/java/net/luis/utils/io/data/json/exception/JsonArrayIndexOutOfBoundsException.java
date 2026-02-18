@@ -52,6 +52,7 @@ public class JsonArrayIndexOutOfBoundsException extends ArrayIndexOutOfBoundsExc
 	
 	/**
 	 * Constructs a new json array index out-of-bounds exception with the specified index and size.<br>
+	 *
 	 * @param index The index that is out of bounds
 	 * @param size The size of the array
 	 */

@@ -26,8 +26,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
- * Represents a TOML scalar value.<br>
- * A TOML value can be a boolean, number, string, or date/time type.<br>
+ * Represents a toml scalar value.<br>
+ * A toml value can be a boolean, number, string, or date/time type.<br>
  * Supported date/time types: LocalDate, LocalTime, LocalDateTime, OffsetDateTime.<br>
  *
  * @author Luis-St
@@ -40,12 +40,12 @@ public class TomlValue implements TomlElement {
 	private static final DateTimeFormatter RFC_3339_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 	
 	/**
-	 * The value of this TOML value.<br>
+	 * The value of this toml value.<br>
 	 */
 	private final Object value;
 	
 	/**
-	 * Constructs a new TOML value with the given boolean value.<br>
+	 * Constructs a new toml value with the given boolean value.<br>
 	 * @param value The boolean value
 	 */
 	public TomlValue(boolean value) {
@@ -53,7 +53,7 @@ public class TomlValue implements TomlElement {
 	}
 	
 	/**
-	 * Constructs a new TOML value with the given number value.<br>
+	 * Constructs a new toml value with the given number value.<br>
 	 *
 	 * @param value The number value
 	 * @throws NullPointerException If the value is null
@@ -63,7 +63,7 @@ public class TomlValue implements TomlElement {
 	}
 	
 	/**
-	 * Constructs a new TOML value with the given character value.<br>
+	 * Constructs a new toml value with the given character value.<br>
 	 * @param value The character value
 	 */
 	public TomlValue(char value) {
@@ -71,7 +71,7 @@ public class TomlValue implements TomlElement {
 	}
 	
 	/**
-	 * Constructs a new TOML value with the given string value.<br>
+	 * Constructs a new toml value with the given string value.<br>
 	 *
 	 * @param value The string value
 	 * @throws NullPointerException If the value is null
@@ -81,7 +81,7 @@ public class TomlValue implements TomlElement {
 	}
 	
 	/**
-	 * Constructs a new TOML value with the given local date.<br>
+	 * Constructs a new toml value with the given local date.<br>
 	 *
 	 * @param value The local date value
 	 * @throws NullPointerException If the value is null
@@ -91,7 +91,7 @@ public class TomlValue implements TomlElement {
 	}
 	
 	/**
-	 * Constructs a new TOML value with the given local time.<br>
+	 * Constructs a new toml value with the given local time.<br>
 	 *
 	 * @param value The local time value
 	 * @throws NullPointerException If the value is null
@@ -101,7 +101,7 @@ public class TomlValue implements TomlElement {
 	}
 	
 	/**
-	 * Constructs a new TOML value with the given local date-time.<br>
+	 * Constructs a new toml value with the given local date-time.<br>
 	 *
 	 * @param value The local date-time value
 	 * @throws NullPointerException If the value is null
@@ -111,7 +111,7 @@ public class TomlValue implements TomlElement {
 	}
 	
 	/**
-	 * Constructs a new TOML value with the given offset date-time.<br>
+	 * Constructs a new toml value with the given offset date-time.<br>
 	 *
 	 * @param value The offset date-time value
 	 * @throws NullPointerException If the value is null
@@ -121,11 +121,11 @@ public class TomlValue implements TomlElement {
 	}
 	
 	/**
-	 * Returns the name of the type of this TOML value in a human-readable format.<br>
+	 * Returns the name of the type of this toml value in a human-readable format.<br>
 	 * Used for debugging and error messages.<br>
 	 *
-	 * @return The name of the type of this TOML value in a human-readable format
-	 * @throws IllegalStateException If the type of this TOML value is unknown
+	 * @return The name of the type of this toml value in a human-readable format
+	 * @throws IllegalStateException If the type of this toml value is unknown
 	 */
 	private @NonNull String getName() {
 		if (this.isTomlBoolean()) {
@@ -143,7 +143,7 @@ public class TomlValue implements TomlElement {
 		} else if (this.isTomlOffsetDateTime()) {
 			return "toml offset date-time";
 		}
-		throw new IllegalStateException("Unknown TOML value type");
+		throw new IllegalStateException("Unknown toml value type");
 	}
 	
 	@Override
@@ -156,7 +156,7 @@ public class TomlValue implements TomlElement {
 		if (this.isTomlBoolean()) {
 			return (boolean) this.value;
 		}
-		throw new TomlTypeException("Expected a TOML boolean, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml boolean, but found: " + this.getName());
 	}
 	
 	@Override
@@ -169,7 +169,7 @@ public class TomlValue implements TomlElement {
 		if (this.isTomlNumber()) {
 			return (Number) this.value;
 		}
-		throw new TomlTypeException("Expected a TOML number, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml number, but found: " + this.getName());
 	}
 	
 	@Override
@@ -184,7 +184,7 @@ public class TomlValue implements TomlElement {
 		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().byteValue();
 		}
-		throw new TomlTypeException("Expected a TOML byte, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml byte, but found: " + this.getName());
 	}
 	
 	@Override
@@ -199,7 +199,7 @@ public class TomlValue implements TomlElement {
 		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().shortValue();
 		}
-		throw new TomlTypeException("Expected a TOML short, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml short, but found: " + this.getName());
 	}
 	
 	@Override
@@ -214,7 +214,7 @@ public class TomlValue implements TomlElement {
 		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().intValue();
 		}
-		throw new TomlTypeException("Expected a TOML integer, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml integer, but found: " + this.getName());
 	}
 	
 	@Override
@@ -229,7 +229,7 @@ public class TomlValue implements TomlElement {
 		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().longValue();
 		}
-		throw new TomlTypeException("Expected a TOML long, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml long, but found: " + this.getName());
 	}
 	
 	@Override
@@ -244,7 +244,7 @@ public class TomlValue implements TomlElement {
 		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().floatValue();
 		}
-		throw new TomlTypeException("Expected a TOML float, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml float, but found: " + this.getName());
 	}
 	
 	@Override
@@ -259,7 +259,7 @@ public class TomlValue implements TomlElement {
 		} else if (this.isTomlNumber()) {
 			return this.getAsNumber().doubleValue();
 		}
-		throw new TomlTypeException("Expected a TOML double, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml double, but found: " + this.getName());
 	}
 	
 	@Override
@@ -278,7 +278,7 @@ public class TomlValue implements TomlElement {
 		} else if (this.isTomlDateTime()) {
 			return this.formatDateTime(TomlConfig.DEFAULT);
 		}
-		throw new TomlTypeException("Expected a TOML string, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml string, but found: " + this.getName());
 	}
 	
 	@Override
@@ -291,7 +291,7 @@ public class TomlValue implements TomlElement {
 		if (this.isTomlLocalDate()) {
 			return (LocalDate) this.value;
 		}
-		throw new TomlTypeException("Expected a TOML local date, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml local date, but found: " + this.getName());
 	}
 	
 	@Override
@@ -304,7 +304,7 @@ public class TomlValue implements TomlElement {
 		if (this.isTomlLocalTime()) {
 			return (LocalTime) this.value;
 		}
-		throw new TomlTypeException("Expected a TOML local time, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml local time, but found: " + this.getName());
 	}
 	
 	@Override
@@ -317,7 +317,7 @@ public class TomlValue implements TomlElement {
 		if (this.isTomlLocalDateTime()) {
 			return (LocalDateTime) this.value;
 		}
-		throw new TomlTypeException("Expected a TOML local date-time, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml local date-time, but found: " + this.getName());
 	}
 	
 	@Override
@@ -330,7 +330,7 @@ public class TomlValue implements TomlElement {
 		if (this.isTomlOffsetDateTime()) {
 			return (OffsetDateTime) this.value;
 		}
-		throw new TomlTypeException("Expected a TOML offset date-time, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml offset date-time, but found: " + this.getName());
 	}
 	
 	@Override
@@ -341,7 +341,7 @@ public class TomlValue implements TomlElement {
 	/**
 	 * Formats the date/time value according to the given config.<br>
 	 *
-	 * @param config The TOML config
+	 * @param config The toml config
 	 * @return The formatted date/time string
 	 * @throws NullPointerException If the config is null
 	 * @throws IllegalStateException If this is not a date/time value
