@@ -422,6 +422,23 @@ public final class YamlBuilder {
 	}
 	
 	/**
+	 * Adds multiple boolean values to the current sequence at once.<br>
+	 *
+	 * @param values The boolean values to add to the sequence
+	 * @return This builder for method chaining
+	 * @throws IllegalStateException If the current context is not a sequence
+	 * @throws NullPointerException If the values array is null
+	 */
+	public @NonNull YamlBuilder addAll(boolean @NonNull ... values) {
+		Objects.requireNonNull(values, "Values array must not be null");
+		
+		for (boolean value : values) {
+			this.add(value);
+		}
+		return this;
+	}
+
+	/**
 	 * Adds an element with an anchor to the current sequence.<br>
 	 *
 	 * @param element The element to anchor
@@ -719,6 +736,51 @@ public final class YamlBuilder {
 	}
 	
 	/**
+	 * Conditionally adds a string value to the current sequence only if the condition is true.<br>
+	 *
+	 * @param condition The condition to evaluate
+	 * @param value The value to add if condition is true
+	 * @return This builder for method chaining
+	 * @throws IllegalStateException If the current context is not a sequence
+	 */
+	public @NonNull YamlBuilder addIf(boolean condition, @Nullable String value) {
+		if (condition) {
+			this.add(value);
+		}
+		return this;
+	}
+	
+	/**
+	 * Conditionally adds a boolean value to the current sequence only if the condition is true.<br>
+	 *
+	 * @param condition The condition to evaluate
+	 * @param value The boolean value to add if condition is true
+	 * @return This builder for method chaining
+	 * @throws IllegalStateException If the current context is not a sequence
+	 */
+	public @NonNull YamlBuilder addIf(boolean condition, boolean value) {
+		if (condition) {
+			this.add(value);
+		}
+		return this;
+	}
+	
+	/**
+	 * Conditionally adds a number value to the current sequence only if the condition is true.<br>
+	 *
+	 * @param condition The condition to evaluate
+	 * @param value The number value to add if condition is true
+	 * @return This builder for method chaining
+	 * @throws IllegalStateException If the current context is not a sequence
+	 */
+	public @NonNull YamlBuilder addIf(boolean condition, @Nullable Number value) {
+		if (condition) {
+			this.add(value);
+		}
+		return this;
+	}
+	
+	/**
 	 * Conditionally adds an alias to the current mapping only if the condition is true.<br>
 	 *
 	 * @param condition The condition to evaluate
@@ -781,10 +843,11 @@ public final class YamlBuilder {
 	
 	/**
 	 * Returns the current nesting depth of the builder.<br>
+	 * A depth of 0 means we're at the root level, 1 means one level nested, etc.<br>
 	 * @return The current nesting depth
 	 */
 	public int getNestingDepth() {
-		return this.contextStack.size();
+		return this.contextStack.size() - 1;
 	}
 	
 	/**

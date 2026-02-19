@@ -158,6 +158,40 @@ public final class IniBuilder {
 	}
 	
 	/**
+	 * Conditionally adds a global property with a boolean value.<br>
+	 *
+	 * @param condition The condition to check
+	 * @param key The property key
+	 * @param value The boolean value
+	 * @return This builder for chaining
+	 * @throws NullPointerException If the key is null
+	 * @throws IllegalStateException If currently inside a section
+	 */
+	public @NonNull IniBuilder addGlobalIf(boolean condition, @NonNull String key, boolean value) {
+		if (condition) {
+			this.addGlobal(key, value);
+		}
+		return this;
+	}
+	
+	/**
+	 * Conditionally adds a global property with a number value.<br>
+	 *
+	 * @param condition The condition to check
+	 * @param key The property key
+	 * @param value The number value
+	 * @return This builder for chaining
+	 * @throws NullPointerException If the key is null
+	 * @throws IllegalStateException If currently inside a section
+	 */
+	public @NonNull IniBuilder addGlobalIf(boolean condition, @NonNull String key, @Nullable Number value) {
+		if (condition) {
+			this.addGlobal(key, value);
+		}
+		return this;
+	}
+	
+	/**
 	 * Starts a new section with the given name.<br>
 	 * All subsequent add() calls will add properties to this section.<br>
 	 *
@@ -373,33 +407,22 @@ public final class IniBuilder {
 	
 	/**
 	 * Builds and returns the ini document.<br>
-	 * Automatically closes any open sections.<br>
 	 *
 	 * @return The built ini document
+	 * @throws IllegalStateException If there are unclosed sections
 	 */
 	public @NonNull IniDocument build() {
-		this.contextStack.clear();
+		if (!this.contextStack.isEmpty()) {
+			throw new IllegalStateException("Cannot build: there are " + this.contextStack.size() + " unclosed section(s)");
+		}
 		return this.document;
 	}
 	
 	//region Object overrides
-	
-	@Override
-	public boolean equals(Object o) {
-		if (!(o instanceof IniBuilder that)) return false;
-		
-		if (!this.contextStack.equals(that.contextStack)) return false;
-		return this.document.equals(that.document);
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(this.contextStack, this.document);
-	}
-	
+
 	@Override
 	public String toString() {
-		return this.toString(IniConfig.DEFAULT);
+		return this.document.toString();
 	}
 	
 	/**

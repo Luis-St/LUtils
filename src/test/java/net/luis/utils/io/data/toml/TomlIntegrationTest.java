@@ -61,7 +61,7 @@ class TomlIntegrationTest {
 			.add("enableMetrics", true)
 			.add("enableTracing", false)
 			.endTable()
-			.build();
+			.buildTable();
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
@@ -114,7 +114,7 @@ class TomlIntegrationTest {
 				.add("10.0.0.0/8")
 				.build())
 			.endTable()
-			.build();
+			.buildTable();
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
@@ -161,7 +161,7 @@ class TomlIntegrationTest {
 			.add("dailyBackup", LocalTime.of(2, 15, 30))
 			.add("weeklyMaintenance", LocalDate.of(2024, 1, 7))
 			.endTable()
-			.build();
+			.buildTable();
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
@@ -197,7 +197,7 @@ class TomlIntegrationTest {
 			.endTable()
 			.endTable()
 			.endTable()
-			.build();
+			.buildTable();
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
@@ -286,7 +286,7 @@ class TomlIntegrationTest {
 				.add(false)
 				.add(true)
 				.build())
-			.build();
+			.buildTable();
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
@@ -350,7 +350,7 @@ class TomlIntegrationTest {
 			.add("database", 0)
 			.add("ttl", 300)
 			.endTable()
-			.build();
+			.buildTable();
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
@@ -411,7 +411,7 @@ class TomlIntegrationTest {
 			.add("jump", "SPACE")
 			.endTable()
 			.endTable()
-			.build();
+			.buildTable();
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
@@ -453,7 +453,7 @@ class TomlIntegrationTest {
 			.add("key1", "value1")
 			.add("key2", 42)
 			.endTable()
-			.build();
+			.buildTable();
 		
 		TomlTable manualTable = new TomlTable();
 		manualTable.add("name", new TomlValue("Test"));
@@ -478,71 +478,71 @@ class TomlIntegrationTest {
 			manualOutput.toString(StandardCharsets.UTF_8)
 		);
 	}
-
+	
 	@Test
 	void largeDataSetRoundTrip() throws IOException {
 		TomlTable data = new TomlTable();
-
+		
 		TomlArray ids = new TomlArray();
 		TomlArray names = new TomlArray();
 		TomlArray prices = new TomlArray();
 		TomlArray actives = new TomlArray();
-
+		
 		for (int i = 0; i < 100; i++) {
 			ids.add(new TomlValue(i));
 			names.add(new TomlValue("Item Number " + i));
 			prices.add(new TomlValue(i * 10.5));
 			actives.add(new TomlValue(i % 3 != 0));
 		}
-
+		
 		TomlTable items = new TomlTable();
 		items.add("ids", ids);
 		items.add("names", names);
 		items.add("prices", prices);
 		items.add("actives", actives);
 		data.add("items", items);
-
+		
 		TomlTable summary = new TomlTable();
 		summary.add("count", new TomlValue(100));
 		summary.add("activeCount", new TomlValue(67));
 		summary.add("totalValue", new TomlValue(49725.0));
 		data.add("summary", summary);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
 			writer.writeToml(data);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		TomlTable resultItems = result.getTomlTable("items");
 		TomlArray resultIds = resultItems.getTomlArray("ids");
 		TomlArray resultNames = resultItems.getTomlArray("names");
 		TomlArray resultPrices = resultItems.getTomlArray("prices");
 		TomlArray resultActives = resultItems.getTomlArray("actives");
-
+		
 		assertEquals(100, resultIds.size());
 		assertEquals(100, resultNames.size());
 		assertEquals(100, resultPrices.size());
 		assertEquals(100, resultActives.size());
-
+		
 		for (int i = 0; i < 100; i++) {
 			assertEquals(i, resultIds.getAsInteger(i));
 			assertEquals("Item Number " + i, resultNames.getAsString(i));
 			assertEquals(i * 10.5, resultPrices.getAsDouble(i), 0.001);
 			assertEquals(i % 3 != 0, resultActives.getAsBoolean(i));
 		}
-
+		
 		TomlTable resultSummary = result.getTomlTable("summary");
 		assertEquals(100, resultSummary.getAsInteger("count"));
 		assertEquals(67, resultSummary.getAsInteger("activeCount"));
 		assertEquals(49725.0, resultSummary.getAsDouble("totalValue"), 0.001);
 	}
-
+	
 	@Test
 	void deeplyNestedConfigurationRoundTrip() throws IOException {
 		TomlTable config = TomlBuilder.table()
@@ -577,21 +577,21 @@ class TomlIntegrationTest {
 			.endTable()
 			.endTable()
 			.endTable()
-			.build();
-
+			.buildTable();
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
 			writer.writeToml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		assertEquals("level1 data", result.getTomlTable("level1").getAsString("extra"));
-
+		
 		TomlTable deepest = result
 			.getTomlTable("level1")
 			.getTomlTable("level2")
@@ -599,7 +599,7 @@ class TomlIntegrationTest {
 			.getTomlTable("level4")
 			.getTomlTable("level5")
 			.getTomlTable("level6");
-
+		
 		assertEquals("Level 6", deepest.getAsString("name"));
 		assertEquals("deepest value", deepest.getAsString("value"));
 		assertEquals(12345, deepest.getAsInteger("number"));
@@ -607,7 +607,7 @@ class TomlIntegrationTest {
 		assertEquals(3, deepest.getTomlArray("items").size());
 		assertEquals("a", deepest.getTomlArray("items").getAsString(0));
 	}
-
+	
 	@Test
 	void unicodeValuesRoundTrip() throws IOException {
 		TomlTable config = TomlBuilder.table()
@@ -624,19 +624,19 @@ class TomlIntegrationTest {
 			.add("quotes", "He said \"Hello\"")
 			.add("backslash", "C:\\Users\\name")
 			.endTable()
-			.build();
-
+			.buildTable();
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
 			writer.writeToml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		assertEquals("Hello, World!", result.getAsString("english"));
 		assertEquals("こんにちは世界", result.getAsString("japanese"));
 		assertEquals("안녕하세요 세계", result.getAsString("korean"));
@@ -644,14 +644,14 @@ class TomlIntegrationTest {
 		assertEquals("مرحبا بالعالم", result.getAsString("arabic"));
 		assertEquals("Привет мир", result.getAsString("russian"));
 		assertEquals("Hello 👋🌍", result.getAsString("emoji"));
-
+		
 		TomlTable special = result.getTomlTable("special");
 		assertEquals("∑∏∫∂", special.getAsString("math"));
 		assertEquals("€£¥₹", special.getAsString("currency"));
 		assertEquals("He said \"Hello\"", special.getAsString("quotes"));
 		assertEquals("C:\\Users\\name", special.getAsString("backslash"));
 	}
-
+	
 	@Test
 	void floatingPointValuesRoundTrip() throws IOException {
 		TomlTable config = TomlBuilder.table()
@@ -670,36 +670,36 @@ class TomlIntegrationTest {
 			.add("item2", 149.95)
 			.add("discount", 0.15)
 			.endTable()
-			.build();
-
+			.buildTable();
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
 			writer.writeToml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		assertEquals(3.14159265359, result.getAsDouble("pi"), 0.0000001);
 		assertEquals(2.71828182845, result.getAsDouble("e"), 0.0000001);
 		assertEquals(-123.456, result.getAsDouble("negativeFloat"), 0.001);
-		assertEquals(1.23e10, result.getAsDouble("largeFloat"), 1e5);
-		assertEquals(1.23e-10, result.getAsDouble("smallFloat"), 1e-15);
-
+		assertEquals(1.23e10, result.getAsDouble("largeFloat"), 1.0e5);
+		assertEquals(1.23e-10, result.getAsDouble("smallFloat"), 1.0e-15);
+		
 		TomlTable physics = result.getTomlTable("physics");
 		assertEquals(299792458, physics.getAsLong("speedOfLight"));
-		assertEquals(6.67430e-11, physics.getAsDouble("gravitationalConstant"), 1e-20);
-		assertEquals(6.62607015e-34, physics.getAsDouble("planckConstant"), 1e-43);
-
+		assertEquals(6.67430e-11, physics.getAsDouble("gravitationalConstant"), 1.0e-20);
+		assertEquals(6.62607015e-34, physics.getAsDouble("planckConstant"), 1.0e-43);
+		
 		TomlTable prices = result.getTomlTable("prices");
 		assertEquals(19.99, prices.getAsDouble("item1"), 0.001);
 		assertEquals(149.95, prices.getAsDouble("item2"), 0.001);
 		assertEquals(0.15, prices.getAsDouble("discount"), 0.001);
 	}
-
+	
 	@Test
 	void emptyStringValuesRoundTrip() throws IOException {
 		TomlTable config = new TomlTable();
@@ -708,36 +708,36 @@ class TomlIntegrationTest {
 		config.add("version", new TomlValue("1.0.0"));
 		config.add("author", new TomlValue(""));
 		config.add("license", new TomlValue("MIT"));
-
+		
 		TomlTable settings = new TomlTable();
 		settings.add("theme", new TomlValue("dark"));
 		settings.add("customCss", new TomlValue(""));
 		settings.add("fontSize", new TomlValue(14));
 		config.add("settings", settings);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
 			writer.writeToml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		assertEquals("MyApp", result.getAsString("name"));
 		assertEquals("", result.getAsString("description"));
 		assertEquals("1.0.0", result.getAsString("version"));
 		assertEquals("", result.getAsString("author"));
 		assertEquals("MIT", result.getAsString("license"));
-
+		
 		TomlTable resultSettings = result.getTomlTable("settings");
 		assertEquals("dark", resultSettings.getAsString("theme"));
 		assertEquals("", resultSettings.getAsString("customCss"));
 		assertEquals(14, resultSettings.getAsInteger("fontSize"));
 	}
-
+	
 	@Test
 	void productCatalogRoundTrip() throws IOException {
 		TomlTable config = TomlBuilder.table()
@@ -760,36 +760,36 @@ class TomlIntegrationTest {
 			.add("stock", 500)
 			.add("tags", TomlBuilder.array().add("accessories").build())
 			.endTable()
-			.build();
-
+			.buildTable();
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
 			writer.writeToml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		assertEquals("Product Catalog", result.getAsString("title"));
-
+		
 		TomlTable resultProduct1 = result.getTomlTable("product1");
 		assertEquals("Widget A", resultProduct1.getAsString("name"));
 		assertEquals(29.99, resultProduct1.getAsDouble("price"), 0.01);
 		assertEquals(100, resultProduct1.getAsInteger("stock"));
 		assertEquals(2, resultProduct1.getTomlArray("tags").size());
-
+		
 		TomlTable resultProduct2 = result.getTomlTable("product2");
 		assertEquals("Widget B", resultProduct2.getAsString("name"));
 		assertEquals(49.99, resultProduct2.getAsDouble("price"), 0.01);
-
+		
 		TomlTable resultProduct3 = result.getTomlTable("product3");
 		assertEquals("Widget C", resultProduct3.getAsString("name"));
 		assertEquals(500, resultProduct3.getAsInteger("stock"));
 	}
-
+	
 	@Test
 	void compactConfigRoundTrip() throws IOException {
 		TomlTable config = TomlBuilder.table()
@@ -804,32 +804,32 @@ class TomlIntegrationTest {
 			.add("port", 5432)
 			.add("name", "mydb")
 			.endTable()
-			.build();
-
+			.buildTable();
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output), TomlConfig.COMPACT)) {
 			writer.writeToml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		assertEquals("Compact Test", result.getAsString("title"));
-
+		
 		TomlTable server = result.getTomlTable("server");
 		assertEquals("localhost", server.getAsString("host"));
 		assertEquals(8080, server.getAsInteger("port"));
 		assertTrue(server.getAsBoolean("ssl"));
-
+		
 		TomlTable database = result.getTomlTable("database");
 		assertEquals("db.example.com", database.getAsString("host"));
 		assertEquals(5432, database.getAsInteger("port"));
 		assertEquals("mydb", database.getAsString("name"));
 	}
-
+	
 	@Test
 	void multiLineStringRoundTrip() throws IOException {
 		String longText = """
@@ -837,31 +837,31 @@ class TomlIntegrationTest {
 			It contains several sentences and should be formatted
 			as a multi-line string when the appropriate configuration
 			is used. This helps improve readability of the TOML file.""";
-
+		
 		TomlTable config = new TomlTable();
 		config.add("description", new TomlValue(longText));
 		config.add("shortText", new TomlValue("Short"));
-
+		
 		TomlConfig multiLineConfig = new TomlConfig(
 			true, true, "  ", false, 3, true, 10,
 			true, 50, true, TomlConfig.DateTimeStyle.RFC_3339, false, StandardCharsets.UTF_8
 		);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output), multiLineConfig)) {
 			writer.writeToml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		assertEquals(longText, result.getAsString("description"));
 		assertEquals("Short", result.getAsString("shortText"));
 	}
-
+	
 	@Test
 	void emptyTableRoundTrip() throws IOException {
 		TomlTable config = TomlBuilder.table()
@@ -873,32 +873,32 @@ class TomlIntegrationTest {
 			.endTable()
 			.startTable("empty2")
 			.endTable()
-			.build();
-
+			.buildTable();
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
 			writer.writeToml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		assertEquals("Test", result.getAsString("title"));
-
+		
 		assertTrue(result.containsKey("empty1"));
 		assertTrue(result.getTomlTable("empty1").isEmpty());
-
+		
 		TomlTable filled = result.getTomlTable("filled");
 		assertEquals(1, filled.size());
 		assertEquals("value", filled.getAsString("key"));
-
+		
 		assertTrue(result.containsKey("empty2"));
 		assertTrue(result.getTomlTable("empty2").isEmpty());
 	}
-
+	
 	@Test
 	void userProfileWithActivityRoundTrip() throws IOException {
 		TomlTable user = TomlBuilder.table()
@@ -933,85 +933,85 @@ class TomlIntegrationTest {
 			.add("amount", 149.99)
 			.endTable()
 			.add("roles", TomlBuilder.array().add("user").add("premium").build())
-			.build();
-
+			.buildTable();
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
 			writer.writeToml(user);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		TomlTable profile = result.getTomlTable("profile");
 		assertEquals("johndoe", profile.getAsString("username"));
 		assertEquals("john.doe@example.com", profile.getAsString("email"));
 		assertTrue(profile.getAsBoolean("verified"));
-
+		
 		TomlTable preferences = profile.getTomlTable("preferences");
 		assertEquals("dark", preferences.getAsString("theme"));
 		assertEquals("en-US", preferences.getAsString("language"));
-
+		
 		TomlTable notifications = preferences.getTomlTable("notifications");
 		assertTrue(notifications.getAsBoolean("email"));
 		assertTrue(notifications.getAsBoolean("push"));
 		assertFalse(notifications.getAsBoolean("sms"));
-
+		
 		TomlTable activity1 = result.getTomlTable("activity1");
 		assertEquals("login", activity1.getAsString("type"));
 		assertEquals("192.168.1.100", activity1.getAsString("ip"));
-
+		
 		TomlTable activity2 = result.getTomlTable("activity2");
 		assertEquals("purchase", activity2.getAsString("type"));
 		assertEquals("ORD-12345", activity2.getAsString("orderId"));
 		assertEquals(149.99, activity2.getAsDouble("amount"), 0.01);
-
+		
 		TomlArray resultRoles = result.getTomlArray("roles");
 		assertEquals(2, resultRoles.size());
 		assertEquals("user", resultRoles.getAsString(0));
 		assertEquals("premium", resultRoles.getAsString(1));
 	}
-
+	
 	@Test
 	void dateTimeStylesRoundTrip() throws IOException {
 		LocalDate date = LocalDate.of(2024, 6, 15);
 		LocalTime time = LocalTime.of(14, 30, 45);
 		LocalDateTime localDateTime = LocalDateTime.of(2024, 6, 15, 14, 30, 45);
 		OffsetDateTime offsetDateTime = OffsetDateTime.of(2024, 6, 15, 14, 30, 45, 0, ZoneOffset.ofHours(2));
-
+		
 		TomlTable config = TomlBuilder.table()
 			.add("date", date)
 			.add("time", time)
 			.add("localDateTime", localDateTime)
 			.add("offsetDateTime", offsetDateTime)
-			.build();
-
+			.buildTable();
+		
 		// RFC_3339 is the standard TOML format that preserves all date/time types
 		TomlConfig testConfig = new TomlConfig(
 			true, true, "  ", false, 3, true, 10,
 			false, 80, true, TomlConfig.DateTimeStyle.RFC_3339, false, StandardCharsets.UTF_8
 		);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output), testConfig)) {
 			writer.writeToml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		assertEquals(date, result.getAsLocalDate("date"));
 		assertEquals(time, result.getAsLocalTime("time"));
 		assertEquals(localDateTime, result.getAsLocalDateTime("localDateTime"));
 		assertEquals(offsetDateTime, result.getAsOffsetDateTime("offsetDateTime"));
 	}
-
+	
 	@Test
 	void organizationStructureRoundTrip() throws IOException {
 		TomlTable config = TomlBuilder.table()
@@ -1037,37 +1037,37 @@ class TomlIntegrationTest {
 			.add("members", TomlBuilder.array().add("Jack").add("Kate").add("Leo").build())
 			.endTable()
 			.endTable()
-			.build();
-
+			.buildTable();
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (TomlWriter writer = new TomlWriter(new OutputProvider(output))) {
 			writer.writeToml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		TomlTable result;
 		try (TomlReader reader = new TomlReader(new InputProvider(input))) {
 			result = reader.readToml();
 		}
-
+		
 		assertEquals("Organization", result.getAsString("name"));
-
+		
 		TomlTable engineering = result.getTomlTable("engineering");
 		assertEquals("Engineering", engineering.getAsString("name"));
-
+		
 		TomlTable backend = engineering.getTomlTable("backend");
 		assertEquals("Backend", backend.getAsString("name"));
 		assertEquals(5, backend.getAsInteger("size"));
 		assertEquals(5, backend.getTomlArray("members").size());
 		assertEquals("Alice", backend.getTomlArray("members").getAsString(0));
-
+		
 		TomlTable frontend = engineering.getTomlTable("frontend");
 		assertEquals("Frontend", frontend.getAsString("name"));
 		assertEquals(4, frontend.getAsInteger("size"));
-
+		
 		TomlTable marketing = result.getTomlTable("marketing");
 		assertEquals("Marketing", marketing.getAsString("name"));
-
+		
 		TomlTable digital = marketing.getTomlTable("digital");
 		assertEquals("Digital", digital.getAsString("name"));
 		assertEquals(3, digital.getAsInteger("size"));

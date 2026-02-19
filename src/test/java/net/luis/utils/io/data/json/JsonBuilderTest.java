@@ -190,8 +190,8 @@ class JsonBuilderTest {
 			.buildArray();
 		
 		assertEquals(2, array.size());
-		assertTrue(array.get(0) instanceof JsonObject);
-		assertTrue(array.get(1) instanceof JsonArray);
+		assertInstanceOf(JsonObject.class, array.get(0));
+		assertInstanceOf(JsonArray.class, array.get(1));
 	}
 	
 	@Test
@@ -373,13 +373,19 @@ class JsonBuilderTest {
 			.add("always")
 			.addIf(includeOptional, "included")
 			.addIf(excludeOptional, "excluded")
+			.addIf(includeOptional, true)
+			.addIf(excludeOptional, false)
+			.addIf(includeOptional, 42)
+			.addIf(excludeOptional, 99)
 			.add("final")
 			.buildArray();
 		
-		assertEquals(3, array.size());
+		assertEquals(5, array.size());
 		assertEquals(new JsonPrimitive("always"), array.get(0));
 		assertEquals(new JsonPrimitive("included"), array.get(1));
-		assertEquals(new JsonPrimitive("final"), array.get(2));
+		assertEquals(new JsonPrimitive(true), array.get(2));
+		assertEquals(new JsonPrimitive(42), array.get(3));
+		assertEquals(new JsonPrimitive("final"), array.get(4));
 	}
 	
 	@Test
@@ -485,31 +491,31 @@ class JsonBuilderTest {
 	void utilityMethods() {
 		JsonBuilder builder = JsonBuilder.object();
 		
-		assertEquals(1, builder.getNestingDepth());
+		assertEquals(0, builder.getNestingDepth());
 		assertTrue(builder.isInObjectContext());
 		assertFalse(builder.isInArrayContext());
 		assertTrue(builder.isAtRootLevel());
 		
 		builder.startObject("nested");
-		assertEquals(2, builder.getNestingDepth());
+		assertEquals(1, builder.getNestingDepth());
 		assertTrue(builder.isInObjectContext());
 		assertFalse(builder.isInArrayContext());
 		assertFalse(builder.isAtRootLevel());
 		
 		builder.startArray("items");
-		assertEquals(3, builder.getNestingDepth());
+		assertEquals(2, builder.getNestingDepth());
 		assertFalse(builder.isInObjectContext());
 		assertTrue(builder.isInArrayContext());
 		assertFalse(builder.isAtRootLevel());
 		
 		builder.endArray();
-		assertEquals(2, builder.getNestingDepth());
+		assertEquals(1, builder.getNestingDepth());
 		assertTrue(builder.isInObjectContext());
 		assertFalse(builder.isInArrayContext());
 		assertFalse(builder.isAtRootLevel());
 		
 		builder.endObject();
-		assertEquals(1, builder.getNestingDepth());
+		assertEquals(0, builder.getNestingDepth());
 		assertTrue(builder.isInObjectContext());
 		assertFalse(builder.isInArrayContext());
 		assertTrue(builder.isAtRootLevel());

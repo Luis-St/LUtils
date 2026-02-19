@@ -762,7 +762,7 @@ class YamlBuilderTest {
 	@Test
 	void getNestingDepthAtRoot() {
 		YamlBuilder builder = YamlBuilder.mapping();
-		assertEquals(1, builder.getNestingDepth());
+		assertEquals(0, builder.getNestingDepth());
 	}
 	
 	@Test
@@ -770,10 +770,10 @@ class YamlBuilderTest {
 		YamlBuilder builder = YamlBuilder.mapping()
 			.startMapping("level1");
 		
-		assertEquals(2, builder.getNestingDepth());
+		assertEquals(1, builder.getNestingDepth());
 		
 		builder.startMapping("level2");
-		assertEquals(3, builder.getNestingDepth());
+		assertEquals(2, builder.getNestingDepth());
 	}
 	
 	@Test
@@ -915,6 +915,57 @@ class YamlBuilderTest {
 			.buildMapping();
 		
 		assertEquals(7, result.size());
+	}
+	
+	@Test
+	void addAllBooleans() {
+		YamlSequence result = YamlBuilder.sequence()
+			.addAll(true, false, true)
+			.buildSequence();
+		
+		assertEquals(3, result.size());
+		assertEquals(new YamlScalar(true), result.get(0));
+		assertEquals(new YamlScalar(false), result.get(1));
+		assertEquals(new YamlScalar(true), result.get(2));
+	}
+	
+	@Test
+	void addAllBooleansNullArrayThrows() {
+		YamlBuilder builder = YamlBuilder.sequence();
+		assertThrows(NullPointerException.class, () -> builder.addAll((boolean[]) null));
+	}
+	
+	@Test
+	void sequenceAddIfString() {
+		YamlSequence result = YamlBuilder.sequence()
+			.addIf(true, "included")
+			.addIf(false, "excluded")
+			.buildSequence();
+		
+		assertEquals(1, result.size());
+		assertEquals(new YamlScalar("included"), result.get(0));
+	}
+	
+	@Test
+	void sequenceAddIfBoolean() {
+		YamlSequence result = YamlBuilder.sequence()
+			.addIf(true, true)
+			.addIf(false, false)
+			.buildSequence();
+		
+		assertEquals(1, result.size());
+		assertEquals(new YamlScalar(true), result.get(0));
+	}
+	
+	@Test
+	void sequenceAddIfNumber() {
+		YamlSequence result = YamlBuilder.sequence()
+			.addIf(true, 42)
+			.addIf(false, 99)
+			.buildSequence();
+		
+		assertEquals(1, result.size());
+		assertEquals(new YamlScalar(42), result.get(0));
 	}
 	
 	@Test

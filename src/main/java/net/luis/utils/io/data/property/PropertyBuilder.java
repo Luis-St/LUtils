@@ -201,84 +201,6 @@ public final class PropertyBuilder {
 	}
 	
 	/**
-	 * Adds a byte value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The byte value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull PropertyBuilder add(@NonNull String key, byte value) {
-		return this.add(key, new PropertyValue(value));
-	}
-	
-	/**
-	 * Adds a short value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The short value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull PropertyBuilder add(@NonNull String key, short value) {
-		return this.add(key, new PropertyValue(value));
-	}
-	
-	/**
-	 * Adds an int value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The int value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull PropertyBuilder add(@NonNull String key, int value) {
-		return this.add(key, new PropertyValue(value));
-	}
-	
-	/**
-	 * Adds a long value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The long value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull PropertyBuilder add(@NonNull String key, long value) {
-		return this.add(key, new PropertyValue(value));
-	}
-	
-	/**
-	 * Adds a float value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The float value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull PropertyBuilder add(@NonNull String key, float value) {
-		return this.add(key, new PropertyValue(value));
-	}
-	
-	/**
-	 * Adds a double value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The double value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull PropertyBuilder add(@NonNull String key, double value) {
-		return this.add(key, new PropertyValue(value));
-	}
-	
-	/**
 	 * Adds a nested property object with the specified key to the current object.<br>
 	 * This method allows you to add pre-built PropertyBuilder results as nested objects.
 	 *
@@ -357,72 +279,6 @@ public final class PropertyBuilder {
 	 */
 	public @NonNull PropertyBuilder add(@Nullable Number value) {
 		return this.add(value == null ? null : new PropertyValue(value));
-	}
-	
-	/**
-	 * Adds a byte value to the current array.
-	 *
-	 * @param value The byte value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull PropertyBuilder add(byte value) {
-		return this.add(new PropertyValue(value));
-	}
-	
-	/**
-	 * Adds a short value to the current array.
-	 *
-	 * @param value The short value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull PropertyBuilder add(short value) {
-		return this.add(new PropertyValue(value));
-	}
-	
-	/**
-	 * Adds an int value to the current array.
-	 *
-	 * @param value The int value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull PropertyBuilder add(int value) {
-		return this.add(new PropertyValue(value));
-	}
-	
-	/**
-	 * Adds a long value to the current array.
-	 *
-	 * @param value The long value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull PropertyBuilder add(long value) {
-		return this.add(new PropertyValue(value));
-	}
-	
-	/**
-	 * Adds a float value to the current array.
-	 *
-	 * @param value The float value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull PropertyBuilder add(float value) {
-		return this.add(new PropertyValue(value));
-	}
-	
-	/**
-	 * Adds a double value to the current array.
-	 *
-	 * @param value The double value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull PropertyBuilder add(double value) {
-		return this.add(new PropertyValue(value));
 	}
 	
 	/**
@@ -703,6 +559,38 @@ public final class PropertyBuilder {
 	}
 	
 	/**
+	 * Conditionally adds a boolean value to the current array only if the condition is true.<br>
+	 * This is useful for building arrays with optional elements based on runtime conditions.
+	 *
+	 * @param condition The condition to evaluate
+	 * @param value The boolean value to add if condition is true
+	 * @return This builder for method chaining
+	 * @throws IllegalStateException If the current context is not an array
+	 */
+	public @NonNull PropertyBuilder addIf(boolean condition, boolean value) {
+		if (condition) {
+			this.add(value);
+		}
+		return this;
+	}
+	
+	/**
+	 * Conditionally adds a number value to the current array only if the condition is true.<br>
+	 * This is useful for building arrays with optional elements based on runtime conditions.
+	 *
+	 * @param condition The condition to evaluate
+	 * @param value The number value to add if condition is true
+	 * @return This builder for method chaining
+	 * @throws IllegalStateException If the current context is not an array
+	 */
+	public @NonNull PropertyBuilder addIf(boolean condition, @Nullable Number value) {
+		if (condition) {
+			this.add(value);
+		}
+		return this;
+	}
+	
+	/**
 	 * Builds and returns the constructed property element.<br>
 	 * This method should be called when you've finished building your property structure.
 	 * The builder can still be used after calling this method.
@@ -755,12 +643,12 @@ public final class PropertyBuilder {
 	
 	/**
 	 * Returns the current nesting depth of the builder.<br>
-	 * A depth of 1 means we're at the root level, 2 means one level nested, etc.
+	 * A depth of 0 means we're at the root level, 1 means one level nested, etc.
 	 *
 	 * @return The current nesting depth
 	 */
 	public int getNestingDepth() {
-		return this.contextStack.size();
+		return this.contextStack.size() - 1;
 	}
 	
 	/**

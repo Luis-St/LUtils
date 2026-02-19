@@ -119,11 +119,11 @@ class DataHelperTest {
 	void tryParseNumberWithScientificNotation() {
 		Object result = DataHelper.tryParseNumber("1.0e10");
 		assertInstanceOf(Number.class, result);
-		assertEquals(1e10, ((Number) result).doubleValue(), 1e5);
+		assertEquals(1.0e10, ((Number) result).doubleValue(), 1.0e5);
 		
 		result = DataHelper.tryParseNumber("1.0E10");
 		assertInstanceOf(Number.class, result);
-		assertEquals(1e10, ((Number) result).doubleValue(), 1e5);
+		assertEquals(1.0e10, ((Number) result).doubleValue(), 1.0e5);
 		
 		result = DataHelper.tryParseNumber("1.5E-3");
 		assertInstanceOf(Number.class, result);
