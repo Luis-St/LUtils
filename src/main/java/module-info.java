@@ -107,6 +107,8 @@ module net.luis.utils {
 	exports net.luis.utils.io.database.condition;
 	exports net.luis.utils.io.database.connection;
 	exports net.luis.utils.io.database.dialect;
+	exports net.luis.utils.io.database.dialect.postgres;
+	exports net.luis.utils.io.database.dialect.postgres.ops;
 	exports net.luis.utils.io.database.exception;
 	exports net.luis.utils.io.database.exception.constraint;
 	exports net.luis.utils.io.database.exception.entity;
@@ -117,10 +119,15 @@ module net.luis.utils {
 	exports net.luis.utils.io.database.function.window;
 	exports net.luis.utils.io.database.index;
 	exports net.luis.utils.io.database.listener;
+	exports net.luis.utils.io.database.mapping;
 	exports net.luis.utils.io.database.migration;
 	exports net.luis.utils.io.database.query;
+	exports net.luis.utils.io.database.query.async;
+	exports net.luis.utils.io.database.query.row;
+	exports net.luis.utils.io.database.renderer;
 	exports net.luis.utils.io.database.sequence;
 	exports net.luis.utils.io.database.table;
+	exports net.luis.utils.io.database.table.ops;
 	exports net.luis.utils.io.database.transaction;
 
 	exports net.luis.utils.io.data;

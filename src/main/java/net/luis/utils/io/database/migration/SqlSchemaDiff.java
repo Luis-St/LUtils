@@ -18,30 +18,43 @@
 
 package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.SqlRenderable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
 /**
  * Interface representing a SQL schema diff.<br>
+ * <p>
+ *     Diffs are used by the migration builder to determine what changes need to be applied.<br>
+ * </p>
  *
  * @author Luis-St
  */
-public interface SqlSchemaDiff extends SqlRenderable {
-	
+public interface SqlSchemaDiff {
+
+	/**
+	 * Computes the diff between two schemas.<br>
+	 *
+	 * @param current The current schema
+	 * @param target The target schema
+	 * @return The schema diff
+	 */
+	static @NonNull SqlSchemaDiff between(@NonNull SqlSchema current, @NonNull SqlSchema target) {
+		throw new UnsupportedOperationException();
+	}
+
 	/**
 	 * Returns the tables that were added in the target schema.<br>
 	 * @return The list of added table diffs
 	 */
 	@NonNull List<SqlTableDiff> getAddedTables();
-	
+
 	/**
 	 * Returns the tables that were removed from the current schema.<br>
 	 * @return The list of removed table diffs
 	 */
 	@NonNull List<SqlTableDiff> getRemovedTables();
-	
+
 	/**
 	 * Returns the tables that were modified between schemas.<br>
 	 * @return The list of modified table diffs

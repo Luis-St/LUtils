@@ -16,14 +16,18 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect;
-
-import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.table.SqlTable;
+package net.luis.utils.io.database.table;
 
 /**
- * SQL dialect for SQLite.<br>
+ * Marker interface for audit update columns.<br>
+ * <p>
+ *     Columns implementing this interface are automatically populated
+ *     when a row is updated in the table.<br>
+ * </p>
  *
  * @author Luis-St
+ *
+ * @param <T> The entity type of the table
+ * @param <V> The type of the column value
  */
-public final class SqliteDialect extends SqlDialect<SqlTable<?>, SqlColumn<?>> {}
+public interface SqlUpdateColumn<T, V> extends SqlColumn<V> {}

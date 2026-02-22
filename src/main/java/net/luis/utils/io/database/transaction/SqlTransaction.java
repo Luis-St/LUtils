@@ -19,11 +19,12 @@
 package net.luis.utils.io.database.transaction;
 
 import net.luis.utils.io.database.SqlIsolationLevel;
-import net.luis.utils.io.database.audit.SqlAuditContext;
+import net.luis.utils.io.database.exception.SqlTransactionException;
+import net.luis.utils.io.database.query.SqlQueryProvider;
+import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
-import java.util.Optional;
 
 /**
  * Interface representing a SQL transaction.<br>
@@ -31,59 +32,51 @@ import java.util.Optional;
  * @author Luis-St
  */
 public interface SqlTransaction {
-	
+
 	/**
-	 * Returns whether the current thread is in a transaction.<br>
-	 * @return Whether a transaction is active
+	 * Returns a query provider bound to the specified table within this transaction.<br>
+	 *
+	 * @param table The table to query
+	 * @param <T> The entity type
+	 * @return A query provider for the given table within this transaction
 	 */
-	static boolean isInTransaction() {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Returns the current transaction, if any.<br>
-	 * @return An optional containing the current transaction
-	 */
-	static @NonNull Optional<SqlTransaction> current() {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Throws an exception if no transaction is currently active.<br>
-	 */
-	static void requireActive() {
-		throw new UnsupportedOperationException();
-	}
-	
+	<T> @NonNull SqlQueryProvider<T> from(@NonNull SqlTable<T> table);
+
 	/**
 	 * Commits the current transaction.<br>
 	 * Executes SQL: {@code COMMIT}.<br>
+	 *
+	 * @throws SqlTransactionException If the commit fails
 	 */
-	void commit();
-	
+	void commit() throws SqlTransactionException;
+
 	/**
 	 * Rolls back the current transaction.<br>
 	 * Executes SQL: {@code ROLLBACK}.<br>
+	 *
+	 * @throws SqlTransactionException If the rollback fails
 	 */
-	void rollback();
-	
+	void rollback() throws SqlTransactionException;
+
 	/**
 	 * Rolls back the current transaction to the given savepoint.<br>
 	 * Executes SQL: {@code ROLLBACK TO SAVEPOINT name}.<br>
 	 *
 	 * @param savepoint The savepoint to roll back to
+	 * @throws SqlTransactionException If the rollback fails
 	 */
-	void rollbackTo(@NonNull SqlSavepoint savepoint);
-	
+	void rollbackTo(@NonNull SqlSavepoint savepoint) throws SqlTransactionException;
+
 	/**
 	 * Creates a savepoint with the given name.<br>
 	 * Executes SQL: {@code SAVEPOINT name}.<br>
 	 *
 	 * @param name The name of the savepoint
 	 * @return The created savepoint
+	 * @throws SqlTransactionException If the savepoint cannot be created
 	 */
-	@NonNull SqlSavepoint savepoint(@NonNull String name);
-	
+	@NonNull SqlSavepoint savepoint(@NonNull String name) throws SqlTransactionException;
+
 	/**
 	 * Sets the transaction to read-only mode.<br>
 	 * Executes SQL: {@code SET TRANSACTION READ ONLY}.<br>
@@ -91,7 +84,7 @@ public interface SqlTransaction {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction readOnly();
-	
+
 	/**
 	 * Sets the timeout for the transaction.<br>
 	 *
@@ -99,7 +92,7 @@ public interface SqlTransaction {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction timeout(@NonNull Duration timeout);
-	
+
 	/**
 	 * Sets the isolation level for the transaction.<br>
 	 * Executes SQL: {@code SET TRANSACTION ISOLATION LEVEL ...}.<br>
@@ -108,13 +101,4 @@ public interface SqlTransaction {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction isolation(@NonNull SqlIsolationLevel level);
-	
-	/**
-	 * Sets the audit context for this transaction.<br>
-	 * The audit context can be used to track metadata about the transaction for auditing purposes, such as the user performing the transaction, the reason for the transaction, or any relevant tags.<br>
-	 *
-	 * @param context The audit context to set for this transaction
-	 * @return This transaction
-	 */
-	@NonNull SqlTransaction auditContext(@NonNull SqlAuditContext context);
 }

@@ -19,11 +19,11 @@
 package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.SqlRenderable;
-import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.query.async.SqlAsyncInsertQuery;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Interface representing a SQL insert query.<br>
@@ -33,47 +33,41 @@ import java.util.concurrent.CompletableFuture;
  * @param <T> The type of the entity
  */
 public interface SqlInsertQuery<T> extends SqlRenderable {
-	
+
+	/**
+	 * Returns the parameter values for this query.<br>
+	 * @return A list of parameter values in order
+	 */
+	@NonNull List<Object> getParameters();
+
 	/**
 	 * Executes the insert query.<br>
+	 *
 	 * @return The number of rows inserted
+	 * @throws SqlException If a database access error occurs
 	 */
-	int execute();
-	
+	int execute() throws SqlException;
+
 	/**
 	 * Executes the insert query and returns the inserted entities.<br>
 	 * Generates SQL: {@code INSERT INTO ... RETURNING *}.<br>
 	 *
 	 * @return The list of inserted entities
+	 * @throws SqlException If a database access error occurs
 	 */
-	@NonNull List<T> returning();
-	
+	@NonNull List<T> returning() throws SqlException;
+
 	/**
 	 * Executes the insert query and fetches the inserted entities.<br>
-	 * @return The list of inserted entities
-	 */
-	@NonNull List<T> fetchInserted();
-	
-	/**
-	 * Asynchronously executes the insert query.<br>
-	 * @return A future containing the number of rows inserted
-	 */
-	@NonNull CompletableFuture<Integer> executeAsync();
-	
-	/**
-	 * Asynchronously executes the insert query and returns the inserted entities.<br>
-	 * Generates SQL: {@code INSERT INTO ... RETURNING *}.<br>
 	 *
-	 * @return A future containing the list of inserted entities
+	 * @return The list of inserted entities
+	 * @throws SqlException If a database access error occurs
 	 */
-	@NonNull CompletableFuture<List<T>> returningAsync();
-	
+	@NonNull List<T> fetchInserted() throws SqlException;
+
 	/**
-	 * Asynchronously executes the insert query and fetches the inserted entities.<br>
-	 * @return A future containing the list of inserted entities
+	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
+	 * @return The asynchronous query
 	 */
-	@NonNull CompletableFuture<List<T>> fetchInsertedAsync();
-	
-	@Override
-	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
+	@NonNull SqlAsyncInsertQuery<T> async();
 }

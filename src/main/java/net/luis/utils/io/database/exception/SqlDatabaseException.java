@@ -18,24 +18,20 @@
 
 package net.luis.utils.io.database.exception;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-import java.util.Optional;
-
 /**
- * Base exception for SQL database operations.<br>
+ * General exception for SQL database operations.<br>
  *
  * @author Luis-St
  */
-public class SqlDatabaseException extends RuntimeException {
-	
+public class SqlDatabaseException extends SqlException {
+
 	/**
 	 * Constructs a new SQL database exception with no details.<br>
 	 */
 	public SqlDatabaseException() {}
-	
+
 	/**
 	 * Constructs a new SQL database exception with the specified message.<br>
 	 * @param message The message of the exception
@@ -43,7 +39,7 @@ public class SqlDatabaseException extends RuntimeException {
 	public SqlDatabaseException(@Nullable String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Constructs a new SQL database exception with the specified message and cause.<br>
 	 *
@@ -53,44 +49,12 @@ public class SqlDatabaseException extends RuntimeException {
 	public SqlDatabaseException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-	
+
 	/**
 	 * Constructs a new SQL database exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
 	public SqlDatabaseException(@Nullable Throwable cause) {
 		super(cause);
-	}
-	
-	/**
-	 * Returns the SQL state code.<br>
-	 * @return The SQL state or {@code null} if not available
-	 */
-	public @Nullable String getSqlState() {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Returns the vendor-specific error code.<br>
-	 * @return The vendor error code
-	 */
-	public int getVendorCode() {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Returns the SQL statement that caused the exception, if available.<br>
-	 * @return An optional containing the SQL statement
-	 */
-	public @NonNull Optional<String> getSql() {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Returns the parameters that were bound to the SQL statement.<br>
-	 * @return The list of parameters
-	 */
-	public @NonNull List<Object> getParameters() {
-		throw new UnsupportedOperationException();
 	}
 }

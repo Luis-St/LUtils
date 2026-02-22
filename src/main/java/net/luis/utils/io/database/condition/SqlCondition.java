@@ -27,49 +27,49 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlCondition extends SqlRenderable {
-	
+
 	/**
 	 * Creates a combined condition using {@code AND}.<br>
 	 * Generates SQL: {@code cond1 AND cond2 AND ...}.<br>
 	 *
-	 * @param conditions The conditions to combine
+	 * @param first The first condition
+	 * @param rest The remaining conditions to combine
 	 * @return The combined condition
 	 */
-	static @NonNull SqlCondition and(SqlCondition @NonNull ... conditions) {
+	static @NonNull SqlCondition allOf(@NonNull SqlCondition first, SqlCondition @NonNull ... rest) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Creates a combined condition using {@code OR}.<br>
 	 * Generates SQL: {@code cond1 OR cond2 OR ...}.<br>
 	 *
-	 * @param conditions The conditions to combine
+	 * @param first The first condition
+	 * @param rest The remaining conditions to combine
 	 * @return The combined condition
 	 */
-	static @NonNull SqlCondition or(SqlCondition @NonNull ... conditions) {
+	static @NonNull SqlCondition anyOf(@NonNull SqlCondition first, SqlCondition @NonNull ... rest) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Combines this condition with the given conditions using {@code AND}.<br>
-	 * Generates SQL: {@code this AND first AND ...}.<br>
+	 * Generates SQL: {@code this AND other1 AND other2 AND ...}.<br>
 	 *
-	 * @param first The first condition to combine with
-	 * @param rest The remaining conditions to combine with
+	 * @param others The conditions to combine with
 	 * @return The combined condition
 	 */
-	@NonNull SqlCondition and(@NonNull SqlCondition first, SqlCondition @NonNull ... rest);
-	
+	@NonNull SqlCondition and(SqlCondition @NonNull ... others);
+
 	/**
 	 * Combines this condition with the given conditions using {@code OR}.<br>
-	 * Generates SQL: {@code this OR first OR ...}.<br>
+	 * Generates SQL: {@code this OR other1 OR other2 OR ...}.<br>
 	 *
-	 * @param first The first condition to combine with
-	 * @param rest The remaining conditions to combine with
+	 * @param others The conditions to combine with
 	 * @return The combined condition
 	 */
-	@NonNull SqlCondition or(@NonNull SqlCondition first, SqlCondition @NonNull ... rest);
-	
+	@NonNull SqlCondition or(SqlCondition @NonNull ... others);
+
 	/**
 	 * Negates this condition.<br>
 	 * Generates SQL: {@code NOT (condition)}.<br>

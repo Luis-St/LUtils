@@ -18,55 +18,45 @@
 
 package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.SqlRenderable;
-import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlException;
 import org.jspecify.annotations.NonNull;
 
-import javax.sql.DataSource;
-import java.io.File;
-import java.util.List;
-
 /**
- * Interface representing a SQL migration.<br>
+ * Interface representing a SQL migration with manual {@code up()} and {@code down()} methods.<br>
+ * <p>
+ *     Migrations define schema changes using a DSL provided by {@link SqlMigrationBuilder}.<br>
+ *     No raw SQL is allowed; all schema modifications go through the builder.<br>
+ * </p>
  *
  * @author Luis-St
  */
-public interface SqlMigration extends SqlRenderable {
-	
-	/**
-	 * Computes the diff between the current and target schema.<br>
-	 *
-	 * @param currentSchema The current schema
-	 * @param targetSchema The target schema
-	 * @return The schema diff
-	 */
-	static @NonNull SqlSchemaDiff diff(@NonNull SqlSchema currentSchema, @NonNull SqlSchema targetSchema) {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Returns the list of pending migrations that have not yet been applied.<br>
-	 *
-	 * @param dataSource The data source to check against
-	 * @param migrationsDir The directory containing migration files
-	 * @return The list of pending migrations
-	 */
-	static @NonNull List<SqlMigration> pending(@NonNull DataSource dataSource, @NonNull File migrationsDir) {
-		throw new UnsupportedOperationException();
-	}
-	
+public interface SqlMigration {
+
 	/**
 	 * Returns the version of this migration.<br>
 	 * @return The migration version
 	 */
 	@NonNull String version();
-	
+
 	/**
 	 * Returns the description of this migration.<br>
 	 * @return The migration description
 	 */
 	@NonNull String description();
-	
-	@Override
-	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
+
+	/**
+	 * Applies this migration (forward).<br>
+	 *
+	 * @param builder The migration builder providing DSL operations
+	 * @throws SqlException If the migration fails
+	 */
+	void up(@NonNull SqlMigrationBuilder builder) throws SqlException;
+
+	/**
+	 * Reverts this migration (rollback).<br>
+	 *
+	 * @param builder The migration builder providing DSL operations
+	 * @throws SqlException If the rollback fails
+	 */
+	void down(@NonNull SqlMigrationBuilder builder) throws SqlException;
 }

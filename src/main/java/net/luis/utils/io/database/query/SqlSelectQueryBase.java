@@ -22,7 +22,7 @@ import net.luis.utils.io.database.SqlPage;
 import net.luis.utils.io.database.SqlRenderable;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlOrderable;
-import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.entity.SqlEntityNotFoundException;
 import net.luis.utils.io.database.exception.query.SqlQueryException;
 import net.luis.utils.io.database.table.SqlColumn;
@@ -32,7 +32,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 /**
@@ -45,7 +44,7 @@ import java.util.stream.Stream;
  * @param <Q> The self-referencing query type for fluent API support
  */
 public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> extends SqlRenderable {
-	
+
 	/**
 	 * Adds a Common Table Expression (CTE) to the query.<br>
 	 *
@@ -53,7 +52,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q with(@NonNull CommonTableExpression cte);
-	
+
 	/**
 	 * Adds a Common Table Expression (CTE) with the specified query to the query.<br>
 	 *
@@ -62,7 +61,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q with(@NonNull CommonTableExpression cte, @NonNull SqlSelectQuery<?> query);
-	
+
 	/**
 	 * Adds a {@code WHERE} condition to the query.<br>
 	 * Multiple calls are combined with AND.<br>
@@ -71,7 +70,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q where(@NonNull SqlCondition condition);
-	
+
 	/**
 	 * Adds a {@code WHERE EXISTS} subquery condition.<br>
 	 *
@@ -79,7 +78,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q whereExists(@NonNull SqlSelectQuery<?> subquery);
-	
+
 	/**
 	 * Adds a {@code WHERE NOT EXISTS} subquery condition.<br>
 	 *
@@ -87,7 +86,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q whereNotExists(@NonNull SqlSelectQuery<?> subquery);
-	
+
 	/**
 	 * Adds an {@code INNER JOIN} clause to the query.<br>
 	 *
@@ -96,7 +95,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
+
 	/**
 	 * Adds a {@code LEFT JOIN} clause to the query.<br>
 	 *
@@ -105,7 +104,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
+
 	/**
 	 * Adds a {@code RIGHT JOIN} clause to the query.<br>
 	 *
@@ -114,7 +113,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
+
 	/**
 	 * Adds a {@code FULL JOIN} clause to the query.<br>
 	 *
@@ -123,7 +122,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
+
 	/**
 	 * Adds a {@code GROUP BY} clause to the query.<br>
 	 *
@@ -131,7 +130,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q groupBy(SqlColumn<?> @NonNull ... columns);
-	
+
 	/**
 	 * Adds a {@code HAVING} condition to the query.<br>
 	 * Requires a preceding GROUP BY clause.<br>
@@ -140,7 +139,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q having(@NonNull SqlCondition condition);
-	
+
 	/**
 	 * Adds an {@code ORDER BY} clause to the query.<br>
 	 *
@@ -148,7 +147,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q orderBy(SqlOrderable @NonNull ... orderables);
-	
+
 	/**
 	 * Limits the number of results returned.<br>
 	 *
@@ -156,7 +155,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q limit(int limit);
-	
+
 	/**
 	 * Skips the specified number of results.<br>
 	 *
@@ -164,25 +163,13 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q offset(long offset);
-	
+
 	/**
 	 * Adds {@code DISTINCT} to the query to eliminate duplicate rows.<br>
 	 * @return This query for method chaining
 	 */
 	@NonNull Q distinct();
-	
-	/**
-	 * Adds {@code DISTINCT ON} to the query to eliminate duplicate rows based on specified columns.<br>
-	 * <p>
-	 *     This is only natively supported in PostgreSQL.<br>
-	 *     For all other databases, this will be achieved by using a window function.
-	 * </p>
-	 *
-	 * @param columns The columns to determine distinctness
-	 * @return This query for method chaining
-	 */
-	@NonNull Q distinctOn(SqlColumn<?> @NonNull ... columns);
-	
+
 	/**
 	 * Combines this query with another using {@code UNION} (removes duplicates).<br>
 	 *
@@ -190,7 +177,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q union(@NonNull SqlSelectQueryBase<T, ?> other);
-	
+
 	/**
 	 * Combines this query with another using {@code UNION ALL} (keeps duplicates).<br>
 	 *
@@ -198,7 +185,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q unionAll(@NonNull SqlSelectQueryBase<T, ?> other);
-	
+
 	/**
 	 * Combines this query with another using {@code INTERSECT} (common rows only).<br>
 	 *
@@ -206,7 +193,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q intersect(@NonNull SqlSelectQueryBase<T, ?> other);
-	
+
 	/**
 	 * Combines this query with another using {@code EXCEPT} (rows in this but not other).<br>
 	 *
@@ -214,116 +201,80 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q except(@NonNull SqlSelectQueryBase<T, ?> other);
-	
+
 	/**
 	 * Executes the query and returns all results as a list.<br>
+	 *
 	 * @return A list of all matching results, empty list if none found
+	 * @throws SqlException If a database access error occurs
 	 */
-	@NonNull List<T> fetch();
-	
+	@NonNull List<T> fetch() throws SqlException;
+
 	/**
 	 * Executes the query and returns the first result.<br>
+	 *
 	 * @return An optional containing the first result, or empty if none found
+	 * @throws SqlException If a database access error occurs
 	 */
-	@NonNull Optional<T> fetchFirst();
-	
+	@NonNull Optional<T> fetchFirst() throws SqlException;
+
 	/**
 	 * Executes the query and returns exactly one result.<br>
 	 *
 	 * @return The single matching result
 	 * @throws SqlEntityNotFoundException If no result is found
 	 * @throws SqlQueryException If more than one result is found
+	 * @throws SqlException If a database access error occurs
 	 */
-	@NonNull T fetchOne();
-	
+	@NonNull T fetchOne() throws SqlException;
+
 	/**
 	 * Executes the query and returns one result or null.<br>
 	 *
 	 * @return The single matching result, or null if none found
 	 * @throws SqlQueryException If more than one result is found
+	 * @throws SqlException If a database access error occurs
 	 */
-	@Nullable T fetchOneOrNull();
-	
+	@Nullable T fetchOneOrNull() throws SqlException;
+
 	/**
 	 * Executes the query and returns the count of matching rows.<br>
+	 *
 	 * @return The number of matching rows
+	 * @throws SqlException If a database access error occurs
 	 */
-	long count();
-	
+	long count() throws SqlException;
+
 	/**
 	 * Checks if any rows match the query conditions.<br>
+	 *
 	 * @return True if at least one row matches, false otherwise
+	 * @throws SqlException If a database access error occurs
 	 */
-	boolean exists();
-	
+	boolean exists() throws SqlException;
+
 	/**
 	 * Executes the query and returns results as a stream.<br>
 	 * The stream should be closed after use to release database resources.<br>
 	 *
 	 * @return A stream of matching results
+	 * @throws SqlException If a database access error occurs
 	 */
-	@NonNull Stream<T> stream();
-	
+	@NonNull Stream<T> stream() throws SqlException;
+
 	/**
 	 * Executes the query with pagination and returns a page of results.<br>
 	 *
 	 * @param page The page number (0-based)
 	 * @param pageSize The number of results per page
 	 * @return A page containing the results and pagination metadata
+	 * @throws SqlException If a database access error occurs
 	 */
-	@NonNull SqlPage<T> fetchPage(int page, int pageSize);
-	
-	/**
-	 * Asynchronously executes the query and returns all results.<br>
-	 * @return A future that completes with all matching results
-	 */
-	@NonNull CompletableFuture<List<T>> fetchAsync();
-	
-	/**
-	 * Asynchronously executes the query and returns the first result.<br>
-	 * @return A future that completes with an optional containing the first result
-	 */
-	@NonNull CompletableFuture<Optional<T>> fetchFirstAsync();
-	
-	/**
-	 * Asynchronously executes the query and returns exactly one result.<br>
-	 * @return A future that completes with the single matching result
-	 */
-	@NonNull CompletableFuture<T> fetchOneAsync();
-	
-	/**
-	 * Asynchronously executes the query and returns one result or null.<br>
-	 * @return A future that completes with the single result or null
-	 */
-	@NonNull CompletableFuture<@Nullable T> fetchOneOrNullAsync();
-	
-	/**
-	 * Asynchronously executes the query and returns the count.<br>
-	 * @return A future that completes with the number of matching rows
-	 */
-	@NonNull CompletableFuture<Long> countAsync();
-	
-	/**
-	 * Asynchronously checks if any rows match the query conditions.<br>
-	 * @return A future that completes with true if at least one row matches
-	 */
-	@NonNull CompletableFuture<Boolean> existsAsync();
-	
-	/**
-	 * Asynchronously executes the query with pagination.<br>
-	 *
-	 * @param page The page number (0-based)
-	 * @param pageSize The number of results per page
-	 * @return A future that completes with the page of results
-	 */
-	@NonNull CompletableFuture<SqlPage<T>> fetchPageAsync(int page, int pageSize);
-	
+	@NonNull SqlPage<T> fetchPage(int page, int pageSize) throws SqlException;
+
 	/**
 	 * Returns the parameter values for this query.<br>
 	 * @return A list of parameter values in order
 	 */
 	@NonNull List<Object> getParameters();
-	
-	@Override
-	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
 }

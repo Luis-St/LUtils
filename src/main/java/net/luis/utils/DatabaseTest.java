@@ -1,175 +1,276 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package net.luis.utils;
 
-import net.luis.utils.io.database.audit.SqlAuditContext;
-import net.luis.utils.io.database.transaction.SqlSavepoint;
-import org.jspecify.annotations.NonNull;
+import net.luis.utils.io.database.SqlDatabase;
+import net.luis.utils.io.database.SqlDatabaseConfig;
+import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.postgres.PostgresQueryProvider;
+import net.luis.utils.io.database.dialect.postgres.PostgresTable;
+import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.dialect.SqlColumnType;
+import net.luis.utils.io.database.migration.*;
+import net.luis.utils.io.database.query.SqlQueryProvider;
+import net.luis.utils.io.database.query.row.SqlRow2;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlCreationColumn;
+import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.table.SqlVersionColumn;
+import net.luis.utils.io.database.transaction.SqlTransaction;
 
-import java.util.Collection;
+import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
+ * Demonstrates the complete database API after the refactoring.<br>
  *
  * @author Luis-St
- *
  */
-
+@SuppressWarnings({"unused", "unchecked"})
 public class DatabaseTest {
-	
-	/**
-	 * Base class for all other SqlExceptions, extends Exception to force handling or declaration of these exceptions
-	 */
-	public static class SqlException extends Exception {
-		
-		public SqlException(String message) {
-			super(message);
+
+	record Person(int id, String name, String email, long version, Instant createdAt) {}
+
+	// --- Table definition (pure schema, no queries) ---
+
+	static final SqlTable<Person> PERSON_TABLE = SqlTable.of("person", Person.class);
+	static final SqlColumn<Integer> ID = PERSON_TABLE.column("id", Integer.class);
+	static final SqlColumn<String> NAME = PERSON_TABLE.column("name", String.class);
+	static final SqlColumn<String> EMAIL = PERSON_TABLE.column("email", String.class);
+	static final SqlVersionColumn<Person, Long> VERSION = PERSON_TABLE.versionColumn("version", Long.class);
+	static final SqlCreationColumn<Person, Instant> CREATED_AT = PERSON_TABLE.creationColumn("created_at", Instant.class);
+
+	void databaseLifecycle() throws SqlException {
+		// SqlDatabaseConfig.builder()...build() returns SqlDatabase directly
+		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+			// DDL via db.from(table)
+			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
+			persons.createIfNotExists();
+
+			// Insert with record-based mapping
+			persons.insert(new Person(1, "Alice", "alice@example.com", 0, Instant.now()));
+			persons.insert(
+				new Person(2, "Bob", "bob@example.com", 0, Instant.now()),
+				new Person(3, "Charlie", "charlie@example.com", 0, Instant.now())
+			);
 		}
-		
-		public SqlException(String message, Throwable cause) {
-			super(message, cause);
+	}
+
+	void selectQueries() throws SqlException {
+		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
+
+			// Full entity select
+			List<Person> all = persons.select().fetch();
+
+			// Single column select (typed)
+			List<String> names = persons.select(NAME).fetch();
+
+			// Two-column typed select returning SqlRow2
+			List<SqlRow2<Integer, String>> rows = persons.select(ID, NAME)
+				.where(NAME.string().startsWith("A"))
+				.fetch();
+
+			// Conditions — static combinators or instance chaining
+			persons.select()
+				.where(SqlCondition.allOf(ID.greaterThan(5), NAME.isNotNull()))
+				.orderBy(NAME.asc())
+				.limit(10)
+				.fetch();
+
+			// Fetch variants
+			persons.select().where(ID.equalTo(1)).fetchOne();
+			persons.select().where(ID.equalTo(999)).fetchFirst();
+			persons.select().where(ID.equalTo(1)).fetchOneOrNull();
+
+			// Count and exists
+			long count = persons.select().count();
+			boolean exists = persons.select().where(NAME.equalTo("Alice")).exists();
+
+			// Pagination
+			persons.select().fetchPage(0, 20);
+
+			// Type-specific column operations
+			persons.select().where(NAME.string().contains("li")).fetch();
+			persons.select().where(ID.numeric().between(1, 100)).fetch();
+			persons.select().where(CREATED_AT.temporal().withinLast(java.time.Duration.ofHours(24))).fetch();
 		}
-		
-		public SqlException(Throwable cause) {
-			super(cause);
+	}
+
+	void asyncQueries() throws SqlException {
+		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
+
+			// Async via .async() wrapper — returns CompletableFuture
+			CompletableFuture<List<Person>> future = persons.select().async().fetch();
+			CompletableFuture<Long> countFuture = persons.select().async().count();
+			CompletableFuture<Integer> deleteFuture = persons.delete().where(ID.equalTo(99)).async().execute();
 		}
 	}
-	
-	void main() {
-		SqlDatabase db = SqlDatabase.of(new SqlDatabaseConfig() {});
-		
-		record Person(int id, String name) {}
-		
-		SqlTable<Person> personTable = SqlTable.of("person", Person.class);
-		SqlColumn<Integer> idColumn = personTable.column("id", Integer.class);
-		SqlColumn<String> nameColumn = personTable.column("name", String.class);
-		
-		db.from(personTable).insert(new Person(1, "Alice"), new Person(2, "Bob"));
-		
-		db.from(personTable).select(idColumn).where(null/*idColumn.equalTo(10)*/).fetch();
-		db.from(personTable).select(idColumn).where(null/*SqlCondition.not(idColumn.equalTo(10))*/)/*.fetchPage(1, 20)*/;
-		db.from(personTable).select(idColumn).where(null/*SqlCondition.or(idColumn.equalTo(10), idColumn.equalTo(20))*/)/*.fetchOne()*/;
-		db.from(personTable).select(idColumn).where(null/*SqlCondition.and(idColumn.equalTo(10), nameColumn.equalTo("Test"))*/)/*.fetchOneOrNull()*/;
-	}
-	
-	interface SqlTransaction {
-		
-		void commit();
-		
-		void rollback();
-		
-		<Q> @NonNull SqlQueryProvider<Q> withIn(@NonNull SqlTable<Q> table);
-		
-		@NonNull SqlSavepoint savepoint(@NonNull String name);
-		
-		void rollbackTo(@NonNull SqlSavepoint savepoint);
-	}
-	
-	interface SqlDatabaseConfig {}
-	
-	interface SqlDatabase {
-		
-		static @NonNull SqlDatabase of(@NonNull SqlDatabaseConfig config) {
-			throw new UnsupportedOperationException("Not implemented");
+
+	void transactions() throws SqlException {
+		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+			// Explicit transactions only
+			SqlTransaction tx = db.beginTransaction();
+			try {
+				SqlQueryProvider<Person> persons = tx.from(PERSON_TABLE);
+				persons.insert(new Person(10, "Dave", "dave@example.com", 0, Instant.now())).execute();
+				persons.update()
+					.set(NAME, "David")
+					.where(ID.equalTo(10))
+					.execute();
+				tx.commit();
+			} catch (SqlException e) {
+				tx.rollback();
+				throw e;
+			}
 		}
-		
-		@NonNull SqlAuditContext getAuditContext();
-		
-		void setAuditContext(@NonNull SqlAuditContext ctx);
-		
-		<Q> @NonNull SqlQueryProvider<Q> from(@NonNull SqlTable<Q> table);
-		
-		@NonNull SqlTransaction beginTransaction();
-		
-		@NonNull SqlTransaction beginTransaction(@NonNull SqlAuditContext ctx /*, more options here, would it make sense to implement a SqlTransactionOption record?*/);
 	}
-	
-	interface SqlQuery<Q> {}
-	
-	interface SqlSelectQuery<Q> extends SqlQuery<Q> {
-		
-		@NonNull SqlSelectQuery<CompletableFuture<Q>> async();
-		
-		@NonNull SqlSelectQuery<Q> where(String condition /*SqlCondition, ....*/);
-		
-		@NonNull SqlSelectQuery<Q> groupBy(SqlColumn<?> @NonNull ... columns);
-		
-		@NonNull SqlSelectQuery<Q> orderBy(@NonNull SqlColumn<?> column, boolean ascending);
-		
-		@NonNull Q fetch();
-		
-		// other fetch methods
-	}
-	
-	interface SqlInsertQuery<Q> extends SqlQuery<Q> {}
-	
-	interface SqlUpdateQuery<Q> extends SqlQuery<Q> {}
-	
-	interface SqlDeleteQuery<Q> extends SqlQuery<Q> {}
-	
-	interface SqlQueryProvider<Q> {
-		
-		@NonNull SqlSelectQuery<Q> select();
-		
-		<T> @NonNull SqlSelectQuery<T> select(@NonNull SqlColumn<T> column);
-		
-		<T1, T2> @NonNull SqlSelectQuery<SqlRow2<T1, T2>> select(
-			@NonNull SqlColumn<T1> column1, @NonNull SqlColumn<T2> column2
-		);
-		
-		<T1, T2, T3> @NonNull SqlSelectQuery<SqlRow3<T1, T2, T3>> select(
-			@NonNull SqlColumn<T1> column1, @NonNull SqlColumn<T2> column2, @NonNull SqlColumn<T3> column3
-		);
-		
-		<T1, T2, T3, T4> @NonNull SqlSelectQuery<SqlRow4<T1, T2, T3, T4>> select(
-			@NonNull SqlColumn<T1> column1, @NonNull SqlColumn<T2> column2, @NonNull SqlColumn<T3> column3, @NonNull SqlColumn<T4> column4
-		);
-		
-		// more select methods for more columns (up to 16, generic varargs option for more columns)
-		
-		@NonNull SqlInsertQuery<Q> insert(@NonNull Q entity);
-		
-		@NonNull SqlInsertQuery<Q> insert(Q @NonNull ... entities);
-		
-		@NonNull SqlInsertQuery<Q> insert(@NonNull Collection<Q> entities, int batchSize);
-		
-		@NonNull SqlInsertQuery<Q> insertOrIgnore(@NonNull Q entity, SqlColumn<?> @NonNull ... conflictColumns);
-		
-		@NonNull SqlInsertQuery<Q> insertFromSelect(@NonNull SqlSelectQuery<Q> query);
-		
-		@NonNull SqlUpdateQuery<Q> update();
-		
-		@NonNull SqlDeleteQuery<Q> delete();
-	}
-	
-	interface SqlTable<Q> {
-		
-		static <Q> @NonNull SqlTable<Q> of(@NonNull String name, @NonNull Class<Q> type) {
-			throw new UnsupportedOperationException("Not implemented");
+
+	void updateAndDelete() throws SqlException {
+		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
+
+			// Update with SET
+			int updated = persons.update()
+				.set(NAME, "Alice Updated")
+				.where(ID.equalTo(1))
+				.execute();
+
+			// Increment numeric column
+			persons.update()
+				.increment(ID, 1)
+				.where(NAME.equalTo("Bob"))
+				.execute();
+
+			// Update with RETURNING
+			List<Person> updatedPersons = persons.update()
+				.set(EMAIL, "new@example.com")
+				.where(ID.equalTo(2))
+				.returning();
+
+			// Delete
+			int deleted = persons.delete()
+				.where(ID.lessThan(0))
+				.execute();
+
+			// Skip version check for bulk operations
+			persons.skipVersionCheck().update()
+				.set(NAME, "Bulk Updated")
+				.where(NAME.string().like("%old%"))
+				.execute();
 		}
-		
-		<C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull Class<C> type);
-		
-		<C, R> @NonNull SqlForeignColumn<C, R> foreignColumn(@NonNull String name, @NonNull Class<C> type, @NonNull SqlTable<R> referencedTable);
-		
-		<V> @NonNull SqlVersionColumn<V> versionColumn(@NonNull String name, @NonNull Class<V> type);
-		
-		<V> @NonNull SqlCreationColumn<V> creationColumn(@NonNull String name, @NonNull Class<V> type);
-		
-		<V> @NonNull SqlUpdateColumn<V> updateColumn(@NonNull String name, @NonNull Class<V> type);
 	}
-	
-	interface SqlColumn<T> {}
-	
-	interface SqlForeignColumn<T, R> extends SqlColumn<T> {}
-	
-	interface SqlVersionColumn<T> extends SqlColumn<T> {}
-	
-	interface SqlCreationColumn<T> extends SqlColumn<T> {}
-	
-	interface SqlUpdateColumn<T> extends SqlColumn<T> {}
-	
-	interface SqlRow2<T1, T2> {}
-	
-	interface SqlRow3<T1, T2, T3> {}
-	
-	interface SqlRow4<T1, T2, T3, T4> {}
+
+	void lockingQueries() throws SqlException {
+		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+			SqlTransaction tx = db.beginTransaction();
+			try {
+				// FOR UPDATE locking
+				tx.from(PERSON_TABLE).select()
+					.where(ID.equalTo(1))
+					.forUpdate()
+					.fetch();
+
+				// SKIP LOCKED for job queue pattern
+				tx.from(PERSON_TABLE).select()
+					.where(NAME.isNotNull())
+					.forUpdate()
+					.skipLocked()
+					.limit(5)
+					.fetch();
+
+				tx.commit();
+			} catch (SqlException e) {
+				tx.rollback();
+				throw e;
+			}
+		}
+	}
+
+	void postgresSpecific() throws SqlException {
+		PostgresTable<Person> pgTable = PostgresTable.of("person", Person.class);
+
+		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+			// Postgres-specific query provider
+			PostgresQueryProvider<Person> pgPersons = PostgresQueryProvider.from(db, pgTable);
+
+			// Postgres-specific: TRUNCATE CASCADE
+			pgPersons.truncateCascade();
+
+			// Postgres-specific: ON CONFLICT DO NOTHING
+			pgPersons.insert(new Person(1, "Alice", "alice@example.com", 0, Instant.now()))
+				.onConflictDoNothing()
+				.execute();
+
+			// Postgres-specific: DISTINCT ON
+			pgPersons.select()
+				.distinctOn(NAME)
+				.fetch();
+		}
+	}
+
+	void migrationExample() throws SqlException {
+		SqlMigration migration = new SqlMigration() {
+			@Override
+			public String version() {
+				return "001";
+			}
+
+			@Override
+			public String description() {
+				return "Create person table";
+			}
+
+			@Override
+			public void up(SqlMigrationBuilder builder) throws SqlException {
+				builder.createTable("person", table -> {
+					table.column("id", SqlColumnType.BIGINT, col -> col.notNull().autoIncrement());
+					table.column("name", SqlColumnType.VARCHAR, col -> col.notNull());
+					table.column("email", SqlColumnType.VARCHAR, col -> col.notNull().unique());
+					table.column("version", SqlColumnType.BIGINT, col -> col.notNull().defaultValue(0L));
+					table.column("created_at", SqlColumnType.TIMESTAMP, col -> col.notNull());
+					table.primaryKey("id");
+				});
+				builder.createIndex("person", "idx_person_email", idx -> idx.columns("email").unique());
+			}
+
+			@Override
+			public void down(SqlMigrationBuilder builder) throws SqlException {
+				builder.dropIndex("idx_person_email");
+				builder.dropTable("person");
+			}
+		};
+
+		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+			SqlMigrationRunner runner = SqlMigrationRunner.of(db);
+			runner.register(migration);
+
+			// Dry run to preview SQL
+			List<net.luis.utils.io.database.SqlRendered> preview = runner.dryRun();
+
+			// Apply all pending migrations
+			runner.migrate();
+
+			// Check migration status
+			List<SqlMigrationInfo> status = runner.status();
+		}
+	}
 }

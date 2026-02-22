@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.migration;
 
+import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -28,28 +29,28 @@ import java.util.List;
  * @author Luis-St
  */
 public interface SqlTableDiff {
-	
+
 	/**
 	 * Returns the name of the table.<br>
 	 * @return The table name
 	 */
 	@NonNull String tableName();
-	
+
 	/**
-	 * Returns the names of columns added to the table.<br>
-	 * @return The list of added column names
+	 * Returns the columns added to the table.<br>
+	 * @return The list of added columns
 	 */
-	@NonNull List<String> addedColumns();
-	
+	@NonNull List<SqlColumn<?>> addedColumns();
+
 	/**
-	 * Returns the names of columns removed from the table.<br>
-	 * @return The list of removed column names
+	 * Returns the columns removed from the table.<br>
+	 * @return The list of removed columns
 	 */
-	@NonNull List<String> removedColumns();
-	
+	@NonNull List<SqlColumn<?>> removedColumns();
+
 	/**
-	 * Returns the names of columns modified in the table.<br>
-	 * @return The list of modified column names
+	 * Returns the columns modified in the table.<br>
+	 * @return The list of column changes
 	 */
-	@NonNull List<String> modifiedColumns();
+	@NonNull List<SqlColumnChange> modifiedColumns();
 }

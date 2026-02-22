@@ -19,6 +19,7 @@
 package net.luis.utils.io.database;
 
 import net.luis.utils.io.database.audit.SqlTimestampSource;
+import net.luis.utils.io.database.exception.SqlConnectionException;
 import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
@@ -31,7 +32,7 @@ import java.util.concurrent.Executor;
  * @author Luis-St
  */
 public interface SqlDatabaseConfig {
-	
+
 	/**
 	 * Creates a new database configuration builder.<br>
 	 * @return The new configuration builder
@@ -39,7 +40,7 @@ public interface SqlDatabaseConfig {
 	static @NonNull SqlDatabaseConfig builder() {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Sets the data source for the database connection.<br>
 	 *
@@ -47,7 +48,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig dataSource(@NonNull DataSource dataSource);
-	
+
 	/**
 	 * Sets the executor for asynchronous operations.<br>
 	 *
@@ -55,7 +56,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig asyncExecutor(@NonNull Executor executor);
-	
+
 	/**
 	 * Sets the connection pool size for asynchronous operations.<br>
 	 *
@@ -63,7 +64,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig asyncConnectionPoolSize(int size);
-	
+
 	/**
 	 * Sets the timestamp source for audit operations.<br>
 	 *
@@ -71,7 +72,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig auditTimestampSource(@NonNull SqlTimestampSource source);
-	
+
 	/**
 	 * Sets the clock used for audit timestamps.<br>
 	 *
@@ -79,10 +80,12 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig auditClock(@NonNull Clock clock);
-	
+
 	/**
-	 * Builds the database configuration.<br>
-	 * @return The built configuration
+	 * Builds the configuration and creates a database instance.<br>
+	 *
+	 * @return The configured database instance
+	 * @throws SqlConnectionException If the connection cannot be established
 	 */
-	@NonNull SqlDatabaseConfig build();
+	@NonNull SqlDatabase build() throws SqlConnectionException;
 }

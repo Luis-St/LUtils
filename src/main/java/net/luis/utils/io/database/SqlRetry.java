@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database;
 
+import net.luis.utils.io.database.exception.SqlException;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
@@ -29,7 +30,7 @@ import java.util.function.Supplier;
  * @author Luis-St
  */
 public interface SqlRetry {
-	
+
 	/**
 	 * Creates a new retry instance with exponential backoff.<br>
 	 *
@@ -40,7 +41,7 @@ public interface SqlRetry {
 	static @NonNull SqlRetry withBackoff(int maxRetries, @NonNull Duration initialDelay) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Configures the exception types to retry on.<br>
 	 *
@@ -49,13 +50,14 @@ public interface SqlRetry {
 	 */
 	@SuppressWarnings("unchecked")
 	@NonNull SqlRetry retryOn(Class<? extends Throwable> @NonNull ... exceptions);
-	
+
 	/**
 	 * Executes the given action with retry logic.<br>
 	 *
 	 * @param action The action to execute
 	 * @param <T> The return type of the action
 	 * @return The result of the action
+	 * @throws SqlException If all retries are exhausted
 	 */
-	<T> T execute(@NonNull Supplier<T> action);
+	<T> T execute(@NonNull Supplier<T> action) throws SqlException;
 }

@@ -32,13 +32,13 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The self-referential entity type
  */
 public interface SqlVersioned<T extends SqlVersioned<T>> {
-
+	
 	/**
 	 * Returns the current version of this entity.<br>
 	 * @return The version number, starting at {@code 0} for new entities
 	 */
 	long version();
-
+	
 	/**
 	 * Returns an immutable copy of this entity with the specified version.<br>
 	 *

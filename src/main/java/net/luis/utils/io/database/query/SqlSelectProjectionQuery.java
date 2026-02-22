@@ -19,14 +19,15 @@
 package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.SqlPage;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.entity.SqlEntityNotFoundException;
 import net.luis.utils.io.database.exception.query.SqlQueryException;
+import net.luis.utils.io.database.query.async.SqlAsyncSelectProjectionQuery;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 /**
@@ -51,7 +52,7 @@ import java.util.stream.Stream;
  * @param <T> The type of the projection result (e.g., Row2, Row3, or single column type)
  */
 public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSelectProjectionQuery<T>> {
-	
+
 	/**
 	 * Executes the query and maps all results to the specified type.<br>
 	 * <p>
@@ -61,18 +62,20 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @param type The class to map results to
 	 * @param <R> The target type
 	 * @return A list of all matching results mapped to the target type
+	 * @throws SqlException If a database access error occurs
 	 */
-	<R> @NonNull List<R> fetchAs(@NonNull Class<R> type);
-	
+	<R> @NonNull List<R> fetchAs(@NonNull Class<R> type) throws SqlException;
+
 	/**
 	 * Executes the query and maps the first result to the specified type.<br>
 	 *
 	 * @param type The class to map the result to
 	 * @param <R> The target type
 	 * @return An optional containing the first result mapped to the target type, or empty if none found
+	 * @throws SqlException If a database access error occurs
 	 */
-	<R> @NonNull Optional<R> fetchFirstAs(@NonNull Class<R> type);
-	
+	<R> @NonNull Optional<R> fetchFirstAs(@NonNull Class<R> type) throws SqlException;
+
 	/**
 	 * Executes the query and maps exactly one result to the specified type.<br>
 	 *
@@ -81,9 +84,10 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return The single matching result mapped to the target type
 	 * @throws SqlEntityNotFoundException If no result is found
 	 * @throws SqlQueryException If more than one result is found
+	 * @throws SqlException If a database access error occurs
 	 */
-	<R> @NonNull R fetchOneAs(@NonNull Class<R> type);
-	
+	<R> @NonNull R fetchOneAs(@NonNull Class<R> type) throws SqlException;
+
 	/**
 	 * Executes the query and maps one result to the specified type, or returns null.<br>
 	 *
@@ -91,9 +95,10 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @param <R> The target type
 	 * @return The single matching result mapped to the target type, or null if none found
 	 * @throws SqlQueryException If more than one result is found
+	 * @throws SqlException If a database access error occurs
 	 */
-	<R> @Nullable R fetchOneOrNullAs(@NonNull Class<R> type);
-	
+	<R> @Nullable R fetchOneOrNullAs(@NonNull Class<R> type) throws SqlException;
+
 	/**
 	 * Executes the query and returns results as a stream mapped to the specified type.<br>
 	 *
@@ -101,9 +106,10 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @param type The class to map results to
 	 * @param <R> The target type
 	 * @return A stream of matching results mapped to the target type
+	 * @throws SqlException If a database access error occurs
 	 */
-	<R> @NonNull Stream<R> streamAs(@NonNull Class<R> type);
-	
+	<R> @NonNull Stream<R> streamAs(@NonNull Class<R> type) throws SqlException;
+
 	/**
 	 * Executes the query with pagination and maps results to the specified type.<br>
 	 *
@@ -112,53 +118,13 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @param type The class to map results to
 	 * @param <R> The target type
 	 * @return A page containing the results mapped to the target type and pagination metadata
+	 * @throws SqlException If a database access error occurs
 	 */
-	<R> @NonNull SqlPage<R> fetchPageAs(int page, int pageSize, @NonNull Class<R> type);
-	
+	<R> @NonNull SqlPage<R> fetchPageAs(int page, int pageSize, @NonNull Class<R> type) throws SqlException;
+
 	/**
-	 * Asynchronously executes the query and maps all results to the specified type.<br>
-	 *
-	 * @param type The class to map results to
-	 * @param <R> The target type
-	 * @return A future that completes with all matching results mapped to the target type
+	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
+	 * @return The asynchronous projection query
 	 */
-	<R> @NonNull CompletableFuture<List<R>> fetchAsAsync(@NonNull Class<R> type);
-	
-	/**
-	 * Asynchronously executes the query and maps the first result to the specified type.<br>
-	 *
-	 * @param type The class to map the result to
-	 * @param <R> The target type
-	 * @return A future that completes with an optional containing the first result mapped to the target type
-	 */
-	<R> @NonNull CompletableFuture<Optional<R>> fetchFirstAsAsync(@NonNull Class<R> type);
-	
-	/**
-	 * Asynchronously executes the query and maps exactly one result to the specified type.<br>
-	 *
-	 * @param type The class to map the result to
-	 * @param <R> The target type
-	 * @return A future that completes with the single matching result mapped to the target type
-	 */
-	<R> @NonNull CompletableFuture<R> fetchOneAsAsync(@NonNull Class<R> type);
-	
-	/**
-	 * Asynchronously executes the query and maps one result to the specified type, or returns null.<br>
-	 *
-	 * @param type The class to map the result to
-	 * @param <R> The target type
-	 * @return A future that completes with the single result mapped to the target type or null
-	 */
-	<R> @NonNull CompletableFuture<@Nullable R> fetchOneOrNullAsAsync(@NonNull Class<R> type);
-	
-	/**
-	 * Asynchronously executes the query with pagination and maps results to the specified type.<br>
-	 *
-	 * @param page The page number (0-based)
-	 * @param pageSize The number of results per page
-	 * @param type The class to map results to
-	 * @param <R> The target type
-	 * @return A future that completes with a page of results mapped to the target type
-	 */
-	<R> @NonNull CompletableFuture<SqlPage<R>> fetchPageAsAsync(int page, int pageSize, @NonNull Class<R> type);
+	@NonNull SqlAsyncSelectProjectionQuery<T> async();
 }

@@ -16,14 +16,24 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect;
+package net.luis.utils.io.database.query.row;
 
-import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.table.SqlTable;
+import org.jspecify.annotations.NonNull;
 
 /**
- * SQL dialect for MySQL.<br>
+ * A record representing a SQL row with 3 columns.<br>
  *
  * @author Luis-St
+ *
+ * @param first The value of the first column
+ * @param second The value of the second column
+ * @param third The value of the third column
+ * @param <T1> The type of the first column
+ * @param <T2> The type of the second column
+ * @param <T3> The type of the third column
  */
-public class MysqlDialect extends SqlDialect<SqlTable<?>, SqlColumn<?>> {}
+public record SqlRow3<T1, T2, T3>(
+	@NonNull T1 first,
+	@NonNull T2 second,
+	@NonNull T3 third
+) {}

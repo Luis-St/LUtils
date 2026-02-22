@@ -20,10 +20,11 @@ package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.SqlRenderable;
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.query.async.SqlAsyncDeleteQuery;
 import org.jspecify.annotations.NonNull;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 
 /**
  * Interface representing a SQL delete query.<br>
@@ -33,7 +34,13 @@ import java.util.concurrent.CompletableFuture;
  * @param <T> The type of the entity
  */
 public interface SqlDeleteQuery<T> extends SqlRenderable {
-	
+
+	/**
+	 * Returns the parameter values for this query.<br>
+	 * @return A list of parameter values in order
+	 */
+	@NonNull List<Object> getParameters();
+
 	/**
 	 * Sets the condition for the delete query.<br>
 	 * Generates SQL: {@code WHERE condition}.<br>
@@ -42,23 +49,19 @@ public interface SqlDeleteQuery<T> extends SqlRenderable {
 	 * @return This delete query
 	 */
 	@NonNull SqlDeleteQuery<T> where(@NonNull SqlCondition condition);
-	
+
 	/**
 	 * Executes the delete query.<br>
 	 * Generates SQL: {@code DELETE FROM table WHERE ...}.<br>
 	 *
 	 * @return The number of rows deleted
+	 * @throws SqlException If a database access error occurs
 	 */
-	int execute();
-	
+	int execute() throws SqlException;
+
 	/**
-	 * Asynchronously executes the delete query.<br>
-	 * Generates SQL: {@code DELETE FROM table WHERE ...}.<br>
-	 *
-	 * @return A future containing the number of rows deleted
+	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
+	 * @return The asynchronous query
 	 */
-	@NonNull CompletableFuture<Integer> executeAsync();
-	
-	@Override
-	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
+	@NonNull SqlAsyncDeleteQuery<T> async();
 }

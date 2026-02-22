@@ -16,14 +16,18 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect;
-
-import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.table.SqlTable;
+package net.luis.utils.io.database.table;
 
 /**
- * SQL dialect for MariaDB.<br>
+ * Marker interface for audit creation columns.<br>
+ * <p>
+ *     Columns implementing this interface are automatically populated
+ *     when a new row is inserted into the table.<br>
+ * </p>
  *
  * @author Luis-St
+ *
+ * @param <T> The entity type of the table
+ * @param <V> The type of the column value
  */
-public final class MariaDialect extends SqlDialect<SqlTable<?>, SqlColumn<?>> {}
+public interface SqlCreationColumn<T, V> extends SqlColumn<V> {}

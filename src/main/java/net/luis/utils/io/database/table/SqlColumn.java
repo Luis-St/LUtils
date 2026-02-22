@@ -19,126 +19,81 @@
 package net.luis.utils.io.database.table;
 
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.function.SqlExpression;
 import net.luis.utils.io.database.query.SqlSelectQuery;
-import org.jetbrains.annotations.NotNull;
+import net.luis.utils.io.database.table.ops.SqlNumericOps;
+import net.luis.utils.io.database.table.ops.SqlStringOps;
+import net.luis.utils.io.database.table.ops.SqlTemporalOps;
 import org.jspecify.annotations.NonNull;
 
-import java.time.Duration;
 import java.util.List;
 
 /**
  * Interface representing a SQL column.<br>
  * Extends {@link SqlExpression} to support aliasing via {@link #as(String)} and usage in conditions and ordering.<br>
+ * <p>
+ *     Type-specific operations are accessed via {@link #string()}, {@link #numeric()}, and {@link #temporal()} accessors.<br>
+ * </p>
  *
  * @see SqlExpression
+ * @see SqlStringOps
+ * @see SqlNumericOps
+ * @see SqlTemporalOps
  *
  * @author Luis-St
  *
  * @param <T> The type of the column value
  */
 public interface SqlColumn<T> extends SqlExpression<T> {
-	
+
 	/**
-	 * Gets the SQL dialect associated with this column.<br>
+	 * Returns string-specific operations for this column.<br>
 	 *
-	 * @param <TT> The type of the dialect specific table
-	 * @param <CC> The type of the dialect specific column
-	 * @return The SQL dialect for this column
+	 * @return The string operations holder
 	 */
-	<TT, CC> @NonNull SqlDialect<TT, CC> getDialect();
-	
+	@NonNull SqlStringOps string();
+
+	/**
+	 * Returns numeric-specific operations for this column.<br>
+	 *
+	 * @return The numeric operations holder
+	 */
+	@NonNull SqlNumericOps<T> numeric();
+
+	/**
+	 * Returns temporal-specific operations for this column.<br>
+	 *
+	 * @return The temporal operations holder
+	 */
+	@NonNull SqlTemporalOps temporal();
+
 	@Override
 	@NonNull SqlCondition equalTo(@NonNull T value);
-	
+
 	@Override
 	@NonNull SqlCondition notEqualTo(@NonNull T value);
-	
+
 	@Override
 	@NonNull SqlCondition greaterThan(@NonNull T value);
-	
+
 	@Override
 	@NonNull SqlCondition greaterThanOrEqualTo(@NonNull T value);
-	
+
 	@Override
 	@NonNull SqlCondition lessThan(@NonNull T value);
-	
+
 	@Override
 	@NonNull SqlCondition lessThanOrEqualTo(@NonNull T value);
-	
+
 	@Override
 	@NonNull SqlCondition between(@NonNull T start, @NonNull T end);
-	
+
 	@Override
 	@NonNull SqlCondition isNull();
-	
+
 	@Override
 	@NonNull SqlCondition isNotNull();
-	
-	/**
-	 * Creates a condition using a SQL {@code LIKE} pattern.<br>
-	 * Generates SQL: {@code column LIKE pattern}.<br>
-	 *
-	 * @param pattern The like pattern
-	 * @return The like condition
-	 */
-	@NonNull SqlCondition like(@NonNull String pattern);
-	
-	/**
-	 * Creates a condition that checks if the column starts with the given prefix.<br>
-	 * Generates SQL: {@code column LIKE 'prefix%'}.<br>
-	 *
-	 * @param prefix The prefix to check for
-	 * @return The starts-with condition
-	 */
-	@NonNull SqlCondition startsWith(@NonNull String prefix);
-	
-	/**
-	 * Creates a condition that checks if the column contains the given substring.<br>
-	 * Generates SQL: {@code column LIKE '%substring%'}.<br>
-	 *
-	 * @param substring The substring to check for
-	 * @return The contains condition
-	 */
-	@NonNull SqlCondition contains(@NonNull String substring);
-	
-	/**
-	 * Creates a condition that checks if the column ends with the given suffix.<br>
-	 * Generates SQL: {@code column LIKE '%suffix'}.<br>
-	 *
-	 * @param suffix The suffix to check for
-	 * @return The ends-with condition
-	 */
-	@NonNull SqlCondition endsWith(@NonNull String suffix);
-	
-	/**
-	 * Creates a condition that checks if the column length is greater than the given value.<br>
-	 * Generates SQL: {@code LENGTH(column) > length}.<br>
-	 *
-	 * @param length The length to compare against
-	 * @return The length condition
-	 */
-	@NonNull SqlCondition lengthGreaterThan(int length);
-	
-	/**
-	 * Creates a condition that checks if the column is equal to the given value ignoring case.<br>
-	 * Generates SQL: {@code LOWER(column) = LOWER(value)}.<br>
-	 *
-	 * @param value The value to compare to
-	 * @return The case-insensitive equality condition
-	 */
-	@NonNull SqlCondition equalToIgnoreCase(@NonNull String value);
-	
-	/**
-	 * Creates a condition that checks if the column value is within the last given duration.<br>
-	 * Generates SQL: {@code column >= NOW() - INTERVAL 'duration'}.<br>
-	 *
-	 * @param duration The duration to check within
-	 * @return The within-last condition
-	 */
-	@NonNull SqlCondition withinLast(@NonNull Duration duration);
-	
+
 	/**
 	 * Creates an IN condition with the specified values.<br>
 	 *
@@ -147,7 +102,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	@NonNull SqlCondition in(T @NonNull ... values);
-	
+
 	/**
 	 * Creates an IN condition with the specified list of values.<br>
 	 *
@@ -155,7 +110,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * @return A condition for IN comparison
 	 */
 	@NonNull SqlCondition in(@NonNull List<T> values);
-	
+
 	/**
 	 * Creates an IN condition with a subquery.<br>
 	 *
@@ -163,7 +118,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * @return A condition for IN comparison with subquery
 	 */
 	@NonNull SqlCondition in(@NonNull SqlSelectQuery<?> subquery);
-	
+
 	/**
 	 * Creates a NOT IN condition with the specified values.<br>
 	 *
@@ -172,7 +127,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	@NonNull SqlCondition notIn(T @NonNull ... values);
-	
+
 	/**
 	 * Creates a NOT IN condition with the specified list of values.<br>
 	 *
@@ -180,7 +135,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * @return A condition for NOT IN comparison
 	 */
 	@NonNull SqlCondition notIn(@NonNull List<T> values);
-	
+
 	/**
 	 * Creates a NOT IN condition with a subquery.<br>
 	 * Generates SQL: {@code column NOT IN (subquery)}.<br>
@@ -188,8 +143,8 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * @param subquery The subquery providing values to exclude
 	 * @return A condition for NOT IN comparison with subquery
 	 */
-	@NotNull SqlCondition notIn(@NonNull SqlSelectQuery<?> subquery);
-	
+	@NonNull SqlCondition notIn(@NonNull SqlSelectQuery<?> subquery);
+
 	/**
 	 * Creates an {@code IFNULL} expression that returns the column value or a default if null.<br>
 	 * Generates SQL: {@code IFNULL(column, defaultValue)} if supported by the dialect, otherwise uses a {@code COALESCE(column, defaultValue)}.<br>
@@ -198,7 +153,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * @return The if-null expression of the same type as the column
 	 */
 	@NonNull SqlExpression<T> ifNull(@NonNull T defaultValue);
-	
+
 	/**
 	 * Creates an aliased version of this column for use in SELECT projections.<br>
 	 * <p>
@@ -211,16 +166,16 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 */
 	@Override
 	@NonNull SqlExpression<T> as(@NonNull String alias);
-	
+
 	@Override
 	@NonNull SqlColumn<T> asc();
-	
+
 	@Override
 	@NonNull SqlColumn<T> desc();
-	
+
 	@Override
 	@NonNull SqlColumn<T> nullsFirst();
-	
+
 	@Override
 	@NonNull SqlColumn<T> nullsLast();
 }

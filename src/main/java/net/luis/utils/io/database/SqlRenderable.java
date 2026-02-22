@@ -18,22 +18,33 @@
 
 package net.luis.utils.io.database;
 
-import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.renderer.SqlRenderer;
 import org.jspecify.annotations.NonNull;
+
+import java.util.List;
 
 /**
  * Interface for SQL elements that can be rendered to a dialect-specific SQL string.<br>
  *
  * @author Luis-St
  */
-@FunctionalInterface
 public interface SqlRenderable {
-	
+
 	/**
-	 * Generates the SQL representation of this element for the given dialect.<br>
+	 * Generates the SQL representation of this element using the given renderer.<br>
 	 *
-	 * @param dialect The SQL dialect to generate SQL for
-	 * @return The dialect-specific SQL string
+	 * @param renderer The SQL renderer to generate SQL with
+	 * @return The rendered SQL string
 	 */
-	@NonNull String toSql(@NonNull SqlDialect<?, ?> dialect);
+	@NonNull String toSql(@NonNull SqlRenderer renderer);
+
+	/**
+	 * Generates the SQL representation along with bound parameter values.<br>
+	 *
+	 * @param renderer The SQL renderer to generate SQL with
+	 * @return A {@link SqlRendered} record containing the SQL string and bound parameters
+	 */
+	default @NonNull SqlRendered toRendered(@NonNull SqlRenderer renderer) {
+		return new SqlRendered(this.toSql(renderer), List.of());
+	}
 }

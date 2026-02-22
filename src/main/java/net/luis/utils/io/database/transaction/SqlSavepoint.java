@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.transaction;
 
+import net.luis.utils.io.database.exception.SqlTransactionException;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -26,16 +27,18 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlSavepoint {
-	
+
 	/**
 	 * Returns the name of this savepoint.<br>
 	 * @return The savepoint name
 	 */
 	@NonNull String name();
-	
+
 	/**
 	 * Releases this savepoint.<br>
 	 * Executes SQL: {@code RELEASE SAVEPOINT name}.<br>
+	 *
+	 * @throws SqlTransactionException If the savepoint cannot be released
 	 */
-	void release();
+	void release() throws SqlTransactionException;
 }
