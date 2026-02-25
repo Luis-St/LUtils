@@ -25,10 +25,7 @@ import java.time.Instant;
 
 /**
  * Interface representing a SQL audit entry.<br>
- * <p>
- *     Audit entries track the entity, operation type, timestamp, and user
- *     associated with a database operation.<br>
- * </p>
+ * Audit entries track the entity, operation type, timestamp, and user associated with a database operation.<br>
  *
  * @author Luis-St
  *

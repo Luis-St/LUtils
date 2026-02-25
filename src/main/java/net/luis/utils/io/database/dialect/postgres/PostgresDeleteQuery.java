@@ -54,5 +54,6 @@ public interface PostgresDeleteQuery<T> extends SqlDeleteQuery<T> {
 	 * @return The list of deleted entities
 	 * @throws SqlException If a database access error occurs
 	 */
+	@Override
 	@NonNull List<T> returning() throws SqlException;
 }

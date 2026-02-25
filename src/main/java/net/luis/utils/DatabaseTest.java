@@ -33,6 +33,7 @@ import net.luis.utils.io.database.table.SqlCreationColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.table.SqlVersionColumn;
 import net.luis.utils.io.database.transaction.SqlTransaction;
+import org.jspecify.annotations.NonNull;
 
 import java.time.Instant;
 import java.util.List;
@@ -230,17 +231,17 @@ public class DatabaseTest {
 	void migrationExample() throws SqlException {
 		SqlMigration migration = new SqlMigration() {
 			@Override
-			public String version() {
+			public @NonNull String version() {
 				return "001";
 			}
 
 			@Override
-			public String description() {
+			public @NonNull String description() {
 				return "Create person table";
 			}
 
 			@Override
-			public void up(SqlMigrationBuilder builder) throws SqlException {
+			public void up(@NonNull SqlMigrationBuilder builder) throws SqlException {
 				builder.createTable("person", table -> {
 					table.column("id", SqlColumnType.BIGINT, col -> col.notNull().autoIncrement());
 					table.column("name", SqlColumnType.VARCHAR, col -> col.notNull());
@@ -253,7 +254,7 @@ public class DatabaseTest {
 			}
 
 			@Override
-			public void down(SqlMigrationBuilder builder) throws SqlException {
+			public void down(@NonNull SqlMigrationBuilder builder) throws SqlException {
 				builder.dropIndex("idx_person_email");
 				builder.dropTable("person");
 			}

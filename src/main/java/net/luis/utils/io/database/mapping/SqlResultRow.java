@@ -25,9 +25,9 @@ import org.jspecify.annotations.Nullable;
 /**
  * Interface representing a single row from a SQL result set with type-safe column access.<br>
  * <p>
- *     Unlike raw {@code Object[]} access, this abstraction provides typed access
- *     to column values using {@link SqlColumn} references, ensuring compile-time
- *     type safety when reading query results.<br>
+ *     Unlike raw {@code Object[]} access,<br>
+ *     this abstraction provides typed accessto column values using {@link SqlColumn} references,<br>
+ *     ensuring compile-time type safety when reading query results.
  * </p>
  *
  * @author Luis-St

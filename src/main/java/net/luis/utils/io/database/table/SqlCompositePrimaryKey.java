@@ -25,15 +25,15 @@ import java.util.List;
 /**
  * Interface representing a composite primary key definition on a table.<br>
  * <p>
- *     A composite primary key consists of multiple columns that together
- *     uniquely identify a row. The framework recognizes this definition
- *     for identity-based operations and constraint generation.<br>
+ *     A composite primary key consists of multiple columns that together uniquely identify a row.<br>
+ *     The framework recognizes this definition for identity-based operations and constraint generation.
  * </p>
  *
  * @author Luis-St
  *
  * @param <T> The entity type
  */
+@FunctionalInterface
 public interface SqlCompositePrimaryKey<T> {
 	
 	/**

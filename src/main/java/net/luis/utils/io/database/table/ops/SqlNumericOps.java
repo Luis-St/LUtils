@@ -23,10 +23,7 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * Interface providing numeric-specific SQL operations for column conditions.<br>
- * <p>
- *     These operations generate SQL conditions specific to numeric columns
- *     such as sign checks and modulo comparisons.<br>
- * </p>
+ * These operations generate SQL conditions specific to numeric columns such as sign checks and modulo comparisons.<br>
  *
  * @author Luis-St
  *

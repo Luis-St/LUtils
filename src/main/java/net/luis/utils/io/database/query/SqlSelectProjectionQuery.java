@@ -29,6 +29,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 /**
@@ -147,10 +148,10 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return This query for method chaining
 	 * @throws SqlLockNotAvailableException If the rows are locked by another transaction
 	 */
-	@NonNull SqlSelectProjectionQuery<T> noWait();
+	@NonNull SqlSelectProjectionQuery<T> noWait() throws SqlLockNotAvailableException;
 	
 	/**
-	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
+	 * Returns an asynchronous view of this query where all terminal operations return {@link CompletableFuture}.<br>
 	 * @return The asynchronous projection query
 	 */
 	@NonNull SqlAsyncSelectProjectionQuery<T> async();

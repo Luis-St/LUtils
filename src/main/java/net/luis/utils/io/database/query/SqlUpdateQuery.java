@@ -28,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.time.temporal.Temporal;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Interface representing a SQL update query.<br>
@@ -113,7 +114,7 @@ public interface SqlUpdateQuery<T> extends SqlRenderable {
 	@NonNull List<T> returning() throws SqlException;
 	
 	/**
-	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
+	 * Returns an asynchronous view of this query where all terminal operations return {@link CompletableFuture}.<br>
 	 * @return The asynchronous query
 	 */
 	@NonNull SqlAsyncUpdateQuery<T> async();

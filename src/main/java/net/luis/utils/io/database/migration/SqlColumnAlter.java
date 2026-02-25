@@ -23,10 +23,7 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * Interface for altering column properties in migrations.<br>
- * <p>
- *     Provides a fluent API for changing the type, nullability, and default value
- *     of an existing column.<br>
- * </p>
+ * Provides a fluent API for changing the type, nullability, and default value of an existing column.<br>
  *
  * @author Luis-St
  */

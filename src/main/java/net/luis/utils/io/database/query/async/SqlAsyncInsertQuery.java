@@ -25,9 +25,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Interface representing an asynchronous SQL insert query.<br>
- * <p>
- *     All terminal operations return {@link CompletableFuture} for non-blocking execution.<br>
- * </p>
+ * All terminal operations return {@link CompletableFuture} for non-blocking execution.<br>
  *
  * @author Luis-St
  *
@@ -37,7 +35,6 @@ public interface SqlAsyncInsertQuery<T> {
 	
 	/**
 	 * Asynchronously executes the insert query.<br>
-	 *
 	 * @return A future that completes with the number of rows inserted
 	 */
 	@NonNull CompletableFuture<Integer> execute();
@@ -52,7 +49,6 @@ public interface SqlAsyncInsertQuery<T> {
 	
 	/**
 	 * Asynchronously executes the insert query and fetches the inserted entities.<br>
-	 *
 	 * @return A future that completes with the list of inserted entities
 	 */
 	@NonNull CompletableFuture<List<T>> fetchInserted();

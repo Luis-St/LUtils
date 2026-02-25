@@ -21,13 +21,12 @@ package net.luis.utils.io.database.query.async;
 import net.luis.utils.io.database.condition.SqlCondition;
 import org.jspecify.annotations.NonNull;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Interface representing an asynchronous SQL delete query.<br>
- * <p>
- *     All terminal operations return {@link CompletableFuture} for non-blocking execution.<br>
- * </p>
+ * All terminal operations return {@link CompletableFuture} for non-blocking execution.<br>
  *
  * @author Luis-St
  *
@@ -51,4 +50,12 @@ public interface SqlAsyncDeleteQuery<T> {
 	 * @return A future that completes with the number of rows deleted
 	 */
 	@NonNull CompletableFuture<Integer> execute();
+
+	/**
+	 * Asynchronously executes the delete query and returns the deleted rows.<br>
+	 * Generates SQL: {@code DELETE FROM table WHERE ... RETURNING *}.<br>
+	 *
+	 * @return A future that completes with the list of deleted entities
+	 */
+	@NonNull CompletableFuture<List<T>> returning();
 }

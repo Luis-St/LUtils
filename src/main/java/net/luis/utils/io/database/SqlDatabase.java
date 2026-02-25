@@ -78,10 +78,7 @@ public interface SqlDatabase extends AutoCloseable {
 	
 	/**
 	 * Returns an asynchronous query provider bound to the specified table.<br>
-	 * <p>
-	 *     All terminal operations on the returned provider return {@link java.util.concurrent.CompletableFuture}
-	 *     for non-blocking execution.<br>
-	 * </p>
+	 * All terminal operations on the returned provider return {@link CompletableFuture} for non-blocking execution.<br>
 	 *
 	 * @param table The table to query
 	 * @param <T> The entity type
@@ -91,10 +88,7 @@ public interface SqlDatabase extends AutoCloseable {
 	
 	/**
 	 * Executes the given action within a new transaction.<br>
-	 * <p>
-	 *     The transaction is automatically committed if the action completes successfully,
-	 *     or rolled back if the action throws an exception.<br>
-	 * </p>
+	 * The transaction is automatically committed if the action completes successfully, or rolled back if the action throws an exception.<br>
 	 *
 	 * @param action The action to execute within the transaction
 	 * @param <R> The return type of the action
@@ -103,6 +97,7 @@ public interface SqlDatabase extends AutoCloseable {
 	 */
 	default <R> R inTransaction(@NonNull Function<SqlTransaction, R> action) throws SqlException {
 		SqlTransaction tx = this.beginTransaction();
+		
 		try {
 			R result = action.apply(tx);
 			tx.commit();
@@ -137,8 +132,8 @@ public interface SqlDatabase extends AutoCloseable {
 	/**
 	 * Begins a new asynchronous transaction.<br>
 	 * <p>
-	 *     The returned transaction is pinned to a dedicated connection from the pool.
-	 *     All operations are dispatched to the async executor but are sequential on that connection.<br>
+	 *     The returned transaction is pinned to a dedicated connection from the pool.<br>
+	 *     All operations are dispatched to the async executor but are sequential on that connection.
 	 * </p>
 	 *
 	 * @return A future that completes with the new async transaction
@@ -159,11 +154,6 @@ public interface SqlDatabase extends AutoCloseable {
 	 */
 	@NonNull SqlAuditContext getAuditContext();
 	
-	/**
-	 * Closes this database connection and releases all resources.<br>
-	 *
-	 * @throws SqlException If an error occurs while closing the connection
-	 */
 	@Override
 	void close() throws SqlException;
 }

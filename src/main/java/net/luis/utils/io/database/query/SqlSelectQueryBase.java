@@ -35,8 +35,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Base interface for SQL select queries providing common functionality
- * for both entity queries and projection queries.<br>
+ * Base interface for SQL select queries providing common functionality for both entity queries and projection queries.<br>
  *
  * @author Luis-St
  *

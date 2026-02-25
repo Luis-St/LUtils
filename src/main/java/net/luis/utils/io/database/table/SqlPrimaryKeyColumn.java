@@ -18,19 +18,18 @@
 
 package net.luis.utils.io.database.table;
 
+import java.util.UUID;
+
 /**
  * Marker interface for a primary key column.<br>
- * <p>
- *     Columns implementing this interface are recognized by query builders
- *     for identity-based operations such as {@code findById()} and upsert logic.<br>
- * </p>
+ * Columns implementing this interface are recognized by query builders for identity-based operations such as {@code findById()} and upsert logic.<br>
  *
  * @see SqlColumn
  *
  * @author Luis-St
  *
  * @param <T> The entity type (for table-level type safety)
- * @param <V> The primary key value type (e.g., {@link Long}, {@link java.util.UUID})
+ * @param <V> The primary key value type (e.g., {@link Long}, {@link UUID})
  */
 public interface SqlPrimaryKeyColumn<T, V> extends SqlColumn<V> {}
 

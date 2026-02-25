@@ -23,10 +23,7 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * Interface providing string-specific SQL operations for column conditions.<br>
- * <p>
- *     These operations generate SQL conditions based on string patterns, prefix/suffix matching,
- *     substring containment, case-insensitive equality, and string length comparisons.<br>
- * </p>
+ * These operations generate SQL conditions based on string patterns, prefix/suffix matching, substring containment, case-insensitive equality, and string length comparisons.<br>
  *
  * @author Luis-St
  */

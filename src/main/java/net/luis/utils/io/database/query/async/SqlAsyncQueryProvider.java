@@ -19,18 +19,19 @@
 package net.luis.utils.io.database.query.async;
 
 import net.luis.utils.io.database.function.SqlExpression;
+import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
  * Interface providing methods to create asynchronous SQL queries for a specific entity type.<br>
  * <p>
- *     This interface mirrors {@link net.luis.utils.io.database.query.SqlQueryProvider} but only
- *     provides query operations (no DDL), with all terminal operations returning
- *     {@link java.util.concurrent.CompletableFuture} for non-blocking execution.<br>
+ *     This interface mirrors {@link SqlQueryProvider} but only provides query operations (no DDL),<br>
+ *     with all terminal operations returning {@link CompletableFuture} for non-blocking execution.
  * </p>
  *
  * @author Luis-St

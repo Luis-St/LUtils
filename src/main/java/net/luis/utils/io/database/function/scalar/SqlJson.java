@@ -123,4 +123,16 @@ public class SqlJson {
 	public static @NonNull SqlExpression<String> keys(@NonNull SqlExpression<?> expr) {
 		throw new UnsupportedOperationException();
 	}
+
+	/**
+	 * Extracts the value at the specified JSON path.<br>
+	 * Generates SQL: {@code JSON_EXTRACT(json, path)} or dialect equivalent.<br>
+	 *
+	 * @param json The JSON expression to extract from
+	 * @param path The JSON path expression
+	 * @return The extracted value expression
+	 */
+	public static @NonNull SqlExpression<String> extract(@NonNull SqlExpression<?> json, @NonNull String path) {
+		throw new UnsupportedOperationException();
+	}
 }

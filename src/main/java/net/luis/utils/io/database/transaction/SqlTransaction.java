@@ -29,9 +29,9 @@ import java.time.Duration;
 /**
  * Interface representing a SQL transaction.<br>
  * <p>
- *     Implements {@link AutoCloseable} to support try-with-resources usage.
- *     If the transaction has not been explicitly committed or rolled back when
- *     {@link #close()} is called, an automatic rollback is performed.<br>
+ *     Implements {@link AutoCloseable} to support try-with-resources usage.<br>
+ *     If the transaction has not been explicitly committed or rolled back when {@link #close()} is called,<br>
+ *     an automatic rollback is performed.
  * </p>
  *
  * @author Luis-St
@@ -124,7 +124,15 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction isolation(@NonNull SqlIsolationLevel level);
-	
+
+	/**
+	 * Sets the propagation behavior for this transaction.<br>
+	 *
+	 * @param propagation The propagation behavior
+	 * @return This transaction
+	 */
+	@NonNull SqlTransaction propagation(@NonNull SqlPropagation propagation);
+
 	/**
 	 * Closes this transaction.<br>
 	 * If the transaction is still active (not committed or rolled back),

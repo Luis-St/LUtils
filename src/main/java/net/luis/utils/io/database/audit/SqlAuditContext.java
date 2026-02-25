@@ -25,8 +25,8 @@ import org.jspecify.annotations.Nullable;
  * Immutable interface representing a SQL audit context.<br>
  * <p>
  *     Provides the identity of the user performing database operations for auditing purposes.<br>
- *     Instances are immutable and thread-safe. Use {@link #withUser(String)} to derive
- *     a new context with a different user, or {@link #empty()} for an anonymous context.<br>
+ *     Instances are immutable and thread-safe. Use {@link #withUser(String)} to derive a new context with a different user,<br>
+ *     or {@link #empty()} for an anonymous context.
  * </p>
  *
  * @author Luis-St
@@ -35,7 +35,6 @@ public interface SqlAuditContext {
 	
 	/**
 	 * Creates an empty audit context with no user set.<br>
-	 *
 	 * @return An empty audit context
 	 */
 	static @NonNull SqlAuditContext empty() {

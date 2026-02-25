@@ -25,9 +25,7 @@ import java.time.*;
 
 /**
  * Interface providing temporal-specific SQL operations for column conditions.<br>
- * <p>
- *     These operations generate SQL conditions for time-based range checks and comparisons.<br>
- * </p>
+ * These operations generate SQL conditions for time-based range checks and comparisons.<br>
  *
  * @author Luis-St
  */

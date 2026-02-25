@@ -25,10 +25,7 @@ import java.util.function.Consumer;
 
 /**
  * Builder for table definitions in migrations.<br>
- * <p>
- *     Provides a fluent API for defining columns and primary keys
- *     when creating a new table.<br>
- * </p>
+ * Provides a fluent API for defining columns and primary keys when creating a new table.<br>
  *
  * @author Luis-St
  */

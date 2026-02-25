@@ -29,10 +29,9 @@ import java.util.function.Consumer;
 /**
  * DSL interface for defining migration operations.<br>
  * <p>
- *     Provides a fluent API for creating, dropping, and renaming tables,
- *     adding, dropping, renaming, and altering columns, managing indexes,
- *     constraints, and sequences.<br>
- *     No raw SQL is allowed; all schema modifications go through this builder.<br>
+ *     Provides a fluent API for creating, dropping, and renaming tables, adding, dropping, renaming, and altering columns,
+ *     managing indexes, constraints, and sequences.<br>
+ *     No raw SQL is allowed; all schema modifications go through this builder.
  * </p>
  *
  * @author Luis-St

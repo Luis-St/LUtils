@@ -29,7 +29,7 @@ import org.jspecify.annotations.NonNull;
 public interface SqlOrderable extends SqlRenderable {
 	
 	/**
-	 * Sets the sort order to ascending.<br>
+	 * Sets the sort order to ascend.<br>
 	 * Generates SQL: {@code ASC}.<br>
 	 *
 	 * @return This orderable with ascending order
@@ -37,7 +37,7 @@ public interface SqlOrderable extends SqlRenderable {
 	@NonNull SqlOrderable asc();
 	
 	/**
-	 * Sets the sort order to descending.<br>
+	 * Sets the sort order to descend.<br>
 	 * Generates SQL: {@code DESC}.<br>
 	 *
 	 * @return This orderable with descending order

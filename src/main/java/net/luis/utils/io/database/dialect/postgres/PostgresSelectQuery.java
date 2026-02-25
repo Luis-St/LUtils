@@ -36,8 +36,7 @@ public interface PostgresSelectQuery<T> extends SqlSelectQuery<T> {
 	
 	/**
 	 * Adds a {@code DISTINCT ON} clause to the query.<br>
-	 * PostgreSQL-specific extension that selects distinct rows based on the specified columns,
-	 * keeping only the first row for each distinct combination.<br>
+	 * PostgreSQL-specific extension that selects distinct rows based on the specified columns, keeping only the first row for each distinct combination.<br>
 	 * Generates SQL: {@code SELECT DISTINCT ON (col1, col2, ...) ...}.<br>
 	 *
 	 * @param columns The columns to apply distinct on

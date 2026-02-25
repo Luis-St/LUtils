@@ -24,10 +24,7 @@ import java.util.List;
 
 /**
  * Record bundling a rendered SQL string together with its bound parameters.<br>
- * <p>
- *     Used to represent a fully rendered SQL statement that is ready
- *     for execution, including all parameter values for prepared statements.<br>
- * </p>
+ * Used to represent a fully rendered SQL statement that is ready for execution, including all parameter values for prepared statements.<br>
  *
  * @author Luis-St
  *

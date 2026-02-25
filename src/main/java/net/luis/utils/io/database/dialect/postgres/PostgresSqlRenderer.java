@@ -35,7 +35,6 @@ public class PostgresSqlRenderer extends SqlDefaultRenderer {
 	
 	/**
 	 * Constructs a new PostgreSQL SQL renderer for the given dialect.<br>
-	 *
 	 * @param dialect The dialect associated with this renderer
 	 */
 	public PostgresSqlRenderer(@NonNull SqlDialect dialect) {
@@ -54,31 +53,11 @@ public class PostgresSqlRenderer extends SqlDefaultRenderer {
 		return "$" + index;
 	}
 	
-	/**
-	 * Returns the PostgreSQL-specific UUID generation function.<br>
-	 *
-	 * @return The {@code gen_random_uuid()} function
-	 */
 	@Override
 	public @NonNull String uuidFunction() {
 		return "gen_random_uuid()";
 	}
 	
-	/**
-	 * Returns the PostgreSQL-specific auto-increment syntax using {@code SERIAL}.<br>
-	 *
-	 * @return The {@code GENERATED ALWAYS AS IDENTITY} syntax
-	 */
-	@Override
-	public @NonNull String autoIncrementSyntax() {
-		return "GENERATED ALWAYS AS IDENTITY";
-	}
-	
-	/**
-	 * Returns the PostgreSQL-specific current timestamp function.<br>
-	 *
-	 * @return The {@code NOW()} function
-	 */
 	@Override
 	public @NonNull String nowFunction() {
 		return "NOW()";

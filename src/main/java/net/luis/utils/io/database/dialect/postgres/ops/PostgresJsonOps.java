@@ -25,8 +25,8 @@ import org.jspecify.annotations.NonNull;
 /**
  * Interface providing PostgreSQL-specific JSON/JSONB operations for column conditions.<br>
  * <p>
- *     These operations generate SQL expressions and conditions for PostgreSQL JSON and JSONB types,
- *     including field access, key existence checks, and text extraction.<br>
+ *     These operations generate SQL expressions and conditions for PostgreSQL JSON and JSONB types,<br>
+ *     including field access, key existence checks, and text extraction.
  * </p>
  *
  * @author Luis-St

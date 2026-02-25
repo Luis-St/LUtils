@@ -26,8 +26,8 @@ import java.util.List;
 /**
  * Interface providing PostgreSQL-specific array operations for column conditions.<br>
  * <p>
- *     These operations generate SQL conditions for PostgreSQL array types,
- *     including containment checks, overlap detection, and array length queries.<br>
+ *     These operations generate SQL conditions for PostgreSQL array types,<br>
+ *     including containment checks, overlap detection, and array length queries.
  * </p>
  *
  * @author Luis-St

@@ -25,10 +25,7 @@ import java.time.Instant;
 
 /**
  * Interface providing information about a SQL migration.<br>
- * <p>
- *     Exposes the version, description, current status, application timestamp,
- *     and checksum of a migration.<br>
- * </p>
+ * Exposes the version, description, current status, application timestamp, and checksum of a migration.<br>
  *
  * @author Luis-St
  */
@@ -61,6 +58,7 @@ public interface SqlMigrationInfo {
 	/**
 	 * Returns the checksum of this migration.<br>
 	 * Used to detect changes in previously applied migrations.<br>
+	 *
 	 * @return The migration checksum
 	 */
 	long checksum();

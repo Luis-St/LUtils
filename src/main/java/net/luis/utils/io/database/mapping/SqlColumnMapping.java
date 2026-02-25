@@ -22,10 +22,7 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * Static utility for resolving column names to record component names and vice versa.<br>
- * <p>
- *     Provides conversion between SQL snake_case column names and Java camelCase
- *     record component names.<br>
- * </p>
+ * Provides conversion between SQL snake_case column names and Java camelCase record component names.<br>
  *
  * @author Luis-St
  */
@@ -43,7 +40,6 @@ public final class SqlColumnMapping {
 	 * @return The camelCase component name
 	 */
 	public static @NonNull String toComponentName(@NonNull String columnName) {
-		// snake_case to camelCase conversion
 		throw new UnsupportedOperationException();
 	}
 	
@@ -54,7 +50,6 @@ public final class SqlColumnMapping {
 	 * @return The snake_case column name
 	 */
 	public static @NonNull String toColumnName(@NonNull String componentName) {
-		// camelCase to snake_case conversion
 		throw new UnsupportedOperationException();
 	}
 }

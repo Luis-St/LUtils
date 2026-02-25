@@ -23,10 +23,7 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * Builder for column options in migration table definitions.<br>
- * <p>
- *     Provides a fluent API for configuring column constraints such as
- *     nullability, uniqueness, default values, auto-increment, foreign keys, and check constraints.<br>
- * </p>
+ * Provides a fluent API for configuring column constraints such as nullability, uniqueness, default values, auto-increment, foreign keys, and check constraints.<br>
  *
  * @author Luis-St
  */

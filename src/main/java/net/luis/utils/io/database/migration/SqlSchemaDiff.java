@@ -24,9 +24,7 @@ import java.util.List;
 
 /**
  * Interface representing a SQL schema diff.<br>
- * <p>
- *     Diffs are used by the migration builder to determine what changes need to be applied.<br>
- * </p>
+ * Diffs are used by the migration builder to determine what changes need to be applied.<br>
  *
  * @author Luis-St
  */

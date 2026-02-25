@@ -32,7 +32,6 @@ public class SqlDefaultRenderer implements SqlRenderer {
 	
 	/**
 	 * Constructs a new default SQL renderer for the given dialect.<br>
-	 *
 	 * @param dialect The dialect associated with this renderer
 	 */
 	public SqlDefaultRenderer(@NonNull SqlDialect dialect) {

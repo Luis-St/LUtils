@@ -21,8 +21,7 @@ package net.luis.utils.io.database.query.async;
 import net.luis.utils.io.database.SqlPage;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlOrderable;
-import net.luis.utils.io.database.query.CommonTableExpression;
-import net.luis.utils.io.database.query.SqlSelectQuery;
+import net.luis.utils.io.database.query.*;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
@@ -35,10 +34,7 @@ import java.util.stream.Stream;
 
 /**
  * Base interface for asynchronous SQL select queries.<br>
- * <p>
- *     This interface provides the same builder methods as {@link net.luis.utils.io.database.query.SqlSelectQueryBase}
- *     but all terminal operations return {@link CompletableFuture} for non-blocking execution.<br>
- * </p>
+ * This interface provides the same builder methods as {@link SqlSelectQueryBase} but all terminal operations return {@link CompletableFuture} for non-blocking execution.<br>
  *
  * @see SqlAsyncSelectQuery
  * @see SqlAsyncSelectProjectionQuery

@@ -25,10 +25,7 @@ import java.util.Optional;
 
 /**
  * Interface describing changes applied to a column during a migration.<br>
- * <p>
- *     Each method returns an {@link Optional} that is present only if
- *     the corresponding property was changed.<br>
- * </p>
+ * Each method returns an {@link Optional} that is present only if the corresponding property was changed.<br>
  *
  * @author Luis-St
  */

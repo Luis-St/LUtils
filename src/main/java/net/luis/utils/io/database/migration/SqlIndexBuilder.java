@@ -24,10 +24,7 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * Builder for index definitions in migrations.<br>
- * <p>
- *     Provides a fluent API for specifying the columns, uniqueness, method,
- *     and optional partial index condition.<br>
- * </p>
+ * Provides a fluent API for specifying the columns, uniqueness, method, and optional partial index condition.<br>
  *
  * @author Luis-St
  */

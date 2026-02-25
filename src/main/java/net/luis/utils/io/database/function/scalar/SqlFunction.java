@@ -80,7 +80,6 @@ public class SqlFunction {
 	 * @param <T> The result type
 	 * @return The cast expression
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> @NonNull SqlExpression<T> cast(@NonNull SqlExpression<?> value, @NonNull SqlColumnType columnType) {
 		throw new UnsupportedOperationException();
 	}

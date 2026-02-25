@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.query;
 
+import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.function.SqlExpression;
 import net.luis.utils.io.database.function.scalar.SqlAgg;
@@ -26,6 +27,8 @@ import net.luis.utils.io.database.index.SqlIndexInfo;
 import net.luis.utils.io.database.query.row.*;
 import net.luis.utils.io.database.sequence.SqlSequenceDefinition;
 import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
@@ -34,10 +37,7 @@ import java.util.function.Function;
 
 /**
  * Interface providing methods to create SQL queries and DDL operations for a specific entity type.<br>
- * <p>
- *     Obtained via {@link net.luis.utils.io.database.SqlDatabase#from(net.luis.utils.io.database.table.SqlTable)}
- *     or {@link net.luis.utils.io.database.transaction.SqlTransaction#from(net.luis.utils.io.database.table.SqlTable)}.<br>
- * </p>
+ * Obtained via {@link SqlDatabase#from(SqlTable)} or {@link SqlTransaction#from(SqlTable)}.<br>
  *
  * @author Luis-St
  */
@@ -45,15 +45,11 @@ public interface SqlQueryProvider<T> {
 	
 	/**
 	 * Returns a scoped view of this query provider where automatic version checks are suppressed.<br>
-	 * <p>
-	 *     Entity-level update and delete on the returned view will not add automatic {@code WHERE version = ?} and {@code SET version = version + 1} clauses.<br>
-	 * </p>
+	 * Entity-level update and delete on the returned view will not add automatic {@code WHERE version = ?} and {@code SET version = version + 1} clauses.<br>
 	 *
 	 * @return A query provider with version checking disabled
 	 */
 	@NonNull SqlQueryProvider<T> skipVersionCheck();
-	
-	// --- DDL Operations ---
 	
 	/**
 	 * Creates this table in the database.<br>
@@ -98,8 +94,6 @@ public interface SqlQueryProvider<T> {
 	 */
 	boolean exists() throws SqlException;
 	
-	// --- Index Operations ---
-	
 	/**
 	 * Creates an index on the specified columns.<br>
 	 *
@@ -133,8 +127,6 @@ public interface SqlQueryProvider<T> {
 	 */
 	@NonNull List<SqlIndexInfo> listIndexes() throws SqlException;
 	
-	// --- Sequence Operations ---
-	
 	/**
 	 * Creates a sequence using the specified definition.<br>
 	 *
@@ -151,8 +143,6 @@ public interface SqlQueryProvider<T> {
 	 * @throws SqlException If a database access error occurs
 	 */
 	long nextSequenceValue(@NonNull String name) throws SqlException;
-	
-	// --- Query Operations ---
 	
 	/**
 	 * Creates a select query for all columns of this table.<br>

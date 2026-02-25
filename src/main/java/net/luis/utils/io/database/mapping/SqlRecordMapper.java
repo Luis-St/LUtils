@@ -24,16 +24,13 @@ import java.util.List;
 
 /**
  * Interface for mapping SQL result set rows to record instances.<br>
- * <p>
- *     Implementations define how column values from a query result are
- *     transformed into instances of a specific record type.<br>
- * </p>
+ * Implementations define how column values from a query result are transformed into instances of a specific record type.<br>
  *
  * @author Luis-St
  *
- * @param <T> The record type to map to
+ * @param <T> The record type to map to, must extend {@link Record}
  */
-public interface SqlRecordMapper<T> {
+public interface SqlRecordMapper<T extends Record> {
 	
 	/**
 	 * Maps a result row to a record instance.<br>

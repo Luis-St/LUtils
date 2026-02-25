@@ -20,6 +20,7 @@ package net.luis.utils.io.database;
 
 import net.luis.utils.io.database.audit.SqlTimestampSource;
 import net.luis.utils.io.database.exception.SqlConnectionException;
+import net.luis.utils.io.database.mapping.SqlNamingStrategy;
 import net.luis.utils.io.database.mapping.SqlTypeConverter;
 import org.jspecify.annotations.NonNull;
 
@@ -96,7 +97,15 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	<J, D> @NonNull SqlDatabaseConfig registerConverter(@NonNull SqlTypeConverter<J, D> converter);
-	
+
+	/**
+	 * Sets the naming strategy used for mapping between Java record component names and SQL column names.<br>
+	 *
+	 * @param strategy The naming strategy to use
+	 * @return This configuration builder
+	 */
+	@NonNull SqlDatabaseConfig namingStrategy(@NonNull SqlNamingStrategy strategy);
+
 	/**
 	 * Builds the configuration and creates a database instance.<br>
 	 *

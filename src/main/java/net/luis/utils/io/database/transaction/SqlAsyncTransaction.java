@@ -29,18 +29,14 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Interface representing an asynchronous SQL transaction.<br>
+ * Provides the same operations as {@link SqlTransaction} but with all terminal operations returning {@link CompletableFuture} for non-blocking execution.<br>
  * <p>
- *     Provides the same operations as {@link SqlTransaction} but with all terminal operations
- *     returning {@link CompletableFuture} for non-blocking execution.<br>
+ *     Internally, the transaction is pinned to a single dedicated connection from the pool.<br>
+ *     Operations are dispatched to the async executor but are sequential on that connection.
  * </p>
  * <p>
- *     Internally, the transaction is pinned to a single dedicated connection from the pool.
- *     Operations are dispatched to the async executor but are sequential on that connection.<br>
- * </p>
- * <p>
- *     Implements {@link AutoCloseable} to support try-with-resources usage.
- *     If the transaction has not been explicitly committed or rolled back when
- *     {@link #close()} is called, an automatic rollback is performed.<br>
+ *     Implements {@link AutoCloseable} to support try-with-resources usage.<br>
+ *     If the transaction has not been explicitly committed or rolled back when {@link #close()} is called, an automatic rollback is performed.
  * </p>
  *
  * @see SqlTransaction
@@ -134,7 +130,15 @@ public interface SqlAsyncTransaction extends AutoCloseable {
 	 * @return This transaction
 	 */
 	@NonNull SqlAsyncTransaction isolation(@NonNull SqlIsolationLevel level);
-	
+
+	/**
+	 * Sets the propagation behavior for this transaction.<br>
+	 *
+	 * @param propagation The propagation behavior
+	 * @return This transaction
+	 */
+	@NonNull SqlAsyncTransaction propagation(@NonNull SqlPropagation propagation);
+
 	/**
 	 * Closes this async transaction.<br>
 	 * If the transaction is still active (not committed or rolled back),

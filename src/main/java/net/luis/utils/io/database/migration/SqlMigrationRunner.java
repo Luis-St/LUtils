@@ -28,8 +28,8 @@ import java.util.List;
 /**
  * Interface for running SQL migrations against a database.<br>
  * <p>
- *     Provides methods to apply, rollback, inspect status, and dry-run
- *     migrations. Migrations must be registered before they can be executed.<br>
+ *     Provides methods to apply, rollback, inspect status, and dry-run migrations.<br>
+ *     Migrations must be registered before they can be executed.<br>
  * </p>
  *
  * @author Luis-St
@@ -110,14 +110,12 @@ public interface SqlMigrationRunner {
 	
 	/**
 	 * Registers a single migration with this runner.<br>
-	 *
 	 * @param migration The migration to register
 	 */
 	void register(@NonNull SqlMigration migration);
 	
 	/**
 	 * Registers a list of migrations with this runner.<br>
-	 *
 	 * @param migrations The migrations to register
 	 */
 	void register(@NonNull List<SqlMigration> migrations);

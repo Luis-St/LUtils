@@ -29,6 +29,28 @@ import org.jspecify.annotations.NonNull;
 public interface SqlCondition extends SqlRenderable {
 	
 	/**
+	 * Returns a condition that is always true.<br>
+	 * Acts as the identity element for {@code AND} operations.<br>
+	 * Generates SQL: {@code TRUE} or dialect equivalent.<br>
+	 *
+	 * @return A condition that always evaluates to true
+	 */
+	static @NonNull SqlCondition always() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns a condition that is always false.<br>
+	 * Acts as the identity element for {@code OR} operations.<br>
+	 * Generates SQL: {@code FALSE} or dialect equivalent.<br>
+	 *
+	 * @return A condition that always evaluates to false
+	 */
+	static @NonNull SqlCondition none() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
 	 * Creates a combined condition using {@code AND}.<br>
 	 * Generates SQL: {@code cond1 AND cond2 AND ...}.<br>
 	 *

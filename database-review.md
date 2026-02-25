@@ -1,310 +1,319 @@
-# Database Concept Review — `net.luis.utils.io.database`
+# Database Concept Review
 
 ## Overview
 
-This is a comprehensive **type-safe SQL query builder and database abstraction layer** for Java, designed as a library-level alternative to frameworks like jOOQ or Exposed. The concept spans **~90+ files** across 15 subpackages covering queries, dialects, migrations, window functions, auditing, async operations, and more.
-
-The overall architectural vision is **ambitious and well-structured**. Below is a detailed review with ratings, strengths, and suggestions organized by subsystem.
-
----
-
-## 1. Architecture & Design — ⭐⭐⭐⭐ (4/5)
-
-### Strengths
-- **Clean separation of concerns**: Dialect vs. Renderer vs. Query vs. Table is well-partitioned. The `SqlDialect` handles type mappings and feature discovery, while `SqlRenderer` handles syntactic output — this is a mature design decision.
-- **Fluent builder pattern** is consistently applied across queries, migrations, conditions, and window clauses.
-- **Generics are used extensively and correctly** — `SqlColumn<T>`, `SqlExpression<T>`, `SqlTable<T>`, `SqlQueryProvider<T>` maintain compile-time type safety throughout the chain.
-- **The `SqlRenderable` / `SqlRendered` abstraction** cleanly separates SQL construction from execution, supporting prepared statements with bound parameters.
-- **Checked exceptions** (`SqlException extends Exception`) force callers to handle database errors — a deliberate and defensible choice for a database library.
-
-### Suggestions
-1. **`SqlDatabase.of(SqlDatabaseConfig)` is a static interface method that throws** — this is a code smell for a factory. Consider making `SqlDatabaseConfig.build()` the sole entry point (which it already is), and **remove `SqlDatabase.of()`** to avoid two ways to create a database. Alternatively, make `of()` delegate to a config builder internally.
-
-2. **`SqlDialect` is an `abstract class` while nearly everything else is an `interface`** — consider making it an interface with default methods, or document the rationale. An abstract class limits users to single-inheritance when creating custom dialects.
-
-3. **Missing `SqlDatabase.from()` for async** — the database provides `SqlQueryProvider` via `from(table)`, but there's no direct async entry point at the database level. Users must call `.async()` on individual queries, which is fine, but consider whether a `SqlDatabase.asyncFrom()` or similar would reduce boilerplate for fully-async codebases.
+The `net.luis.utils.io.database` package defines a **conceptual SQL database abstraction layer**.
+It is currently a pure API design — nearly all types are interfaces or abstract classes, and methods with bodies mostly throw `UnsupportedOperationException` as placeholders.
+This review evaluates the feature set and API design of the concept.
 
 ---
 
-## 2. Query System — ⭐⭐⭐⭐⭐ (5/5)
+## Package Structure
 
-### Strengths
-- **Full CRUD coverage** with `SqlSelectQuery`, `SqlInsertQuery`, `SqlUpdateQuery`, `SqlDeleteQuery`.
-- **Type-safe projections** via `SqlRow2` through `SqlRow16` records — ensures compile-time checking of multi-column selects.
-- **Rich SELECT API**: `WHERE`, `JOIN` (all types), `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT/OFFSET`, `DISTINCT`, `UNION/INTERSECT/EXCEPT`, `CTE`, `EXISTS/NOT EXISTS` subqueries.
-- **Pagination** is built-in via `SqlPage<T>` with `fetchNext()`/`fetchPrevious()` navigation — excellent UX.
-- **Pessimistic locking** (`FOR UPDATE`, `SKIP LOCKED`, `NOWAIT`) is thoughtfully scoped to entity queries only, not projections.
-- **Upsert, INSERT OR IGNORE, INSERT FROM SELECT, batch inserts** — covers advanced insert patterns.
-- **`skipVersionCheck()`** on `SqlQueryProvider` is a smart escape hatch for optimistic locking.
-
-### Suggestions
-1. **The 16 overloaded `select()` methods on `SqlQueryProvider`** (one per arity) are a maintenance burden. Consider:
-    - A code-generation step to produce these.
-    - Alternatively, a `select(SqlColumn<?>...)` varargs fallback that returns `SqlSelectProjectionQuery<SqlRow>` with runtime-typed access (already partially present as `select(SqlExpression<?>...)`). Document the tradeoff clearly.
-
-2. **`SqlDeleteQuery` lacks `returning()`** — `SqlInsertQuery` and `SqlUpdateQuery` both have `returning()`, but `SqlDeleteQuery` does not. PostgreSQL supports `DELETE ... RETURNING`, and this would be a natural addition.
-
-3. **`SqlUpdateQuery.setNow()` accepts `SqlColumn<?>`** — the wildcard type here is too loose. Consider constraining it to temporal types (`SqlColumn<? extends Temporal>` or similar) for type safety.
-
-4. **Missing `SqlSelectQueryBase.forUpdate()`** — it's only on `SqlSelectQuery`, which means projection queries can't lock rows. While the Javadoc explains projection queries are "typically read-only," there are valid use cases (e.g., `SELECT id FROM ... FOR UPDATE`). Consider either adding it to the base or documenting the limitation more prominently.
-
-5. **`CommonTableExpression` is a concrete class, not an interface** — inconsistent with the rest of the API. Consider making it an interface or a sealed abstract class.
-
----
-
-## 3. Dialect & Renderer System — ⭐⭐⭐⭐ (4/5)
-
-### Strengths
-- **`SqlDialectFeatures` is comprehensive** — 16 feature flags covering RETURNING, SKIP LOCKED, arrays, JSONB, CTEs, window functions, schemas, MERGE, LATERAL, identity columns, etc.
-- **`SqlColumnType` enum covers modern types** — UUID, JSONB, ARRAY, XML, BYTEA, TIMESTAMP_TZ.
-- **`SqlRenderer` cleanly captures syntactic differences** — identifier quoting, boolean literals, parameter placeholders, limit/offset, upsert syntax, RETURNING.
-- **`SqlDefaultRenderer`** provides sensible ANSI SQL defaults.
-- **PostgreSQL is a first-class dialect** with dedicated `PostgresTable`, `PostgresColumn`, query types, and ops (array, JSON, string).
-
-### Suggestions
-1. **`PostgresDialect.createRenderer()` returns `SqlDefaultRenderer`** — this should return a `PostgresSqlRenderer`. This appears to be a placeholder, but it's worth flagging: the Postgres-specific renderer already exists in `dialect.postgres.PostgresSqlRenderer`.
-
-2. **No MySQL/MariaDB, SQLite, or SQL Server dialect** — even as stubs, having at least a MySQL dialect would validate the abstraction. MySQL has significantly different syntax (backtick quoting, `AUTO_INCREMENT` vs `GENERATED ALWAYS AS IDENTITY`, `LIMIT` without `OFFSET` keyword, etc.).
-
-3. **`SqlColumnType` mixes abstract and concrete types** — `BYTEA` is PostgreSQL-specific, `BLOB` is more generic. Consider whether `BYTEA` should be in the generic enum or only mapped via `PostgresDialect.mapColumnType()`. Similarly, `JSONB` is Postgres-specific.
-
-4. **`SqlRenderer.parameterPlaceholder(int index)`** — the index parameter suggests support for positional placeholders (`$1`, `$2` in PostgreSQL), but `SqlDefaultRenderer` always returns `?`. Document whether this is for future positional parameter support or for dialect-specific behavior.
-
-5. **Missing dialect auto-detection** — consider a `SqlDialect.fromUrl(String jdbcUrl)` that infers the dialect from the JDBC URL prefix (`jdbc:postgresql:`, `jdbc:mysql:`, etc.).
+```
+net.luis.utils.io.database/
+├── audit/              – Audit trail (context, entries, operations)
+├── condition/          – SQL conditions (WHERE clauses)
+├── connection/         – Connection management
+├── dialect/            – Dialect abstraction + PostgreSQL stub
+│   └── postgres/ops/
+├── exception/          – Rich exception hierarchy
+│   ├── constraint/     – Constraint violation exceptions
+│   ├── entity/         – Entity-related exceptions
+│   ├── locking/        – Lock/deadlock exceptions
+│   └── query/          – Query execution exceptions
+├── function/           – SQL function wrappers
+│   ├── scalar/         – Scalar functions (string, math, date, json, array, hash, regex)
+│   └── window/         – Window functions & frame bounds
+├── index/              – Index definitions
+├── listener/           – Entity lifecycle listeners
+├── mapping/            – Result mapping, type conversion, column naming
+├── migration/          – Schema migration support
+├── query/              – Query builders (select, insert, update, delete)
+│   ├── async/          – Async query equivalents
+│   └── row/            – Typed tuple rows (SqlRow2–SqlRow16)
+├── renderer/           – Dialect-specific SQL rendering
+├── sequence/           – Sequence definitions
+├── table/              – Table, column, and key definitions
+│   └── ops/            – Type-specific column operations (string, numeric, temporal)
+└── transaction/        – Transactions, async transactions, savepoints
+```
 
 ---
 
-## 4. Expression & Function System — ⭐⭐⭐⭐⭐ (5/5)
+## Core Design
 
-### Strengths
-- **Extremely comprehensive scalar function coverage**: `SqlString` (20+ functions), `SqlMath` (15+ functions), `SqlDate` (15+ functions), `SqlJson`, `SqlArray`, `SqlHash`, `SqlRegex`.
-- **`SqlExpression<T>` unifies columns, functions, and aliases** under a common type that supports conditions and ordering.
-- **`SqlWindowExpression<T>`** correctly extends `SqlExpression<T>` with `over()` / `over(clause)` — aggregates can be used both as plain aggregates and as window functions.
-- **`SqlWindowClause`** with `partitionBy()`, `orderBy()`, `frame()`, `rows()`, `range()` — and full frame bound support (`UNBOUNDED PRECEDING`, `n PRECEDING`, `CURRENT ROW`, `n FOLLOWING`, `UNBOUNDED FOLLOWING`).
-- **Type-specific ops** on columns (`string()`, `numeric()`, `temporal()`) — avoids polluting the base column interface.
+### Entry Points
 
-### Suggestions
-1. **`SqlFunction.cast()` takes `Class<T>` but needs dialect mapping** — the implementation will need to convert `Class<T>` to a SQL type name. Consider accepting `SqlColumnType` as an alternative overload: `cast(expr, SqlColumnType.INTEGER)`.
+| Type | Role |
+|------|------|
+| `SqlDatabaseConfig` | Builder for configuring and creating a database instance |
+| `SqlDatabase` | Main facade — health checks, query providers, transactions, audit |
+| `SqlTable<T>` | Schema definition — columns, keys, listeners |
+| `SqlQueryProvider<T>` | DDL + DML operations on a table |
 
-2. **Static utility classes (e.g., `SqlMath`, `SqlString`) have no access to the dialect/renderer** — since functions like `RANDOM()` vs `RAND()`, `TRUNCATE()` vs `TRUNC()`, `LENGTH()` vs `CHAR_LENGTH()` are dialect-dependent, how will the static methods know which SQL to generate? These methods should either:
-    - Return an `SqlExpression` implementation that defers rendering to `toSql(SqlRenderer)`, or
-    - Accept a renderer parameter.
+### Type Hierarchy
 
-   This is likely already planned (since they return `SqlExpression` which has `toSql(renderer)`), but it should be documented explicitly as an architecture note.
+```
+SqlRenderable
+  ├── SqlCondition
+  ├── SqlOrderable
+  │   └── SqlExpression<T>
+  │       ├── SqlColumn<T>
+  │       │   ├── SqlPrimaryKeyColumn<T, V>
+  │       │   ├── SqlVersionColumn<T, V>
+  │       │   ├── SqlForeignColumn<T, R>
+  │       │   ├── SqlCreationColumn<T, V>
+  │       │   └── SqlUpdateColumn<T, V>
+  │       └── SqlWindowExpression<T>
+  ├── SqlWindowFrame
+  ├── SqlFrameBound
+  └── SqlWindowClause
 
-3. **`SqlNumericOps<T>` is very thin** — only has `between()`, which already exists on `SqlExpression`. Consider adding: `isPositive()`, `isNegative()`, `isZero()`, `moduloEquals(divisor, remainder)`.
+SqlException
+  ├── SqlConnectionException
+  ├── SqlTransactionException
+  ├── SqlDatabaseException
+  ├── SqlMappingException
+  ├── SqlQueryException
+  │   └── SqlQueryTimeoutException
+  ├── SqlConstraintViolationException
+  │   ├── SqlCheckConstraintViolationException
+  │   ├── SqlNotNullViolationException
+  │   ├── SqlUniqueConstraintViolationException
+  │   └── SqlForeignKeyViolationException
+  ├── SqlLockingException
+  │   ├── SqlDeadlockException
+  │   └── SqlLockNotAvailableException
+  └── SqlEntityException
+      ├── SqlEntityNotFoundException
+      ├── SqlStaleEntityException
+      └── SqlRelationshipNotLoadedException
 
-4. **`SqlTemporalOps` is also very thin** — only `withinLast(Duration)`. Consider adding: `before(Instant)`, `after(Instant)`, `withinNext(Duration)`, `onDate(LocalDate)`.
-
----
-
-## 5. Table & Column System — ⭐⭐⭐⭐ (4/5)
-
-### Strengths
-- **`SqlTable<T>` is a pure schema definition** — no data access on the table itself, which is clean.
-- **Specialized column types**: `SqlForeignColumn`, `SqlVersionColumn`, `SqlCreationColumn`, `SqlUpdateColumn` — each carries semantic meaning that the framework can act on automatically.
-- **Optimistic locking** via `SqlVersioned<T>` + `SqlVersionColumn` with auto-increment on UPDATE is well-designed.
-- **Audit columns** (`SqlCreationColumn`, `SqlUpdateColumn`) auto-populated from `SqlAuditContext` — smart.
-- **Entity lifecycle listeners** on `SqlTable` — clean observer pattern.
-
-### Suggestions
-1. **`SqlTable<T>` lacks a way to define composite primary keys** at the API level. The migration `SqlTableBuilder.primaryKey(String...)` supports composites, but the query-side `SqlTable` doesn't expose a primary key definition. This could matter for `findById()` if added later.
-
-2. **`SqlTable.column()` creates columns on-the-fly** — there's no compile-time guarantee that column definitions are consistent across call sites. Consider encouraging a pattern where columns are declared as `static final` fields:
-   ```java
-   SqlTable<User> USERS = SqlTable.of("users", User.class);
-   SqlColumn<String> EMAIL = USERS.column("email", String.class);
-   ```
-   This is likely the intended usage pattern; adding an example to the Javadoc would help.
-
-3. **`SqlForeignColumn` doesn't expose ON DELETE/ON UPDATE actions** (CASCADE, SET NULL, RESTRICT, etc.). These are critical for foreign key relationships and should be part of the column definition or at least configurable.
-
-4. **No `SqlColumn.primaryKey()` marker** — unlike `SqlVersionColumn` or `SqlCreationColumn`, there's no way to mark a column as the primary key in the query-side API. This would be useful for auto-generating `findById()` or identity-based upsert logic.
-
----
-
-## 6. Transaction System — ⭐⭐⭐⭐ (4/5)
-
-### Strengths
-- **Full transaction lifecycle**: `beginTransaction()`, `commit()`, `rollback()`, savepoints, read-only mode, timeout, isolation levels.
-- **Audit context integration** — `beginTransaction(SqlAuditContext)`.
-- **`SqlSavepoint`** with `release()` and `rollbackTo()` — proper savepoint semantics.
-- **Isolation levels** as a clean enum.
-
-### Suggestions
-1. **`SqlTransaction` doesn't implement `AutoCloseable`** — this is a significant omission. Transactions should be usable in try-with-resources to ensure rollback on exceptions:
-   ```java
-   try (var tx = db.beginTransaction()) {
-       // ...
-       tx.commit();
-   } // auto-rollback if not committed
-   ```
-
-2. **Missing `SqlTransaction.isActive()` / `isCommitted()` / `isRolledBack()`** — state introspection is important for error handling and retry logic.
-
-3. **No transactional `execute()` helper** — consider a convenience method like:
-   ```java
-   db.inTransaction(tx -> {
-       tx.from(users).insert(user);
-       return result;
-   });
-   ```
-   This would auto-commit on success and auto-rollback on exception, reducing boilerplate.
+AutoCloseable
+  ├── SqlDatabase
+  ├── SqlTransaction
+  └── SqlAsyncTransaction
+```
 
 ---
 
-## 7. Migration System — ⭐⭐⭐⭐ (4/5)
+## Strengths
 
-### Strengths
-- **Programmatic migrations** with `up()` / `down()` — avoids raw SQL files.
-- **Rich DSL**: `createTable`, `dropTable`, `renameTable`, `addColumn`, `dropColumn`, `renameColumn`, `alterColumn`, indexes, constraints, sequences.
-- **`SqlMigrationRunner`** with `migrate()`, `migrateTo()`, `rollback()`, `rollbackTo()`, `status()`, `dryRun()`.
-- **Schema introspection** via `SqlSchema.fromDatabase()` and **schema diffing** via `SqlSchemaDiff.between()`.
-- **Checksums** on `SqlMigrationInfo` for drift detection.
-- **`SqlMigrationStatus`** enum (PENDING, APPLIED, ROLLED_BACK) — clean state tracking.
+### 1. Comprehensive Type-Safe API
+The generic type system is used consistently throughout. `SqlColumn<T>`, `SqlExpression<T>`, and the typed tuple rows (`SqlRow2<T1,T2>` through `SqlRow16`) provide compile-time type safety for query results. This prevents common errors like accessing columns with the wrong type.
 
-### Suggestions
-1. **No migration ordering mechanism beyond `version()` string** — how are versions compared? Lexicographic? Semantic versioning? Consider requiring a numeric or timestamp-based version, or documenting the comparison strategy.
+### 2. Clean Separation of Concerns
+Each sub-package has a clear, focused responsibility:
+- Schema definition (`table/`) is separate from query building (`query/`)
+- SQL rendering (`renderer/`) is separate from dialect capabilities (`dialect/`)
+- Audit concerns (`audit/`) are isolated from core query logic
 
-2. **`SqlMigration` lacks a `checksum()` method** — `SqlMigrationInfo` has `checksum()` but it's not clear how the checksum is computed. If it's derived from the migration's operations, consider making this explicit.
+### 3. Rich Exception Hierarchy
+The exception hierarchy is well-structured with specific exception types for different failure modes (constraint violations, locking issues, entity problems, timeouts). This allows callers to handle errors granularly — e.g., catching `SqlUniqueConstraintViolationException` specifically for upsert-like logic.
 
-3. **Missing data migrations** — the DSL only supports DDL (schema changes). Consider adding `execute(SqlDatabase db)` or similar for data migrations (e.g., backfilling a new column).
+### 4. Dialect Abstraction
+The `SqlDialect` + `SqlRenderer` + `SqlDialectFeatures` trio is a solid pattern:
+- `SqlDialect` identifies and configures the database
+- `SqlRenderer` handles dialect-specific SQL generation
+- `SqlDialectFeatures` advertises capabilities, enabling the query layer to adapt
 
-4. **No migration validation/lint** — consider a `validate()` method on `SqlMigrationRunner` that checks for:
-    - Duplicate versions
-    - Checksum mismatches with applied migrations
-    - Orphaned applied migrations (applied but not registered)
+### 5. Fluent Builder APIs
+Query builders, conditions, and transactions use fluent method chaining consistently, making the intended usage readable:
+```java
+db.from(users).select()
+  .where(users.column("age", Integer.class).greaterThan(18))
+  .orderBy(users.column("name", String.class).asc())
+  .limit(10)
+```
 
-5. **`SqlTableBuilder` doesn't support composite foreign keys** — `SqlColumnBuilder.references(table, column)` handles single-column FKs, but multi-column FKs are not supported in the migration DSL.
+### 6. Async Support
+Every synchronous query operation has an async counterpart returning `CompletableFuture`. The async transaction API mirrors the sync one. This is a pragmatic design that avoids forcing all consumers into one paradigm.
 
----
+### 7. Extensive SQL Function Coverage
+The scalar function library is impressively comprehensive — string, math, date/time, JSON, array, hash, and regex operations are all covered with type-safe wrappers. Window functions with full frame specification support (`ROWS`, `RANGE`, `GROUPS`, bounds) are equally thorough.
 
-## 8. Connection Management — ⭐⭐⭐ (3/5)
-
-### Strengths
-- **Two connection strategies**: `SqlPooledDataSource` (pooled) and `SqlSingleConnectionDataSource` (simple) — good flexibility.
-- **Standard `javax.sql.DataSource` interface** — compatible with existing JDBC infrastructure.
-
-### Suggestions
-1. **Custom connection pooling is risky** — implementing a production-grade connection pool is extremely complex (connection validation, leak detection, idle timeout, max lifetime, etc.). **Strongly consider depending on HikariCP** or similar instead of rolling your own `SqlPooledDataSource`. If the goal is zero dependencies, document the limitations clearly.
-
-2. **Neither DataSource implements `Closeable` / `AutoCloseable`** — pooled connections need lifecycle management. `SqlPooledDataSource` should be closeable to shut down the pool.
-
-3. **No connection validation/health-check configuration** — `SqlDatabase.health()` and `ping()` exist but there's no way to configure validation queries, test-on-borrow, or idle connection eviction on the DataSource.
-
-4. **Credentials are passed as constructor parameters** — consider supporting `Properties` or a builder pattern for connection configuration (SSL, timeout, application name, etc.).
+### 8. Audit Trail Built In
+Audit support (context, entries, timestamp sources) is integrated at the database and transaction level rather than bolted on as an afterthought. This is the right architectural choice.
 
 ---
 
-## 9. Async Query System — ⭐⭐⭐⭐ (4/5)
+## Feature Review
 
-### Strengths
-- **Mirror async API** for every query type — `SqlAsyncSelectQuery`, `SqlAsyncInsertQuery`, `SqlAsyncUpdateQuery`, `SqlAsyncDeleteQuery`, `SqlAsyncSelectProjectionQuery`.
-- **Clean opt-in via `.async()`** — synchronous by default, async when needed.
-- **Configurable executor** via `SqlDatabaseConfig.asyncExecutor()` and `asyncConnectionPoolSize()`.
+### Query System
 
-### Suggestions
-1. **Async queries should return `CompletableFuture<T>`** — verify this is the case in all async terminal methods. The Javadoc mentions it but the interfaces weren't fully read.
+The query API is the centerpiece of the concept. `SqlQueryProvider<T>` exposes a complete set of operations — DDL (create, drop, truncate), DML (select, insert, update, delete), index management, and sequence operations — all accessed through `SqlDatabase.from(table)`.
 
-2. **Missing reactive/streaming support** — for large result sets, consider `Flow.Publisher<T>` (Java 9+) or at minimum `CompletableFuture<Stream<T>>` with backpressure awareness.
+**Select queries** are well-designed with typed projections. The overloaded `select()` methods returning `SqlRow2<T1,T2>` through `SqlRow16` provide compile-time type safety for multi-column results, while the varargs `select(SqlExpression<?>...)` fallback handles dynamic cases. The `SqlSelectQuery` adds pessimistic locking support (`forUpdate()`, `skipLocked()`, `noWait()`), which is essential for real-world concurrent access patterns.
 
-3. **No async transaction support** — `SqlTransaction` is synchronous only. Consider whether async transactions are needed, or document that transactions must be synchronous.
+**Insert queries** cover all common patterns: single insert, batch insert with configurable batch size, upsert with conflict resolution, insert-or-ignore, and insert-from-select. This is a complete set that should handle most use cases without forcing users to drop down to raw SQL.
+
+**Suggestion:** Consider adding a `returning()` clause to insert/update/delete queries (the renderer already has `returningSyntax()`), which is increasingly common and avoids a separate select after mutation.
+
+### Condition & Expression System
+
+The `SqlCondition` / `SqlExpression<T>` hierarchy is clean and expressive. Conditions compose via `and()`, `or()`, and `not()` with static `allOf()` / `anyOf()` combinators. Expressions provide all standard comparisons (`equalTo`, `greaterThan`, `between`, `isNull`, etc.) and flow naturally into ordering (`asc()`, `desc()`, `nullsFirst()`, `nullsLast()`).
+
+The type-specific operations on columns (`SqlStringOps`, `SqlNumericOps`, `SqlTemporalOps`) are a particularly nice touch — `column.string().startsWith("foo")` is more discoverable than a flat API with dozens of methods.
+
+**Suggestion:** Consider adding `SqlCondition.none()` and `SqlCondition.always()` as identity elements for dynamic condition building (e.g., starting with `always()` and chaining `.and(...)` conditionally).
+
+### Scalar Functions
+
+The scalar function library is comprehensive and well-organized across focused utility classes:
+
+| Class | Coverage |
+|-------|----------|
+| `SqlFunction` | General: `coalesce`, `nullif`, `cast`, `greatest`, `least`, `caseWhen` |
+| `SqlString` | 20+ string operations including `groupConcat` variants |
+| `SqlMath` | Full math suite including trigonometry and bitwise operations |
+| `SqlDate` | 30+ date/time operations including extraction, arithmetic, formatting |
+| `SqlJson` | JSON manipulation: set, insert, replace, remove, merge, type inspection |
+| `SqlArray` | Array operations: append, contains, sort, overlap checks |
+| `SqlHash` | Cryptographic hashes: MD5, SHA family, CRC32 |
+| `SqlRegex` | Pattern matching and replacement |
+
+All functions return `SqlExpression<T>` or `SqlWindowExpression<T>`, so they compose naturally with conditions and ordering. This is the right design — functions are first-class expressions, not a separate subsystem.
+
+**Suggestion:** `SqlJson` could benefit from a path-based extraction method (e.g., `extract(SqlExpression<?> json, String path)`) since JSON path access is the most common JSON operation in queries.
+
+### Window Functions
+
+Window function support is thorough. `SqlWindow` provides all standard window functions (`rowNumber`, `rank`, `denseRank`, `ntile`, `lag`, `lead`, `percentRank`, `cumeDist`, `firstValue`, `lastValue`, `nthValue`), and the framing API is complete:
+
+- `SqlWindowClause` — partition by, order by, frame specification
+- `SqlWindowFrame` — `ROWS`, `RANGE`, `GROUPS` frame types
+- `SqlFrameBound` — `UNBOUNDED PRECEDING`, `n PRECEDING`, `CURRENT ROW`, `n FOLLOWING`, `UNBOUNDED FOLLOWING`
+
+The `SqlWindowExpression<T>` extending `SqlExpression<T>` with an `over()` method is elegant — it means aggregate functions can be used as both regular aggregates and window functions through the same type.
+
+### Transaction Management
+
+Transactions support isolation levels, timeouts, read-only mode, and savepoints — covering the features most applications need. The fluent configuration pattern is clean:
+```java
+db.beginTransaction()
+  .isolation(SqlIsolationLevel.REPEATABLE_READ)
+  .readOnly()
+  .timeout(Duration.ofSeconds(30))
+```
+
+The `SqlDatabase.inTransaction()` convenience method with auto-commit/rollback semantics is practical for simple cases. Savepoints with named `rollbackTo()` enable partial rollback patterns.
+
+**Suggestion:** Consider whether transaction propagation semantics (REQUIRED, REQUIRES_NEW, NESTED) are needed. If the design intentionally avoids propagation to keep things simple, that's a valid choice — but it should be documented as a deliberate decision.
+
+### Async Support
+
+Every synchronous operation has an async counterpart returning `CompletableFuture`:
+- `SqlAsyncQueryProvider<T>` mirrors `SqlQueryProvider<T>`
+- `SqlAsyncTransaction` mirrors `SqlTransaction`
+- `SqlAsyncSelectQuery<T>`, `SqlAsyncInsertQuery<T>`, etc.
+
+The config accepts an `Executor` and connection pool size for async operations, giving the caller control over thread management. Mirroring the sync API 1:1 means there's no conceptual overhead when switching between sync and async — users learn one API shape.
+
+### Dialect & Rendering
+
+The three-part dialect system is well-structured:
+
+- **`SqlDialect`** — identity, type mapping (Java ↔ SQL), renderer creation
+- **`SqlRenderer`** — dialect-specific SQL syntax (quoting, placeholders, limit/offset, upsert, returning, etc.)
+- **`SqlDialectFeatures`** — capability flags (18 boolean methods covering arrays, JSON, CTEs, window functions, etc.)
+
+`SqlRenderable.toSql(SqlRenderer)` threads the renderer through the entire expression tree, so every element produces dialect-correct SQL. The `SqlRendered` record bundling SQL with bound parameters is a clean abstraction for prepared statement execution.
+
+**Suggestion:** `SqlDialectFeatures` uses individual boolean methods, which requires interface changes when adding new features. An enum-based approach (`boolean supports(SqlFeature feature)`) would be more extensible. Alternatively, default methods returning `false` would allow adding features without breaking existing dialect implementations.
+
+### Table & Column Model
+
+`SqlTable<T>` provides a complete schema definition API with specialized column types:
+
+| Column Type | Purpose |
+|-------------|---------|
+| `SqlColumn<T>` | Standard typed column |
+| `SqlPrimaryKeyColumn<T, V>` | Primary key |
+| `SqlCompositePrimaryKey<T>` | Composite primary key |
+| `SqlForeignColumn<T, R>` | Foreign key with referential actions |
+| `SqlVersionColumn<T, V>` | Optimistic locking version |
+| `SqlCreationColumn<T, V>` | Audit creation timestamp |
+| `SqlUpdateColumn<T, V>` | Audit update timestamp |
+
+Foreign keys include `onDelete` / `onUpdate` actions (`CASCADE`, `RESTRICT`, `SET_NULL`, `SET_DEFAULT`, `NO_ACTION`). The `SqlVersioned<T>` interface for entities with `version()` / `withVersion()` integrates cleanly with `SqlVersionColumn` and `skipVersionCheck()` on the query provider.
+
+**Suggestion:** `SqlForeignColumn` defines relationships, and `SqlRelationshipNotLoadedException` exists in the exception hierarchy, which implies some form of lazy loading is planned. Consider defining the loading strategy (eager vs. lazy, join fetch API) as part of the concept — it has significant implications for how entities are modeled and how queries are built.
+
+### Entity Mapping
+
+`SqlRecordMapper<T>` and `SqlResultRow` handle the mapping between SQL results and Java objects. `SqlResultRow` provides access by column reference, index, or name — covering all common patterns. `SqlTypeConverter<J,D>` enables custom type conversions registered through the database config.
+
+`SqlColumnMapping` handles `snake_case` ↔ `camelCase` naming conversion, following the common convention for Java-to-SQL name mapping.
+
+**Suggestion:** Consider making the naming strategy pluggable (not all projects use `snake_case` columns). Also, clarify whether `SqlRecordMapper<T>` requires `T` to be a Java record — if so, this could be enforced with a type bound.
+
+### Audit System
+
+Audit support is integrated at the infrastructure level:
+
+- `SqlAuditContext` — carries user identity, set on the database or per-transaction
+- `SqlAuditEntry<T>` — records entity, operation (CREATE/UPDATE/DELETE), timestamp, and user
+- `SqlTimestampSource` — application-side vs. database-side timestamps
+- `SqlCreationColumn` / `SqlUpdateColumn` — automatic timestamp columns
+- `SqlEntityListener<T>` — lifecycle hooks (before/after insert, update, delete)
+
+This is well-designed. Audit context flows through transactions, timestamps are configurable, and entity listeners provide extensibility points without polluting the core API.
+
+### Exception Hierarchy
+
+The exception hierarchy is granular and well-organized:
+
+- **Connection** — `SqlConnectionException`
+- **Queries** — `SqlQueryException`, `SqlQueryTimeoutException`
+- **Constraints** — `SqlConstraintViolationException` with subtypes for check, not-null, unique, and foreign key violations
+- **Locking** — `SqlLockingException` with deadlock and lock-unavailable subtypes
+- **Entities** — `SqlEntityNotFoundException`, `SqlStaleEntityException` (version mismatch), `SqlRelationshipNotLoadedException`
+- **Mapping** — `SqlMappingException`
+- **Transactions** — `SqlTransactionException`
+
+This granularity enables precise error handling — e.g., catching `SqlUniqueConstraintViolationException` for upsert logic, or `SqlStaleEntityException` for optimistic lock retries. The `SqlRetry` interface with `retryOn()` filtering complements this nicely.
+
+### Pagination
+
+`SqlPage<T>` provides a complete pagination model: content, total elements/pages, current page, and navigation (`hasNext`, `hasPrevious`, `fetchNext`, `fetchPrevious`). This is a self-contained cursor that handles the common pagination pattern without requiring the caller to manage offsets manually.
+
+### Index & Sequence Support
+
+Index operations (create, drop, list) and sequence operations (create, next value) are accessible through the query provider. `SqlIndexDefinition` and `SqlSequenceDefinition` provide the configuration, keeping these DDL features discoverable alongside the DML operations rather than hidden in a separate management API.
+
+### Retry Mechanism
+
+`SqlRetry` with configurable max retries, exponential backoff, and exception filtering (`retryOn(...)`) is a useful infrastructure feature. It integrates naturally with the exception hierarchy — e.g., retrying on `SqlDeadlockException` or `SqlConnectionException` while failing fast on constraint violations.
+
+### Common Table Expressions
+
+`CommonTableExpression` supports both regular and recursive CTEs with named queries. This enables complex query composition (hierarchical data traversal, multi-step aggregations) within the type-safe query builder framework.
 
 ---
 
-## 10. Exception Hierarchy — ⭐⭐⭐⭐⭐ (5/5)
+## Architecture Assessment
 
-### Strengths
-- **Rich, well-organized exception hierarchy**:
-    - `SqlException` (base)
-        - `SqlConnectionException`
-        - `SqlDatabaseException`
-        - `SqlTransactionException`
-        - `SqlMappingException`
-        - **Constraint violations**: `SqlConstraintViolationException` → `SqlUniqueConstraintViolationException`, `SqlForeignKeyViolationException`, `SqlNotNullViolationException`, `SqlCheckConstraintViolationException`
-        - **Entity exceptions**: `SqlEntityException` → `SqlEntityNotFoundException`, `SqlStaleEntityException`, `SqlRelationshipNotLoadedException`
-        - **Locking exceptions**: `SqlLockingException` → `SqlDeadlockException`, `SqlLockNotAvailableException`
-        - **Query exceptions**: `SqlQueryException` → `SqlQueryTimeoutException`
-- **Semantic exception types** enable precise catch blocks and retry logic.
-- **`SqlStaleEntityException`** for optimistic locking failures — correct design.
-
-### Suggestions
-1. **Consider adding `SqlException.getSqlState()`** and `getSqlErrorCode()` — these are available from `java.sql.SQLException` and critical for programmatic error handling.
-
----
-
-## 11. Audit System — ⭐⭐⭐⭐ (4/5)
-
-### Strengths
-- **`SqlAuditContext`** with `getCurrentUser()`, `setCurrentUser()`, `clear()`, and `withUser()` scoping.
-- **`SqlTimestampSource`** (APPLICATION vs DATABASE) — lets users choose between app-level `Clock` and DB-level `NOW()`.
-- **`SqlAuditEntry`** for tracking INSERT/UPDATE operations.
-
-### Suggestions
-1. **`SqlAuditContext` is mutable** — `setCurrentUser()` is inherently thread-unsafe if shared. Consider making it `ThreadLocal`-based internally, or documenting thread-safety requirements.
-
-2. **`SqlAuditEntry` lacks a `forDelete()` factory** — DELETE operations should also be auditable.
-
-3. **`SqlAuditEntry` interface is very sparse** — it has no accessors beyond the factory methods. It should expose: `getEntity()`, `getOperation()` (CREATE/UPDATE/DELETE), `getTimestamp()`, `getUser()`.
-
----
-
-## 12. Mapping System — ⭐⭐⭐ (3/5)
-
-### Strengths
-- **`SqlColumnMapping`** for bidirectional snake_case ↔ camelCase conversion — essential for Java record mapping.
-- **`SqlRecordMapper<T>`** for ResultSet → record conversion.
-
-### Suggestions
-1. **Very thin for the scope of the project** — no annotation-based mapping (`@Column`, `@Table`), no relationship mapping (OneToMany, ManyToOne), no lazy loading, no embeddable types. While keeping it simple is valid, the audit/version columns already imply a form of entity mapping. Consider at minimum:
-    - Auto-discovery of record components → column mappings
-    - `@SqlColumn("custom_name")` annotation for overrides
-
-2. **`SqlRecordMapper.map(Object[])` is stringly-typed** — using `Object[]` loses all type safety. Consider a `SqlResultRow` abstraction that provides typed access: `row.get(column)`.
-
-3. **No custom type converters** — how are `UUID`, `Instant`, `enum` types, or JSON columns mapped to/from Java objects? A `SqlTypeConverter<J, D>` interface would be valuable.
-
----
-
-## 13. PostgreSQL Extensions — ⭐⭐⭐⭐ (4/5)
-
-### Strengths
-- **Dedicated Postgres package** with `PostgresTable`, `PostgresColumn`, `PostgresQueryProvider`, and all CRUD query variants.
-- **`PostgresArrayOps`**, **`PostgresJsonOps`**, **`PostgresStringOps`** — dialect-specific operator support.
-- **Proper OO extension** — `PostgresTable extends SqlTable`, `PostgresColumn extends SqlColumn`.
-
-### Suggestions
-1. **Consider `PostgresInsertQuery.onConflictDoNothing()`** — PostgreSQL's `ON CONFLICT DO NOTHING` is a common pattern not clearly exposed.
-
-2. **Missing PostgreSQL-specific features**: `LISTEN/NOTIFY`, `COPY`, `EXPLAIN ANALYZE`, advisory locks, `pg_advisory_lock()`. Not all need to be included, but `LISTEN/NOTIFY` is commonly needed.
+| Aspect | Rating | Notes |
+|--------|--------|-------|
+| API Consistency | Strong | Naming, generics, and patterns are applied uniformly |
+| Type Safety | Strong | Generics used well throughout; typed tuples and expressions compose cleanly |
+| Separation of Concerns | Strong | Clean package boundaries with focused responsibilities |
+| Feature Completeness | Strong | Covers CRUD, conditions, functions, window functions, transactions, async, audit, pagination, CTEs, retry |
+| Extensibility | Moderate | Dialect/renderer pattern is good; `SqlDialectFeatures` boolean methods are somewhat rigid |
+| Composability | Strong | Expressions, conditions, and functions share a common type hierarchy and compose naturally |
 
 ---
 
 ## Summary
 
-| Subsystem | Rating | Key Strength | Top Suggestion |
-|-----------|--------|-------------|----------------|
-| Architecture | ⭐⭐⭐⭐ | Clean separation of concerns | Remove duplicate factory method |
-| Query System | ⭐⭐⭐⭐⭐ | Comprehensive type-safe API | Add `DELETE ... RETURNING` |
-| Dialect/Renderer | ⭐⭐⭐⭐ | Feature flags + syntax delegation | Fix Postgres renderer, add MySQL |
-| Expressions/Functions | ⭐⭐⭐⭐⭐ | Massive function coverage | Document dialect rendering strategy |
-| Table/Column | ⭐⭐⭐⭐ | Semantic column types | Add ON DELETE/UPDATE to FK columns |
-| Transactions | ⭐⭐⭐⭐ | Full lifecycle + savepoints | Implement `AutoCloseable` |
-| Migrations | ⭐⭐⭐⭐ | Programmatic DSL + schema diff | Define version ordering strategy |
-| Connections | ⭐⭐⭐ | Standard DataSource | Use HikariCP instead of custom pool |
-| Async | ⭐⭐⭐⭐ | Clean opt-in via `.async()` | Consider reactive streams |
-| Exceptions | ⭐⭐⭐⭐⭐ | Precise semantic hierarchy | Add SQL state/error code |
-| Audit | ⭐⭐⭐⭐ | Context-scoped user tracking | Thread-safety + forDelete() |
-| Mapping | ⭐⭐⭐ | Record-based approach | Type converters + auto-mapping |
-| Postgres | ⭐⭐⭐⭐ | Proper dialect extensions | ON CONFLICT DO NOTHING |
+The database concept presents a well-designed, feature-rich SQL abstraction layer. The feature set covers the full spectrum of SQL operations — from basic CRUD through advanced window functions, JSON/array operations, and CTEs — with a consistent, type-safe API throughout.
 
-### Overall Rating: ⭐⭐⭐⭐ (4/5) — Very Strong Concept
+Key design strengths:
+- **Unified expression model** — columns, functions, and aggregates all flow through `SqlExpression<T>`, making them composable in conditions, ordering, and projections
+- **Complete async mirroring** — every sync operation has an async counterpart with no conceptual overhead
+- **Integrated audit trail** — audit context flows through the database and transaction layers
+- **Granular exception hierarchy** — enables precise error handling and clean retry logic
+- **Dialect independence** — the renderer/dialect/features trio cleanly separates SQL generation from query building
 
-**Top 5 Priority Suggestions:**
-1. **Make `SqlTransaction` implement `AutoCloseable`** — this is a correctness issue; transactions that aren't closed leak connections.
-2. **Don't build a custom connection pool** — use HikariCP or document severe limitations.
-3. **Fix `PostgresDialect` to use `PostgresSqlRenderer`** — currently returns the default renderer.
-4. **Add `DELETE ... RETURNING` to `SqlDeleteQuery`** — inconsistent with INSERT and UPDATE.
-5. **Expand the mapping system** — type converters and auto-mapping from records are essential for practical use.
-
-The concept demonstrates deep knowledge of SQL semantics, strong API design instincts, and excellent documentation discipline. The Javadoc quality across all files is exceptional — every method is documented with the generated SQL, which is rare and valuable. This is a well-thought-out foundation ready for implementation.
+The suggestions above are refinements to an already solid design — adding identity conditions, a `returning()` clause, JSON path extraction, pluggable naming strategies, and more extensible dialect features would further strengthen the concept.

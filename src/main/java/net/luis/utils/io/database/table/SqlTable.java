@@ -18,18 +18,16 @@
 
 package net.luis.utils.io.database.table;
 
+import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.listener.SqlEntityListener;
+import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
 
 /**
  * Interface representing a SQL table definition.<br>
+ * A table is a pure schema definition. Use {@link SqlDatabase#from(SqlTable)} or {@link SqlTransaction#from(SqlTable)} to create queries.<br>
  * <p>
- *     A table is a pure schema definition. Use {@link net.luis.utils.io.database.SqlDatabase#from(SqlTable)}
- *     or {@link net.luis.utils.io.database.transaction.SqlTransaction#from(SqlTable)} to create queries.<br>
- * </p>
- * <p>
- *     The recommended pattern is to declare table and column references as {@code static final} fields
- *     to ensure consistent definitions across call sites:
+ *     The recommended pattern is to declare table and column references as {@code static final} fields to ensure consistent definitions across call sites:
  * </p>
  * <pre>{@code
  * public class Tables {
@@ -93,10 +91,7 @@ public interface SqlTable<T> {
 	
 	/**
 	 * Defines a composite primary key consisting of multiple columns.<br>
-	 * <p>
-	 *     The returned definition is recognized by query builders for identity-based operations
-	 *     involving multiple columns (e.g., composite-key lookups, upserts).<br>
-	 * </p>
+	 * The returned definition is recognized by query builders for identity-based operations involving multiple columns (e.g., composite-key lookups, upserts).<br>
 	 *
 	 * @param columns The columns forming the composite primary key
 	 * @return The composite primary key definition

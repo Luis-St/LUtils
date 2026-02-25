@@ -58,7 +58,16 @@ public interface SqlDeleteQuery<T> extends SqlRenderable {
 	 * @throws SqlException If a database access error occurs
 	 */
 	int execute() throws SqlException;
-	
+
+	/**
+	 * Executes the delete query and returns the deleted rows.<br>
+	 * Generates SQL: {@code DELETE FROM table WHERE ... RETURNING *}.<br>
+	 *
+	 * @return The list of deleted entities
+	 * @throws SqlException If a database access error occurs
+	 */
+	@NonNull List<T> returning() throws SqlException;
+
 	/**
 	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
 	 * @return The asynchronous query

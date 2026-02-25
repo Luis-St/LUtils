@@ -22,10 +22,7 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * Builder for sequence definitions in migrations.<br>
- * <p>
- *     Provides a fluent API for configuring sequence properties such as
- *     start value, increment, min/max bounds, and cycling behavior.<br>
- * </p>
+ * Provides a fluent API for configuring sequence properties such as start value, increment, min/max bounds, and cycling behavior.<br>
  *
  * @author Luis-St
  */
@@ -66,6 +63,7 @@ public interface SqlSequenceBuilder {
 	/**
 	 * Enables cycling for the sequence.<br>
 	 * When the sequence reaches its maximum (or minimum) value, it wraps around.<br>
+	 *
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlSequenceBuilder cycle();

@@ -28,9 +28,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Interface representing an asynchronous SQL update query.<br>
- * <p>
- *     All terminal operations return {@link CompletableFuture} for non-blocking execution.<br>
- * </p>
+ * All terminal operations return {@link CompletableFuture} for non-blocking execution.<br>
  *
  * @author Luis-St
  *

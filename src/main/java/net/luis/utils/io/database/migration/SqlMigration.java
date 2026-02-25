@@ -25,7 +25,7 @@ import org.jspecify.annotations.NonNull;
  * Interface representing a SQL migration with manual {@code up()} and {@code down()} methods.<br>
  * <p>
  *     Migrations define schema changes using a DSL provided by {@link SqlMigrationBuilder}.<br>
- *     No raw SQL is allowed; all schema modifications go through the builder.<br>
+ *     No raw SQL is allowed; all schema modifications go through the builder.
  * </p>
  *
  * @author Luis-St
@@ -36,8 +36,7 @@ public interface SqlMigration {
 	 * Returns the version of this migration.<br>
 	 * <p>
 	 *     Versions are compared numerically to determine migration ordering.<br>
-	 *     Use a timestamp-based format ({@code YYYYMMDDHHmmss}, e.g., {@code "20260225120000"})
-	 *     to avoid ordering conflicts in team environments.<br>
+	 *     Use a timestamp-based format ({@code YYYYMMDDHHmmss}, e.g., {@code "20260225120000"}) to avoid ordering conflicts in team environments.
 	 * </p>
 	 *
 	 * @return The migration version
@@ -69,15 +68,13 @@ public interface SqlMigration {
 	/**
 	 * Returns a checksum representing the content of this migration.<br>
 	 * <p>
-	 *     The checksum is used by the migration runner to detect changes
-	 *     in previously applied migrations. If the checksum of a registered
-	 *     migration differs from the stored checksum, the runner can flag
-	 *     the migration as tampered.<br>
+	 *     The checksum is used by the migration runner to detect changes in previously applied migrations.<br>
+	 *     If the checksum of a registered migration differs from the stored checksum,<br>
+	 *     the runner can flag the migration as tampered.
 	 * </p>
 	 * <p>
-	 *     The default implementation computes the checksum from the migration's
-	 *     version and description. Implementations should override this to include
-	 *     the actual migration operations for more reliable drift detection.<br>
+	 *     The default implementation computes the checksum from the migration's version and description.<br>
+	 *     Implementations should override this to include the actual migration operations for more reliable drift detection.
 	 * </p>
 	 *
 	 * @return The migration checksum

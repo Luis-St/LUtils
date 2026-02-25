@@ -20,10 +20,7 @@ package net.luis.utils.io.database.table;
 
 /**
  * Marker interface for audit update columns.<br>
- * <p>
- *     Columns implementing this interface are automatically populated
- *     when a row is updated in the table.<br>
- * </p>
+ * Columns implementing this interface are automatically populated when a row is updated in the table.<br>
  *
  * @author Luis-St
  *

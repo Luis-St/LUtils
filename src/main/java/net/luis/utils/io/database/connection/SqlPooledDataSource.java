@@ -21,21 +21,17 @@ package net.luis.utils.io.database.connection;
 import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
-import java.io.Closeable;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.logging.Logger;
 
 /**
  * A pooled {@link DataSource} implementation for connection pooling.<br>
- * <p>
- *     Implements {@link Closeable} to allow proper shutdown of the connection pool
- *     and release of all pooled connections.<br>
- * </p>
+ * Implements {@link AutoCloseable} to allow proper shutdown of the connection pool and release of all pooled connections.<br>
  *
  * @author Luis-St
  */
-public class SqlPooledDataSource implements DataSource, Closeable {
+public class SqlPooledDataSource implements DataSource, AutoCloseable {
 	
 	/**
 	 * Constructs a new pooled data source with the given JDBC URL and pool bounds.<br>

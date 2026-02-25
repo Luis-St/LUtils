@@ -16,15 +16,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.table;
+package net.luis.utils.io.database.mapping;
+
+import org.jspecify.annotations.NonNull;
 
 /**
- * Marker interface for audit creation columns.<br>
- * Columns implementing this interface are automatically populated when a new row is inserted into the table.<br>
+ * Interface for pluggable naming strategies that convert between Java record component names and SQL column names.<br>
  *
  * @author Luis-St
- *
- * @param <T> The entity type of the table
- * @param <V> The type of the column value
  */
-public interface SqlCreationColumn<T, V> extends SqlColumn<V> {}
+public interface SqlNamingStrategy {
+
+	/**
+	 * Converts a SQL column name to a Java record component name.<br>
+	 *
+	 * @param columnName The SQL column name
+	 * @return The Java record component name
+	 */
+	@NonNull String toComponentName(@NonNull String columnName);
+
+	/**
+	 * Converts a Java record component name to a SQL column name.<br>
+	 *
+	 * @param componentName The Java record component name
+	 * @return The SQL column name
+	 */
+	@NonNull String toColumnName(@NonNull String componentName);
+}

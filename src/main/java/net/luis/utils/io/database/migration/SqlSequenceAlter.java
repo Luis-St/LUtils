@@ -22,10 +22,7 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * Interface for altering sequence properties in migrations.<br>
- * <p>
- *     Provides a fluent API for modifying the restart value, increment,
- *     min/max bounds, and cycling behavior of an existing sequence.<br>
- * </p>
+ * Provides a fluent API for modifying the restart value, increment, min/max bounds, and cycling behavior of an existing sequence.<br>
  *
  * @author Luis-St
  */
