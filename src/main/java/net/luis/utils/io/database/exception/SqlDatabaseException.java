@@ -26,12 +26,12 @@ import org.jspecify.annotations.Nullable;
  * @author Luis-St
  */
 public class SqlDatabaseException extends SqlException {
-
+	
 	/**
 	 * Constructs a new SQL database exception with no details.<br>
 	 */
 	public SqlDatabaseException() {}
-
+	
 	/**
 	 * Constructs a new SQL database exception with the specified message.<br>
 	 * @param message The message of the exception
@@ -39,7 +39,7 @@ public class SqlDatabaseException extends SqlException {
 	public SqlDatabaseException(@Nullable String message) {
 		super(message);
 	}
-
+	
 	/**
 	 * Constructs a new SQL database exception with the specified message and cause.<br>
 	 *
@@ -49,7 +49,7 @@ public class SqlDatabaseException extends SqlException {
 	public SqlDatabaseException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	/**
 	 * Constructs a new SQL database exception with the specified cause.<br>
 	 * @param cause The cause of the exception

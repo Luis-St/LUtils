@@ -36,7 +36,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the result entity
  */
 public interface SqlAsyncSelectQuery<T> extends SqlAsyncSelectQueryBase<T, SqlAsyncSelectQuery<T>> {
-
+	
 	/**
 	 * Adds {@code FOR UPDATE} clause to lock selected rows.<br>
 	 * Prevents other transactions from modifying or locking the rows until this transaction completes.<br>
@@ -44,7 +44,7 @@ public interface SqlAsyncSelectQuery<T> extends SqlAsyncSelectQueryBase<T, SqlAs
 	 * @return This query for method chaining
 	 */
 	@NonNull SqlAsyncSelectQuery<T> forUpdate();
-
+	
 	/**
 	 * Adds {@code SKIP LOCKED} modifier to skip rows that are already locked.<br>
 	 * Must be used in combination with {@link #forUpdate()}.<br>
@@ -53,7 +53,7 @@ public interface SqlAsyncSelectQuery<T> extends SqlAsyncSelectQueryBase<T, SqlAs
 	 * @return This query for method chaining
 	 */
 	@NonNull SqlAsyncSelectQuery<T> skipLocked();
-
+	
 	/**
 	 * Adds NOWAIT modifier to fail immediately if rows are locked.<br>
 	 * Must be used in combination with {@link #forUpdate()}.<br>

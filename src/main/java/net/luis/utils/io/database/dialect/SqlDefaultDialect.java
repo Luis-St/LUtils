@@ -28,7 +28,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public final class SqlDefaultDialect extends SqlDialect {
-
+	
 	@Override
 	public @NonNull SqlRenderer createRenderer() {
 		return new SqlDefaultRenderer(this);

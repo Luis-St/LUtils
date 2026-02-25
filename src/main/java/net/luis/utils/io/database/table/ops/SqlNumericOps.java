@@ -33,7 +33,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The numeric type of the column value
  */
 public interface SqlNumericOps<T> {
-
+	
 	/**
 	 * Creates a condition that checks if the column value is positive (greater than zero).<br>
 	 * Generates SQL: {@code column > 0}.<br>
@@ -41,7 +41,7 @@ public interface SqlNumericOps<T> {
 	 * @return The is-positive condition
 	 */
 	@NonNull SqlCondition isPositive();
-
+	
 	/**
 	 * Creates a condition that checks if the column value is negative (less than zero).<br>
 	 * Generates SQL: {@code column < 0}.<br>
@@ -49,7 +49,7 @@ public interface SqlNumericOps<T> {
 	 * @return The is-negative condition
 	 */
 	@NonNull SqlCondition isNegative();
-
+	
 	/**
 	 * Creates a condition that checks if the column value is zero.<br>
 	 * Generates SQL: {@code column = 0}.<br>
@@ -57,7 +57,7 @@ public interface SqlNumericOps<T> {
 	 * @return The is-zero condition
 	 */
 	@NonNull SqlCondition isZero();
-
+	
 	/**
 	 * Creates a condition that checks if the column value modulo the given divisor equals the given remainder.<br>
 	 * Generates SQL: {@code MOD(column, divisor) = remainder}.<br>

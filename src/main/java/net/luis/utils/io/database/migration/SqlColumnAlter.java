@@ -31,7 +31,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlColumnAlter {
-
+	
 	/**
 	 * Changes the column type.<br>
 	 *
@@ -39,7 +39,7 @@ public interface SqlColumnAlter {
 	 * @return This alter instance for chaining
 	 */
 	@NonNull SqlColumnAlter setType(@NonNull SqlColumnType type);
-
+	
 	/**
 	 * Changes the nullability of the column.<br>
 	 *
@@ -47,7 +47,7 @@ public interface SqlColumnAlter {
 	 * @return This alter instance for chaining
 	 */
 	@NonNull SqlColumnAlter setNullable(boolean nullable);
-
+	
 	/**
 	 * Sets a new default value for the column.<br>
 	 *
@@ -55,7 +55,7 @@ public interface SqlColumnAlter {
 	 * @return This alter instance for chaining
 	 */
 	@NonNull SqlColumnAlter setDefault(@NonNull Object value);
-
+	
 	/**
 	 * Drops the default value from the column.<br>
 	 * @return This alter instance for chaining

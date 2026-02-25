@@ -33,7 +33,7 @@ import java.util.concurrent.Executor;
  * @author Luis-St
  */
 public interface SqlDatabaseConfig {
-
+	
 	/**
 	 * Creates a new database configuration builder.<br>
 	 * @return The new configuration builder
@@ -41,7 +41,7 @@ public interface SqlDatabaseConfig {
 	static @NonNull SqlDatabaseConfig builder() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Sets the data source for the database connection.<br>
 	 *
@@ -49,7 +49,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig dataSource(@NonNull DataSource dataSource);
-
+	
 	/**
 	 * Sets the executor for asynchronous operations.<br>
 	 *
@@ -57,7 +57,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig asyncExecutor(@NonNull Executor executor);
-
+	
 	/**
 	 * Sets the connection pool size for asynchronous operations.<br>
 	 *
@@ -65,7 +65,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig asyncConnectionPoolSize(int size);
-
+	
 	/**
 	 * Sets the timestamp source for audit operations.<br>
 	 *
@@ -73,7 +73,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig auditTimestampSource(@NonNull SqlTimestampSource source);
-
+	
 	/**
 	 * Sets the clock used for audit timestamps.<br>
 	 *
@@ -81,7 +81,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig auditClock(@NonNull Clock clock);
-
+	
 	/**
 	 * Registers a custom type converter for mapping between Java and database types.<br>
 	 * <p>
@@ -96,7 +96,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	<J, D> @NonNull SqlDatabaseConfig registerConverter(@NonNull SqlTypeConverter<J, D> converter);
-
+	
 	/**
 	 * Builds the configuration and creates a database instance.<br>
 	 *

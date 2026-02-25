@@ -33,31 +33,31 @@ import java.time.Instant;
  * @author Luis-St
  */
 public interface SqlMigrationInfo {
-
+	
 	/**
 	 * Returns the version identifier of this migration.<br>
 	 * @return The migration version
 	 */
 	@NonNull String version();
-
+	
 	/**
 	 * Returns the human-readable description of this migration.<br>
 	 * @return The migration description
 	 */
 	@NonNull String description();
-
+	
 	/**
 	 * Returns the current status of this migration.<br>
 	 * @return The migration status
 	 */
 	@NonNull SqlMigrationStatus status();
-
+	
 	/**
 	 * Returns the instant at which this migration was applied.<br>
 	 * @return The application timestamp, or {@code null} if not yet applied
 	 */
 	@Nullable Instant appliedAt();
-
+	
 	/**
 	 * Returns the checksum of this migration.<br>
 	 * Used to detect changes in previously applied migrations.<br>

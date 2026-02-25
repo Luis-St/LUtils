@@ -34,13 +34,13 @@ import java.util.List;
  * @param <T> The type of the entity
  */
 public interface SqlDeleteQuery<T> extends SqlRenderable {
-
+	
 	/**
 	 * Returns the parameter values for this query.<br>
 	 * @return A list of parameter values in order
 	 */
 	@NonNull List<Object> getParameters();
-
+	
 	/**
 	 * Sets the condition for the delete query.<br>
 	 * Generates SQL: {@code WHERE condition}.<br>
@@ -49,7 +49,7 @@ public interface SqlDeleteQuery<T> extends SqlRenderable {
 	 * @return This delete query
 	 */
 	@NonNull SqlDeleteQuery<T> where(@NonNull SqlCondition condition);
-
+	
 	/**
 	 * Executes the delete query.<br>
 	 * Generates SQL: {@code DELETE FROM table WHERE ...}.<br>
@@ -58,7 +58,7 @@ public interface SqlDeleteQuery<T> extends SqlRenderable {
 	 * @throws SqlException If a database access error occurs
 	 */
 	int execute() throws SqlException;
-
+	
 	/**
 	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
 	 * @return The asynchronous query

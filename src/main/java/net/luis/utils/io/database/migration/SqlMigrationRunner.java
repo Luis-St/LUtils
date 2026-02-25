@@ -35,7 +35,7 @@ import java.util.List;
  * @author Luis-St
  */
 public interface SqlMigrationRunner {
-
+	
 	/**
 	 * Creates a new migration runner for the specified database.<br>
 	 *
@@ -45,13 +45,13 @@ public interface SqlMigrationRunner {
 	static @NonNull SqlMigrationRunner of(@NonNull SqlDatabase database) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Applies all pending migrations in version order.<br>
 	 * @throws SqlException If a migration fails
 	 */
 	void migrate() throws SqlException;
-
+	
 	/**
 	 * Applies all pending migrations up to and including the specified version.<br>
 	 *
@@ -59,13 +59,13 @@ public interface SqlMigrationRunner {
 	 * @throws SqlException If a migration fails
 	 */
 	void migrateTo(@NonNull String targetVersion) throws SqlException;
-
+	
 	/**
 	 * Rolls back the most recently applied migration.<br>
 	 * @throws SqlException If the rollback fails
 	 */
 	void rollback() throws SqlException;
-
+	
 	/**
 	 * Rolls back the specified number of most recently applied migrations.<br>
 	 *
@@ -73,7 +73,7 @@ public interface SqlMigrationRunner {
 	 * @throws SqlException If a rollback fails
 	 */
 	void rollback(int count) throws SqlException;
-
+	
 	/**
 	 * Rolls back all migrations down to and including the specified version.<br>
 	 *
@@ -81,7 +81,7 @@ public interface SqlMigrationRunner {
 	 * @throws SqlException If a rollback fails
 	 */
 	void rollbackTo(@NonNull String targetVersion) throws SqlException;
-
+	
 	/**
 	 * Returns the status of all registered migrations.<br>
 	 *
@@ -89,7 +89,7 @@ public interface SqlMigrationRunner {
 	 * @throws SqlException If the status cannot be retrieved
 	 */
 	@NonNull List<SqlMigrationInfo> status() throws SqlException;
-
+	
 	/**
 	 * Performs a dry run of all pending migrations without applying them.<br>
 	 * Returns the SQL statements that would be executed.<br>
@@ -98,7 +98,7 @@ public interface SqlMigrationRunner {
 	 * @throws SqlException If the dry run fails
 	 */
 	@NonNull List<SqlRendered> dryRun() throws SqlException;
-
+	
 	/**
 	 * Performs a dry run of rolling back the most recently applied migration.<br>
 	 * Returns the SQL statements that would be executed.<br>
@@ -107,14 +107,14 @@ public interface SqlMigrationRunner {
 	 * @throws SqlException If the dry run fails
 	 */
 	@NonNull List<SqlRendered> dryRunRollback() throws SqlException;
-
+	
 	/**
 	 * Registers a single migration with this runner.<br>
 	 *
 	 * @param migration The migration to register
 	 */
 	void register(@NonNull SqlMigration migration);
-
+	
 	/**
 	 * Registers a list of migrations with this runner.<br>
 	 *

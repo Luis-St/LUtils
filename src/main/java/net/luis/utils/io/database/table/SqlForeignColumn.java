@@ -41,7 +41,7 @@ public interface SqlForeignColumn<T, R> extends SqlColumn<T> {
 	 * @return The referenced column
 	 */
 	@NonNull SqlColumn<?> referencedColumn();
-
+	
 	/**
 	 * Returns the action to perform when a referenced row is deleted.<br>
 	 * Defaults to {@link SqlForeignKeyAction#NO_ACTION}.<br>
@@ -49,7 +49,7 @@ public interface SqlForeignColumn<T, R> extends SqlColumn<T> {
 	 * @return The on-delete action
 	 */
 	@NonNull SqlForeignKeyAction onDelete();
-
+	
 	/**
 	 * Returns the action to perform when a referenced row is updated.<br>
 	 * Defaults to {@link SqlForeignKeyAction#NO_ACTION}.<br>

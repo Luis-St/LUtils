@@ -57,7 +57,7 @@ public interface SqlAuditEntry<T> {
 	static <T> @NonNull SqlAuditEntry<T> forUpdate(@NonNull T entity) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Creates an audit entry for a {@code DELETE} operation.<br>
 	 *
@@ -68,25 +68,25 @@ public interface SqlAuditEntry<T> {
 	static <T> @NonNull SqlAuditEntry<T> forDelete(@NonNull T entity) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the entity associated with this audit entry.<br>
 	 * @return The audited entity
 	 */
 	@NonNull T getEntity();
-
+	
 	/**
 	 * Returns the type of operation that was performed.<br>
 	 * @return The audit operation type
 	 */
 	@NonNull SqlAuditOperation getOperation();
-
+	
 	/**
 	 * Returns the timestamp when the operation was performed.<br>
 	 * @return The operation timestamp
 	 */
 	@NonNull Instant getTimestamp();
-
+	
 	/**
 	 * Returns the user who performed the operation.<br>
 	 * @return The user, or {@code null} if no audit context was set

@@ -32,7 +32,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface PostgresStringOps extends SqlStringOps {
-
+	
 	/**
 	 * Creates a condition using a case-insensitive {@code ILIKE} pattern.<br>
 	 * Generates SQL: {@code column ILIKE pattern}.<br>
@@ -41,7 +41,7 @@ public interface PostgresStringOps extends SqlStringOps {
 	 * @return The ilike condition
 	 */
 	@NonNull SqlCondition ilike(@NonNull String pattern);
-
+	
 	/**
 	 * Creates a condition using a PostgreSQL {@code SIMILAR TO} regular expression pattern.<br>
 	 * Generates SQL: {@code column SIMILAR TO pattern}.<br>
@@ -50,7 +50,7 @@ public interface PostgresStringOps extends SqlStringOps {
 	 * @return The similar-to condition
 	 */
 	@NonNull SqlCondition similarTo(@NonNull String pattern);
-
+	
 	/**
 	 * Creates a condition using a POSIX regular expression match.<br>
 	 * Generates SQL: {@code column ~ regex}.<br>

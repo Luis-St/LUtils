@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  * @author Luis-St
  */
 public interface SqlRetry {
-
+	
 	/**
 	 * Creates a new retry instance with exponential backoff.<br>
 	 *
@@ -41,7 +41,7 @@ public interface SqlRetry {
 	static @NonNull SqlRetry withBackoff(int maxRetries, @NonNull Duration initialDelay) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Configures the exception types to retry on.<br>
 	 *
@@ -50,7 +50,7 @@ public interface SqlRetry {
 	 */
 	@SuppressWarnings("unchecked")
 	@NonNull SqlRetry retryOn(Class<? extends Throwable> @NonNull ... exceptions);
-
+	
 	/**
 	 * Executes the given action with retry logic.<br>
 	 *

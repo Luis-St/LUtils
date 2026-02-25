@@ -33,43 +33,43 @@ import java.util.Optional;
  * @author Luis-St
  */
 public interface SqlColumnChange {
-
+	
 	/**
 	 * Returns the name of the column being changed.<br>
 	 * @return An optional containing the column name
 	 */
 	@NonNull Optional<String> columnName();
-
+	
 	/**
 	 * Returns the previous column type before the change.<br>
 	 * @return An optional containing the old column type
 	 */
 	@NonNull Optional<SqlColumnType> oldType();
-
+	
 	/**
 	 * Returns the new column type after the change.<br>
 	 * @return An optional containing the new column type
 	 */
 	@NonNull Optional<SqlColumnType> newType();
-
+	
 	/**
 	 * Returns the previous nullability setting before the change.<br>
 	 * @return An optional containing the old nullable flag
 	 */
 	@NonNull Optional<Boolean> oldNullable();
-
+	
 	/**
 	 * Returns the new nullability setting after the change.<br>
 	 * @return An optional containing the new nullable flag
 	 */
 	@NonNull Optional<Boolean> newNullable();
-
+	
 	/**
 	 * Returns the previous default value before the change.<br>
 	 * @return An optional containing the old default value
 	 */
 	@NonNull Optional<Object> oldDefault();
-
+	
 	/**
 	 * Returns the new default value after the change.<br>
 	 * @return An optional containing the new default value

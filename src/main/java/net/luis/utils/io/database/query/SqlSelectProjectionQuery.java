@@ -53,7 +53,7 @@ import java.util.stream.Stream;
  * @param <T> The type of the projection result (e.g., Row2, Row3, or single column type)
  */
 public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSelectProjectionQuery<T>> {
-
+	
 	/**
 	 * Executes the query and maps all results to the specified type.<br>
 	 * <p>
@@ -66,7 +66,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @throws SqlException If a database access error occurs
 	 */
 	<R> @NonNull List<R> fetchAs(@NonNull Class<R> type) throws SqlException;
-
+	
 	/**
 	 * Executes the query and maps the first result to the specified type.<br>
 	 *
@@ -76,7 +76,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @throws SqlException If a database access error occurs
 	 */
 	<R> @NonNull Optional<R> fetchFirstAs(@NonNull Class<R> type) throws SqlException;
-
+	
 	/**
 	 * Executes the query and maps exactly one result to the specified type.<br>
 	 *
@@ -88,7 +88,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @throws SqlException If a database access error occurs
 	 */
 	<R> @NonNull R fetchOneAs(@NonNull Class<R> type) throws SqlException;
-
+	
 	/**
 	 * Executes the query and maps one result to the specified type, or returns null.<br>
 	 *
@@ -99,7 +99,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @throws SqlException If a database access error occurs
 	 */
 	<R> @Nullable R fetchOneOrNullAs(@NonNull Class<R> type) throws SqlException;
-
+	
 	/**
 	 * Executes the query and returns results as a stream mapped to the specified type.<br>
 	 *
@@ -110,7 +110,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @throws SqlException If a database access error occurs
 	 */
 	<R> @NonNull Stream<R> streamAs(@NonNull Class<R> type) throws SqlException;
-
+	
 	/**
 	 * Executes the query with pagination and maps results to the specified type.<br>
 	 *
@@ -122,7 +122,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @throws SqlException If a database access error occurs
 	 */
 	<R> @NonNull SqlPage<R> fetchPageAs(int page, int pageSize, @NonNull Class<R> type) throws SqlException;
-
+	
 	/**
 	 * Adds {@code FOR UPDATE} clause to lock selected rows.<br>
 	 * Prevents other transactions from modifying or locking the rows until this transaction completes.<br>
@@ -130,7 +130,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return This query for method chaining
 	 */
 	@NonNull SqlSelectProjectionQuery<T> forUpdate();
-
+	
 	/**
 	 * Adds {@code SKIP LOCKED} modifier to skip rows that are already locked.<br>
 	 * Must be used in combination with {@link #forUpdate()}.<br>
@@ -139,7 +139,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @return This query for method chaining
 	 */
 	@NonNull SqlSelectProjectionQuery<T> skipLocked();
-
+	
 	/**
 	 * Adds NOWAIT modifier to fail immediately if rows are locked.<br>
 	 * Must be used in combination with {@link #forUpdate()}.<br>
@@ -148,7 +148,7 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @throws SqlLockNotAvailableException If the rows are locked by another transaction
 	 */
 	@NonNull SqlSelectProjectionQuery<T> noWait();
-
+	
 	/**
 	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
 	 * @return The asynchronous projection query

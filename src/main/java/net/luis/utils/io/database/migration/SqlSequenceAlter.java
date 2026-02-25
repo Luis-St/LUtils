@@ -30,7 +30,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlSequenceAlter {
-
+	
 	/**
 	 * Restarts the sequence with the specified value.<br>
 	 *
@@ -38,7 +38,7 @@ public interface SqlSequenceAlter {
 	 * @return This alter instance for chaining
 	 */
 	@NonNull SqlSequenceAlter restartWith(long value);
-
+	
 	/**
 	 * Changes the increment value of the sequence.<br>
 	 *
@@ -46,7 +46,7 @@ public interface SqlSequenceAlter {
 	 * @return This alter instance for chaining
 	 */
 	@NonNull SqlSequenceAlter incrementBy(long value);
-
+	
 	/**
 	 * Sets the minimum value of the sequence.<br>
 	 *
@@ -54,7 +54,7 @@ public interface SqlSequenceAlter {
 	 * @return This alter instance for chaining
 	 */
 	@NonNull SqlSequenceAlter setMinValue(long value);
-
+	
 	/**
 	 * Sets the maximum value of the sequence.<br>
 	 *
@@ -62,7 +62,7 @@ public interface SqlSequenceAlter {
 	 * @return This alter instance for chaining
 	 */
 	@NonNull SqlSequenceAlter setMaxValue(long value);
-
+	
 	/**
 	 * Sets whether the sequence should cycle.<br>
 	 *

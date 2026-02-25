@@ -62,7 +62,7 @@ public interface SqlSelectQuery<T> extends SqlSelectQueryBase<T, SqlSelectQuery<
 	 * @throws SqlLockNotAvailableException If the rows are locked by another transaction
 	 */
 	@NonNull SqlSelectQuery<T> noWait();
-
+	
 	/**
 	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
 	 * @return The asynchronous query

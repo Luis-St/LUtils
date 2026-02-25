@@ -34,7 +34,7 @@ import java.util.concurrent.CompletableFuture;
  * @param <T> The type of the entity
  */
 public interface SqlAsyncDeleteQuery<T> {
-
+	
 	/**
 	 * Sets the condition for the delete query.<br>
 	 * Generates SQL: {@code WHERE condition}.<br>
@@ -43,7 +43,7 @@ public interface SqlAsyncDeleteQuery<T> {
 	 * @return This delete query for method chaining
 	 */
 	@NonNull SqlAsyncDeleteQuery<T> where(@NonNull SqlCondition condition);
-
+	
 	/**
 	 * Asynchronously executes the delete query.<br>
 	 * Generates SQL: {@code DELETE FROM table WHERE ...}.<br>

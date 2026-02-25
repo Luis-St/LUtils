@@ -33,12 +33,12 @@ import java.util.List;
  * @author Luis-St
  */
 public class SqlMappingException extends SqlException {
-
+	
 	/**
 	 * Constructs a new SQL mapping exception with no details.<br>
 	 */
 	public SqlMappingException() {}
-
+	
 	/**
 	 * Constructs a new SQL mapping exception with the specified message.<br>
 	 * @param message The message of the exception
@@ -46,7 +46,7 @@ public class SqlMappingException extends SqlException {
 	public SqlMappingException(@Nullable String message) {
 		super(message);
 	}
-
+	
 	/**
 	 * Constructs a new SQL mapping exception with the specified message and cause.<br>
 	 *
@@ -56,7 +56,7 @@ public class SqlMappingException extends SqlException {
 	public SqlMappingException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	/**
 	 * Constructs a new SQL mapping exception with the specified cause.<br>
 	 * @param cause The cause of the exception
@@ -64,7 +64,7 @@ public class SqlMappingException extends SqlException {
 	public SqlMappingException(@Nullable Throwable cause) {
 		super(cause);
 	}
-
+	
 	/**
 	 * Returns the expected record type that the mapping targeted.<br>
 	 * @return The expected record type
@@ -72,7 +72,7 @@ public class SqlMappingException extends SqlException {
 	public @NonNull Class<?> getExpectedType() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the actual column names from the result set.<br>
 	 * @return The list of actual column names

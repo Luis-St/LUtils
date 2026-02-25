@@ -45,7 +45,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the entity
  */
 public interface SqlTable<T> {
-
+	
 	/**
 	 * Creates a new table reference for the specified table name and entity type.<br>
 	 *
@@ -57,19 +57,19 @@ public interface SqlTable<T> {
 	static <T> @NonNull SqlTable<T> of(@NonNull String name, @NonNull Class<T> type) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the name of this table.<br>
 	 * @return The table name
 	 */
 	@NonNull String getName();
-
+	
 	/**
 	 * Returns the entity type of this table.<br>
 	 * @return The entity class
 	 */
 	@NonNull Class<T> getType();
-
+	
 	/**
 	 * Returns a column reference for the specified column name and type.<br>
 	 *
@@ -79,7 +79,7 @@ public interface SqlTable<T> {
 	 * @return A column reference
 	 */
 	<C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull Class<C> type);
-
+	
 	/**
 	 * Returns a primary key column reference for the specified column name and type.<br>
 	 * Primary key columns are recognized by query builders for identity-based operations.<br>
@@ -90,7 +90,7 @@ public interface SqlTable<T> {
 	 * @return A primary key column reference
 	 */
 	<V> @NonNull SqlPrimaryKeyColumn<T, V> primaryKeyColumn(@NonNull String name, @NonNull Class<V> type);
-
+	
 	/**
 	 * Defines a composite primary key consisting of multiple columns.<br>
 	 * <p>
@@ -102,7 +102,7 @@ public interface SqlTable<T> {
 	 * @return The composite primary key definition
 	 */
 	@NonNull SqlCompositePrimaryKey<T> compositePrimaryKey(SqlColumn<?> @NonNull ... columns);
-
+	
 	/**
 	 * Returns a foreign column reference for the specified column name and referenced table.<br>
 	 *
@@ -114,7 +114,7 @@ public interface SqlTable<T> {
 	 * @return A foreign column reference
 	 */
 	<C, R> @NonNull SqlForeignColumn<C, R> foreignColumn(@NonNull String name, @NonNull Class<C> type, @NonNull SqlTable<R> referencedTable);
-
+	
 	/**
 	 * Returns a version column reference for the specified column name and type.<br>
 	 * Version columns are recognized by query builders to apply automatic optimistic locking checks during updates and deletes.
@@ -125,7 +125,7 @@ public interface SqlTable<T> {
 	 * @return A version column reference
 	 */
 	<V> @NonNull SqlVersionColumn<T, V> versionColumn(@NonNull String name, @NonNull Class<V> type);
-
+	
 	/**
 	 * Returns a creation audit column reference for the specified column name and type.<br>
 	 * Creation columns are automatically filled on INSERT from the audit context.<br>
@@ -136,7 +136,7 @@ public interface SqlTable<T> {
 	 * @return A creation column reference
 	 */
 	<V> @NonNull SqlCreationColumn<T, V> creationColumn(@NonNull String name, @NonNull Class<V> type);
-
+	
 	/**
 	 * Returns an update audit column reference for the specified column name and type.<br>
 	 * Update columns are automatically filled on INSERT and UPDATE from the audit context.<br>
@@ -147,13 +147,13 @@ public interface SqlTable<T> {
 	 * @return An update column reference
 	 */
 	<V> @NonNull SqlUpdateColumn<T, V> updateColumn(@NonNull String name, @NonNull Class<V> type);
-
+	
 	/**
 	 * Adds an entity lifecycle listener to this table.<br>
 	 * @param listener The listener to add
 	 */
 	void addListener(@NonNull SqlEntityListener<T> listener);
-
+	
 	/**
 	 * Removes an entity lifecycle listener from this table.<br>
 	 * @param listener The listener to remove

@@ -31,7 +31,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public abstract class SqlDialect {
-
+	
 	/**
 	 * Returns the identifier of this dialect.<br>
 	 * @return The dialect identifier
@@ -39,7 +39,7 @@ public abstract class SqlDialect {
 	public @NonNull String getId() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the display name of this dialect.<br>
 	 * @return The dialect name
@@ -47,7 +47,7 @@ public abstract class SqlDialect {
 	public @NonNull String getName() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns the features supported by this dialect.<br>
 	 * @return The dialect features
@@ -55,7 +55,7 @@ public abstract class SqlDialect {
 	public @NonNull SqlDialectFeatures getFeatures() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Maps a column type to the dialect-specific SQL type name.<br>
 	 *
@@ -65,7 +65,7 @@ public abstract class SqlDialect {
 	public @NonNull String mapColumnType(@NonNull SqlColumnType type) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Maps a Java type to the corresponding SQL column type.<br>
 	 *
@@ -75,7 +75,7 @@ public abstract class SqlDialect {
 	public @NonNull SqlColumnType mapJavaType(@NonNull Class<?> javaType) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Creates a new renderer for this dialect.<br>
 	 * @return A renderer that produces SQL syntax for this dialect

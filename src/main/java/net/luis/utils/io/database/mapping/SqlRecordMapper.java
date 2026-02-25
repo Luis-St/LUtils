@@ -34,7 +34,7 @@ import java.util.List;
  * @param <T> The record type to map to
  */
 public interface SqlRecordMapper<T> {
-
+	
 	/**
 	 * Maps a result row to a record instance.<br>
 	 *
@@ -42,13 +42,13 @@ public interface SqlRecordMapper<T> {
 	 * @return The mapped record instance
 	 */
 	@NonNull T map(@NonNull SqlResultRow row);
-
+	
 	/**
 	 * Returns the column names expected by this mapper.<br>
 	 * @return The list of column names
 	 */
 	@NonNull List<String> columnNames();
-
+	
 	/**
 	 * Returns the record type this mapper produces.<br>
 	 * @return The record class

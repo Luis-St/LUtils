@@ -27,7 +27,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlCondition extends SqlRenderable {
-
+	
 	/**
 	 * Creates a combined condition using {@code AND}.<br>
 	 * Generates SQL: {@code cond1 AND cond2 AND ...}.<br>
@@ -39,7 +39,7 @@ public interface SqlCondition extends SqlRenderable {
 	static @NonNull SqlCondition allOf(@NonNull SqlCondition first, SqlCondition @NonNull ... rest) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Creates a combined condition using {@code OR}.<br>
 	 * Generates SQL: {@code cond1 OR cond2 OR ...}.<br>
@@ -51,7 +51,7 @@ public interface SqlCondition extends SqlRenderable {
 	static @NonNull SqlCondition anyOf(@NonNull SqlCondition first, SqlCondition @NonNull ... rest) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Combines this condition with the given conditions using {@code AND}.<br>
 	 * Generates SQL: {@code this AND other1 AND other2 AND ...}.<br>
@@ -60,7 +60,7 @@ public interface SqlCondition extends SqlRenderable {
 	 * @return The combined condition
 	 */
 	@NonNull SqlCondition and(SqlCondition @NonNull ... others);
-
+	
 	/**
 	 * Combines this condition with the given conditions using {@code OR}.<br>
 	 * Generates SQL: {@code this OR other1 OR other2 OR ...}.<br>
@@ -69,7 +69,7 @@ public interface SqlCondition extends SqlRenderable {
 	 * @return The combined condition
 	 */
 	@NonNull SqlCondition or(SqlCondition @NonNull ... others);
-
+	
 	/**
 	 * Negates this condition.<br>
 	 * Generates SQL: {@code NOT (condition)}.<br>

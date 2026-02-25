@@ -32,7 +32,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface PostgresJsonOps {
-
+	
 	/**
 	 * Accesses a JSON field by key and returns it as an expression.<br>
 	 * Generates SQL: {@code column -> 'key'}.<br>
@@ -41,7 +41,7 @@ public interface PostgresJsonOps {
 	 * @return An expression representing the JSON field value
 	 */
 	@NonNull SqlExpression<?> get(@NonNull String key);
-
+	
 	/**
 	 * Creates a condition that checks if the JSON column contains the given key.<br>
 	 * Generates SQL: {@code column ? 'key'}.<br>
@@ -50,7 +50,7 @@ public interface PostgresJsonOps {
 	 * @return The has-key condition
 	 */
 	@NonNull SqlCondition hasKey(@NonNull String key);
-
+	
 	/**
 	 * Accesses a JSON field by key and returns its value as text.<br>
 	 * Generates SQL: {@code column ->> 'key'}.<br>

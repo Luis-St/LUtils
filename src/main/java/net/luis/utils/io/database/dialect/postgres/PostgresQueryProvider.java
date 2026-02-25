@@ -37,7 +37,7 @@ import java.util.Collection;
  * @param <T> The type of the entity
  */
 public interface PostgresQueryProvider<T> extends SqlQueryProvider<T> {
-
+	
 	/**
 	 * Creates a new PostgreSQL query provider for the given database and table.<br>
 	 *
@@ -49,32 +49,32 @@ public interface PostgresQueryProvider<T> extends SqlQueryProvider<T> {
 	static <T> @NonNull PostgresQueryProvider<T> from(@NonNull SqlDatabase db, @NonNull PostgresTable<T> table) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	@Override
 	@NonNull PostgresQueryProvider<T> skipVersionCheck();
-
+	
 	@Override
 	@NonNull PostgresSelectQuery<T> select();
-
+	
 	@Override
 	@NonNull PostgresInsertQuery<T> insert(@NonNull T entity);
-
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	@NonNull PostgresInsertQuery<T> insert(T @NonNull ... entities);
-
+	
 	@Override
 	@NonNull PostgresInsertQuery<T> insert(@NonNull Collection<T> entities);
-
+	
 	@Override
 	@NonNull PostgresInsertQuery<T> insert(@NonNull Collection<T> entities, int batchSize);
-
+	
 	@Override
 	@NonNull PostgresUpdateQuery<T> update();
-
+	
 	@Override
 	@NonNull PostgresDeleteQuery<T> delete();
-
+	
 	/**
 	 * Truncates (removes all rows from) this table with cascade.<br>
 	 * Also truncates all tables that have foreign key references to this table.<br>

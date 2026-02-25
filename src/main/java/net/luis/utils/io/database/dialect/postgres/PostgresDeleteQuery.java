@@ -36,7 +36,7 @@ import java.util.List;
  * @param <T> The type of the entity
  */
 public interface PostgresDeleteQuery<T> extends SqlDeleteQuery<T> {
-
+	
 	/**
 	 * Adds a {@code USING} clause to the delete query.<br>
 	 * Allows the delete to reference columns from another table, which is a PostgreSQL-specific extension.<br>
@@ -46,7 +46,7 @@ public interface PostgresDeleteQuery<T> extends SqlDeleteQuery<T> {
 	 * @return This delete query for method chaining
 	 */
 	@NonNull PostgresDeleteQuery<T> using(@NonNull SqlTable<?> table);
-
+	
 	/**
 	 * Executes the delete query and returns the deleted entities.<br>
 	 * Generates SQL: {@code DELETE FROM table WHERE ... RETURNING *}.<br>

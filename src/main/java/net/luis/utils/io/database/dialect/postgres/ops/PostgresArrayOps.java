@@ -35,7 +35,7 @@ import java.util.List;
  * @param <T> The element type of the array column
  */
 public interface PostgresArrayOps<T> {
-
+	
 	/**
 	 * Creates a condition that checks if the array column contains the given element.<br>
 	 * Generates SQL: {@code value = ANY(column)}.<br>
@@ -44,7 +44,7 @@ public interface PostgresArrayOps<T> {
 	 * @return The array contains condition
 	 */
 	@NonNull SqlCondition contains(@NonNull Object element);
-
+	
 	/**
 	 * Creates a condition that checks if the array column overlaps with the given list of values.<br>
 	 * Generates SQL: {@code column && ARRAY[values]}.<br>
@@ -53,7 +53,7 @@ public interface PostgresArrayOps<T> {
 	 * @return The array overlaps condition
 	 */
 	@NonNull SqlCondition overlaps(@NonNull List<?> values);
-
+	
 	/**
 	 * Creates a condition that checks the length of the array column.<br>
 	 * Generates SQL: {@code array_length(column, 1)}.<br>

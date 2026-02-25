@@ -32,7 +32,7 @@ import java.util.Optional;
  * @author Luis-St
  */
 public interface SqlSchema {
-
+	
 	/**
 	 * Introspects the current database schema.<br>
 	 *
@@ -43,13 +43,13 @@ public interface SqlSchema {
 	static @NonNull SqlSchema fromDatabase(@NonNull SqlDatabase db) throws SqlException {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns all tables in this schema.<br>
 	 * @return The list of tables
 	 */
 	@NonNull List<SqlTable<?>> tables();
-
+	
 	/**
 	 * Returns a specific table by name.<br>
 	 *

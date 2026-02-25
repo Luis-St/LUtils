@@ -35,7 +35,7 @@ import java.util.List;
  * @param <T> The type of the column value
  */
 public interface PostgresColumn<T> extends SqlColumn<T> {
-
+	
 	/**
 	 * Creates a condition using a case-insensitive {@code ILIKE} pattern.<br>
 	 * Generates SQL: {@code column ILIKE pattern}.<br>
@@ -44,7 +44,7 @@ public interface PostgresColumn<T> extends SqlColumn<T> {
 	 * @return The ilike condition
 	 */
 	@NonNull SqlCondition ilike(@NonNull String pattern);
-
+	
 	/**
 	 * Creates a condition using a PostgreSQL {@code SIMILAR TO} regular expression pattern.<br>
 	 * Generates SQL: {@code column SIMILAR TO pattern}.<br>
@@ -53,7 +53,7 @@ public interface PostgresColumn<T> extends SqlColumn<T> {
 	 * @return The similar-to condition
 	 */
 	@NonNull SqlCondition similarTo(@NonNull String pattern);
-
+	
 	/**
 	 * Creates a condition that accesses a JSON field by key.<br>
 	 * Generates SQL: {@code column -> 'field'}.<br>
@@ -62,7 +62,7 @@ public interface PostgresColumn<T> extends SqlColumn<T> {
 	 * @return The json field condition
 	 */
 	@NonNull SqlCondition jsonField(@NonNull String field);
-
+	
 	/**
 	 * Creates a condition that accesses a JSON value using a path expression.<br>
 	 * Generates SQL: {@code column #>> 'path'}.<br>
@@ -71,7 +71,7 @@ public interface PostgresColumn<T> extends SqlColumn<T> {
 	 * @return The json path condition
 	 */
 	@NonNull SqlCondition jsonPath(@NonNull String path);
-
+	
 	/**
 	 * Creates a condition that checks if the array column contains the given element.<br>
 	 * Generates SQL: {@code value = ANY(column)}.<br>
@@ -80,7 +80,7 @@ public interface PostgresColumn<T> extends SqlColumn<T> {
 	 * @return The array contains condition
 	 */
 	@NonNull SqlCondition arrayContains(@NonNull T element);
-
+	
 	/**
 	 * Creates a condition that checks if the array column overlaps with the given list of values.<br>
 	 * Generates SQL: {@code column && ARRAY[values]}.<br>
@@ -89,7 +89,7 @@ public interface PostgresColumn<T> extends SqlColumn<T> {
 	 * @return The array overlaps condition
 	 */
 	@NonNull SqlCondition arrayOverlaps(@NonNull List<T> values);
-
+	
 	/**
 	 * Creates a full-text search condition using PostgreSQL {@code @@} operator.<br>
 	 * Generates SQL: {@code column @@ to_tsquery('query')}.<br>

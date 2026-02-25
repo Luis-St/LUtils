@@ -32,7 +32,7 @@ import java.time.*;
  * @author Luis-St
  */
 public interface SqlTemporalOps {
-
+	
 	/**
 	 * Creates a condition that checks if the column value is within the last given duration.<br>
 	 * Generates SQL: {@code column >= NOW() - INTERVAL 'duration'}.<br>
@@ -41,7 +41,7 @@ public interface SqlTemporalOps {
 	 * @return The within-last condition
 	 */
 	@NonNull SqlCondition withinLast(@NonNull Duration duration);
-
+	
 	/**
 	 * Creates a condition that checks if the column value is within the next given duration.<br>
 	 * Generates SQL: {@code column <= NOW() + INTERVAL 'duration'}.<br>
@@ -50,7 +50,7 @@ public interface SqlTemporalOps {
 	 * @return The within-next condition
 	 */
 	@NonNull SqlCondition withinNext(@NonNull Duration duration);
-
+	
 	/**
 	 * Creates a condition that checks if the column value is before the given instant.<br>
 	 * Generates SQL: {@code column < instant}.<br>
@@ -59,7 +59,7 @@ public interface SqlTemporalOps {
 	 * @return The before condition
 	 */
 	@NonNull SqlCondition before(@NonNull Instant instant);
-
+	
 	/**
 	 * Creates a condition that checks if the column value is after the given instant.<br>
 	 * Generates SQL: {@code column > instant}.<br>
@@ -68,7 +68,7 @@ public interface SqlTemporalOps {
 	 * @return The after condition
 	 */
 	@NonNull SqlCondition after(@NonNull Instant instant);
-
+	
 	/**
 	 * Creates a condition that checks if the column value falls on the given date.<br>
 	 * Generates SQL: {@code column >= date AND column < date + 1 day} or {@code column::date = date} depending on the dialect.<br>

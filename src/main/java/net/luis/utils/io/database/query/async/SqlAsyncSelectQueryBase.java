@@ -49,7 +49,7 @@ import java.util.stream.Stream;
  * @param <Q> The self-referencing query type for fluent API support
  */
 public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T, Q>> {
-
+	
 	/**
 	 * Adds a Common Table Expression (CTE) to the query.<br>
 	 *
@@ -57,7 +57,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q with(@NonNull CommonTableExpression cte);
-
+	
 	/**
 	 * Adds a Common Table Expression (CTE) with the specified query to the query.<br>
 	 *
@@ -66,7 +66,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q with(@NonNull CommonTableExpression cte, @NonNull SqlSelectQuery<?> query);
-
+	
 	/**
 	 * Adds a {@code WHERE} condition to the query.<br>
 	 * Multiple calls are combined with AND.<br>
@@ -75,7 +75,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q where(@NonNull SqlCondition condition);
-
+	
 	/**
 	 * Adds a {@code WHERE EXISTS} subquery condition.<br>
 	 *
@@ -83,7 +83,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q whereExists(@NonNull SqlSelectQuery<?> subquery);
-
+	
 	/**
 	 * Adds a {@code WHERE NOT EXISTS} subquery condition.<br>
 	 *
@@ -91,7 +91,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q whereNotExists(@NonNull SqlSelectQuery<?> subquery);
-
+	
 	/**
 	 * Adds an {@code INNER JOIN} clause to the query.<br>
 	 *
@@ -100,7 +100,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-
+	
 	/**
 	 * Adds a {@code LEFT JOIN} clause to the query.<br>
 	 *
@@ -109,7 +109,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-
+	
 	/**
 	 * Adds a {@code RIGHT JOIN} clause to the query.<br>
 	 *
@@ -118,7 +118,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-
+	
 	/**
 	 * Adds a {@code FULL JOIN} clause to the query.<br>
 	 *
@@ -127,7 +127,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-
+	
 	/**
 	 * Adds a {@code GROUP BY} clause to the query.<br>
 	 *
@@ -135,7 +135,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q groupBy(SqlColumn<?> @NonNull ... columns);
-
+	
 	/**
 	 * Adds a {@code HAVING} condition to the query.<br>
 	 * Requires a preceding GROUP BY clause.<br>
@@ -144,7 +144,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q having(@NonNull SqlCondition condition);
-
+	
 	/**
 	 * Adds an {@code ORDER BY} clause to the query.<br>
 	 *
@@ -152,7 +152,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q orderBy(SqlOrderable @NonNull ... orderables);
-
+	
 	/**
 	 * Limits the number of results returned.<br>
 	 *
@@ -160,7 +160,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q limit(int limit);
-
+	
 	/**
 	 * Skips the specified number of results.<br>
 	 *
@@ -168,13 +168,13 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q offset(long offset);
-
+	
 	/**
 	 * Adds {@code DISTINCT} to the query to eliminate duplicate rows.<br>
 	 * @return This query for method chaining
 	 */
 	@NonNull Q distinct();
-
+	
 	/**
 	 * Combines this query with another using {@code UNION} (removes duplicates).<br>
 	 *
@@ -182,7 +182,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q union(@NonNull SqlAsyncSelectQueryBase<T, ?> other);
-
+	
 	/**
 	 * Combines this query with another using {@code UNION ALL} (keeps duplicates).<br>
 	 *
@@ -190,7 +190,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q unionAll(@NonNull SqlAsyncSelectQueryBase<T, ?> other);
-
+	
 	/**
 	 * Combines this query with another using {@code INTERSECT} (common rows only).<br>
 	 *
@@ -198,7 +198,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q intersect(@NonNull SqlAsyncSelectQueryBase<T, ?> other);
-
+	
 	/**
 	 * Combines this query with another using {@code EXCEPT} (rows in this but not other).<br>
 	 *
@@ -206,49 +206,49 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return This query for method chaining
 	 */
 	@NonNull Q except(@NonNull SqlAsyncSelectQueryBase<T, ?> other);
-
+	
 	/**
 	 * Asynchronously executes the query and returns all results as a list.<br>
 	 *
 	 * @return A future that completes with a list of all matching results, empty list if none found
 	 */
 	@NonNull CompletableFuture<List<T>> fetch();
-
+	
 	/**
 	 * Asynchronously executes the query and returns the first result.<br>
 	 *
 	 * @return A future that completes with an optional containing the first result, or empty if none found
 	 */
 	@NonNull CompletableFuture<Optional<T>> fetchFirst();
-
+	
 	/**
 	 * Asynchronously executes the query and returns exactly one result.<br>
 	 *
 	 * @return A future that completes with the single matching result
 	 */
 	@NonNull CompletableFuture<T> fetchOne();
-
+	
 	/**
 	 * Asynchronously executes the query and returns one result or null.<br>
 	 *
 	 * @return A future that completes with the single result or null
 	 */
 	@NonNull CompletableFuture<@Nullable T> fetchOneOrNull();
-
+	
 	/**
 	 * Asynchronously executes the query and returns the count of matching rows.<br>
 	 *
 	 * @return A future that completes with the number of matching rows
 	 */
 	@NonNull CompletableFuture<Long> count();
-
+	
 	/**
 	 * Asynchronously checks if any rows match the query conditions.<br>
 	 *
 	 * @return A future that completes with true if at least one row matches, false otherwise
 	 */
 	@NonNull CompletableFuture<Boolean> exists();
-
+	
 	/**
 	 * Asynchronously executes the query and returns results as a stream.<br>
 	 * The stream should be closed after use to release database resources.<br>
@@ -256,7 +256,7 @@ public interface SqlAsyncSelectQueryBase<T, Q extends SqlAsyncSelectQueryBase<T,
 	 * @return A future that completes with a stream of matching results
 	 */
 	@NonNull CompletableFuture<Stream<T>> stream();
-
+	
 	/**
 	 * Asynchronously executes the query with pagination and returns a page of results.<br>
 	 *

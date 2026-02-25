@@ -24,17 +24,17 @@ package net.luis.utils.io.database.migration;
  * @author Luis-St
  */
 public enum SqlMigrationStatus {
-
+	
 	/**
 	 * The migration has not yet been applied.<br>
 	 */
 	PENDING,
-
+	
 	/**
 	 * The migration has been successfully applied.<br>
 	 */
 	APPLIED,
-
+	
 	/**
 	 * The migration has been rolled back.<br>
 	 */

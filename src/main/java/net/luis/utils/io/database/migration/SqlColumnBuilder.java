@@ -31,19 +31,19 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlColumnBuilder {
-
+	
 	/**
 	 * Marks the column as not null.<br>
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlColumnBuilder notNull();
-
+	
 	/**
 	 * Marks the column as unique.<br>
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlColumnBuilder unique();
-
+	
 	/**
 	 * Sets the default value for the column.<br>
 	 *
@@ -51,13 +51,13 @@ public interface SqlColumnBuilder {
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlColumnBuilder defaultValue(@NonNull Object value);
-
+	
 	/**
 	 * Marks the column as auto-incrementing.<br>
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlColumnBuilder autoIncrement();
-
+	
 	/**
 	 * Adds a foreign key reference to the specified table and column.<br>
 	 *
@@ -66,7 +66,7 @@ public interface SqlColumnBuilder {
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlColumnBuilder references(@NonNull String table, @NonNull String column);
-
+	
 	/**
 	 * Adds a check constraint to the column.<br>
 	 *

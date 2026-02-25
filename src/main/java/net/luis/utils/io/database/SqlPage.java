@@ -31,43 +31,43 @@ import java.util.List;
  * @param <T> The type of the content
  */
 public interface SqlPage<T> {
-
+	
 	/**
 	 * Returns the content of this page.<br>
 	 * @return The list of elements on this page
 	 */
 	@NonNull List<T> content();
-
+	
 	/**
 	 * Returns the total number of elements across all pages.<br>
 	 * @return The total element count
 	 */
 	long totalElements();
-
+	
 	/**
 	 * Returns the total number of pages.<br>
 	 * @return The total page count
 	 */
 	int totalPages();
-
+	
 	/**
 	 * Returns the current page number.<br>
 	 * @return The current page number
 	 */
 	int currentPage();
-
+	
 	/**
 	 * Checks if there is a next page.<br>
 	 * @return Whether a next page exists
 	 */
 	boolean hasNext();
-
+	
 	/**
 	 * Checks if there is a previous page.<br>
 	 * @return Whether a previous page exists
 	 */
 	boolean hasPrevious();
-
+	
 	/**
 	 * Fetches the next page of results.<br>
 	 * Executes a SQL query with adjusted {@code LIMIT} and {@code OFFSET} clauses.<br>
@@ -76,7 +76,7 @@ public interface SqlPage<T> {
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull SqlPage<T> fetchNext() throws SqlException;
-
+	
 	/**
 	 * Fetches the previous page of results.<br>
 	 * Executes a SQL query with adjusted {@code LIMIT} and {@code OFFSET} clauses.<br>

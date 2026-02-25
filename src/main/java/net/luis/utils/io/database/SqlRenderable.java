@@ -29,7 +29,7 @@ import java.util.List;
  * @author Luis-St
  */
 public interface SqlRenderable {
-
+	
 	/**
 	 * Generates the SQL representation of this element using the given renderer.<br>
 	 *
@@ -37,7 +37,7 @@ public interface SqlRenderable {
 	 * @return The rendered SQL string
 	 */
 	@NonNull String toSql(@NonNull SqlRenderer renderer);
-
+	
 	/**
 	 * Generates the SQL representation along with bound parameter values.<br>
 	 *

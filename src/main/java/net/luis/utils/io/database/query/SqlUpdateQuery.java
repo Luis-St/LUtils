@@ -37,13 +37,13 @@ import java.util.List;
  * @param <T> The type of the entity
  */
 public interface SqlUpdateQuery<T> extends SqlRenderable {
-
+	
 	/**
 	 * Returns the parameter values for this query.<br>
 	 * @return A list of parameter values in order
 	 */
 	@NonNull List<Object> getParameters();
-
+	
 	/**
 	 * Sets a column to the given value.<br>
 	 * Generates SQL: {@code SET column = value}.<br>
@@ -54,7 +54,7 @@ public interface SqlUpdateQuery<T> extends SqlRenderable {
 	 * @return This update query
 	 */
 	<V> @NonNull SqlUpdateQuery<T> set(@NonNull SqlColumn<V> column, @NonNull V value);
-
+	
 	/**
 	 * Sets a column to the result of the given expression.<br>
 	 * Generates SQL: {@code SET column = expression}.<br>
@@ -65,7 +65,7 @@ public interface SqlUpdateQuery<T> extends SqlRenderable {
 	 * @return This update query
 	 */
 	<V> @NonNull SqlUpdateQuery<T> set(@NonNull SqlColumn<V> column, @NonNull SqlExpression<V> expression);
-
+	
 	/**
 	 * Increments a numeric column by the given amount.<br>
 	 * Generates SQL: {@code SET column = column + amount}.<br>
@@ -75,7 +75,7 @@ public interface SqlUpdateQuery<T> extends SqlRenderable {
 	 * @return This update query
 	 */
 	@NonNull SqlUpdateQuery<T> increment(@NonNull SqlColumn<? extends Number> column, @NonNull Number amount);
-
+	
 	/**
 	 * Sets a column to the current timestamp.<br>
 	 * Generates SQL: {@code SET column = NOW()}.<br>
@@ -84,7 +84,7 @@ public interface SqlUpdateQuery<T> extends SqlRenderable {
 	 * @return This update query
 	 */
 	@NonNull SqlUpdateQuery<T> setNow(@NonNull SqlColumn<? extends Temporal> column);
-
+	
 	/**
 	 * Sets the condition for the update query.<br>
 	 * Generates SQL: {@code WHERE condition}.<br>
@@ -93,7 +93,7 @@ public interface SqlUpdateQuery<T> extends SqlRenderable {
 	 * @return This update query
 	 */
 	@NonNull SqlUpdateQuery<T> where(@NonNull SqlCondition condition);
-
+	
 	/**
 	 * Executes the update query.<br>
 	 * Generates SQL: {@code UPDATE table SET ... WHERE ...}.<br>
@@ -102,7 +102,7 @@ public interface SqlUpdateQuery<T> extends SqlRenderable {
 	 * @throws SqlException If a database access error occurs
 	 */
 	int execute() throws SqlException;
-
+	
 	/**
 	 * Executes the update query and returns the updated entities.<br>
 	 * Generates SQL: {@code UPDATE table SET ... WHERE ... RETURNING *}.<br>
@@ -111,7 +111,7 @@ public interface SqlUpdateQuery<T> extends SqlRenderable {
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull List<T> returning() throws SqlException;
-
+	
 	/**
 	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
 	 * @return The asynchronous query

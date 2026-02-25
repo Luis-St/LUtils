@@ -34,14 +34,14 @@ import java.util.concurrent.CompletableFuture;
  * @param <T> The type of the entity
  */
 public interface SqlAsyncInsertQuery<T> {
-
+	
 	/**
 	 * Asynchronously executes the insert query.<br>
 	 *
 	 * @return A future that completes with the number of rows inserted
 	 */
 	@NonNull CompletableFuture<Integer> execute();
-
+	
 	/**
 	 * Asynchronously executes the insert query and returns the inserted entities.<br>
 	 * Generates SQL: {@code INSERT INTO ... RETURNING *}.<br>
@@ -49,7 +49,7 @@ public interface SqlAsyncInsertQuery<T> {
 	 * @return A future that completes with the list of inserted entities
 	 */
 	@NonNull CompletableFuture<List<T>> returning();
-
+	
 	/**
 	 * Asynchronously executes the insert query and fetches the inserted entities.<br>
 	 *

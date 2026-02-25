@@ -33,7 +33,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the entity
  */
 public interface PostgresInsertQuery<T> extends SqlInsertQuery<T> {
-
+	
 	/**
 	 * Adds an {@code ON CONFLICT DO NOTHING} clause to the insert query.<br>
 	 * Rows that would cause a conflict are silently skipped.<br>
@@ -42,7 +42,7 @@ public interface PostgresInsertQuery<T> extends SqlInsertQuery<T> {
 	 * @return This insert query for method chaining
 	 */
 	@NonNull PostgresInsertQuery<T> onConflictDoNothing();
-
+	
 	/**
 	 * Adds an {@code ON CONFLICT} clause targeting the specified columns.<br>
 	 * Used together with an update action to implement upsert behavior.<br>

@@ -32,7 +32,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlIndexBuilder {
-
+	
 	/**
 	 * Specifies the columns included in the index.<br>
 	 *
@@ -40,13 +40,13 @@ public interface SqlIndexBuilder {
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlIndexBuilder columns(String @NonNull ... columns);
-
+	
 	/**
 	 * Marks the index as unique.<br>
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlIndexBuilder unique();
-
+	
 	/**
 	 * Specifies the index method to use.<br>
 	 *
@@ -54,7 +54,7 @@ public interface SqlIndexBuilder {
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlIndexBuilder method(@NonNull SqlIndexMethod method);
-
+	
 	/**
 	 * Adds a partial index condition.<br>
 	 * Generates SQL: {@code CREATE INDEX ... WHERE condition}.<br>

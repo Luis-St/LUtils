@@ -32,7 +32,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class PostgresSqlRenderer extends SqlDefaultRenderer {
-
+	
 	/**
 	 * Constructs a new PostgreSQL SQL renderer for the given dialect.<br>
 	 *
@@ -41,7 +41,7 @@ public class PostgresSqlRenderer extends SqlDefaultRenderer {
 	public PostgresSqlRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
-
+	
 	/**
 	 * Returns a PostgreSQL-specific parameter placeholder using {@code $N} syntax.<br>
 	 * PostgreSQL uses positional parameters ({@code $1}, {@code $2}, etc.) instead of {@code ?}.<br>
@@ -53,7 +53,7 @@ public class PostgresSqlRenderer extends SqlDefaultRenderer {
 	public @NonNull String parameterPlaceholder(int index) {
 		return "$" + index;
 	}
-
+	
 	/**
 	 * Returns the PostgreSQL-specific UUID generation function.<br>
 	 *
@@ -63,7 +63,7 @@ public class PostgresSqlRenderer extends SqlDefaultRenderer {
 	public @NonNull String uuidFunction() {
 		return "gen_random_uuid()";
 	}
-
+	
 	/**
 	 * Returns the PostgreSQL-specific auto-increment syntax using {@code SERIAL}.<br>
 	 *
@@ -73,7 +73,7 @@ public class PostgresSqlRenderer extends SqlDefaultRenderer {
 	public @NonNull String autoIncrementSyntax() {
 		return "GENERATED ALWAYS AS IDENTITY";
 	}
-
+	
 	/**
 	 * Returns the PostgreSQL-specific current timestamp function.<br>
 	 *

@@ -32,7 +32,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the entity
  */
 public interface PostgresTable<T> extends SqlTable<T> {
-
+	
 	/**
 	 * Creates a new PostgreSQL table reference for the specified table name and entity type.<br>
 	 *
@@ -44,10 +44,10 @@ public interface PostgresTable<T> extends SqlTable<T> {
 	static <T> @NonNull PostgresTable<T> of(@NonNull String name, @NonNull Class<T> type) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	@Override
 	<C> @NonNull PostgresColumn<C> column(@NonNull String name, @NonNull Class<C> type);
-
+	
 	/**
 	 * Returns a JSONB column reference for the specified column name.<br>
 	 * JSONB is a PostgreSQL-specific binary JSON type that supports indexing and querying.<br>
@@ -57,7 +57,7 @@ public interface PostgresTable<T> extends SqlTable<T> {
 	 * @return A PostgreSQL column reference for the JSONB column
 	 */
 	<C> @NonNull PostgresColumn<C> jsonbColumn(@NonNull String name);
-
+	
 	/**
 	 * Returns an array column reference for the specified column name and element type.<br>
 	 * Arrays are a PostgreSQL-specific column type that stores a list of values.<br>

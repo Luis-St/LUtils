@@ -52,7 +52,7 @@ import java.util.stream.Stream;
  * @param <T> The type of the projection result (e.g., SqlRow2, SqlRow3, or single column type)
  */
 public interface SqlAsyncSelectProjectionQuery<T> extends SqlAsyncSelectQueryBase<T, SqlAsyncSelectProjectionQuery<T>> {
-
+	
 	/**
 	 * Asynchronously executes the query and maps all results to the specified type.<br>
 	 * <p>
@@ -64,7 +64,7 @@ public interface SqlAsyncSelectProjectionQuery<T> extends SqlAsyncSelectQueryBas
 	 * @return A future that completes with a list of all matching results mapped to the target type
 	 */
 	<R> @NonNull CompletableFuture<List<R>> fetchAs(@NonNull Class<R> type);
-
+	
 	/**
 	 * Asynchronously executes the query and maps the first result to the specified type.<br>
 	 *
@@ -73,7 +73,7 @@ public interface SqlAsyncSelectProjectionQuery<T> extends SqlAsyncSelectQueryBas
 	 * @return A future that completes with an optional containing the first result mapped to the target type, or empty if none found
 	 */
 	<R> @NonNull CompletableFuture<Optional<R>> fetchFirstAs(@NonNull Class<R> type);
-
+	
 	/**
 	 * Asynchronously executes the query and maps exactly one result to the specified type.<br>
 	 *
@@ -82,7 +82,7 @@ public interface SqlAsyncSelectProjectionQuery<T> extends SqlAsyncSelectQueryBas
 	 * @return A future that completes with the single matching result mapped to the target type
 	 */
 	<R> @NonNull CompletableFuture<R> fetchOneAs(@NonNull Class<R> type);
-
+	
 	/**
 	 * Asynchronously executes the query and maps one result to the specified type, or returns null.<br>
 	 *
@@ -91,7 +91,7 @@ public interface SqlAsyncSelectProjectionQuery<T> extends SqlAsyncSelectQueryBas
 	 * @return A future that completes with the single result mapped to the target type or null
 	 */
 	<R> @NonNull CompletableFuture<@Nullable R> fetchOneOrNullAs(@NonNull Class<R> type);
-
+	
 	/**
 	 * Asynchronously executes the query and returns results as a stream mapped to the specified type.<br>
 	 * The stream should be closed after use to release database resources.<br>
@@ -101,7 +101,7 @@ public interface SqlAsyncSelectProjectionQuery<T> extends SqlAsyncSelectQueryBas
 	 * @return A future that completes with a stream of matching results mapped to the target type
 	 */
 	<R> @NonNull CompletableFuture<Stream<R>> streamAs(@NonNull Class<R> type);
-
+	
 	/**
 	 * Asynchronously executes the query with pagination and maps results to the specified type.<br>
 	 *

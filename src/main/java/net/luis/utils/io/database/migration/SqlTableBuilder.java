@@ -33,7 +33,7 @@ import java.util.function.Consumer;
  * @author Luis-St
  */
 public interface SqlTableBuilder {
-
+	
 	/**
 	 * Adds a column with the specified name and type.<br>
 	 *
@@ -42,7 +42,7 @@ public interface SqlTableBuilder {
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlTableBuilder column(@NonNull String name, @NonNull SqlColumnType type);
-
+	
 	/**
 	 * Adds a column with the specified name, type, and additional options.<br>
 	 *
@@ -52,7 +52,7 @@ public interface SqlTableBuilder {
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlTableBuilder column(@NonNull String name, @NonNull SqlColumnType type, @NonNull Consumer<SqlColumnBuilder> options);
-
+	
 	/**
 	 * Sets the primary key for the table.<br>
 	 *

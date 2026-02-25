@@ -30,7 +30,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlSequenceBuilder {
-
+	
 	/**
 	 * Sets the starting value of the sequence.<br>
 	 *
@@ -38,7 +38,7 @@ public interface SqlSequenceBuilder {
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlSequenceBuilder startWith(long value);
-
+	
 	/**
 	 * Sets the increment value of the sequence.<br>
 	 *
@@ -46,7 +46,7 @@ public interface SqlSequenceBuilder {
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlSequenceBuilder incrementBy(long value);
-
+	
 	/**
 	 * Sets the minimum value of the sequence.<br>
 	 *
@@ -54,7 +54,7 @@ public interface SqlSequenceBuilder {
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlSequenceBuilder minValue(long value);
-
+	
 	/**
 	 * Sets the maximum value of the sequence.<br>
 	 *
@@ -62,7 +62,7 @@ public interface SqlSequenceBuilder {
 	 * @return This builder for chaining
 	 */
 	@NonNull SqlSequenceBuilder maxValue(long value);
-
+	
 	/**
 	 * Enables cycling for the sequence.<br>
 	 * When the sequence reaches its maximum (or minimum) value, it wraps around.<br>

@@ -38,7 +38,7 @@ import java.util.function.Consumer;
  * @author Luis-St
  */
 public interface SqlMigrationBuilder {
-
+	
 	/**
 	 * Creates a new table with the specified name and definition.<br>
 	 *
@@ -47,7 +47,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the table creation fails
 	 */
 	void createTable(@NonNull String name, @NonNull Consumer<SqlTableBuilder> definition) throws SqlException;
-
+	
 	/**
 	 * Drops the table with the specified name.<br>
 	 *
@@ -55,7 +55,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the table drop fails
 	 */
 	void dropTable(@NonNull String name) throws SqlException;
-
+	
 	/**
 	 * Renames a table.<br>
 	 *
@@ -64,7 +64,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the table rename fails
 	 */
 	void renameTable(@NonNull String oldName, @NonNull String newName) throws SqlException;
-
+	
 	/**
 	 * Adds a column to the specified table.<br>
 	 *
@@ -74,7 +74,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the column addition fails
 	 */
 	void addColumn(@NonNull String table, @NonNull String name, @NonNull SqlColumnType type) throws SqlException;
-
+	
 	/**
 	 * Adds a column with additional options to the specified table.<br>
 	 *
@@ -85,7 +85,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the column addition fails
 	 */
 	void addColumn(@NonNull String table, @NonNull String name, @NonNull SqlColumnType type, @NonNull Consumer<SqlColumnBuilder> options) throws SqlException;
-
+	
 	/**
 	 * Drops a column from the specified table.<br>
 	 *
@@ -94,7 +94,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the column drop fails
 	 */
 	void dropColumn(@NonNull String table, @NonNull String name) throws SqlException;
-
+	
 	/**
 	 * Renames a column in the specified table.<br>
 	 *
@@ -104,7 +104,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the column rename fails
 	 */
 	void renameColumn(@NonNull String table, @NonNull String oldName, @NonNull String newName) throws SqlException;
-
+	
 	/**
 	 * Alters a column in the specified table.<br>
 	 *
@@ -114,7 +114,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the column alteration fails
 	 */
 	void alterColumn(@NonNull String table, @NonNull String name, @NonNull Consumer<SqlColumnAlter> changes) throws SqlException;
-
+	
 	/**
 	 * Creates an index on the specified table.<br>
 	 *
@@ -124,7 +124,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the index creation fails
 	 */
 	void createIndex(@NonNull String table, @NonNull String name, @NonNull Consumer<SqlIndexBuilder> definition) throws SqlException;
-
+	
 	/**
 	 * Drops the index with the specified name.<br>
 	 *
@@ -132,7 +132,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the index drop fails
 	 */
 	void dropIndex(@NonNull String name) throws SqlException;
-
+	
 	/**
 	 * Adds a unique constraint to the specified table.<br>
 	 *
@@ -142,7 +142,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the constraint addition fails
 	 */
 	void addUniqueConstraint(@NonNull String table, @NonNull String name, String @NonNull ... columns) throws SqlException;
-
+	
 	/**
 	 * Adds a foreign key constraint to the specified table.<br>
 	 *
@@ -154,7 +154,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the foreign key addition fails
 	 */
 	void addForeignKey(@NonNull String table, @NonNull String name, @NonNull String column, @NonNull String refTable, @NonNull String refColumn) throws SqlException;
-
+	
 	/**
 	 * Adds a composite foreign key constraint to the specified table.<br>
 	 * Generates SQL: {@code ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (col1, col2, ...) REFERENCES refTable(refCol1, refCol2, ...)}.<br>
@@ -177,7 +177,7 @@ public interface SqlMigrationBuilder {
 		@NonNull SqlForeignKeyAction onDelete,
 		@NonNull SqlForeignKeyAction onUpdate
 	) throws SqlException;
-
+	
 	/**
 	 * Adds a check constraint to the specified table.<br>
 	 *
@@ -187,7 +187,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the check constraint addition fails
 	 */
 	void addCheckConstraint(@NonNull String table, @NonNull String name, @NonNull SqlCondition condition) throws SqlException;
-
+	
 	/**
 	 * Drops a constraint from the specified table.<br>
 	 *
@@ -196,7 +196,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the constraint drop fails
 	 */
 	void dropConstraint(@NonNull String table, @NonNull String name) throws SqlException;
-
+	
 	/**
 	 * Creates a new sequence with the specified name and definition.<br>
 	 *
@@ -205,7 +205,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the sequence creation fails
 	 */
 	void createSequence(@NonNull String name, @NonNull Consumer<SqlSequenceBuilder> definition) throws SqlException;
-
+	
 	/**
 	 * Drops the sequence with the specified name.<br>
 	 *
@@ -213,7 +213,7 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the sequence drop fails
 	 */
 	void dropSequence(@NonNull String name) throws SqlException;
-
+	
 	/**
 	 * Alters the sequence with the specified name.<br>
 	 *

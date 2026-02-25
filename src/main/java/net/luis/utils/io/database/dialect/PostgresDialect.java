@@ -28,7 +28,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public final class PostgresDialect extends SqlDialect {
-
+	
 	@Override
 	public @NonNull SqlRenderer createRenderer() {
 		return new PostgresSqlRenderer(this);

@@ -42,7 +42,7 @@ import java.util.function.Function;
  * @author Luis-St
  */
 public interface SqlQueryProvider<T> {
-
+	
 	/**
 	 * Returns a scoped view of this query provider where automatic version checks are suppressed.<br>
 	 * <p>
@@ -52,44 +52,44 @@ public interface SqlQueryProvider<T> {
 	 * @return A query provider with version checking disabled
 	 */
 	@NonNull SqlQueryProvider<T> skipVersionCheck();
-
+	
 	// --- DDL Operations ---
-
+	
 	/**
 	 * Creates this table in the database.<br>
 	 *
 	 * @throws SqlException If a database access error occurs or the table already exists
 	 */
 	void create() throws SqlException;
-
+	
 	/**
 	 * Creates this table in the database if it does not exist.<br>
 	 *
 	 * @throws SqlException If a database access error occurs
 	 */
 	void createIfNotExists() throws SqlException;
-
+	
 	/**
 	 * Drops this table from the database.<br>
 	 *
 	 * @throws SqlException If a database access error occurs or the table does not exist
 	 */
 	void drop() throws SqlException;
-
+	
 	/**
 	 * Drops this table from the database if it exists.<br>
 	 *
 	 * @throws SqlException If a database access error occurs
 	 */
 	void dropIfExists() throws SqlException;
-
+	
 	/**
 	 * Truncates (removes all rows from) this table.<br>
 	 *
 	 * @throws SqlException If a database access error occurs
 	 */
 	void truncate() throws SqlException;
-
+	
 	/**
 	 * Checks if this table exists in the database.<br>
 	 *
@@ -97,9 +97,9 @@ public interface SqlQueryProvider<T> {
 	 * @throws SqlException If a database access error occurs
 	 */
 	boolean exists() throws SqlException;
-
+	
 	// --- Index Operations ---
-
+	
 	/**
 	 * Creates an index on the specified columns.<br>
 	 *
@@ -108,7 +108,7 @@ public interface SqlQueryProvider<T> {
 	 * @throws SqlException If a database access error occurs
 	 */
 	void createIndex(@NonNull String name, SqlColumn<?> @NonNull ... columns) throws SqlException;
-
+	
 	/**
 	 * Creates an index using the specified definition.<br>
 	 *
@@ -116,7 +116,7 @@ public interface SqlQueryProvider<T> {
 	 * @throws SqlException If a database access error occurs
 	 */
 	void createIndex(@NonNull SqlIndexDefinition definition) throws SqlException;
-
+	
 	/**
 	 * Drops an index by name.<br>
 	 *
@@ -124,7 +124,7 @@ public interface SqlQueryProvider<T> {
 	 * @throws SqlException If a database access error occurs
 	 */
 	void dropIndex(@NonNull String name) throws SqlException;
-
+	
 	/**
 	 * Lists all indexes on this table.<br>
 	 *
@@ -132,9 +132,9 @@ public interface SqlQueryProvider<T> {
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull List<SqlIndexInfo> listIndexes() throws SqlException;
-
+	
 	// --- Sequence Operations ---
-
+	
 	/**
 	 * Creates a sequence using the specified definition.<br>
 	 *
@@ -142,7 +142,7 @@ public interface SqlQueryProvider<T> {
 	 * @throws SqlException If a database access error occurs
 	 */
 	void createSequence(@NonNull SqlSequenceDefinition definition) throws SqlException;
-
+	
 	/**
 	 * Returns the next value from the specified sequence.<br>
 	 *
@@ -151,15 +151,15 @@ public interface SqlQueryProvider<T> {
 	 * @throws SqlException If a database access error occurs
 	 */
 	long nextSequenceValue(@NonNull String name) throws SqlException;
-
+	
 	// --- Query Operations ---
-
+	
 	/**
 	 * Creates a select query for all columns of this table.<br>
 	 * @return A select query returning full entities
 	 */
 	@NonNull SqlSelectQuery<T> select();
-
+	
 	/**
 	 * Creates a typed select query for a single column.<br>
 	 *
@@ -168,7 +168,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning values of the column type
 	 */
 	<T1> @NonNull SqlSelectProjectionQuery<T1> select(@NonNull SqlColumn<T1> c1);
-
+	
 	/**
 	 * Creates a typed select query for two columns.<br>
 	 *
@@ -179,7 +179,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow2} tuples
 	 */
 	<T1, T2> @NonNull SqlSelectProjectionQuery<SqlRow2<T1, T2>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2);
-
+	
 	/**
 	 * Creates a typed select query for three columns.<br>
 	 *
@@ -192,7 +192,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow3} tuples
 	 */
 	<T1, T2, T3> @NonNull SqlSelectProjectionQuery<SqlRow3<T1, T2, T3>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3);
-
+	
 	/**
 	 * Creates a typed select query for four columns.<br>
 	 *
@@ -207,7 +207,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow4} tuples
 	 */
 	<T1, T2, T3, T4> @NonNull SqlSelectProjectionQuery<SqlRow4<T1, T2, T3, T4>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4);
-
+	
 	/**
 	 * Creates a typed select query for five columns.<br>
 	 *
@@ -224,7 +224,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow5} tuples
 	 */
 	<T1, T2, T3, T4, T5> @NonNull SqlSelectProjectionQuery<SqlRow5<T1, T2, T3, T4, T5>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5);
-
+	
 	/**
 	 * Creates a typed select query for six columns.<br>
 	 *
@@ -243,7 +243,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow6} tuples
 	 */
 	<T1, T2, T3, T4, T5, T6> @NonNull SqlSelectProjectionQuery<SqlRow6<T1, T2, T3, T4, T5, T6>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6);
-
+	
 	/**
 	 * Creates a typed select query for seven columns.<br>
 	 *
@@ -264,7 +264,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow7} tuples
 	 */
 	<T1, T2, T3, T4, T5, T6, T7> @NonNull SqlSelectProjectionQuery<SqlRow7<T1, T2, T3, T4, T5, T6, T7>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7);
-
+	
 	/**
 	 * Creates a typed select query for eight columns.<br>
 	 *
@@ -287,7 +287,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow8} tuples
 	 */
 	<T1, T2, T3, T4, T5, T6, T7, T8> @NonNull SqlSelectProjectionQuery<SqlRow8<T1, T2, T3, T4, T5, T6, T7, T8>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8);
-
+	
 	/**
 	 * Creates a typed select query for nine columns.<br>
 	 *
@@ -312,7 +312,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow9} tuples
 	 */
 	<T1, T2, T3, T4, T5, T6, T7, T8, T9> @NonNull SqlSelectProjectionQuery<SqlRow9<T1, T2, T3, T4, T5, T6, T7, T8, T9>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9);
-
+	
 	/**
 	 * Creates a typed select query for ten columns.<br>
 	 *
@@ -339,7 +339,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow10} tuples
 	 */
 	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> @NonNull SqlSelectProjectionQuery<SqlRow10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10);
-
+	
 	/**
 	 * Creates a typed select query for eleven columns.<br>
 	 *
@@ -368,7 +368,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow11} tuples
 	 */
 	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> @NonNull SqlSelectProjectionQuery<SqlRow11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11);
-
+	
 	/**
 	 * Creates a typed select query for twelve columns.<br>
 	 *
@@ -399,7 +399,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow12} tuples
 	 */
 	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> @NonNull SqlSelectProjectionQuery<SqlRow12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11, @NonNull SqlColumn<T12> c12);
-
+	
 	/**
 	 * Creates a typed select query for thirteen columns.<br>
 	 *
@@ -432,7 +432,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow13} tuples
 	 */
 	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> @NonNull SqlSelectProjectionQuery<SqlRow13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11, @NonNull SqlColumn<T12> c12, @NonNull SqlColumn<T13> c13);
-
+	
 	/**
 	 * Creates a typed select query for fourteen columns.<br>
 	 *
@@ -467,7 +467,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow14} tuples
 	 */
 	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> @NonNull SqlSelectProjectionQuery<SqlRow14<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11, @NonNull SqlColumn<T12> c12, @NonNull SqlColumn<T13> c13, @NonNull SqlColumn<T14> c14);
-
+	
 	/**
 	 * Creates a typed select query for fifteen columns.<br>
 	 *
@@ -504,7 +504,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow15} tuples
 	 */
 	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> @NonNull SqlSelectProjectionQuery<SqlRow15<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11, @NonNull SqlColumn<T12> c12, @NonNull SqlColumn<T13> c13, @NonNull SqlColumn<T14> c14, @NonNull SqlColumn<T15> c15);
-
+	
 	/**
 	 * Creates a typed select query for sixteen columns.<br>
 	 *
@@ -543,7 +543,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query returning {@link SqlRow16} tuples
 	 */
 	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> @NonNull SqlSelectProjectionQuery<SqlRow16<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11, @NonNull SqlColumn<T12> c12, @NonNull SqlColumn<T13> c13, @NonNull SqlColumn<T14> c14, @NonNull SqlColumn<T15> c15, @NonNull SqlColumn<T16> c16);
-
+	
 	/**
 	 * Creates a select query for the specified expressions (columns, aggregates, functions).<br>
 	 * Supports columns, aliased columns via {@link SqlColumn#as(String)}, and SQL expressions like aggregates ({@link SqlAgg}).<br>
@@ -552,7 +552,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A projection query returning the selected values
 	 */
 	@NonNull SqlSelectProjectionQuery<?> select(SqlExpression<?> @NonNull ... expressions);
-
+	
 	/**
 	 * Creates a subquery selecting the specified expressions.<br>
 	 * Subqueries can be used in {@code IN} conditions or {@code EXISTS} checks.<br>
@@ -561,7 +561,7 @@ public interface SqlQueryProvider<T> {
 	 * @return A select query for use as a subquery
 	 */
 	@NonNull SqlSelectQuery<?> subquery(SqlExpression<?> @NonNull ... expressions);
-
+	
 	/**
 	 * Adds an entity to be inserted.<br>
 	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...)}.<br>
@@ -570,7 +570,7 @@ public interface SqlQueryProvider<T> {
 	 * @return This insert query
 	 */
 	@NonNull SqlInsertQuery<T> insert(@NonNull T entity);
-
+	
 	/**
 	 * Adds multiple entities to be inserted.<br>
 	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...), (...)}.<br>
@@ -580,7 +580,7 @@ public interface SqlQueryProvider<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	@NonNull SqlInsertQuery<T> insert(T @NonNull ... entities);
-
+	
 	/**
 	 * Adds multiple entities to be inserted.<br>
 	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...), (...)}.<br>
@@ -589,7 +589,7 @@ public interface SqlQueryProvider<T> {
 	 * @return This insert query
 	 */
 	@NonNull SqlInsertQuery<T> insert(@NonNull Collection<T> entities);
-
+	
 	/**
 	 * Adds multiple entities to be inserted in batches.<br>
 	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...), (...)} for each batch of entities.<br>
@@ -599,7 +599,7 @@ public interface SqlQueryProvider<T> {
 	 * @return This insert query
 	 */
 	@NonNull SqlInsertQuery<T> insert(@NonNull Collection<T> entities, int batchSize);
-
+	
 	/**
 	 * Adds an entity to be upserted.<br>
 	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...) ON CONFLICT (column) DO UPDATE SET ...}.<br>
@@ -610,7 +610,7 @@ public interface SqlQueryProvider<T> {
 	 * @return This insert query
 	 */
 	@NonNull SqlInsertQuery<T> upsert(@NonNull T entity, @NonNull SqlColumn<?> conflictColumn, @NonNull Function<T, T> onConflict);
-
+	
 	/**
 	 * Adds an entity to be inserted, ignoring conflicts.<br>
 	 * Generates SQL: {@code INSERT OR IGNORE INTO table (...) VALUES (...)}.<br>
@@ -620,7 +620,7 @@ public interface SqlQueryProvider<T> {
 	 * @return This insert query
 	 */
 	@NonNull SqlInsertQuery<T> insertOrIgnore(@NonNull T entity, SqlColumn<?> @NonNull ... conflictColumns);
-
+	
 	/**
 	 * Inserts data from a select query.<br>
 	 * Generates SQL: {@code INSERT INTO table (...) SELECT ...}.<br>
@@ -629,13 +629,13 @@ public interface SqlQueryProvider<T> {
 	 * @return This insert query
 	 */
 	@NonNull SqlInsertQuery<T> insertFromSelect(@NonNull SqlSelectQuery<?> query);
-
+	
 	/**
 	 * Creates an update query builder for this table.<br>
 	 * @return An update query builder
 	 */
 	@NonNull SqlUpdateQuery<T> update();
-
+	
 	/**
 	 * Creates a delete query builder for this table.<br>
 	 * @return A delete query builder

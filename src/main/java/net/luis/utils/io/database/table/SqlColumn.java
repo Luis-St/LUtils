@@ -21,9 +21,7 @@ package net.luis.utils.io.database.table;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.function.SqlExpression;
 import net.luis.utils.io.database.query.SqlSelectQuery;
-import net.luis.utils.io.database.table.ops.SqlNumericOps;
-import net.luis.utils.io.database.table.ops.SqlStringOps;
-import net.luis.utils.io.database.table.ops.SqlTemporalOps;
+import net.luis.utils.io.database.table.ops.*;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -45,55 +43,55 @@ import java.util.List;
  * @param <T> The type of the column value
  */
 public interface SqlColumn<T> extends SqlExpression<T> {
-
+	
 	/**
 	 * Returns string-specific operations for this column.<br>
 	 *
 	 * @return The string operations holder
 	 */
 	@NonNull SqlStringOps string();
-
+	
 	/**
 	 * Returns numeric-specific operations for this column.<br>
 	 *
 	 * @return The numeric operations holder
 	 */
 	@NonNull SqlNumericOps<T> numeric();
-
+	
 	/**
 	 * Returns temporal-specific operations for this column.<br>
 	 *
 	 * @return The temporal operations holder
 	 */
 	@NonNull SqlTemporalOps temporal();
-
+	
 	@Override
 	@NonNull SqlCondition equalTo(@NonNull T value);
-
+	
 	@Override
 	@NonNull SqlCondition notEqualTo(@NonNull T value);
-
+	
 	@Override
 	@NonNull SqlCondition greaterThan(@NonNull T value);
-
+	
 	@Override
 	@NonNull SqlCondition greaterThanOrEqualTo(@NonNull T value);
-
+	
 	@Override
 	@NonNull SqlCondition lessThan(@NonNull T value);
-
+	
 	@Override
 	@NonNull SqlCondition lessThanOrEqualTo(@NonNull T value);
-
+	
 	@Override
 	@NonNull SqlCondition between(@NonNull T start, @NonNull T end);
-
+	
 	@Override
 	@NonNull SqlCondition isNull();
-
+	
 	@Override
 	@NonNull SqlCondition isNotNull();
-
+	
 	/**
 	 * Creates an IN condition with the specified values.<br>
 	 *
@@ -102,7 +100,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	@NonNull SqlCondition in(T @NonNull ... values);
-
+	
 	/**
 	 * Creates an IN condition with the specified list of values.<br>
 	 *
@@ -110,7 +108,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * @return A condition for IN comparison
 	 */
 	@NonNull SqlCondition in(@NonNull List<T> values);
-
+	
 	/**
 	 * Creates an IN condition with a subquery.<br>
 	 *
@@ -118,7 +116,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * @return A condition for IN comparison with subquery
 	 */
 	@NonNull SqlCondition in(@NonNull SqlSelectQuery<?> subquery);
-
+	
 	/**
 	 * Creates a NOT IN condition with the specified values.<br>
 	 *
@@ -127,7 +125,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	@NonNull SqlCondition notIn(T @NonNull ... values);
-
+	
 	/**
 	 * Creates a NOT IN condition with the specified list of values.<br>
 	 *
@@ -135,7 +133,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * @return A condition for NOT IN comparison
 	 */
 	@NonNull SqlCondition notIn(@NonNull List<T> values);
-
+	
 	/**
 	 * Creates a NOT IN condition with a subquery.<br>
 	 * Generates SQL: {@code column NOT IN (subquery)}.<br>
@@ -144,7 +142,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * @return A condition for NOT IN comparison with subquery
 	 */
 	@NonNull SqlCondition notIn(@NonNull SqlSelectQuery<?> subquery);
-
+	
 	/**
 	 * Creates an {@code IFNULL} expression that returns the column value or a default if null.<br>
 	 * Generates SQL: {@code IFNULL(column, defaultValue)} if supported by the dialect, otherwise uses a {@code COALESCE(column, defaultValue)}.<br>
@@ -153,7 +151,7 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 * @return The if-null expression of the same type as the column
 	 */
 	@NonNull SqlExpression<T> ifNull(@NonNull T defaultValue);
-
+	
 	/**
 	 * Creates an aliased version of this column for use in SELECT projections.<br>
 	 * <p>
@@ -166,16 +164,16 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	 */
 	@Override
 	@NonNull SqlExpression<T> as(@NonNull String alias);
-
+	
 	@Override
 	@NonNull SqlColumn<T> asc();
-
+	
 	@Override
 	@NonNull SqlColumn<T> desc();
-
+	
 	@Override
 	@NonNull SqlColumn<T> nullsFirst();
-
+	
 	@Override
 	@NonNull SqlColumn<T> nullsLast();
 }

@@ -33,7 +33,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the entity
  */
 public interface PostgresUpdateQuery<T> extends SqlUpdateQuery<T> {
-
+	
 	/**
 	 * Adds a {@code FROM} clause to the update query.<br>
 	 * Allows the update to reference columns from another table, which is a PostgreSQL-specific extension.<br>

@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  * @param <Q> The self-referencing query type for fluent API support
  */
 public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> extends SqlRenderable {
-
+	
 	/**
 	 * Adds a Common Table Expression (CTE) to the query.<br>
 	 *
@@ -52,7 +52,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q with(@NonNull CommonTableExpression cte);
-
+	
 	/**
 	 * Adds a Common Table Expression (CTE) with the specified query to the query.<br>
 	 *
@@ -61,7 +61,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q with(@NonNull CommonTableExpression cte, @NonNull SqlSelectQuery<?> query);
-
+	
 	/**
 	 * Adds a {@code WHERE} condition to the query.<br>
 	 * Multiple calls are combined with AND.<br>
@@ -70,7 +70,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q where(@NonNull SqlCondition condition);
-
+	
 	/**
 	 * Adds a {@code WHERE EXISTS} subquery condition.<br>
 	 *
@@ -78,7 +78,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q whereExists(@NonNull SqlSelectQuery<?> subquery);
-
+	
 	/**
 	 * Adds a {@code WHERE NOT EXISTS} subquery condition.<br>
 	 *
@@ -86,7 +86,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q whereNotExists(@NonNull SqlSelectQuery<?> subquery);
-
+	
 	/**
 	 * Adds an {@code INNER JOIN} clause to the query.<br>
 	 *
@@ -95,7 +95,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-
+	
 	/**
 	 * Adds a {@code LEFT JOIN} clause to the query.<br>
 	 *
@@ -104,7 +104,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-
+	
 	/**
 	 * Adds a {@code RIGHT JOIN} clause to the query.<br>
 	 *
@@ -113,7 +113,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-
+	
 	/**
 	 * Adds a {@code FULL JOIN} clause to the query.<br>
 	 *
@@ -122,7 +122,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-
+	
 	/**
 	 * Adds a {@code GROUP BY} clause to the query.<br>
 	 *
@@ -130,7 +130,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q groupBy(SqlColumn<?> @NonNull ... columns);
-
+	
 	/**
 	 * Adds a {@code HAVING} condition to the query.<br>
 	 * Requires a preceding GROUP BY clause.<br>
@@ -139,7 +139,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q having(@NonNull SqlCondition condition);
-
+	
 	/**
 	 * Adds an {@code ORDER BY} clause to the query.<br>
 	 *
@@ -147,7 +147,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q orderBy(SqlOrderable @NonNull ... orderables);
-
+	
 	/**
 	 * Limits the number of results returned.<br>
 	 *
@@ -155,7 +155,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q limit(int limit);
-
+	
 	/**
 	 * Skips the specified number of results.<br>
 	 *
@@ -163,13 +163,13 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q offset(long offset);
-
+	
 	/**
 	 * Adds {@code DISTINCT} to the query to eliminate duplicate rows.<br>
 	 * @return This query for method chaining
 	 */
 	@NonNull Q distinct();
-
+	
 	/**
 	 * Combines this query with another using {@code UNION} (removes duplicates).<br>
 	 *
@@ -177,7 +177,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q union(@NonNull SqlSelectQueryBase<T, ?> other);
-
+	
 	/**
 	 * Combines this query with another using {@code UNION ALL} (keeps duplicates).<br>
 	 *
@@ -185,7 +185,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q unionAll(@NonNull SqlSelectQueryBase<T, ?> other);
-
+	
 	/**
 	 * Combines this query with another using {@code INTERSECT} (common rows only).<br>
 	 *
@@ -193,7 +193,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q intersect(@NonNull SqlSelectQueryBase<T, ?> other);
-
+	
 	/**
 	 * Combines this query with another using {@code EXCEPT} (rows in this but not other).<br>
 	 *
@@ -201,7 +201,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q except(@NonNull SqlSelectQueryBase<T, ?> other);
-
+	
 	/**
 	 * Executes the query and returns all results as a list.<br>
 	 *
@@ -209,7 +209,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull List<T> fetch() throws SqlException;
-
+	
 	/**
 	 * Executes the query and returns the first result.<br>
 	 *
@@ -217,7 +217,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull Optional<T> fetchFirst() throws SqlException;
-
+	
 	/**
 	 * Executes the query and returns exactly one result.<br>
 	 *
@@ -227,7 +227,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull T fetchOne() throws SqlException;
-
+	
 	/**
 	 * Executes the query and returns one result or null.<br>
 	 *
@@ -236,7 +236,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @throws SqlException If a database access error occurs
 	 */
 	@Nullable T fetchOneOrNull() throws SqlException;
-
+	
 	/**
 	 * Executes the query and returns the count of matching rows.<br>
 	 *
@@ -244,7 +244,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @throws SqlException If a database access error occurs
 	 */
 	long count() throws SqlException;
-
+	
 	/**
 	 * Checks if any rows match the query conditions.<br>
 	 *
@@ -252,7 +252,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @throws SqlException If a database access error occurs
 	 */
 	boolean exists() throws SqlException;
-
+	
 	/**
 	 * Executes the query and returns results as a stream.<br>
 	 * The stream should be closed after use to release database resources.<br>
@@ -261,7 +261,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull Stream<T> stream() throws SqlException;
-
+	
 	/**
 	 * Executes the query with pagination and returns a page of results.<br>
 	 *
@@ -271,7 +271,7 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull SqlPage<T> fetchPage(int page, int pageSize) throws SqlException;
-
+	
 	/**
 	 * Returns the parameter values for this query.<br>
 	 * @return A list of parameter values in order

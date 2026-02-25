@@ -37,7 +37,7 @@ import java.time.Duration;
  * @author Luis-St
  */
 public interface SqlTransaction extends AutoCloseable {
-
+	
 	/**
 	 * Returns a query provider bound to the specified table within this transaction.<br>
 	 *
@@ -46,25 +46,25 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @return A query provider for the given table within this transaction
 	 */
 	<T> @NonNull SqlQueryProvider<T> from(@NonNull SqlTable<T> table);
-
+	
 	/**
 	 * Returns whether this transaction is still active (neither committed nor rolled back).<br>
 	 * @return Whether the transaction is active
 	 */
 	boolean isActive();
-
+	
 	/**
 	 * Returns whether this transaction has been committed.<br>
 	 * @return Whether the transaction was committed
 	 */
 	boolean isCommitted();
-
+	
 	/**
 	 * Returns whether this transaction has been rolled back.<br>
 	 * @return Whether the transaction was rolled back
 	 */
 	boolean isRolledBack();
-
+	
 	/**
 	 * Commits the current transaction.<br>
 	 * Executes SQL: {@code COMMIT}.<br>
@@ -72,7 +72,7 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @throws SqlTransactionException If the commit fails
 	 */
 	void commit() throws SqlTransactionException;
-
+	
 	/**
 	 * Rolls back the current transaction.<br>
 	 * Executes SQL: {@code ROLLBACK}.<br>
@@ -80,7 +80,7 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @throws SqlTransactionException If the rollback fails
 	 */
 	void rollback() throws SqlTransactionException;
-
+	
 	/**
 	 * Rolls back the current transaction to the given savepoint.<br>
 	 * Executes SQL: {@code ROLLBACK TO SAVEPOINT name}.<br>
@@ -89,7 +89,7 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @throws SqlTransactionException If the rollback fails
 	 */
 	void rollbackTo(@NonNull SqlSavepoint savepoint) throws SqlTransactionException;
-
+	
 	/**
 	 * Creates a savepoint with the given name.<br>
 	 * Executes SQL: {@code SAVEPOINT name}.<br>
@@ -99,7 +99,7 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @throws SqlTransactionException If the savepoint cannot be created
 	 */
 	@NonNull SqlSavepoint savepoint(@NonNull String name) throws SqlTransactionException;
-
+	
 	/**
 	 * Sets the transaction to read-only mode.<br>
 	 * Executes SQL: {@code SET TRANSACTION READ ONLY}.<br>
@@ -107,7 +107,7 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction readOnly();
-
+	
 	/**
 	 * Sets the timeout for the transaction.<br>
 	 *
@@ -115,7 +115,7 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction timeout(@NonNull Duration timeout);
-
+	
 	/**
 	 * Sets the isolation level for the transaction.<br>
 	 * Executes SQL: {@code SET TRANSACTION ISOLATION LEVEL ...}.<br>
@@ -124,7 +124,7 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction isolation(@NonNull SqlIsolationLevel level);
-
+	
 	/**
 	 * Closes this transaction.<br>
 	 * If the transaction is still active (not committed or rolled back),

@@ -27,9 +27,9 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public class SqlDefaultRenderer implements SqlRenderer {
-
+	
 	private final SqlDialect dialect;
-
+	
 	/**
 	 * Constructs a new default SQL renderer for the given dialect.<br>
 	 *
@@ -38,42 +38,42 @@ public class SqlDefaultRenderer implements SqlRenderer {
 	public SqlDefaultRenderer(@NonNull SqlDialect dialect) {
 		this.dialect = dialect;
 	}
-
+	
 	@Override
 	public @NonNull SqlDialect getDialect() {
 		return this.dialect;
 	}
-
+	
 	@Override
 	public @NonNull String quoteIdentifier(@NonNull String identifier) {
 		return "\"" + identifier + "\"";
 	}
-
+	
 	@Override
 	public @NonNull String nowFunction() {
 		return "CURRENT_TIMESTAMP";
 	}
-
+	
 	@Override
 	public @NonNull String uuidFunction() {
 		return "GEN_RANDOM_UUID()";
 	}
-
+	
 	@Override
 	public @NonNull String autoIncrementSyntax() {
 		return "GENERATED ALWAYS AS IDENTITY";
 	}
-
+	
 	@Override
 	public @NonNull String createTableSuffix() {
 		return "";
 	}
-
+	
 	@Override
 	public boolean supportsIfNotExists() {
 		return true;
 	}
-
+	
 	@Override
 	public @NonNull String limitOffsetSyntax(int limit, int offset) {
 		if (offset > 0) {
@@ -81,27 +81,27 @@ public class SqlDefaultRenderer implements SqlRenderer {
 		}
 		return "LIMIT " + limit;
 	}
-
+	
 	@Override
 	public @NonNull String upsertSyntax() {
 		return "ON CONFLICT";
 	}
-
+	
 	@Override
 	public @NonNull String returningSyntax(@NonNull String columns) {
 		return "RETURNING " + columns;
 	}
-
+	
 	@Override
 	public @NonNull String booleanLiteral(boolean value) {
 		return value ? "TRUE" : "FALSE";
 	}
-
+	
 	@Override
 	public @NonNull String stringConcatOperator() {
 		return "||";
 	}
-
+	
 	@Override
 	public @NonNull String parameterPlaceholder(int index) {
 		return "?";

@@ -31,7 +31,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlMigration {
-
+	
 	/**
 	 * Returns the version of this migration.<br>
 	 * <p>
@@ -43,13 +43,13 @@ public interface SqlMigration {
 	 * @return The migration version
 	 */
 	@NonNull String version();
-
+	
 	/**
 	 * Returns the description of this migration.<br>
 	 * @return The migration description
 	 */
 	@NonNull String description();
-
+	
 	/**
 	 * Applies this migration (forward).<br>
 	 *
@@ -57,7 +57,7 @@ public interface SqlMigration {
 	 * @throws SqlException If the migration fails
 	 */
 	void up(@NonNull SqlMigrationBuilder builder) throws SqlException;
-
+	
 	/**
 	 * Reverts this migration (rollback).<br>
 	 *
@@ -65,7 +65,7 @@ public interface SqlMigration {
 	 * @throws SqlException If the rollback fails
 	 */
 	void down(@NonNull SqlMigrationBuilder builder) throws SqlException;
-
+	
 	/**
 	 * Returns a checksum representing the content of this migration.<br>
 	 * <p>
@@ -83,6 +83,6 @@ public interface SqlMigration {
 	 * @return The migration checksum
 	 */
 	default long checksum() {
-		return (long) version().hashCode() * 31 + description().hashCode();
+		return (long) this.version().hashCode() * 31 + this.description().hashCode();
 	}
 }

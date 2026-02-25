@@ -31,13 +31,13 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlRenderer {
-
+	
 	/**
 	 * Returns the dialect associated with this renderer.<br>
 	 * @return The SQL dialect
 	 */
 	@NonNull SqlDialect getDialect();
-
+	
 	/**
 	 * Quotes the given identifier for use in SQL statements.<br>
 	 *
@@ -45,37 +45,37 @@ public interface SqlRenderer {
 	 * @return The quoted identifier
 	 */
 	@NonNull String quoteIdentifier(@NonNull String identifier);
-
+	
 	/**
 	 * Returns the SQL function for the current timestamp.<br>
 	 * @return The now function syntax
 	 */
 	@NonNull String nowFunction();
-
+	
 	/**
 	 * Returns the SQL function for generating a UUID.<br>
 	 * @return The UUID function syntax
 	 */
 	@NonNull String uuidFunction();
-
+	
 	/**
 	 * Returns the auto-increment syntax for this dialect.<br>
 	 * @return The auto-increment syntax
 	 */
 	@NonNull String autoIncrementSyntax();
-
+	
 	/**
 	 * Returns the suffix appended to {@code CREATE TABLE} statements.<br>
 	 * @return The create table suffix
 	 */
 	@NonNull String createTableSuffix();
-
+	
 	/**
 	 * Returns whether the dialect supports {@code IF NOT EXISTS} in DDL statements.<br>
 	 * @return Whether {@code IF NOT EXISTS} is supported
 	 */
 	boolean supportsIfNotExists();
-
+	
 	/**
 	 * Returns the limit and offset syntax for this dialect.<br>
 	 *
@@ -84,13 +84,13 @@ public interface SqlRenderer {
 	 * @return The limit/offset SQL syntax
 	 */
 	@NonNull String limitOffsetSyntax(int limit, int offset);
-
+	
 	/**
 	 * Returns the upsert syntax for this dialect.<br>
 	 * @return The upsert SQL syntax
 	 */
 	@NonNull String upsertSyntax();
-
+	
 	/**
 	 * Returns the {@code RETURNING} clause syntax for this dialect.<br>
 	 *
@@ -98,7 +98,7 @@ public interface SqlRenderer {
 	 * @return The returning SQL syntax
 	 */
 	@NonNull String returningSyntax(@NonNull String columns);
-
+	
 	/**
 	 * Returns the boolean literal for the given value.<br>
 	 *
@@ -106,13 +106,13 @@ public interface SqlRenderer {
 	 * @return The boolean literal
 	 */
 	@NonNull String booleanLiteral(boolean value);
-
+	
 	/**
 	 * Returns the string concatenation operator for this dialect.<br>
 	 * @return The concatenation operator
 	 */
 	@NonNull String stringConcatOperator();
-
+	
 	/**
 	 * Returns the parameter placeholder for the given index.<br>
 	 * <p>

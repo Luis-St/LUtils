@@ -38,13 +38,13 @@ import java.util.function.Function;
  * @param <T> The type of the entity
  */
 public interface SqlAsyncQueryProvider<T> {
-
+	
 	/**
 	 * Creates an asynchronous select query for all columns of this table.<br>
 	 * @return An async select query returning full entities
 	 */
 	@NonNull SqlAsyncSelectQuery<T> select();
-
+	
 	/**
 	 * Creates an asynchronous select query for the specified expressions (columns, aggregates, functions).<br>
 	 *
@@ -52,7 +52,7 @@ public interface SqlAsyncQueryProvider<T> {
 	 * @return An async projection query returning the selected values
 	 */
 	@NonNull SqlAsyncSelectProjectionQuery<?> select(SqlExpression<?> @NonNull ... expressions);
-
+	
 	/**
 	 * Adds an entity to be inserted asynchronously.<br>
 	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...)}.<br>
@@ -61,7 +61,7 @@ public interface SqlAsyncQueryProvider<T> {
 	 * @return An async insert query
 	 */
 	@NonNull SqlAsyncInsertQuery<T> insert(@NonNull T entity);
-
+	
 	/**
 	 * Adds multiple entities to be inserted asynchronously.<br>
 	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...), (...)}.<br>
@@ -71,7 +71,7 @@ public interface SqlAsyncQueryProvider<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	@NonNull SqlAsyncInsertQuery<T> insert(T @NonNull ... entities);
-
+	
 	/**
 	 * Adds multiple entities to be inserted asynchronously.<br>
 	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...), (...)}.<br>
@@ -80,7 +80,7 @@ public interface SqlAsyncQueryProvider<T> {
 	 * @return An async insert query
 	 */
 	@NonNull SqlAsyncInsertQuery<T> insert(@NonNull Collection<T> entities);
-
+	
 	/**
 	 * Adds multiple entities to be inserted asynchronously in batches.<br>
 	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...), (...)} for each batch of entities.<br>
@@ -90,7 +90,7 @@ public interface SqlAsyncQueryProvider<T> {
 	 * @return An async insert query
 	 */
 	@NonNull SqlAsyncInsertQuery<T> insert(@NonNull Collection<T> entities, int batchSize);
-
+	
 	/**
 	 * Adds an entity to be upserted asynchronously.<br>
 	 * Generates SQL: {@code INSERT INTO table (...) VALUES (...) ON CONFLICT (column) DO UPDATE SET ...}.<br>
@@ -101,7 +101,7 @@ public interface SqlAsyncQueryProvider<T> {
 	 * @return An async insert query
 	 */
 	@NonNull SqlAsyncInsertQuery<T> upsert(@NonNull T entity, @NonNull SqlColumn<?> conflictColumn, @NonNull Function<T, T> onConflict);
-
+	
 	/**
 	 * Adds an entity to be inserted asynchronously, ignoring conflicts.<br>
 	 * Generates SQL: {@code INSERT OR IGNORE INTO table (...) VALUES (...)}.<br>
@@ -111,13 +111,13 @@ public interface SqlAsyncQueryProvider<T> {
 	 * @return An async insert query
 	 */
 	@NonNull SqlAsyncInsertQuery<T> insertOrIgnore(@NonNull T entity, SqlColumn<?> @NonNull ... conflictColumns);
-
+	
 	/**
 	 * Creates an asynchronous update query builder for this table.<br>
 	 * @return An async update query builder
 	 */
 	@NonNull SqlAsyncUpdateQuery<T> update();
-
+	
 	/**
 	 * Creates an asynchronous delete query builder for this table.<br>
 	 * @return An async delete query builder

@@ -33,7 +33,7 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The type of the result entity
  */
 public interface PostgresSelectQuery<T> extends SqlSelectQuery<T> {
-
+	
 	/**
 	 * Adds a {@code DISTINCT ON} clause to the query.<br>
 	 * PostgreSQL-specific extension that selects distinct rows based on the specified columns,

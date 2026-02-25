@@ -30,12 +30,12 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public final class SqlColumnMapping {
-
+	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 */
 	private SqlColumnMapping() {}
-
+	
 	/**
 	 * Converts a SQL snake_case column name to a Java camelCase component name.<br>
 	 *
@@ -46,7 +46,7 @@ public final class SqlColumnMapping {
 		// snake_case to camelCase conversion
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Converts a Java camelCase component name to a SQL snake_case column name.<br>
 	 *

@@ -33,13 +33,13 @@ import java.util.List;
  * @param <T> The type of the entity
  */
 public interface SqlInsertQuery<T> extends SqlRenderable {
-
+	
 	/**
 	 * Returns the parameter values for this query.<br>
 	 * @return A list of parameter values in order
 	 */
 	@NonNull List<Object> getParameters();
-
+	
 	/**
 	 * Executes the insert query.<br>
 	 *
@@ -47,7 +47,7 @@ public interface SqlInsertQuery<T> extends SqlRenderable {
 	 * @throws SqlException If a database access error occurs
 	 */
 	int execute() throws SqlException;
-
+	
 	/**
 	 * Executes the insert query and returns the inserted entities.<br>
 	 * Generates SQL: {@code INSERT INTO ... RETURNING *}.<br>
@@ -56,7 +56,7 @@ public interface SqlInsertQuery<T> extends SqlRenderable {
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull List<T> returning() throws SqlException;
-
+	
 	/**
 	 * Executes the insert query and fetches the inserted entities.<br>
 	 *
@@ -64,7 +64,7 @@ public interface SqlInsertQuery<T> extends SqlRenderable {
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull List<T> fetchInserted() throws SqlException;
-
+	
 	/**
 	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
 	 * @return The asynchronous query
