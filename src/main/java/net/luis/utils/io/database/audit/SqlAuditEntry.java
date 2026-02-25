@@ -19,9 +19,16 @@
 package net.luis.utils.io.database.audit;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.time.Instant;
 
 /**
  * Interface representing a SQL audit entry.<br>
+ * <p>
+ *     Audit entries track the entity, operation type, timestamp, and user
+ *     associated with a database operation.<br>
+ * </p>
  *
  * @author Luis-St
  *
@@ -50,4 +57,39 @@ public interface SqlAuditEntry<T> {
 	static <T> @NonNull SqlAuditEntry<T> forUpdate(@NonNull T entity) {
 		throw new UnsupportedOperationException();
 	}
+
+	/**
+	 * Creates an audit entry for a {@code DELETE} operation.<br>
+	 *
+	 * @param entity The entity being deleted
+	 * @param <T> The type of the audited entity
+	 * @return The audit entry
+	 */
+	static <T> @NonNull SqlAuditEntry<T> forDelete(@NonNull T entity) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Returns the entity associated with this audit entry.<br>
+	 * @return The audited entity
+	 */
+	@NonNull T getEntity();
+
+	/**
+	 * Returns the type of operation that was performed.<br>
+	 * @return The audit operation type
+	 */
+	@NonNull SqlAuditOperation getOperation();
+
+	/**
+	 * Returns the timestamp when the operation was performed.<br>
+	 * @return The operation timestamp
+	 */
+	@NonNull Instant getTimestamp();
+
+	/**
+	 * Returns the user who performed the operation.<br>
+	 * @return The user, or {@code null} if no audit context was set
+	 */
+	@Nullable String getUser();
 }

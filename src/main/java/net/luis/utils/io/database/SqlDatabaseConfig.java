@@ -20,6 +20,7 @@ package net.luis.utils.io.database;
 
 import net.luis.utils.io.database.audit.SqlTimestampSource;
 import net.luis.utils.io.database.exception.SqlConnectionException;
+import net.luis.utils.io.database.mapping.SqlTypeConverter;
 import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
@@ -80,6 +81,21 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig auditClock(@NonNull Clock clock);
+
+	/**
+	 * Registers a custom type converter for mapping between Java and database types.<br>
+	 * <p>
+	 *     Converters are used by the mapping layer when reading from and writing to
+	 *     the database. If a converter is registered for a type, it takes precedence
+	 *     over the default JDBC type handling.<br>
+	 * </p>
+	 *
+	 * @param converter The type converter to register
+	 * @param <J> The Java type
+	 * @param <D> The database type
+	 * @return This configuration builder
+	 */
+	<J, D> @NonNull SqlDatabaseConfig registerConverter(@NonNull SqlTypeConverter<J, D> converter);
 
 	/**
 	 * Builds the configuration and creates a database instance.<br>

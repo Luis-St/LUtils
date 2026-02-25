@@ -115,9 +115,14 @@ public interface SqlRenderer {
 
 	/**
 	 * Returns the parameter placeholder for the given index.<br>
+	 * <p>
+	 *     The {@code index} parameter is 1-based and used by dialects that support
+	 *     positional parameter syntax (e.g., PostgreSQL's {@code $1}, {@code $2}).<br>
+	 *     Dialects using the JDBC standard {@code ?} placeholder may ignore the index.<br>
+	 * </p>
 	 *
-	 * @param index The parameter index
-	 * @return The parameter placeholder
+	 * @param index The 1-based parameter index
+	 * @return The parameter placeholder (e.g., {@code ?} for ANSI SQL, {@code $1} for PostgreSQL)
 	 */
 	@NonNull String parameterPlaceholder(int index);
 }

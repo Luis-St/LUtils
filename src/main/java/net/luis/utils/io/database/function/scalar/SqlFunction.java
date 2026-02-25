@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.function.scalar;
 
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.SqlColumnType;
 import net.luis.utils.io.database.function.SqlExpression;
 import org.jspecify.annotations.NonNull;
 
@@ -65,6 +66,22 @@ public class SqlFunction {
 	 * @return The cast expression
 	 */
 	public static <T> @NonNull SqlExpression<T> cast(@NonNull SqlExpression<?> value, @NonNull Class<T> type) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Casts the given expression to the specified SQL column type.<br>
+	 * The returned expression defers rendering to {@code toSql(SqlRenderer)},
+	 * where the renderer's dialect maps the column type to a concrete SQL type name.<br>
+	 * Generates SQL: {@code CAST(value AS mapped_type)}.<br>
+	 *
+	 * @param value The expression to cast
+	 * @param columnType The target SQL column type
+	 * @param <T> The result type
+	 * @return The cast expression
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> @NonNull SqlExpression<T> cast(@NonNull SqlExpression<?> value, @NonNull SqlColumnType columnType) {
 		throw new UnsupportedOperationException();
 	}
 	

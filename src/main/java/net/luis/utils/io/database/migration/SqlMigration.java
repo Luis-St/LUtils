@@ -34,6 +34,12 @@ public interface SqlMigration {
 
 	/**
 	 * Returns the version of this migration.<br>
+	 * <p>
+	 *     Versions are compared numerically to determine migration ordering.<br>
+	 *     Use a timestamp-based format ({@code YYYYMMDDHHmmss}, e.g., {@code "20260225120000"})
+	 *     to avoid ordering conflicts in team environments.<br>
+	 * </p>
+	 *
 	 * @return The migration version
 	 */
 	@NonNull String version();
@@ -59,4 +65,24 @@ public interface SqlMigration {
 	 * @throws SqlException If the rollback fails
 	 */
 	void down(@NonNull SqlMigrationBuilder builder) throws SqlException;
+
+	/**
+	 * Returns a checksum representing the content of this migration.<br>
+	 * <p>
+	 *     The checksum is used by the migration runner to detect changes
+	 *     in previously applied migrations. If the checksum of a registered
+	 *     migration differs from the stored checksum, the runner can flag
+	 *     the migration as tampered.<br>
+	 * </p>
+	 * <p>
+	 *     The default implementation computes the checksum from the migration's
+	 *     version and description. Implementations should override this to include
+	 *     the actual migration operations for more reliable drift detection.<br>
+	 * </p>
+	 *
+	 * @return The migration checksum
+	 */
+	default long checksum() {
+		return (long) version().hashCode() * 31 + description().hashCode();
+	}
 }

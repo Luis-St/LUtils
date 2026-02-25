@@ -21,55 +21,48 @@ package net.luis.utils.io.database.audit;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.function.Supplier;
-
 /**
- * Interface for managing SQL audit context.<br>
- * Provides methods to track the current user performing database operations for auditing purposes.<br>
+ * Immutable interface representing a SQL audit context.<br>
+ * <p>
+ *     Provides the identity of the user performing database operations for auditing purposes.<br>
+ *     Instances are immutable and thread-safe. Use {@link #withUser(String)} to derive
+ *     a new context with a different user, or {@link #empty()} for an anonymous context.<br>
+ * </p>
  *
  * @author Luis-St
  */
 public interface SqlAuditContext {
 	
 	/**
+	 * Creates an empty audit context with no user set.<br>
+	 *
+	 * @return An empty audit context
+	 */
+	static @NonNull SqlAuditContext empty() {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Creates an audit context for the specified user.<br>
+	 *
+	 * @param user The audit user
+	 * @return An audit context with the given user
+	 */
+	static @NonNull SqlAuditContext of(@NonNull String user) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
 	 * Returns the current audit user.<br>
 	 * @return The current audit user or {@code null} if not set
 	 */
-	@Nullable String getCurrentUser();
+	@Nullable String getUser();
 	
 	/**
-	 * Sets the current audit user.<br>
-	 * @param user The audit user to set
-	 */
-	void setCurrentUser(@NonNull String user);
-	
-	/**
-	 * Clears the current audit context.<br>
-	 */
-	void clear();
-	
-	/**
-	 * Executes the given action with the specified audit user set.<br>
-	 * The audit context is restored to its previous state after the action completes.<br>
+	 * Returns a new audit context with the specified user.<br>
 	 *
-	 * @param user The audit user to set
-	 * @param action The action to execute
-	 * @param <T> The return type of the action
-	 * @return The result of the action
+	 * @param user The audit user
+	 * @return A new audit context with the given user
 	 */
-	default <T> T withUser(@NonNull String user, @NonNull Supplier<T> action) {
-		String previous = this.getCurrentUser();
-		
-		this.setCurrentUser(user);
-		
-		try {
-			return action.get();
-		} finally {
-			if (previous != null) {
-				this.setCurrentUser(previous);
-			} else {
-				this.clear();
-			}
-		}
-	}
+	@NonNull SqlAuditContext withUser(@NonNull String user);
 }

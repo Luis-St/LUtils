@@ -24,7 +24,8 @@ import org.jspecify.annotations.NonNull;
 /**
  * Interface providing numeric-specific SQL operations for column conditions.<br>
  * <p>
- *     These operations generate SQL conditions for numeric range checks.<br>
+ *     These operations generate SQL conditions specific to numeric columns
+ *     such as sign checks and modulo comparisons.<br>
  * </p>
  *
  * @author Luis-St
@@ -34,12 +35,36 @@ import org.jspecify.annotations.NonNull;
 public interface SqlNumericOps<T> {
 
 	/**
-	 * Creates a condition that checks if the column value is between the given start and end values (inclusive).<br>
-	 * Generates SQL: {@code column BETWEEN start AND end}.<br>
+	 * Creates a condition that checks if the column value is positive (greater than zero).<br>
+	 * Generates SQL: {@code column > 0}.<br>
 	 *
-	 * @param start The start value of the range (inclusive)
-	 * @param end The end value of the range (inclusive)
-	 * @return The between condition
+	 * @return The is-positive condition
 	 */
-	@NonNull SqlCondition between(@NonNull T start, @NonNull T end);
+	@NonNull SqlCondition isPositive();
+
+	/**
+	 * Creates a condition that checks if the column value is negative (less than zero).<br>
+	 * Generates SQL: {@code column < 0}.<br>
+	 *
+	 * @return The is-negative condition
+	 */
+	@NonNull SqlCondition isNegative();
+
+	/**
+	 * Creates a condition that checks if the column value is zero.<br>
+	 * Generates SQL: {@code column = 0}.<br>
+	 *
+	 * @return The is-zero condition
+	 */
+	@NonNull SqlCondition isZero();
+
+	/**
+	 * Creates a condition that checks if the column value modulo the given divisor equals the given remainder.<br>
+	 * Generates SQL: {@code MOD(column, divisor) = remainder}.<br>
+	 *
+	 * @param divisor The divisor for the modulo operation
+	 * @param remainder The expected remainder
+	 * @return The modulo-equals condition
+	 */
+	@NonNull SqlCondition moduloEquals(@NonNull Number divisor, @NonNull Number remainder);
 }

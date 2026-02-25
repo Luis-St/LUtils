@@ -24,9 +24,14 @@ import net.luis.utils.io.database.exception.SqlConnectionException;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.SqlTransactionException;
 import net.luis.utils.io.database.query.SqlQueryProvider;
+import net.luis.utils.io.database.query.async.SqlAsyncQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.transaction.SqlAsyncTransaction;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 /**
  * Interface representing a SQL database connection.<br>
@@ -74,6 +79,46 @@ public interface SqlDatabase extends AutoCloseable {
 	<T> @NonNull SqlQueryProvider<T> from(@NonNull SqlTable<T> table);
 
 	/**
+	 * Returns an asynchronous query provider bound to the specified table.<br>
+	 * <p>
+	 *     All terminal operations on the returned provider return {@link java.util.concurrent.CompletableFuture}
+	 *     for non-blocking execution.<br>
+	 * </p>
+	 *
+	 * @param table The table to query
+	 * @param <T> The entity type
+	 * @return An asynchronous query provider for the given table
+	 */
+	<T> @NonNull SqlAsyncQueryProvider<T> asyncFrom(@NonNull SqlTable<T> table);
+
+	/**
+	 * Executes the given action within a new transaction.<br>
+	 * <p>
+	 *     The transaction is automatically committed if the action completes successfully,
+	 *     or rolled back if the action throws an exception.<br>
+	 * </p>
+	 *
+	 * @param action The action to execute within the transaction
+	 * @param <R> The return type of the action
+	 * @return The result of the action
+	 * @throws SqlException If the action or the transaction fails
+	 */
+	default <R> R inTransaction(@NonNull Function<SqlTransaction, R> action) throws SqlException {
+		SqlTransaction tx = this.beginTransaction();
+		try {
+			R result = action.apply(tx);
+			tx.commit();
+			return result;
+		} catch (Exception e) {
+			tx.rollback();
+			if (e instanceof SqlException sqlEx) {
+				throw sqlEx;
+			}
+			throw new SqlException("Transaction failed", e);
+		}
+	}
+
+	/**
 	 * Begins a new transaction.<br>
 	 * Executes the SQL statement {@code START TRANSACTION}.<br>
 	 *
@@ -90,6 +135,25 @@ public interface SqlDatabase extends AutoCloseable {
 	 * @throws SqlTransactionException If the transaction cannot be started
 	 */
 	@NonNull SqlTransaction beginTransaction(@NonNull SqlAuditContext context) throws SqlTransactionException;
+
+ 	/**
+	 * Begins a new asynchronous transaction.<br>
+	 * <p>
+	 *     The returned transaction is pinned to a dedicated connection from the pool.
+	 *     All operations are dispatched to the async executor but are sequential on that connection.<br>
+	 * </p>
+	 *
+	 * @return A future that completes with the new async transaction
+	 */
+	@NonNull CompletableFuture<SqlAsyncTransaction> beginAsyncTransaction();
+
+	/**
+	 * Begins a new asynchronous transaction with the specified audit context.<br>
+	 *
+	 * @param context The audit context for the transaction
+	 * @return A future that completes with the new async transaction
+	 */
+	@NonNull CompletableFuture<SqlAsyncTransaction> beginAsyncTransaction(@NonNull SqlAuditContext context);
 
 	/**
 	 * Returns the audit context for this database.<br>

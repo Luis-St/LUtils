@@ -16,37 +16,28 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect;
+package net.luis.utils.io.database.audit;
 
 /**
- * Enum representing abstract SQL column types that each dialect maps to concrete SQL strings.<br>
- * <p>
- *     These types are database-agnostic. Dialect-specific types (e.g., {@code BYTEA}, {@code JSONB})
- *     are produced by the dialect's {@link SqlDialect#mapColumnType(SqlColumnType)} method.<br>
- * </p>
+ * Enum representing the type of audited SQL operation.<br>
  *
  * @author Luis-St
  */
-public enum SqlColumnType {
+public enum SqlAuditOperation {
 	
-	VARCHAR,
-	TEXT,
-	CHAR,
-	BOOLEAN,
-	SMALLINT,
-	INTEGER,
-	BIGINT,
-	REAL,
-	DOUBLE,
-	DECIMAL,
-	UUID,
-	DATE,
-	TIME,
-	TIMESTAMP,
-	TIMESTAMP_TZ,
-	BLOB,
-	BINARY,
-	JSON,
-	ARRAY,
-	XML
+	/**
+	 * An {@code INSERT} operation.<br>
+	 */
+	CREATE,
+	
+	/**
+	 * An {@code UPDATE} operation.<br>
+	 */
+	UPDATE,
+	
+	/**
+	 * A {@code DELETE} operation.<br>
+	 */
+	DELETE
 }
+

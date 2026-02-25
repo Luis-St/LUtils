@@ -27,6 +27,18 @@ import org.jspecify.annotations.NonNull;
  *     A table is a pure schema definition. Use {@link net.luis.utils.io.database.SqlDatabase#from(SqlTable)}
  *     or {@link net.luis.utils.io.database.transaction.SqlTransaction#from(SqlTable)} to create queries.<br>
  * </p>
+ * <p>
+ *     The recommended pattern is to declare table and column references as {@code static final} fields
+ *     to ensure consistent definitions across call sites:
+ * </p>
+ * <pre>{@code
+ * public class Tables {
+ *     public static final SqlTable<User> USERS = SqlTable.of("users", User.class);
+ *     public static final SqlColumn<Long> USER_ID = USERS.column("id", Long.class);
+ *     public static final SqlColumn<String> EMAIL = USERS.column("email", String.class);
+ *     public static final SqlVersionColumn<User, Long> VERSION = USERS.versionColumn("version", Long.class);
+ * }
+ * }</pre>
  *
  * @author Luis-St
  *
@@ -67,6 +79,29 @@ public interface SqlTable<T> {
 	 * @return A column reference
 	 */
 	<C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull Class<C> type);
+
+	/**
+	 * Returns a primary key column reference for the specified column name and type.<br>
+	 * Primary key columns are recognized by query builders for identity-based operations.<br>
+	 *
+	 * @param name The column name
+	 * @param type The primary key value type
+	 * @param <V> The primary key type (e.g., {@link Long} or {@link java.util.UUID})
+	 * @return A primary key column reference
+	 */
+	<V> @NonNull SqlPrimaryKeyColumn<T, V> primaryKeyColumn(@NonNull String name, @NonNull Class<V> type);
+
+	/**
+	 * Defines a composite primary key consisting of multiple columns.<br>
+	 * <p>
+	 *     The returned definition is recognized by query builders for identity-based operations
+	 *     involving multiple columns (e.g., composite-key lookups, upserts).<br>
+	 * </p>
+	 *
+	 * @param columns The columns forming the composite primary key
+	 * @return The composite primary key definition
+	 */
+	@NonNull SqlCompositePrimaryKey<T> compositePrimaryKey(SqlColumn<?> @NonNull ... columns);
 
 	/**
 	 * Returns a foreign column reference for the specified column name and referenced table.<br>

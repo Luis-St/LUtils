@@ -20,102 +20,112 @@ package net.luis.utils.io.database.transaction;
 
 import net.luis.utils.io.database.SqlIsolationLevel;
 import net.luis.utils.io.database.exception.SqlTransactionException;
-import net.luis.utils.io.database.query.SqlQueryProvider;
+import net.luis.utils.io.database.query.async.SqlAsyncQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * Interface representing a SQL transaction.<br>
+ * Interface representing an asynchronous SQL transaction.<br>
+ * <p>
+ *     Provides the same operations as {@link SqlTransaction} but with all terminal operations
+ *     returning {@link CompletableFuture} for non-blocking execution.<br>
+ * </p>
+ * <p>
+ *     Internally, the transaction is pinned to a single dedicated connection from the pool.
+ *     Operations are dispatched to the async executor but are sequential on that connection.<br>
+ * </p>
  * <p>
  *     Implements {@link AutoCloseable} to support try-with-resources usage.
  *     If the transaction has not been explicitly committed or rolled back when
  *     {@link #close()} is called, an automatic rollback is performed.<br>
  * </p>
  *
+ * @see SqlTransaction
+ *
  * @author Luis-St
  */
-public interface SqlTransaction extends AutoCloseable {
-
+public interface SqlAsyncTransaction extends AutoCloseable {
+	
 	/**
-	 * Returns a query provider bound to the specified table within this transaction.<br>
+	 * Returns an asynchronous query provider bound to the specified table within this transaction.<br>
 	 *
 	 * @param table The table to query
 	 * @param <T> The entity type
-	 * @return A query provider for the given table within this transaction
+	 * @return An async query provider for the given table within this transaction
 	 */
-	<T> @NonNull SqlQueryProvider<T> from(@NonNull SqlTable<T> table);
-
+	<T> @NonNull SqlAsyncQueryProvider<T> from(@NonNull SqlTable<T> table);
+	
 	/**
 	 * Returns whether this transaction is still active (neither committed nor rolled back).<br>
 	 * @return Whether the transaction is active
 	 */
 	boolean isActive();
-
+	
 	/**
 	 * Returns whether this transaction has been committed.<br>
 	 * @return Whether the transaction was committed
 	 */
 	boolean isCommitted();
-
+	
 	/**
 	 * Returns whether this transaction has been rolled back.<br>
 	 * @return Whether the transaction was rolled back
 	 */
 	boolean isRolledBack();
-
+	
 	/**
-	 * Commits the current transaction.<br>
+	 * Asynchronously commits the current transaction.<br>
 	 * Executes SQL: {@code COMMIT}.<br>
 	 *
-	 * @throws SqlTransactionException If the commit fails
+	 * @return A future that completes when the commit is finished
 	 */
-	void commit() throws SqlTransactionException;
-
+	@NonNull CompletableFuture<Void> commit();
+	
 	/**
-	 * Rolls back the current transaction.<br>
+	 * Asynchronously rolls back the current transaction.<br>
 	 * Executes SQL: {@code ROLLBACK}.<br>
 	 *
-	 * @throws SqlTransactionException If the rollback fails
+	 * @return A future that completes when the rollback is finished
 	 */
-	void rollback() throws SqlTransactionException;
-
+	@NonNull CompletableFuture<Void> rollback();
+	
 	/**
-	 * Rolls back the current transaction to the given savepoint.<br>
+	 * Asynchronously rolls back the current transaction to the given savepoint.<br>
 	 * Executes SQL: {@code ROLLBACK TO SAVEPOINT name}.<br>
 	 *
 	 * @param savepoint The savepoint to roll back to
-	 * @throws SqlTransactionException If the rollback fails
+	 * @return A future that completes when the rollback is finished
 	 */
-	void rollbackTo(@NonNull SqlSavepoint savepoint) throws SqlTransactionException;
-
+	@NonNull CompletableFuture<Void> rollbackTo(@NonNull SqlSavepoint savepoint);
+	
 	/**
-	 * Creates a savepoint with the given name.<br>
+	 * Asynchronously creates a savepoint with the given name.<br>
 	 * Executes SQL: {@code SAVEPOINT name}.<br>
 	 *
 	 * @param name The name of the savepoint
-	 * @return The created savepoint
-	 * @throws SqlTransactionException If the savepoint cannot be created
+	 * @return A future that completes with the created savepoint
 	 */
-	@NonNull SqlSavepoint savepoint(@NonNull String name) throws SqlTransactionException;
-
+	@NonNull CompletableFuture<SqlSavepoint> savepoint(@NonNull String name);
+	
 	/**
 	 * Sets the transaction to read-only mode.<br>
 	 * Executes SQL: {@code SET TRANSACTION READ ONLY}.<br>
 	 *
 	 * @return This transaction
 	 */
-	@NonNull SqlTransaction readOnly();
-
+	@NonNull SqlAsyncTransaction readOnly();
+	
 	/**
 	 * Sets the timeout for the transaction.<br>
 	 *
 	 * @param timeout The maximum duration for the transaction
 	 * @return This transaction
 	 */
-	@NonNull SqlTransaction timeout(@NonNull Duration timeout);
-
+	@NonNull SqlAsyncTransaction timeout(@NonNull Duration timeout);
+	
 	/**
 	 * Sets the isolation level for the transaction.<br>
 	 * Executes SQL: {@code SET TRANSACTION ISOLATION LEVEL ...}.<br>
@@ -123,15 +133,16 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @param level The isolation level
 	 * @return This transaction
 	 */
-	@NonNull SqlTransaction isolation(@NonNull SqlIsolationLevel level);
-
+	@NonNull SqlAsyncTransaction isolation(@NonNull SqlIsolationLevel level);
+	
 	/**
-	 * Closes this transaction.<br>
+	 * Closes this async transaction.<br>
 	 * If the transaction is still active (not committed or rolled back),
-	 * an automatic rollback is performed.<br>
+	 * an automatic rollback is performed synchronously.<br>
 	 *
 	 * @throws SqlTransactionException If the close or automatic rollback fails
 	 */
 	@Override
 	void close() throws SqlTransactionException;
 }
+

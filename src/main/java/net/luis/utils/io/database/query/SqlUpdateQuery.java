@@ -26,6 +26,7 @@ import net.luis.utils.io.database.query.async.SqlAsyncUpdateQuery;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
+import java.time.temporal.Temporal;
 import java.util.List;
 
 /**
@@ -79,10 +80,10 @@ public interface SqlUpdateQuery<T> extends SqlRenderable {
 	 * Sets a column to the current timestamp.<br>
 	 * Generates SQL: {@code SET column = NOW()}.<br>
 	 *
-	 * @param column The column to set
+	 * @param column The temporal column to set
 	 * @return This update query
 	 */
-	@NonNull SqlUpdateQuery<T> setNow(@NonNull SqlColumn<?> column);
+	@NonNull SqlUpdateQuery<T> setNow(@NonNull SqlColumn<? extends Temporal> column);
 
 	/**
 	 * Sets the condition for the update query.<br>

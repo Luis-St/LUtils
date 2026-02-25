@@ -21,6 +21,7 @@ package net.luis.utils.io.database.query;
 import net.luis.utils.io.database.SqlPage;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.entity.SqlEntityNotFoundException;
+import net.luis.utils.io.database.exception.locking.SqlLockNotAvailableException;
 import net.luis.utils.io.database.exception.query.SqlQueryException;
 import net.luis.utils.io.database.query.async.SqlAsyncSelectProjectionQuery;
 import org.jspecify.annotations.NonNull;
@@ -121,6 +122,32 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @throws SqlException If a database access error occurs
 	 */
 	<R> @NonNull SqlPage<R> fetchPageAs(int page, int pageSize, @NonNull Class<R> type) throws SqlException;
+
+	/**
+	 * Adds {@code FOR UPDATE} clause to lock selected rows.<br>
+	 * Prevents other transactions from modifying or locking the rows until this transaction completes.<br>
+	 *
+	 * @return This query for method chaining
+	 */
+	@NonNull SqlSelectProjectionQuery<T> forUpdate();
+
+	/**
+	 * Adds {@code SKIP LOCKED} modifier to skip rows that are already locked.<br>
+	 * Must be used in combination with {@link #forUpdate()}.<br>
+	 * Useful for job queue patterns where multiple workers process available rows.<br>
+	 *
+	 * @return This query for method chaining
+	 */
+	@NonNull SqlSelectProjectionQuery<T> skipLocked();
+
+	/**
+	 * Adds NOWAIT modifier to fail immediately if rows are locked.<br>
+	 * Must be used in combination with {@link #forUpdate()}.<br>
+	 *
+	 * @return This query for method chaining
+	 * @throws SqlLockNotAvailableException If the rows are locked by another transaction
+	 */
+	@NonNull SqlSelectProjectionQuery<T> noWait();
 
 	/**
 	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>

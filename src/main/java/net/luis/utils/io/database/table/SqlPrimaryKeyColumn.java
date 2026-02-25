@@ -16,37 +16,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect;
+package net.luis.utils.io.database.table;
 
 /**
- * Enum representing abstract SQL column types that each dialect maps to concrete SQL strings.<br>
+ * Marker interface for a primary key column.<br>
  * <p>
- *     These types are database-agnostic. Dialect-specific types (e.g., {@code BYTEA}, {@code JSONB})
- *     are produced by the dialect's {@link SqlDialect#mapColumnType(SqlColumnType)} method.<br>
+ *     Columns implementing this interface are recognized by query builders
+ *     for identity-based operations such as {@code findById()} and upsert logic.<br>
  * </p>
  *
+ * @see SqlColumn
+ *
  * @author Luis-St
+ *
+ * @param <T> The entity type (for table-level type safety)
+ * @param <V> The primary key value type (e.g., {@link Long}, {@link java.util.UUID})
  */
-public enum SqlColumnType {
-	
-	VARCHAR,
-	TEXT,
-	CHAR,
-	BOOLEAN,
-	SMALLINT,
-	INTEGER,
-	BIGINT,
-	REAL,
-	DOUBLE,
-	DECIMAL,
-	UUID,
-	DATE,
-	TIME,
-	TIMESTAMP,
-	TIMESTAMP_TZ,
-	BLOB,
-	BINARY,
-	JSON,
-	ARRAY,
-	XML
-}
+public interface SqlPrimaryKeyColumn<T, V> extends SqlColumn<V> {}
+

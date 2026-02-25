@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.renderer.SqlDefaultRenderer;
+import net.luis.utils.io.database.dialect.postgres.PostgresSqlRenderer;
 import net.luis.utils.io.database.renderer.SqlRenderer;
 import org.jspecify.annotations.NonNull;
 
@@ -31,6 +31,6 @@ public final class PostgresDialect extends SqlDialect {
 
 	@Override
 	public @NonNull SqlRenderer createRenderer() {
-		return new SqlDefaultRenderer(this);
+		return new PostgresSqlRenderer(this);
 	}
 }

@@ -21,16 +21,21 @@ package net.luis.utils.io.database.connection;
 import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
+import java.io.Closeable;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.logging.Logger;
 
 /**
  * A pooled {@link DataSource} implementation for connection pooling.<br>
+ * <p>
+ *     Implements {@link Closeable} to allow proper shutdown of the connection pool
+ *     and release of all pooled connections.<br>
+ * </p>
  *
  * @author Luis-St
  */
-public class SqlPooledDataSource implements DataSource {
+public class SqlPooledDataSource implements DataSource, Closeable {
 	
 	/**
 	 * Constructs a new pooled data source with the given JDBC URL and pool bounds.<br>
@@ -98,6 +103,15 @@ public class SqlPooledDataSource implements DataSource {
 	
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Closes this pooled data source and releases all pooled connections.<br>
+	 * After calling this method, no new connections can be obtained from this data source.<br>
+	 */
+	@Override
+	public void close() {
 		throw new UnsupportedOperationException();
 	}
 }

@@ -21,6 +21,7 @@ package net.luis.utils.io.database.migration;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlColumnType;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.table.*;
 import org.jspecify.annotations.NonNull;
 
 import java.util.function.Consumer;
@@ -153,6 +154,29 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the foreign key addition fails
 	 */
 	void addForeignKey(@NonNull String table, @NonNull String name, @NonNull String column, @NonNull String refTable, @NonNull String refColumn) throws SqlException;
+
+	/**
+	 * Adds a composite foreign key constraint to the specified table.<br>
+	 * Generates SQL: {@code ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (col1, col2, ...) REFERENCES refTable(refCol1, refCol2, ...)}.<br>
+	 *
+	 * @param table The table to add the constraint to
+	 * @param name The constraint name
+	 * @param columns The columns in the source table forming the foreign key
+	 * @param referencedTable The referenced table
+	 * @param referencedColumns The referenced columns in the target table
+	 * @param onDelete The action to perform when a referenced row is deleted
+	 * @param onUpdate The action to perform when a referenced row is updated
+	 * @throws SqlException If the composite foreign key addition fails
+	 */
+	void addCompositeForeignKey(
+		@NonNull SqlTable<?> table,
+		@NonNull String name,
+		@NonNull SqlColumn<?> @NonNull [] columns,
+		@NonNull SqlTable<?> referencedTable,
+		@NonNull SqlColumn<?> @NonNull [] referencedColumns,
+		@NonNull SqlForeignKeyAction onDelete,
+		@NonNull SqlForeignKeyAction onUpdate
+	) throws SqlException;
 
 	/**
 	 * Adds a check constraint to the specified table.<br>

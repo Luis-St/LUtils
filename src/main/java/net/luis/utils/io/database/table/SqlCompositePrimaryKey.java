@@ -16,42 +16,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.mapping;
+package net.luis.utils.io.database.table;
 
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
 /**
- * Interface for mapping SQL result set rows to record instances.<br>
+ * Interface representing a composite primary key definition on a table.<br>
  * <p>
- *     Implementations define how column values from a query result are
- *     transformed into instances of a specific record type.<br>
+ *     A composite primary key consists of multiple columns that together
+ *     uniquely identify a row. The framework recognizes this definition
+ *     for identity-based operations and constraint generation.<br>
  * </p>
  *
  * @author Luis-St
  *
- * @param <T> The record type to map to
+ * @param <T> The entity type
  */
-public interface SqlRecordMapper<T> {
-
+public interface SqlCompositePrimaryKey<T> {
+	
 	/**
-	 * Maps a result row to a record instance.<br>
-	 *
-	 * @param row The result row providing typed column access
-	 * @return The mapped record instance
+	 * Returns the columns forming this composite primary key.<br>
+	 * @return An unmodifiable list of columns in declaration order
 	 */
-	@NonNull T map(@NonNull SqlResultRow row);
-
-	/**
-	 * Returns the column names expected by this mapper.<br>
-	 * @return The list of column names
-	 */
-	@NonNull List<String> columnNames();
-
-	/**
-	 * Returns the record type this mapper produces.<br>
-	 * @return The record class
-	 */
-	@NonNull Class<T> recordType();
+	@NonNull List<SqlColumn<?>> columns();
 }
+

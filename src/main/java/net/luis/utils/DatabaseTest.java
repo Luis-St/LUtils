@@ -109,7 +109,7 @@ public class DatabaseTest {
 
 			// Type-specific column operations
 			persons.select().where(NAME.string().contains("li")).fetch();
-			persons.select().where(ID.numeric().between(1, 100)).fetch();
+			persons.select().where(ID.between(1, 100)).fetch();
 			persons.select().where(CREATED_AT.temporal().withinLast(java.time.Duration.ofHours(24))).fetch();
 		}
 	}

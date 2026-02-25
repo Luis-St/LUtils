@@ -18,9 +18,12 @@
 
 package net.luis.utils.io.database.dialect.postgres;
 
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.query.SqlDeleteQuery;
 import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
+
+import java.util.List;
 
 /**
  * Interface representing a PostgreSQL-specific delete query.<br>
@@ -43,4 +46,13 @@ public interface PostgresDeleteQuery<T> extends SqlDeleteQuery<T> {
 	 * @return This delete query for method chaining
 	 */
 	@NonNull PostgresDeleteQuery<T> using(@NonNull SqlTable<?> table);
+
+	/**
+	 * Executes the delete query and returns the deleted entities.<br>
+	 * Generates SQL: {@code DELETE FROM table WHERE ... RETURNING *}.<br>
+	 *
+	 * @return The list of deleted entities
+	 * @throws SqlException If a database access error occurs
+	 */
+	@NonNull List<T> returning() throws SqlException;
 }
