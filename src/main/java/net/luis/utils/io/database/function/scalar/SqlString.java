@@ -117,7 +117,7 @@ public class SqlString {
 	 * @param expr The expression to trim
 	 * @return The left-trimmed expression
 	 */
-	public static @NonNull SqlExpression<String> ltrim(@NonNull SqlExpression<String> expr) {
+	public static @NonNull SqlExpression<String> leftTrim(@NonNull SqlExpression<String> expr) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -128,7 +128,7 @@ public class SqlString {
 	 * @param expr The expression to trim
 	 * @return The right-trimmed expression
 	 */
-	public static @NonNull SqlExpression<String> rtrim(@NonNull SqlExpression<String> expr) {
+	public static @NonNull SqlExpression<String> rightTrim(@NonNull SqlExpression<String> expr) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -200,7 +200,7 @@ public class SqlString {
 	 * @param fill The fill string
 	 * @return The left-padded expression
 	 */
-	public static @NonNull SqlExpression<String> lpad(@NonNull SqlExpression<String> expr, int length, @NonNull String fill) {
+	public static @NonNull SqlExpression<String> leftPad(@NonNull SqlExpression<String> expr, int length, @NonNull String fill) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -213,7 +213,7 @@ public class SqlString {
 	 * @param fill The fill string
 	 * @return The right-padded expression
 	 */
-	public static @NonNull SqlExpression<String> rpad(@NonNull SqlExpression<String> expr, int length, @NonNull String fill) {
+	public static @NonNull SqlExpression<String> rightPad(@NonNull SqlExpression<String> expr, int length, @NonNull String fill) {
 		throw new UnsupportedOperationException();
 	}
 	

@@ -42,18 +42,6 @@ public class SqlRegex {
 	}
 	
 	/**
-	 * Creates a condition that checks if the expression does not match the given regex pattern.<br>
-	 * Generates SQL: {@code expression !~ pattern} or dialect equivalent.<br>
-	 *
-	 * @param expr The expression to match
-	 * @param pattern The regex pattern
-	 * @return The negated regex match condition
-	 */
-	public static @NonNull SqlCondition notMatches(@NonNull SqlExpression<String> expr, @NonNull String pattern) {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
 	 * Creates a condition that checks if the expression matches the given regex pattern, ignoring case.<br>
 	 * Generates SQL: {@code expression ~* pattern} or dialect equivalent.<br>
 	 *
