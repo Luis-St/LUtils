@@ -218,29 +218,6 @@ public class SqlString {
 	}
 	
 	/**
-	 * Repeats a string expression the specified number of times.<br>
-	 * Generates SQL: {@code REPEAT(expression, count)}.<br>
-	 *
-	 * @param expr The expression to repeat
-	 * @param count The number of times to repeat
-	 * @return The repeated expression
-	 */
-	public static @NonNull SqlExpression<String> repeat(@NonNull SqlExpression<String> expr, int count) {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
-	 * Reverses a string expression.<br>
-	 * Generates SQL: {@code REVERSE(expression)}.<br>
-	 *
-	 * @param expr The expression to reverse
-	 * @return The reversed expression
-	 */
-	public static @NonNull SqlExpression<String> reverse(@NonNull SqlExpression<String> expr) {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
 	 * Returns the ASCII code of the first character of a string expression.<br>
 	 * Generates SQL: {@code ASCII(expression)}.<br>
 	 *
