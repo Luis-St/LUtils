@@ -20,7 +20,6 @@ package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.SqlRenderable;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.query.async.SqlAsyncInsertQuery;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -65,9 +64,4 @@ public interface SqlInsertQuery<T> extends SqlRenderable {
 	 */
 	@NonNull List<T> fetchInserted() throws SqlException;
 	
-	/**
-	 * Returns an asynchronous view of this query where all terminal operations return {@link java.util.concurrent.CompletableFuture}.<br>
-	 * @return The asynchronous query
-	 */
-	@NonNull SqlAsyncInsertQuery<T> async();
 }

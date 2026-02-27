@@ -26,7 +26,6 @@ import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
 import java.time.Clock;
-import java.util.concurrent.Executor;
 
 /**
  * Interface representing a SQL database configuration builder.<br>
@@ -50,22 +49,6 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig dataSource(@NonNull DataSource dataSource);
-	
-	/**
-	 * Sets the executor for asynchronous operations.<br>
-	 *
-	 * @param executor The executor to use for async operations
-	 * @return This configuration builder
-	 */
-	@NonNull SqlDatabaseConfig asyncExecutor(@NonNull Executor executor);
-	
-	/**
-	 * Sets the connection pool size for asynchronous operations.<br>
-	 *
-	 * @param size The pool size
-	 * @return This configuration builder
-	 */
-	@NonNull SqlDatabaseConfig asyncConnectionPoolSize(int size);
 	
 	/**
 	 * Sets the timestamp source for audit operations.<br>

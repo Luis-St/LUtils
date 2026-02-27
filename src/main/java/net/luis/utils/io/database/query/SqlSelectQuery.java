@@ -19,10 +19,7 @@
 package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.exception.locking.SqlLockNotAvailableException;
-import net.luis.utils.io.database.query.async.SqlAsyncSelectQuery;
 import org.jspecify.annotations.NonNull;
-
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Interface representing a SQL select query for entities.<br>
@@ -63,9 +60,4 @@ public interface SqlSelectQuery<T> extends SqlSelectQueryBase<T, SqlSelectQuery<
 	 */
 	@NonNull SqlSelectQuery<T> noWait() throws SqlLockNotAvailableException;
 	
-	/**
-	 * Returns an asynchronous view of this query where all terminal operations return {@link CompletableFuture}.<br>
-	 * @return The asynchronous query
-	 */
-	@NonNull SqlAsyncSelectQuery<T> async();
 }

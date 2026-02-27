@@ -22,13 +22,10 @@ import net.luis.utils.io.database.audit.SqlAuditContext;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
-import net.luis.utils.io.database.query.async.SqlAsyncQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
-import net.luis.utils.io.database.transaction.SqlAsyncTransaction;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -77,16 +74,6 @@ public interface SqlDatabase extends AutoCloseable {
 	<T> @NonNull SqlQueryProvider<T> from(@NonNull SqlTable<T> table);
 	
 	/**
-	 * Returns an asynchronous query provider bound to the specified table.<br>
-	 * All terminal operations on the returned provider return {@link CompletableFuture} for non-blocking execution.<br>
-	 *
-	 * @param table The table to query
-	 * @param <T> The entity type
-	 * @return An asynchronous query provider for the given table
-	 */
-	<T> @NonNull SqlAsyncQueryProvider<T> asyncFrom(@NonNull SqlTable<T> table);
-	
-	/**
 	 * Executes the given action within a new transaction.<br>
 	 * The transaction is automatically committed if the action completes successfully, or rolled back if the action throws an exception.<br>
 	 *
@@ -128,25 +115,6 @@ public interface SqlDatabase extends AutoCloseable {
 	 * @throws SqlTransactionException If the transaction cannot be started
 	 */
 	@NonNull SqlTransaction beginTransaction(@NonNull SqlAuditContext context) throws SqlTransactionException;
-	
-	/**
-	 * Begins a new asynchronous transaction.<br>
-	 * <p>
-	 *     The returned transaction is pinned to a dedicated connection from the pool.<br>
-	 *     All operations are dispatched to the async executor but are sequential on that connection.
-	 * </p>
-	 *
-	 * @return A future that completes with the new async transaction
-	 */
-	@NonNull CompletableFuture<SqlAsyncTransaction> beginAsyncTransaction();
-	
-	/**
-	 * Begins a new asynchronous transaction with the specified audit context.<br>
-	 *
-	 * @param context The audit context for the transaction
-	 * @return A future that completes with the new async transaction
-	 */
-	@NonNull CompletableFuture<SqlAsyncTransaction> beginAsyncTransaction(@NonNull SqlAuditContext context);
 	
 	/**
 	 * Returns the audit context for this database.<br>

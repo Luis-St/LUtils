@@ -122,7 +122,6 @@ module net.luis.utils {
 	exports net.luis.utils.io.database.mapping;
 	exports net.luis.utils.io.database.migration;
 	exports net.luis.utils.io.database.query;
-	exports net.luis.utils.io.database.query.async;
 	exports net.luis.utils.io.database.query.row;
 	exports net.luis.utils.io.database.renderer;
 	exports net.luis.utils.io.database.sequence;

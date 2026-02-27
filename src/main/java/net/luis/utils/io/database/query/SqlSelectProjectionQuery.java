@@ -23,13 +23,11 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.entity.SqlEntityNotFoundException;
 import net.luis.utils.io.database.exception.locking.SqlLockNotAvailableException;
 import net.luis.utils.io.database.exception.query.SqlQueryException;
-import net.luis.utils.io.database.query.async.SqlAsyncSelectProjectionQuery;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 /**
@@ -150,9 +148,4 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 */
 	@NonNull SqlSelectProjectionQuery<T> noWait() throws SqlLockNotAvailableException;
 	
-	/**
-	 * Returns an asynchronous view of this query where all terminal operations return {@link CompletableFuture}.<br>
-	 * @return The asynchronous projection query
-	 */
-	@NonNull SqlAsyncSelectProjectionQuery<T> async();
 }

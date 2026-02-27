@@ -21,23 +21,19 @@ package net.luis.utils;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.SqlDatabaseConfig;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.SqlColumnType;
 import net.luis.utils.io.database.dialect.postgres.PostgresQueryProvider;
 import net.luis.utils.io.database.dialect.postgres.PostgresTable;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.dialect.SqlColumnType;
 import net.luis.utils.io.database.migration.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.query.row.SqlRow2;
-import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.table.SqlCreationColumn;
-import net.luis.utils.io.database.table.SqlTable;
-import net.luis.utils.io.database.table.SqlVersionColumn;
+import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Demonstrates the complete database API after the refactoring.<br>
@@ -112,17 +108,6 @@ public class DatabaseTest {
 			persons.select().where(NAME.string().contains("li")).fetch();
 			persons.select().where(ID.between(1, 100)).fetch();
 			persons.select().where(CREATED_AT.temporal().withinLast(java.time.Duration.ofHours(24))).fetch();
-		}
-	}
-
-	void asyncQueries() throws SqlException {
-		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
-			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
-
-			// Async via .async() wrapper — returns CompletableFuture
-			CompletableFuture<List<Person>> future = persons.select().async().fetch();
-			CompletableFuture<Long> countFuture = persons.select().async().count();
-			CompletableFuture<Integer> deleteFuture = persons.delete().where(ID.equalTo(99)).async().execute();
 		}
 	}
 

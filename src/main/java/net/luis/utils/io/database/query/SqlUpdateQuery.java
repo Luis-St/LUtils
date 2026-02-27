@@ -22,13 +22,11 @@ import net.luis.utils.io.database.SqlRenderable;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.function.SqlExpression;
-import net.luis.utils.io.database.query.async.SqlAsyncUpdateQuery;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 import java.time.temporal.Temporal;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Interface representing a SQL update query.<br>
@@ -113,9 +111,4 @@ public interface SqlUpdateQuery<T> extends SqlRenderable {
 	 */
 	@NonNull List<T> returning() throws SqlException;
 	
-	/**
-	 * Returns an asynchronous view of this query where all terminal operations return {@link CompletableFuture}.<br>
-	 * @return The asynchronous query
-	 */
-	@NonNull SqlAsyncUpdateQuery<T> async();
 }
