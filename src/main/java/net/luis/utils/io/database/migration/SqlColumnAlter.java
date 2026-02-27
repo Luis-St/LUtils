@@ -26,36 +26,38 @@ import org.jspecify.annotations.NonNull;
  * Provides a fluent API for changing the type, nullability, and default value of an existing column.<br>
  *
  * @author Luis-St
+ *
+ * @param <V> The type of the column value
  */
-public interface SqlColumnAlter {
-	
+public interface SqlColumnAlter<V> {
+
 	/**
 	 * Changes the column type.<br>
 	 *
 	 * @param type The new column type
 	 * @return This alter instance for chaining
 	 */
-	@NonNull SqlColumnAlter setType(@NonNull SqlColumnType type);
-	
+	@NonNull SqlColumnAlter<V> setType(@NonNull SqlColumnType type);
+
 	/**
 	 * Changes the nullability of the column.<br>
 	 *
 	 * @param nullable Whether the column should allow null values
 	 * @return This alter instance for chaining
 	 */
-	@NonNull SqlColumnAlter setNullable(boolean nullable);
-	
+	@NonNull SqlColumnAlter<V> setNullable(boolean nullable);
+
 	/**
 	 * Sets a new default value for the column.<br>
 	 *
 	 * @param value The new default value
 	 * @return This alter instance for chaining
 	 */
-	@NonNull SqlColumnAlter setDefault(@NonNull Object value);
-	
+	@NonNull SqlColumnAlter<V> setDefault(@NonNull V value);
+
 	/**
 	 * Drops the default value from the column.<br>
 	 * @return This alter instance for chaining
 	 */
-	@NonNull SqlColumnAlter dropDefault();
+	@NonNull SqlColumnAlter<V> dropDefault();
 }

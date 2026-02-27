@@ -43,7 +43,19 @@ import java.util.List;
  * @param <T> The type of the column value
  */
 public interface SqlColumn<T> extends SqlExpression<T> {
-	
+
+	/**
+	 * Returns the name of this column.<br>
+	 * @return The column name
+	 */
+	@NonNull String getName();
+
+	/**
+	 * Returns the table this column belongs to.<br>
+	 * @return The owning table
+	 */
+	@NonNull SqlTable<?> getTable();
+
 	/**
 	 * Returns string-specific operations for this column.<br>
 	 *

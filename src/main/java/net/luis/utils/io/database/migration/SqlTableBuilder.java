@@ -19,6 +19,8 @@
 package net.luis.utils.io.database.migration;
 
 import net.luis.utils.io.database.dialect.SqlColumnType;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlPrimaryKeyColumn;
 import org.jspecify.annotations.NonNull;
 
 import java.util.function.Consumer;
@@ -30,31 +32,32 @@ import java.util.function.Consumer;
  * @author Luis-St
  */
 public interface SqlTableBuilder {
-	
+
 	/**
-	 * Adds a column with the specified name and type.<br>
+	 * Adds a column with the specified column reference and type.<br>
 	 *
-	 * @param name The column name
+	 * @param column The column reference
 	 * @param type The column type
 	 * @return This builder for chaining
 	 */
-	@NonNull SqlTableBuilder column(@NonNull String name, @NonNull SqlColumnType type);
-	
+	@NonNull SqlTableBuilder column(@NonNull SqlColumn<?> column, @NonNull SqlColumnType type);
+
 	/**
-	 * Adds a column with the specified name, type, and additional options.<br>
+	 * Adds a column with the specified column reference, type, and additional options.<br>
 	 *
-	 * @param name The column name
+	 * @param column The column reference
 	 * @param type The column type
 	 * @param options A consumer to configure column options
+	 * @param <V> The column value type
 	 * @return This builder for chaining
 	 */
-	@NonNull SqlTableBuilder column(@NonNull String name, @NonNull SqlColumnType type, @NonNull Consumer<SqlColumnBuilder> options);
-	
+	<V> @NonNull SqlTableBuilder column(@NonNull SqlColumn<V> column, @NonNull SqlColumnType type, @NonNull Consumer<SqlColumnBuilder<V>> options);
+
 	/**
 	 * Sets the primary key for the table.<br>
 	 *
-	 * @param columns The column names forming the primary key
+	 * @param columns The primary key columns
 	 * @return This builder for chaining
 	 */
-	@NonNull SqlTableBuilder primaryKey(String @NonNull ... columns);
+	@NonNull SqlTableBuilder primaryKey(SqlPrimaryKeyColumn<?, ?> @NonNull ... columns);
 }

@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.migration;
 
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.table.SqlPrimaryKeyColumn;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -26,49 +27,50 @@ import org.jspecify.annotations.NonNull;
  * Provides a fluent API for configuring column constraints such as nullability, uniqueness, default values, auto-increment, foreign keys, and check constraints.<br>
  *
  * @author Luis-St
+ *
+ * @param <V> The type of the column value
  */
-public interface SqlColumnBuilder {
-	
+public interface SqlColumnBuilder<V> {
+
 	/**
 	 * Marks the column as not null.<br>
 	 * @return This builder for chaining
 	 */
-	@NonNull SqlColumnBuilder notNull();
-	
+	@NonNull SqlColumnBuilder<V> notNull();
+
 	/**
 	 * Marks the column as unique.<br>
 	 * @return This builder for chaining
 	 */
-	@NonNull SqlColumnBuilder unique();
-	
+	@NonNull SqlColumnBuilder<V> unique();
+
 	/**
 	 * Sets the default value for the column.<br>
 	 *
 	 * @param value The default value
 	 * @return This builder for chaining
 	 */
-	@NonNull SqlColumnBuilder defaultValue(@NonNull Object value);
-	
+	@NonNull SqlColumnBuilder<V> defaultValue(@NonNull V value);
+
 	/**
 	 * Marks the column as auto-incrementing.<br>
 	 * @return This builder for chaining
 	 */
-	@NonNull SqlColumnBuilder autoIncrement();
-	
+	@NonNull SqlColumnBuilder<V> autoIncrement();
+
 	/**
-	 * Adds a foreign key reference to the specified table and column.<br>
+	 * Adds a foreign key reference to the specified primary key column.<br>
 	 *
-	 * @param table The referenced table name
-	 * @param column The referenced column name
+	 * @param referencedColumn The referenced primary key column (carries its owning table)
 	 * @return This builder for chaining
 	 */
-	@NonNull SqlColumnBuilder references(@NonNull String table, @NonNull String column);
-	
+	@NonNull SqlColumnBuilder<V> references(@NonNull SqlPrimaryKeyColumn<?, ?> referencedColumn);
+
 	/**
 	 * Adds a check constraint to the column.<br>
 	 *
 	 * @param condition The check condition
 	 * @return This builder for chaining
 	 */
-	@NonNull SqlColumnBuilder check(@NonNull SqlCondition condition);
+	@NonNull SqlColumnBuilder<V> check(@NonNull SqlCondition condition);
 }

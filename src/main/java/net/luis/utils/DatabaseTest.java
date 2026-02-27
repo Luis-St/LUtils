@@ -18,8 +18,7 @@
 
 package net.luis.utils;
 
-import net.luis.utils.io.database.SqlDatabase;
-import net.luis.utils.io.database.SqlDatabaseConfig;
+import net.luis.utils.io.database.*;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlColumnType;
 import net.luis.utils.io.database.dialect.postgres.PostgresQueryProvider;
@@ -48,7 +47,7 @@ public class DatabaseTest {
 	// --- Table definition (pure schema, no queries) ---
 
 	static final SqlTable<Person> PERSON_TABLE = SqlTable.of("person", Person.class);
-	static final SqlColumn<Integer> ID = PERSON_TABLE.column("id", Integer.class);
+	static final SqlPrimaryKeyColumn<Person, Integer> ID = PERSON_TABLE.primaryKeyColumn("id", Integer.class);
 	static final SqlColumn<String> NAME = PERSON_TABLE.column("name", String.class);
 	static final SqlColumn<String> EMAIL = PERSON_TABLE.column("email", String.class);
 	static final SqlVersionColumn<Person, Long> VERSION = PERSON_TABLE.versionColumn("version", Long.class);
@@ -227,21 +226,21 @@ public class DatabaseTest {
 
 			@Override
 			public void up(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.createTable("person", table -> {
-					table.column("id", SqlColumnType.BIGINT, col -> col.notNull().autoIncrement());
-					table.column("name", SqlColumnType.VARCHAR, col -> col.notNull());
-					table.column("email", SqlColumnType.VARCHAR, col -> col.notNull().unique());
-					table.column("version", SqlColumnType.BIGINT, col -> col.notNull().defaultValue(0L));
-					table.column("created_at", SqlColumnType.TIMESTAMP, col -> col.notNull());
-					table.primaryKey("id");
+				builder.createTable(PERSON_TABLE, table -> {
+					table.column(ID, SqlColumnType.BIGINT, col -> col.notNull().autoIncrement());
+					table.column(NAME, SqlColumnType.VARCHAR, col -> col.notNull());
+					table.column(EMAIL, SqlColumnType.VARCHAR, col -> col.notNull().unique());
+					table.column(VERSION, SqlColumnType.BIGINT, col -> col.notNull().defaultValue(0L));
+					table.column(CREATED_AT, SqlColumnType.TIMESTAMP, col -> col.notNull());
+					table.primaryKey(ID);
 				});
-				builder.createIndex("person", "idx_person_email", idx -> idx.columns("email").unique());
+				builder.createIndex(PERSON_TABLE, "idx_person_email", idx -> idx.columns(EMAIL).unique());
 			}
 
 			@Override
 			public void down(@NonNull SqlMigrationBuilder builder) throws SqlException {
 				builder.dropIndex("idx_person_email");
-				builder.dropTable("person");
+				builder.dropTable(PERSON_TABLE);
 			}
 		};
 
@@ -250,7 +249,7 @@ public class DatabaseTest {
 			runner.register(migration);
 
 			// Dry run to preview SQL
-			List<net.luis.utils.io.database.SqlRendered> preview = runner.dryRun();
+			List<SqlRendered> preview = runner.dryRun();
 
 			// Apply all pending migrations
 			runner.migrate();

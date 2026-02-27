@@ -20,6 +20,7 @@ package net.luis.utils.io.database.migration;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -33,10 +34,10 @@ public interface SqlIndexBuilder {
 	/**
 	 * Specifies the columns included in the index.<br>
 	 *
-	 * @param columns The column names
+	 * @param columns The column references
 	 * @return This builder for chaining
 	 */
-	@NonNull SqlIndexBuilder columns(String @NonNull ... columns);
+	@NonNull SqlIndexBuilder columns(SqlColumn<?> @NonNull ... columns);
 	
 	/**
 	 * Marks the index as unique.<br>
