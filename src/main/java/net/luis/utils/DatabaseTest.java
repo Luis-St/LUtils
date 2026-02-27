@@ -47,11 +47,11 @@ public class DatabaseTest {
 	// --- Table definition (pure schema, no queries) ---
 
 	static final SqlTable<Person> PERSON_TABLE = SqlTable.of("person", Person.class);
-	static final SqlPrimaryKeyColumn<Person, Integer> ID = PERSON_TABLE.primaryKeyColumn("id", Integer.class);
-	static final SqlColumn<String> NAME = PERSON_TABLE.column("name", String.class);
-	static final SqlColumn<String> EMAIL = PERSON_TABLE.column("email", String.class);
-	static final SqlVersionColumn<Person, Long> VERSION = PERSON_TABLE.versionColumn("version", Long.class);
-	static final SqlCreationColumn<Person, Instant> CREATED_AT = PERSON_TABLE.creationColumn("created_at", Instant.class);
+	static final SqlPrimaryKeyColumn<Person, Integer> ID = PERSON_TABLE.primaryKeyColumn("id", Integer.class, col -> col.notNull().autoIncrement());
+	static final SqlColumn<String> NAME = PERSON_TABLE.column("name", String.class, SqlColumnBuilder::notNull);
+	static final SqlColumn<String> EMAIL = PERSON_TABLE.column("email", String.class, col -> col.notNull().unique());
+	static final SqlVersionColumn<Person, Long> VERSION = PERSON_TABLE.versionColumn("version", Long.class, col -> col.notNull().defaultValue(0L));
+	static final SqlCreationColumn<Person, Instant> CREATED_AT = PERSON_TABLE.creationColumn("created_at", Instant.class, SqlColumnBuilder::notNull);
 
 	void databaseLifecycle() throws SqlException {
 		// SqlDatabaseConfig.builder()...build() returns SqlDatabase directly

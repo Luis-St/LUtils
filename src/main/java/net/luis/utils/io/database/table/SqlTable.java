@@ -20,8 +20,11 @@ package net.luis.utils.io.database.table;
 
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.listener.SqlEntityListener;
+import net.luis.utils.io.database.migration.SqlColumnBuilder;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
+
+import java.util.function.Consumer;
 
 /**
  * Interface representing a SQL table definition.<br>
@@ -77,7 +80,18 @@ public interface SqlTable<T> {
 	 * @return A column reference
 	 */
 	<C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull Class<C> type);
-	
+
+	/**
+	 * Returns a column reference for the specified column name and type, with constraints configured via the consumer.<br>
+	 *
+	 * @param name The column name
+	 * @param type The column value type
+	 * @param constraints A consumer to configure column constraints at definition time
+	 * @param <C> The column type
+	 * @return A column reference
+	 */
+	<C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull Class<C> type, @NonNull Consumer<SqlColumnBuilder<C>> constraints);
+
 	/**
 	 * Returns a primary key column reference for the specified column name and type.<br>
 	 * Primary key columns are recognized by query builders for identity-based operations.<br>
@@ -88,7 +102,19 @@ public interface SqlTable<T> {
 	 * @return A primary key column reference
 	 */
 	<V> @NonNull SqlPrimaryKeyColumn<T, V> primaryKeyColumn(@NonNull String name, @NonNull Class<V> type);
-	
+
+	/**
+	 * Returns a primary key column reference for the specified column name and type, with constraints configured via the consumer.<br>
+	 * Primary key columns are recognized by query builders for identity-based operations.<br>
+	 *
+	 * @param name The column name
+	 * @param type The primary key value type
+	 * @param constraints A consumer to configure column constraints at definition time
+	 * @param <V> The primary key type (e.g., {@link Long} or {@link java.util.UUID})
+	 * @return A primary key column reference
+	 */
+	<V> @NonNull SqlPrimaryKeyColumn<T, V> primaryKeyColumn(@NonNull String name, @NonNull Class<V> type, @NonNull Consumer<SqlColumnBuilder<V>> constraints);
+
 	/**
 	 * Defines a composite primary key consisting of multiple columns.<br>
 	 * The returned definition is recognized by query builders for identity-based operations involving multiple columns (e.g., composite-key lookups, upserts).<br>
@@ -97,7 +123,7 @@ public interface SqlTable<T> {
 	 * @return The composite primary key definition
 	 */
 	@NonNull SqlCompositePrimaryKey<T> compositePrimaryKey(SqlColumn<?> @NonNull ... columns);
-	
+
 	/**
 	 * Returns a foreign column reference for the specified column name and referenced table.<br>
 	 *
@@ -109,7 +135,20 @@ public interface SqlTable<T> {
 	 * @return A foreign column reference
 	 */
 	<C, R> @NonNull SqlForeignColumn<C, R> foreignColumn(@NonNull String name, @NonNull Class<C> type, @NonNull SqlTable<R> referencedTable);
-	
+
+	/**
+	 * Returns a foreign column reference for the specified column name and referenced table, with constraints configured via the consumer.<br>
+	 *
+	 * @param name The column name
+	 * @param type The column value type
+	 * @param referencedTable The referenced table
+	 * @param constraints A consumer to configure column constraints at definition time
+	 * @param <C> The column type
+	 * @param <R> The referenced entity type
+	 * @return A foreign column reference
+	 */
+	<C, R> @NonNull SqlForeignColumn<C, R> foreignColumn(@NonNull String name, @NonNull Class<C> type, @NonNull SqlTable<R> referencedTable, @NonNull Consumer<SqlColumnBuilder<C>> constraints);
+
 	/**
 	 * Returns a version column reference for the specified column name and type.<br>
 	 * Version columns are recognized by query builders to apply automatic optimistic locking checks during updates and deletes.
@@ -120,7 +159,19 @@ public interface SqlTable<T> {
 	 * @return A version column reference
 	 */
 	<V> @NonNull SqlVersionColumn<T, V> versionColumn(@NonNull String name, @NonNull Class<V> type);
-	
+
+	/**
+	 * Returns a version column reference for the specified column name and type, with constraints configured via the consumer.<br>
+	 * Version columns are recognized by query builders to apply automatic optimistic locking checks during updates and deletes.
+	 *
+	 * @param name The column name
+	 * @param type The version value type
+	 * @param constraints A consumer to configure column constraints at definition time
+	 * @param <V> The version type (e.g., {@link Long} or {@link Integer})
+	 * @return A version column reference
+	 */
+	<V> @NonNull SqlVersionColumn<T, V> versionColumn(@NonNull String name, @NonNull Class<V> type, @NonNull Consumer<SqlColumnBuilder<V>> constraints);
+
 	/**
 	 * Returns a creation audit column reference for the specified column name and type.<br>
 	 * Creation columns are automatically filled on INSERT from the audit context.<br>
@@ -131,7 +182,19 @@ public interface SqlTable<T> {
 	 * @return A creation column reference
 	 */
 	<V> @NonNull SqlCreationColumn<T, V> creationColumn(@NonNull String name, @NonNull Class<V> type);
-	
+
+	/**
+	 * Returns a creation audit column reference for the specified column name and type, with constraints configured via the consumer.<br>
+	 * Creation columns are automatically filled on INSERT from the audit context.<br>
+	 *
+	 * @param name The column name
+	 * @param type The column value type
+	 * @param constraints A consumer to configure column constraints at definition time
+	 * @param <V> The column type (e.g., {@link java.time.Instant} or {@link String})
+	 * @return A creation column reference
+	 */
+	<V> @NonNull SqlCreationColumn<T, V> creationColumn(@NonNull String name, @NonNull Class<V> type, @NonNull Consumer<SqlColumnBuilder<V>> constraints);
+
 	/**
 	 * Returns an update audit column reference for the specified column name and type.<br>
 	 * Update columns are automatically filled on INSERT and UPDATE from the audit context.<br>
@@ -142,6 +205,18 @@ public interface SqlTable<T> {
 	 * @return An update column reference
 	 */
 	<V> @NonNull SqlUpdateColumn<T, V> updateColumn(@NonNull String name, @NonNull Class<V> type);
+
+	/**
+	 * Returns an update audit column reference for the specified column name and type, with constraints configured via the consumer.<br>
+	 * Update columns are automatically filled on INSERT and UPDATE from the audit context.<br>
+	 *
+	 * @param name The column name
+	 * @param type The column value type
+	 * @param constraints A consumer to configure column constraints at definition time
+	 * @param <V> The column type (e.g., {@link java.time.Instant} or {@link String})
+	 * @return An update column reference
+	 */
+	<V> @NonNull SqlUpdateColumn<T, V> updateColumn(@NonNull String name, @NonNull Class<V> type, @NonNull Consumer<SqlColumnBuilder<V>> constraints);
 	
 	/**
 	 * Adds an entity lifecycle listener to this table.<br>
