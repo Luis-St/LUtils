@@ -39,10 +39,12 @@ import java.util.List;
  *
  * @author Luis-St
  */
-@SuppressWarnings({"unused", "unchecked"})
+@SuppressWarnings("unused")
 public class DatabaseTest {
 
 	record Person(int id, String name, String email, long version, Instant createdAt) {}
+	record Role(int id, String name) {}
+	record PersonRole(int personId, int roleId) {}
 
 	// --- Table definition (pure schema, no queries) ---
 
@@ -52,6 +54,16 @@ public class DatabaseTest {
 	static final SqlColumn<String> EMAIL = PERSON_TABLE.column("email", String.class, col -> col.notNull().unique());
 	static final SqlVersionColumn<Person, Long> VERSION = PERSON_TABLE.versionColumn("version", Long.class, col -> col.notNull().defaultValue(0L));
 	static final SqlCreationColumn<Person, Instant> CREATED_AT = PERSON_TABLE.creationColumn("created_at", Instant.class, SqlColumnBuilder::notNull);
+
+	static final SqlTable<Role> ROLE_TABLE = SqlTable.of("role", Role.class);
+	static final SqlPrimaryKeyColumn<Role, Integer> ROLE_ID = ROLE_TABLE.primaryKeyColumn("id", Integer.class, col -> col.notNull().autoIncrement());
+	static final SqlColumn<String> ROLE_NAME = ROLE_TABLE.column("name", String.class, SqlColumnBuilder::notNull);
+
+	// Junction table: composite PK over two FK columns
+	static final SqlTable<PersonRole> PERSON_ROLE_TABLE = SqlTable.of("person_role", PersonRole.class);
+	static final SqlForeignColumn<Integer, Person> PR_PERSON_ID = PERSON_ROLE_TABLE.foreignColumn("person_id", Integer.class, PERSON_TABLE);
+	static final SqlForeignColumn<Integer, Role> PR_ROLE_ID = PERSON_ROLE_TABLE.foreignColumn("role_id", Integer.class, ROLE_TABLE);
+	static final SqlCompositePrimaryKey<PersonRole> PERSON_ROLE_PK = PERSON_ROLE_TABLE.compositePrimaryKey(PR_PERSON_ID, PR_ROLE_ID);
 
 	void databaseLifecycle() throws SqlException {
 		// SqlDatabaseConfig.builder()...build() returns SqlDatabase directly
@@ -210,6 +222,65 @@ public class DatabaseTest {
 				.distinctOn(NAME)
 				.fetch();
 		}
+	}
+
+	void compositePrimaryKeyExample() throws SqlException {
+		SqlMigration migration = new SqlMigration() {
+			@Override
+			public @NonNull String version() {
+				return "002";
+			}
+
+			@Override
+			public @NonNull String description() {
+				return "Create role and person_role tables";
+			}
+
+			@Override
+			public void up(@NonNull SqlMigrationBuilder builder) throws SqlException {
+				builder.createTable(ROLE_TABLE, table -> {
+					table.column(ROLE_ID, SqlColumnType.INTEGER, col -> col.notNull().autoIncrement());
+					table.column(ROLE_NAME, SqlColumnType.VARCHAR, col -> col.notNull());
+					table.primaryKey(ROLE_ID);
+				});
+
+				// Junction table: composite PK over two FK columns (neither is SqlPrimaryKeyColumn)
+				builder.createTable(PERSON_ROLE_TABLE, table -> {
+					table.column(PR_PERSON_ID, SqlColumnType.INTEGER, col -> col.notNull());
+					table.column(PR_ROLE_ID, SqlColumnType.INTEGER, col -> col.notNull());
+					table.compositePrimaryKey(PR_PERSON_ID, PR_ROLE_ID);
+				});
+			}
+
+			@Override
+			public void down(@NonNull SqlMigrationBuilder builder) throws SqlException {
+				builder.dropTable(PERSON_ROLE_TABLE);
+				builder.dropTable(ROLE_TABLE);
+			}
+		};
+
+		// Alternatively, add a composite PK constraint to an existing table via ALTER TABLE
+		SqlMigration alterMigration = new SqlMigration() {
+			@Override
+			public @NonNull String version() {
+				return "003";
+			}
+
+			@Override
+			public @NonNull String description() {
+				return "Add composite primary key constraint to person_role";
+			}
+
+			@Override
+			public void up(@NonNull SqlMigrationBuilder builder) throws SqlException {
+				builder.addCompositePrimaryKey(PERSON_ROLE_TABLE, "pk_person_role", PR_PERSON_ID, PR_ROLE_ID);
+			}
+
+			@Override
+			public void down(@NonNull SqlMigrationBuilder builder) throws SqlException {
+				builder.dropConstraint(PERSON_ROLE_TABLE, "pk_person_role");
+			}
+		};
 	}
 
 	void migrationExample() throws SqlException {
