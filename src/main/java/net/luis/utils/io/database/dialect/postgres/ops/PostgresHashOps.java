@@ -33,7 +33,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface PostgresHashOps {
-
+	
 	/**
 	 * Computes the MD5 hash of the column.<br>
 	 * Generates SQL: {@code md5(column)}.<br>
@@ -41,7 +41,7 @@ public interface PostgresHashOps {
 	 * @return The MD5 hash expression
 	 */
 	@NonNull SqlExpression<String> md5();
-
+	
 	/**
 	 * Computes the SHA-1 hash of the column.<br>
 	 * Generates SQL: {@code encode(digest(column, 'sha1'), 'hex')}.<br>
@@ -52,7 +52,7 @@ public interface PostgresHashOps {
 	 * @return The SHA-1 hash expression
 	 */
 	@NonNull SqlExpression<String> sha1();
-
+	
 	/**
 	 * Computes the SHA-224 hash of the column.<br>
 	 * Generates SQL: {@code encode(digest(column, 'sha224'), 'hex')}.<br>
@@ -63,7 +63,7 @@ public interface PostgresHashOps {
 	 * @return The SHA-224 hash expression
 	 */
 	@NonNull SqlExpression<String> sha224();
-
+	
 	/**
 	 * Computes the SHA-256 hash of the column.<br>
 	 * Generates SQL: {@code encode(digest(column, 'sha256'), 'hex')}.<br>
@@ -74,7 +74,7 @@ public interface PostgresHashOps {
 	 * @return The SHA-256 hash expression
 	 */
 	@NonNull SqlExpression<String> sha256();
-
+	
 	/**
 	 * Computes the SHA-384 hash of the column.<br>
 	 * Generates SQL: {@code encode(digest(column, 'sha384'), 'hex')}.<br>
@@ -85,7 +85,7 @@ public interface PostgresHashOps {
 	 * @return The SHA-384 hash expression
 	 */
 	@NonNull SqlExpression<String> sha384();
-
+	
 	/**
 	 * Computes the SHA-512 hash of the column.<br>
 	 * Generates SQL: {@code encode(digest(column, 'sha512'), 'hex')}.<br>

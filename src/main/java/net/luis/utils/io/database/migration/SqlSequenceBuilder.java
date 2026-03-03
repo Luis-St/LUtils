@@ -61,6 +61,14 @@ public interface SqlSequenceBuilder {
 	@NonNull SqlSequenceBuilder maxValue(long value);
 	
 	/**
+	 * Sets the number of sequence values to cache.<br>
+	 *
+	 * @param value The cache size
+	 * @return This builder for chaining
+	 */
+	@NonNull SqlSequenceBuilder cache(int value);
+	
+	/**
 	 * Enables cycling for the sequence.<br>
 	 * When the sequence reaches its maximum (or minimum) value, it wraps around.<br>
 	 *

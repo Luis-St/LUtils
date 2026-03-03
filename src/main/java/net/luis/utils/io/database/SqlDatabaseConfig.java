@@ -80,7 +80,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	<J, D> @NonNull SqlDatabaseConfig registerConverter(@NonNull SqlTypeConverter<J, D> converter);
-
+	
 	/**
 	 * Sets the naming strategy used for mapping between Java record component names and SQL column names.<br>
 	 *
@@ -88,7 +88,7 @@ public interface SqlDatabaseConfig {
 	 * @return This configuration builder
 	 */
 	@NonNull SqlDatabaseConfig namingStrategy(@NonNull SqlNamingStrategy strategy);
-
+	
 	/**
 	 * Builds the configuration and creates a database instance.<br>
 	 *

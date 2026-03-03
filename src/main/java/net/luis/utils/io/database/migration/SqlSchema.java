@@ -20,6 +20,7 @@ package net.luis.utils.io.database.migration;
 
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.sequence.SqlSequenceInfo;
 import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
@@ -57,4 +58,18 @@ public interface SqlSchema {
 	 * @return An optional containing the table, or empty if not found
 	 */
 	@NonNull Optional<SqlTable<?>> table(@NonNull String name);
+	
+	/**
+	 * Returns all sequences in this schema.<br>
+	 * @return The list of sequences
+	 */
+	@NonNull List<SqlSequenceInfo> sequences();
+	
+	/**
+	 * Returns a specific sequence by name.<br>
+	 *
+	 * @param name The sequence name
+	 * @return An optional containing the sequence info, or empty if not found
+	 */
+	@NonNull Optional<SqlSequenceInfo> sequence(@NonNull String name);
 }

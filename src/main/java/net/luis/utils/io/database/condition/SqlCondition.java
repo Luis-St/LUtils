@@ -38,7 +38,7 @@ public interface SqlCondition extends SqlRenderable {
 	static @NonNull SqlCondition always() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Returns a condition that is always false.<br>
 	 * Acts as the identity element for {@code OR} operations.<br>
@@ -49,7 +49,7 @@ public interface SqlCondition extends SqlRenderable {
 	static @NonNull SqlCondition none() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Creates a combined condition using {@code AND}.<br>
 	 * Generates SQL: {@code cond1 AND cond2 AND ...}.<br>

@@ -25,38 +25,38 @@ package net.luis.utils.io.database.transaction;
  * @author Luis-St
  */
 public enum SqlPropagation {
-
+	
 	/**
 	 * Joins the current transaction if one exists, otherwise creates a new one.<br>
 	 */
 	REQUIRED,
-
+	
 	/**
 	 * Always creates a new transaction, suspending the current one if it exists.<br>
 	 */
 	REQUIRES_NEW,
-
+	
 	/**
 	 * Creates a nested transaction using a savepoint within the current transaction.<br>
 	 * Requires an active transaction to exist.<br>
 	 */
 	NESTED,
-
+	
 	/**
 	 * Joins the current transaction if one exists, otherwise executes non-transactionally.<br>
 	 */
 	SUPPORTS,
-
+	
 	/**
 	 * Executes non-transactionally, suspending the current transaction if one exists.<br>
 	 */
 	NOT_SUPPORTED,
-
+	
 	/**
 	 * Requires an active transaction to exist; throws an exception if none is present.<br>
 	 */
 	MANDATORY,
-
+	
 	/**
 	 * Requires that no active transaction exists; throws an exception if one is present.<br>
 	 */

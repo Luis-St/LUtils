@@ -16,30 +16,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.mapping;
+package net.luis.utils.io.database.dialect.postgres;
 
+import net.luis.utils.io.database.migration.SqlSequenceAlter;
+import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Interface for pluggable naming strategies that convert between Java record component names and SQL column names.<br>
+ * PostgreSQL-specific extension of {@link SqlSequenceAlter} for ownership management.<br>
  *
  * @author Luis-St
  */
-public interface SqlNamingStrategy {
+public interface PostgresSequenceAlter extends SqlSequenceAlter {
 	
 	/**
-	 * Converts a SQL column name to a Java record component name.<br>
+	 * Sets the column that owns this sequence.<br>
+	 * Generates SQL: {@code OWNED BY column}.<br>
 	 *
-	 * @param columnName The SQL column name
-	 * @return The Java record component name
+	 * @param column The owning column
+	 * @return This alter instance for chaining
 	 */
-	@NonNull String toComponentName(@NonNull String columnName);
+	@NonNull PostgresSequenceAlter ownedBy(@NonNull SqlColumn<?> column);
 	
 	/**
-	 * Converts a Java record component name to a SQL column name.<br>
+	 * Removes the ownership of this sequence.<br>
+	 * Generates SQL: {@code OWNED BY NONE}.<br>
 	 *
-	 * @param componentName The Java record component name
-	 * @return The SQL column name
+	 * @return This alter instance for chaining
 	 */
-	@NonNull String toColumnName(@NonNull String componentName);
+	@NonNull PostgresSequenceAlter noOwner();
 }

@@ -21,11 +21,11 @@ package net.luis.utils.io.database.sequence;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Interface representing a SQL sequence definition.<br>
+ * Interface representing SQL sequence information for schema introspection.<br>
  *
  * @author Luis-St
  */
-public interface SqlSequenceDefinition {
+public interface SqlSequenceInfo {
 	
 	/**
 	 * Returns the name of the sequence.<br>

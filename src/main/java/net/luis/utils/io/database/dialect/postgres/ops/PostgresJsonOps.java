@@ -32,7 +32,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface PostgresJsonOps {
-
+	
 	/**
 	 * Accesses a JSON field by key and returns it as an expression.<br>
 	 * Generates SQL: {@code column -> 'key'}.<br>
@@ -41,7 +41,7 @@ public interface PostgresJsonOps {
 	 * @return An expression representing the JSON field value
 	 */
 	@NonNull SqlExpression<?> get(@NonNull String key);
-
+	
 	/**
 	 * Creates a condition that checks if the JSON column contains the given key.<br>
 	 * Generates SQL: {@code column ? 'key'}.<br>
@@ -50,7 +50,7 @@ public interface PostgresJsonOps {
 	 * @return The has-key condition
 	 */
 	@NonNull SqlCondition hasKey(@NonNull String key);
-
+	
 	/**
 	 * Accesses a JSON field by key and returns its value as text.<br>
 	 * Generates SQL: {@code column ->> 'key'}.<br>
@@ -59,7 +59,7 @@ public interface PostgresJsonOps {
 	 * @return A condition representing the JSON field value as text
 	 */
 	@NonNull SqlCondition getAsText(@NonNull String key);
-
+	
 	/**
 	 * Sets the value at the specified JSON path.<br>
 	 * Generates SQL: {@code jsonb_set(column, path, value)}.<br>
@@ -69,7 +69,7 @@ public interface PostgresJsonOps {
 	 * @return The modified JSON expression
 	 */
 	@NonNull SqlExpression<String> set(@NonNull String path, @NonNull Object value);
-
+	
 	/**
 	 * Removes the value at the specified JSON path.<br>
 	 * Generates SQL: {@code column #- path}.<br>
@@ -78,7 +78,7 @@ public interface PostgresJsonOps {
 	 * @return The modified JSON expression
 	 */
 	@NonNull SqlExpression<String> remove(@NonNull String path);
-
+	
 	/**
 	 * Merges the given JSON string into the column using concatenation.<br>
 	 * Generates SQL: {@code column || json::jsonb}.<br>
@@ -87,7 +87,7 @@ public interface PostgresJsonOps {
 	 * @return The merged JSON expression
 	 */
 	@NonNull SqlExpression<String> merge(@NonNull String json);
-
+	
 	/**
 	 * Returns the JSON type of the value at the top level.<br>
 	 * Generates SQL: {@code jsonb_typeof(column)}.<br>
@@ -95,7 +95,7 @@ public interface PostgresJsonOps {
 	 * @return The JSON type expression
 	 */
 	@NonNull SqlExpression<String> typeOf();
-
+	
 	/**
 	 * Returns the length of the JSON array column.<br>
 	 * Generates SQL: {@code jsonb_array_length(column)}.<br>
@@ -103,7 +103,7 @@ public interface PostgresJsonOps {
 	 * @return The array length expression
 	 */
 	@NonNull SqlExpression<Integer> arrayLength();
-
+	
 	/**
 	 * Returns the keys of the JSON object column.<br>
 	 * Generates SQL: {@code jsonb_object_keys(column)}.<br>
@@ -111,7 +111,7 @@ public interface PostgresJsonOps {
 	 * @return The keys expression
 	 */
 	@NonNull SqlExpression<String> keys();
-
+	
 	/**
 	 * Extracts the value at the specified JSON path as text.<br>
 	 * Generates SQL: {@code column #>> path}.<br>

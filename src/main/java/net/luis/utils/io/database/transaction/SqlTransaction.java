@@ -124,7 +124,7 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction isolation(@NonNull SqlIsolationLevel level);
-
+	
 	/**
 	 * Sets the propagation behavior for this transaction.<br>
 	 *
@@ -132,7 +132,7 @@ public interface SqlTransaction extends AutoCloseable {
 	 * @return This transaction
 	 */
 	@NonNull SqlTransaction propagation(@NonNull SqlPropagation propagation);
-
+	
 	/**
 	 * Closes this transaction.<br>
 	 * If the transaction is still active (not committed or rolled back),

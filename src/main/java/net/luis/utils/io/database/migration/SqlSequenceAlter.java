@@ -61,6 +61,30 @@ public interface SqlSequenceAlter {
 	@NonNull SqlSequenceAlter setMaxValue(long value);
 	
 	/**
+	 * Sets the number of sequence values to cache.<br>
+	 *
+	 * @param value The new cache size
+	 * @return This alter instance for chaining
+	 */
+	@NonNull SqlSequenceAlter setCache(int value);
+	
+	/**
+	 * Removes the minimum value constraint from the sequence.<br>
+	 * Generates SQL: {@code ALTER SEQUENCE ... NO MINVALUE}.<br>
+	 *
+	 * @return This alter instance for chaining
+	 */
+	@NonNull SqlSequenceAlter noMinValue();
+	
+	/**
+	 * Removes the maximum value constraint from the sequence.<br>
+	 * Generates SQL: {@code ALTER SEQUENCE ... NO MAXVALUE}.<br>
+	 *
+	 * @return This alter instance for chaining
+	 */
+	@NonNull SqlSequenceAlter noMaxValue();
+	
+	/**
 	 * Sets whether the sequence should cycle.<br>
 	 *
 	 * @param cycle Whether to enable cycling

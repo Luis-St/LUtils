@@ -44,55 +44,55 @@ import java.util.List;
  * @param <T> The type of the column value
  */
 public interface SqlColumn<T> extends SqlExpression<T> {
-
+	
 	/**
 	 * Returns the name of this column.<br>
 	 * @return The column name
 	 */
 	@NonNull String getName();
-
+	
 	/**
 	 * Returns whether this column was defined as NOT NULL.<br>
 	 * @return {@code true} if this column is not null
 	 */
 	boolean isNotNull();
-
+	
 	/**
 	 * Returns whether this column was defined as UNIQUE.<br>
 	 * @return {@code true} if this column is unique
 	 */
 	boolean isUnique();
-
+	
 	/**
 	 * Returns whether this column was defined as AUTO INCREMENT.<br>
 	 * @return {@code true} if this column is auto-increment
 	 */
 	boolean isAutoIncrement();
-
+	
 	/**
 	 * Returns the default value registered at definition time, or {@code null} if none was set.<br>
 	 * @return The default value, or {@code null}
 	 */
 	@Nullable T getDefaultValue();
-
+	
 	/**
 	 * Returns the primary key column this column references (inline FK), or {@code null} if none.<br>
 	 * @return The referenced primary key column, or {@code null}
 	 */
 	@Nullable SqlPrimaryKeyColumn<?, ?> getReferences();
-
+	
 	/**
 	 * Returns the check constraints registered at definition time. Empty list if none.<br>
 	 * @return The list of check constraints
 	 */
 	@NonNull List<SqlCondition> getChecks();
-
+	
 	/**
 	 * Returns the table this column belongs to.<br>
 	 * @return The owning table
 	 */
 	@NonNull SqlTable<?> getTable();
-
+	
 	/**
 	 * Returns string-specific operations for this column.<br>
 	 *

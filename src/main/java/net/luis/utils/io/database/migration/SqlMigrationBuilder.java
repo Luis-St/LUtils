@@ -227,4 +227,22 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the sequence alteration fails
 	 */
 	void alterSequence(@NonNull String name, @NonNull Consumer<SqlSequenceAlter> changes) throws SqlException;
+	
+	/**
+	 * Renames a sequence.<br>
+	 *
+	 * @param from The current sequence name
+	 * @param to The new sequence name
+	 * @throws SqlException If the sequence rename fails
+	 */
+	void renameSequence(@NonNull String from, @NonNull String to) throws SqlException;
+	
+	/**
+	 * Renames an index.<br>
+	 *
+	 * @param from The current index name
+	 * @param to The new index name
+	 * @throws SqlException If the index rename fails
+	 */
+	void renameIndex(@NonNull String from, @NonNull String to) throws SqlException;
 }

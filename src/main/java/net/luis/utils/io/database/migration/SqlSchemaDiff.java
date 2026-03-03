@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.migration;
 
+import net.luis.utils.io.database.sequence.SqlSequenceInfo;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -58,4 +59,22 @@ public interface SqlSchemaDiff {
 	 * @return The list of modified table diffs
 	 */
 	@NonNull List<SqlTableDiff> getModifiedTables();
+	
+	/**
+	 * Returns the sequences that were added in the target schema.<br>
+	 * @return The list of added sequences
+	 */
+	@NonNull List<SqlSequenceInfo> getAddedSequences();
+	
+	/**
+	 * Returns the sequences that were removed from the current schema.<br>
+	 * @return The list of removed sequences
+	 */
+	@NonNull List<SqlSequenceInfo> getRemovedSequences();
+	
+	/**
+	 * Returns the sequences that were modified between schemas.<br>
+	 * @return The list of modified sequence diffs
+	 */
+	@NonNull List<SqlSequenceDiff> getModifiedSequences();
 }

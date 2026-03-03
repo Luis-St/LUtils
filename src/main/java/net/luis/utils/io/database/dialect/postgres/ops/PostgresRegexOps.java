@@ -32,7 +32,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface PostgresRegexOps {
-
+	
 	/**
 	 * Creates a condition that checks if the column matches the given regex pattern.<br>
 	 * Generates SQL: {@code column ~ pattern}.<br>
@@ -41,7 +41,7 @@ public interface PostgresRegexOps {
 	 * @return The regex match condition
 	 */
 	@NonNull SqlCondition matches(@NonNull String pattern);
-
+	
 	/**
 	 * Creates a condition that checks if the column matches the given regex pattern, ignoring case.<br>
 	 * Generates SQL: {@code column ~* pattern}.<br>
@@ -50,7 +50,7 @@ public interface PostgresRegexOps {
 	 * @return The case-insensitive regex match condition
 	 */
 	@NonNull SqlCondition matchesIgnoreCase(@NonNull String pattern);
-
+	
 	/**
 	 * Replaces all occurrences of a regex pattern in the column with the given replacement.<br>
 	 * Generates SQL: {@code regexp_replace(column, pattern, replacement, 'g')}.<br>

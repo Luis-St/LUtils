@@ -26,7 +26,7 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public interface SqlDialectFeatures {
-
+	
 	/**
 	 * Returns whether the dialect supports the given feature.<br>
 	 *

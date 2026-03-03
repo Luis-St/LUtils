@@ -57,7 +57,7 @@ public interface SqlDeleteQuery<T> extends SqlRenderable {
 	 * @throws SqlException If a database access error occurs
 	 */
 	int execute() throws SqlException;
-
+	
 	/**
 	 * Executes the delete query and returns the deleted rows.<br>
 	 * Generates SQL: {@code DELETE FROM table WHERE ... RETURNING *}.<br>
@@ -66,5 +66,5 @@ public interface SqlDeleteQuery<T> extends SqlRenderable {
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull List<T> returning() throws SqlException;
-
+	
 }
