@@ -21,6 +21,7 @@ package net.luis.utils.io.database.migration;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlColumnType;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.*;
 import org.jspecify.annotations.NonNull;
 
@@ -210,4 +211,22 @@ public interface SqlMigrationBuilder {
 	 * @throws SqlException If the index rename fails
 	 */
 	void renameIndex(@NonNull String from, @NonNull String to) throws SqlException;
+	
+	/**
+	 * Returns a query provider for the specified table, scoped to the migration transaction.<br>
+	 * <p>
+	 *     Provides access to the full query DSL (INSERT, UPDATE, DELETE, SELECT) for data migrations
+	 *     such as backfilling newly added columns, seeding initial rows, or transforming existing data.
+	 * </p>
+	 * <p>
+	 *     All queries executed via the returned provider participate in the same transaction as the migration.
+	 *     If any operation fails, the entire migration (DDL and DML alike) is rolled back together.
+	 * </p>
+	 *
+	 * @param table The table to obtain a query provider for
+	 * @param <T> The entity type of the table
+	 * @return A query provider scoped to the migration transaction
+	 * @throws SqlException If a database access error occurs
+	 */
+	<T> @NonNull SqlQueryProvider<T> queryProvider(@NonNull SqlTable<T> table) throws SqlException;
 }

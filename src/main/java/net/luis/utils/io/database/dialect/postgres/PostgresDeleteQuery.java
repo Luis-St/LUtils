@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect.postgres;
 
+import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.query.SqlDeleteQuery;
 import net.luis.utils.io.database.table.SqlTable;
@@ -56,4 +57,19 @@ public interface PostgresDeleteQuery<T> extends SqlDeleteQuery<T> {
 	 */
 	@Override
 	@NonNull List<T> returning() throws SqlException;
+	
+	@Override
+	@NonNull PostgresDeleteQuery<T> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	@Override
+	@NonNull PostgresDeleteQuery<T> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	@Override
+	@NonNull PostgresDeleteQuery<T> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	@Override
+	@NonNull PostgresDeleteQuery<T> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	@Override
+	@NonNull PostgresDeleteQuery<T> batchSize(int batchSize);
 }

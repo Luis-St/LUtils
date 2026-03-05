@@ -41,6 +41,15 @@ public interface SqlExpression<T> extends SqlOrderable {
 	@NonNull SqlCondition equalTo(@NonNull T value);
 	
 	/**
+	 * Creates a condition that checks if this expression is equal to another expression.<br>
+	 * Generates SQL: {@code left = right}.<br>
+	 *
+	 * @param other The expression to compare to
+	 * @return The equality condition
+	 */
+	@NonNull SqlCondition equalTo(@NonNull SqlExpression<T> other);
+	
+	/**
 	 * Creates a condition that checks if this expression is not equal to the given value.<br>
 	 * Generates SQL: {@code column <> value}.<br>
 	 *
@@ -48,6 +57,15 @@ public interface SqlExpression<T> extends SqlOrderable {
 	 * @return The inequality condition
 	 */
 	@NonNull SqlCondition notEqualTo(@NonNull T value);
+	
+	/**
+	 * Creates a condition that checks if this expression is not equal to another expression.<br>
+	 * Generates SQL: {@code left <> right}.<br>
+	 *
+	 * @param other The expression to compare to
+	 * @return The inequality condition
+	 */
+	@NonNull SqlCondition notEqualTo(@NonNull SqlExpression<T> other);
 	
 	/**
 	 * Creates a condition that checks if this expression is greater than the given value.<br>
@@ -59,6 +77,15 @@ public interface SqlExpression<T> extends SqlOrderable {
 	@NonNull SqlCondition greaterThan(@NonNull T value);
 	
 	/**
+	 * Creates a condition that checks if this expression is greater than another expression.<br>
+	 * Generates SQL: {@code left > right}.<br>
+	 *
+	 * @param other The expression to compare to
+	 * @return The greater-than condition
+	 */
+	@NonNull SqlCondition greaterThan(@NonNull SqlExpression<T> other);
+	
+	/**
 	 * Creates a condition that checks if this expression is greater than or equal to the given value.<br>
 	 * Generates SQL: {@code column >= value}.<br>
 	 *
@@ -66,6 +93,15 @@ public interface SqlExpression<T> extends SqlOrderable {
 	 * @return The greater-than-or-equal condition
 	 */
 	@NonNull SqlCondition greaterThanOrEqualTo(@NonNull T value);
+	
+	/**
+	 * Creates a condition that checks if this expression is greater than or equal to another expression.<br>
+	 * Generates SQL: {@code left >= right}.<br>
+	 *
+	 * @param other The expression to compare to
+	 * @return The greater-than-or-equal condition
+	 */
+	@NonNull SqlCondition greaterThanOrEqualTo(@NonNull SqlExpression<T> other);
 	
 	/**
 	 * Creates a condition that checks if this expression is less than the given value.<br>
@@ -77,6 +113,15 @@ public interface SqlExpression<T> extends SqlOrderable {
 	@NonNull SqlCondition lessThan(@NonNull T value);
 	
 	/**
+	 * Creates a condition that checks if this expression is less than another expression.<br>
+	 * Generates SQL: {@code left < right}.<br>
+	 *
+	 * @param other The expression to compare to
+	 * @return The less-than condition
+	 */
+	@NonNull SqlCondition lessThan(@NonNull SqlExpression<T> other);
+	
+	/**
 	 * Creates a condition that checks if this expression is less than or equal to the given value.<br>
 	 * Generates SQL: {@code column <= value}.<br>
 	 *
@@ -84,6 +129,15 @@ public interface SqlExpression<T> extends SqlOrderable {
 	 * @return The less-than-or-equal condition
 	 */
 	@NonNull SqlCondition lessThanOrEqualTo(@NonNull T value);
+	
+	/**
+	 * Creates a condition that checks if this expression is less than or equal to another expression.<br>
+	 * Generates SQL: {@code left <= right}.<br>
+	 *
+	 * @param other The expression to compare to
+	 * @return The less-than-or-equal condition
+	 */
+	@NonNull SqlCondition lessThanOrEqualTo(@NonNull SqlExpression<T> other);
 	
 	/**
 	 * Creates a condition that checks if this expression is between the given values.<br>
@@ -94,6 +148,16 @@ public interface SqlExpression<T> extends SqlOrderable {
 	 * @return The between condition
 	 */
 	@NonNull SqlCondition between(@NonNull T start, @NonNull T end);
+	
+	/**
+	 * Creates a condition that checks if this expression is between two other expressions.<br>
+	 * Generates SQL: {@code expr BETWEEN startExpr AND endExpr}.<br>
+	 *
+	 * @param start The expression defining the lower bound
+	 * @param end The expression defining the upper bound
+	 * @return The between condition
+	 */
+	@NonNull SqlCondition between(@NonNull SqlExpression<T> start, @NonNull SqlExpression<T> end);
 	
 	/**
 	 * Creates a condition that checks if this expression is null.<br>

@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect.postgres;
 
+import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.query.SqlUpdateQuery;
 import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
@@ -43,4 +44,19 @@ public interface PostgresUpdateQuery<T> extends SqlUpdateQuery<T> {
 	 * @return This update query for method chaining
 	 */
 	@NonNull PostgresUpdateQuery<T> from(@NonNull SqlTable<?> table);
+	
+	@Override
+	@NonNull PostgresUpdateQuery<T> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	@Override
+	@NonNull PostgresUpdateQuery<T> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	@Override
+	@NonNull PostgresUpdateQuery<T> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	@Override
+	@NonNull PostgresUpdateQuery<T> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	@Override
+	@NonNull PostgresUpdateQuery<T> batchSize(int batchSize);
 }

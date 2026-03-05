@@ -118,22 +118,43 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	@NonNull SqlCondition equalTo(@NonNull T value);
 	
 	@Override
+	@NonNull SqlCondition equalTo(@NonNull SqlExpression<T> other);
+	
+	@Override
 	@NonNull SqlCondition notEqualTo(@NonNull T value);
+	
+	@Override
+	@NonNull SqlCondition notEqualTo(@NonNull SqlExpression<T> other);
 	
 	@Override
 	@NonNull SqlCondition greaterThan(@NonNull T value);
 	
 	@Override
+	@NonNull SqlCondition greaterThan(@NonNull SqlExpression<T> other);
+	
+	@Override
 	@NonNull SqlCondition greaterThanOrEqualTo(@NonNull T value);
+	
+	@Override
+	@NonNull SqlCondition greaterThanOrEqualTo(@NonNull SqlExpression<T> other);
 	
 	@Override
 	@NonNull SqlCondition lessThan(@NonNull T value);
 	
 	@Override
+	@NonNull SqlCondition lessThan(@NonNull SqlExpression<T> other);
+	
+	@Override
 	@NonNull SqlCondition lessThanOrEqualTo(@NonNull T value);
 	
 	@Override
+	@NonNull SqlCondition lessThanOrEqualTo(@NonNull SqlExpression<T> other);
+	
+	@Override
 	@NonNull SqlCondition between(@NonNull T start, @NonNull T end);
+	
+	@Override
+	@NonNull SqlCondition between(@NonNull SqlExpression<T> start, @NonNull SqlExpression<T> end);
 	
 	@Override
 	@NonNull SqlCondition isNull();

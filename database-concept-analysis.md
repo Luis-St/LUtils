@@ -87,22 +87,6 @@ All interfaces are stubs (`throw new UnsupportedOperationException()`), confirmi
 
 ## 3. Missing or Incomplete Features
 
-### 3.1 Critical Gaps
-
-**Batch UPDATE and DELETE**
-`SqlInsertQuery` has `insert(Collection<T>, int batchSize)` for batched inserts, but `SqlUpdateQuery` and `SqlDeleteQuery` have no equivalent. Bulk update/delete operations (e.g., `UPDATE WHERE id IN (...)` applied to thousands of rows in batches) are a standard need and currently have no path.
-
-**Column-to-column comparisons in conditions**
-`SqlCondition` only supports column-to-value comparisons (e.g., `WHERE version = 5`). There is no way to express column-to-column comparisons such as `WHERE updated_at > created_at` or `WHERE salary > min_salary`. This is needed for many real-world queries and audit checks.
-
-**Data migrations (DML in `SqlMigrationBuilder`)**
-`SqlMigrationBuilder` is DDL-only. There is no way to run DML (INSERT/UPDATE/DELETE) as part of a migration step — for example, backfilling a newly added column, seeding initial data, or transforming existing rows. This is a fundamental requirement of real migration workflows.
-
-**JOIN in UPDATE and DELETE**
-`SqlUpdateQuery` and `SqlDeleteQuery` have no JOIN support. Cross-table mutations (e.g., `UPDATE t1 SET ... FROM t2 WHERE t1.id = t2.id`, or `DELETE FROM t1 USING t2 WHERE ...`) are standard SQL patterns with no representation in the concept.
-
----
-
 ### 3.2 Notable Gaps
 
 **Raw SQL escape hatch**
@@ -182,10 +166,10 @@ The 1–16 column typed `select(col1, col2, ...)` overloads are declared to acce
 | Entity lifecycle listeners | Complete |
 | Type conversion and naming strategy | Complete |
 | Column operations (string/numeric/temporal) | Mostly complete — minor asymmetries |
-| Batch operations | Partial — INSERT only, no batch UPDATE/DELETE |
-| Column-to-column conditions | **Missing** |
-| JOIN in UPDATE/DELETE | **Missing** |
-| Data migrations (DML in builder) | **Missing** |
+| Batch operations | Complete — INSERT, UPDATE, DELETE all support batching |
+| Column-to-column conditions | Complete — expression-to-expression overloads on `SqlExpression<T>` |
+| JOIN in UPDATE/DELETE | Complete — `SqlJoinable<Q>` shared interface; all four join types |
+| Data migrations (DML in builder) | Complete — `queryProvider()` on `SqlMigrationBuilder` |
 | Raw SQL escape hatch | **Missing** |
 | `FOR SHARE` locking | **Missing** |
 | CROSS JOIN / LATERAL JOIN | **Missing** |
@@ -198,4 +182,4 @@ The 1–16 column typed `select(col1, col2, ...)` overloads are declared to acce
 
 ## 5. Conclusion
 
-The concept is architecturally sound and substantially complete for the common case. The separation of schema definition from query execution, the dialect abstraction, the type-safe projection tuples, and the DSL-only migration system are all strong design choices. The most impactful gaps are: **data migrations**, **batch UPDATE/DELETE**, **column-to-column conditions**, and **JOIN-based mutations**. These represent patterns that appear in virtually every non-trivial application. The remaining issues are refinements rather than blockers.
+The concept is architecturally sound and substantially complete for the common case. The separation of schema definition from query execution, the dialect abstraction, the type-safe projection tuples, and the DSL-only migration system are all strong design choices. The previously critical gaps — **data migrations**, **batch UPDATE/DELETE**, **column-to-column conditions**, and **JOIN-based mutations** — have been addressed. The remaining issues are refinements rather than blockers.

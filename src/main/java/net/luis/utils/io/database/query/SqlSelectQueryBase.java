@@ -26,7 +26,6 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.entity.SqlEntityNotFoundException;
 import net.luis.utils.io.database.exception.query.SqlQueryException;
 import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -42,7 +41,7 @@ import java.util.stream.Stream;
  * @param <T> The type of the result
  * @param <Q> The self-referencing query type for fluent API support
  */
-public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> extends SqlRenderable {
+public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> extends SqlRenderable, SqlJoinable<Q> {
 	
 	/**
 	 * Adds a Common Table Expression (CTE) to the query.<br>
@@ -85,42 +84,6 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 * @return This query for method chaining
 	 */
 	@NonNull Q whereNotExists(@NonNull SqlSelectQuery<?> subquery);
-	
-	/**
-	 * Adds an {@code INNER JOIN} clause to the query.<br>
-	 *
-	 * @param table The table to join
-	 * @param on The join condition
-	 * @return This query for method chaining
-	 */
-	@NonNull Q innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	/**
-	 * Adds a {@code LEFT JOIN} clause to the query.<br>
-	 *
-	 * @param table The table to join
-	 * @param on The join condition
-	 * @return This query for method chaining
-	 */
-	@NonNull Q leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	/**
-	 * Adds a {@code RIGHT JOIN} clause to the query.<br>
-	 *
-	 * @param table The table to join
-	 * @param on The join condition
-	 * @return This query for method chaining
-	 */
-	@NonNull Q rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	/**
-	 * Adds a {@code FULL JOIN} clause to the query.<br>
-	 *
-	 * @param table The table to join
-	 * @param on The join condition
-	 * @return This query for method chaining
-	 */
-	@NonNull Q fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
 	
 	/**
 	 * Adds a {@code GROUP BY} clause to the query.<br>

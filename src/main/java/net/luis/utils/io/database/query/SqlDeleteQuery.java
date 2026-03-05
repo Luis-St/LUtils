@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @param <T> The type of the entity
  */
-public interface SqlDeleteQuery<T> extends SqlRenderable {
+public interface SqlDeleteQuery<T> extends SqlRenderable, SqlJoinable<SqlDeleteQuery<T>> {
 	
 	/**
 	 * Sets the condition for the delete query.<br>
@@ -42,6 +42,20 @@ public interface SqlDeleteQuery<T> extends SqlRenderable {
 	 * @return This delete query
 	 */
 	@NonNull SqlDeleteQuery<T> where(@NonNull SqlCondition condition);
+	
+	/**
+	 * Sets the maximum number of rows to process per execution.<br>
+	 * When set, the delete is applied in repeated executions of at most {@code batchSize} rows each,
+	 * looping until no rows remain. The total number of affected rows is the sum across all executions.<br>
+	 * <p>
+	 *     When combined with {@link #returning()}, results from all batch executions are accumulated
+	 *     into a single list before being returned.
+	 * </p>
+	 *
+	 * @param batchSize The maximum number of rows per batch execution (must be positive)
+	 * @return This delete query
+	 */
+	@NonNull SqlDeleteQuery<T> batchSize(int batchSize);
 	
 	/**
 	 * Executes the delete query.<br>
