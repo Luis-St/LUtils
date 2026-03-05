@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.migration;
 
+import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -32,10 +33,10 @@ import java.time.Instant;
 public interface SqlMigrationInfo {
 	
 	/**
-	 * Returns the version identifier of this migration.<br>
+	 * Returns the version of this migration.<br>
 	 * @return The migration version
 	 */
-	@NonNull String version();
+	@NonNull Version version();
 	
 	/**
 	 * Returns the human-readable description of this migration.<br>

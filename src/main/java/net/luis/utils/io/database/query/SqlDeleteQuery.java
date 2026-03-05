@@ -35,12 +35,6 @@ import java.util.List;
 public interface SqlDeleteQuery<T> extends SqlRenderable {
 	
 	/**
-	 * Returns the parameter values for this query.<br>
-	 * @return A list of parameter values in order
-	 */
-	@NonNull List<Object> getParameters();
-	
-	/**
 	 * Sets the condition for the delete query.<br>
 	 * Generates SQL: {@code WHERE condition}.<br>
 	 *

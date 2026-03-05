@@ -71,8 +71,10 @@ public interface SqlPage<T> {
 	/**
 	 * Fetches the next page of results.<br>
 	 * Executes a SQL query with adjusted {@code LIMIT} and {@code OFFSET} clauses.<br>
+	 * Callers must check {@link #hasNext()} before calling this method.<br>
 	 *
 	 * @return The next page of results
+	 * @throws java.util.NoSuchElementException If there is no next page (i.e. {@link #hasNext()} returns false)
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull SqlPage<T> fetchNext() throws SqlException;
@@ -80,8 +82,10 @@ public interface SqlPage<T> {
 	/**
 	 * Fetches the previous page of results.<br>
 	 * Executes a SQL query with adjusted {@code LIMIT} and {@code OFFSET} clauses.<br>
+	 * Callers must check {@link #hasPrevious()} before calling this method.<br>
 	 *
 	 * @return The previous page of results
+	 * @throws java.util.NoSuchElementException If there is no previous page (i.e. {@link #hasPrevious()} returns false)
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull SqlPage<T> fetchPrevious() throws SqlException;

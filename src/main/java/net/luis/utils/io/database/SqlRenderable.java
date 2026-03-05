@@ -39,12 +39,22 @@ public interface SqlRenderable {
 	@NonNull String toSql(@NonNull SqlRenderer renderer);
 	
 	/**
+	 * Returns the bound parameter values for this element in the order they appear in the rendered SQL.<br>
+	 * Elements that do not bind values (e.g. static conditions like {@code IS NULL}) return an empty list.<br>
+	 *
+	 * @return An immutable list of bound parameter values
+	 */
+	default @NonNull List<Object> getParameters() {
+		return List.of();
+	}
+	
+	/**
 	 * Generates the SQL representation along with bound parameter values.<br>
 	 *
 	 * @param renderer The SQL renderer to generate SQL with
 	 * @return A {@link SqlRendered} record containing the SQL string and bound parameters
 	 */
 	default @NonNull SqlRendered toRendered(@NonNull SqlRenderer renderer) {
-		return new SqlRendered(this.toSql(renderer), List.of());
+		return new SqlRendered(this.toSql(renderer), this.getParameters());
 	}
 }

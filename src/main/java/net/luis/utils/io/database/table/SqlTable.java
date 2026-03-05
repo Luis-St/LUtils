@@ -23,6 +23,7 @@ import net.luis.utils.io.database.listener.SqlEntityListener;
 import net.luis.utils.io.database.migration.SqlColumnBuilder;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -64,6 +65,12 @@ public interface SqlTable<T> {
 	 * @return The table name
 	 */
 	@NonNull String getName();
+	
+	/**
+	 * Returns the schema this table belongs to, or {@code null} to use the connection's default schema.<br>
+	 * @return The schema name, or {@code null}
+	 */
+	@Nullable String getSchema();
 	
 	/**
 	 * Returns the entity type of this table.<br>

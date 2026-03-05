@@ -38,12 +38,6 @@ import java.util.List;
 public interface SqlUpdateQuery<T> extends SqlRenderable {
 	
 	/**
-	 * Returns the parameter values for this query.<br>
-	 * @return A list of parameter values in order
-	 */
-	@NonNull List<Object> getParameters();
-	
-	/**
 	 * Sets a column to the given value.<br>
 	 * Generates SQL: {@code SET column = value}.<br>
 	 *

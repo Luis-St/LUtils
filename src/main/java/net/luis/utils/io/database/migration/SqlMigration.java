@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.migration;
 
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -27,6 +28,10 @@ import org.jspecify.annotations.NonNull;
  *     Migrations define schema changes using a DSL provided by {@link SqlMigrationBuilder}.<br>
  *     No raw SQL is allowed; all schema modifications go through the builder.
  * </p>
+ * <p>
+ *     Migrations are ordered by their {@link #version()} using the natural ordering of {@link Version}.<br>
+ *     The checksum is computed by {@link SqlMigrationRunner} at registration time by dry-running {@link #up(SqlMigrationBuilder)}.
+ * </p>
  *
  * @author Luis-St
  */
@@ -34,14 +39,11 @@ public interface SqlMigration {
 	
 	/**
 	 * Returns the version of this migration.<br>
-	 * <p>
-	 *     Versions are compared numerically to determine migration ordering.<br>
-	 *     Use a timestamp-based format ({@code YYYYMMDDHHmmss}, e.g., {@code "20260225120000"}) to avoid ordering conflicts in team environments.
-	 * </p>
+	 * Migrations are applied in ascending version order.<br>
 	 *
 	 * @return The migration version
 	 */
-	@NonNull String version();
+	@NonNull Version version();
 	
 	/**
 	 * Returns the description of this migration.<br>
@@ -64,22 +66,4 @@ public interface SqlMigration {
 	 * @throws SqlException If the rollback fails
 	 */
 	void down(@NonNull SqlMigrationBuilder builder) throws SqlException;
-	
-	/**
-	 * Returns a checksum representing the content of this migration.<br>
-	 * <p>
-	 *     The checksum is used by the migration runner to detect changes in previously applied migrations.<br>
-	 *     If the checksum of a registered migration differs from the stored checksum,<br>
-	 *     the runner can flag the migration as tampered.
-	 * </p>
-	 * <p>
-	 *     The default implementation computes the checksum from the migration's version and description.<br>
-	 *     Implementations should override this to include the actual migration operations for more reliable drift detection.
-	 * </p>
-	 *
-	 * @return The migration checksum
-	 */
-	default long checksum() {
-		return (long) this.version().hashCode() * 31 + this.description().hashCode();
-	}
 }

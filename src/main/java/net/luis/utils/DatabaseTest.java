@@ -18,7 +18,8 @@
 
 package net.luis.utils;
 
-import net.luis.utils.io.database.*;
+import net.luis.utils.io.database.SqlDatabase;
+import net.luis.utils.io.database.SqlRendered;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlColumnType;
 import net.luis.utils.io.database.dialect.postgres.PostgresQueryProvider;
@@ -29,8 +30,10 @@ import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.query.row.SqlRow2;
 import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.transaction.SqlTransaction;
+import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -68,23 +71,22 @@ public class DatabaseTest {
 	static final SqlCompositePrimaryKey<PersonRole> PERSON_ROLE_PK = PERSON_ROLE_TABLE.compositePrimaryKey(PR_PERSON_ID, PR_ROLE_ID);
 	
 	void databaseLifecycle() throws SqlException {
-		// SqlDatabaseConfig.builder()...build() returns SqlDatabase directly
-		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+		try (SqlDatabase db = SqlDatabase.builder().build()) {
 			// DDL via db.from(table)
 			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
 			persons.createIfNotExists();
 			
 			// Insert with record-based mapping
-			persons.insert(new Person(1, "Alice", "alice@example.com", 0, Instant.now()));
+			persons.insert(new Person(1, "Alice", "alice@example.com", 0, Instant.now())).execute();
 			persons.insert(
 				new Person(2, "Bob", "bob@example.com", 0, Instant.now()),
 				new Person(3, "Charlie", "charlie@example.com", 0, Instant.now())
-			);
+			).execute();
 		}
 	}
 	
 	void selectQueries() throws SqlException {
-		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+		try (SqlDatabase db = SqlDatabase.builder().build()) {
 			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
 			
 			// Full entity select
@@ -120,15 +122,13 @@ public class DatabaseTest {
 			// Type-specific column operations
 			persons.select().where(NAME.string().contains("li")).fetch();
 			persons.select().where(ID.between(1, 100)).fetch();
-			persons.select().where(CREATED_AT.temporal().withinLast(java.time.Duration.ofHours(24))).fetch();
+			persons.select().where(CREATED_AT.temporal().withinLast(Duration.ofHours(24))).fetch();
 		}
 	}
 	
 	void transactions() throws SqlException {
-		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
-			// Explicit transactions only
-			SqlTransaction tx = db.beginTransaction();
-			try {
+		try (SqlDatabase db = SqlDatabase.builder().build()) {
+			try (SqlTransaction tx = db.beginTransaction()) {
 				SqlQueryProvider<Person> persons = tx.from(PERSON_TABLE);
 				persons.insert(new Person(10, "Dave", "dave@example.com", 0, Instant.now())).execute();
 				persons.update()
@@ -136,15 +136,12 @@ public class DatabaseTest {
 					.where(ID.equalTo(10))
 					.execute();
 				tx.commit();
-			} catch (SqlException e) {
-				tx.rollback();
-				throw e;
 			}
 		}
 	}
 	
 	void updateAndDelete() throws SqlException {
-		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+		try (SqlDatabase db = SqlDatabase.builder().build()) {
 			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
 			
 			// Update with SET
@@ -179,9 +176,8 @@ public class DatabaseTest {
 	}
 	
 	void lockingQueries() throws SqlException {
-		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
-			SqlTransaction tx = db.beginTransaction();
-			try {
+		try (SqlDatabase db = SqlDatabase.builder().build()) {
+			try (SqlTransaction tx = db.beginTransaction()) {
 				// FOR UPDATE locking
 				tx.from(PERSON_TABLE).select()
 					.where(ID.equalTo(1))
@@ -197,9 +193,6 @@ public class DatabaseTest {
 					.fetch();
 				
 				tx.commit();
-			} catch (SqlException e) {
-				tx.rollback();
-				throw e;
 			}
 		}
 	}
@@ -207,7 +200,7 @@ public class DatabaseTest {
 	void postgresSpecific() throws SqlException {
 		PostgresTable<Person> pgTable = PostgresTable.of("person", Person.class);
 		
-		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+		try (SqlDatabase db = SqlDatabase.builder().build()) {
 			// Postgres-specific query provider
 			PostgresQueryProvider<Person> pgPersons = PostgresQueryProvider.from(db, pgTable);
 			
@@ -229,8 +222,8 @@ public class DatabaseTest {
 	void compositePrimaryKeyExample() throws SqlException {
 		SqlMigration migration = new SqlMigration() {
 			@Override
-			public @NonNull String version() {
-				return "002";
+			public @NonNull Version version() {
+				return Version.of(0, 2);
 			}
 			
 			@Override
@@ -264,8 +257,8 @@ public class DatabaseTest {
 		// Alternatively, add a composite PK constraint to an existing table via ALTER TABLE
 		SqlMigration alterMigration = new SqlMigration() {
 			@Override
-			public @NonNull String version() {
-				return "003";
+			public @NonNull Version version() {
+				return Version.of(0, 3);
 			}
 			
 			@Override
@@ -288,8 +281,8 @@ public class DatabaseTest {
 	void migrationExample() throws SqlException {
 		SqlMigration migration = new SqlMigration() {
 			@Override
-			public @NonNull String version() {
-				return "001";
+			public @NonNull Version version() {
+				return Version.of(0, 1);
 			}
 			
 			@Override
@@ -317,7 +310,7 @@ public class DatabaseTest {
 			}
 		};
 		
-		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
+		try (SqlDatabase db = SqlDatabase.builder().build()) {
 			SqlMigrationRunner runner = SqlMigrationRunner.of(db);
 			runner.register(migration);
 			

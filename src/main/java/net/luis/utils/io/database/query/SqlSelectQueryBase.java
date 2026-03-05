@@ -271,9 +271,4 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	 */
 	@NonNull SqlPage<T> fetchPage(int page, int pageSize) throws SqlException;
 	
-	/**
-	 * Returns the parameter values for this query.<br>
-	 * @return A list of parameter values in order
-	 */
-	@NonNull List<Object> getParameters();
 }

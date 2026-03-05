@@ -34,12 +34,6 @@ import java.util.List;
 public interface SqlInsertQuery<T> extends SqlRenderable {
 	
 	/**
-	 * Returns the parameter values for this query.<br>
-	 * @return A list of parameter values in order
-	 */
-	@NonNull List<Object> getParameters();
-	
-	/**
 	 * Executes the insert query.<br>
 	 *
 	 * @return The number of rows inserted

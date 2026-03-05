@@ -21,6 +21,7 @@ package net.luis.utils.io.database.migration;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.SqlRendered;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -58,7 +59,7 @@ public interface SqlMigrationRunner {
 	 * @param targetVersion The target migration version
 	 * @throws SqlException If a migration fails
 	 */
-	void migrateTo(@NonNull String targetVersion) throws SqlException;
+	void migrateTo(@NonNull Version targetVersion) throws SqlException;
 	
 	/**
 	 * Rolls back the most recently applied migration.<br>
@@ -80,7 +81,7 @@ public interface SqlMigrationRunner {
 	 * @param targetVersion The target migration version to roll back to
 	 * @throws SqlException If a rollback fails
 	 */
-	void rollbackTo(@NonNull String targetVersion) throws SqlException;
+	void rollbackTo(@NonNull Version targetVersion) throws SqlException;
 	
 	/**
 	 * Returns the status of all registered migrations.<br>
@@ -110,12 +111,17 @@ public interface SqlMigrationRunner {
 	
 	/**
 	 * Registers a single migration with this runner.<br>
+	 * The checksum is computed at registration time by dry-running {@link SqlMigration#up(SqlMigrationBuilder)}
+	 * against a capturing builder and hashing the resulting SQL statements.<br>
+	 *
 	 * @param migration The migration to register
 	 */
 	void register(@NonNull SqlMigration migration);
 	
 	/**
 	 * Registers a list of migrations with this runner.<br>
+	 * The checksum for each migration is computed at registration time.<br>
+	 *
 	 * @param migrations The migrations to register
 	 */
 	void register(@NonNull List<SqlMigration> migrations);

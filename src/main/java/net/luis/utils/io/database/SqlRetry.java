@@ -52,7 +52,7 @@ public interface SqlRetry {
 	@NonNull SqlRetry retryOn(Class<? extends Throwable> @NonNull ... exceptions);
 	
 	/**
-	 * Executes the given action with retry logic.<br>
+	 * Executes the given value-returning action with retry logic.<br>
 	 *
 	 * @param action The action to execute
 	 * @param <T> The return type of the action
@@ -60,4 +60,21 @@ public interface SqlRetry {
 	 * @throws SqlException If all retries are exhausted
 	 */
 	<T> T execute(@NonNull Supplier<T> action) throws SqlException;
+	
+	/**
+	 * Executes the given void action with retry logic.<br>
+	 *
+	 * @param action The action to execute
+	 * @throws SqlException If all retries are exhausted
+	 */
+	void run(@NonNull SqlAction action) throws SqlException;
+	
+	/**
+	 * A void action that may throw a {@link SqlException}.<br>
+	 */
+	@FunctionalInterface
+	interface SqlAction {
+		
+		void run() throws SqlException;
+	}
 }

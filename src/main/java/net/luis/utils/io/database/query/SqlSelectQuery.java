@@ -18,46 +18,17 @@
 
 package net.luis.utils.io.database.query;
 
-import net.luis.utils.io.database.exception.locking.SqlLockNotAvailableException;
-import org.jspecify.annotations.NonNull;
-
 /**
  * Interface representing a SQL select query for entities.<br>
- * This interface extends {@link SqlSelectQueryBase} with entity-specific locking methods for pessimistic concurrency control.<br>
+ * Extends {@link SqlSelectQueryBase} with pessimistic row-level locking via {@link SqlLockableQuery}.<br>
  *
  * @see SqlSelectQueryBase
+ * @see SqlLockableQuery
  * @see SqlSelectProjectionQuery
  *
  * @author Luis-St
  *
  * @param <T> The type of the result entity
  */
-public interface SqlSelectQuery<T> extends SqlSelectQueryBase<T, SqlSelectQuery<T>> {
-	
-	/**
-	 * Adds {@code FOR UPDATE} clause to lock selected rows.<br>
-	 * Prevents other transactions from modifying or locking the rows until this transaction completes.<br>
-	 *
-	 * @return This query for method chaining
-	 */
-	@NonNull SqlSelectQuery<T> forUpdate();
-	
-	/**
-	 * Adds {@code SKIP LOCKED} modifier to skip rows that are already locked.<br>
-	 * Must be used in combination with {@link #forUpdate()}.<br>
-	 * Useful for job queue patterns where multiple workers process available rows.<br>
-	 *
-	 * @return This query for method chaining
-	 */
-	@NonNull SqlSelectQuery<T> skipLocked();
-	
-	/**
-	 * Adds NOWAIT modifier to fail immediately if rows are locked.<br>
-	 * Must be used in combination with {@link #forUpdate()}.<br>
-	 *
-	 * @return This query for method chaining
-	 * @throws SqlLockNotAvailableException If the rows are locked by another transaction
-	 */
-	@NonNull SqlSelectQuery<T> noWait() throws SqlLockNotAvailableException;
-	
-}
+public interface SqlSelectQuery<T> extends SqlSelectQueryBase<T, SqlSelectQuery<T>>, SqlLockableQuery<SqlSelectQuery<T>> {}
+

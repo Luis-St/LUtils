@@ -33,7 +33,6 @@ import java.util.List;
  *
  * @param <T> The entity type
  */
-@FunctionalInterface
 public interface SqlCompositePrimaryKey<T> {
 	
 	/**

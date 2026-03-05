@@ -19,8 +19,11 @@
 package net.luis.utils.io.database.dialect.postgres;
 
 import net.luis.utils.io.database.query.SqlInsertQuery;
+import net.luis.utils.io.database.query.SqlUpdateQuery;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
+
+import java.util.function.Consumer;
 
 /**
  * Interface representing a PostgreSQL-specific insert query.<br>
@@ -35,8 +38,8 @@ import org.jspecify.annotations.NonNull;
 public interface PostgresInsertQuery<T> extends SqlInsertQuery<T> {
 	
 	/**
-	 * Adds an {@code ON CONFLICT DO NOTHING} clause to the insert query.<br>
-	 * Rows that would cause a conflict are silently skipped.<br>
+	 * Adds an {@code ON CONFLICT DO NOTHING} clause without targeting specific columns.<br>
+	 * Any conflict causes the insert to be silently skipped.<br>
 	 * Generates SQL: {@code INSERT INTO ... ON CONFLICT DO NOTHING}.<br>
 	 *
 	 * @return This insert query for method chaining
@@ -44,12 +47,23 @@ public interface PostgresInsertQuery<T> extends SqlInsertQuery<T> {
 	@NonNull PostgresInsertQuery<T> onConflictDoNothing();
 	
 	/**
-	 * Adds an {@code ON CONFLICT} clause targeting the specified columns.<br>
-	 * Used together with an update action to implement upsert behavior.<br>
-	 * Generates SQL: {@code INSERT INTO ... ON CONFLICT (col1, col2, ...) ...}.<br>
+	 * Adds an {@code ON CONFLICT (columns) DO NOTHING} clause targeting specific columns.<br>
+	 * A conflict on the specified columns causes the insert to be silently skipped.<br>
+	 * Generates SQL: {@code INSERT INTO ... ON CONFLICT (col1, col2, ...) DO NOTHING}.<br>
 	 *
 	 * @param columns The conflict target columns
 	 * @return This insert query for method chaining
 	 */
-	@NonNull PostgresInsertQuery<T> onConflict(SqlColumn<?> @NonNull ... columns);
+	@NonNull PostgresInsertQuery<T> onConflictDoNothing(SqlColumn<?> @NonNull ... columns);
+	
+	/**
+	 * Adds an {@code ON CONFLICT (columns) DO UPDATE SET} clause targeting specific columns.<br>
+	 * A conflict on the specified columns triggers the update defined by the consumer.<br>
+	 * Generates SQL: {@code INSERT INTO ... ON CONFLICT (col1, col2, ...) DO UPDATE SET ...}.<br>
+	 *
+	 * @param update A consumer that configures the columns to update on conflict
+	 * @param columns The conflict target columns
+	 * @return This insert query for method chaining
+	 */
+	@NonNull PostgresInsertQuery<T> onConflictDoUpdate(@NonNull Consumer<SqlUpdateQuery<T>> update, SqlColumn<?> @NonNull ... columns);
 }

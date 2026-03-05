@@ -37,10 +37,10 @@ public interface SqlForeignColumn<T, R> extends SqlColumn<T> {
 	@NonNull SqlTable<R> referencedTable();
 	
 	/**
-	 * Returns the column referenced by this foreign key column.<br>
-	 * @return The referenced column
+	 * Returns the primary key column referenced by this foreign key column.<br>
+	 * @return The referenced primary key column
 	 */
-	@NonNull SqlColumn<?> referencedColumn();
+	@NonNull SqlPrimaryKeyColumn<?, ?> referencedColumn();
 	
 	/**
 	 * Returns the action to perform when a referenced row is deleted.<br>

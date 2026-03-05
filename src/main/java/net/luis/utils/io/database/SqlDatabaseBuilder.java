@@ -28,43 +28,36 @@ import javax.sql.DataSource;
 import java.time.Clock;
 
 /**
- * Interface representing a SQL database configuration builder.<br>
+ * Builder interface for configuring and creating a {@link SqlDatabase} instance.<br>
+ * Obtained via {@link SqlDatabase#builder()}.<br>
  *
  * @author Luis-St
  */
-public interface SqlDatabaseConfig {
-	
-	/**
-	 * Creates a new database configuration builder.<br>
-	 * @return The new configuration builder
-	 */
-	static @NonNull SqlDatabaseConfig builder() {
-		throw new UnsupportedOperationException();
-	}
+public interface SqlDatabaseBuilder {
 	
 	/**
 	 * Sets the data source for the database connection.<br>
 	 *
 	 * @param dataSource The data source to use
-	 * @return This configuration builder
+	 * @return This builder
 	 */
-	@NonNull SqlDatabaseConfig dataSource(@NonNull DataSource dataSource);
+	@NonNull SqlDatabaseBuilder dataSource(@NonNull DataSource dataSource);
 	
 	/**
 	 * Sets the timestamp source for audit operations.<br>
 	 *
 	 * @param source The audit timestamp source
-	 * @return This configuration builder
+	 * @return This builder
 	 */
-	@NonNull SqlDatabaseConfig auditTimestampSource(@NonNull SqlTimestampSource source);
+	@NonNull SqlDatabaseBuilder auditTimestampSource(@NonNull SqlTimestampSource source);
 	
 	/**
 	 * Sets the clock used for audit timestamps.<br>
 	 *
 	 * @param clock The clock to use
-	 * @return This configuration builder
+	 * @return This builder
 	 */
-	@NonNull SqlDatabaseConfig auditClock(@NonNull Clock clock);
+	@NonNull SqlDatabaseBuilder auditClock(@NonNull Clock clock);
 	
 	/**
 	 * Registers a custom type converter for mapping between Java and database types.<br>
@@ -77,17 +70,17 @@ public interface SqlDatabaseConfig {
 	 * @param converter The type converter to register
 	 * @param <J> The Java type
 	 * @param <D> The database type
-	 * @return This configuration builder
+	 * @return This builder
 	 */
-	<J, D> @NonNull SqlDatabaseConfig registerConverter(@NonNull SqlTypeConverter<J, D> converter);
+	<J, D> @NonNull SqlDatabaseBuilder registerConverter(@NonNull SqlTypeConverter<J, D> converter);
 	
 	/**
 	 * Sets the naming strategy used for mapping between Java record component names and SQL column names.<br>
 	 *
 	 * @param strategy The naming strategy to use
-	 * @return This configuration builder
+	 * @return This builder
 	 */
-	@NonNull SqlDatabaseConfig namingStrategy(@NonNull SqlNamingStrategy strategy);
+	@NonNull SqlDatabaseBuilder namingStrategy(@NonNull SqlNamingStrategy strategy);
 	
 	/**
 	 * Builds the configuration and creates a database instance.<br>

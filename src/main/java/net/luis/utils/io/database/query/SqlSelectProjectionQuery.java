@@ -21,7 +21,6 @@ package net.luis.utils.io.database.query;
 import net.luis.utils.io.database.SqlPage;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.entity.SqlEntityNotFoundException;
-import net.luis.utils.io.database.exception.locking.SqlLockNotAvailableException;
 import net.luis.utils.io.database.exception.query.SqlQueryException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -38,20 +37,21 @@ import java.util.stream.Stream;
  * </p>
  * <p>
  *     All common query functionality is inherited from {@link SqlSelectQueryBase}.<br>
- *     Unlike {@link SqlSelectQuery}, this interface does not support row-level locking as projection queries are typically read-only operations.
+ *     Pessimistic row-level locking ({@code FOR UPDATE}, {@code SKIP LOCKED}, {@code NOWAIT}) is supported via {@link SqlLockableQuery}.
  * </p>
  * <p>
  *     This interface provides additional {@code fetchAs} methods to map projection results to custom data structures (records, DTOs, or interfaces).<br>
  * </p>
  *
  * @see SqlSelectQueryBase
+ * @see SqlLockableQuery
  * @see SqlSelectQuery
  *
  * @author Luis-St
  *
  * @param <T> The type of the projection result (e.g., Row2, Row3, or single column type)
  */
-public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSelectProjectionQuery<T>> {
+public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSelectProjectionQuery<T>>, SqlLockableQuery<SqlSelectProjectionQuery<T>> {
 	
 	/**
 	 * Executes the query and maps all results to the specified type.<br>
@@ -121,31 +121,5 @@ public interface SqlSelectProjectionQuery<T> extends SqlSelectQueryBase<T, SqlSe
 	 * @throws SqlException If a database access error occurs
 	 */
 	<R> @NonNull SqlPage<R> fetchPageAs(int page, int pageSize, @NonNull Class<R> type) throws SqlException;
-	
-	/**
-	 * Adds {@code FOR UPDATE} clause to lock selected rows.<br>
-	 * Prevents other transactions from modifying or locking the rows until this transaction completes.<br>
-	 *
-	 * @return This query for method chaining
-	 */
-	@NonNull SqlSelectProjectionQuery<T> forUpdate();
-	
-	/**
-	 * Adds {@code SKIP LOCKED} modifier to skip rows that are already locked.<br>
-	 * Must be used in combination with {@link #forUpdate()}.<br>
-	 * Useful for job queue patterns where multiple workers process available rows.<br>
-	 *
-	 * @return This query for method chaining
-	 */
-	@NonNull SqlSelectProjectionQuery<T> skipLocked();
-	
-	/**
-	 * Adds NOWAIT modifier to fail immediately if rows are locked.<br>
-	 * Must be used in combination with {@link #forUpdate()}.<br>
-	 *
-	 * @return This query for method chaining
-	 * @throws SqlLockNotAvailableException If the rows are locked by another transaction
-	 */
-	@NonNull SqlSelectProjectionQuery<T> noWait() throws SqlLockNotAvailableException;
 	
 }

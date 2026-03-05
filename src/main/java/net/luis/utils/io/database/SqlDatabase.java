@@ -20,7 +20,8 @@ package net.luis.utils.io.database;
 
 import net.luis.utils.io.database.audit.SqlAuditContext;
 import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.exception.*;
+import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.SqlTransactionException;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.transaction.SqlTransaction;
@@ -36,13 +37,11 @@ import java.util.function.Function;
 public interface SqlDatabase extends AutoCloseable {
 	
 	/**
-	 * Creates a new database instance from the given configuration.<br>
+	 * Returns a builder for configuring and creating a new database instance.<br>
 	 *
-	 * @param config The database configuration
-	 * @return The new database instance
-	 * @throws SqlConnectionException If the connection cannot be established
+	 * @return A new database builder
 	 */
-	static @NonNull SqlDatabase of(@NonNull SqlDatabaseConfig config) throws SqlConnectionException {
+	static @NonNull SqlDatabaseBuilder builder() {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -83,18 +82,25 @@ public interface SqlDatabase extends AutoCloseable {
 	 * @throws SqlException If the action or the transaction fails
 	 */
 	default <R> R inTransaction(@NonNull Function<SqlTransaction, R> action) throws SqlException {
-		SqlTransaction tx = this.beginTransaction();
-		
-		try {
-			R result = action.apply(tx);
-			tx.commit();
-			return result;
-		} catch (Exception e) {
-			tx.rollback();
-			if (e instanceof SqlException sqlEx) {
-				throw sqlEx;
+		try (SqlTransaction tx = this.beginTransaction()) {
+			try {
+				R result = action.apply(tx);
+				tx.commit();
+				return result;
+			} catch (Exception e) {
+				try {
+					tx.rollback();
+				} catch (SqlTransactionException rollbackEx) {
+					e.addSuppressed(rollbackEx);
+				}
+				if (e instanceof SqlException sqlEx) {
+					throw sqlEx;
+				}
+				if (e instanceof RuntimeException rte) {
+					throw rte;
+				}
+				throw new SqlException("Transaction failed", e);
 			}
-			throw new SqlException("Transaction failed", e);
 		}
 	}
 	
