@@ -124,8 +124,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.database.query;
 	exports net.luis.utils.io.database.query.row;
 	exports net.luis.utils.io.database.renderer;
-	exports net.luis.utils.io.database.sequence;
-	exports net.luis.utils.io.database.table;
+exports net.luis.utils.io.database.table;
 	exports net.luis.utils.io.database.table.ops;
 	exports net.luis.utils.io.database.transaction;
 

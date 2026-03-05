@@ -51,11 +51,6 @@ public enum SqlFeature {
 	PARTIAL_INDEXES,
 	
 	/**
-	 * Database sequences for generating unique values.<br>
-	 */
-	SEQUENCES,
-	
-	/**
 	 * Common Table Expressions (CTEs) using {@code WITH} clauses.<br>
 	 */
 	CTE,

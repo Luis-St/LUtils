@@ -24,8 +24,6 @@ import net.luis.utils.io.database.dialect.SqlColumnType;
 import net.luis.utils.io.database.dialect.postgres.PostgresQueryProvider;
 import net.luis.utils.io.database.dialect.postgres.PostgresTable;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.function.SqlExpression;
-import net.luis.utils.io.database.function.scalar.SqlSequence;
 import net.luis.utils.io.database.migration.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.query.row.SqlRow2;
@@ -285,89 +283,6 @@ public class DatabaseTest {
 				builder.dropConstraint(PERSON_ROLE_TABLE, "pk_person_role");
 			}
 		};
-	}
-	
-	void sequenceExample() throws SqlException {
-		SqlMigration migration = new SqlMigration() {
-			@Override
-			public @NonNull String version() {
-				return "004";
-			}
-			
-			@Override
-			public @NonNull String description() {
-				return "Add person_id sequence";
-			}
-			
-			@Override
-			public void up(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.createSequence("person_id_seq", seq -> seq
-					.startWith(1)
-					.incrementBy(1)
-					.minValue(1)
-					.maxValue(Long.MAX_VALUE)
-					.cache(50)
-					.cycle()
-				);
-			}
-			
-			@Override
-			public void down(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.dropSequence("person_id_seq");
-			}
-		};
-		
-		SqlMigration alterMigration = new SqlMigration() {
-			@Override
-			public @NonNull String version() {
-				return "005";
-			}
-			
-			@Override
-			public @NonNull String description() {
-				return "Adjust person_id sequence cache";
-			}
-			
-			@Override
-			public void up(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.alterSequence("person_id_seq", seq -> seq
-					.setCache(100)
-					.noMaxValue()
-				);
-				builder.renameSequence("person_id_seq", "person_id_sequence");
-			}
-			
-			@Override
-			public void down(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.renameSequence("person_id_sequence", "person_id_seq");
-				builder.alterSequence("person_id_seq", seq -> seq
-					.setCache(50)
-					.setMaxValue(Long.MAX_VALUE)
-				);
-			}
-		};
-		
-		// Using sequence functions in queries
-		try (SqlDatabase db = SqlDatabaseConfig.builder().build()) {
-			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
-			
-			// Fetch the next sequence value as a standalone query
-			SqlExpression<Long> nextId = SqlSequence.nextValue("person_id_sequence");
-			long generatedId = persons.select(nextId).fetchOne();
-			
-			// Use NEXTVAL inline during an INSERT — the sequence generates the id automatically
-			persons.insert(new Person(0, "Alice", "alice@example.com", 0, Instant.now()))
-				.withExpression(ID, SqlSequence.nextValue("person_id_sequence"))
-				.execute();
-			
-			// Use CURRVAL after an INSERT to retrieve the id that was just assigned
-			SqlExpression<Long> currentId = SqlSequence.currentValue("person_id_sequence");
-			long lastInsertedId = persons.select(currentId).fetchOne();
-			
-			// Reset the sequence to a known value, e.g. after a bulk import
-			SqlExpression<Long> resetId = SqlSequence.setValue("person_id_sequence", 1000);
-			persons.select(resetId).fetchOne();
-		}
 	}
 	
 	void migrationExample() throws SqlException {

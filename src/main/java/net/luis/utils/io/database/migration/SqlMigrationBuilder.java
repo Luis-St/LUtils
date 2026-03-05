@@ -203,41 +203,6 @@ public interface SqlMigrationBuilder {
 	void dropConstraint(@NonNull SqlTable<?> table, @NonNull String name) throws SqlException;
 	
 	/**
-	 * Creates a new sequence with the specified name and definition.<br>
-	 *
-	 * @param name The sequence name
-	 * @param definition A consumer to define the sequence
-	 * @throws SqlException If the sequence creation fails
-	 */
-	void createSequence(@NonNull String name, @NonNull Consumer<SqlSequenceBuilder> definition) throws SqlException;
-	
-	/**
-	 * Drops the sequence with the specified name.<br>
-	 *
-	 * @param name The sequence name
-	 * @throws SqlException If the sequence drop fails
-	 */
-	void dropSequence(@NonNull String name) throws SqlException;
-	
-	/**
-	 * Alters the sequence with the specified name.<br>
-	 *
-	 * @param name The sequence name
-	 * @param changes A consumer to define the sequence alterations
-	 * @throws SqlException If the sequence alteration fails
-	 */
-	void alterSequence(@NonNull String name, @NonNull Consumer<SqlSequenceAlter> changes) throws SqlException;
-	
-	/**
-	 * Renames a sequence.<br>
-	 *
-	 * @param from The current sequence name
-	 * @param to The new sequence name
-	 * @throws SqlException If the sequence rename fails
-	 */
-	void renameSequence(@NonNull String from, @NonNull String to) throws SqlException;
-	
-	/**
 	 * Renames an index.<br>
 	 *
 	 * @param from The current index name

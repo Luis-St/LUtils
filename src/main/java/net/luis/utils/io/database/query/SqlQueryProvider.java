@@ -25,7 +25,6 @@ import net.luis.utils.io.database.function.scalar.SqlAgg;
 import net.luis.utils.io.database.index.SqlIndexDefinition;
 import net.luis.utils.io.database.index.SqlIndexInfo;
 import net.luis.utils.io.database.query.row.*;
-import net.luis.utils.io.database.sequence.SqlSequenceDefinition;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.transaction.SqlTransaction;
@@ -126,23 +125,6 @@ public interface SqlQueryProvider<T> {
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull List<SqlIndexInfo> listIndexes() throws SqlException;
-	
-	/**
-	 * Creates a sequence using the specified definition.<br>
-	 *
-	 * @param definition The sequence definition
-	 * @throws SqlException If a database access error occurs
-	 */
-	void createSequence(@NonNull SqlSequenceDefinition definition) throws SqlException;
-	
-	/**
-	 * Returns the next value from the specified sequence.<br>
-	 *
-	 * @param name The sequence name
-	 * @return The next sequence value
-	 * @throws SqlException If a database access error occurs
-	 */
-	long nextSequenceValue(@NonNull String name) throws SqlException;
 	
 	/**
 	 * Creates a select query for all columns of this table.<br>
