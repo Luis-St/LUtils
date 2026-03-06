@@ -69,6 +69,12 @@ public interface SqlPage<T> {
 	boolean hasPrevious();
 	
 	/**
+	 * Returns the number of elements per page as configured when this page was fetched.<br>
+	 * @return The page size
+	 */
+	int pageSize();
+	
+	/**
 	 * Fetches the next page of results.<br>
 	 * Executes a SQL query with adjusted {@code LIMIT} and {@code OFFSET} clauses.<br>
 	 * Callers must check {@link #hasNext()} before calling this method.<br>
@@ -80,6 +86,18 @@ public interface SqlPage<T> {
 	@NonNull SqlPage<T> fetchNext() throws SqlException;
 	
 	/**
+	 * Fetches the page {@code pages} positions ahead of the current page.<br>
+	 * Executes a SQL query with {@code LIMIT} and {@code OFFSET} adjusted by {@code pages * pageSize()}.<br>
+	 * Callers must ensure the target page exists (i.e., {@code currentPage() + pages < totalPages()}).<br>
+	 *
+	 * @param pages The number of pages to advance (must be &gt; 0)
+	 * @return The page at the requested offset from the current page
+	 * @throws java.util.NoSuchElementException If the resulting page is beyond the last page
+	 * @throws SqlException If a database access error occurs
+	 */
+	@NonNull SqlPage<T> fetchNext(int pages) throws SqlException;
+	
+	/**
 	 * Fetches the previous page of results.<br>
 	 * Executes a SQL query with adjusted {@code LIMIT} and {@code OFFSET} clauses.<br>
 	 * Callers must check {@link #hasPrevious()} before calling this method.<br>
@@ -89,4 +107,16 @@ public interface SqlPage<T> {
 	 * @throws SqlException If a database access error occurs
 	 */
 	@NonNull SqlPage<T> fetchPrevious() throws SqlException;
+	
+	/**
+	 * Fetches the page {@code pages} positions before the current page.<br>
+	 * Executes a SQL query with {@code LIMIT} and {@code OFFSET} adjusted by {@code pages * pageSize()}.<br>
+	 * Callers must ensure the target page exists (i.e., {@code currentPage() - pages >= 0}).<br>
+	 *
+	 * @param pages The number of pages to go back (must be &gt; 0)
+	 * @return The page at the requested offset before the current page
+	 * @throws java.util.NoSuchElementException If the resulting page is before the first page
+	 * @throws SqlException If a database access error occurs
+	 */
+	@NonNull SqlPage<T> fetchPrevious(int pages) throws SqlException;
 }

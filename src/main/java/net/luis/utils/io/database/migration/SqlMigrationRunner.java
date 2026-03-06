@@ -21,6 +21,7 @@ package net.luis.utils.io.database.migration;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.SqlRendered;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 
@@ -125,4 +126,14 @@ public interface SqlMigrationRunner {
 	 * @param migrations The migrations to register
 	 */
 	void register(@NonNull List<SqlMigration> migrations);
+	
+	/**
+	 * Computes the diff between the registered Java {@link SqlTable} definitions and the live database schema.<br>
+	 * Useful for detecting schema drift between code and the database without applying any migrations.<br>
+	 *
+	 * @param tables The Java table definitions to compare against
+	 * @return The schema diff
+	 * @throws SqlException If the live schema cannot be introspected
+	 */
+	@NonNull SqlSchemaDiff diff(SqlTable<?> @NonNull ... tables) throws SqlException;
 }

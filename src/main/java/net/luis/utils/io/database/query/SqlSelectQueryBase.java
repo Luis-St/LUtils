@@ -61,6 +61,18 @@ public interface SqlSelectQueryBase<T, Q extends SqlSelectQueryBase<T, Q>> exten
 	@NonNull Q with(@NonNull CommonTableExpression cte, @NonNull SqlSelectQuery<?> query);
 	
 	/**
+	 * Adds a {@code JOIN LATERAL} clause to the query.<br>
+	 * The subquery may reference columns from preceding tables in the FROM clause.<br>
+	 * Requires {@link net.luis.utils.io.database.dialect.SqlFeature#LATERAL} dialect support.<br>
+	 * Generates SQL: {@code JOIN LATERAL (subquery) AS alias ON TRUE}.<br>
+	 *
+	 * @param subquery The correlated subquery to join laterally
+	 * @param alias The alias for the lateral subquery result
+	 * @return This query for method chaining
+	 */
+	@NonNull Q lateralJoin(@NonNull SqlSelectQueryBase<?, ?> subquery, @NonNull String alias);
+	
+	/**
 	 * Adds a {@code WHERE} condition to the query.<br>
 	 * Multiple calls are combined with AND.<br>
 	 *

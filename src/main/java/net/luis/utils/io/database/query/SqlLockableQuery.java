@@ -49,6 +49,15 @@ public interface SqlLockableQuery<Q> {
 	@NonNull Q skipLocked();
 	
 	/**
+	 * Adds {@code FOR SHARE} clause to lock selected rows with a shared lock.<br>
+	 * Allows other transactions to read the rows but prevents them from acquiring exclusive locks.<br>
+	 * Must not be combined with {@link #forUpdate()}.<br>
+	 *
+	 * @return This query for method chaining
+	 */
+	@NonNull Q forShare();
+	
+	/**
 	 * Adds {@code NOWAIT} modifier to fail immediately if rows are locked.<br>
 	 * Must be used in combination with {@link #forUpdate()}.<br>
 	 *

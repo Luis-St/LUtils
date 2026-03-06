@@ -75,4 +75,14 @@ public interface SqlJoinable<Q> {
 	 * @return This query for method chaining
 	 */
 	@NonNull Q fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	
+	/**
+	 * Adds a {@code CROSS JOIN} clause to the query.<br>
+	 * Produces the Cartesian product of both tables (all row combinations).<br>
+	 * Generates SQL: {@code CROSS JOIN table}.<br>
+	 *
+	 * @param table The table to cross join
+	 * @return This query for method chaining
+	 */
+	@NonNull Q crossJoin(@NonNull SqlTable<?> table);
 }

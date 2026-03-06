@@ -88,6 +88,12 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	@NonNull List<SqlCondition> getChecks();
 	
 	/**
+	 * Returns the Java type of this column's values.<br>
+	 * @return The column value class
+	 */
+	@NonNull Class<T> getType();
+	
+	/**
 	 * Returns the table this column belongs to.<br>
 	 * @return The owning table
 	 */

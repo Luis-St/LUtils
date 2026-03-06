@@ -19,12 +19,15 @@
 package net.luis.utils.io.database.table;
 
 import net.luis.utils.io.database.SqlDatabase;
+import net.luis.utils.io.database.audit.SqlAuditLog;
 import net.luis.utils.io.database.listener.SqlEntityListener;
 import net.luis.utils.io.database.migration.SqlColumnBuilder;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
@@ -79,6 +82,14 @@ public interface SqlTable<T> {
 	@NonNull Class<T> getType();
 	
 	/**
+	 * Returns all columns registered on this table, in the order they were defined.<br>
+	 * Includes all column subtypes: regular, primary key, foreign key, version, creation, and update columns.<br>
+	 *
+	 * @return An unmodifiable ordered list of all columns
+	 */
+	@NonNull List<SqlColumn<?>> getColumns();
+	
+	/**
 	 * Returns a column reference for the specified column name and type.<br>
 	 *
 	 * @param name The column name
@@ -105,7 +116,7 @@ public interface SqlTable<T> {
 	 *
 	 * @param name The column name
 	 * @param type The primary key value type
-	 * @param <V> The primary key type (e.g., {@link Long} or {@link java.util.UUID})
+	 * @param <V> The primary key type (e.g., {@link Long} or {@link UUID})
 	 * @return A primary key column reference
 	 */
 	<V> @NonNull SqlPrimaryKeyColumn<T, V> primaryKeyColumn(@NonNull String name, @NonNull Class<V> type);
@@ -117,7 +128,7 @@ public interface SqlTable<T> {
 	 * @param name The column name
 	 * @param type The primary key value type
 	 * @param constraints A consumer to configure column constraints at definition time
-	 * @param <V> The primary key type (e.g., {@link Long} or {@link java.util.UUID})
+	 * @param <V> The primary key type (e.g., {@link Long} or {@link UUID})
 	 * @return A primary key column reference
 	 */
 	<V> @NonNull SqlPrimaryKeyColumn<T, V> primaryKeyColumn(@NonNull String name, @NonNull Class<V> type, @NonNull Consumer<SqlColumnBuilder<V>> constraints);
@@ -236,4 +247,18 @@ public interface SqlTable<T> {
 	 * @param listener The listener to remove
 	 */
 	void removeListener(@NonNull SqlEntityListener<T> listener);
+	
+	/**
+	 * Returns the audit log for this table, or {@code null} if none is set.<br>
+	 * @return The audit log, or {@code null}
+	 */
+	@Nullable SqlAuditLog<T> getAuditLog();
+	
+	/**
+	 * Sets the audit log for this table.<br>
+	 * When set, the framework records an audit entry after each successful INSERT, UPDATE, and DELETE.<br>
+	 *
+	 * @param log The audit log, or {@code null} to disable auditing
+	 */
+	void setAuditLog(@Nullable SqlAuditLog<T> log);
 }
