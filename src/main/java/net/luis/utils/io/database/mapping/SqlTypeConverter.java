@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.mapping;
 
-import net.luis.utils.io.database.SqlDatabaseConfig;
+import net.luis.utils.io.database.SqlDatabaseBuilder;
 import org.jspecify.annotations.NonNull;
 
 import java.time.*;
@@ -28,7 +28,7 @@ import java.util.UUID;
  * Interface for converting between a Java type and a database (JDBC) type.<br>
  * <p>
  *     Implementations define how custom Java types are stored in and retrieved from<br>
- *     Register converters via {@link SqlDatabaseConfig} to make them available to the mapping layer.
+ *     Register converters via {@link SqlDatabaseBuilder} to make them available to the mapping layer.
  * </p>
  * Built-in converters are provided for common types such as {@link UUID}, {@link Instant}, {@link LocalDate}, {@link LocalDateTime}, and {@link Enum} types.<br>
  *

@@ -52,10 +52,10 @@ public interface SqlColumn<T> extends SqlExpression<T> {
 	@NonNull String getName();
 	
 	/**
-	 * Returns whether this column was defined as NOT NULL.<br>
-	 * @return {@code true} if this column is not null
+	 * Returns whether this column allows null values.<br>
+	 * @return {@code true} if this column allows null values, {@code false} if it was defined as NOT NULL
 	 */
-	boolean isNotNull();
+	boolean isNullable();
 	
 	/**
 	 * Returns whether this column was defined as UNIQUE.<br>

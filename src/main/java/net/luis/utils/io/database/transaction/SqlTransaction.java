@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.database.transaction;
 
-import net.luis.utils.io.database.SqlIsolationLevel;
 import net.luis.utils.io.database.exception.SqlTransactionException;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
