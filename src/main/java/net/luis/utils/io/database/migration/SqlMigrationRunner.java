@@ -21,6 +21,7 @@ package net.luis.utils.io.database.migration;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.SqlRendered;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.SqlMigrationException;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
@@ -83,6 +84,18 @@ public interface SqlMigrationRunner {
 	 * @throws SqlException If a rollback fails
 	 */
 	void rollbackTo(@NonNull Version targetVersion) throws SqlException;
+	
+	/**
+	 * Validates that all applied migrations still have matching checksums.<br>
+	 * Compares the stored checksum of each applied migration against its current computed checksum.<br>
+	 * <p>
+	 *     This detects accidental or unauthorized modifications to previously applied migrations.<br>
+	 * </p>
+	 *
+	 * @throws SqlMigrationException If a checksum mismatch is detected for any applied migration
+	 * @throws SqlException If the validation cannot be performed due to a database access error
+	 */
+	void validate() throws SqlMigrationException, SqlException;
 	
 	/**
 	 * Returns the status of all registered migrations.<br>

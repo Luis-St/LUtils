@@ -82,4 +82,22 @@ public interface SqlStringOps {
 	 * @return The length condition
 	 */
 	@NonNull SqlCondition lengthGreaterThan(int length);
+	
+	/**
+	 * Creates a condition that checks if the column length is less than the given value.<br>
+	 * Generates SQL: {@code LENGTH(column) < length}.<br>
+	 *
+	 * @param length The length to compare against
+	 * @return The length condition
+	 */
+	@NonNull SqlCondition lengthLessThan(int length);
+	
+	/**
+	 * Creates a condition that checks if the column length is equal to the given value.<br>
+	 * Generates SQL: {@code LENGTH(column) = length}.<br>
+	 *
+	 * @param length The length to compare against
+	 * @return The length condition
+	 */
+	@NonNull SqlCondition lengthEquals(int length);
 }

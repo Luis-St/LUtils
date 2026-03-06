@@ -28,6 +28,7 @@ import java.util.List;
  *
  * @author Luis-St
  */
+@FunctionalInterface
 public interface SqlRenderable {
 	
 	/**

@@ -135,59 +135,59 @@ public interface SqlQueryProvider<T> {
 	/**
 	 * Creates a typed select query for a single column.<br>
 	 *
-	 * @param c1 The column to select
+	 * @param e1 The expression to select
 	 * @param <T1> The type of the column
 	 * @return A select query returning values of the column type
 	 */
-	<T1> @NonNull SqlSelectProjectionQuery<T1> select(@NonNull SqlColumn<T1> c1);
+	<T1> @NonNull SqlSelectProjectionQuery<T1> select(@NonNull SqlExpression<T1> e1);
 	
 	/**
 	 * Creates a typed select query for two columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @return A select query returning {@link SqlRow2} tuples
 	 */
-	<T1, T2> @NonNull SqlSelectProjectionQuery<SqlRow2<T1, T2>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2);
+	<T1, T2> @NonNull SqlSelectProjectionQuery<SqlRow2<T1, T2>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2);
 	
 	/**
 	 * Creates a typed select query for three columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
 	 * @return A select query returning {@link SqlRow3} tuples
 	 */
-	<T1, T2, T3> @NonNull SqlSelectProjectionQuery<SqlRow3<T1, T2, T3>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3);
+	<T1, T2, T3> @NonNull SqlSelectProjectionQuery<SqlRow3<T1, T2, T3>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3);
 	
 	/**
 	 * Creates a typed select query for four columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
 	 * @param <T4> The type of the fourth column
 	 * @return A select query returning {@link SqlRow4} tuples
 	 */
-	<T1, T2, T3, T4> @NonNull SqlSelectProjectionQuery<SqlRow4<T1, T2, T3, T4>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4);
+	<T1, T2, T3, T4> @NonNull SqlSelectProjectionQuery<SqlRow4<T1, T2, T3, T4>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4);
 	
 	/**
 	 * Creates a typed select query for five columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -195,17 +195,17 @@ public interface SqlQueryProvider<T> {
 	 * @param <T5> The type of the fifth column
 	 * @return A select query returning {@link SqlRow5} tuples
 	 */
-	<T1, T2, T3, T4, T5> @NonNull SqlSelectProjectionQuery<SqlRow5<T1, T2, T3, T4, T5>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5);
+	<T1, T2, T3, T4, T5> @NonNull SqlSelectProjectionQuery<SqlRow5<T1, T2, T3, T4, T5>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5);
 	
 	/**
 	 * Creates a typed select query for six columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
-	 * @param c6 The sixth column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
+	 * @param e6 The sixth expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -214,18 +214,18 @@ public interface SqlQueryProvider<T> {
 	 * @param <T6> The type of the sixth column
 	 * @return A select query returning {@link SqlRow6} tuples
 	 */
-	<T1, T2, T3, T4, T5, T6> @NonNull SqlSelectProjectionQuery<SqlRow6<T1, T2, T3, T4, T5, T6>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6);
+	<T1, T2, T3, T4, T5, T6> @NonNull SqlSelectProjectionQuery<SqlRow6<T1, T2, T3, T4, T5, T6>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5, @NonNull SqlExpression<T6> e6);
 	
 	/**
 	 * Creates a typed select query for seven columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
-	 * @param c6 The sixth column
-	 * @param c7 The seventh column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
+	 * @param e6 The sixth expression
+	 * @param e7 The seventh expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -235,19 +235,19 @@ public interface SqlQueryProvider<T> {
 	 * @param <T7> The type of the seventh column
 	 * @return A select query returning {@link SqlRow7} tuples
 	 */
-	<T1, T2, T3, T4, T5, T6, T7> @NonNull SqlSelectProjectionQuery<SqlRow7<T1, T2, T3, T4, T5, T6, T7>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7);
+	<T1, T2, T3, T4, T5, T6, T7> @NonNull SqlSelectProjectionQuery<SqlRow7<T1, T2, T3, T4, T5, T6, T7>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5, @NonNull SqlExpression<T6> e6, @NonNull SqlExpression<T7> e7);
 	
 	/**
 	 * Creates a typed select query for eight columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
-	 * @param c6 The sixth column
-	 * @param c7 The seventh column
-	 * @param c8 The eighth column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
+	 * @param e6 The sixth expression
+	 * @param e7 The seventh expression
+	 * @param e8 The eighth expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -258,20 +258,20 @@ public interface SqlQueryProvider<T> {
 	 * @param <T8> The type of the eighth column
 	 * @return A select query returning {@link SqlRow8} tuples
 	 */
-	<T1, T2, T3, T4, T5, T6, T7, T8> @NonNull SqlSelectProjectionQuery<SqlRow8<T1, T2, T3, T4, T5, T6, T7, T8>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8);
+	<T1, T2, T3, T4, T5, T6, T7, T8> @NonNull SqlSelectProjectionQuery<SqlRow8<T1, T2, T3, T4, T5, T6, T7, T8>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5, @NonNull SqlExpression<T6> e6, @NonNull SqlExpression<T7> e7, @NonNull SqlExpression<T8> e8);
 	
 	/**
 	 * Creates a typed select query for nine columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
-	 * @param c6 The sixth column
-	 * @param c7 The seventh column
-	 * @param c8 The eighth column
-	 * @param c9 The ninth column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
+	 * @param e6 The sixth expression
+	 * @param e7 The seventh expression
+	 * @param e8 The eighth expression
+	 * @param e9 The ninth expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -283,21 +283,21 @@ public interface SqlQueryProvider<T> {
 	 * @param <T9> The type of the ninth column
 	 * @return A select query returning {@link SqlRow9} tuples
 	 */
-	<T1, T2, T3, T4, T5, T6, T7, T8, T9> @NonNull SqlSelectProjectionQuery<SqlRow9<T1, T2, T3, T4, T5, T6, T7, T8, T9>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9);
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9> @NonNull SqlSelectProjectionQuery<SqlRow9<T1, T2, T3, T4, T5, T6, T7, T8, T9>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5, @NonNull SqlExpression<T6> e6, @NonNull SqlExpression<T7> e7, @NonNull SqlExpression<T8> e8, @NonNull SqlExpression<T9> e9);
 	
 	/**
 	 * Creates a typed select query for ten columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
-	 * @param c6 The sixth column
-	 * @param c7 The seventh column
-	 * @param c8 The eighth column
-	 * @param c9 The ninth column
-	 * @param c10 The tenth column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
+	 * @param e6 The sixth expression
+	 * @param e7 The seventh expression
+	 * @param e8 The eighth expression
+	 * @param e9 The ninth expression
+	 * @param e10 The tenth expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -310,22 +310,22 @@ public interface SqlQueryProvider<T> {
 	 * @param <T10> The type of the tenth column
 	 * @return A select query returning {@link SqlRow10} tuples
 	 */
-	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> @NonNull SqlSelectProjectionQuery<SqlRow10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10);
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> @NonNull SqlSelectProjectionQuery<SqlRow10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5, @NonNull SqlExpression<T6> e6, @NonNull SqlExpression<T7> e7, @NonNull SqlExpression<T8> e8, @NonNull SqlExpression<T9> e9, @NonNull SqlExpression<T10> e10);
 	
 	/**
 	 * Creates a typed select query for eleven columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
-	 * @param c6 The sixth column
-	 * @param c7 The seventh column
-	 * @param c8 The eighth column
-	 * @param c9 The ninth column
-	 * @param c10 The tenth column
-	 * @param c11 The eleventh column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
+	 * @param e6 The sixth expression
+	 * @param e7 The seventh expression
+	 * @param e8 The eighth expression
+	 * @param e9 The ninth expression
+	 * @param e10 The tenth expression
+	 * @param e11 The eleventh expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -339,23 +339,23 @@ public interface SqlQueryProvider<T> {
 	 * @param <T11> The type of the eleventh column
 	 * @return A select query returning {@link SqlRow11} tuples
 	 */
-	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> @NonNull SqlSelectProjectionQuery<SqlRow11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11);
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> @NonNull SqlSelectProjectionQuery<SqlRow11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5, @NonNull SqlExpression<T6> e6, @NonNull SqlExpression<T7> e7, @NonNull SqlExpression<T8> e8, @NonNull SqlExpression<T9> e9, @NonNull SqlExpression<T10> e10, @NonNull SqlExpression<T11> e11);
 	
 	/**
 	 * Creates a typed select query for twelve columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
-	 * @param c6 The sixth column
-	 * @param c7 The seventh column
-	 * @param c8 The eighth column
-	 * @param c9 The ninth column
-	 * @param c10 The tenth column
-	 * @param c11 The eleventh column
-	 * @param c12 The twelfth column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
+	 * @param e6 The sixth expression
+	 * @param e7 The seventh expression
+	 * @param e8 The eighth expression
+	 * @param e9 The ninth expression
+	 * @param e10 The tenth expression
+	 * @param e11 The eleventh expression
+	 * @param e12 The twelfth expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -370,24 +370,24 @@ public interface SqlQueryProvider<T> {
 	 * @param <T12> The type of the twelfth column
 	 * @return A select query returning {@link SqlRow12} tuples
 	 */
-	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> @NonNull SqlSelectProjectionQuery<SqlRow12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11, @NonNull SqlColumn<T12> c12);
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> @NonNull SqlSelectProjectionQuery<SqlRow12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5, @NonNull SqlExpression<T6> e6, @NonNull SqlExpression<T7> e7, @NonNull SqlExpression<T8> e8, @NonNull SqlExpression<T9> e9, @NonNull SqlExpression<T10> e10, @NonNull SqlExpression<T11> e11, @NonNull SqlExpression<T12> e12);
 	
 	/**
 	 * Creates a typed select query for thirteen columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
-	 * @param c6 The sixth column
-	 * @param c7 The seventh column
-	 * @param c8 The eighth column
-	 * @param c9 The ninth column
-	 * @param c10 The tenth column
-	 * @param c11 The eleventh column
-	 * @param c12 The twelfth column
-	 * @param c13 The thirteenth column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
+	 * @param e6 The sixth expression
+	 * @param e7 The seventh expression
+	 * @param e8 The eighth expression
+	 * @param e9 The ninth expression
+	 * @param e10 The tenth expression
+	 * @param e11 The eleventh expression
+	 * @param e12 The twelfth expression
+	 * @param e13 The thirteenth expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -403,25 +403,25 @@ public interface SqlQueryProvider<T> {
 	 * @param <T13> The type of the thirteenth column
 	 * @return A select query returning {@link SqlRow13} tuples
 	 */
-	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> @NonNull SqlSelectProjectionQuery<SqlRow13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11, @NonNull SqlColumn<T12> c12, @NonNull SqlColumn<T13> c13);
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> @NonNull SqlSelectProjectionQuery<SqlRow13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5, @NonNull SqlExpression<T6> e6, @NonNull SqlExpression<T7> e7, @NonNull SqlExpression<T8> e8, @NonNull SqlExpression<T9> e9, @NonNull SqlExpression<T10> e10, @NonNull SqlExpression<T11> e11, @NonNull SqlExpression<T12> e12, @NonNull SqlExpression<T13> e13);
 	
 	/**
 	 * Creates a typed select query for fourteen columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
-	 * @param c6 The sixth column
-	 * @param c7 The seventh column
-	 * @param c8 The eighth column
-	 * @param c9 The ninth column
-	 * @param c10 The tenth column
-	 * @param c11 The eleventh column
-	 * @param c12 The twelfth column
-	 * @param c13 The thirteenth column
-	 * @param c14 The fourteenth column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
+	 * @param e6 The sixth expression
+	 * @param e7 The seventh expression
+	 * @param e8 The eighth expression
+	 * @param e9 The ninth expression
+	 * @param e10 The tenth expression
+	 * @param e11 The eleventh expression
+	 * @param e12 The twelfth expression
+	 * @param e13 The thirteenth expression
+	 * @param e14 The fourteenth expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -438,26 +438,26 @@ public interface SqlQueryProvider<T> {
 	 * @param <T14> The type of the fourteenth column
 	 * @return A select query returning {@link SqlRow14} tuples
 	 */
-	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> @NonNull SqlSelectProjectionQuery<SqlRow14<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11, @NonNull SqlColumn<T12> c12, @NonNull SqlColumn<T13> c13, @NonNull SqlColumn<T14> c14);
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> @NonNull SqlSelectProjectionQuery<SqlRow14<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5, @NonNull SqlExpression<T6> e6, @NonNull SqlExpression<T7> e7, @NonNull SqlExpression<T8> e8, @NonNull SqlExpression<T9> e9, @NonNull SqlExpression<T10> e10, @NonNull SqlExpression<T11> e11, @NonNull SqlExpression<T12> e12, @NonNull SqlExpression<T13> e13, @NonNull SqlExpression<T14> e14);
 	
 	/**
 	 * Creates a typed select query for fifteen columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
-	 * @param c6 The sixth column
-	 * @param c7 The seventh column
-	 * @param c8 The eighth column
-	 * @param c9 The ninth column
-	 * @param c10 The tenth column
-	 * @param c11 The eleventh column
-	 * @param c12 The twelfth column
-	 * @param c13 The thirteenth column
-	 * @param c14 The fourteenth column
-	 * @param c15 The fifteenth column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
+	 * @param e6 The sixth expression
+	 * @param e7 The seventh expression
+	 * @param e8 The eighth expression
+	 * @param e9 The ninth expression
+	 * @param e10 The tenth expression
+	 * @param e11 The eleventh expression
+	 * @param e12 The twelfth expression
+	 * @param e13 The thirteenth expression
+	 * @param e14 The fourteenth expression
+	 * @param e15 The fifteenth expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -475,27 +475,27 @@ public interface SqlQueryProvider<T> {
 	 * @param <T15> The type of the fifteenth column
 	 * @return A select query returning {@link SqlRow15} tuples
 	 */
-	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> @NonNull SqlSelectProjectionQuery<SqlRow15<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11, @NonNull SqlColumn<T12> c12, @NonNull SqlColumn<T13> c13, @NonNull SqlColumn<T14> c14, @NonNull SqlColumn<T15> c15);
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> @NonNull SqlSelectProjectionQuery<SqlRow15<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5, @NonNull SqlExpression<T6> e6, @NonNull SqlExpression<T7> e7, @NonNull SqlExpression<T8> e8, @NonNull SqlExpression<T9> e9, @NonNull SqlExpression<T10> e10, @NonNull SqlExpression<T11> e11, @NonNull SqlExpression<T12> e12, @NonNull SqlExpression<T13> e13, @NonNull SqlExpression<T14> e14, @NonNull SqlExpression<T15> e15);
 	
 	/**
 	 * Creates a typed select query for sixteen columns.<br>
 	 *
-	 * @param c1 The first column
-	 * @param c2 The second column
-	 * @param c3 The third column
-	 * @param c4 The fourth column
-	 * @param c5 The fifth column
-	 * @param c6 The sixth column
-	 * @param c7 The seventh column
-	 * @param c8 The eighth column
-	 * @param c9 The ninth column
-	 * @param c10 The tenth column
-	 * @param c11 The eleventh column
-	 * @param c12 The twelfth column
-	 * @param c13 The thirteenth column
-	 * @param c14 The fourteenth column
-	 * @param c15 The fifteenth column
-	 * @param c16 The sixteenth column
+	 * @param e1 The first expression
+	 * @param e2 The second expression
+	 * @param e3 The third expression
+	 * @param e4 The fourth expression
+	 * @param e5 The fifth expression
+	 * @param e6 The sixth expression
+	 * @param e7 The seventh expression
+	 * @param e8 The eighth expression
+	 * @param e9 The ninth expression
+	 * @param e10 The tenth expression
+	 * @param e11 The eleventh expression
+	 * @param e12 The twelfth expression
+	 * @param e13 The thirteenth expression
+	 * @param e14 The fourteenth expression
+	 * @param e15 The fifteenth expression
+	 * @param e16 The sixteenth expression
 	 * @param <T1> The type of the first column
 	 * @param <T2> The type of the second column
 	 * @param <T3> The type of the third column
@@ -514,7 +514,7 @@ public interface SqlQueryProvider<T> {
 	 * @param <T16> The type of the sixteenth column
 	 * @return A select query returning {@link SqlRow16} tuples
 	 */
-	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> @NonNull SqlSelectProjectionQuery<SqlRow16<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>> select(@NonNull SqlColumn<T1> c1, @NonNull SqlColumn<T2> c2, @NonNull SqlColumn<T3> c3, @NonNull SqlColumn<T4> c4, @NonNull SqlColumn<T5> c5, @NonNull SqlColumn<T6> c6, @NonNull SqlColumn<T7> c7, @NonNull SqlColumn<T8> c8, @NonNull SqlColumn<T9> c9, @NonNull SqlColumn<T10> c10, @NonNull SqlColumn<T11> c11, @NonNull SqlColumn<T12> c12, @NonNull SqlColumn<T13> c13, @NonNull SqlColumn<T14> c14, @NonNull SqlColumn<T15> c15, @NonNull SqlColumn<T16> c16);
+	<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> @NonNull SqlSelectProjectionQuery<SqlRow16<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>> select(@NonNull SqlExpression<T1> e1, @NonNull SqlExpression<T2> e2, @NonNull SqlExpression<T3> e3, @NonNull SqlExpression<T4> e4, @NonNull SqlExpression<T5> e5, @NonNull SqlExpression<T6> e6, @NonNull SqlExpression<T7> e7, @NonNull SqlExpression<T8> e8, @NonNull SqlExpression<T9> e9, @NonNull SqlExpression<T10> e10, @NonNull SqlExpression<T11> e11, @NonNull SqlExpression<T12> e12, @NonNull SqlExpression<T13> e13, @NonNull SqlExpression<T14> e14, @NonNull SqlExpression<T15> e15, @NonNull SqlExpression<T16> e16);
 	
 	/**
 	 * Creates a select query for the specified expressions (columns, aggregates, functions).<br>
