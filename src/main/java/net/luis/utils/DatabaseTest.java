@@ -18,18 +18,18 @@
 
 package net.luis.utils;
 
-import net.luis.utils.io.database.SqlDatabase;
-import net.luis.utils.io.database.SqlRendered;
-import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.dialect.SqlColumnType;
-import net.luis.utils.io.database.dialect.postgres.PostgresQueryProvider;
-import net.luis.utils.io.database.dialect.postgres.PostgresTable;
-import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.migration.*;
-import net.luis.utils.io.database.query.SqlQueryProvider;
-import net.luis.utils.io.database.query.row.SqlRow2;
-import net.luis.utils.io.database.table.*;
-import net.luis.utils.io.database.transaction.SqlTransaction;
+import net.luis.utils.io.databasev1.SqlDatabase;
+import net.luis.utils.io.databasev1.SqlRendered;
+import net.luis.utils.io.databasev1.condition.SqlCondition;
+import net.luis.utils.io.databasev1.dialect.SqlColumnType;
+import net.luis.utils.io.databasev1.dialect.postgres.PostgresQueryProvider;
+import net.luis.utils.io.databasev1.dialect.postgres.PostgresTable;
+import net.luis.utils.io.databasev1.exception.SqlException;
+import net.luis.utils.io.databasev1.migration.*;
+import net.luis.utils.io.databasev1.query.SqlQueryProvider;
+import net.luis.utils.io.databasev1.query.row.SqlRow2;
+import net.luis.utils.io.databasev1.table.*;
+import net.luis.utils.io.databasev1.transaction.SqlTransaction;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 
