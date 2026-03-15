@@ -16,9 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.condition;
-
-import org.jspecify.annotations.NonNull;
+package net.luis.utils.io.database.exception;
 
 /**
  *
@@ -26,13 +24,9 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlOrderable {
+public class SqlException extends Exception {
 	
-	@NonNull SqlOrderable ascending();
-	
-	@NonNull SqlOrderable descending();
-	
-	@NonNull SqlOrderable nullsFirst();
-	
-	@NonNull SqlOrderable nullsLast();
+	public SqlException(String message) {
+		super(message);
+	}
 }

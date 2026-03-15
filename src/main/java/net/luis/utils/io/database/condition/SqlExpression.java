@@ -18,6 +18,8 @@
 
 package net.luis.utils.io.database.condition;
 
+import net.luis.utils.io.database.query.SqlAlias;
+import net.luis.utils.io.database.rendering.SqlRenderable;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -26,13 +28,11 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlOrderable {
+public interface SqlExpression<T> extends SqlOrderable, SqlRenderable {
 	
-	@NonNull SqlOrderable ascending();
+	static <T> @NonNull SqlExpression<T> of(@NonNull T value) {
+		return null;
+	}
 	
-	@NonNull SqlOrderable descending();
-	
-	@NonNull SqlOrderable nullsFirst();
-	
-	@NonNull SqlOrderable nullsLast();
+	@NonNull SqlExpression<T> as(@NonNull SqlAlias alias);
 }

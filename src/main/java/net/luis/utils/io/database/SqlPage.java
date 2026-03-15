@@ -16,9 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.condition;
+package net.luis.utils.io.database;
 
 import org.jspecify.annotations.NonNull;
+
+import java.util.List;
 
 /**
  *
@@ -26,13 +28,19 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlOrderable {
+public interface SqlPage<T> {
 	
-	@NonNull SqlOrderable ascending();
+	@NonNull List<T> content();
 	
-	@NonNull SqlOrderable descending();
+	int page();
 	
-	@NonNull SqlOrderable nullsFirst();
+	int pageSize();
 	
-	@NonNull SqlOrderable nullsLast();
+	long totalElements();
+	
+	int totalPages();
+	
+	boolean hasNext();
+	
+	boolean hasPrevious();
 }
