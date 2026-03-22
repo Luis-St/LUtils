@@ -28,6 +28,8 @@ public enum SqlDefaultFunctionType implements SqlFunctionType {
 	
 	// SqlFunctions
 	EQUAL_TO,
+	IN_LIST,
+	IN_SUBQUERY,
 	IS_DISTINCT_FROM,
 	IS_NULL,
 	COUNT,
@@ -61,6 +63,10 @@ public enum SqlDefaultFunctionType implements SqlFunctionType {
 	LEAST,
 	
 	// SqlNumericFunctions
+	IS_POSITIVE,
+	IS_NEGATIVE,
+	IS_ZERO,
+	MOD_EQUALS,
 	RANDOM,
 	PI,
 	NEGATE,
@@ -92,8 +98,13 @@ public enum SqlDefaultFunctionType implements SqlFunctionType {
 	BITWISE_OR,
 	BITWISE_XOR,
 	BITWISE_NOT,
-
+	
 	// SqlStringFunctions
+	STARTS_WITH,
+	CONTAINS,
+	ENDS_WITH,
+	LIKE,
+	EQUALS_IGNORE_CASE,
 	LOWER,
 	UPPER,
 	TRIM,
@@ -116,6 +127,10 @@ public enum SqlDefaultFunctionType implements SqlFunctionType {
 	UNHEX,
 	
 	// SqlTemporalFunctions
+	WITHIN_LAST,
+	WITHIN_NEXT,
+	BEFORE,
+	AFTER,
 	NOW,
 	CURRENT_DATE,
 	CURRENT_TIME,

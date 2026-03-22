@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.database.query.crud;
 
-import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.query.SqlQuery;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import org.jspecify.annotations.NonNull;

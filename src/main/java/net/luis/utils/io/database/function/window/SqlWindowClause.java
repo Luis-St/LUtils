@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.database.function.window;
 
-import net.luis.utils.io.database.column.SqlColumn;
 import net.luis.utils.io.database.condition.SqlOrderable;
 import net.luis.utils.io.database.rendering.SqlRenderable;
+import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 /**

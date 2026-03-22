@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database;
+package net.luis.utils.io.database.migration;
 
 /**
  *
@@ -24,5 +24,5 @@ package net.luis.utils.io.database;
  *
  */
 
-public class SqlTable<T> {
+public interface SqlColumnMigration extends SqlMigration {
 }

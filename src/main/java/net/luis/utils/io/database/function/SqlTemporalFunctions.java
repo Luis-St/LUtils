@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.function;
 
+import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlExpression;
 import org.jspecify.annotations.NonNull;
 
@@ -31,6 +32,30 @@ import java.time.temporal.Temporal;
  */
 
 public final class SqlTemporalFunctions {
+	
+	public static @NonNull SqlCondition withinLast(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Duration duration) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition withinNext(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Duration duration) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition before(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Temporal timestamp) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition before(@NonNull SqlExpression<? extends Temporal> expression, @NonNull SqlExpression<? extends Temporal> timestamp) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition after(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Temporal timestamp) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition after(@NonNull SqlExpression<? extends Temporal> expression, @NonNull SqlExpression<? extends Temporal> timestamp) {
+		return null;
+	}
 	
 	public static @NonNull SqlExpression<LocalDateTime> now() {
 		return null;

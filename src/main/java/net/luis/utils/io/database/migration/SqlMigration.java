@@ -16,11 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.column;
-
-import net.luis.utils.io.database.condition.SqlExpression;
-import net.luis.utils.io.database.query.SqlAlias;
-import org.jspecify.annotations.NonNull;
+package net.luis.utils.io.database.migration;
 
 /**
  *
@@ -28,7 +24,5 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlColumn<T> extends SqlExpression<T> {
-	
-	@NonNull SqlExpression<T> of(@NonNull SqlAlias alias);
+public interface SqlMigration {
 }

@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.SqlColumnType;
-import net.luis.utils.io.database.function.SqlDefaultFunctionType;
+import net.luis.utils.io.database.function.SqlFunctionType;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import org.jspecify.annotations.NonNull;
 
@@ -31,11 +30,8 @@ import java.util.List;
  *
  */
 
+@FunctionalInterface
 public interface SqlDialect {
 	
-	@NonNull SqlRendered render(@NonNull SqlDefaultFunctionType type, @NonNull List<SqlRendered> arguments);
-	
-	@NonNull String quoteIdentifier(@NonNull String identifier);
-	
-	@NonNull String typeName(@NonNull SqlColumnType columnType);
+	@NonNull SqlRendered render(@NonNull SqlFunctionType type, @NonNull List<SqlRendered> arguments);
 }

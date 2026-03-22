@@ -18,10 +18,11 @@
 
 package net.luis.utils.io.database.function;
 
-import net.luis.utils.io.database.column.SqlColumn;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlExpression;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
+import net.luis.utils.io.database.query.crud.SqlSelectQuery;
+import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -37,6 +38,18 @@ public final class SqlFunctions {
 	}
 	
 	public static <T> @NonNull SqlCondition equalTo(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> other) {
+		return null;
+	}
+	
+	public static <T> @NonNull SqlCondition in(@NonNull SqlExpression<T> expression, T @NonNull ... values) {
+		return null;
+	}
+	
+	public static <T> @NonNull SqlCondition in(@NonNull SqlExpression<T> expression, SqlExpression<T> @NonNull ... otherExpressions) {
+		return null;
+	}
+	
+	public static <T> @NonNull SqlCondition in(@NonNull SqlExpression<T> expression, @NonNull SqlSelectQuery<T> subquery) {
 		return null;
 	}
 	

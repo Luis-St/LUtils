@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.function;
 
+import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlExpression;
 import org.jspecify.annotations.NonNull;
 
@@ -28,6 +29,46 @@ import org.jspecify.annotations.NonNull;
  */
 
 public final class SqlStringFunctions {
+	
+	public static @NonNull SqlCondition startsWith(@NonNull SqlExpression<String> expression, @NonNull String prefix) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition startsWith(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> prefix) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition contains(@NonNull SqlExpression<String> expression, @NonNull String substring) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition contains(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> substring) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition endsWith(@NonNull SqlExpression<String> expression, @NonNull String suffix) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition endsWith(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> suffix) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition like(@NonNull SqlExpression<String> expression, @NonNull String pattern) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition like(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> pattern) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition equalsIgnoreCase(@NonNull SqlExpression<String> expression, @NonNull String value) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition equalsIgnoreCase(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> value) {
+		return null;
+	}
 	
 	public static @NonNull SqlExpression<String> lower(@NonNull SqlExpression<String> expression) {
 		return null;

@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.database.index;
 
-import net.luis.utils.io.database.column.SqlColumn;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

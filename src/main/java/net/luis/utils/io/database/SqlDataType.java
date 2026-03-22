@@ -16,10 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query;
+package net.luis.utils.io.database;
 
-import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.table.SqlColumnType;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -28,15 +27,9 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlJoinableQuery<T> extends SqlQuery<T> {
-	
-	@NonNull SqlJoinableQuery<T> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	@NonNull SqlJoinableQuery<T> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	@NonNull SqlJoinableQuery<T> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	@NonNull SqlJoinableQuery<T> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	@NonNull SqlJoinableQuery<T> crossJoin(@NonNull SqlTable<?> table);
+public record SqlDataType<T>(
+	@NonNull String name,
+	@NonNull Class<T> javaType,
+	@NonNull SqlColumnType columnType
+) {
 }

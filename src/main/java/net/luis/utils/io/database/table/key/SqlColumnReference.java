@@ -16,11 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query;
+package net.luis.utils.io.database.table.key;
 
-import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -28,15 +29,20 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlJoinableQuery<T> extends SqlQuery<T> {
+public record SqlColumnReference<T>(
+	@NonNull SqlColumn<T> column,
+	@NonNull SqlReferentialAction onUpdate,
+	@NonNull SqlReferentialAction onDelete
+) implements SqlReference<SqlColumn<T>> {
 	
-	@NonNull SqlJoinableQuery<T> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	public SqlColumnReference {
+		Objects.requireNonNull(column, "Referenced column must not be null");
+		Objects.requireNonNull(onUpdate, "On update action must not be null");
+		Objects.requireNonNull(onDelete, "On delete action must not be null");
+	}
 	
-	@NonNull SqlJoinableQuery<T> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	@NonNull SqlJoinableQuery<T> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	@NonNull SqlJoinableQuery<T> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	@NonNull SqlJoinableQuery<T> crossJoin(@NonNull SqlTable<?> table);
+	@Override
+	public @NonNull SqlColumn<T> referenceTarget() {
+		return this.column;
+	}
 }

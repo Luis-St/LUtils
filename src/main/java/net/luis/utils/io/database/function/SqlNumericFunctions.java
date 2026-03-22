@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.function;
 
+import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlExpression;
 import org.jspecify.annotations.NonNull;
 
@@ -28,6 +29,26 @@ import org.jspecify.annotations.NonNull;
  */
 
 public abstract class SqlNumericFunctions {
+	
+	public static @NonNull SqlCondition isPositive(@NonNull SqlExpression<? extends Number> expression) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition isNegative(@NonNull SqlExpression<? extends Number> expression) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition isZero(@NonNull SqlExpression<? extends Number> expression) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition modEquals(@NonNull SqlExpression<? extends Number> expression, @NonNull Number divisor, @NonNull Number remainder) {
+		return null;
+	}
+	
+	public static @NonNull SqlCondition modEquals(@NonNull SqlExpression<? extends Number> expression, @NonNull SqlExpression<? extends Number> divisor, @NonNull SqlExpression<? extends Number> remainder) {
+		return null;
+	}
 	
 	public static @NonNull SqlExpression<Double> random() {
 		return null;

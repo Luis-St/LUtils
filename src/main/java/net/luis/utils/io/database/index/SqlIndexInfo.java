@@ -18,6 +18,8 @@
 
 package net.luis.utils.io.database.index;
 
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -32,9 +34,9 @@ public interface SqlIndexInfo {
 	
 	@NonNull String name();
 	
-	@NonNull String tableName();
+	@NonNull SqlTable<?> table();
 	
-	@NonNull List<String> columns();
+	@NonNull List<SqlColumn<?>> columns();
 	
 	boolean isUnique();
 	

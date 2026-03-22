@@ -16,10 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query;
+package net.luis.utils.io.database.table.key;
 
-import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -28,15 +26,11 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlJoinableQuery<T> extends SqlQuery<T> {
+public interface SqlReference<T> {
 	
-	@NonNull SqlJoinableQuery<T> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	@NonNull T referenceTarget();
 	
-	@NonNull SqlJoinableQuery<T> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	@NonNull SqlReferentialAction onUpdate();
 	
-	@NonNull SqlJoinableQuery<T> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	@NonNull SqlJoinableQuery<T> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
-	
-	@NonNull SqlJoinableQuery<T> crossJoin(@NonNull SqlTable<?> table);
+	@NonNull SqlReferentialAction onDelete();
 }
