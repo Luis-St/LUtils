@@ -20,6 +20,7 @@ package net.luis.utils.io.database.index;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.table.SqlColumn;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -31,15 +32,15 @@ import java.util.List;
  *
  */
 
-public interface SqlIndexDefinition {
+public record SqlIndex(
+	@NonNull String name,
+	@NonNull List<SqlColumn<?>> columns,
+	boolean unique,
+	@Nullable SqlCondition whereCondition,
+	@NonNull SqlIndexMethod method
+) {
 	
-	@NonNull String name();
-	
-	@NonNull List<SqlColumn<?>> columns();
-	
-	boolean unique();
-	
-	@Nullable SqlCondition where();
-	
-	@NonNull SqlIndexMethod method();
+	public SqlIndex(@NonNull String name, @NonNull List<SqlColumn<?>> columns, boolean unique, @NotNull SqlIndexMethod method) {
+		this(name, columns, unique, null, method);
+	}
 }

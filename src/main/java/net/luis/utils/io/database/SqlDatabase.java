@@ -18,6 +18,20 @@
 
 package net.luis.utils.io.database;
 
+import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.index.SqlIndex;
+import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.table.*;
+import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.query.SqlQueryProvider;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+
 /**
  *
  * @author Luis-St
@@ -25,4 +39,41 @@ package net.luis.utils.io.database;
  */
 
 public class SqlDatabase {
+	
+	public @NotNull SqlDialect getDialect() {
+		return null;
+	}
+	
+	public boolean health() {
+		return false;
+	}
+	
+	public boolean ping() {
+		return false;
+	}
+	
+	public void createSchema(@NotNull String name) throws SqlException {
+	
+	}
+	
+	public void createSchemaIfNotExists(@NotNull String name) throws SqlException {
+	
+	}
+	
+	public boolean existsSchema(@NotNull String name) throws SqlException {
+		return false;
+	}
+	
+	public void dropSchema(@NotNull String name, boolean cascade) throws SqlException {
+	
+	}
+	
+	public <T> @NonNull SqlTableProvider<T> table(@NonNull SqlTable<T> table) {
+		return null;
+	}
+	
+	public <T> @NonNull SqlQueryProvider<T> from(@NonNull SqlTable<T> table) {
+		return null;
+	}
 }
+ 

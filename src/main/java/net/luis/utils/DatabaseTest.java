@@ -18,24 +18,12 @@
 
 package net.luis.utils;
 
-import net.luis.utils.io.databasev1.SqlDatabase;
-import net.luis.utils.io.databasev1.SqlRendered;
-import net.luis.utils.io.databasev1.condition.SqlCondition;
-import net.luis.utils.io.databasev1.dialect.SqlColumnType;
-import net.luis.utils.io.databasev1.dialect.postgres.PostgresQueryProvider;
-import net.luis.utils.io.databasev1.dialect.postgres.PostgresTable;
-import net.luis.utils.io.databasev1.exception.SqlException;
-import net.luis.utils.io.databasev1.migration.*;
-import net.luis.utils.io.databasev1.query.SqlQueryProvider;
-import net.luis.utils.io.databasev1.query.row.SqlRow2;
-import net.luis.utils.io.databasev1.table.*;
-import net.luis.utils.io.databasev1.transaction.SqlTransaction;
-import net.luis.utils.util.Version;
-import org.jspecify.annotations.NonNull;
+import net.luis.utils.io.database.SqlDataType;
+import net.luis.utils.io.database.table.*;
+import net.luis.utils.io.database.table.key.SqlCompositePrimaryKey;
+import net.luis.utils.io.database.table.key.SqlForeignKey;
 
-import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 
 /**
  * Demonstrates the complete database API after the refactoring.<br>
@@ -45,7 +33,54 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class DatabaseTest {
 	
-	record Person(int id, String name, String email, long version, Instant createdAt) {}
+	public record Person(int id, String name, String email, long version, Instant createdAt) {}
+	
+	public record Role(int id, String name) {}
+	
+	public record PersonRole(int personId, int roleId) {}
+	
+	public static final SqlTable<Person> PERSON_TABLE;
+	public static final SqlColumn<Integer> ID;
+	public static final SqlColumn<String> NAME;
+	public static final SqlColumn<String> EMAIL;
+	public static final SqlColumn<Long> VERSION;
+	public static final SqlColumn<Instant> CREATED_AT;
+	
+	public static final SqlTable<Role> ROLE_TABLE;
+	public static final SqlColumn<Integer> ROLE_ID;
+	public static final SqlColumn<String> ROLE_NAME;
+	
+	public static final SqlTable<PersonRole> PERSON_ROLE_TABLE;
+	public static final SqlColumn<Integer> PR_PERSON_ID;
+	public static final SqlColumn<Integer> PR_ROLE_ID;
+	public static final SqlForeignKey FK_PR_PERSON_ID;
+	public static final SqlForeignKey FK_PR_ROLE_ID;
+	public static final SqlCompositePrimaryKey PERSON_ROLE_PK;
+	
+	static {
+		SqlTableBuilder<Person> personTableBuilder = SqlTable.of(Person.class, "person");
+		ID = personTableBuilder.column("id", SqlDataType.INTEGER, col -> col.primaryKey().notNull().autoIncrement());
+		NAME = personTableBuilder.column("name", SqlDataType.STRING, SqlColumnBuilder::notNull);
+		EMAIL = personTableBuilder.column("email", SqlDataType.STRING, col -> col.notNull().unique());
+		VERSION = personTableBuilder.column("version", SqlDataType.LONG, col -> col.notNull().defaultValue(0L));
+		CREATED_AT = personTableBuilder.column("created_at", SqlDataType.INSTANT, SqlColumnBuilder::notNull);
+		PERSON_TABLE = personTableBuilder.build();
+		
+		SqlTableBuilder<Role> roleTableBuilder = SqlTable.of(Role.class, "role");
+		ROLE_ID = roleTableBuilder.column("id", SqlDataType.INTEGER, col -> col.primaryKey().notNull().autoIncrement());
+		ROLE_NAME = roleTableBuilder.column("name", SqlDataType.STRING, SqlColumnBuilder::notNull);
+		ROLE_TABLE = roleTableBuilder.build();
+		
+		SqlTableBuilder<PersonRole> personRoleTableBuilder = SqlTable.of(PersonRole.class, "person_role");
+		PR_PERSON_ID = personRoleTableBuilder.column("person_id", SqlDataType.INTEGER, col -> col.primaryKey().notNull());
+		PR_ROLE_ID = personRoleTableBuilder.column("role_id", SqlDataType.INTEGER, col -> col.primaryKey().notNull());
+		PERSON_ROLE_PK = personRoleTableBuilder.compositePrimaryKey(PR_PERSON_ID, PR_ROLE_ID);
+		FK_PR_PERSON_ID = personRoleTableBuilder.foreignKey(PR_PERSON_ID, PERSON_TABLE);
+		FK_PR_ROLE_ID = personRoleTableBuilder.foreignKey(PR_ROLE_ID, ROLE_TABLE);
+		PERSON_ROLE_TABLE = personRoleTableBuilder.build();
+	}
+	
+	/*record Person(int id, String name, String email, long version, Instant createdAt) {}
 	
 	record Role(int id, String name) {}
 	
@@ -323,5 +358,5 @@ public class DatabaseTest {
 			// Check migration status
 			List<SqlMigrationInfo> status = runner.status();
 		}
-	}
+	}*/
 }

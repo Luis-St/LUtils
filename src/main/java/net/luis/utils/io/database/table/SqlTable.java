@@ -120,7 +120,6 @@ public class SqlTable<T> {
 			}
 		}
 	}
-	//endregion
 	
 	private void validatePrimaryKeyColumn(@NonNull SqlColumn<?> column) {
 		Objects.requireNonNull(column, "Column must not be null");
@@ -141,6 +140,7 @@ public class SqlTable<T> {
 			throw new IllegalStateException("Column '" + column.getName() + "' is not defined in table " + this.name);
 		}
 	}
+	//endregion
 	
 	public @NonNull Class<T> getType() {
 		return this.type;

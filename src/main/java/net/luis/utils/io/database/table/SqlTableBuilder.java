@@ -61,6 +61,11 @@ public class SqlTableBuilder<T> {
 		return column;
 	}
 	
+	public @NonNull SqlCompositePrimaryKey compositePrimaryKey(SqlColumn<?> @NonNull  ... columns) {
+		Objects.requireNonNull(columns, "Columns must not be null");
+		return this.compositePrimaryKey(Lists.newArrayList(columns));
+	}
+	
 	public @NonNull SqlCompositePrimaryKey compositePrimaryKey(@NonNull List<SqlColumn<?>> columns) {
 		return this.compositePrimaryKey(new SqlCompositePrimaryKey(columns));
 	}
