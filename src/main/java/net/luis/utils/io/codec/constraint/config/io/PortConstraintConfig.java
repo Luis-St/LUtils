@@ -20,13 +20,11 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.PortRange;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -112,6 +110,11 @@ public record PortConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
@@ -138,6 +141,7 @@ public record PortConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of port values that are allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withIn(@NonNull Collection<Integer> values) {
@@ -149,6 +153,7 @@ public record PortConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of port values that are not allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withNotIn(@NonNull Collection<Integer> values) {
@@ -182,6 +187,7 @@ public record PortConstraintConfig(
 	 * Creates a new config with the specified port type constraint.<br>
 	 *
 	 * @param config The enum constraint config for port type validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withType(@NonNull EnumConstraintConfig<PortRange> config) {
@@ -193,6 +199,7 @@ public record PortConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
@@ -202,15 +209,15 @@ public record PortConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Integer value) {
+	public void validate(@NonNull Integer value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> IOMatchers.matchPortRange(value, this.inRange),
-			() -> IOMatchers.matchPortType(value, this.type),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> IOValidators.validatePortRange(value, this.inRange),
+			() -> IOValidators.validatePortType(value, this.type),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

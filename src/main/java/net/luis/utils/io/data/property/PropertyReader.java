@@ -22,15 +22,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.property.exception.PropertySyntaxException;
-import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.reader.StringScope;
+import net.luis.utils.io.reader.*;
 import net.luis.utils.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.io.*;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -106,7 +105,33 @@ public class PropertyReader implements AutoCloseable {
 	/**
 	 * The internal io reader to read the properties.<br>
 	 */
-	private final BufferedReader reader;
+	private final StringReader reader;
+	/**
+	 * The current line number for error messages.<br>
+	 */
+	private int lineNumber;
+	
+	/**
+	 * Constructs a new property reader with the given string and the default configuration.<br>
+	 *
+	 * @param string The string to read from
+	 * @throws NullPointerException If the string is null
+	 */
+	public PropertyReader(@NonNull String string) {
+		this(string, PropertyConfig.DEFAULT);
+	}
+	
+	/**
+	 * Constructs a new property reader with the given string and configuration.<br>
+	 *
+	 * @param string The string to read from
+	 * @param config The configuration for this reader
+	 * @throws NullPointerException If the string or the configuration is null
+	 */
+	public PropertyReader(@NonNull String string, @NonNull PropertyConfig config) {
+		this.config = Objects.requireNonNull(config, "Property config must not be null");
+		this.reader = new StringReader(Objects.requireNonNull(string, "String must not be null"));
+	}
 	
 	/**
 	 * Constructs a new property reader with the given input and the default configuration.<br>
@@ -127,7 +152,7 @@ public class PropertyReader implements AutoCloseable {
 	 */
 	public PropertyReader(@NonNull InputProvider input, @NonNull PropertyConfig config) {
 		this.config = Objects.requireNonNull(config, "Property config must not be null");
-		this.reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
+		this.reader = new StringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
 	
 	/**
@@ -140,6 +165,7 @@ public class PropertyReader implements AutoCloseable {
 	private static @NonNull String readScopeExclude(@NonNull ScopedStringReader reader, @NonNull StringScope scope) {
 		Objects.requireNonNull(reader, "Reader must not be null");
 		Objects.requireNonNull(scope, "Scope must not be null");
+		
 		String result = reader.readScope(scope);
 		return result.substring(1, result.length() - 1);
 	}
@@ -150,8 +176,11 @@ public class PropertyReader implements AutoCloseable {
 	 * @param content The content to split
 	 * @param separator The separator character
 	 * @return The list of elements
+	 * @throws NullPointerException If the content is null
 	 */
 	private static @NonNull List<String> splitArrayElements(@NonNull String content, char separator) {
+		Objects.requireNonNull(content, "Content must not be null");
+		
 		List<String> elements = Lists.newArrayList();
 		StringBuilder current = new StringBuilder();
 		int depth = 0;
@@ -186,7 +215,6 @@ public class PropertyReader implements AutoCloseable {
 		if (!current.isEmpty()) {
 			elements.add(current.toString());
 		}
-		
 		return elements;
 	}
 	
@@ -198,32 +226,26 @@ public class PropertyReader implements AutoCloseable {
 	 */
 	public @NonNull PropertyObject readProperties() {
 		PropertyObject properties = new PropertyObject();
-		while (true) {
-			String line;
-			try {
-				line = this.reader.readLine();
-			} catch (Exception e) {
-				throw new PropertySyntaxException("Unable to read line from input", e);
-			}
-			if (line == null) {
-				break;
-			}
+		while (this.reader.canRead()) {
+			String line = this.reader.readLine(false);
+			this.lineNumber++;
+			
 			List<ParsedProperty> parsedProperties = this.parseLine(line);
 			if (parsedProperties.isEmpty()) {
 				continue;
 			}
 			for (ParsedProperty prop : parsedProperties) {
 				if (prop.isArrayAppend()) {
-					// Multi-line array syntax: key[] = value
 					String baseKey = prop.key();
 					PropertyArray array = this.arrayCache.computeIfAbsent(baseKey, k -> new PropertyArray());
+					
 					array.add(prop.element());
 					properties.add(baseKey, array);
 				} else {
 					properties.add(prop.key(), prop.element());
 				}
-				// Cache string values for variable resolution
-				if (prop.element() instanceof PropertyValue value && value.isString()) {
+				
+				if (prop.element() instanceof PropertyValue value && value.isPropertyString()) {
 					this.propertyCache.put(prop.key(), value.getAsString());
 				}
 			}
@@ -246,13 +268,15 @@ public class PropertyReader implements AutoCloseable {
 		if (line.isBlank() || this.config.commentCharacters().contains(line.charAt(0))) {
 			return List.of();
 		}
+		
 		char separator = this.config.separator();
 		if (!StringUtils.containsNotEscaped(line, separator)) {
-			throw new PropertySyntaxException("No separator (" + separator + ") found in line: " + line);
+			throw new PropertySyntaxException("No separator (" + separator + ") found at line " + this.lineNumber + ": " + line);
 		}
+		
 		String[] parts = StringUtils.splitNotEscaped(line, separator);
 		if (parts.length == 0) {
-			throw new PropertySyntaxException("Unable to split line at separator (" + separator + "): " + line);
+			throw new PropertySyntaxException("Unable to split line at separator (" + separator + ") at line " + this.lineNumber + ": " + line);
 		}
 		return this.parseProperty(parts[0], this.getValuePart(parts));
 	}
@@ -272,6 +296,7 @@ public class PropertyReader implements AutoCloseable {
 		} else if (valueParts.length == 2) {
 			return valueParts[1];
 		}
+		
 		StringBuilder builder = new StringBuilder(valueParts[1]);
 		for (int i = 2; i < valueParts.length; i++) {
 			builder.append(this.config.separator()).append(valueParts[i]);
@@ -291,29 +316,32 @@ public class PropertyReader implements AutoCloseable {
 	private @NonNull @Unmodifiable List<ParsedProperty> parseProperty(@NonNull String rawKey, @NonNull String rawValue) {
 		Objects.requireNonNull(rawKey, "Key must not be null");
 		Objects.requireNonNull(rawValue, "Value must not be null");
+		
 		int alignment = this.getWhitespaceAlignmentCount(rawKey);
 		String key = this.removeAlignment(rawKey, alignment, true);
 		String value = this.removeAlignment(rawValue, alignment, false);
 		
-		// Check for multi-line array syntax: key[] = value
 		boolean isArrayAppend = key.endsWith("[]") && this.config.allowMultiLineArrays();
 		if (isArrayAppend) {
 			key = key.substring(0, key.length() - 2);
 		}
 		
 		if (this.isAdvancedKey(key) && !this.config.advancedParsing()) {
-			throw new PropertySyntaxException("Advanced key '" + key + "' is not allowed: '" + rawKey + "'");
+			throw new PropertySyntaxException("Advanced key '" + key + "' is not allowed at line " + this.lineNumber + ": '" + rawKey + "'");
 		}
+		
 		if (this.config.advancedParsing()) {
 			List<ParsedProperty> properties = Lists.newArrayList();
 			for (String resolvedKey : this.resolveAdvancedKeys(key)) {
 				this.config.ensureKeyMatches(resolvedKey);
 				this.config.ensureValueMatches(value);
+				
 				PropertyElement element = this.parseValue(value);
 				properties.add(new ParsedProperty(resolvedKey, element, isArrayAppend));
 			}
 			return properties;
 		}
+		
 		this.config.ensureKeyMatches(key);
 		this.config.ensureValueMatches(value);
 		PropertyElement element = this.parseValue(value);
@@ -326,11 +354,12 @@ public class PropertyReader implements AutoCloseable {
 	 *
 	 * @param value The value string to parse
 	 * @return The parsed property element
+	 * @throws NullPointerException If the value is null
 	 */
 	private @NonNull PropertyElement parseValue(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
 		String trimmed = value.strip();
 		
-		// Check for null values
 		if (trimmed.isEmpty()) {
 			return PropertyNull.INSTANCE;
 		}
@@ -338,20 +367,15 @@ public class PropertyReader implements AutoCloseable {
 			return PropertyNull.INSTANCE;
 		}
 		
-		// Check for inline array: [value1, value2, value3]
 		if (trimmed.startsWith(String.valueOf(this.config.arrayOpenChar())) &&
 			trimmed.endsWith(String.valueOf(this.config.arrayCloseChar()))) {
 			return this.parseInlineArray(trimmed);
 		}
 		
-		// Parse as simple value
 		PropertyValue propValue = new PropertyValue(value);
-		
-		// Auto-parse typed values if enabled
 		if (this.config.parseTypedValues()) {
 			return propValue.getAsParsedPropertyValue();
 		}
-		
 		return propValue;
 	}
 	
@@ -360,24 +384,26 @@ public class PropertyReader implements AutoCloseable {
 	 *
 	 * @param arrayString The array string to parse
 	 * @return The parsed property array
+	 * @throws NullPointerException If the array string is null
 	 */
 	private @NonNull PropertyArray parseInlineArray(@NonNull String arrayString) {
+		Objects.requireNonNull(arrayString, "Array string must not be null");
 		PropertyArray array = new PropertyArray();
 		
-		// Remove brackets
 		String content = arrayString.substring(1, arrayString.length() - 1).strip();
 		if (content.isEmpty()) {
 			return array;
 		}
 		
-		// Split by array separator, respecting quotes and nested structures
 		List<String> elements = splitArrayElements(content, this.config.arraySeparator());
 		for (String element : elements) {
 			String trimmed = element.strip();
+			
 			if (trimmed.isEmpty()) {
 				array.add(PropertyNull.INSTANCE);
 			} else {
 				PropertyValue value = new PropertyValue(trimmed);
+				
 				if (this.config.parseTypedValues()) {
 					array.add(value.getAsParsedPropertyValue());
 				} else {
@@ -385,7 +411,6 @@ public class PropertyReader implements AutoCloseable {
 				}
 			}
 		}
-		
 		return array;
 	}
 	
@@ -410,6 +435,7 @@ public class PropertyReader implements AutoCloseable {
 	 */
 	private int getWhitespaceAlignmentCount(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		int count = 0;
 		for (int i = key.length() - 1; i >= 0; i--) {
 			if (Character.isWhitespace(key.charAt(i))) {
@@ -435,6 +461,7 @@ public class PropertyReader implements AutoCloseable {
 		if (0 >= alignment) {
 			return str;
 		}
+		
 		if (isKey) {
 			return str.substring(0, str.length() - alignment);
 		}
@@ -452,6 +479,7 @@ public class PropertyReader implements AutoCloseable {
 	 */
 	private @NonNull @Unmodifiable List<String> resolveAdvancedKeys(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		List<String> resolvedKeys = Lists.newArrayList();
 		ScopedStringReader reader = new ScopedStringReader(key);
 		while (reader.canRead()) {
@@ -474,6 +502,7 @@ public class PropertyReader implements AutoCloseable {
 			if (partReader.peek() == '$') {
 				partReader.skip(); // skip $
 				position += partReader.getIndex();
+				
 				String variable = readScopeExclude(partReader, StringScope.CURLY_BRACKETS);
 				if (variable.isEmpty()) {
 					throw new PropertySyntaxException("Variable key part '${" + variable + "}' at position " + position + " must not be empty: '" + key + "'");
@@ -483,6 +512,7 @@ public class PropertyReader implements AutoCloseable {
 				resolvedKeys = this.extendResolvedKeys(resolvedKeys, this.resolveVariableKeyPart(key, variable));
 			} else if (partReader.peek() == '[') {
 				position += partReader.getIndex();
+				
 				String compacted = readScopeExclude(partReader, StringScope.SQUARE_BRACKETS);
 				if (compacted.isEmpty()) {
 					throw new PropertySyntaxException("Compacted key part '[" + compacted + "]' at position " + position + " must not be empty: '" + key + "'");
@@ -512,6 +542,7 @@ public class PropertyReader implements AutoCloseable {
 	private String @NonNull [] resolveCompactedKeyPart(@NonNull String key, @NonNull String compacted) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(compacted, "Compacted key part must not be null");
+		
 		String[] compactedValues = compacted.split("\\|");
 		for (int i = 0; i < compactedValues.length; i++) {
 			String compactedValue = compactedValues[i];
@@ -553,7 +584,6 @@ public class PropertyReader implements AutoCloseable {
 		char typeSeparator = this.config.variableTypeSeparator();
 		String defaultMarker = this.config.defaultValueMarker();
 		
-		// Find the type separator
 		int typeEnd = variable.indexOf(typeSeparator);
 		if (typeEnd == -1) {
 			throw new PropertySyntaxException("Variable '${" + variable + "}' must contain type separator '" + typeSeparator + "': '" + key + "'");
@@ -562,26 +592,21 @@ public class PropertyReader implements AutoCloseable {
 		String type = variable.substring(0, typeEnd).strip();
 		String remainder = variable.substring(typeEnd + 1);
 		
-		// Check for default value marker
 		String targetKey;
 		String defaultValue = null;
 		int defaultIndex = remainder.indexOf(defaultMarker);
-		if (defaultIndex != -1) {
+		if (defaultIndex == -1) {
+			targetKey = remainder.strip();
+		} else {
 			targetKey = remainder.substring(0, defaultIndex).strip();
 			defaultValue = remainder.substring(defaultIndex + defaultMarker.length());
-		} else {
-			targetKey = remainder.strip();
 		}
 		
-		// Validate target key
 		if (targetKey.isEmpty()) {
 			throw new PropertySyntaxException("Target key in variable '${" + variable + "}' must not be empty: '" + key + "'");
 		}
 		
-		// Resolve the value based on type
 		String value = this.resolveVariableValue(type, targetKey, key, variable);
-		
-		// Apply default if needed
 		if (value == null && defaultValue != null) {
 			value = defaultValue;
 		}
@@ -589,7 +614,6 @@ public class PropertyReader implements AutoCloseable {
 		if (value == null) {
 			throw new PropertySyntaxException("Could not resolve variable '${" + variable + "}' and no default was provided: '" + key + "'");
 		}
-		
 		return value;
 	}
 	
@@ -602,9 +626,14 @@ public class PropertyReader implements AutoCloseable {
 	 * @param variable The original variable (for error messages)
 	 * @return The resolved value, or null if not found
 	 * @throws PropertySyntaxException If the type is not recognized
+	 * @throws NullPointerException If any of the parameters are null
 	 */
 	private @Nullable String resolveVariableValue(@NonNull String type, @NonNull String targetKey, @NonNull String key, @NonNull String variable) {
-		// Check custom variables first
+		Objects.requireNonNull(type, "Variable type must not be null");
+		Objects.requireNonNull(targetKey, "Target key must not be null");
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(variable, "Variable must not be null");
+		
 		Map<String, String> customVars = this.config.getCustomVariables();
 		if (!customVars.isEmpty() && customVars.containsKey(targetKey)) {
 			return customVars.get(targetKey);
@@ -629,10 +658,12 @@ public class PropertyReader implements AutoCloseable {
 	 */
 	private @NonNull List<String> extendResolvedKeys(@NonNull List<String> resolvedKeys, String @Nullable ... keyParts) {
 		Objects.requireNonNull(resolvedKeys, "Resolved keys must not be null");
+		
 		List<String> result = Lists.newArrayList();
 		if (resolvedKeys.isEmpty() && keyParts != null) {
 			result.addAll(Arrays.asList(keyParts));
 		}
+		
 		for (String existingKey : resolvedKeys) {
 			for (String part : ArrayUtils.nullToEmpty(keyParts)) {
 				result.add(existingKey + "." + part);
@@ -642,16 +673,32 @@ public class PropertyReader implements AutoCloseable {
 	}
 	
 	@Override
-	public void close() throws IOException {
-		this.reader.close();
+	public void close() {
+		this.reader.readRemaining();
 	}
 	
 	/**
 	 * Internal record for holding a parsed property with its key, element, and array append flag.<br>
 	 *
+	 * @author Luis-St
+	 *
 	 * @param key The property key
 	 * @param element The property element
 	 * @param isArrayAppend Whether this is a multi-line array append (key[] = value)
 	 */
-	private record ParsedProperty(@NonNull String key, @NonNull PropertyElement element, boolean isArrayAppend) {}
+	private record ParsedProperty(@NonNull String key, @NonNull PropertyElement element, boolean isArrayAppend) {
+		
+		/**
+		 * Constructs a new parsed property and ensures that the key and element are not null.<br>
+		 *
+		 * @param key The property key
+		 * @param element The property element
+		 * @param isArrayAppend Whether this is a multi-line array append (key[] = value)
+		 * @throws NullPointerException If the key or element is null
+		 */
+		private ParsedProperty {
+			Objects.requireNonNull(key, "Property key must not be null");
+			Objects.requireNonNull(element, "Property element must not be null");
+		}
+	}
 }

@@ -812,8 +812,8 @@ class IniIntegrationTest {
 		
 		IniSection physics = result.requireSection("physics");
 		assertEquals(299792458, physics.getAsLong("speedOfLight"));
-		assertEquals(6.67430e-11, physics.getAsDouble("gravitationalConstant"), 1e-20);
-		assertEquals(6.62607015e-34, physics.getAsDouble("planckConstant"), 1e-43);
+		assertEquals(6.67430e-11, physics.getAsDouble("gravitationalConstant"), 1.0e-20);
+		assertEquals(6.62607015e-34, physics.getAsDouble("planckConstant"), 1.0e-43);
 		
 		IniSection prices = result.requireSection("prices");
 		assertEquals(19.99, prices.getAsDouble("item1"), 0.001);

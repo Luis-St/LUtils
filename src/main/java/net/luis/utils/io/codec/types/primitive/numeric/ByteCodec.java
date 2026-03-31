@@ -18,116 +18,80 @@
 
 package net.luis.utils.io.codec.types.primitive.numeric;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.numeric.IntegerConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.numeric.IntegerConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for bytes.<br>
  *
  * @author Luis-St
  */
-public class ByteCodec extends AbstractCodec<Byte, IntegerConstraintConfig<Byte>> implements IntegerConstraint<Byte, ByteCodec> {
+public class ByteCodec
+	extends AbstractConstrainableCodec<Byte, IntegerConstraintConfig<Byte>, ByteCodec>
+	implements IntegerConstraint<Byte, ByteCodec> {
 	
 	/**
 	 * Constructs a new byte codec.<br>
 	 */
-	public ByteCodec() {}
+	public ByteCodec() {
+		super(ByteCodec::new, IntegerConstraintConfig.unconstrained());
+	}
 	
 	/**
 	 * Constructs a new byte codec with the specified integer constraint configuration.<br>
 	 *
-	 * @param constraintConfig The integer constraint configuration
+	 * @param config The integer constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	private ByteCodec(@NonNull IntegerConstraintConfig<Byte> constraintConfig) {
-		super(constraintConfig);
+	private ByteCodec(@NonNull IntegerConstraintConfig<Byte> config) {
+		super(ByteCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull ByteCodec apply(@NonNull UnaryOperator<IntegerConstraintConfig<Byte>> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new ByteCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(IntegerConstraintConfig.unconstrained()))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Byte value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Byte value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as byte using '" + this + "'");
+			throw new EncoderException("Unable to encode null as byte", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createByte(value);
+		return provider.createByte(this.validateEncodeConstraints(value), EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull Byte key) {
+	public @NonNull String encodeKey(@NonNull Byte key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(Byte.toString(key));
+		return Byte.toString(this.validateEncodeConstraints(key));
 	}
 	
 	@Override
-	public <R> @NonNull Result<Byte> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Byte decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as byte using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as byte", this);
 		}
 		
-		Result<Byte> result = provider.getByte(value);
-		if (result.isError()) {
-			return result;
-		}
-		
-		Byte byteValue = result.resultOrThrow();
-		Result<Void> constraintResult = this.checkConstraints(byteValue);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(byteValue);
+		return this.validateDecodeConstraints(provider.getByte(value, DecoderException::new));
 	}
 	
 	@Override
-	public @NonNull Result<Byte> decodeKey(@NonNull String key) {
+	public @NonNull Byte decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			Byte byteValue = Byte.parseByte(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(byteValue);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(byteValue);
-		} catch (Exception e) {
-			return Result.error("Unable to decode key '" + key + "' as byte using '" + this + "': " + e.getMessage());
+			return this.validateDecodeConstraints(byteValue);
+		} catch (NumberFormatException e) {
+			throw new DecoderException("Unable to decode key '" + key + "' as byte: " + e.getMessage(), this);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedByteCodec[constraints=" + config + "]";
-		}).orElse("ByteCodec");
 	}
 }

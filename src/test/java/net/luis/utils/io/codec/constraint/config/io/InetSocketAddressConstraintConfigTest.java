@@ -19,9 +19,9 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.*;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.net.*;
@@ -94,6 +94,17 @@ class InetSocketAddressConstraintConfigTest {
 		assertTrue(config.resolved().isEmpty());
 		assertTrue(config.unresolved().isEmpty());
 		assertTrue(config.custom().isEmpty());
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(InetSocketAddressConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withPort(PortConstraintConfig.UNCONSTRAINED.withInRange(1, 65535));
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -202,7 +213,7 @@ class InetSocketAddressConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withCustom(value -> {});
 		
 		assertTrue(config.custom().isPresent());
 	}
@@ -213,114 +224,116 @@ class InetSocketAddressConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesUnconstrained() throws UnknownHostException {
+	void validateUnconstrained() throws UnknownHostException {
 		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED;
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("10.0.0.1"), 443)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 80)).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)));
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("10.0.0.1"), 443)));
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 80)));
 	}
 	
 	@Test
-	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> InetSocketAddressConstraintConfig.UNCONSTRAINED.matches(null));
+	void validateWithNull() {
+		assertThrows(NullPointerException.class, () -> InetSocketAddressConstraintConfig.UNCONSTRAINED.validate(null));
 	}
 	
 	@Test
-	void matchesEqualTo() throws UnknownHostException {
+	void validateEqualTo() throws UnknownHostException {
 		InetSocketAddress expected = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
 		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withEqualTo(expected);
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8081)).isError());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 8080)).isError());
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8081)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 8080)));
 	}
 	
 	@Test
-	void matchesNotEqualTo() throws UnknownHostException {
+	void validateNotEqualTo() throws UnknownHostException {
 		InetSocketAddress excluded = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
 		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withNotEqualTo(excluded);
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 8080)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8081)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)).isError());
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 8080)));
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8081)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)));
 	}
 	
 	@Test
-	void matchesIn() throws UnknownHostException {
+	void validateIn() throws UnknownHostException {
 		InetSocketAddress addr1 = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
 		InetSocketAddress addr2 = new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 8080);
 		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withIn(List.of(addr1, addr2));
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 8080)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.3"), 8080)).isError());
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)));
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 8080)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.3"), 8080)));
 	}
 	
 	@Test
-	void matchesNotIn() throws UnknownHostException {
+	void validateNotIn() throws UnknownHostException {
 		InetSocketAddress excluded = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
 		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withNotIn(List.of(excluded));
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 8080)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)).isError());
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 8080)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)));
 	}
 	
 	@Test
-	void matchesAddressConstraint() throws UnknownHostException {
+	void validateAddressConstraint() throws UnknownHostException {
 		InetAddressConstraintConfig addressConfig = InetAddressConstraintConfig.UNCONSTRAINED.withIpType(
 			EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE)
 		);
 		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withAddress(addressConfig);
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("10.0.0.1"), 8080)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 8080)).isError());
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)));
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("10.0.0.1"), 8080)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 8080)));
 	}
 	
 	@Test
-	void matchesPortConstraint() throws UnknownHostException {
+	void validatePortConstraint() throws UnknownHostException {
 		PortConstraintConfig portConfig = PortConstraintConfig.UNCONSTRAINED.withInRange(1024, 65535);
 		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withPort(portConfig);
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 65535)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 80)).isError());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 443)).isError());
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)));
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 65535)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 80)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 443)));
 	}
 	
 	@Test
-	void matchesResolved() throws UnknownHostException {
+	void validateResolved() throws UnknownHostException {
 		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withResolved();
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)));
 		
 		InetSocketAddress unresolved = InetSocketAddress.createUnresolved("nonexistent.invalid", 8080);
-		assertTrue(config.matches(unresolved).isError());
+		assertThrows(ConstraintViolateException.class, () -> config.validate(unresolved));
 	}
 	
 	@Test
-	void matchesUnresolved() throws UnknownHostException {
+	void validateUnresolved() throws UnknownHostException {
 		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withUnresolved();
 		
 		InetSocketAddress unresolved = InetSocketAddress.createUnresolved("nonexistent.invalid", 8080);
-		assertTrue(config.matches(unresolved).isSuccess());
+		assertDoesNotThrow(() -> config.validate(unresolved));
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)).isError());
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)));
 	}
 	
 	@Test
-	void matchesCustom() throws UnknownHostException {
-		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withCustom(
-			value -> value.getPort() == 8080 ? Result.success() : Result.error("Port must be 8080")
-		);
+	void validateCustom() throws UnknownHostException {
+		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED.withCustom(value -> {
+			if (value.getPort() != 8080) {
+				throw new ConstraintViolateException("Port must be 8080");
+			}
+		});
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8081)).isError());
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8081)));
 	}
 	
 	@Test
-	void matchesCombinedConstraints() throws UnknownHostException {
+	void validateCombinedConstraints() throws UnknownHostException {
 		InetAddressConstraintConfig addressConfig = InetAddressConstraintConfig.UNCONSTRAINED.withInAnySubnet(List.of("192.168.0.0/16"));
 		PortConstraintConfig portConfig = PortConstraintConfig.UNCONSTRAINED.withInRange(8000, 9000);
 		InetSocketAddressConstraintConfig config = InetSocketAddressConstraintConfig.UNCONSTRAINED
@@ -328,10 +341,10 @@ class InetSocketAddressConstraintConfigTest {
 			.withPort(portConfig)
 			.withResolved();
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)).isSuccess());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.255.255"), 9000)).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080)));
+		assertDoesNotThrow(() -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.255.255"), 9000)));
 		
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("10.0.0.1"), 8080)).isError());
-		assertTrue(config.matches(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 80)).isError());
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("10.0.0.1"), 8080)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 80)));
 	}
 }

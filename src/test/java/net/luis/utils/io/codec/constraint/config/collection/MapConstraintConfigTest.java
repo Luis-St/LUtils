@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -199,7 +199,18 @@ class MapConstraintConfigTest {
 		assertTrue(config.uniqueValues().isEmpty());
 		assertTrue(config.nonNullValues().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(Map.of("a", 1)).isSuccess());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1)));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(MapConstraintConfig.<String, Integer>unconstrained().isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withMinSize(1);
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -386,7 +397,9 @@ class MapConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withCustom(m -> m.isEmpty() ? Result.error("Map must not be empty") : Result.success());
+		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withCustom(m -> {
+			if (m.isEmpty()) throw new ConstraintViolateException("Map must not be empty");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -396,110 +409,110 @@ class MapConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		Map<String, Integer> map = Map.of("a", 1);
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withEqualTo(map);
-		assertTrue(config.matches(Map.of("a", 1)).isSuccess());
-		assertTrue(config.matches(Map.of("b", 2)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("b", 2)));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		Map<String, Integer> map = Map.of("a", 1);
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withNotEqualTo(map);
-		assertTrue(config.matches(Map.of("b", 2)).isSuccess());
-		assertTrue(config.matches(Map.of("a", 1)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("b", 2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", 1)));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		List<Map<String, Integer>> maps = List.of(Map.of("a", 1), Map.of("b", 2));
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withIn(maps);
-		assertTrue(config.matches(Map.of("a", 1)).isSuccess());
-		assertTrue(config.matches(Map.of("b", 2)).isSuccess());
-		assertTrue(config.matches(Map.of("c", 3)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1)));
+		assertDoesNotThrow(() -> config.validate(Map.of("b", 2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("c", 3)));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		List<Map<String, Integer>> maps = List.of(Map.of("a", 1), Map.of("b", 2));
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withNotIn(maps);
-		assertTrue(config.matches(Map.of("c", 3)).isSuccess());
-		assertTrue(config.matches(Map.of("a", 1)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("c", 3)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", 1)));
 	}
 	
 	@Test
-	void matchesWithMinSize() {
+	void validateWithMinSize() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withMinSize(2);
-		assertTrue(config.matches(Map.of("a", 1, "b", 2)).isSuccess());
-		assertTrue(config.matches(Map.of("a", 1)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1, "b", 2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", 1)));
 	}
 	
 	@Test
-	void matchesWithMaxSize() {
+	void validateWithMaxSize() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withMaxSize(2);
-		assertTrue(config.matches(Map.of("a", 1, "b", 2)).isSuccess());
-		assertTrue(config.matches(Map.of("a", 1, "b", 2, "c", 3)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1, "b", 2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", 1, "b", 2, "c", 3)));
 	}
 	
 	@Test
-	void matchesWithExactSize() {
+	void validateWithExactSize() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withExactSize(2);
-		assertTrue(config.matches(Map.of("a", 1, "b", 2)).isSuccess());
-		assertTrue(config.matches(Map.of("a", 1)).isError());
-		assertTrue(config.matches(Map.of("a", 1, "b", 2, "c", 3)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1, "b", 2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", 1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", 1, "b", 2, "c", 3)));
 	}
 	
 	@Test
-	void matchesWithRequiredKeys() {
+	void validateWithRequiredKeys() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withRequiredKeys(List.of("a", "b"));
-		assertTrue(config.matches(Map.of("a", 1, "b", 2)).isSuccess());
-		assertTrue(config.matches(Map.of("a", 1, "b", 2, "c", 3)).isSuccess());
-		assertTrue(config.matches(Map.of("a", 1)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1, "b", 2)));
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1, "b", 2, "c", 3)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", 1)));
 	}
 	
 	@Test
-	void matchesWithForbiddenKeys() {
+	void validateWithForbiddenKeys() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withForbiddenKeys(List.of("x", "y"));
-		assertTrue(config.matches(Map.of("a", 1, "b", 2)).isSuccess());
-		assertTrue(config.matches(Map.of("a", 1, "x", 2)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1, "b", 2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", 1, "x", 2)));
 	}
 	
 	@Test
-	void matchesWithAllowedKeys() {
+	void validateWithAllowedKeys() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withAllowedKeys(List.of("a", "b"));
-		assertTrue(config.matches(Map.of("a", 1)).isSuccess());
-		assertTrue(config.matches(Map.of("a", 1, "b", 2)).isSuccess());
-		assertTrue(config.matches(Map.of("a", 1, "c", 3)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1)));
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1, "b", 2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", 1, "c", 3)));
 	}
 	
 	@Test
-	void matchesWithUniqueValues() {
+	void validateWithUniqueValues() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withUniqueValues();
-		assertTrue(config.matches(Map.of("a", 1, "b", 2)).isSuccess());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1, "b", 2)));
 		Map<String, Integer> mapWithDuplicates = new HashMap<>();
 		mapWithDuplicates.put("a", 1);
 		mapWithDuplicates.put("b", 1);
-		assertTrue(config.matches(mapWithDuplicates).isError());
+		assertThrows(ConstraintViolateException.class, () -> config.validate(mapWithDuplicates));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained()
 			.withMinSize(1)
 			.withMaxSize(3)
 			.withRequiredKey("id")
 			.withForbiddenKey("secret");
 		
-		assertTrue(config.matches(Map.of("id", 1, "name", 2)).isSuccess());
-		assertTrue(config.matches(Map.of("name", 1)).isError());
-		assertTrue(config.matches(Map.of("id", 1, "secret", 2)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("id", 1, "name", 2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("name", 1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("id", 1, "secret", 2)));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.unconstrained();
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 	
 	@Test
@@ -520,12 +533,12 @@ class MapConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithSize() {
+	void validateWithSize() {
 		SizeConstraintConfig sizeConfig = SizeConstraintConfig.UNCONSTRAINED.withMinSize(1).withMaxSize(3);
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withSize(sizeConfig);
-		assertTrue(config.matches(Map.of("a", 1)).isSuccess());
-		assertTrue(config.matches(Map.of("a", 1, "b", 2, "c", 3)).isSuccess());
-		assertTrue(config.matches(Map.of()).isError());
-		assertTrue(config.matches(Map.of("a", 1, "b", 2, "c", 3, "d", 4)).isError());
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1)));
+		assertDoesNotThrow(() -> config.validate(Map.of("a", 1, "b", 2, "c", 3)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of()));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Map.of("a", 1, "b", 2, "c", 3, "d", 4)));
 	}
 }

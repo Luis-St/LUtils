@@ -19,9 +19,10 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,107 +35,100 @@ import static org.junit.jupiter.api.Assertions.*;
 class LongArrayCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<long[]> codec = new LongArrayCodec();
 		long[] array = { 1L, 2L, 3L };
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), array));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, array));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), array));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, array));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<long[]> codec = new LongArrayCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as long array"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as long array"));
 	}
 	
 	@Test
-	void encodeStartWithEmptyArray() {
+	void encodeWithEmptyArray() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<long[]> codec = new LongArrayCodec();
 		long[] array = {};
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonArray(), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), array);
+		assertEquals(new JsonArray(), result);
 	}
 	
 	@Test
-	void encodeStartWithSingleElement() {
+	void encodeWithSingleElement() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<long[]> codec = new LongArrayCodec();
 		long[] array = { 42L };
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), array);
 		JsonArray expected = new JsonArray();
 		expected.add(42L);
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void encodeStartWithMultipleElements() {
+	void encodeWithMultipleElements() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<long[]> codec = new LongArrayCodec();
 		long[] array = { 1L, 2L, 3L };
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), array);
 		JsonArray expected = new JsonArray();
 		expected.add(1L);
 		expected.add(2L);
 		expected.add(3L);
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<long[]> codec = new LongArrayCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonArray()));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonArray()));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<long[]> codec = new LongArrayCodec();
 		
-		Result<long[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as long array"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as long array"));
 	}
 	
 	@Test
-	void decodeStartWithEmptyArray() {
+	void decodeWithEmptyArray() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<long[]> codec = new LongArrayCodec();
 		JsonArray array = new JsonArray();
 		
-		Result<long[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new long[] {}, result.resultOrThrow());
+		long[] result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertArrayEquals(new long[] {}, result);
 	}
 	
 	@Test
-	void decodeStartWithSingleElement() {
+	void decodeWithSingleElement() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<long[]> codec = new LongArrayCodec();
 		JsonArray array = new JsonArray();
 		array.add(42L);
 		
-		Result<long[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new long[] { 42L }, result.resultOrThrow());
+		long[] result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertArrayEquals(new long[] { 42L }, result);
 	}
 	
 	@Test
-	void decodeStartWithMultipleElements() {
+	void decodeWithMultipleElements() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<long[]> codec = new LongArrayCodec();
 		JsonArray array = new JsonArray();
@@ -142,18 +136,16 @@ class LongArrayCodecTest {
 		array.add(2L);
 		array.add(3L);
 		
-		Result<long[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new long[] { 1L, 2L, 3L }, result.resultOrThrow());
+		long[] result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertArrayEquals(new long[] { 1L, 2L, 3L }, result);
 	}
 	
 	@Test
-	void decodeStartWithNonArray() {
+	void decodeWithNonArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<long[]> codec = new LongArrayCodec();
 		
-		Result<long[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42L));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42L)));
 	}
 	
 	@Test

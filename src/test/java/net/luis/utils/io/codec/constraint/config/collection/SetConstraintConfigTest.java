@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -92,7 +92,18 @@ class SetConstraintConfigTest {
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.size().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(Set.of("a", "b")).isSuccess());
+		assertDoesNotThrow(() -> config.validate(Set.of("a", "b")));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(SetConstraintConfig.<String>unconstrained().isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withMinSize(1);
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -206,7 +217,9 @@ class SetConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withCustom(set -> set.isEmpty() ? Result.error("Set must not be empty") : Result.success());
+		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withCustom(set -> {
+			if (set.isEmpty()) throw new ConstraintViolateException("Set must not be empty");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -216,84 +229,84 @@ class SetConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		Set<String> set = Set.of("a", "b");
 		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withEqualTo(set);
-		assertTrue(config.matches(Set.of("a", "b")).isSuccess());
-		assertTrue(config.matches(Set.of("c", "d")).isError());
+		assertDoesNotThrow(() -> config.validate(Set.of("a", "b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of("c", "d")));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		Set<String> set = Set.of("a", "b");
 		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withNotEqualTo(set);
-		assertTrue(config.matches(Set.of("c", "d")).isSuccess());
-		assertTrue(config.matches(Set.of("a", "b")).isError());
+		assertDoesNotThrow(() -> config.validate(Set.of("c", "d")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of("a", "b")));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		List<Set<String>> sets = List.of(Set.of("a"), Set.of("b"));
 		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withIn(sets);
-		assertTrue(config.matches(Set.of("a")).isSuccess());
-		assertTrue(config.matches(Set.of("b")).isSuccess());
-		assertTrue(config.matches(Set.of("c")).isError());
+		assertDoesNotThrow(() -> config.validate(Set.of("a")));
+		assertDoesNotThrow(() -> config.validate(Set.of("b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of("c")));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		List<Set<String>> sets = List.of(Set.of("a"), Set.of("b"));
 		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withNotIn(sets);
-		assertTrue(config.matches(Set.of("c")).isSuccess());
-		assertTrue(config.matches(Set.of("a")).isError());
+		assertDoesNotThrow(() -> config.validate(Set.of("c")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of("a")));
 	}
 	
 	@Test
-	void matchesWithMinSize() {
+	void validateWithMinSize() {
 		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withMinSize(2);
-		assertTrue(config.matches(Set.of("a", "b")).isSuccess());
-		assertTrue(config.matches(Set.of("a")).isError());
+		assertDoesNotThrow(() -> config.validate(Set.of("a", "b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of("a")));
 	}
 	
 	@Test
-	void matchesWithMaxSize() {
+	void validateWithMaxSize() {
 		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withMaxSize(2);
-		assertTrue(config.matches(Set.of("a", "b")).isSuccess());
-		assertTrue(config.matches(Set.of("a", "b", "c")).isError());
+		assertDoesNotThrow(() -> config.validate(Set.of("a", "b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of("a", "b", "c")));
 	}
 	
 	@Test
-	void matchesWithExactSize() {
+	void validateWithExactSize() {
 		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withExactSize(2);
-		assertTrue(config.matches(Set.of("a", "b")).isSuccess());
-		assertTrue(config.matches(Set.of("a")).isError());
-		assertTrue(config.matches(Set.of("a", "b", "c")).isError());
+		assertDoesNotThrow(() -> config.validate(Set.of("a", "b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of("a")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of("a", "b", "c")));
 	}
 	
 	@Test
-	void matchesWithSize() {
+	void validateWithSize() {
 		SizeConstraintConfig sizeConfig = SizeConstraintConfig.UNCONSTRAINED.withMinSize(1).withMaxSize(3);
 		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained().withSize(sizeConfig);
-		assertTrue(config.matches(Set.of("a")).isSuccess());
-		assertTrue(config.matches(Set.of("a", "b", "c")).isSuccess());
-		assertTrue(config.matches(Set.of()).isError());
-		assertTrue(config.matches(Set.of("a", "b", "c", "d")).isError());
+		assertDoesNotThrow(() -> config.validate(Set.of("a")));
+		assertDoesNotThrow(() -> config.validate(Set.of("a", "b", "c")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of()));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of("a", "b", "c", "d")));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		SetConstraintConfig<String> config = SetConstraintConfig.<String>unconstrained()
 			.withMinSize(1)
 			.withMaxSize(3);
 		
-		assertTrue(config.matches(Set.of("a", "b")).isSuccess());
-		assertTrue(config.matches(Set.of()).isError());
-		assertTrue(config.matches(Set.of("a", "b", "c", "d")).isError());
+		assertDoesNotThrow(() -> config.validate(Set.of("a", "b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of()));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Set.of("a", "b", "c", "d")));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		SetConstraintConfig<String> config = SetConstraintConfig.unconstrained();
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

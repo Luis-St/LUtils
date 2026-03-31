@@ -19,11 +19,10 @@
 package net.luis.utils.io.codec.constraint.config.numeric;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -135,6 +134,11 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 		);
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.min.isEmpty() && this.max.isEmpty() && this.positive.isEmpty() && this.negative.isEmpty() && this.zero.isEmpty() && this.percentage.isEmpty() && this.finite.isEmpty() && this.notNaN.isEmpty() && this.integral.isEmpty() && this.normalized.isEmpty() && this.custom.isEmpty();
+	}
+	
 	//region With methods
 	
 	/**
@@ -142,6 +146,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The exact value that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull DecimalConstraintConfig<T> withEqualTo(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -153,6 +158,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The value that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull DecimalConstraintConfig<T> withNotEqualTo(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -164,6 +170,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param values The collection of values that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull DecimalConstraintConfig<T> withIn(@NonNull Collection<T> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -175,6 +182,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param values The collection of values that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull DecimalConstraintConfig<T> withNotIn(@NonNull Collection<T> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -186,6 +194,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull DecimalConstraintConfig<T> withGreaterThan(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'greater than' constraint must not be null");
@@ -197,6 +206,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull DecimalConstraintConfig<T> withGreaterThanOrEqual(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'greater than or equal' constraint must not be null");
@@ -208,6 +218,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull DecimalConstraintConfig<T> withLessThan(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'less than' constraint must not be null");
@@ -219,6 +230,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull DecimalConstraintConfig<T> withLessThanOrEqual(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'less than or equal' constraint must not be null");
@@ -231,6 +243,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @param min The minimum value (exclusive)
 	 * @param max The maximum value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the min or max value is null
 	 */
 	public @NonNull DecimalConstraintConfig<T> withBetween(@NonNull T min, @NonNull T max) {
 		Objects.requireNonNull(min, "Min value for 'between' constraint must not be null");
@@ -244,6 +257,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @param min The minimum value (inclusive)
 	 * @param max The maximum value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the min or max value is null
 	 */
 	public @NonNull DecimalConstraintConfig<T> withBetweenOrEqual(@NonNull T min, @NonNull T max) {
 		Objects.requireNonNull(min, "Min value for 'between or equal' constraint must not be null");
@@ -355,6 +369,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull DecimalConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
@@ -363,20 +378,20 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull T value) {
+	public void validate(@NonNull T value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
-			() -> ConstraintMatchers.matchSign(value, this.positive, this.negative, this.zero),
-			() -> ConstraintMatchers.matchPercentage(value, this.percentage),
-			() -> ConstraintMatchers.matchFlag(value, this.finite, v -> Double.isFinite(v.doubleValue()), "Value '" + value + "' must be finite"),
-			() -> ConstraintMatchers.matchFlag(value, this.notNaN, v -> !Double.isNaN(v.doubleValue()), "Value '" + value + "' must not be NaN"),
-			() -> ConstraintMatchers.matchFlag(value, this.integral, v -> v.doubleValue() == Math.floor(v.doubleValue()), "Value '" + value + "' must be integral (no fractional part)"),
-			() -> ConstraintMatchers.matchFlag(value, this.normalized, v -> v.doubleValue() >= 0.0 && v.doubleValue() <= 1.0, "Value '" + value + "' must be normalized (between 0.0 and 1.0)"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.min, this.max),
+			() -> ConstraintValidators.validateSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintValidators.validatePercentage(value, this.percentage),
+			() -> ConstraintValidators.validateFlag(value, this.finite, v -> Double.isFinite(v.doubleValue()), "Value '" + value + "' must be finite"),
+			() -> ConstraintValidators.validateFlag(value, this.notNaN, v -> !Double.isNaN(v.doubleValue()), "Value '" + value + "' must not be NaN"),
+			() -> ConstraintValidators.validateFlag(value, this.integral, v -> v.doubleValue() == Math.floor(v.doubleValue()), "Value '" + value + "' must be integral (no fractional part)"),
+			() -> ConstraintValidators.validateFlag(value, this.normalized, v -> v.doubleValue() >= 0.0 && v.doubleValue() <= 1.0, "Value '" + value + "' must be normalized (between 0.0 and 1.0)"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

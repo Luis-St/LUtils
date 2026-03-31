@@ -126,7 +126,6 @@ public class DepthConstraintBuilder implements DepthConstraint<Integer, DepthCon
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
-	 *
 	 * @return The built depth constraint config
 	 */
 	public @NonNull DepthConstraintConfig build() {

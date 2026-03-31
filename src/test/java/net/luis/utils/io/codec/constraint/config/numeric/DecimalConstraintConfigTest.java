@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config.numeric;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
 import org.junit.jupiter.api.Test;
@@ -172,7 +173,18 @@ class DecimalConstraintConfigTest {
 		assertTrue(config.integral().isEmpty());
 		assertTrue(config.normalized().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(3.14).isSuccess());
+		assertDoesNotThrow(() -> config.validate(3.14));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(DecimalConstraintConfig.<Double>unconstrained().isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withPositive();
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -339,200 +351,200 @@ class DecimalConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withEqualTo(3.14);
-		assertTrue(config.matches(3.14).isSuccess());
-		assertTrue(config.matches(3.15).isError());
+		assertDoesNotThrow(() -> config.validate(3.14));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(3.15));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withNotEqualTo(3.14);
-		assertTrue(config.matches(3.15).isSuccess());
-		assertTrue(config.matches(3.14).isError());
+		assertDoesNotThrow(() -> config.validate(3.15));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(3.14));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withIn(List.of(1.0, 2.0, 3.0));
-		assertTrue(config.matches(1.0).isSuccess());
-		assertTrue(config.matches(2.0).isSuccess());
-		assertTrue(config.matches(4.0).isError());
+		assertDoesNotThrow(() -> config.validate(1.0));
+		assertDoesNotThrow(() -> config.validate(2.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(4.0));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withNotIn(List.of(1.0, 2.0, 3.0));
-		assertTrue(config.matches(4.0).isSuccess());
-		assertTrue(config.matches(1.0).isError());
+		assertDoesNotThrow(() -> config.validate(4.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1.0));
 	}
 	
 	@Test
-	void matchesWithGreaterThan() {
+	void validateWithGreaterThan() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withGreaterThan(5.0);
-		assertTrue(config.matches(5.1).isSuccess());
-		assertTrue(config.matches(5.0).isError());
-		assertTrue(config.matches(4.9).isError());
+		assertDoesNotThrow(() -> config.validate(5.1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(5.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(4.9));
 	}
 	
 	@Test
-	void matchesWithGreaterThanOrEqual() {
+	void validateWithGreaterThanOrEqual() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withGreaterThanOrEqual(5.0);
-		assertTrue(config.matches(5.0).isSuccess());
-		assertTrue(config.matches(5.1).isSuccess());
-		assertTrue(config.matches(4.9).isError());
+		assertDoesNotThrow(() -> config.validate(5.0));
+		assertDoesNotThrow(() -> config.validate(5.1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(4.9));
 	}
 	
 	@Test
-	void matchesWithLessThan() {
+	void validateWithLessThan() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withLessThan(10.0);
-		assertTrue(config.matches(9.9).isSuccess());
-		assertTrue(config.matches(10.0).isError());
-		assertTrue(config.matches(10.1).isError());
+		assertDoesNotThrow(() -> config.validate(9.9));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(10.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(10.1));
 	}
 	
 	@Test
-	void matchesWithLessThanOrEqual() {
+	void validateWithLessThanOrEqual() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withLessThanOrEqual(10.0);
-		assertTrue(config.matches(10.0).isSuccess());
-		assertTrue(config.matches(9.9).isSuccess());
-		assertTrue(config.matches(10.1).isError());
+		assertDoesNotThrow(() -> config.validate(10.0));
+		assertDoesNotThrow(() -> config.validate(9.9));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(10.1));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withBetween(1.0, 10.0);
-		assertTrue(config.matches(5.0).isSuccess());
-		assertTrue(config.matches(1.0).isError());
-		assertTrue(config.matches(10.0).isError());
+		assertDoesNotThrow(() -> config.validate(5.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(10.0));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withBetweenOrEqual(1.0, 10.0);
-		assertTrue(config.matches(1.0).isSuccess());
-		assertTrue(config.matches(10.0).isSuccess());
-		assertTrue(config.matches(5.0).isSuccess());
-		assertTrue(config.matches(0.9).isError());
-		assertTrue(config.matches(10.1).isError());
+		assertDoesNotThrow(() -> config.validate(1.0));
+		assertDoesNotThrow(() -> config.validate(10.0));
+		assertDoesNotThrow(() -> config.validate(5.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0.9));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(10.1));
 	}
 	
 	@Test
-	void matchesWithPositive() {
+	void validateWithPositive() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withPositive();
-		assertTrue(config.matches(0.1).isSuccess());
-		assertTrue(config.matches(100.0).isSuccess());
-		assertTrue(config.matches(0.0).isError());
-		assertTrue(config.matches(-0.1).isError());
+		assertDoesNotThrow(() -> config.validate(0.1));
+		assertDoesNotThrow(() -> config.validate(100.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-0.1));
 	}
 	
 	@Test
-	void matchesWithNonPositive() {
+	void validateWithNonPositive() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withNonPositive();
-		assertTrue(config.matches(0.0).isSuccess());
-		assertTrue(config.matches(-0.1).isSuccess());
-		assertTrue(config.matches(0.1).isError());
+		assertDoesNotThrow(() -> config.validate(0.0));
+		assertDoesNotThrow(() -> config.validate(-0.1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0.1));
 	}
 	
 	@Test
-	void matchesWithNegative() {
+	void validateWithNegative() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withNegative();
-		assertTrue(config.matches(-0.1).isSuccess());
-		assertTrue(config.matches(-100.0).isSuccess());
-		assertTrue(config.matches(0.0).isError());
-		assertTrue(config.matches(0.1).isError());
+		assertDoesNotThrow(() -> config.validate(-0.1));
+		assertDoesNotThrow(() -> config.validate(-100.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0.1));
 	}
 	
 	@Test
-	void matchesWithNonNegative() {
+	void validateWithNonNegative() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withNonNegative();
-		assertTrue(config.matches(0.0).isSuccess());
-		assertTrue(config.matches(0.1).isSuccess());
-		assertTrue(config.matches(-0.1).isError());
+		assertDoesNotThrow(() -> config.validate(0.0));
+		assertDoesNotThrow(() -> config.validate(0.1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-0.1));
 	}
 	
 	@Test
-	void matchesWithZero() {
+	void validateWithZero() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withZero();
-		assertTrue(config.matches(0.0).isSuccess());
-		assertTrue(config.matches(0.1).isError());
-		assertTrue(config.matches(-0.1).isError());
+		assertDoesNotThrow(() -> config.validate(0.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0.1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-0.1));
 	}
 	
 	@Test
-	void matchesWithNonZero() {
+	void validateWithNonZero() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withNonZero();
-		assertTrue(config.matches(0.1).isSuccess());
-		assertTrue(config.matches(-0.1).isSuccess());
-		assertTrue(config.matches(0.0).isError());
+		assertDoesNotThrow(() -> config.validate(0.1));
+		assertDoesNotThrow(() -> config.validate(-0.1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0.0));
 	}
 	
 	@Test
-	void matchesWithPercentage() {
+	void validateWithPercentage() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withPercentage();
-		assertTrue(config.matches(0.0).isSuccess());
-		assertTrue(config.matches(50.0).isSuccess());
-		assertTrue(config.matches(100.0).isSuccess());
-		assertTrue(config.matches(-0.1).isError());
-		assertTrue(config.matches(100.1).isError());
+		assertDoesNotThrow(() -> config.validate(0.0));
+		assertDoesNotThrow(() -> config.validate(50.0));
+		assertDoesNotThrow(() -> config.validate(100.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-0.1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(100.1));
 	}
 	
 	@Test
-	void matchesWithFinite() {
+	void validateWithFinite() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withFinite();
-		assertTrue(config.matches(3.14).isSuccess());
-		assertTrue(config.matches(0.0).isSuccess());
-		assertTrue(config.matches(Double.POSITIVE_INFINITY).isError());
-		assertTrue(config.matches(Double.NEGATIVE_INFINITY).isError());
-		assertTrue(config.matches(Double.NaN).isError());
+		assertDoesNotThrow(() -> config.validate(3.14));
+		assertDoesNotThrow(() -> config.validate(0.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Double.POSITIVE_INFINITY));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Double.NEGATIVE_INFINITY));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Double.NaN));
 	}
 	
 	@Test
-	void matchesWithNotNaN() {
+	void validateWithNotNaN() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withNotNaN();
-		assertTrue(config.matches(3.14).isSuccess());
-		assertTrue(config.matches(Double.POSITIVE_INFINITY).isSuccess());
-		assertTrue(config.matches(Double.NaN).isError());
+		assertDoesNotThrow(() -> config.validate(3.14));
+		assertDoesNotThrow(() -> config.validate(Double.POSITIVE_INFINITY));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Double.NaN));
 	}
 	
 	@Test
-	void matchesWithIntegral() {
+	void validateWithIntegral() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withIntegral();
-		assertTrue(config.matches(1.0).isSuccess());
-		assertTrue(config.matches(42.0).isSuccess());
-		assertTrue(config.matches(-5.0).isSuccess());
-		assertTrue(config.matches(1.5).isError());
-		assertTrue(config.matches(3.14).isError());
+		assertDoesNotThrow(() -> config.validate(1.0));
+		assertDoesNotThrow(() -> config.validate(42.0));
+		assertDoesNotThrow(() -> config.validate(-5.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1.5));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(3.14));
 	}
 	
 	@Test
-	void matchesWithNormalized() {
+	void validateWithNormalized() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained().withNormalized();
-		assertTrue(config.matches(0.0).isSuccess());
-		assertTrue(config.matches(0.5).isSuccess());
-		assertTrue(config.matches(1.0).isSuccess());
-		assertTrue(config.matches(-0.1).isError());
-		assertTrue(config.matches(1.1).isError());
+		assertDoesNotThrow(() -> config.validate(0.0));
+		assertDoesNotThrow(() -> config.validate(0.5));
+		assertDoesNotThrow(() -> config.validate(1.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-0.1));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(1.1));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.<Double>unconstrained()
 			.withPositive()
 			.withFinite()
 			.withLessThanOrEqual(100.0);
 		
-		assertTrue(config.matches(0.1).isSuccess());
-		assertTrue(config.matches(50.0).isSuccess());
-		assertTrue(config.matches(100.0).isSuccess());
-		assertTrue(config.matches(0.0).isError());
-		assertTrue(config.matches(-1.0).isError());
-		assertTrue(config.matches(Double.POSITIVE_INFINITY).isError());
+		assertDoesNotThrow(() -> config.validate(0.1));
+		assertDoesNotThrow(() -> config.validate(50.0));
+		assertDoesNotThrow(() -> config.validate(100.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(0.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(-1.0));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Double.POSITIVE_INFINITY));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		DecimalConstraintConfig<Double> config = DecimalConstraintConfig.unconstrained();
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

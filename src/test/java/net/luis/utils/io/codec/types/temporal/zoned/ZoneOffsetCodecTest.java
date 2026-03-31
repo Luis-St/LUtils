@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.temporal.zoned;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
@@ -37,89 +38,82 @@ import static org.junit.jupiter.api.Assertions.*;
 class ZoneOffsetCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		ZoneOffset offset = ZoneOffset.of("+02:00");
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), offset));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, offset));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), offset));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, offset));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as zone offset"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as zone offset"));
 	}
 	
 	@Test
-	void encodeStartWithPositiveOffset() {
+	void encodeWithPositiveOffset() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		ZoneOffset offset = ZoneOffset.of("+02:00");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), offset);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("+02:00"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), offset);
+		assertEquals(new JsonPrimitive("+02:00"), result);
 	}
 	
 	@Test
-	void encodeStartWithNegativeOffset() {
+	void encodeWithNegativeOffset() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		ZoneOffset offset = ZoneOffset.of("-05:00");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), offset);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("-05:00"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), offset);
+		assertEquals(new JsonPrimitive("-05:00"), result);
 	}
 	
 	@Test
-	void encodeStartWithUTC() {
+	void encodeWithUTC() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		ZoneOffset offset = ZoneOffset.UTC;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), offset);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("Z"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), offset);
+		assertEquals(new JsonPrimitive("Z"), result);
 	}
 	
 	@Test
-	void encodeStartWithMaxOffset() {
+	void encodeWithMaxOffset() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		ZoneOffset offset = ZoneOffset.MAX;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), offset);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("+18:00"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), offset);
+		assertEquals(new JsonPrimitive("+18:00"), result);
 	}
 	
 	@Test
-	void encodeStartWithMinOffset() {
+	void encodeWithMinOffset() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		ZoneOffset offset = ZoneOffset.MIN;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), offset);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("-18:00"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), offset);
+		assertEquals(new JsonPrimitive("-18:00"), result);
 	}
 	
 	@Test
-	void encodeStartWithOffsetWithMinutes() {
+	void encodeWithOffsetWithMinutes() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		ZoneOffset offset = ZoneOffset.of("+05:30");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), offset);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("+05:30"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), offset);
+		assertEquals(new JsonPrimitive("+05:30"), result);
 	}
 	
 	@Test
@@ -131,112 +125,102 @@ class ZoneOffsetCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithOffset() {
+	void encodeKeyWithOffset() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		ZoneOffset offset = ZoneOffset.of("+02:00");
 		
-		Result<String> result = codec.encodeKey(offset);
-		assertTrue(result.isSuccess());
-		assertEquals("+02:00", result.resultOrThrow());
+		String result = codec.encodeKey(offset);
+		assertEquals("+02:00", result);
 	}
 	
 	@Test
-	void encodeKeyWithUTC() {
+	void encodeKeyWithUTC() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		ZoneOffset offset = ZoneOffset.UTC;
 		
-		Result<String> result = codec.encodeKey(offset);
-		assertTrue(result.isSuccess());
-		assertEquals("Z", result.resultOrThrow());
+		String result = codec.encodeKey(offset);
+		assertEquals("Z", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("+02:00")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("+02:00")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as zone offset"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as zone offset"));
 	}
 	
 	@Test
-	void decodeStartWithValidPositiveOffset() {
+	void decodeWithValidPositiveOffset() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+02:00"));
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneOffset.of("+02:00"), result.resultOrThrow());
+		ZoneOffset result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("+02:00"));
+		assertEquals(ZoneOffset.of("+02:00"), result);
 	}
 	
 	@Test
-	void decodeStartWithValidNegativeOffset() {
+	void decodeWithValidNegativeOffset() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-05:00"));
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneOffset.of("-05:00"), result.resultOrThrow());
+		ZoneOffset result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("-05:00"));
+		assertEquals(ZoneOffset.of("-05:00"), result);
 	}
 	
 	@Test
-	void decodeStartWithUTC() {
+	void decodeWithUTC() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("Z"));
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneOffset.UTC, result.resultOrThrow());
+		ZoneOffset result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("Z"));
+		assertEquals(ZoneOffset.UTC, result);
 	}
 	
 	@Test
-	void decodeStartWithOffsetWithMinutes() {
+	void decodeWithOffsetWithMinutes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+05:30"));
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneOffset.of("+05:30"), result.resultOrThrow());
+		ZoneOffset result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("+05:30"));
+		assertEquals(ZoneOffset.of("+05:30"), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidOffset() {
+	void decodeWithInvalidOffset() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode zone offset"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid")));
+		assertTrue(exception.getMessage().contains("Unable to decode zone offset"));
 	}
 	
 	@Test
-	void decodeStartWithOutOfRangeOffset() {
+	void decodeWithOutOfRangeOffset() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+20:00"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode zone offset"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("+20:00")));
+		assertTrue(exception.getMessage().contains("Unable to decode zone offset"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -248,23 +232,21 @@ class ZoneOffsetCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidOffset() {
+	void decodeKeyWithValidOffset() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<ZoneOffset> result = codec.decodeKey("+02:00");
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneOffset.of("+02:00"), result.resultOrThrow());
+		ZoneOffset result = codec.decodeKey("+02:00");
+		assertEquals(ZoneOffset.of("+02:00"), result);
 	}
 	
 	@Test
-	void decodeKeyWithUTC() {
+	void decodeKeyWithUTC() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<ZoneOffset> result = codec.decodeKey("Z");
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneOffset.UTC, result.resultOrThrow());
+		ZoneOffset result = codec.decodeKey("Z");
+		assertEquals(ZoneOffset.UTC, result);
 	}
 	
 	@Test
@@ -272,9 +254,8 @@ class ZoneOffsetCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec();
 		
-		Result<ZoneOffset> result = codec.decodeKey("invalid");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as zone offset"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("invalid"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'invalid' as zone offset"));
 	}
 	
 	@Test

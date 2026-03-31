@@ -290,7 +290,7 @@ class JsonObjectTest {
 		assertEquals(new JsonPrimitive("oldValue"), result);
 		assertEquals(new JsonPrimitive("newValue"), object.get("key1"));
 		
-		result = object.replace("key1", (JsonElement) null);
+		result = object.replace("key1", null);
 		assertEquals(new JsonPrimitive("newValue"), result);
 		assertEquals(JsonNull.INSTANCE, object.get("key1"));
 		

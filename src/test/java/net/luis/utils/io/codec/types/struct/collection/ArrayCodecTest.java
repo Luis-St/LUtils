@@ -19,9 +19,10 @@
 package net.luis.utils.io.codec.types.struct.collection;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static net.luis.utils.io.codec.Codecs.*;
@@ -42,112 +43,102 @@ class ArrayCodecTest {
 	}
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
-		Integer[] array = new Integer[] { 1, 2, 3 };
+		Integer[] array = { 1, 2, 3 };
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), array));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, array));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), array));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, array));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null value as array"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null value as array"));
 	}
 	
 	@Test
-	void encodeStartWithValidArray() {
+	void encodeWithValidArray() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
-		Integer[] array = new Integer[] { 1, 2, 3 };
+		Integer[] array = { 1, 2, 3 };
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), array);
 		
 		JsonArray expected = new JsonArray();
 		expected.add(new JsonPrimitive(1));
 		expected.add(new JsonPrimitive(2));
 		expected.add(new JsonPrimitive(3));
 		
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void encodeStartWithEmptyArray() {
+	void encodeWithEmptyArray() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
-		Integer[] array = new Integer[] {};
+		Integer[] array = {};
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonArray(), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), array);
+		assertEquals(new JsonArray(), result);
 	}
 	
 	@Test
-	void encodeStartWithSingleElement() {
+	void encodeWithSingleElement() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String[]> codec = new ArrayCodec<>(String.class, STRING);
-		String[] array = new String[] { "hello" };
+		String[] array = { "hello" };
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), array);
 		
 		JsonArray expected = new JsonArray();
 		expected.add(new JsonPrimitive("hello"));
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void encodeStartWithDifferentTypes() {
+	void encodeWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<String[]> stringCodec = new ArrayCodec<>(String.class, STRING);
-		Result<JsonElement> stringResult = stringCodec.encodeStart(typeProvider, typeProvider.empty(), new String[] { "a", "b" });
-		assertTrue(stringResult.isSuccess());
+		assertDoesNotThrow(() -> stringCodec.encode(typeProvider, typeProvider.empty(), new String[] { "a", "b" }));
 		
 		Codec<Boolean[]> boolCodec = new ArrayCodec<>(Boolean.class, BOOLEAN);
-		Result<JsonElement> boolResult = boolCodec.encodeStart(typeProvider, typeProvider.empty(), new Boolean[] { true, false });
-		assertTrue(boolResult.isSuccess());
+		assertDoesNotThrow(() -> boolCodec.encode(typeProvider, typeProvider.empty(), new Boolean[] { true, false }));
 	}
 	
 	@Test
-	void encodeStartWithInvalidElements() {
+	void encodeWithInvalidElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
-		Integer[] arrayWithNull = new Integer[] { 1, null, 3 };
+		Integer[] arrayWithNull = { 1, null, 3 };
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), arrayWithNull);
-		assertTrue(result.isPartial());
-		assertTrue(result.hasError());
-		assertTrue(result.hasValue());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), arrayWithNull));
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonArray()));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonArray()));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
 		
-		Result<Integer[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as array"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as array"));
 	}
 	
 	@Test
-	void decodeStartWithValidArray() {
+	void decodeWithValidArray() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
 		
@@ -156,46 +147,42 @@ class ArrayCodecTest {
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
 		
-		Result<Integer[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new Integer[] { 1, 2, 3 }, result.resultOrThrow());
+		Integer[] result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertArrayEquals(new Integer[] { 1, 2, 3 }, result);
 	}
 	
 	@Test
-	void decodeStartWithEmptyArray() {
+	void decodeWithEmptyArray() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
 		
-		Result<Integer[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonArray());
-		assertTrue(result.isSuccess());
-		assertEquals(0, result.resultOrThrow().length);
+		Integer[] result = codec.decode(typeProvider, typeProvider.empty(), new JsonArray());
+		assertEquals(0, result.length);
 	}
 	
 	@Test
-	void decodeStartWithSingleElement() {
+	void decodeWithSingleElement() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String[]> codec = new ArrayCodec<>(String.class, STRING);
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive("hello"));
 		
-		Result<String[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new String[] { "hello" }, result.resultOrThrow());
+		String[] result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertArrayEquals(new String[] { "hello" }, result);
 	}
 	
 	@Test
-	void decodeStartWithNonArray() {
+	void decodeWithNonArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
 		
-		Result<Integer[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode array"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
+		assertTrue(exception.getMessage().contains("Json element '42' is not a json array"));
 	}
 	
 	@Test
-	void decodeStartWithDifferentTypes() {
+	void decodeWithDifferentTypes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		JsonArray stringArray = new JsonArray();
@@ -203,22 +190,20 @@ class ArrayCodecTest {
 		stringArray.add(new JsonPrimitive("b"));
 		
 		Codec<String[]> stringCodec = new ArrayCodec<>(String.class, STRING);
-		Result<String[]> stringResult = stringCodec.decodeStart(typeProvider, typeProvider.empty(), stringArray);
-		assertTrue(stringResult.isSuccess());
-		assertArrayEquals(new String[] { "a", "b" }, stringResult.resultOrThrow());
+		String[] stringResult = stringCodec.decode(typeProvider, typeProvider.empty(), stringArray);
+		assertArrayEquals(new String[] { "a", "b" }, stringResult);
 		
 		JsonArray boolArray = new JsonArray();
 		boolArray.add(new JsonPrimitive(true));
 		boolArray.add(new JsonPrimitive(false));
 		
 		Codec<Boolean[]> boolCodec = new ArrayCodec<>(Boolean.class, BOOLEAN);
-		Result<Boolean[]> boolResult = boolCodec.decodeStart(typeProvider, typeProvider.empty(), boolArray);
-		assertTrue(boolResult.isSuccess());
-		assertArrayEquals(new Boolean[] { true, false }, boolResult.resultOrThrow());
+		Boolean[] boolResult = boolCodec.decode(typeProvider, typeProvider.empty(), boolArray);
+		assertArrayEquals(new Boolean[] { true, false }, boolResult);
 	}
 	
 	@Test
-	void decodeStartWithInvalidElements() {
+	void decodeWithInvalidElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
 		
@@ -227,14 +212,11 @@ class ArrayCodecTest {
 		array.add(new JsonPrimitive("not-a-number"));
 		array.add(new JsonPrimitive(3));
 		
-		Result<Integer[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isPartial());
-		assertTrue(result.hasError());
-		assertTrue(result.hasValue());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartWithMixedValidInvalid() {
+	void decodeWithMixedValidInvalid() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> codec = new ArrayCodec<>(Integer.class, INTEGER);
 		
@@ -243,27 +225,23 @@ class ArrayCodecTest {
 		array.add(JsonNull.INSTANCE);
 		array.add(new JsonPrimitive(100));
 		
-		Result<Integer[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isPartial());
-		assertTrue(result.hasError());
-		assertTrue(result.hasValue());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void nestedTwoDimensionalArrays() {
+	void nestedTwoDimensionalArrays() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[][]> codec = new ArrayCodec<>(Integer[].class, new ArrayCodec<>(Integer.class, INTEGER));
 		
-		Integer[][] originalArray = new Integer[][] {
+		Integer[][] originalArray = {
 			{ 1, 2, 3 },
 			{ 4, 5, 6 },
 			{ 7, 8, 9 }
 		};
 		
-		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), originalArray);
-		assertTrue(encodeResult.isSuccess());
+		JsonElement encodeResult = codec.encode(typeProvider, typeProvider.empty(), originalArray);
 		
-		JsonArray outerArray = assertInstanceOf(JsonArray.class, encodeResult.resultOrThrow());
+		JsonArray outerArray = assertInstanceOf(JsonArray.class, encodeResult);
 		assertEquals(3, outerArray.size());
 		
 		JsonArray firstInnerArray = outerArray.get(0).getAsJsonArray();
@@ -272,10 +250,8 @@ class ArrayCodecTest {
 		assertEquals(2, firstInnerArray.get(1).getAsJsonPrimitive().getAsInteger());
 		assertEquals(3, firstInnerArray.get(2).getAsJsonPrimitive().getAsInteger());
 		
-		Result<Integer[][]> decodeResult = codec.decodeStart(typeProvider, typeProvider.empty(), encodeResult.resultOrThrow());
-		assertTrue(decodeResult.isSuccess());
+		Integer[][] decoded = codec.decode(typeProvider, typeProvider.empty(), encodeResult);
 		
-		Integer[][] decoded = decodeResult.resultOrThrow();
 		assertEquals(3, decoded.length);
 		assertArrayEquals(new Integer[] { 1, 2, 3 }, decoded[0]);
 		assertArrayEquals(new Integer[] { 4, 5, 6 }, decoded[1]);
@@ -283,11 +259,11 @@ class ArrayCodecTest {
 	}
 	
 	@Test
-	void nestedThreeDimensionalArrays() {
+	void nestedThreeDimensionalArrays() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[][][]> codec = new ArrayCodec<>(Integer[][].class, new ArrayCodec<>(Integer[].class, new ArrayCodec<>(Integer.class, INTEGER)));
 		
-		Integer[][][] originalArray = new Integer[][][] {
+		Integer[][][] originalArray = {
 			{
 				{ 1, 2 },
 				{ 3, 4 }
@@ -298,13 +274,9 @@ class ArrayCodecTest {
 			}
 		};
 		
-		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), originalArray);
-		assertTrue(encodeResult.isSuccess());
+		JsonElement encodeResult = codec.encode(typeProvider, typeProvider.empty(), originalArray);
+		Integer[][][] decoded = codec.decode(typeProvider, typeProvider.empty(), encodeResult);
 		
-		Result<Integer[][][]> decodeResult = codec.decodeStart(typeProvider, typeProvider.empty(), encodeResult.resultOrThrow());
-		assertTrue(decodeResult.isSuccess());
-		
-		Integer[][][] decoded = decodeResult.resultOrThrow();
 		assertEquals(2, decoded.length);
 		assertEquals(2, decoded[0].length);
 		assertEquals(2, decoded[0][0].length);
@@ -319,23 +291,19 @@ class ArrayCodecTest {
 	}
 	
 	@Test
-	void jaggedNestedArrays() {
+	void jaggedNestedArrays() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[][]> codec = new ArrayCodec<>(Integer[].class, new ArrayCodec<>(Integer.class, INTEGER));
 		
-		Integer[][] jaggedArray = new Integer[][] {
+		Integer[][] jaggedArray = {
 			{ 1, 2, 3, 4, 5 },
 			{ 6, 7 },
 			{ 8, 9, 10 }
 		};
 		
-		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), jaggedArray);
-		assertTrue(encodeResult.isSuccess());
+		JsonElement encodeResult = codec.encode(typeProvider, typeProvider.empty(), jaggedArray);
+		Integer[][] decoded = codec.decode(typeProvider, typeProvider.empty(), encodeResult);
 		
-		Result<Integer[][]> decodeResult = codec.decodeStart(typeProvider, typeProvider.empty(), encodeResult.resultOrThrow());
-		assertTrue(decodeResult.isSuccess());
-		
-		Integer[][] decoded = decodeResult.resultOrThrow();
 		assertEquals(3, decoded.length);
 		assertArrayEquals(new Integer[] { 1, 2, 3, 4, 5 }, decoded[0]);
 		assertArrayEquals(new Integer[] { 6, 7 }, decoded[1]);
@@ -343,39 +311,33 @@ class ArrayCodecTest {
 	}
 	
 	@Test
-	void emptyNestedArrays() {
+	void emptyNestedArrays() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String[][]> codec = new ArrayCodec<>(String[].class, new ArrayCodec<>(String.class, STRING));
 		
-		String[][] emptyNestedArray = new String[][] {};
+		String[][] emptyNestedArray = {};
 		
-		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), emptyNestedArray);
-		assertTrue(encodeResult.isSuccess());
-		assertEquals(new JsonArray(), encodeResult.resultOrThrow());
+		JsonElement encodeResult = codec.encode(typeProvider, typeProvider.empty(), emptyNestedArray);
+		assertEquals(new JsonArray(), encodeResult);
 		
-		Result<String[][]> decodeResult = codec.decodeStart(typeProvider, typeProvider.empty(), encodeResult.resultOrThrow());
-		assertTrue(decodeResult.isSuccess());
-		assertEquals(0, decodeResult.resultOrThrow().length);
+		String[][] decoded = codec.decode(typeProvider, typeProvider.empty(), encodeResult);
+		assertEquals(0, decoded.length);
 	}
 	
 	@Test
-	void nestedArraysWithSomeEmptyInnerArrays() {
+	void nestedArraysWithSomeEmptyInnerArrays() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[][]> codec = new ArrayCodec<>(Integer[].class, new ArrayCodec<>(Integer.class, INTEGER));
 		
-		Integer[][] arrayWithEmptyInner = new Integer[][] {
+		Integer[][] arrayWithEmptyInner = {
 			{ 1, 2, 3 },
 			{},
 			{ 4, 5 }
 		};
 		
-		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), arrayWithEmptyInner);
-		assertTrue(encodeResult.isSuccess());
+		JsonElement encodeResult = codec.encode(typeProvider, typeProvider.empty(), arrayWithEmptyInner);
+		Integer[][] decoded = codec.decode(typeProvider, typeProvider.empty(), encodeResult);
 		
-		Result<Integer[][]> decodeResult = codec.decodeStart(typeProvider, typeProvider.empty(), encodeResult.resultOrThrow());
-		assertTrue(decodeResult.isSuccess());
-		
-		Integer[][] decoded = decodeResult.resultOrThrow();
 		assertEquals(3, decoded.length);
 		assertArrayEquals(new Integer[] { 1, 2, 3 }, decoded[0]);
 		assertEquals(0, decoded[1].length);
@@ -383,46 +345,30 @@ class ArrayCodecTest {
 	}
 	
 	@Test
-	void mixedTypeNestedArrays() {
+	void mixedTypeNestedArrays() throws Exception {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<String[][]> stringArrayCodec = new ArrayCodec<>(String[].class, new ArrayCodec<>(String.class, STRING));
-		String[][] stringArray = new String[][] {
+		String[][] stringArray = {
 			{ "hello", "world" },
 			{ "foo", "bar", "baz" }
 		};
 		
-		Result<JsonElement> stringEncodeResult = stringArrayCodec.encodeStart(typeProvider, typeProvider.empty(), stringArray);
-		assertTrue(stringEncodeResult.isSuccess());
-		
-		Result<String[][]> stringDecodeResult = stringArrayCodec.decodeStart(typeProvider, typeProvider.empty(), stringEncodeResult.resultOrThrow());
-		assertTrue(stringDecodeResult.isSuccess());
-		String[][] decodedStringArray = stringDecodeResult.resultOrThrow();
+		JsonElement stringEncodeResult = stringArrayCodec.encode(typeProvider, typeProvider.empty(), stringArray);
+		String[][] decodedStringArray = stringArrayCodec.decode(typeProvider, typeProvider.empty(), stringEncodeResult);
 		assertArrayEquals(new String[] { "hello", "world" }, decodedStringArray[0]);
 		assertArrayEquals(new String[] { "foo", "bar", "baz" }, decodedStringArray[1]);
 		
 		Codec<Boolean[][]> boolArrayCodec = new ArrayCodec<>(Boolean[].class, new ArrayCodec<>(Boolean.class, BOOLEAN));
-		Boolean[][] boolArray = new Boolean[][] {
+		Boolean[][] boolArray = {
 			{ true, false },
 			{ false, true, false }
 		};
 		
-		Result<JsonElement> boolEncodeResult = boolArrayCodec.encodeStart(typeProvider, typeProvider.empty(), boolArray);
-		assertTrue(boolEncodeResult.isSuccess());
-		
-		Result<Boolean[][]> boolDecodeResult = boolArrayCodec.decodeStart(typeProvider, typeProvider.empty(), boolEncodeResult.resultOrThrow());
-		assertTrue(boolDecodeResult.isSuccess());
-		Boolean[][] decodedBoolArray = boolDecodeResult.resultOrThrow();
+		JsonElement boolEncodeResult = boolArrayCodec.encode(typeProvider, typeProvider.empty(), boolArray);
+		Boolean[][] decodedBoolArray = boolArrayCodec.decode(typeProvider, typeProvider.empty(), boolEncodeResult);
 		assertArrayEquals(new Boolean[] { true, false }, decodedBoolArray[0]);
 		assertArrayEquals(new Boolean[] { false, true, false }, decodedBoolArray[1]);
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		ArrayCodec<Integer> codec1 = new ArrayCodec<>(Integer.class, INTEGER);
-		ArrayCodec<Integer> codec2 = new ArrayCodec<>(Integer.class, INTEGER);
-		
-		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
 	
 	@Test

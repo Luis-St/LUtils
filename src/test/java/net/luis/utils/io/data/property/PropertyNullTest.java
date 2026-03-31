@@ -163,15 +163,15 @@ class PropertyNullTest {
 	void primitiveTypeChecks() {
 		PropertyNull propertyNull = PropertyNull.INSTANCE;
 		
-		assertFalse(propertyNull.isBoolean());
-		assertFalse(propertyNull.isNumber());
-		assertFalse(propertyNull.isByte());
-		assertFalse(propertyNull.isShort());
-		assertFalse(propertyNull.isInteger());
-		assertFalse(propertyNull.isLong());
-		assertFalse(propertyNull.isFloat());
-		assertFalse(propertyNull.isDouble());
-		assertFalse(propertyNull.isString());
+		assertFalse(propertyNull.isPropertyBoolean());
+		assertFalse(propertyNull.isPropertyNumber());
+		assertFalse(propertyNull.isPropertyByte());
+		assertFalse(propertyNull.isPropertyShort());
+		assertFalse(propertyNull.isPropertyInteger());
+		assertFalse(propertyNull.isPropertyLong());
+		assertFalse(propertyNull.isPropertyFloat());
+		assertFalse(propertyNull.isPropertyDouble());
+		assertFalse(propertyNull.isPropertyString());
 	}
 	
 	@Test

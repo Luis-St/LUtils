@@ -80,21 +80,25 @@ public final class JsonBuilder {
 	private final JsonElement root;
 	
 	/**
-	 * Private constructor to enforce factory method usage.
+	 * Private constructor to enforce factory method usage.<br>
 	 *
 	 * @param initialContext The initial context type
 	 * @param initialElement The initial json element
+	 * @throws NullPointerException If the initial context or element is null
 	 */
 	private JsonBuilder(@NonNull BuilderContext initialContext, @NonNull JsonElement initialElement) {
+		Objects.requireNonNull(initialContext, "Initial context must not be null");
+		Objects.requireNonNull(initialElement, "Initial element must not be null");
+		
 		this.root = initialElement;
 		this.contextStack.push(new ContextFrame(initialContext, initialElement));
 	}
 	
 	/**
 	 * Creates a new builder for constructing a json object.<br>
-	 * The builder will start in object context, allowing you to add key-value pairs.
+	 * The builder will start in object context, allowing you to add key-value pairs.<br>
 	 *
-	 * @return A new JsonBuilder configured for object construction
+	 * @return A new json builder configured for object construction
 	 */
 	public static @NonNull JsonBuilder object() {
 		return new JsonBuilder(BuilderContext.OBJECT, new JsonObject());
@@ -102,16 +106,16 @@ public final class JsonBuilder {
 	
 	/**
 	 * Creates a new builder for constructing a json array.<br>
-	 * The builder will start in array context, allowing you to add elements.
+	 * The builder will start in array context, allowing you to add elements.<br>
 	 *
-	 * @return A new JsonBuilder configured for array construction
+	 * @return A new json builder configured for array construction
 	 */
 	public static @NonNull JsonBuilder array() {
 		return new JsonBuilder(BuilderContext.ARRAY, new JsonArray());
 	}
 	
 	/**
-	 * Gets the current context frame from the stack.
+	 * Gets the current context frame from the stack.<br>
 	 *
 	 * @return The current context frame
 	 * @throws IllegalStateException If the context stack is empty
@@ -124,24 +128,24 @@ public final class JsonBuilder {
 	}
 	
 	/**
-	 * Ensures the current context is an object context.
-	 *
+	 * Ensures the current context is an object context.<br>
 	 * @throws IllegalStateException If the current context is not an object
 	 */
 	private void ensureObjectContext() {
 		ContextFrame current = this.getCurrentContext();
+		
 		if (current.type != BuilderContext.OBJECT) {
 			throw new IllegalStateException("Current context is not an object. Use add(value) for arrays.");
 		}
 	}
 	
 	/**
-	 * Ensures the current context is an array context.
-	 *
+	 * Ensures the current context is an array context.<br>
 	 * @throws IllegalStateException If the current context is not an array
 	 */
 	private void ensureArrayContext() {
 		ContextFrame current = this.getCurrentContext();
+		
 		if (current.type != BuilderContext.ARRAY) {
 			throw new IllegalStateException("Current context is not an array. Use add(key, value) for objects.");
 		}
@@ -149,7 +153,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Adds a json element with the specified key to the current object.<br>
-	 * If the element is null, it will be converted to JsonNull.
+	 * If the element is null, it will be converted to json null.<br>
 	 *
 	 * @param key The key for the element
 	 * @param element The json element to add
@@ -168,7 +172,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Adds a string value with the specified key to the current object.<br>
-	 * If the value is null, it will be converted to JsonNull.
+	 * If the value is null, it will be converted to json null.<br>
 	 *
 	 * @param key The key for the value
 	 * @param value The string value to add
@@ -181,7 +185,7 @@ public final class JsonBuilder {
 	}
 	
 	/**
-	 * Adds a boolean value with the specified key to the current object.
+	 * Adds a boolean value with the specified key to the current object.<br>
 	 *
 	 * @param key The key for the value
 	 * @param value The boolean value to add
@@ -195,7 +199,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Adds a number value with the specified key to the current object.<br>
-	 * If the value is null, it will be converted to JsonNull.
+	 * If the value is null, it will be converted to json null.<br>
 	 *
 	 * @param key The key for the value
 	 * @param value The number value to add
@@ -208,86 +212,8 @@ public final class JsonBuilder {
 	}
 	
 	/**
-	 * Adds a byte value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The byte value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull JsonBuilder add(@NonNull String key, byte value) {
-		return this.add(key, new JsonPrimitive(value));
-	}
-	
-	/**
-	 * Adds a short value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The short value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull JsonBuilder add(@NonNull String key, short value) {
-		return this.add(key, new JsonPrimitive(value));
-	}
-	
-	/**
-	 * Adds an int value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The int value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull JsonBuilder add(@NonNull String key, int value) {
-		return this.add(key, new JsonPrimitive(value));
-	}
-	
-	/**
-	 * Adds a long value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The long value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull JsonBuilder add(@NonNull String key, long value) {
-		return this.add(key, new JsonPrimitive(value));
-	}
-	
-	/**
-	 * Adds a float value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The float value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull JsonBuilder add(@NonNull String key, float value) {
-		return this.add(key, new JsonPrimitive(value));
-	}
-	
-	/**
-	 * Adds a double value with the specified key to the current object.
-	 *
-	 * @param key The key for the value
-	 * @param value The double value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an object
-	 * @throws NullPointerException If the key is null
-	 */
-	public @NonNull JsonBuilder add(@NonNull String key, double value) {
-		return this.add(key, new JsonPrimitive(value));
-	}
-	
-	/**
 	 * Adds a nested json object with the specified key to the current object.<br>
-	 * This method allows you to add pre-built JsonBuilder results as nested objects.
+	 * This method allows you to add pre-built json builder  results as nested objects.<br>
 	 *
 	 * @param key The key for the nested object
 	 * @param objectBuilder The builder containing the object to nest
@@ -302,7 +228,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Adds a nested json array with the specified key to the current object.<br>
-	 * This method allows you to add pre-built JsonBuilder results as nested arrays.
+	 * This method allows you to add pre-built json builder results as nested arrays.<br>
 	 *
 	 * @param key The key for the nested array
 	 * @param arrayBuilder The builder containing the array to nest
@@ -317,7 +243,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Adds a json element to the current array.<br>
-	 * If the element is null, it will be converted to JsonNull.
+	 * If the element is null, it will be converted to json null.<br>
 	 *
 	 * @param element The json element to add
 	 * @return This builder for method chaining
@@ -333,7 +259,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Adds a string value to the current array.<br>
-	 * If the value is null, it will be converted to JsonNull.
+	 * If the value is null, it will be converted to json null.<br>
 	 *
 	 * @param value The string value to add
 	 * @return This builder for method chaining
@@ -344,7 +270,7 @@ public final class JsonBuilder {
 	}
 	
 	/**
-	 * Adds a boolean value to the current array.
+	 * Adds a boolean value to the current array.<br>
 	 *
 	 * @param value The boolean value to add
 	 * @return This builder for method chaining
@@ -356,7 +282,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Adds a number value to the current array.<br>
-	 * If the value is null, it will be converted to JsonNull.
+	 * If the value is null, it will be converted to json null.<br>
 	 *
 	 * @param value The number value to add
 	 * @return This builder for method chaining
@@ -367,74 +293,8 @@ public final class JsonBuilder {
 	}
 	
 	/**
-	 * Adds a byte value to the current array.
-	 *
-	 * @param value The byte value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull JsonBuilder add(byte value) {
-		return this.add(new JsonPrimitive(value));
-	}
-	
-	/**
-	 * Adds a short value to the current array.
-	 *
-	 * @param value The short value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull JsonBuilder add(short value) {
-		return this.add(new JsonPrimitive(value));
-	}
-	
-	/**
-	 * Adds an int value to the current array.
-	 *
-	 * @param value The int value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull JsonBuilder add(int value) {
-		return this.add(new JsonPrimitive(value));
-	}
-	
-	/**
-	 * Adds a long value to the current array.
-	 *
-	 * @param value The long value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull JsonBuilder add(long value) {
-		return this.add(new JsonPrimitive(value));
-	}
-	
-	/**
-	 * Adds a float value to the current array.
-	 *
-	 * @param value The float value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull JsonBuilder add(float value) {
-		return this.add(new JsonPrimitive(value));
-	}
-	
-	/**
-	 * Adds a double value to the current array.
-	 *
-	 * @param value The double value to add
-	 * @return This builder for method chaining
-	 * @throws IllegalStateException If the current context is not an array
-	 */
-	public @NonNull JsonBuilder add(double value) {
-		return this.add(new JsonPrimitive(value));
-	}
-	
-	/**
 	 * Adds a nested json object to the current array.<br>
-	 * This method allows you to add pre-built JsonBuilder results as nested objects.
+	 * This method allows you to add pre-built JsonBuilder results as nested objects.<br>
 	 *
 	 * @param objectBuilder The builder containing the object to add
 	 * @return This builder for method chaining
@@ -448,7 +308,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Adds a nested json array to the current array.<br>
-	 * This method allows you to add pre-built JsonBuilder results as nested arrays.
+	 * This method allows you to add pre-built JsonBuilder results as nested arrays.<br>
 	 *
 	 * @param arrayBuilder The builder containing the array to add
 	 * @return This builder for method chaining
@@ -462,7 +322,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Adds multiple values to the current array at once.<br>
-	 * This is a convenience method for adding several elements in one call.
+	 * This is a convenience method for adding several elements in one call.<br>
 	 *
 	 * @param values The values to add to the array
 	 * @return This builder for method chaining
@@ -480,7 +340,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Adds multiple number values to the current array at once.<br>
-	 * This is a convenience method for adding several numeric elements in one call.
+	 * This is a convenience method for adding several numeric elements in one call.<br>
 	 *
 	 * @param values The number values to add to the array
 	 * @return This builder for method chaining
@@ -498,7 +358,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Adds multiple boolean values to the current array at once.<br>
-	 * This is a convenience method for adding several boolean elements in one call.
+	 * This is a convenience method for adding several boolean elements in one call.<br>
 	 *
 	 * @param values The boolean values to add to the array
 	 * @return This builder for method chaining
@@ -516,8 +376,8 @@ public final class JsonBuilder {
 	
 	/**
 	 * Starts building a nested object with the specified key in the current object.<br>
-	 * This method pushes a new object context onto the stack, allowing you to build
-	 * a nested object structure. Use {@link #endObject()} to return to the parent context.
+	 * This method pushes a new object context onto the stack, allowing you to build a nested object structure.<br>
+	 * Use {@link #endObject()} to return to the parent context.<br>
 	 *
 	 * @param key The key for the nested object
 	 * @return This builder for method chaining, now in object context
@@ -538,8 +398,8 @@ public final class JsonBuilder {
 	
 	/**
 	 * Starts building a nested object in the current array.<br>
-	 * This method pushes a new object context onto the stack, allowing you to build
-	 * a nested object structure. Use {@link #endObject()} to return to the parent context.
+	 * This method pushes a new object context onto the stack, allowing you to build a nested object structure.<br>
+	 * Use {@link #endObject()} to return to the parent context.<br>
 	 *
 	 * @return This builder for method chaining, now in object context
 	 * @throws IllegalStateException If the current context is not an array
@@ -557,8 +417,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Ends the current object building context and returns to the parent context.<br>
-	 * This method pops the current context from the stack, allowing you to continue
-	 * building the parent structure.
+	 * This method pops the current context from the stack, allowing you to continue building the parent structure.<br>
 	 *
 	 * @return This builder for method chaining, now in the parent context
 	 * @throws IllegalStateException If the current context is not an object or if no parent context exists
@@ -579,8 +438,8 @@ public final class JsonBuilder {
 	
 	/**
 	 * Starts building a nested array with the specified key in the current object.<br>
-	 * This method pushes a new array context onto the stack, allowing you to build
-	 * a nested array structure. Use {@link #endArray()} to return to the parent context.
+	 * This method pushes a new array context onto the stack, allowing you to build a nested array structure.<br>
+	 * Use {@link #endArray()} to return to the parent context.
 	 *
 	 * @param key The key for the nested array
 	 * @return This builder for method chaining, now in array context
@@ -601,8 +460,8 @@ public final class JsonBuilder {
 	
 	/**
 	 * Starts building a nested array in the current array.<br>
-	 * This method pushes a new array context onto the stack, allowing you to build
-	 * a nested array structure. Use {@link #endArray()} to return to the parent context.
+	 * This method pushes a new array context onto the stack, allowing you to build a nested array structure.<br>
+	 * Use {@link #endArray()} to return to the parent context.<br>
 	 *
 	 * @return This builder for method chaining, now in array context
 	 * @throws IllegalStateException If the current context is not an array
@@ -620,8 +479,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Ends the current array building context and returns to the parent context.<br>
-	 * This method pops the current context from the stack, allowing you to continue
-	 * building the parent structure.
+	 * This method pops the current context from the stack, allowing you to continue building the parent structure.<br>
 	 *
 	 * @return This builder for method chaining, now in the parent context
 	 * @throws IllegalStateException If the current context is not an array or if no parent context exists
@@ -641,7 +499,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Conditionally adds a key-value pair to the current object only if the condition is true.<br>
-	 * This is useful for building objects with optional fields based on runtime conditions.
+	 * This is useful for building objects with optional fields based on runtime conditions.<br>
 	 *
 	 * @param condition The condition to evaluate
 	 * @param key The key for the value
@@ -659,7 +517,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Conditionally adds a key-value pair to the current object only if the condition is true.<br>
-	 * This is useful for building objects with optional fields based on runtime conditions.
+	 * This is useful for building objects with optional fields based on runtime conditions.<br>
 	 *
 	 * @param condition The condition to evaluate
 	 * @param key The key for the value
@@ -677,7 +535,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Conditionally adds a key-value pair to the current object only if the condition is true.<br>
-	 * This is useful for building objects with optional fields based on runtime conditions.
+	 * This is useful for building objects with optional fields based on runtime conditions.<br>
 	 *
 	 * @param condition The condition to evaluate
 	 * @param key The key for the value
@@ -695,7 +553,7 @@ public final class JsonBuilder {
 	
 	/**
 	 * Conditionally adds a value to the current array only if the condition is true.<br>
-	 * This is useful for building arrays with optional elements based on runtime conditions.
+	 * This is useful for building arrays with optional elements based on runtime conditions.<br>
 	 *
 	 * @param condition The condition to evaluate
 	 * @param value The value to add if condition is true
@@ -710,9 +568,41 @@ public final class JsonBuilder {
 	}
 	
 	/**
+	 * Conditionally adds a boolean value to the current array only if the condition is true.<br>
+	 * This is useful for building arrays with optional elements based on runtime conditions.<br>
+	 *
+	 * @param condition The condition to evaluate
+	 * @param value The boolean value to add if condition is true
+	 * @return This builder for method chaining
+	 * @throws IllegalStateException If the current context is not an array
+	 */
+	public @NonNull JsonBuilder addIf(boolean condition, boolean value) {
+		if (condition) {
+			this.add(value);
+		}
+		return this;
+	}
+	
+	/**
+	 * Conditionally adds a number value to the current array only if the condition is true.<br>
+	 * This is useful for building arrays with optional elements based on runtime conditions.<br>
+	 *
+	 * @param condition The condition to evaluate
+	 * @param value The number value to add if condition is true
+	 * @return This builder for method chaining
+	 * @throws IllegalStateException If the current context is not an array
+	 */
+	public @NonNull JsonBuilder addIf(boolean condition, @Nullable Number value) {
+		if (condition) {
+			this.add(value);
+		}
+		return this;
+	}
+	
+	/**
 	 * Builds and returns the constructed json element.<br>
-	 * This method should be called when you've finished building your json structure.
-	 * The builder can still be used after calling this method.
+	 * This method should be called when you've finished building your json structure.<br>
+	 * The builder can still be used after calling this method.<br>
 	 *
 	 * @return The constructed json element
 	 * @throws IllegalStateException If there are unclosed nested contexts
@@ -725,8 +615,8 @@ public final class JsonBuilder {
 	}
 	
 	/**
-	 * Builds and returns the constructed json element as a JsonObject.<br>
-	 * This is a convenience method that casts the result to JsonObject.
+	 * Builds and returns the constructed json element as a json object.<br>
+	 * This is a convenience method that casts the result to json object.<br>
 	 *
 	 * @return The constructed json object
 	 * @throws IllegalStateException If there are unclosed nested contexts or if the root is not an object
@@ -734,7 +624,7 @@ public final class JsonBuilder {
 	public @NonNull JsonObject buildObject() {
 		JsonElement element = this.build();
 		if (!(element instanceof JsonObject object)) {
-			throw new IllegalStateException("Root element is not a JsonObject");
+			throw new IllegalStateException("Root element is not a json object");
 		}
 		
 		JsonObject result = new JsonObject();
@@ -743,8 +633,8 @@ public final class JsonBuilder {
 	}
 	
 	/**
-	 * Builds and returns the constructed json element as a JsonArray.<br>
-	 * This is a convenience method that casts the result to JsonArray.
+	 * Builds and returns the constructed json element as a json array.<br>
+	 * This is a convenience method that casts the result to json array.<br>
 	 *
 	 * @return The constructed json array
 	 * @throws IllegalStateException If there are unclosed nested contexts or if the root is not an array
@@ -752,7 +642,7 @@ public final class JsonBuilder {
 	public @NonNull JsonArray buildArray() {
 		JsonElement element = this.build();
 		if (!(element instanceof JsonArray array)) {
-			throw new IllegalStateException("Root element is not a JsonArray");
+			throw new IllegalStateException("Root element is not a json array");
 		}
 		
 		JsonArray result = new JsonArray();
@@ -762,17 +652,16 @@ public final class JsonBuilder {
 	
 	/**
 	 * Returns the current nesting depth of the builder.<br>
-	 * A depth of 1 means we're at the root level, 2 means one level nested, etc.
+	 * A depth of 0 means we're at the root level, 1 means one level nested, etc.<br>
 	 *
 	 * @return The current nesting depth
 	 */
 	public int getNestingDepth() {
-		return this.contextStack.size();
+		return this.contextStack.size() - 1;
 	}
 	
 	/**
 	 * Checks if the builder is currently in an object context.
-	 *
 	 * @return True if the current context is an object, false otherwise
 	 */
 	public boolean isInObjectContext() {
@@ -780,8 +669,7 @@ public final class JsonBuilder {
 	}
 	
 	/**
-	 * Checks if the builder is currently in an array context.
-	 *
+	 * Checks if the builder is currently in an array context.<br>
 	 * @return True if the current context is an array, false otherwise
 	 */
 	public boolean isInArrayContext() {
@@ -789,8 +677,7 @@ public final class JsonBuilder {
 	}
 	
 	/**
-	 * Checks if the builder is at the root level (no nested contexts).
-	 *
+	 * Checks if the builder is at the root level (no nested contexts).<br>
 	 * @return True if at root level, false if there are nested contexts
 	 */
 	public boolean isAtRootLevel() {
@@ -798,6 +685,7 @@ public final class JsonBuilder {
 	}
 	
 	//region Object overrides
+	
 	/**
 	 * Returns a string representation of the current json structure being built.<br>
 	 * This method uses the default json configuration for formatting.
@@ -823,7 +711,9 @@ public final class JsonBuilder {
 	//endregion
 	
 	/**
-	 * Enumeration of builder contexts to track whether we're building an object or array.
+	 * Enumeration of builder contexts to track whether we're building an object or array.<br>
+	 *
+	 * @author Luis-St
 	 */
 	private enum BuilderContext {
 		/**
@@ -838,6 +728,8 @@ public final class JsonBuilder {
 	
 	/**
 	 * Internal class to track nesting state.<br>
+	 *
+	 * @author Luis-St
 	 *
 	 * @param type The type of context (object or array)
 	 * @param element The json element associated with this context

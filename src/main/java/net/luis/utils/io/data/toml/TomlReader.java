@@ -20,20 +20,22 @@ package net.luis.utils.io.data.toml;
 
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.toml.exception.TomlSyntaxException;
+import net.luis.utils.io.reader.StringReader;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.io.*;
+import java.io.InputStreamReader;
 import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Represents a reader for TOML files.<br>
- * This reader reads the TOML content from a defined input and returns it as a TOML table.<br>
+ * Represents a reader for toml files.<br>
+ * This reader reads the toml content from a defined input and returns it as a toml table.<br>
  * <p>
- * Supports TOML v1.0 specification including:
+ *     Supports toml v1.0 specification including:
+ * </p>
  * <ul>
  *     <li>Basic and literal strings</li>
  *     <li>Multi-line strings</li>
@@ -85,27 +87,17 @@ public class TomlReader implements AutoCloseable {
 	private final TomlConfig config;
 	
 	/**
-	 * The internal io reader to read the TOML content.<br>
+	 * The internal io reader to read the toml content.<br>
 	 */
-	private final BufferedReader reader;
+	private final StringReader reader;
 	
 	/**
 	 * The current line number for error messages.<br>
 	 */
-	private int lineNumber;
+	private int lineNumber = 1;
 	
 	/**
-	 * Buffer for multi-line reading.<br>
-	 */
-	private String currentLine;
-	
-	/**
-	 * Current position in the current line.<br>
-	 */
-	private int position;
-	
-	/**
-	 * Constructs a new TOML reader with the given string and the default configuration.<br>
+	 * Constructs a new toml reader with the given string and the default configuration.<br>
 	 *
 	 * @param string The string to read from
 	 * @throws NullPointerException If the string is null
@@ -115,19 +107,19 @@ public class TomlReader implements AutoCloseable {
 	}
 	
 	/**
-	 * Constructs a new TOML reader with the given string and configuration.<br>
+	 * Constructs a new toml reader with the given string and configuration.<br>
 	 *
 	 * @param string The string to read from
 	 * @param config The configuration for this reader
 	 * @throws NullPointerException If the string or the configuration is null
 	 */
 	public TomlReader(@NonNull String string, @NonNull TomlConfig config) {
-		this.config = Objects.requireNonNull(config, "TOML config must not be null");
-		this.reader = new BufferedReader(new java.io.StringReader(Objects.requireNonNull(string, "String must not be null")));
+		this.config = Objects.requireNonNull(config, "Toml config must not be null");
+		this.reader = new StringReader(Objects.requireNonNull(string, "String must not be null"));
 	}
 	
 	/**
-	 * Constructs a new TOML reader with the given input and the default configuration.<br>
+	 * Constructs a new toml reader with the given input and the default configuration.<br>
 	 *
 	 * @param input The input to create the reader for
 	 * @throws NullPointerException If the input is null
@@ -137,118 +129,175 @@ public class TomlReader implements AutoCloseable {
 	}
 	
 	/**
-	 * Constructs a new TOML reader with the given input and configuration.<br>
+	 * Constructs a new toml reader with the given input and configuration.<br>
 	 *
 	 * @param input The input to create the reader for
 	 * @param config The configuration for this reader
 	 * @throws NullPointerException If the input or the configuration is null
 	 */
 	public TomlReader(@NonNull InputProvider input, @NonNull TomlConfig config) {
-		this.config = Objects.requireNonNull(config, "TOML config must not be null");
-		this.reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
+		this.config = Objects.requireNonNull(config, "Toml config must not be null");
+		this.reader = new StringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
 	
 	/**
-	 * Reads the TOML content and returns it as a TOML table.<br>
+	 * Reads the toml content and returns it as a toml table.<br>
 	 *
-	 * @return The parsed TOML table (root document)
-	 * @throws TomlSyntaxException If the TOML content has syntax errors
-	 * @throws UncheckedIOException If an I/O error occurs
+	 * @return The parsed toml table (root document)
+	 * @throws TomlSyntaxException If the toml content has syntax errors
 	 */
 	public @NonNull TomlTable readToml() {
-		try {
-			TomlTable root = new TomlTable();
-			TomlTable currentTable = root;
+		TomlTable root = new TomlTable();
+		TomlTable currentTable = root;
+		
+		while (this.reader.canRead()) {
+			this.skipWhitespace();
 			
-			String line;
-			while ((line = this.reader.readLine()) != null) {
-				this.lineNumber++;
-				this.currentLine = line;
-				this.position = 0;
-				
-				this.skipWhitespace();
-				
-				if (this.position >= line.length()) {
-					continue;
-				}
-				
-				if (this.peek() == '#') {
-					continue;
-				}
+			if (!this.reader.canRead() || this.isEndOfLine()) {
+				this.skipToNextLine();
+				continue;
+			}
+			
+			if (this.peek() == '#') {
+				this.skipToNextLine();
+				continue;
+			}
+			
+			if (this.peek() == '[') {
+				this.advance();
 				
 				if (this.peek() == '[') {
 					this.advance();
 					
-					if (this.peek() == '[') {
-						this.advance();
-						String tablePath = this.parseTablePath();
-						this.expectChar(']');
-						this.expectChar(']');
-						this.skipWhitespaceAndComment();
-						
-						currentTable = this.getOrCreateArrayOfTables(root, tablePath);
-					} else {
-						String tablePath = this.parseTablePath();
-						this.expectChar(']');
-						this.skipWhitespaceAndComment();
-						
-						currentTable = this.getOrCreateTable(root, tablePath);
-					}
-					continue;
+					String tablePath = this.parseTablePath();
+					
+					this.expectChar(']');
+					this.expectChar(']');
+					this.skipWhitespaceAndComment();
+					
+					currentTable = this.getOrCreateArrayOfTables(root, tablePath);
+				} else {
+					String tablePath = this.parseTablePath();
+					this.expectChar(']');
+					this.skipWhitespaceAndComment();
+					
+					currentTable = this.getOrCreateTable(root, tablePath);
 				}
-				
-				this.parseKeyValue(currentTable);
+				continue;
 			}
 			
-			return root;
-		} catch (IOException e) {
-			throw new UncheckedIOException("Failed to read TOML content", e);
+			this.parseKeyValue(currentTable);
+		}
+		
+		return root;
+	}
+	
+	/**
+	 * Checks if the current position is at end of line (newline character).<br>
+	 * @return True if at end of line, false otherwise
+	 */
+	private boolean isEndOfLine() {
+		if (!this.reader.canRead()) {
+			return true;
+		}
+		char c = this.reader.peek();
+		return c == '\n' || c == '\r';
+	}
+	
+	/**
+	 * Skips to the next line, consuming the newline character(s).<br>
+	 */
+	private void skipToNextLine() {
+		while (this.reader.canRead()) {
+			char c = this.reader.read();
+			if (c == '\n') {
+				this.lineNumber++;
+				return;
+			} else if (c == '\r') {
+				this.lineNumber++;
+				if (this.reader.canRead() && this.reader.peek() == '\n') {
+					this.reader.skip();
+				}
+				return;
+			}
 		}
 	}
 	
 	/**
 	 * Peeks at the current character without advancing.<br>
-	 *
-	 * @return The current character, or '\0' if at end of line
+	 * @return The current character, or '\0' if at end of input or end of line
 	 */
 	private char peek() {
-		if (this.currentLine == null || this.position >= this.currentLine.length()) {
+		if (!this.reader.canRead()) {
 			return '\0';
 		}
-		return this.currentLine.charAt(this.position);
+		char c = this.reader.peek();
+		if (c == '\n' || c == '\r') {
+			return '\0';
+		}
+		return c;
 	}
 	
 	/**
 	 * Peeks at a character ahead without advancing.<br>
 	 *
 	 * @param offset The offset from current position
-	 * @return The character at the offset, or '\0' if past end
+	 * @return The character at the offset, or '\0' if past end or at newline
 	 */
 	private char peek(int offset) {
-		int index = this.position + offset;
-		if (this.currentLine == null || index >= this.currentLine.length()) {
+		if (!this.reader.canRead(offset + 1)) {
 			return '\0';
 		}
-		return this.currentLine.charAt(index);
+		this.reader.mark();
+		for (int i = 0; i < offset; i++) {
+			char c = this.reader.read();
+			if (c == '\n' || c == '\r') {
+				this.reader.reset();
+				return '\0';
+			}
+		}
+		char result = this.reader.peek();
+		this.reader.reset();
+		if (result == '\n' || result == '\r') {
+			return '\0';
+		}
+		return result;
 	}
 	
 	/**
 	 * Advances to the next character.<br>
-	 *
 	 * @return The character that was at the current position
 	 */
 	private char advance() {
-		char c = this.peek();
-		this.position++;
+		if (!this.reader.canRead()) {
+			return '\0';
+		}
+		
+		char c = this.reader.read();
+		if (c == '\n') {
+			this.lineNumber++;
+		} else if (c == '\r') {
+			this.lineNumber++;
+			
+			if (this.reader.canRead() && this.reader.peek() == '\n') {
+				this.reader.skip();
+			}
+		}
 		return c;
 	}
 	
 	/**
-	 * Skips whitespace characters.<br>
+	 * Skips whitespace characters (spaces and tabs only, not newlines).<br>
 	 */
 	private void skipWhitespace() {
-		while (this.peek() == ' ' || this.peek() == '\t') {
-			this.advance();
+		while (this.reader.canRead()) {
+			char c = this.reader.peek();
+			
+			if (c == ' ' || c == '\t') {
+				this.reader.skip();
+			} else {
+				break;
+			}
 		}
 	}
 	
@@ -257,10 +306,74 @@ public class TomlReader implements AutoCloseable {
 	 */
 	private void skipWhitespaceAndComment() {
 		this.skipWhitespace();
+		
 		if (this.peek() == '#') {
-			this.position = this.currentLine.length();
-		} else if (this.peek() != '\0') {
+			this.skipToNextLine();
+		} else if (!this.isEndOfLine() && this.reader.canRead()) {
 			throw new TomlSyntaxException("Unexpected character '" + this.peek() + "' at line " + this.lineNumber);
+		} else {
+			this.skipToNextLine();
+		}
+	}
+	
+	/**
+	 * Peeks at the current character without advancing (raw - includes newlines).<br>
+	 * @return The current character, or '\0' if at end of input
+	 */
+	private char peekRaw() {
+		if (!this.reader.canRead()) {
+			return '\0';
+		}
+		return this.reader.peek();
+	}
+	
+	/**
+	 * Peeks at a character ahead without advancing (raw - includes newlines).<br>
+	 *
+	 * @param offset The offset from current position
+	 * @return The character at the offset, or '\0' if past end
+	 */
+	private char peekRaw(int offset) {
+		if (!this.reader.canRead(offset + 1)) {
+			return '\0';
+		}
+		
+		this.reader.mark();
+		for (int i = 0; i < offset; i++) {
+			this.reader.read();
+		}
+		
+		char result = this.reader.peek();
+		this.reader.reset();
+		return result;
+	}
+	
+	/**
+	 * Expects and consumes a specific character (raw - allows newlines).<br>
+	 *
+	 * @param expected The expected character
+	 * @throws TomlSyntaxException If the character doesn't match
+	 */
+	private void expectCharRaw(char expected) {
+		char actual = this.peekRaw();
+		if (actual != expected) {
+			throw new TomlSyntaxException("Expected '" + expected + "' but found '" + actual + "' at line " + this.lineNumber);
+		}
+		this.advance();
+	}
+	
+	/**
+	 * Skips whitespace characters including newlines (for multi-line strings).<br>
+	 */
+	private void skipWhitespaceRaw() {
+		while (this.reader.canRead()) {
+			char c = this.reader.peek();
+			
+			if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+				this.advance();
+			} else {
+				break;
+			}
 		}
 	}
 	
@@ -280,7 +393,6 @@ public class TomlReader implements AutoCloseable {
 	
 	/**
 	 * Parses a table path (e.g., "server.database").<br>
-	 *
 	 * @return The table path
 	 */
 	private @NonNull String parseTablePath() {
@@ -310,7 +422,6 @@ public class TomlReader implements AutoCloseable {
 	
 	/**
 	 * Parses a key (bare or quoted).<br>
-	 *
 	 * @return The parsed key
 	 */
 	private @NonNull String parseKey() {
@@ -327,7 +438,6 @@ public class TomlReader implements AutoCloseable {
 	
 	/**
 	 * Parses a bare key.<br>
-	 *
 	 * @return The bare key
 	 */
 	private @NonNull String parseBareKey() {
@@ -335,8 +445,7 @@ public class TomlReader implements AutoCloseable {
 		
 		while (true) {
 			char c = this.peek();
-			if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
-				(c >= '0' && c <= '9') || c == '_' || c == '-') {
+			if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' || c == '-') {
 				key.append(this.advance());
 			} else {
 				break;
@@ -350,11 +459,10 @@ public class TomlReader implements AutoCloseable {
 	}
 	
 	/**
-	 * Parses a key-value pair and adds it to the table.<br>
-	 *
-	 * @param table The table to add the key-value to
+	 * Reads a dotted key path until the '=' character.<br>
+	 * @return The list of keys in the path
 	 */
-	private void parseKeyValue(@NonNull TomlTable table) {
+	private @NonNull List<String> readKeyPath() {
 		List<String> keyPath = new ArrayList<>();
 		keyPath.add(this.parseKey());
 		
@@ -369,6 +477,20 @@ public class TomlReader implements AutoCloseable {
 		this.expectChar('=');
 		this.skipWhitespace();
 		
+		return keyPath;
+	}
+	
+	/**
+	 * Parses a key-value pair and adds it to the table.<br>
+	 *
+	 * @param table The table to add the key-value to
+	 * @throws NullPointerException If the table is null
+	 * @throws TomlSyntaxException If there are syntax errors
+	 */
+	private void parseKeyValue(@NonNull TomlTable table) {
+		Objects.requireNonNull(table, "Table must not be null");
+		
+		List<String> keyPath = this.readKeyPath();
 		TomlElement value = this.parseValue();
 		this.skipWhitespaceAndComment();
 		
@@ -376,6 +498,7 @@ public class TomlReader implements AutoCloseable {
 		for (int i = 0; i < keyPath.size() - 1; i++) {
 			String key = keyPath.get(i);
 			TomlElement existing = target.get(key);
+			
 			if (existing == null) {
 				TomlTable newTable = new TomlTable();
 				target.add(key, newTable);
@@ -398,6 +521,7 @@ public class TomlReader implements AutoCloseable {
 	 * Parses a value.<br>
 	 *
 	 * @return The parsed value
+	 * @throws TomlSyntaxException If the value has syntax errors
 	 */
 	private @NonNull TomlElement parseValue() {
 		char c = this.peek();
@@ -428,6 +552,7 @@ public class TomlReader implements AutoCloseable {
 	 * Parses a basic string (double-quoted).<br>
 	 *
 	 * @return The parsed string
+	 * @throws TomlSyntaxException If the string is unterminated
 	 */
 	private @NonNull String parseBasicString() {
 		this.expectChar('"');
@@ -458,6 +583,7 @@ public class TomlReader implements AutoCloseable {
 	 * Parses a literal string (single-quoted).<br>
 	 *
 	 * @return The parsed string
+	 * @throws TomlSyntaxException If the string is unterminated
 	 */
 	private @NonNull String parseLiteralString() {
 		this.expectChar('\'');
@@ -465,7 +591,6 @@ public class TomlReader implements AutoCloseable {
 		
 		while (true) {
 			char c = this.peek();
-			
 			if (c == '\0') {
 				throw new TomlSyntaxException("Unterminated literal string at line " + this.lineNumber);
 			}
@@ -483,118 +608,95 @@ public class TomlReader implements AutoCloseable {
 	 * Parses a multi-line basic string.<br>
 	 *
 	 * @return The parsed string
+	 * @throws TomlSyntaxException If the string is unterminated
 	 */
 	private @NonNull String parseMultiLineBasicString() {
-		this.expectChar('"');
-		this.expectChar('"');
-		this.expectChar('"');
+		this.expectCharRaw('"');
+		this.expectCharRaw('"');
+		this.expectCharRaw('"');
 		
 		StringBuilder result = new StringBuilder();
 		boolean firstLine = true;
 		
-		try {
-			while (true) {
-				if (this.peek() == '"' && this.peek(1) == '"' && this.peek(2) == '"') {
-					this.advance();
-					this.advance();
-					this.advance();
-					break;
-				}
-				
-				if (this.position >= this.currentLine.length()) {
-					this.currentLine = this.reader.readLine();
-					if (this.currentLine == null) {
-						throw new TomlSyntaxException("Unterminated multi-line string starting at line " + this.lineNumber);
-					}
-					this.lineNumber++;
-					this.position = 0;
-					
-					if (!firstLine) {
-						result.append('\n');
-					}
-					firstLine = false;
-					continue;
-				}
-				
-				char c = this.peek();
-				if (c == '\\') {
-					this.advance();
-					char next = this.peek();
-					if (next == '\0' || next == '\n') {
-						this.currentLine = this.reader.readLine();
-						if (this.currentLine == null) {
-							throw new TomlSyntaxException("Unterminated multi-line string at line " + this.lineNumber);
-						}
-						
-						this.lineNumber++;
-						this.position = 0;
-						this.skipWhitespace();
-					} else {
-						result.append(this.parseEscapeSequence());
-					}
-				} else {
-					result.append(this.advance());
-				}
-				
-				firstLine = false;
+		while (this.reader.canRead()) {
+			if (this.peekRaw() == '"' && this.peekRaw(1) == '"' && this.peekRaw(2) == '"') {
+				this.advance();
+				this.advance();
+				this.advance();
+				return result.toString();
 			}
-		} catch (IOException e) {
-			throw new UncheckedIOException("Failed to read multi-line string", e);
+			
+			char c = this.peekRaw();
+			if (c == '\n' || c == '\r') {
+				if (!firstLine) {
+					result.append('\n');
+				}
+				this.advance();
+				firstLine = false;
+				continue;
+			}
+			
+			if (c == '\\') {
+				this.advance();
+				char next = this.peekRaw();
+				if (next == '\n' || next == '\r') {
+					this.advance();
+					this.skipWhitespaceRaw();
+				} else {
+					result.append(this.parseEscapeSequence());
+				}
+			} else {
+				result.append(this.advance());
+			}
+			
+			firstLine = false;
 		}
-		return result.toString();
+		throw new TomlSyntaxException("Unterminated multi-line string starting at line " + this.lineNumber);
 	}
 	
 	/**
 	 * Parses a multi-line literal string.<br>
 	 *
 	 * @return The parsed string
+	 * @throws TomlSyntaxException If the string is unterminated
 	 */
 	private @NonNull String parseMultiLineLiteralString() {
-		this.expectChar('\'');
-		this.expectChar('\'');
-		this.expectChar('\'');
+		this.expectCharRaw('\'');
+		this.expectCharRaw('\'');
+		this.expectCharRaw('\'');
 		
 		StringBuilder result = new StringBuilder();
 		boolean firstLine = true;
 		
-		try {
-			while (true) {
-				if (this.peek() == '\'' && this.peek(1) == '\'' && this.peek(2) == '\'') {
-					this.advance();
-					this.advance();
-					this.advance();
-					break;
-				}
-				
-				if (this.position >= this.currentLine.length()) {
-					this.currentLine = this.reader.readLine();
-					if (this.currentLine == null) {
-						throw new TomlSyntaxException("Unterminated multi-line literal string starting at line " + this.lineNumber);
-					}
-					this.lineNumber++;
-					this.position = 0;
-					
-					if (!firstLine) {
-						result.append('\n');
-					}
-					firstLine = false;
-					continue;
-				}
-				
-				result.append(this.advance());
-				firstLine = false;
+		while (this.reader.canRead()) {
+			if (this.peekRaw() == '\'' && this.peekRaw(1) == '\'' && this.peekRaw(2) == '\'') {
+				this.advance();
+				this.advance();
+				this.advance();
+				return result.toString();
 			}
-		} catch (IOException e) {
-			throw new UncheckedIOException("Failed to read multi-line literal string", e);
+			
+			char c = this.peekRaw();
+			if (c == '\n' || c == '\r') {
+				if (!firstLine) {
+					result.append('\n');
+				}
+				this.advance();
+				firstLine = false;
+				continue;
+			}
+			
+			result.append(this.advance());
+			firstLine = false;
 		}
-		
-		return result.toString();
+		throw new TomlSyntaxException("Unterminated multi-line literal string starting at line " + this.lineNumber);
 	}
 	
 	/**
 	 * Parses an escape sequence.<br>
 	 *
 	 * @return The escaped character(s)
+	 * @throws TomlSyntaxException If the escape sequence is invalid
 	 */
 	private @NonNull String parseEscapeSequence() {
 		char c = this.advance();
@@ -623,6 +725,7 @@ public class TomlReader implements AutoCloseable {
 	 *
 	 * @param length The number of hex characters to read
 	 * @return The hex string
+	 * @throws TomlSyntaxException If an invalid hex character is encountered
 	 */
 	private @NonNull String readHex(int length) {
 		StringBuilder hex = new StringBuilder();
@@ -642,55 +745,46 @@ public class TomlReader implements AutoCloseable {
 	 * Parses an array.<br>
 	 *
 	 * @return The parsed array
+	 * @throws TomlSyntaxException If the array has syntax errors
 	 */
 	private @NonNull TomlArray parseArray() {
 		this.expectChar('[');
 		TomlArray array = new TomlArray();
 		
-		try {
-			while (true) {
-				this.skipWhitespaceAndNewlines();
-				
-				if (this.peek() == ']') {
-					this.advance();
-					return array;
-				}
-				
-				TomlElement element = this.parseValue();
-				array.add(element);
-				
-				this.skipWhitespaceAndNewlines();
-				if (this.peek() == ',') {
-					this.advance();
-				} else if (this.peek() != ']') {
-					throw new TomlSyntaxException("Expected ',' or ']' in array at line " + this.lineNumber);
-				}
+		while (true) {
+			this.skipWhitespaceAndNewlines();
+			
+			if (this.peekRaw() == ']') {
+				this.advance();
+				return array;
 			}
-		} catch (IOException e) {
-			throw new UncheckedIOException("Failed to read array", e);
+			
+			TomlElement element = this.parseValue();
+			array.add(element);
+			
+			this.skipWhitespaceAndNewlines();
+			if (this.peekRaw() == ',') {
+				this.advance();
+			} else if (this.peekRaw() != ']') {
+				throw new TomlSyntaxException("Expected ',' or ']' in array at line " + this.lineNumber);
+			}
 		}
 	}
 	
 	/**
-	 * Skips whitespace and newlines, reading new lines as needed.<br>
-	 *
-	 * @throws IOException If reading fails
+	 * Skips whitespace, newlines, and comments.<br>
 	 */
-	private void skipWhitespaceAndNewlines() throws IOException {
-		while (true) {
-			this.skipWhitespace();
-			
-			if (this.peek() == '#') {
-				this.position = this.currentLine.length();
-			}
-			
-			if (this.position >= this.currentLine.length()) {
-				this.currentLine = this.reader.readLine();
-				if (this.currentLine == null) {
-					break;
+	private void skipWhitespaceAndNewlines() {
+		while (this.reader.canRead()) {
+			char c = this.reader.peek();
+			if (c == ' ' || c == '\t') {
+				this.reader.skip();
+			} else if (c == '#') {
+				while (this.reader.canRead() && this.reader.peek() != '\n' && this.reader.peek() != '\r') {
+					this.reader.skip();
 				}
-				this.lineNumber++;
-				this.position = 0;
+			} else if (c == '\n' || c == '\r') {
+				this.advance();
 			} else {
 				break;
 			}
@@ -699,8 +793,8 @@ public class TomlReader implements AutoCloseable {
 	
 	/**
 	 * Parses an inline table.<br>
-	 *
 	 * @return The parsed table
+	 * @throws TomlSyntaxException If the table has syntax errors
 	 */
 	private @NonNull TomlTable parseInlineTable() {
 		this.expectChar('{');
@@ -717,20 +811,7 @@ public class TomlReader implements AutoCloseable {
 		while (true) {
 			this.skipWhitespace();
 			
-			List<String> keyPath = new ArrayList<>();
-			keyPath.add(this.parseKey());
-			
-			this.skipWhitespace();
-			while (this.peek() == '.') {
-				this.advance();
-				this.skipWhitespace();
-				keyPath.add(this.parseKey());
-				this.skipWhitespace();
-			}
-			
-			this.expectChar('=');
-			this.skipWhitespace();
-			
+			List<String> keyPath = this.readKeyPath();
 			TomlElement value = this.parseValue();
 			
 			TomlTable target = table;
@@ -768,8 +849,8 @@ public class TomlReader implements AutoCloseable {
 	
 	/**
 	 * Parses a boolean value.<br>
-	 *
 	 * @return The parsed boolean value
+	 * @throws TomlSyntaxException If the boolean is invalid
 	 */
 	private @NonNull TomlValue parseBoolean() {
 		if (this.match("true")) {
@@ -787,7 +868,7 @@ public class TomlReader implements AutoCloseable {
 	 * @return True if matched, false otherwise
 	 */
 	private boolean match(@NonNull String expected) {
-		if (this.currentLine == null) {
+		if (!this.reader.canRead()) {
 			return false;
 		}
 		
@@ -802,13 +883,12 @@ public class TomlReader implements AutoCloseable {
 			return false;
 		}
 		
-		this.position += expected.length();
+		this.reader.skip(expected.length());
 		return true;
 	}
 	
 	/**
 	 * Parses a number or date/time value.<br>
-	 *
 	 * @return The parsed value
 	 */
 	private @NonNull TomlValue parseNumberOrDateTime() {
@@ -848,8 +928,10 @@ public class TomlReader implements AutoCloseable {
 	 *
 	 * @param value The value string
 	 * @return The parsed date/time, or null if not a date/time
+	 * @throws NullPointerException If the value is null
 	 */
 	private @Nullable TomlValue tryParseDateTime(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
 		try {
 			if (OFFSET_DATETIME_PATTERN.matcher(value).matches()) {
 				String normalized = value.replace(' ', 'T');
@@ -869,6 +951,7 @@ public class TomlReader implements AutoCloseable {
 				return new TomlValue(LocalTime.parse(value));
 			}
 		} catch (DateTimeParseException _) {}
+		
 		return null;
 	}
 	
@@ -877,8 +960,11 @@ public class TomlReader implements AutoCloseable {
 	 *
 	 * @param value The value string
 	 * @return The parsed number value
+	 * @throws NullPointerException If the value is null
+	 * @throws TomlSyntaxException If the number is invalid
 	 */
 	private @NonNull TomlValue parseNumber(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
 		String cleanValue = value.replace("_", "");
 		
 		try {
@@ -905,8 +991,13 @@ public class TomlReader implements AutoCloseable {
 	 * @param root The root table
 	 * @param path The table path (e.g., "server.database")
 	 * @return The table at the path
+	 * @throws NullPointerException If the root or path is null
+	 * @throws TomlSyntaxException If the table cannot be created due to existing non-table elements
 	 */
+	@SuppressWarnings("DuplicatedCode")
 	private @NonNull TomlTable getOrCreateTable(@NonNull TomlTable root, @NonNull String path) {
+		Objects.requireNonNull(root, "Root table must not be null");
+		Objects.requireNonNull(path, "Table path must not be null");
 		String[] parts = path.split("\\.");
 		TomlTable current = root;
 		
@@ -933,8 +1024,13 @@ public class TomlReader implements AutoCloseable {
 	 * @param root The root table
 	 * @param path The table path (e.g., "products")
 	 * @return A new table added to the array
+	 * @throws NullPointerException If the root or path is null
+	 * @throws TomlSyntaxException If the array of tables cannot be created due to existing non-array elements
 	 */
+	@SuppressWarnings("DuplicatedCode")
 	private @NonNull TomlTable getOrCreateArrayOfTables(@NonNull TomlTable root, @NonNull String path) {
+		Objects.requireNonNull(root, "Root table must not be null");
+		Objects.requireNonNull(path, "Table path must not be null");
 		String[] parts = path.split("\\.");
 		TomlTable current = root;
 		
@@ -973,7 +1069,7 @@ public class TomlReader implements AutoCloseable {
 	}
 	
 	@Override
-	public void close() throws IOException {
-		this.reader.close();
+	public void close() {
+		this.reader.readRemaining();
 	}
 }

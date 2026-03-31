@@ -20,8 +20,9 @@ package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -48,7 +49,7 @@ import java.util.function.Supplier;
  *
  * @param <C> The type of the optional value
  */
-public class OptionalCodec<C> extends AbstractCodec<Optional<C>, Object> {
+public class OptionalCodec<C> extends AbstractCodec<Optional<C>> {
 	
 	/**
 	 * The codec used to encode and decode the optional value.<br>
@@ -90,34 +91,37 @@ public class OptionalCodec<C> extends AbstractCodec<Optional<C>, Object> {
 	
 	@Override
 	@SuppressWarnings("OptionalAssignedToNull")
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Optional<C> value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Optional<C> value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.success(current);
+			return current;
 		}
 		
-		return value.map(c -> this.codec.encodeStart(provider, current, c)).orElseGet(() -> Result.success(current));
+		if (value.isEmpty()) {
+			return current;
+		} else {
+			return this.codec.encode(provider, current, value.get());
+		}
 	}
 	
 	@Override
-	public <R> @NonNull Result<Optional<C>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Optional<C> decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.success(this.defaultProvider.get());
+			return this.defaultProvider.get();
 		}
 		
-		Result<R> decoded = provider.getEmpty(value);
-		if (decoded.isSuccess()) {
-			return Result.success(this.defaultProvider.get());
+		if (provider.isEmpty(value, DecoderException::new)) {
+			return this.defaultProvider.get();
 		}
 		
-		Result<C> result = this.codec.decodeStart(provider, current, value);
-		if (result.isError()) {
-			return Result.success(this.defaultProvider.get());
+		try {
+			return Optional.of(this.codec.decode(provider, current, value));
+		} catch (DecoderException e) {
+			return this.defaultProvider.get();
 		}
-		return result.map(Optional::of);
 	}
 	
 	@Override

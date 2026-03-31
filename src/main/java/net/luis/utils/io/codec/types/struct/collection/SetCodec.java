@@ -18,32 +18,38 @@
 
 package net.luis.utils.io.codec.types.struct.collection;
 
-import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.*;
 import net.luis.utils.io.codec.constraint.config.collection.SetConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.collection.SetConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
+import net.luis.utils.util.Either;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for sets.<br>
  * Uses a list representation internally and converts to/from a set.<br>
  *
- * @author Luis-St
+ * @param <C> The element type of the set
  *
- * @param <E> The element type of the set
+ * @author Luis-St
  */
-public class SetCodec<E> extends AbstractCodec<Set<E>, SetConstraintConfig<E>> implements SetConstraint<E, SetCodec<E>> {
+public class SetCodec<C>
+	extends AbstractConstrainableCodec<Set<C>, SetConstraintConfig<C>, SetCodec<C>>
+	implements PartialCodec<SetCodec<C>>, SetConstraint<C, SetCodec<C>> {
 	
 	/**
 	 * The codec used to encode and decode set elements.<br>
 	 */
-	private final Codec<E> codec;
+	private final Codec<C> codec;
+	/**
+	 * Whether this codec is partial.<br>
+	 */
+	private final boolean partial;
 	
 	/**
 	 * Constructs a new set codec.<br>
@@ -51,138 +57,104 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SetConstraintConfig<E>> i
 	 * @param codec The codec for set elements
 	 * @throws NullPointerException If the element codec is null
 	 */
-	public SetCodec(@NonNull Codec<E> codec) {
-		this.codec = Objects.requireNonNull(codec, "Element codec must not be null");
+	public SetCodec(@NonNull Codec<C> codec) {
+		this(codec, false, SetConstraintConfig.unconstrained());
 	}
 	
 	/**
 	 * Constructs a new set codec using the given codec for the elements and the given constraint configuration.<br>
 	 *
 	 * @param codec The codec for the elements
-	 * @param constraintConfig The constraint configuration
-	 * @throws NullPointerException If the codec is null
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the codec or the config is null
 	 */
-	private SetCodec(@NonNull Codec<E> codec, @NonNull SetConstraintConfig<E> constraintConfig) {
-		super(constraintConfig);
+	private SetCodec(@NonNull Codec<C> codec, @NonNull SetConstraintConfig<C> config) {
+		this(codec, false, config);
+	}
+	
+	/**
+	 * Constructs a new set codec using the given codec for the elements, the given partial flag and the given constraint configuration.<br>
+	 *
+	 * @param codec The codec for the elements
+	 * @param partial Whether this codec is partial
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the codec or the config is null
+	 */
+	private SetCodec(@NonNull Codec<C> codec, boolean partial, @NonNull SetConstraintConfig<C> config) {
+		super(newConfig -> new SetCodec<>(codec, newConfig), config);
 		this.codec = Objects.requireNonNull(codec, "Element codec must not be null");
+		this.partial = partial;
 	}
 	
 	@Override
-	public @NonNull SetCodec<E> apply(@NonNull UnaryOperator<SetConstraintConfig<E>> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new SetCodec<>(this.codec,
-			configModifier.apply(this.getConstraintConfig().orElse(SetConstraintConfig.unconstrained()))
-		);
+	public @NonNull SetCodec<C> partial() {
+		return new SetCodec<>(this.codec, true, this.config);
+	}
+	
+	@Override
+	public @NonNull SetCodec<C> strict() {
+		return new SetCodec<>(this.codec, false, this.config);
+	}
+	
+	@Override
+	public boolean isPartial() {
+		return this.partial;
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NonNull Class<Set<E>> getType() {
-		return (Class<Set<E>>) (Class<?>) Set.class;
+	public @NonNull Class<Set<C>> getType() {
+		return (Class<Set<C>>) (Class<?>) Set.class;
 	}
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Set<E> value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Set<C> value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null value as set using '" + this + "'");
+			throw new EncoderException("Unable to encode null as set", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		
-		List<R> elements = new ArrayList<>();
-		List<String> errors = new ArrayList<>();
-		int i = 0;
-		for (E element : value) {
-			Result<R> result = this.codec.encodeStart(provider, provider.empty(), element);
-			
-			if (result.hasValue()) {
-				R encodedValue = result.resultOrThrow();
-				if (provider.getEmpty(encodedValue).isError()) {
-					elements.add(encodedValue);
+		List<Either<R, EncoderException>> partialElements = new ArrayList<>(value.size());
+		for (C element : this.validateEncodeConstraints(value)) {
+			try {
+				R encodedElement = this.codec.encode(provider, current, element);
+				
+				if (!provider.isEmpty(encodedElement, EncoderException::new)) {
+					partialElements.add(Either.left(encodedElement));
 				}
+			} catch (EncoderException e) {
+				partialElements.add(Either.right(e));
 			}
-			if (result.hasError()) {
-				errors.add("Index " + i + ": " + result.errorOrThrow());
-			}
-			i++;
 		}
-		
-		Result<R> merged = provider.merge(current, provider.createList(elements));
-		if (merged.isError()) {
-			return Result.error(merged.errorOrThrow());
-		}
-		if (errors.isEmpty()) {
-			return merged;
-		}
-		return Result.partial(merged.resultOrThrow(), "Encoded " + elements.size() + " of " + value.size() + " elements successfully:", errors);
+		return provider.merge(current, provider.createList(this.encode(partialElements), EncoderException::new), EncoderException::new);
 	}
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <R> @NonNull Result<Set<E>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Set<C> decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as set using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as set", this);
 		}
 		
-		Result<List<R>> decoded = provider.getList(value);
-		if (decoded.isError()) {
-			return Result.error("Unable to decode set using '" + this + "': " + decoded.errorOrThrow());
-		}
-		List<Result<E>> results = decoded.resultOrThrow().stream().map(element -> this.codec.decodeStart(provider, value, element)).toList();
-		
-		Set<E> elements = new LinkedHashSet<>();
-		List<String> errors = new ArrayList<>();
-		for (int i = 0; i < results.size(); i++) {
-			Result<E> result = results.get(i);
-			if (result.hasValue()) {
-				elements.add(result.resultOrThrow());
-			}
-			if (result.hasError()) {
-				errors.add("Index " + i + ": " + result.errorOrThrow());
+		List<Either<C, DecoderException>> partialElements = new ArrayList<>();
+		for (R element : provider.getList(value, DecoderException::new)) {
+			try {
+				C decodedElement = this.codec.decode(provider, current, element);
+				partialElements.add(Either.left(decodedElement));
+			} catch (DecoderException e) {
+				partialElements.add(Either.right(e));
 			}
 		}
-		
-		if (elements.isEmpty() && !errors.isEmpty()) {
-			return Result.error("Unable to decode any elements of the set using '" + this + "': " + String.join("\n - ", errors));
-		}
-		Result<Void> constraintResult = this.checkConstraints(elements);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		
-		if (errors.isEmpty()) {
-			return Result.success(elements);
-		}
-		return Result.partial(elements, "Decoded " + elements.size() + " of " + results.size() + " elements successfully:", errors);
-	}
-	
-	//region Object overrides
-	@Override
-	public boolean equals(Object object) {
-		if (!(object instanceof SetCodec<?> that)) return false;
-		
-		return this.codec.equals(that.codec);
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(this.codec);
+		return this.validateDecodeConstraints(new LinkedHashSet<>(this.decode(partialElements)));
 	}
 	
 	@Override
 	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedSetCodec[" + this.codec + ",constraints=" + config + "]";
-		}).orElse("SetCodec[" + this.codec + "]");
+		String base = "SetCodec[" + this.codec + "]";
+		return this.config.isUnconstrained() ? base : "Constrained" + base + "[constraints=" + this.config + "]";
 	}
-	//endregion
 }

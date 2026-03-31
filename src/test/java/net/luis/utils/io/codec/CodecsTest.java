@@ -18,6 +18,9 @@
 
 package net.luis.utils.io.codec;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.codec.types.struct.*;
 import net.luis.utils.io.data.json.*;
@@ -32,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.*;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.*;
 
@@ -217,7 +219,7 @@ public class CodecsTest {
 	}
 	
 	@Test
-	void enumCodecs() {
+	void enumCodecs() throws Exception {
 		assertThrows(NullPointerException.class, () -> enumOrdinal((Class<TestEnum>) null));
 		assertThrows(NullPointerException.class, () -> enumName((Class<TestEnum>) null));
 		assertThrows(NullPointerException.class, () -> dynamicEnum((Class<TestEnum>) null));
@@ -240,8 +242,8 @@ public class CodecsTest {
 		assertEquals(TestEnum.ONE, dynamicCodec.decode(provider, new JsonPrimitive("ONE")));
 		assertEquals(TestEnum.ONE, dynamicCodec.decode(provider, new JsonPrimitive(0)));
 		
-		Function<TestEnum, String> toFriendly = e -> e.name().toLowerCase();
-		Function<String, TestEnum> fromFriendly = s -> TestEnum.valueOf(s.toUpperCase());
+		ThrowableFunction<TestEnum, String, EncoderException> toFriendly = e -> e.name().toLowerCase();
+		ThrowableFunction<String, TestEnum, DecoderException> fromFriendly = s -> TestEnum.valueOf(s.toUpperCase());
 		assertThrows(NullPointerException.class, () -> friendlyEnumName(null, fromFriendly));
 		assertThrows(NullPointerException.class, () -> friendlyEnumName(toFriendly, null));
 		
@@ -270,7 +272,7 @@ public class CodecsTest {
 	}
 	
 	@Test
-	void unitCodecs() {
+	void unitCodecs() throws Exception {
 		assertDoesNotThrow(() -> unit((Object) null));
 		assertThrows(NullPointerException.class, () -> unit((Supplier<?>) null));
 		
@@ -291,7 +293,7 @@ public class CodecsTest {
 	}
 	
 	@Test
-	void stringResolverCodecs() {
+	void stringResolverCodecs() throws Exception {
 		assertThrows(NullPointerException.class, () -> stringResolver(null, Integer::valueOf));
 		assertThrows(NullPointerException.class, () -> stringResolver(String::valueOf, null));
 		
@@ -304,11 +306,11 @@ public class CodecsTest {
 		Integer decoded = stringResolverCodec.decode(provider, new JsonPrimitive("42"));
 		assertEquals(42, decoded);
 		
-		assertTrue(stringResolverCodec.decodeStart(provider, provider.empty(), new JsonPrimitive("invalid")).isError());
+		assertThrows(DecoderException.class, () -> stringResolverCodec.decode(provider, provider.empty(), new JsonPrimitive("invalid")));
 	}
 	
 	@Test
-	void recursiveCodecs() {
+	void recursiveCodecs() throws Exception {
 		assertThrows(NullPointerException.class, () -> recursive(null));
 		
 		record LinkedListNode(int value, LinkedListNode next) {}

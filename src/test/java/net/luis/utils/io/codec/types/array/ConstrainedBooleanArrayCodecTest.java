@@ -20,9 +20,11 @@ package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -37,23 +39,21 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedBooleanArrayCodecTest {
 	
 	@Test
-	void encodeStartWithValidConstrainedValue() {
+	void encodeWithValidConstrainedValue() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMinLength(1));
-		boolean[] validArray = new boolean[] { true, false, true };
+		boolean[] validArray = { true, false, true };
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), validArray);
-		assertTrue(result.isSuccess());
-		
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), validArray);
 		JsonArray expected = new JsonArray();
 		expected.add(new JsonPrimitive(true));
 		expected.add(new JsonPrimitive(false));
 		expected.add(new JsonPrimitive(true));
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void decodeStartWithValidConstrainedValue() {
+	void decodeWithValidConstrainedValue() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMinLength(1));
 		
@@ -61,9 +61,8 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(false));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertArrayEquals(new boolean[] { true, false }, result.resultOrThrow());
+		boolean[] result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertArrayEquals(new boolean[] { true, false }, result);
 	}
 	
 	@Test
@@ -74,25 +73,23 @@ class ConstrainedBooleanArrayCodecTest {
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintSuccess() {
+	void encodeEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.equalTo(new boolean[] { true, false, true });
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false, true });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false, true }));
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.equalTo(new boolean[] { true, false, true });
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { false, true });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { false, true }));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintSuccess() {
+	void decodeEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.equalTo(new boolean[] { true, false, true });
 		
@@ -101,12 +98,11 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(false));
 		array.add(new JsonPrimitive(true));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartEqualToConstraintViolation() {
+	void decodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.equalTo(new boolean[] { true, false, true });
 		
@@ -114,30 +110,27 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(false));
 		array.add(new JsonPrimitive(true));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintSuccess() {
+	void encodeNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.notEqualTo(new boolean[] { true, false, true });
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { false, true, false });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { false, true, false }));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.notEqualTo(new boolean[] { true, false, true });
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false, true });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false, true }));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintSuccess() {
+	void decodeNotEqualToConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.notEqualTo(new boolean[] { true, false, true });
 		
@@ -145,12 +138,11 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(false));
 		array.add(new JsonPrimitive(true));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartNotEqualToConstraintViolation() {
+	void decodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.notEqualTo(new boolean[] { true, false, true });
 		
@@ -159,30 +151,27 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(false));
 		array.add(new JsonPrimitive(true));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartInConstraintSuccess() {
+	void encodeInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.in(List.of(new boolean[] { true, false }, new boolean[] { false, true }));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false }));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.in(List.of(new boolean[] { true, false }, new boolean[] { false, true }));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, true });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, true }));
 	}
 	
 	@Test
-	void decodeStartInConstraintSuccess() {
+	void decodeInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.in(List.of(new boolean[] { true, false }, new boolean[] { false, true }));
 		
@@ -190,12 +179,11 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(false));
 		array.add(new JsonPrimitive(true));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartInConstraintViolation() {
+	void decodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.in(List.of(new boolean[] { true, false }, new boolean[] { false, true }));
 		
@@ -203,30 +191,27 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(true));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintSuccess() {
+	void encodeNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.notIn(List.of(new boolean[] { true, false }, new boolean[] { false, true }));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, true });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, true }));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.notIn(List.of(new boolean[] { true, false }, new boolean[] { false, true }));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false }));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintSuccess() {
+	void decodeNotInConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.notIn(List.of(new boolean[] { true, false }, new boolean[] { false, true }));
 		
@@ -234,12 +219,11 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(true));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartNotInConstraintViolation() {
+	void decodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.notIn(List.of(new boolean[] { true, false }, new boolean[] { false, true }));
 		
@@ -247,30 +231,27 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(false));
 		array.add(new JsonPrimitive(true));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartMinLengthConstraintSuccess() {
+	void encodeMinLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMinLength(2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false, true });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false, true }));
 	}
 	
 	@Test
-	void encodeStartMinLengthConstraintViolation() {
+	void encodeMinLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMinLength(3));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false }));
 	}
 	
 	@Test
-	void decodeStartMinLengthConstraintSuccess() {
+	void decodeMinLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMinLength(2));
 		
@@ -278,12 +259,11 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(false));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartMinLengthConstraintViolation() {
+	void decodeMinLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMinLength(3));
 		
@@ -291,30 +271,27 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(false));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartMaxLengthConstraintSuccess() {
+	void encodeMaxLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMaxLength(5));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false, true });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false, true }));
 	}
 	
 	@Test
-	void encodeStartMaxLengthConstraintViolation() {
+	void encodeMaxLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMaxLength(2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false, true });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false, true }));
 	}
 	
 	@Test
-	void decodeStartMaxLengthConstraintSuccess() {
+	void decodeMaxLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMaxLength(5));
 		
@@ -322,12 +299,11 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(false));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartMaxLengthConstraintViolation() {
+	void decodeMaxLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMaxLength(2));
 		
@@ -336,30 +312,27 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(false));
 		array.add(new JsonPrimitive(true));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartExactLengthConstraintSuccess() {
+	void encodeExactLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withExactLength(3));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false, true });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false, true }));
 	}
 	
 	@Test
-	void encodeStartExactLengthConstraintViolation() {
+	void encodeExactLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withExactLength(3));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false }));
 	}
 	
 	@Test
-	void decodeStartExactLengthConstraintSuccess() {
+	void decodeExactLengthConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withExactLength(2));
 		
@@ -367,12 +340,11 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(false));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartExactLengthConstraintViolation() {
+	void decodeExactLengthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withExactLength(3));
 		
@@ -380,39 +352,35 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(false));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartLengthBetweenConstraintSuccess() {
+	void encodeLengthBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withLengthBetween(2, 4));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false, true });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false, true }));
 	}
 	
 	@Test
-	void encodeStartLengthBetweenConstraintViolationTooSmall() {
+	void encodeLengthBetweenConstraintViolationTooSmall() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withLengthBetween(3, 5));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false }));
 	}
 	
 	@Test
-	void encodeStartLengthBetweenConstraintViolationTooLarge() {
+	void encodeLengthBetweenConstraintViolationTooLarge() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withLengthBetween(1, 2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false, true });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false, true }));
 	}
 	
 	@Test
-	void decodeStartLengthBetweenConstraintSuccess() {
+	void decodeLengthBetweenConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withLengthBetween(1, 3));
 		
@@ -420,12 +388,11 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(false));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartLengthBetweenConstraintViolation() {
+	void decodeLengthBetweenConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withLengthBetween(3, 5));
 		
@@ -433,102 +400,91 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(false));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintSuccess() {
+	void encodeCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.custom(arr -> {
 			for (boolean b : arr) {
 				if (!b) {
-					return Result.error("All elements must be true");
+					throw new ConstraintViolateException("All elements must be true");
 				}
 			}
-			return Result.success(null);
 		});
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, true, true });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, true, true }));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.custom(arr -> {
 			for (boolean b : arr) {
 				if (!b) {
-					return Result.error("All elements must be true");
+					throw new ConstraintViolateException("All elements must be true");
 				}
 			}
-			return Result.success(null);
 		});
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false, true });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false, true }));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintSuccess() {
+	void decodeCustomConstraintSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.custom(arr -> {
 			for (boolean b : arr) {
 				if (!b) {
-					return Result.error("All elements must be true");
+					throw new ConstraintViolateException("All elements must be true");
 				}
 			}
-			return Result.success(null);
 		});
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(true));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartCustomConstraintViolation() {
+	void decodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.custom(arr -> {
 			for (boolean b : arr) {
 				if (!b) {
-					return Result.error("All elements must be true");
+					throw new ConstraintViolateException("All elements must be true");
 				}
 			}
-			return Result.success(null);
 		});
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(false));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void encodeStartCombinedConstraintsSuccess() {
+	void encodeCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMinLength(2).withMaxLength(4));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true, false, true });
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true, false, true }));
 	}
 	
 	@Test
-	void encodeStartCombinedConstraintsViolation() {
+	void encodeCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMinLength(2).withMaxLength(4));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), new boolean[] { true });
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), new boolean[] { true }));
 	}
 	
 	@Test
-	void decodeStartCombinedConstraintsSuccess() {
+	void decodeCombinedConstraintsSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMinLength(1).withMaxLength(3));
 		
@@ -536,12 +492,11 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(false));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartCombinedConstraintsViolation() {
+	void decodeCombinedConstraintsViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = Codecs.BOOLEAN_ARRAY.apply(config -> config.withMinLength(3).withMaxLength(5));
 		
@@ -549,7 +504,6 @@ class ConstrainedBooleanArrayCodecTest {
 		array.add(new JsonPrimitive(true));
 		array.add(new JsonPrimitive(false));
 		
-		Result<boolean[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 }

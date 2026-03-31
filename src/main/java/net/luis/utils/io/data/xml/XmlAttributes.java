@@ -246,7 +246,6 @@ public class XmlAttributes {
 		return this.add(new XmlAttribute(name, value));
 	}
 	
-	
 	/**
 	 * Removes the attribute with the given name from this collection.<br>
 	 *
@@ -276,7 +275,6 @@ public class XmlAttributes {
 	public void clear() {
 		this.attributes.clear();
 	}
-	
 	
 	/**
 	 * Replaces the attribute with the given name in this collection with the new attribute.<br>

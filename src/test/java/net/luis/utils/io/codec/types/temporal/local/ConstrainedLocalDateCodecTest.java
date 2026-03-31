@@ -20,10 +20,11 @@ package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.*;
@@ -39,319 +40,290 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstrainedLocalDateCodecTest {
 	
 	@Test
-	void encodeStartWithValidAfterConstraint() {
+	void encodeWithValidAfterConstraint() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		LocalDate value = LocalDate.of(2023, 6, 15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("2023-06-15"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), value);
+		assertEquals(new JsonPrimitive("2023-06-15"), result);
 	}
 	
 	@Test
-	void encodeStartWithValidBeforeConstraint() {
+	void encodeWithValidBeforeConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2025, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.before(threshold);
 		LocalDate value = LocalDate.of(2023, 6, 15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidBetweenConstraint() {
+	void encodeWithValidBetweenConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate after = LocalDate.of(2020, 1, 1);
 		LocalDate before = LocalDate.of(2025, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.between(after, before);
 		LocalDate value = LocalDate.of(2023, 6, 15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidEqualToConstraint() {
+	void encodeWithValidEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate target = LocalDate.of(2023, 6, 15);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.equalTo(target);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), target);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), target));
 	}
 	
 	@Test
-	void encodeStartWithValidInConstraint() {
+	void encodeWithValidInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate value1 = LocalDate.of(2023, 6, 15);
 		LocalDate value2 = LocalDate.of(2023, 7, 20);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.in(Set.of(value1, value2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value1);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value1));
 	}
 	
 	@Test
-	void encodeStartWithValidNotEqualToConstraint() {
+	void encodeWithValidNotEqualToConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate excluded = LocalDate.of(2023, 6, 15);
 		LocalDate value = LocalDate.of(2023, 7, 20);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.notEqualTo(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidNotInConstraint() {
+	void encodeWithValidNotInConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate excluded1 = LocalDate.of(2023, 6, 15);
 		LocalDate excluded2 = LocalDate.of(2023, 7, 20);
 		LocalDate value = LocalDate.of(2023, 8, 25);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.notIn(Set.of(excluded1, excluded2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidAfterOrEqualConstraint() {
+	void encodeWithValidAfterOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2023, 6, 15);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.afterOrEqual(threshold);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), threshold));
 	}
 	
 	@Test
-	void encodeStartWithValidBeforeOrEqualConstraint() {
+	void encodeWithValidBeforeOrEqualConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2023, 6, 15);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.beforeOrEqual(threshold);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), threshold);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), threshold));
 	}
 	
 	@Test
-	void encodeStartWithValidDayOfWeekConstraint() {
+	void encodeWithValidDayOfWeekConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.dayOfWeek(builder -> builder.in(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY)));
 		LocalDate value = LocalDate.of(2023, 6, 16); // Friday
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidDayOfMonthConstraint() {
+	void encodeWithValidDayOfMonthConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.dayOfMonth(builder -> builder.betweenOrEqual(1, 15));
 		LocalDate value = LocalDate.of(2023, 6, 10);
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidMonthConstraint() {
+	void encodeWithValidMonthConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.month(builder -> builder.in(Set.of(Month.JUNE, Month.JULY, Month.AUGUST)));
 		LocalDate value = LocalDate.of(2023, 6, 15);
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartWithValidYearConstraint() {
+	void encodeWithValidYearConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.year(builder -> builder.greaterThanOrEqual(2020));
 		LocalDate value = LocalDate.of(2023, 6, 15);
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeKeyWithValidConstraint() {
+	void encodeKeyWithValidConstraint() throws EncoderException {
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		LocalDate value = LocalDate.of(2023, 6, 15);
 		
-		Result<String> result = codec.encodeKey(value);
-		assertTrue(result.isSuccess());
-		assertEquals("2023-06-15", result.resultOrThrow());
+		String result = codec.encodeKey(value);
+		assertEquals("2023-06-15", result);
 	}
 	
 	@Test
-	void decodeStartWithValidConstraint() {
+	void decodeWithValidConstraint() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		
-		Result<LocalDate> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15"));
-		assertTrue(result.isSuccess());
-		assertEquals(LocalDate.of(2023, 6, 15), result.resultOrThrow());
+		LocalDate result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2023-06-15"));
+		assertEquals(LocalDate.of(2023, 6, 15), result);
 	}
 	
 	@Test
-	void decodeKeyWithValidConstraint() {
+	void decodeKeyWithValidConstraint() throws DecoderException {
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		
-		Result<LocalDate> result = codec.decodeKey("2023-06-15");
-		assertTrue(result.isSuccess());
-		assertEquals(LocalDate.of(2023, 6, 15), result.resultOrThrow());
+		LocalDate result = codec.decodeKey("2023-06-15");
+		assertEquals(LocalDate.of(2023, 6, 15), result);
 	}
 	
 	@Test
-	void encodeStartWithCustomConstraint() {
+	void encodeWithCustomConstraint() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.custom(value -> {
 			if (value.getDayOfMonth() % 5 == 0) {
-				return Result.success(null);
+				return;
 			}
-			return Result.error("Day of month must be divisible by 5");
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Day of month must be divisible by 5");
 		});
 		LocalDate value = LocalDate.of(2023, 6, 15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isSuccess());
+		assertDoesNotThrow(() -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartAfterConstraintViolation() {
+	void encodeAfterConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		LocalDate valueBefore = LocalDate.of(2019, 6, 15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueBefore);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueBefore));
 	}
 	
 	@Test
-	void encodeStartBeforeConstraintViolation() {
+	void encodeBeforeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.before(threshold);
 		LocalDate valueAfter = LocalDate.of(2023, 6, 15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueAfter);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueAfter));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintViolationTooEarly() {
+	void encodeBetweenConstraintViolationTooEarly() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate after = LocalDate.of(2020, 1, 1);
 		LocalDate before = LocalDate.of(2025, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.between(after, before);
 		LocalDate valueTooEarly = LocalDate.of(2019, 6, 15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooEarly);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueTooEarly));
 	}
 	
 	@Test
-	void encodeStartBetweenConstraintViolationTooLate() {
+	void encodeBetweenConstraintViolationTooLate() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate after = LocalDate.of(2020, 1, 1);
 		LocalDate before = LocalDate.of(2025, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.between(after, before);
 		LocalDate valueTooLate = LocalDate.of(2026, 6, 15);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), valueTooLate);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), valueTooLate));
 	}
 	
 	@Test
-	void encodeStartEqualToConstraintViolation() {
+	void encodeEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate target = LocalDate.of(2023, 6, 15);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.equalTo(target);
 		LocalDate differentValue = LocalDate.of(2023, 7, 20);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), differentValue);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), differentValue));
 	}
 	
 	@Test
-	void encodeStartInConstraintViolation() {
+	void encodeInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate value1 = LocalDate.of(2023, 6, 15);
 		LocalDate value2 = LocalDate.of(2023, 7, 20);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.in(Set.of(value1, value2));
 		LocalDate notInSet = LocalDate.of(2023, 8, 25);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), notInSet);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), notInSet));
 	}
 	
 	@Test
-	void encodeStartNotEqualToConstraintViolation() {
+	void encodeNotEqualToConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate excluded = LocalDate.of(2023, 6, 15);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.notEqualTo(excluded);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded));
 	}
 	
 	@Test
-	void encodeStartNotInConstraintViolation() {
+	void encodeNotInConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate excluded1 = LocalDate.of(2023, 6, 15);
 		LocalDate excluded2 = LocalDate.of(2023, 7, 20);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.notIn(Set.of(excluded1, excluded2));
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), excluded1);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), excluded1));
 	}
 	
 	@Test
-	void encodeStartDayOfWeekConstraintViolation() {
+	void encodeDayOfWeekConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.dayOfWeek(builder -> builder.in(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY)));
 		LocalDate value = LocalDate.of(2023, 6, 17); // Saturday
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartDayOfMonthConstraintViolation() {
+	void encodeDayOfMonthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.dayOfMonth(builder -> builder.betweenOrEqual(1, 15));
 		LocalDate value = LocalDate.of(2023, 6, 20);
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartMonthConstraintViolation() {
+	void encodeMonthConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.month(builder -> builder.in(Set.of(Month.JUNE, Month.JULY, Month.AUGUST)));
 		LocalDate value = LocalDate.of(2023, 1, 15); // January
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
-	void encodeStartYearConstraintViolation() {
+	void encodeYearConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.year(builder -> builder.greaterThanOrEqual(2020));
 		LocalDate value = LocalDate.of(2015, 6, 15);
-
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test
@@ -360,18 +332,16 @@ class ConstrainedLocalDateCodecTest {
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		LocalDate valueBefore = LocalDate.of(2019, 6, 15);
 		
-		Result<String> result = codec.encodeKey(valueBefore);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encodeKey(valueBefore));
 	}
 	
 	@Test
-	void decodeStartConstraintViolation() {
+	void decodeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		
-		Result<LocalDate> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("2019-06-15"));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("2019-06-15")));
 	}
 	
 	@Test
@@ -379,23 +349,21 @@ class ConstrainedLocalDateCodecTest {
 		LocalDate threshold = LocalDate.of(2020, 1, 1);
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.after(threshold);
 		
-		Result<LocalDate> result = codec.decodeKey("2019-06-15");
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decodeKey("2019-06-15"));
 	}
 	
 	@Test
-	void encodeStartCustomConstraintViolation() {
+	void encodeCustomConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalDate> codec = Codecs.LOCAL_DATE.custom(value -> {
 			if (value.getDayOfMonth() % 5 == 0) {
-				return Result.success(null);
+				return;
 			}
-			return Result.error("Day of month must be divisible by 5");
+			throw new net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException("Day of month must be divisible by 5");
 		});
 		LocalDate value = LocalDate.of(2023, 6, 17);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
-		assertTrue(result.isError());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), value));
 	}
 	
 	@Test

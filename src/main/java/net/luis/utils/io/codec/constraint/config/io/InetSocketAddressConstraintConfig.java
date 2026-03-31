@@ -19,13 +19,11 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.net.InetSocketAddress;
@@ -96,6 +94,11 @@ public record InetSocketAddressConstraintConfig(
 		if (resolved.isPresent() && unresolved.isPresent()) {
 			throw new IllegalArgumentException("Both resolved and unresolved constraints cannot be present at the same time");
 		}
+	}
+	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
 	}
 	
 	//region With methods
@@ -204,17 +207,17 @@ public record InetSocketAddressConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull InetSocketAddress value) {
+	public void validate(@NonNull InetSocketAddress value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> IOMatchers.matchInetSocketAddressAddress(value, this.address),
-			() -> IOMatchers.matchInetSocketAddressPort(value, this.port),
-			() -> ConstraintMatchers.matchFlag(value, this.resolved, v -> !v.isUnresolved(), "InetSocketAddress '" + value + "' must be resolved"),
-			() -> ConstraintMatchers.matchFlag(value, this.unresolved, InetSocketAddress::isUnresolved, "InetSocketAddress '" + value + "' must be unresolved"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> IOValidators.validateInetSocketAddressAddress(value, this.address),
+			() -> IOValidators.validateInetSocketAddressPort(value, this.port),
+			() -> ConstraintValidators.validateFlag(value, this.resolved, v -> !v.isUnresolved(), "InetSocketAddress '" + value + "' must be resolved"),
+			() -> ConstraintValidators.validateFlag(value, this.unresolved, InetSocketAddress::isUnresolved, "InetSocketAddress '" + value + "' must be unresolved"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

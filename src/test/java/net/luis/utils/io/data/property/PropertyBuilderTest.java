@@ -367,13 +367,19 @@ class PropertyBuilderTest {
 			.add("always")
 			.addIf(includeOptional, "included")
 			.addIf(excludeOptional, "excluded")
+			.addIf(includeOptional, true)
+			.addIf(excludeOptional, false)
+			.addIf(includeOptional, 42)
+			.addIf(excludeOptional, 99)
 			.add("final")
 			.buildArray();
 		
-		assertEquals(3, array.size());
+		assertEquals(5, array.size());
 		assertEquals(new PropertyValue("always"), array.get(0));
 		assertEquals(new PropertyValue("included"), array.get(1));
-		assertEquals(new PropertyValue("final"), array.get(2));
+		assertEquals(new PropertyValue(true), array.get(2));
+		assertEquals(new PropertyValue(42), array.get(3));
+		assertEquals(new PropertyValue("final"), array.get(4));
 	}
 	
 	@Test
@@ -473,31 +479,31 @@ class PropertyBuilderTest {
 	void utilityMethods() {
 		PropertyBuilder builder = PropertyBuilder.object();
 		
-		assertEquals(1, builder.getNestingDepth());
+		assertEquals(0, builder.getNestingDepth());
 		assertTrue(builder.isInObjectContext());
 		assertFalse(builder.isInArrayContext());
 		assertTrue(builder.isAtRootLevel());
 		
 		builder.startObject("nested");
-		assertEquals(2, builder.getNestingDepth());
+		assertEquals(1, builder.getNestingDepth());
 		assertTrue(builder.isInObjectContext());
 		assertFalse(builder.isInArrayContext());
 		assertFalse(builder.isAtRootLevel());
 		
 		builder.startArray("items");
-		assertEquals(3, builder.getNestingDepth());
+		assertEquals(2, builder.getNestingDepth());
 		assertFalse(builder.isInObjectContext());
 		assertTrue(builder.isInArrayContext());
 		assertFalse(builder.isAtRootLevel());
 		
 		builder.endArray();
-		assertEquals(2, builder.getNestingDepth());
+		assertEquals(1, builder.getNestingDepth());
 		assertTrue(builder.isInObjectContext());
 		assertFalse(builder.isInArrayContext());
 		assertFalse(builder.isAtRootLevel());
 		
 		builder.endObject();
-		assertEquals(1, builder.getNestingDepth());
+		assertEquals(0, builder.getNestingDepth());
 		assertTrue(builder.isInObjectContext());
 		assertFalse(builder.isInArrayContext());
 		assertTrue(builder.isAtRootLevel());

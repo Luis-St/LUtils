@@ -19,13 +19,11 @@
 package net.luis.utils.io.codec.constraint.config.temporal;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.TemporalMatchers;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.TemporalValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Period;
@@ -127,12 +125,18 @@ public record PeriodConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact period that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withEqualTo(@NonNull Period value) {
@@ -144,6 +148,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The period that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withNotEqualTo(@NonNull Period value) {
@@ -155,6 +160,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of Periods that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withIn(@NonNull Collection<Period> values) {
@@ -166,6 +172,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of Periods that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withNotIn(@NonNull Collection<Period> values) {
@@ -177,6 +184,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified greater-than constraint (exclusive).<br>
 	 *
 	 * @param value The threshold period (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withGreaterThan(@NonNull Period value) {
@@ -188,6 +196,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified greater-than-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold period (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withGreaterThanOrEqual(@NonNull Period value) {
@@ -199,6 +208,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified less-than constraint (exclusive).<br>
 	 *
 	 * @param value The threshold period (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withLessThan(@NonNull Period value) {
@@ -210,6 +220,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified less-than-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold period (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withLessThanOrEqual(@NonNull Period value) {
@@ -222,6 +233,7 @@ public record PeriodConstraintConfig(
 	 *
 	 * @param min The minimum period (exclusive)
 	 * @param max The maximum period (exclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withBetween(@NonNull Period min, @NonNull Period max) {
@@ -235,6 +247,7 @@ public record PeriodConstraintConfig(
 	 *
 	 * @param min The minimum period (inclusive)
 	 * @param max The maximum period (inclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withBetweenOrEqual(@NonNull Period min, @NonNull Period max) {
@@ -301,6 +314,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified day constraint.<br>
 	 *
 	 * @param dayConfig The numeric field constraint config for day validation
+	 * @throws NullPointerException If the dayConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withDay(@NonNull NumericConstraintConfig dayConfig) {
@@ -312,6 +326,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified month constraint.<br>
 	 *
 	 * @param monthConfig The numeric field constraint config for month validation
+	 * @throws NullPointerException If the monthConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withMonth(@NonNull NumericConstraintConfig monthConfig) {
@@ -323,6 +338,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified year constraint.<br>
 	 *
 	 * @param yearConfig The numeric field constraint config for year validation
+	 * @throws NullPointerException If the yearConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withYear(@NonNull NumericConstraintConfig yearConfig) {
@@ -334,6 +350,7 @@ public record PeriodConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withCustom(@NonNull Constraint<Period> constraint) {
@@ -343,18 +360,18 @@ public record PeriodConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Period value) {
+	public void validate(@NonNull Period value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> TemporalMatchers.matchPeriodRange(value, this.min, this.max),
-			() -> TemporalMatchers.matchPeriodSign(value, this.positive, this.negative, this.zero),
-			() -> ConstraintMatchers.matchNestedConfig(value.getDays(), this.day, "Day"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getMonths(), this.month, "Month"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getYears(), this.year, "Year"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> TemporalValidators.validatePeriodRange(value, this.min, this.max),
+			() -> TemporalValidators.validatePeriodSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintValidators.validateNestedConfig(value.getDays(), this.day, "Day"),
+			() -> ConstraintValidators.validateNestedConfig(value.getMonths(), this.month, "Month"),
+			() -> ConstraintValidators.validateNestedConfig(value.getYears(), this.year, "Year"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

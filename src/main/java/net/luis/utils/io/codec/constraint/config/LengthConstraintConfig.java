@@ -18,11 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.core.LengthConstraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -105,6 +104,11 @@ public record LengthConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
@@ -132,6 +136,7 @@ public record LengthConstraintConfig(
 	 *
 	 * @param values The collection of values that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull LengthConstraintConfig withIn(@NonNull Collection<Integer> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -143,6 +148,7 @@ public record LengthConstraintConfig(
 	 *
 	 * @param values The collection of values that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull LengthConstraintConfig withNotIn(@NonNull Collection<Integer> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -198,6 +204,7 @@ public record LengthConstraintConfig(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull LengthConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
@@ -206,14 +213,14 @@ public record LengthConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull Integer value) {
+	public void validate(@NonNull Integer value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.min, this.max),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

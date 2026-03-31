@@ -18,9 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.io.DomainConstraintConfig;
-import net.luis.utils.util.result.Result;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -49,7 +48,7 @@ class DomainConstraintBuilderTest {
 		DomainConstraintConfig initialConfig = DomainConstraintConfig.UNCONSTRAINED.withMinLength(5);
 		DomainConstraintBuilder builder = new DomainConstraintBuilder(initialConfig);
 		DomainConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
 		assertTrue(config.length().isPresent());
@@ -115,7 +114,7 @@ class DomainConstraintBuilderTest {
 	@Test
 	void customReturnsBuilder() {
 		DomainConstraintBuilder builder = new DomainConstraintBuilder();
-		Constraint<String> constraint = value -> Result.success(null);
+		Constraint<String> constraint = value -> {};
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
 	}
@@ -125,12 +124,12 @@ class DomainConstraintBuilderTest {
 		DomainConstraintBuilder builder = new DomainConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.custom(null));
 	}
-
+	
 	@Test
 	void lengthReturnsBuilder() {
 		DomainConstraintBuilder builder = new DomainConstraintBuilder();
 		assertSame(builder, builder.length(b -> b.minLength(5).maxLength(100)));
-
+		
 		DomainConstraintConfig config = builder.build();
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());
@@ -138,7 +137,7 @@ class DomainConstraintBuilderTest {
 		assertEquals(5, config.length().get().min().get().getFirst());
 		assertEquals(100, config.length().get().max().get().getFirst());
 	}
-
+	
 	@Test
 	void lengthWithNullBuilder() {
 		DomainConstraintBuilder builder = new DomainConstraintBuilder();
@@ -397,26 +396,26 @@ class DomainConstraintBuilderTest {
 	void buildReturnsCorrectConfig() {
 		DomainConstraintBuilder builder = new DomainConstraintBuilder();
 		builder.length(b -> b.minLength(5).maxLength(253)).endsWith(".com");
-
+		
 		DomainConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());
 		assertTrue(config.length().get().max().isPresent());
 		assertTrue(config.endsWith().isPresent());
 	}
-
+	
 	@Test
 	void methodChainingWorks() {
 		DomainConstraintBuilder builder = new DomainConstraintBuilder();
-
+		
 		DomainConstraintConfig config = builder
 			.length(b -> b.minLength(5).maxLength(253))
 			.endsWith(".com")
 			.rootDomain()
 			.build();
-
+		
 		assertNotNull(config);
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());

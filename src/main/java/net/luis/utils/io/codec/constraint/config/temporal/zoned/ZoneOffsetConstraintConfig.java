@@ -19,13 +19,11 @@
 package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.TemporalMatchers;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.TemporalValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.ZoneOffset;
@@ -117,12 +115,18 @@ public record ZoneOffsetConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact zone offset that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withEqualTo(@NonNull ZoneOffset value) {
@@ -134,6 +138,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The zone offset that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNotEqualTo(@NonNull ZoneOffset value) {
@@ -145,6 +150,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of ZoneOffsets that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withIn(@NonNull Collection<ZoneOffset> values) {
@@ -156,6 +162,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of ZoneOffsets that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNotIn(@NonNull Collection<ZoneOffset> values) {
@@ -167,6 +174,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified greater-than constraint (exclusive).<br>
 	 *
 	 * @param value The threshold zone offset (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withGreaterThan(@NonNull ZoneOffset value) {
@@ -178,6 +186,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified greater-than-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold zone offset (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withGreaterThanOrEqual(@NonNull ZoneOffset value) {
@@ -189,6 +198,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified less-than constraint (exclusive).<br>
 	 *
 	 * @param value The threshold zone offset (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withLessThan(@NonNull ZoneOffset value) {
@@ -200,6 +210,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified less-than-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold zone offset (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withLessThanOrEqual(@NonNull ZoneOffset value) {
@@ -212,6 +223,7 @@ public record ZoneOffsetConstraintConfig(
 	 *
 	 * @param min The minimum zone offset (exclusive)
 	 * @param max The maximum zone offset (exclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withBetween(@NonNull ZoneOffset min, @NonNull ZoneOffset max) {
@@ -225,6 +237,7 @@ public record ZoneOffsetConstraintConfig(
 	 *
 	 * @param min The minimum zone offset (inclusive)
 	 * @param max The maximum zone offset (inclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withBetweenOrEqual(@NonNull ZoneOffset min, @NonNull ZoneOffset max) {
@@ -303,6 +316,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified hour constraint.<br>
 	 *
 	 * @param hourConfig The numeric field constraint config for hour validation
+	 * @throws NullPointerException If the hourConfig is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withHour(@NonNull NumericConstraintConfig hourConfig) {
@@ -314,6 +328,7 @@ public record ZoneOffsetConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withCustom(@NonNull Constraint<ZoneOffset> constraint) {
@@ -323,16 +338,16 @@ public record ZoneOffsetConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull ZoneOffset value) {
+	public void validate(@NonNull ZoneOffset value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max, Comparator.comparingInt(ZoneOffset::getTotalSeconds)),
-			() -> TemporalMatchers.matchZoneOffsetSign(value, this.positive, this.negative, this.zero),
-			() -> ConstraintMatchers.matchNestedConfig(value.getTotalSeconds() / 3600, this.hour, "Hours"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.min, this.max, Comparator.comparingInt(ZoneOffset::getTotalSeconds)),
+			() -> TemporalValidators.validateZoneOffsetSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintValidators.validateNestedConfig(value.getTotalSeconds() / 3600, this.hour, "Hours"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

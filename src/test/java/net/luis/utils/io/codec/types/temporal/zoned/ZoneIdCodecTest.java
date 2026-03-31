@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.temporal.zoned;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;
@@ -37,78 +38,72 @@ import static org.junit.jupiter.api.Assertions.*;
 class ZoneIdCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		ZoneId zoneId = ZoneId.of("Europe/Berlin");
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), zoneId));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, zoneId));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), zoneId));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, zoneId));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as zone id"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as zone id"));
 	}
 	
 	@Test
-	void encodeStartWithEuropeanZone() {
+	void encodeWithEuropeanZone() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		ZoneId zoneId = ZoneId.of("Europe/Berlin");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), zoneId);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("Europe/Berlin"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), zoneId);
+		assertEquals(new JsonPrimitive("Europe/Berlin"), result);
 	}
 	
 	@Test
-	void encodeStartWithAmericanZone() {
+	void encodeWithAmericanZone() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		ZoneId zoneId = ZoneId.of("America/New_York");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), zoneId);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("America/New_York"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), zoneId);
+		assertEquals(new JsonPrimitive("America/New_York"), result);
 	}
 	
 	@Test
-	void encodeStartWithUTC() {
+	void encodeWithUTC() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		ZoneId zoneId = ZoneId.of("UTC");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), zoneId);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("UTC"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), zoneId);
+		assertEquals(new JsonPrimitive("UTC"), result);
 	}
 	
 	@Test
-	void encodeStartWithSystemDefault() {
+	void encodeWithSystemDefault() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		ZoneId zoneId = ZoneId.systemDefault();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), zoneId);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(zoneId.getId()), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), zoneId);
+		assertEquals(new JsonPrimitive(zoneId.getId()), result);
 	}
 	
 	@Test
-	void encodeStartWithOffsetZone() {
+	void encodeWithOffsetZone() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		ZoneId zoneId = ZoneId.of("+02:00");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), zoneId);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("+02:00"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), zoneId);
+		assertEquals(new JsonPrimitive("+02:00"), result);
 	}
 	
 	@Test
@@ -120,91 +115,83 @@ class ZoneIdCodecTest {
 	}
 	
 	@Test
-	void encodeKeyWithZone() {
+	void encodeKeyWithZone() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		ZoneId zoneId = ZoneId.of("Europe/Berlin");
 		
-		Result<String> result = codec.encodeKey(zoneId);
-		assertTrue(result.isSuccess());
-		assertEquals("Europe/Berlin", result.resultOrThrow());
+		String result = codec.encodeKey(zoneId);
+		assertEquals("Europe/Berlin", result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("Europe/Berlin")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("Europe/Berlin")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as zone id"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as zone id"));
 	}
 	
 	@Test
-	void decodeStartWithValidEuropeanZone() {
+	void decodeWithValidEuropeanZone() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin"));
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneId.of("Europe/Berlin"), result.resultOrThrow());
+		ZoneId result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("Europe/Berlin"));
+		assertEquals(ZoneId.of("Europe/Berlin"), result);
 	}
 	
 	@Test
-	void decodeStartWithValidAmericanZone() {
+	void decodeWithValidAmericanZone() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("America/New_York"));
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneId.of("America/New_York"), result.resultOrThrow());
+		ZoneId result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("America/New_York"));
+		assertEquals(ZoneId.of("America/New_York"), result);
 	}
 	
 	@Test
-	void decodeStartWithUTC() {
+	void decodeWithUTC() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("UTC"));
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneId.of("UTC"), result.resultOrThrow());
+		ZoneId result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("UTC"));
+		assertEquals(ZoneId.of("UTC"), result);
 	}
 	
 	@Test
-	void decodeStartWithOffsetZone() {
+	void decodeWithOffsetZone() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+02:00"));
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneId.of("+02:00"), result.resultOrThrow());
+		ZoneId result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("+02:00"));
+		assertEquals(ZoneId.of("+02:00"), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidZone() {
+	void decodeWithInvalidZone() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("Invalid/Zone"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode zone id"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("Invalid/Zone")));
+		assertTrue(exception.getMessage().contains("Unable to decode zone id"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		Result<ZoneId> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
@@ -216,23 +203,21 @@ class ZoneIdCodecTest {
 	}
 	
 	@Test
-	void decodeKeyWithValidZone() {
+	void decodeKeyWithValidZone() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		Result<ZoneId> result = codec.decodeKey("Europe/Berlin");
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneId.of("Europe/Berlin"), result.resultOrThrow());
+		ZoneId result = codec.decodeKey("Europe/Berlin");
+		assertEquals(ZoneId.of("Europe/Berlin"), result);
 	}
 	
 	@Test
-	void decodeKeyWithUTC() {
+	void decodeKeyWithUTC() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		Result<ZoneId> result = codec.decodeKey("UTC");
-		assertTrue(result.isSuccess());
-		assertEquals(ZoneId.of("UTC"), result.resultOrThrow());
+		ZoneId result = codec.decodeKey("UTC");
+		assertEquals(ZoneId.of("UTC"), result);
 	}
 	
 	@Test
@@ -240,9 +225,8 @@ class ZoneIdCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneId> codec = new ZoneIdCodec();
 		
-		Result<ZoneId> result = codec.decodeKey("Invalid/Zone");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key 'Invalid/Zone' as zone id"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("Invalid/Zone"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'Invalid/Zone' as zone id"));
 	}
 	
 	@Test

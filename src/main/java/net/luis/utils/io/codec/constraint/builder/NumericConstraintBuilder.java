@@ -128,7 +128,6 @@ public class NumericConstraintBuilder implements ComparableConstraint<Integer, N
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
-	 *
 	 * @return The built numeric field constraint config
 	 */
 	public @NonNull NumericConstraintConfig build() {

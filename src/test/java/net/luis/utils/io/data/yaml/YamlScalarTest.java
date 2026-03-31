@@ -131,32 +131,32 @@ class YamlScalarTest {
 		YamlScalar doubleScalar = new YamlScalar(6.6);
 		YamlScalar stringScalar = new YamlScalar("test");
 		
-		assertTrue(booleanScalar.isBoolean());
-		assertFalse(booleanScalar.isNumber());
-		assertFalse(booleanScalar.isString());
+		assertTrue(booleanScalar.isYamlBoolean());
+		assertFalse(booleanScalar.isYamlNumber());
+		assertFalse(booleanScalar.isYamlString());
 		
-		assertTrue(byteScalar.isNumber());
-		assertTrue(byteScalar.isByte());
-		assertFalse(byteScalar.isBoolean());
+		assertTrue(byteScalar.isYamlNumber());
+		assertTrue(byteScalar.isYamlByte());
+		assertFalse(byteScalar.isYamlBoolean());
 		
-		assertTrue(shortScalar.isNumber());
-		assertTrue(shortScalar.isShort());
+		assertTrue(shortScalar.isYamlNumber());
+		assertTrue(shortScalar.isYamlShort());
 		
-		assertTrue(intScalar.isNumber());
-		assertTrue(intScalar.isInteger());
+		assertTrue(intScalar.isYamlNumber());
+		assertTrue(intScalar.isYamlInteger());
 		
-		assertTrue(longScalar.isNumber());
-		assertTrue(longScalar.isLong());
+		assertTrue(longScalar.isYamlNumber());
+		assertTrue(longScalar.isYamlLong());
 		
-		assertTrue(floatScalar.isNumber());
-		assertTrue(floatScalar.isFloat());
+		assertTrue(floatScalar.isYamlNumber());
+		assertTrue(floatScalar.isYamlFloat());
 		
-		assertTrue(doubleScalar.isNumber());
-		assertTrue(doubleScalar.isDouble());
+		assertTrue(doubleScalar.isYamlNumber());
+		assertTrue(doubleScalar.isYamlDouble());
 		
-		assertTrue(stringScalar.isString());
-		assertFalse(stringScalar.isNumber());
-		assertFalse(stringScalar.isBoolean());
+		assertTrue(stringScalar.isYamlString());
+		assertFalse(stringScalar.isYamlNumber());
+		assertFalse(stringScalar.isYamlBoolean());
 	}
 	
 	@Test

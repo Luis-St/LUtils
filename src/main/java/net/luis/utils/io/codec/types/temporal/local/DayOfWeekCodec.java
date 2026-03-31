@@ -18,17 +18,17 @@
 
 package net.luis.utils.io.codec.types.temporal.local;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.EnumConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.DayOfWeek;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for day of week.<br>
@@ -36,12 +36,16 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, EnumConstraintConfig<DayOfWeek>> implements EnumConstraint<DayOfWeek, DayOfWeekCodec> {
+public class DayOfWeekCodec
+	extends AbstractConstrainableCodec<DayOfWeek, EnumConstraintConfig<DayOfWeek>, DayOfWeekCodec>
+	implements EnumConstraint<DayOfWeek, DayOfWeekCodec> {
 	
 	/**
 	 * Constructs a new day of week codec.<br>
 	 */
-	public DayOfWeekCodec() {}
+	public DayOfWeekCodec() {
+		super(DayOfWeekCodec::new, EnumConstraintConfig.unconstrained());
+	}
 	
 	/**
 	 * Constructs a new day of week codec with the given configuration.<br>
@@ -50,92 +54,52 @@ public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, EnumConstraintConfi
 	 * @throws NullPointerException If the config is null
 	 */
 	private DayOfWeekCodec(@NonNull EnumConstraintConfig<DayOfWeek> config) {
-		super(config);
+		super(DayOfWeekCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull DayOfWeekCodec apply(@NonNull UnaryOperator<EnumConstraintConfig<DayOfWeek>> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new DayOfWeekCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(EnumConstraintConfig.unconstrained()))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable DayOfWeek value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable DayOfWeek value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as day of week using '" + this + "'");
+			throw new EncoderException("Unable to encode null as day of week", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(value.name());
+		return provider.createString(this.validateEncodeConstraints(value).name(), EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull DayOfWeek key) {
+	public @NonNull String encodeKey(@NonNull DayOfWeek key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key.name());
+		return this.validateEncodeConstraints(key).name();
 	}
 	
 	@Override
-	public <R> @NonNull Result<DayOfWeek> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull DayOfWeek decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as day of week using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as day of week", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			DayOfWeek dayOfWeek = DayOfWeek.valueOf(string);
-			
-			Result<Void> constraintResult = this.checkConstraints(dayOfWeek);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(dayOfWeek);
+			return this.validateDecodeConstraints(dayOfWeek);
 		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to decode day of week '" + string + "' using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode day of week '" + string + "': " + e.getMessage(), this, e);
 		}
 	}
 	
 	@Override
-	public @NonNull Result<DayOfWeek> decodeKey(@NonNull String key) {
+	public @NonNull DayOfWeek decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			DayOfWeek dayOfWeek = DayOfWeek.valueOf(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(dayOfWeek);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(dayOfWeek);
+			return this.validateDecodeConstraints(dayOfWeek);
 		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to decode key '" + key + "' as day of week using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode key '" + key + "' as day of week: " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedDayOfWeekCodec[constraints=" + config + "]";
-		}).orElse("DayOfWeekCodec");
 	}
 }

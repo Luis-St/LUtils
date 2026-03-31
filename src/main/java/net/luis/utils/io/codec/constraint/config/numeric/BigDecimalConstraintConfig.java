@@ -19,11 +19,10 @@
 package net.luis.utils.io.codec.constraint.config.numeric;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.math.BigDecimal;
@@ -168,6 +167,11 @@ public record BigDecimalConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
@@ -175,6 +179,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The exact value that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withEqualTo(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -186,6 +191,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The value that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withNotEqualTo(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -197,6 +203,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param values The collection of values that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withIn(@NonNull Collection<BigDecimal> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -208,6 +215,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param values The collection of values that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withNotIn(@NonNull Collection<BigDecimal> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -219,6 +227,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The threshold value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withGreaterThan(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'greater than' constraint must not be null");
@@ -230,6 +239,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The threshold value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withGreaterThanOrEqual(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'greater than or equal' constraint must not be null");
@@ -241,6 +251,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The threshold value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withLessThan(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'less than' constraint must not be null");
@@ -252,6 +263,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param value The threshold value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withLessThanOrEqual(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value for 'less than or equal' constraint must not be null");
@@ -264,6 +276,7 @@ public record BigDecimalConstraintConfig(
 	 * @param min The minimum value (exclusive)
 	 * @param max The maximum value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the min or max value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withBetween(@NonNull BigDecimal min, @NonNull BigDecimal max) {
 		Objects.requireNonNull(min, "Min value for 'between' constraint must not be null");
@@ -277,6 +290,7 @@ public record BigDecimalConstraintConfig(
 	 * @param min The minimum value (inclusive)
 	 * @param max The maximum value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the min or max value is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withBetweenOrEqual(@NonNull BigDecimal min, @NonNull BigDecimal max) {
 		Objects.requireNonNull(min, "Min value for 'between or equal' constraint must not be null");
@@ -452,6 +466,7 @@ public record BigDecimalConstraintConfig(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull BigDecimalConstraintConfig withCustom(@NonNull Constraint<BigDecimal> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
@@ -460,20 +475,20 @@ public record BigDecimalConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull BigDecimal value) {
+	public void validate(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
-			() -> ConstraintMatchers.matchSign(value, this.positive, this.negative, this.zero),
-			() -> ConstraintMatchers.matchPercentage(value, this.percentage),
-			() -> ConstraintMatchers.matchFlag(value, this.integral, v -> v.stripTrailingZeros().scale() <= 0, "Value '" + value + "' must be integral (no fractional part)"),
-			() -> ConstraintMatchers.matchFlag(value, this.normalized, v -> v.compareTo(BigDecimal.ZERO) >= 0 && v.compareTo(BigDecimal.ONE) <= 0, "Value '" + value + "' must be normalized (between 0.0 and 1.0)"),
-			() -> ConstraintMatchers.matchRange(value.scale(), this.scaleMin, this.scaleMax),
-			() -> ConstraintMatchers.matchRange(value.precision(), this.precisionMin, this.precisionMax),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.min, this.max),
+			() -> ConstraintValidators.validateSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintValidators.validatePercentage(value, this.percentage),
+			() -> ConstraintValidators.validateFlag(value, this.integral, v -> v.stripTrailingZeros().scale() <= 0, "Value '" + value + "' must be integral (no fractional part)"),
+			() -> ConstraintValidators.validateFlag(value, this.normalized, v -> v.compareTo(BigDecimal.ZERO) >= 0 && v.compareTo(BigDecimal.ONE) <= 0, "Value '" + value + "' must be normalized (between 0.0 and 1.0)"),
+			() -> ConstraintValidators.validateRange(value.scale(), this.scaleMin, this.scaleMax),
+			() -> ConstraintValidators.validateRange(value.precision(), this.precisionMin, this.precisionMax),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

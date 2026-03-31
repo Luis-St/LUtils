@@ -301,7 +301,6 @@ public class StringConstraintBuilder implements StringConstraint<StringConstrain
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
-	 *
 	 * @return The built string constraint config
 	 */
 	public @NonNull StringConstraintConfig build() {

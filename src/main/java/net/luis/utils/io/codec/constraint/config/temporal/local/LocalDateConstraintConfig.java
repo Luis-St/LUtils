@@ -20,12 +20,10 @@ package net.luis.utils.io.codec.constraint.config.temporal.local;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.*;
@@ -146,12 +144,18 @@ public record LocalDateConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact local date that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withEqualTo(@NonNull LocalDate value) {
@@ -163,6 +167,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The local date that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withNotEqualTo(@NonNull LocalDate value) {
@@ -174,6 +179,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of LocalDates that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withIn(@NonNull Collection<LocalDate> values) {
@@ -185,6 +191,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of LocalDates that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withNotIn(@NonNull Collection<LocalDate> values) {
@@ -196,6 +203,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
 	 * @param value The threshold local date (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withAfter(@NonNull LocalDate value) {
@@ -207,6 +215,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold local date (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withAfterOrEqual(@NonNull LocalDate value) {
@@ -218,6 +227,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
 	 * @param value The threshold local date (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withBefore(@NonNull LocalDate value) {
@@ -229,6 +239,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold local date (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withBeforeOrEqual(@NonNull LocalDate value) {
@@ -241,6 +252,7 @@ public record LocalDateConstraintConfig(
 	 *
 	 * @param after The minimum local date (exclusive)
 	 * @param before The maximum local date (exclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withBetween(@NonNull LocalDate after, @NonNull LocalDate before) {
@@ -254,6 +266,7 @@ public record LocalDateConstraintConfig(
 	 *
 	 * @param after The minimum local date (inclusive)
 	 * @param before The maximum local date (inclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withBetweenOrEqual(@NonNull LocalDate after, @NonNull LocalDate before) {
@@ -266,6 +279,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified within-last constraint.<br>
 	 *
 	 * @param duration The duration backwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withWithinLast(@NonNull Duration duration) {
@@ -277,6 +291,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified within-next constraint.<br>
 	 *
 	 * @param duration The duration forwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withWithinNext(@NonNull Duration duration) {
@@ -288,6 +303,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified day of week constraint.<br>
 	 *
 	 * @param config The enum constraint config for day of week validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withDayOfWeek(@NonNull EnumConstraintConfig<DayOfWeek> config) {
@@ -299,6 +315,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified day of month constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for day of month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withDayOfMonth(@NonNull NumericConstraintConfig config) {
@@ -310,6 +327,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified day of year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for day of year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withDayOfYear(@NonNull NumericConstraintConfig config) {
@@ -321,6 +339,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified week of month constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for week of month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withWeekOfMonth(@NonNull NumericConstraintConfig config) {
@@ -332,6 +351,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified week of year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for week of year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withWeekOfYear(@NonNull NumericConstraintConfig config) {
@@ -343,6 +363,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified month constraint.<br>
 	 *
 	 * @param config The enum constraint config for month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withMonth(@NonNull EnumConstraintConfig<Month> config) {
@@ -354,6 +375,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withYear(@NonNull NumericConstraintConfig config) {
@@ -365,6 +387,7 @@ public record LocalDateConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withCustom(@NonNull Constraint<LocalDate> constraint) {
@@ -374,23 +397,23 @@ public record LocalDateConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull LocalDate value) {
+	public void validate(@NonNull LocalDate value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.after, this.before, ChronoLocalDate::compareTo),
-			() -> ConstraintMatchers.matchWithinLast(value, this.withinLast, LocalDate::now, (t, d) -> t.minusDays(d.toDays()), "Local date"),
-			() -> ConstraintMatchers.matchWithinNext(value, this.withinNext, LocalDate::now, (t, d) -> t.plusDays(d.toDays()), "Local date"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getDayOfWeek(), this.dayOfWeek, "Day of week"),
-			() -> ConstraintMatchers.matchNumericField(value.getDayOfMonth(), this.dayOfMonth, "day of week"),
-			() -> ConstraintMatchers.matchNumericField(value.getDayOfYear(), this.dayOfYear, "dayOfYear"),
-			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfMonth()), this.weekOfMonth, "week of month"),
-			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfWeekBasedYear()), this.weekOfYear, "week of year"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getMonth(), this.month, "Month"),
-			() -> ConstraintMatchers.matchNumericField(value.getYear(), this.year, "year"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.after, this.before, ChronoLocalDate::compareTo),
+			() -> ConstraintValidators.validateWithinLast(value, this.withinLast, LocalDate::now, (t, d) -> t.minusDays(d.toDays()), "Local date"),
+			() -> ConstraintValidators.validateWithinNext(value, this.withinNext, LocalDate::now, (t, d) -> t.plusDays(d.toDays()), "Local date"),
+			() -> ConstraintValidators.validateNestedConfig(value.getDayOfWeek(), this.dayOfWeek, "Day of week"),
+			() -> ConstraintValidators.validateNumericField(value.getDayOfMonth(), this.dayOfMonth, "day of week"),
+			() -> ConstraintValidators.validateNumericField(value.getDayOfYear(), this.dayOfYear, "dayOfYear"),
+			() -> ConstraintValidators.validateNumericField(value.get(WeekFields.ISO.weekOfMonth()), this.weekOfMonth, "week of month"),
+			() -> ConstraintValidators.validateNumericField(value.get(WeekFields.ISO.weekOfWeekBasedYear()), this.weekOfYear, "week of year"),
+			() -> ConstraintValidators.validateNestedConfig(value.getMonth(), this.month, "Month"),
+			() -> ConstraintValidators.validateNumericField(value.getYear(), this.year, "year"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.Charset;
@@ -38,145 +39,133 @@ import static org.junit.jupiter.api.Assertions.*;
 class CharsetCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		Charset charset = StandardCharsets.UTF_8;
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), charset));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, charset));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), charset));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, charset));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as charset"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as charset"));
 	}
 	
 	@Test
-	void encodeStartWithUTF8() {
+	void encodeWithUTF8() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		Charset charset = StandardCharsets.UTF_8;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), charset);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("UTF-8"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), charset);
+		assertEquals(new JsonPrimitive("UTF-8"), result);
 	}
 	
 	@Test
-	void encodeStartWithISO88591() {
+	void encodeWithISO88591() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		Charset charset = StandardCharsets.ISO_8859_1;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), charset);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("ISO-8859-1"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), charset);
+		assertEquals(new JsonPrimitive("ISO-8859-1"), result);
 	}
 	
 	@Test
-	void encodeStartWithUS_ASCII() {
+	void encodeWithUS_ASCII() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		Charset charset = StandardCharsets.US_ASCII;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), charset);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("US-ASCII"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), charset);
+		assertEquals(new JsonPrimitive("US-ASCII"), result);
 	}
 	
 	@Test
-	void encodeStartWithUTF16() {
+	void encodeWithUTF16() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		Charset charset = StandardCharsets.UTF_16;
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), charset);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("UTF-16"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), charset);
+		assertEquals(new JsonPrimitive("UTF-16"), result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("UTF-8")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("UTF-8")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		
-		Result<Charset> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as charset"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as charset"));
 	}
 	
 	@Test
-	void decodeStartWithUTF8() {
+	void decodeWithUTF8() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		
-		Result<Charset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("UTF-8"));
-		assertTrue(result.isSuccess());
-		assertEquals(StandardCharsets.UTF_8, result.resultOrThrow());
+		Charset result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("UTF-8"));
+		assertEquals(StandardCharsets.UTF_8, result);
 	}
 	
 	@Test
-	void decodeStartWithISO88591() {
+	void decodeWithISO88591() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		
-		Result<Charset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("ISO-8859-1"));
-		assertTrue(result.isSuccess());
-		assertEquals(StandardCharsets.ISO_8859_1, result.resultOrThrow());
+		Charset result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("ISO-8859-1"));
+		assertEquals(StandardCharsets.ISO_8859_1, result);
 	}
 	
 	@Test
-	void decodeStartWithUS_ASCII() {
+	void decodeWithUS_ASCII() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		
-		Result<Charset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("US-ASCII"));
-		assertTrue(result.isSuccess());
-		assertEquals(StandardCharsets.US_ASCII, result.resultOrThrow());
+		Charset result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("US-ASCII"));
+		assertEquals(StandardCharsets.US_ASCII, result);
 	}
 	
 	@Test
-	void decodeStartWithUTF16() {
+	void decodeWithUTF16() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		
-		Result<Charset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("UTF-16"));
-		assertTrue(result.isSuccess());
-		assertEquals(StandardCharsets.UTF_16, result.resultOrThrow());
+		Charset result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("UTF-16"));
+		assertEquals(StandardCharsets.UTF_16, result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidCharset() {
+	void decodeWithInvalidCharset() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		
-		Result<Charset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("INVALID-CHARSET"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode charset"));
-		assertTrue(result.errorOrThrow().contains("Unable to parse charset"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("INVALID-CHARSET")));
+		assertTrue(exception.getMessage().contains("Unable to decode charset"));
+		assertTrue(exception.getMessage().contains("Unable to parse charset"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Charset> codec = new CharsetCodec();
 		
-		Result<Charset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test

@@ -18,10 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.io.PortConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.PortRange;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -115,7 +114,7 @@ class PortConstraintBuilderTest {
 	@Test
 	void customReturnsBuilder() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
-		Constraint<Integer> constraint = value -> Result.success(null);
+		Constraint<Integer> constraint = value -> {};
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
 	}

@@ -20,13 +20,11 @@ package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.collection.MapConstraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -162,6 +160,11 @@ public record MapConstraintConfig<K, V>(
 		return new MapConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.size.isEmpty() && this.requiredKeys.isEmpty() && this.forbiddenKeys.isEmpty() && this.allowedKeys.isEmpty() && this.nonNullKeys.isEmpty() && this.uniqueValues.isEmpty() && this.nonNullValues.isEmpty() && this.custom.isEmpty();
+	}
+	
 	//region With methods
 	
 	/**
@@ -169,6 +172,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param value The exact map that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withEqualTo(@NonNull Map<K, V> value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -180,6 +184,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param value The map that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withNotEqualTo(@NonNull Map<K, V> value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -191,6 +196,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param values The collection of maps that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withIn(@NonNull Collection<Map<K, V>> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -208,6 +214,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param values The collection of maps that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withNotIn(@NonNull Collection<Map<K, V>> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -285,6 +292,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param key The key that must be present in the map
 	 * @return A new config with the required key constraint applied
+	 * @throws NullPointerException If the key is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withRequiredKey(@NonNull K key) {
 		Objects.requireNonNull(key, "Key for 'required key' constraint must not be null");
@@ -299,6 +307,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param keys The keys that must be present in the map
 	 * @return A new config with the required keys constraint applied
+	 * @throws NullPointerException If the keys collection is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withRequiredKeys(@NonNull Collection<K> keys) {
 		Objects.requireNonNull(keys, "Keys for 'required keys' constraint must not be null");
@@ -313,6 +322,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param key The key that must not be present in the map
 	 * @return A new config with the forbidden key constraint applied
+	 * @throws NullPointerException If the key is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withForbiddenKey(@NonNull K key) {
 		Objects.requireNonNull(key, "Key for 'forbidden key' constraint must not be null");
@@ -327,6 +337,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param keys The keys that must not be present in the map
 	 * @return A new config with the forbidden keys constraint applied
+	 * @throws NullPointerException If the keys collection is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withForbiddenKeys(@NonNull Collection<K> keys) {
 		Objects.requireNonNull(keys, "Keys for 'forbidden keys' constraint must not be null");
@@ -341,6 +352,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param key The only key that is allowed in the map
 	 * @return A new config with the allowed key constraint applied
+	 * @throws NullPointerException If the key is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withAllowedKey(@NonNull K key) {
 		Objects.requireNonNull(key, "Key for 'allowed key' constraint must not be null");
@@ -355,6 +367,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param keys The collection of keys that are allowed in the map
 	 * @return A new config with the allowed keys constraint applied
+	 * @throws NullPointerException If the keys collection is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withAllowedKeys(@NonNull Collection<K> keys) {
 		Objects.requireNonNull(keys, "Keys for 'allowed keys' constraint must not be null");
@@ -396,6 +409,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull MapConstraintConfig<K, V> withCustom(@NonNull Constraint<Map<K, V>> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
@@ -404,20 +418,20 @@ public record MapConstraintConfig<K, V>(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Map<K, V> value) {
+	public void validate(@NonNull Map<K, V> value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.size, Map::size, "Size"),
-			() -> ConstraintMatchers.matchRequiredKeys(value.keySet(), this.requiredKeys, "Map"),
-			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Map"),
-			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Map"),
-			() -> ConstraintMatchers.matchFlag(value, this.nonNullKeys, m -> m.keySet().stream().noneMatch(Objects::isNull), "Map keys must not contain null"),
-			() -> ConstraintMatchers.matchFlag(value, this.uniqueValues, m -> m.values().stream().distinct().count() == m.size(), "Map values must be unique"),
-			() -> ConstraintMatchers.matchFlag(value, this.nonNullValues, m -> m.values().stream().noneMatch(Objects::isNull), "Map values must not contain null"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateExtractedValue(value, this.size, Map::size, "Size"),
+			() -> ConstraintValidators.validateRequiredKeys(value.keySet(), this.requiredKeys, "Map"),
+			() -> ConstraintValidators.validateForbiddenKeys(value.keySet(), this.forbiddenKeys, "Map"),
+			() -> ConstraintValidators.validateAllowedKeys(value.keySet(), this.allowedKeys, "Map"),
+			() -> ConstraintValidators.validateFlag(value, this.nonNullKeys, m -> m.keySet().stream().noneMatch(Objects::isNull), "Map keys must not contain null"),
+			() -> ConstraintValidators.validateFlag(value, this.uniqueValues, m -> m.values().stream().distinct().count() == m.size(), "Map values must be unique"),
+			() -> ConstraintValidators.validateFlag(value, this.nonNullValues, m -> m.values().stream().noneMatch(Objects::isNull), "Map values must not contain null"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

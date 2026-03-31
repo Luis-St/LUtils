@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -92,12 +92,23 @@ class ArrayConstraintConfigTest {
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.length().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(new String[] { "a", "b" }).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new String[] { "a", "b" }));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(ArrayConstraintConfig.<String>unconstrained().isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withMinLength(1);
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
 	void withEqualTo() {
-		String[] array = new String[] { "a", "b" };
+		String[] array = { "a", "b" };
 		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withEqualTo(array);
 		assertTrue(config.equalTo().isPresent());
 		assertArrayEquals(array, config.equalTo().get().getFirst());
@@ -111,7 +122,7 @@ class ArrayConstraintConfigTest {
 	
 	@Test
 	void withNotEqualTo() {
-		String[] array = new String[] { "a", "b" };
+		String[] array = { "a", "b" };
 		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withNotEqualTo(array);
 		assertTrue(config.equalTo().isPresent());
 		assertArrayEquals(array, config.equalTo().get().getFirst());
@@ -206,7 +217,9 @@ class ArrayConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withCustom(arr -> arr.length > 0 ? Result.success() : Result.error("Array must not be empty"));
+		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withCustom(arr -> {
+			if (arr.length == 0) throw new ConstraintViolateException("Array must not be empty");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -216,67 +229,67 @@ class ArrayConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
-		String[] array = new String[] { "a", "b" };
+	void validateWithEqualTo() {
+		String[] array = { "a", "b" };
 		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withEqualTo(array);
-		assertTrue(config.matches(new String[] { "a", "b" }).isSuccess());
-		assertTrue(config.matches(new String[] { "c", "d" }).isError());
+		assertDoesNotThrow(() -> config.validate(new String[] { "a", "b" }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new String[] { "c", "d" }));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
-		String[] array = new String[] { "a", "b" };
+	void validateWithNotEqualTo() {
+		String[] array = { "a", "b" };
 		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withNotEqualTo(array);
-		assertTrue(config.matches(new String[] { "c", "d" }).isSuccess());
-		assertTrue(config.matches(new String[] { "a", "b" }).isError());
+		assertDoesNotThrow(() -> config.validate(new String[] { "c", "d" }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new String[] { "a", "b" }));
 	}
 	
 	@Test
-	void matchesWithMinLength() {
+	void validateWithMinLength() {
 		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withMinLength(2);
-		assertTrue(config.matches(new String[] { "a", "b" }).isSuccess());
-		assertTrue(config.matches(new String[] { "a" }).isError());
+		assertDoesNotThrow(() -> config.validate(new String[] { "a", "b" }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new String[] { "a" }));
 	}
 	
 	@Test
-	void matchesWithMaxLength() {
+	void validateWithMaxLength() {
 		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withMaxLength(2);
-		assertTrue(config.matches(new String[] { "a", "b" }).isSuccess());
-		assertTrue(config.matches(new String[] { "a", "b", "c" }).isError());
+		assertDoesNotThrow(() -> config.validate(new String[] { "a", "b" }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new String[] { "a", "b", "c" }));
 	}
 	
 	@Test
-	void matchesWithExactLength() {
+	void validateWithExactLength() {
 		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withExactLength(2);
-		assertTrue(config.matches(new String[] { "a", "b" }).isSuccess());
-		assertTrue(config.matches(new String[] { "a" }).isError());
-		assertTrue(config.matches(new String[] { "a", "b", "c" }).isError());
+		assertDoesNotThrow(() -> config.validate(new String[] { "a", "b" }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new String[] { "a" }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new String[] { "a", "b", "c" }));
 	}
 	
 	@Test
-	void matchesWithLength() {
+	void validateWithLength() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(1).withMaxLength(3);
 		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained().withLength(lengthConfig);
-		assertTrue(config.matches(new String[] { "a" }).isSuccess());
-		assertTrue(config.matches(new String[] { "a", "b", "c" }).isSuccess());
-		assertTrue(config.matches(new String[] {}).isError());
-		assertTrue(config.matches(new String[] { "a", "b", "c", "d" }).isError());
+		assertDoesNotThrow(() -> config.validate(new String[] { "a" }));
+		assertDoesNotThrow(() -> config.validate(new String[] { "a", "b", "c" }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new String[] {}));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new String[] { "a", "b", "c", "d" }));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		ArrayConstraintConfig<String> config = ArrayConstraintConfig.<String>unconstrained()
 			.withMinLength(1)
 			.withMaxLength(3);
 		
-		assertTrue(config.matches(new String[] { "a", "b" }).isSuccess());
-		assertTrue(config.matches(new String[] {}).isError());
-		assertTrue(config.matches(new String[] { "a", "b", "c", "d" }).isError());
+		assertDoesNotThrow(() -> config.validate(new String[] { "a", "b" }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new String[] {}));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new String[] { "a", "b", "c", "d" }));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		ArrayConstraintConfig<String> config = ArrayConstraintConfig.unconstrained();
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

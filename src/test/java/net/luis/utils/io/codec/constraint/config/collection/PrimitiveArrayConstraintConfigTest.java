@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -106,7 +106,18 @@ class PrimitiveArrayConstraintConfigTest {
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.length().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(new int[] { 1, 2, 3 }).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new int[] { 1, 2, 3 }));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(PrimitiveArrayConstraintConfig.intArray().isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withMinLength(1);
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -117,7 +128,7 @@ class PrimitiveArrayConstraintConfigTest {
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.length().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(new long[] { 1L, 2L, 3L }).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new long[] { 1L, 2L, 3L }));
 	}
 	
 	@Test
@@ -128,7 +139,7 @@ class PrimitiveArrayConstraintConfigTest {
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.length().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(new double[] { 1.0, 2.0, 3.0 }).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new double[] { 1.0, 2.0, 3.0 }));
 	}
 	
 	@Test
@@ -139,7 +150,7 @@ class PrimitiveArrayConstraintConfigTest {
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.length().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(new float[] { 1.0f, 2.0f, 3.0f }).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new float[] { 1.0f, 2.0f, 3.0f }));
 	}
 	
 	@Test
@@ -150,7 +161,7 @@ class PrimitiveArrayConstraintConfigTest {
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.length().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(new short[] { 1, 2, 3 }).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new short[] { 1, 2, 3 }));
 	}
 	
 	@Test
@@ -161,7 +172,7 @@ class PrimitiveArrayConstraintConfigTest {
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.length().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(new byte[] { 1, 2, 3 }).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new byte[] { 1, 2, 3 }));
 	}
 	
 	@Test
@@ -172,7 +183,7 @@ class PrimitiveArrayConstraintConfigTest {
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.length().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(new boolean[] { true, false, true }).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new boolean[] { true, false, true }));
 	}
 	
 	@Test
@@ -183,12 +194,12 @@ class PrimitiveArrayConstraintConfigTest {
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.length().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(new char[] { 'a', 'b', 'c' }).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new char[] { 'a', 'b', 'c' }));
 	}
 	
 	@Test
 	void withEqualTo() {
-		int[] array = new int[] { 1, 2, 3 };
+		int[] array = { 1, 2, 3 };
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withEqualTo(array);
 		assertTrue(config.equalTo().isPresent());
 		assertArrayEquals(array, config.equalTo().get().getFirst());
@@ -202,7 +213,7 @@ class PrimitiveArrayConstraintConfigTest {
 	
 	@Test
 	void withNotEqualTo() {
-		int[] array = new int[] { 1, 2, 3 };
+		int[] array = { 1, 2, 3 };
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withNotEqualTo(array);
 		assertTrue(config.equalTo().isPresent());
 		assertArrayEquals(array, config.equalTo().get().getFirst());
@@ -297,7 +308,9 @@ class PrimitiveArrayConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withCustom(arr -> arr.length > 0 ? Result.success() : Result.error("Array must not be empty"));
+		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withCustom(arr -> {
+			if (arr.length == 0) throw new ConstraintViolateException("Array must not be empty");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -307,105 +320,107 @@ class PrimitiveArrayConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
-		int[] array = new int[] { 1, 2, 3 };
+	void validateWithEqualTo() {
+		int[] array = { 1, 2, 3 };
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withEqualTo(array);
-		assertTrue(config.matches(new int[] { 1, 2, 3 }).isSuccess());
-		assertTrue(config.matches(new int[] { 4, 5, 6 }).isError());
+		assertDoesNotThrow(() -> config.validate(new int[] { 1, 2, 3 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] { 4, 5, 6 }));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
-		int[] array = new int[] { 1, 2, 3 };
+	void validateWithNotEqualTo() {
+		int[] array = { 1, 2, 3 };
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withNotEqualTo(array);
-		assertTrue(config.matches(new int[] { 4, 5, 6 }).isSuccess());
-		assertTrue(config.matches(new int[] { 1, 2, 3 }).isError());
+		assertDoesNotThrow(() -> config.validate(new int[] { 4, 5, 6 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] { 1, 2, 3 }));
 	}
 	
 	@Test
-	void matchesWithMinLength() {
+	void validateWithMinLength() {
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withMinLength(2);
-		assertTrue(config.matches(new int[] { 1, 2 }).isSuccess());
-		assertTrue(config.matches(new int[] { 1 }).isError());
+		assertDoesNotThrow(() -> config.validate(new int[] { 1, 2 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] { 1 }));
 	}
 	
 	@Test
-	void matchesWithMaxLength() {
+	void validateWithMaxLength() {
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withMaxLength(2);
-		assertTrue(config.matches(new int[] { 1, 2 }).isSuccess());
-		assertTrue(config.matches(new int[] { 1, 2, 3 }).isError());
+		assertDoesNotThrow(() -> config.validate(new int[] { 1, 2 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] { 1, 2, 3 }));
 	}
 	
 	@Test
-	void matchesWithExactLength() {
+	void validateWithExactLength() {
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withExactLength(2);
-		assertTrue(config.matches(new int[] { 1, 2 }).isSuccess());
-		assertTrue(config.matches(new int[] { 1 }).isError());
-		assertTrue(config.matches(new int[] { 1, 2, 3 }).isError());
+		assertDoesNotThrow(() -> config.validate(new int[] { 1, 2 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] { 1 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] { 1, 2, 3 }));
 	}
 	
 	@Test
-	void matchesWithLength() {
+	void validateWithLength() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(1).withMaxLength(3);
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withLength(lengthConfig);
-		assertTrue(config.matches(new int[] { 1 }).isSuccess());
-		assertTrue(config.matches(new int[] { 1, 2, 3 }).isSuccess());
-		assertTrue(config.matches(new int[] {}).isError());
-		assertTrue(config.matches(new int[] { 1, 2, 3, 4 }).isError());
+		assertDoesNotThrow(() -> config.validate(new int[] { 1 }));
+		assertDoesNotThrow(() -> config.validate(new int[] { 1, 2, 3 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] {}));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] { 1, 2, 3, 4 }));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray()
 			.withMinLength(1)
 			.withMaxLength(3);
 		
-		assertTrue(config.matches(new int[] { 1, 2 }).isSuccess());
-		assertTrue(config.matches(new int[] {}).isError());
-		assertTrue(config.matches(new int[] { 1, 2, 3, 4 }).isError());
+		assertDoesNotThrow(() -> config.validate(new int[] { 1, 2 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] {}));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] { 1, 2, 3, 4 }));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray();
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 	
 	@Test
-	void matchesWithCustomConstraint() {
+	void validateWithCustomConstraint() {
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray()
-			.withCustom(arr -> Arrays.stream(arr).allMatch(i -> i > 0) ? Result.success() : Result.error("All elements must be positive"));
+			.withCustom(arr -> {
+				if (!Arrays.stream(arr).allMatch(i -> i > 0)) throw new ConstraintViolateException("All elements must be positive");
+			});
 		
-		assertTrue(config.matches(new int[] { 1, 2, 3 }).isSuccess());
-		assertTrue(config.matches(new int[] { 1, -2, 3 }).isError());
+		assertDoesNotThrow(() -> config.validate(new int[] { 1, 2, 3 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] { 1, -2, 3 }));
 	}
 	
 	@Test
 	void intArrayEqualityFunction() {
 		PrimitiveArrayConstraintConfig<int[]> config = PrimitiveArrayConstraintConfig.intArray().withEqualTo(new int[] { 1, 2, 3 });
-		assertTrue(config.matches(new int[] { 1, 2, 3 }).isSuccess());
-		assertTrue(config.matches(new int[] { 1, 2 }).isError());
-		assertTrue(config.matches(new int[] { 1, 2, 3, 4 }).isError());
+		assertDoesNotThrow(() -> config.validate(new int[] { 1, 2, 3 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] { 1, 2 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new int[] { 1, 2, 3, 4 }));
 	}
 	
 	@Test
 	void booleanArrayEqualityFunction() {
 		PrimitiveArrayConstraintConfig<boolean[]> config = PrimitiveArrayConstraintConfig.booleanArray().withEqualTo(new boolean[] { true, false });
-		assertTrue(config.matches(new boolean[] { true, false }).isSuccess());
-		assertTrue(config.matches(new boolean[] { false, true }).isError());
-		assertTrue(config.matches(new boolean[] { true }).isError());
+		assertDoesNotThrow(() -> config.validate(new boolean[] { true, false }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new boolean[] { false, true }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new boolean[] { true }));
 	}
 	
 	@Test
 	void doubleArrayEqualityFunction() {
 		PrimitiveArrayConstraintConfig<double[]> config = PrimitiveArrayConstraintConfig.doubleArray().withEqualTo(new double[] { 1.0, 2.0, 3.0 });
-		assertTrue(config.matches(new double[] { 1.0, 2.0, 3.0 }).isSuccess());
-		assertTrue(config.matches(new double[] { 1.0, 2.0 }).isError());
+		assertDoesNotThrow(() -> config.validate(new double[] { 1.0, 2.0, 3.0 }));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(new double[] { 1.0, 2.0 }));
 	}
 	
 	@Test
 	void doubleArrayEqualityFunctionWithNaN() {
 		PrimitiveArrayConstraintConfig<double[]> config = PrimitiveArrayConstraintConfig.doubleArray().withEqualTo(new double[] { Double.NaN });
-		assertTrue(config.matches(new double[] { Double.NaN }).isSuccess());
+		assertDoesNotThrow(() -> config.validate(new double[] { Double.NaN }));
 	}
 }

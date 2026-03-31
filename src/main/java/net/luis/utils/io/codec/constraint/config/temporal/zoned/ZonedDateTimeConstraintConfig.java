@@ -20,12 +20,10 @@ package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.*;
@@ -170,12 +168,18 @@ public record ZonedDateTimeConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact zoned date time that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withEqualTo(@NonNull ZonedDateTime value) {
@@ -187,6 +191,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The zoned date time that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withNotEqualTo(@NonNull ZonedDateTime value) {
@@ -198,6 +203,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of ZonedDateTimes that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withIn(@NonNull Collection<ZonedDateTime> values) {
@@ -209,6 +215,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of ZonedDateTimes that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withNotIn(@NonNull Collection<ZonedDateTime> values) {
@@ -220,6 +227,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
 	 * @param value The threshold zoned date time (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withAfter(@NonNull ZonedDateTime value) {
@@ -231,6 +239,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold zoned date time (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withAfterOrEqual(@NonNull ZonedDateTime value) {
@@ -242,6 +251,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
 	 * @param value The threshold zoned date time (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBefore(@NonNull ZonedDateTime value) {
@@ -253,6 +263,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold zoned date time (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBeforeOrEqual(@NonNull ZonedDateTime value) {
@@ -265,6 +276,7 @@ public record ZonedDateTimeConstraintConfig(
 	 *
 	 * @param after The minimum zoned date time (exclusive)
 	 * @param before The maximum zoned date time (exclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBetween(@NonNull ZonedDateTime after, @NonNull ZonedDateTime before) {
@@ -278,6 +290,7 @@ public record ZonedDateTimeConstraintConfig(
 	 *
 	 * @param after The minimum zoned date time (inclusive)
 	 * @param before The maximum zoned date time (inclusive)
+	 * @throws NullPointerException If the after or before is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBetweenOrEqual(@NonNull ZonedDateTime after, @NonNull ZonedDateTime before) {
@@ -290,6 +303,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified within-last constraint.<br>
 	 *
 	 * @param duration The duration backwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
@@ -301,6 +315,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified within-next constraint.<br>
 	 *
 	 * @param duration The duration forwards from now
+	 * @throws NullPointerException If the duration is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
@@ -312,6 +327,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified day of week constraint.<br>
 	 *
 	 * @param config The enum constraint config for day of week validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withDayOfWeek(@NonNull EnumConstraintConfig<DayOfWeek> config) {
@@ -323,6 +339,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified day of month constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for day of month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withDayOfMonth(@NonNull NumericConstraintConfig config) {
@@ -334,6 +351,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified day of year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for day of year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withDayOfYear(@NonNull NumericConstraintConfig config) {
@@ -345,6 +363,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified week of month constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for week of month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWeekOfMonth(@NonNull NumericConstraintConfig config) {
@@ -356,6 +375,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified week of year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for week of year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWeekOfYear(@NonNull NumericConstraintConfig config) {
@@ -367,6 +387,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified month constraint.<br>
 	 *
 	 * @param config The enum constraint config for month validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withMonth(@NonNull EnumConstraintConfig<Month> config) {
@@ -378,6 +399,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified year constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for year validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withYear(@NonNull NumericConstraintConfig config) {
@@ -389,6 +411,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified hour constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for hour validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withHour(@NonNull NumericConstraintConfig config) {
@@ -400,6 +423,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified minute constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for minute validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withMinute(@NonNull NumericConstraintConfig config) {
@@ -411,6 +435,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified second constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for second validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withSecond(@NonNull NumericConstraintConfig config) {
@@ -422,6 +447,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified millisecond constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for millisecond validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withMillisecond(@NonNull NumericConstraintConfig config) {
@@ -433,6 +459,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified nanosecond constraint.<br>
 	 *
 	 * @param config The numeric field constraint config for nanosecond validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withNanosecond(@NonNull NumericConstraintConfig config) {
@@ -444,6 +471,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified zone constraint.<br>
 	 *
 	 * @param config The zone ID constraint config for zone validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withZone(@NonNull ZoneIdConstraintConfig config) {
@@ -455,6 +483,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withCustom(@NonNull Constraint<ZonedDateTime> constraint) {
@@ -464,29 +493,29 @@ public record ZonedDateTimeConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull ZonedDateTime value) {
+	public void validate(@NonNull ZonedDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.after, this.before, ChronoZonedDateTime::compareTo),
-			() -> ConstraintMatchers.matchWithinLast(value, this.withinLast, ZonedDateTime::now, ZonedDateTime::minus, "Zoned date time"),
-			() -> ConstraintMatchers.matchWithinNext(value, this.withinNext, ZonedDateTime::now, ZonedDateTime::plus, "Zoned date time"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getDayOfWeek(), this.dayOfWeek, "Day of week"),
-			() -> ConstraintMatchers.matchNumericField(value.getDayOfMonth(), this.dayOfMonth, "day of month"),
-			() -> ConstraintMatchers.matchNumericField(value.getDayOfYear(), this.dayOfYear, "day of year"),
-			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfMonth()), this.weekOfMonth, "week of month"),
-			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfWeekBasedYear()), this.weekOfYear, "week of year"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getMonth(), this.month, "Month"),
-			() -> ConstraintMatchers.matchNumericField(value.getYear(), this.year, "year"),
-			() -> ConstraintMatchers.matchNumericField(value.getHour(), this.hour, "hour"),
-			() -> ConstraintMatchers.matchNumericField(value.getMinute(), this.minute, "minute"),
-			() -> ConstraintMatchers.matchNumericField(value.getSecond(), this.second, "second"),
-			() -> ConstraintMatchers.matchNumericField(value.getNano() / 1_000_000, this.millisecond, "millisecond"),
-			() -> ConstraintMatchers.matchNumericField(value.getNano(), this.nanosecond, "nanosecond"),
-			() -> ConstraintMatchers.matchNestedConfig(value.getZone(), this.zone, "Zone"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.after, this.before, ChronoZonedDateTime::compareTo),
+			() -> ConstraintValidators.validateWithinLast(value, this.withinLast, ZonedDateTime::now, ZonedDateTime::minus, "Zoned date time"),
+			() -> ConstraintValidators.validateWithinNext(value, this.withinNext, ZonedDateTime::now, ZonedDateTime::plus, "Zoned date time"),
+			() -> ConstraintValidators.validateNestedConfig(value.getDayOfWeek(), this.dayOfWeek, "Day of week"),
+			() -> ConstraintValidators.validateNumericField(value.getDayOfMonth(), this.dayOfMonth, "day of month"),
+			() -> ConstraintValidators.validateNumericField(value.getDayOfYear(), this.dayOfYear, "day of year"),
+			() -> ConstraintValidators.validateNumericField(value.get(WeekFields.ISO.weekOfMonth()), this.weekOfMonth, "week of month"),
+			() -> ConstraintValidators.validateNumericField(value.get(WeekFields.ISO.weekOfWeekBasedYear()), this.weekOfYear, "week of year"),
+			() -> ConstraintValidators.validateNestedConfig(value.getMonth(), this.month, "Month"),
+			() -> ConstraintValidators.validateNumericField(value.getYear(), this.year, "year"),
+			() -> ConstraintValidators.validateNumericField(value.getHour(), this.hour, "hour"),
+			() -> ConstraintValidators.validateNumericField(value.getMinute(), this.minute, "minute"),
+			() -> ConstraintValidators.validateNumericField(value.getSecond(), this.second, "second"),
+			() -> ConstraintValidators.validateNumericField(value.getNano() / 1_000_000, this.millisecond, "millisecond"),
+			() -> ConstraintValidators.validateNumericField(value.getNano(), this.nanosecond, "nanosecond"),
+			() -> ConstraintValidators.validateNestedConfig(value.getZone(), this.zone, "Zone"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

@@ -18,15 +18,13 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.UUIDConstraint;
 import net.luis.utils.io.codec.constraint.util.UUIDVariant;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -115,6 +113,11 @@ public record UUIDConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
@@ -122,6 +125,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param value The exact uuid that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull UUIDConstraintConfig withEqualTo(@NonNull UUID value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -133,6 +137,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param value The uuid that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull UUIDConstraintConfig withNotEqualTo(@NonNull UUID value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -144,6 +149,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param values The collection of UUIDs that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull UUIDConstraintConfig withIn(@NonNull Collection<UUID> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -155,6 +161,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param values The collection of UUIDs that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull UUIDConstraintConfig withNotIn(@NonNull Collection<UUID> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -166,6 +173,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param config The numeric field constraint config for version validation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the config is null
 	 */
 	public @NonNull UUIDConstraintConfig withVersion(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'version' constraint must not be null");
@@ -177,6 +185,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param config The enum constraint config for variant validation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the config is null
 	 */
 	public @NonNull UUIDConstraintConfig withVariant(@NonNull EnumConstraintConfig<UUIDVariant> config) {
 		Objects.requireNonNull(config, "Config for 'variant' constraint must not be null");
@@ -224,6 +233,7 @@ public record UUIDConstraintConfig(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull UUIDConstraintConfig withCustom(@NonNull Constraint<UUID> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
@@ -232,18 +242,18 @@ public record UUIDConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull UUID value) {
+	public void validate(@NonNull UUID value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchNestedConfig(value.version(), this.version, "Version"),
-			() -> ConstraintMatchers.matchNestedConfig(UUIDVariant.from(value), this.variant, "Variant"),
-			() -> ConstraintMatchers.matchFlag(value, this.nil, u -> u.equals(NIL_UUID), "UUID '" + value + "' must be the nil UUID"),
-			() -> ConstraintMatchers.matchFlag(value, this.notNil, u -> !u.equals(NIL_UUID), "UUID '" + value + "' must not be the nil UUID"),
-			() -> ConstraintMatchers.matchFlag(value, this.max, u -> u.equals(MAX_UUID), "UUID '" + value + "' must be the max UUID"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateNestedConfig(value.version(), this.version, "Version"),
+			() -> ConstraintValidators.validateNestedConfig(UUIDVariant.from(value), this.variant, "Variant"),
+			() -> ConstraintValidators.validateFlag(value, this.nil, u -> u.equals(NIL_UUID), "UUID '" + value + "' must be the nil UUID"),
+			() -> ConstraintValidators.validateFlag(value, this.notNil, u -> !u.equals(NIL_UUID), "UUID '" + value + "' must not be the nil UUID"),
+			() -> ConstraintValidators.validateFlag(value, this.max, u -> u.equals(MAX_UUID), "UUID '" + value + "' must be the max UUID"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

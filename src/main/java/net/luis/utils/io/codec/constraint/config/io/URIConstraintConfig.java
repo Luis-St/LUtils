@@ -20,13 +20,11 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.net.URI;
@@ -178,12 +176,18 @@ public record URIConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact uri that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withEqualTo(@NonNull URI value) {
@@ -195,6 +199,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The uri that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withNotEqualTo(@NonNull URI value) {
@@ -206,6 +211,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of URIs that are allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withIn(@NonNull Collection<URI> values) {
@@ -217,6 +223,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of URIs that are not allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withNotIn(@NonNull Collection<URI> values) {
@@ -228,6 +235,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified scheme constraint.<br>
 	 *
 	 * @param config The string constraint config for scheme validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withScheme(@NonNull StringConstraintConfig config) {
@@ -239,6 +247,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified host constraint.<br>
 	 *
 	 * @param config The host constraint config for host validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withHost(@NonNull HostConstraintConfig config) {
@@ -259,6 +268,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified user info constraint.<br>
 	 *
 	 * @param config The string constraint config for user info validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withUserInfo(@NonNull StringConstraintConfig config) {
@@ -279,6 +289,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified port constraint.<br>
 	 *
 	 * @param config The port constraint config for port validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withPort(@NonNull PortConstraintConfig config) {
@@ -299,6 +310,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified path constraint.<br>
 	 *
 	 * @param config The URI path constraint config for path validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withPath(@NonNull URIPathConstraintConfig config) {
@@ -319,6 +331,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified query constraint.<br>
 	 *
 	 * @param config The query constraint config for query validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withQuery(@NonNull QueryConstraintConfig config) {
@@ -339,6 +352,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified fragment constraint.<br>
 	 *
 	 * @param config The string constraint config for fragment validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withFragment(@NonNull StringConstraintConfig config) {
@@ -386,6 +400,7 @@ public record URIConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withCustom(@NonNull Constraint<URI> constraint) {
@@ -395,29 +410,29 @@ public record URIConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull URI value) {
+	public void validate(@NonNull URI value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> IOMatchers.matchUriSchemeConfig(value, this.scheme),
-			() -> IOMatchers.matchUriHostConfig(value, this.host),
-			() -> ConstraintMatchers.matchFlag(value, this.withoutUserInfo, uri -> uri.getUserInfo() == null, "URI '" + value + "' must not have user info"),
-			() -> IOMatchers.matchUriUserInfoConfig(value, this.userInfo),
-			() -> ConstraintMatchers.matchFlag(value, this.withoutPort, uri -> uri.getPort() == -1, "URI '" + value + "' must not have a port"),
-			() -> IOMatchers.matchUriPortConfig(value, this.port),
-			() -> ConstraintMatchers.matchFlag(value, this.withoutPath, uri -> uri.getPath() == null || uri.getPath().isEmpty(), "URI '" + value + "' must not have a path"),
-			() -> IOMatchers.matchUriPathConfig(value, this.path),
-			() -> ConstraintMatchers.matchFlag(value, this.withoutQuery, uri -> uri.getQuery() == null, "URI '" + value + "' must not have a query"),
-			() -> IOMatchers.matchUriQueryConfig(value, this.query),
-			() -> ConstraintMatchers.matchFlag(value, this.withoutFragment, uri -> uri.getFragment() == null, "URI '" + value + "' must not have a fragment"),
-			() -> IOMatchers.matchUriFragmentConfig(value, this.fragment),
-			() -> ConstraintMatchers.matchFlag(value, this.absolute, URI::isAbsolute, "URI '" + value + "' must be absolute"),
-			() -> ConstraintMatchers.matchFlag(value, this.relative, uri -> !uri.isAbsolute(), "URI '" + value + "' must be relative"),
-			() -> ConstraintMatchers.matchFlag(value, this.opaque, URI::isOpaque, "URI '" + value + "' must be opaque"),
-			() -> ConstraintMatchers.matchFlag(value, this.hierarchical, uri -> !uri.isOpaque(), "URI '" + value + "' must be hierarchical"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> IOValidators.validateUriSchemeConfig(value, this.scheme),
+			() -> IOValidators.validateUriHostConfig(value, this.host),
+			() -> ConstraintValidators.validateFlag(value, this.withoutUserInfo, uri -> uri.getUserInfo() == null, "URI '" + value + "' must not have user info"),
+			() -> IOValidators.validateUriUserInfoConfig(value, this.userInfo),
+			() -> ConstraintValidators.validateFlag(value, this.withoutPort, uri -> uri.getPort() == -1, "URI '" + value + "' must not have a port"),
+			() -> IOValidators.validateUriPortConfig(value, this.port),
+			() -> ConstraintValidators.validateFlag(value, this.withoutPath, uri -> uri.getPath() == null || uri.getPath().isEmpty(), "URI '" + value + "' must not have a path"),
+			() -> IOValidators.validateUriPathConfig(value, this.path),
+			() -> ConstraintValidators.validateFlag(value, this.withoutQuery, uri -> uri.getQuery() == null, "URI '" + value + "' must not have a query"),
+			() -> IOValidators.validateUriQueryConfig(value, this.query),
+			() -> ConstraintValidators.validateFlag(value, this.withoutFragment, uri -> uri.getFragment() == null, "URI '" + value + "' must not have a fragment"),
+			() -> IOValidators.validateUriFragmentConfig(value, this.fragment),
+			() -> ConstraintValidators.validateFlag(value, this.absolute, URI::isAbsolute, "URI '" + value + "' must be absolute"),
+			() -> ConstraintValidators.validateFlag(value, this.relative, uri -> !uri.isAbsolute(), "URI '" + value + "' must be relative"),
+			() -> ConstraintValidators.validateFlag(value, this.opaque, URI::isOpaque, "URI '" + value + "' must be opaque"),
+			() -> ConstraintValidators.validateFlag(value, this.hierarchical, uri -> !uri.isOpaque(), "URI '" + value + "' must be hierarchical"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

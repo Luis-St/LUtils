@@ -224,7 +224,6 @@ public class DomainConstraintBuilder implements DomainConstraint<String, DomainC
 	
 	/**
 	 * Builds and returns the domain constraint configuration.<br>
-	 *
 	 * @return The built constraint configuration
 	 */
 	public @NonNull DomainConstraintConfig build() {

@@ -26,9 +26,9 @@ import java.util.*;
 import java.util.function.Consumer;
 
 /**
- * A fluent builder for creating complex XML structures with ease.<br>
- * This builder provides a chainable API for constructing XML documents, containers, values, and elements
- * with support for attributes, nested structures, and various XML configurations.<br>
+ * A fluent builder for creating complex xml structures with ease.<br>
+ * This builder provides a chainable API for constructing xml documents, containers, values, and elements
+ * with support for attributes, nested structures, and various xml configurations.<br>
  *
  * <p><b>Basic Usage:</b></p>
  * <pre>{@code
@@ -47,7 +47,7 @@ import java.util.function.Consumer;
  *             .value("book", "Java Programming")
  *                 .attribute("id", "1")
  *                 .attribute("author", "John Doe")
- *             .value("book", "XML Processing")
+ *             .value("book", "xml Processing")
  *                 .attribute("id", "2")
  *                 .attribute("author", "Jane Smith")
  *         .end()
@@ -55,7 +55,7 @@ import java.util.function.Consumer;
  *     .buildContainer();
  * }</pre>
  *
- * <p><b>Full XML Documents:</b></p>
+ * <p><b>Full xml Documents:</b></p>
  * <pre>{@code
  * String xml = XmlBuilder.create()
  *     .container("root")
@@ -68,7 +68,7 @@ import java.util.function.Consumer;
 public final class XmlBuilder {
 	
 	/**
-	 * The XML configuration used for building and formatting.<br>
+	 * The xml configuration used for building and formatting.<br>
 	 */
 	private final XmlConfig config;
 	/**
@@ -81,28 +81,26 @@ public final class XmlBuilder {
 	private @Nullable XmlElement currentElement;
 	
 	/**
-	 * Private constructor for creating a new XML builder with the specified configuration.<br>
-	 *
-	 * @param config The XML configuration to use
+	 * Private constructor for creating a new xml builder with the specified configuration.<br>
+	 * @param config The xml configuration to use
 	 */
 	private XmlBuilder(@NonNull XmlConfig config) {
 		this.config = Objects.requireNonNull(config, "Config must not be null");
 	}
 	
 	/**
-	 * Creates a new XML builder with the default configuration.<br>
-	 *
-	 * @return A new XML builder instance
+	 * Creates a new xml builder with the default configuration.<br>
+	 * @return A new xml builder instance
 	 */
 	public static @NonNull XmlBuilder create() {
 		return new XmlBuilder(XmlConfig.DEFAULT);
 	}
 	
 	/**
-	 * Creates a new XML builder with the specified configuration.<br>
+	 * Creates a new xml builder with the specified configuration.<br>
 	 *
-	 * @param config The XML configuration to use
-	 * @return A new XML builder instance
+	 * @param config The xml configuration to use
+	 * @return A new xml builder instance
 	 * @throws NullPointerException If the config is null
 	 */
 	public static @NonNull XmlBuilder create(@NonNull XmlConfig config) {
@@ -110,10 +108,10 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Creates a new XML builder and immediately starts building a container with the specified name.<br>
+	 * Creates a new xml builder and immediately starts building a container with the specified name.<br>
 	 *
 	 * @param containerName The name of the root container
-	 * @return A new XML builder instance with the container started
+	 * @return A new xml builder instance with the container started
 	 * @throws NullPointerException If the container name is null
 	 */
 	public static @NonNull XmlBuilder createContainer(@NonNull String containerName) {
@@ -121,11 +119,11 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Creates a new XML builder with the specified configuration and immediately starts building a container.<br>
+	 * Creates a new xml builder with the specified configuration and immediately starts building a container.<br>
 	 *
 	 * @param containerName The name of the root container
-	 * @param config The XML configuration to use
-	 * @return A new XML builder instance with the container started
+	 * @param config The xml configuration to use
+	 * @return A new xml builder instance with the container started
 	 * @throws NullPointerException If the container name or config is null
 	 */
 	public static @NonNull XmlBuilder createContainer(@NonNull String containerName, @NonNull XmlConfig config) {
@@ -133,7 +131,7 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Starts building a self-closing XML element with the specified name.<br>
+	 * Starts building a self-closing xml element with the specified name.<br>
 	 * This element will have no content and will be rendered as {@code <name/>}.<br>
 	 *
 	 * @param name The name of the element
@@ -150,7 +148,7 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Starts building a container XML element with the specified name.<br>
+	 * Starts building a container xml element with the specified name.<br>
 	 * Container elements can contain child elements and are rendered with opening and closing tags.<br>
 	 * Use {@link #end()} to finish building this container and return to the parent context.<br>
 	 *
@@ -165,12 +163,12 @@ public final class XmlBuilder {
 		
 		XmlContainer container = new XmlContainer(name);
 		this.contextStack.push(new BuilderContext(container));
-		this.currentElement = container; // Set as current element so attributes can be added
+		this.currentElement = container;
 		return this;
 	}
 	
 	/**
-	 * Starts building a value XML element with the specified name and boolean value.<br>
+	 * Starts building a value xml element with the specified name and boolean value.<br>
 	 *
 	 * @param name The name of the value element
 	 * @param value The boolean value
@@ -187,7 +185,7 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Starts building a value XML element with the specified name and number value.<br>
+	 * Starts building a value xml element with the specified name and number value.<br>
 	 *
 	 * @param name The name of the value element
 	 * @param value The number value
@@ -204,7 +202,7 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Starts building a value XML element with the specified name and string value.<br>
+	 * Starts building a value xml element with the specified name and string value.<br>
 	 *
 	 * @param name The name of the value element
 	 * @param value The string value
@@ -298,7 +296,7 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Adds a pre-built XML element to the current container.<br>
+	 * Adds a pre-built xml element to the current container.<br>
 	 * This allows mixing builder-created elements with manually created ones.<br>
 	 *
 	 * @param element The element to add
@@ -359,7 +357,6 @@ public final class XmlBuilder {
 		}
 		
 		BuilderContext context = this.contextStack.peek();
-		
 		if (this.currentElement != null && this.currentElement != context.container) {
 			context.container.add(this.currentElement);
 		}
@@ -375,10 +372,10 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Builds and returns the current XML element.<br>
+	 * Builds and returns the current xml element.<br>
 	 * This method completes the building process and returns the constructed element.<br>
 	 *
-	 * @return The built XML element
+	 * @return The built xml element
 	 * @throws IllegalStateException If no element has been built or if there are unclosed containers
 	 */
 	public @NonNull XmlElement build() {
@@ -388,16 +385,17 @@ public final class XmlBuilder {
 		if (this.currentElement == null) {
 			throw new IllegalStateException("No element to build. Start building an element first.");
 		}
+		
 		XmlElement result = this.currentElement;
 		this.currentElement = null;
 		return result;
 	}
 	
 	/**
-	 * Builds and returns the current XML element as a container.<br>
+	 * Builds and returns the current xml element as a container.<br>
 	 * This is a convenience method that ensures the built element is a container.<br>
 	 *
-	 * @return The built XML container
+	 * @return The built xml container
 	 * @throws IllegalStateException If no element has been built, if there are unclosed containers, or if the element is not a container
 	 */
 	public @NonNull XmlContainer buildContainer() {
@@ -410,10 +408,10 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Builds and returns the current XML element as a value.<br>
+	 * Builds and returns the current xml element as a value.<br>
 	 * This is a convenience method that ensures the built element is a value.<br>
 	 *
-	 * @return The built XML value
+	 * @return The built xml value
 	 * @throws IllegalStateException If no element has been built, if there are unclosed containers, or if the element is not a value
 	 */
 	public @NonNull XmlValue buildValue() {
@@ -426,10 +424,10 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Builds the XML element and converts it to an XML string representation.<br>
-	 * This method creates a complete XML document with declaration and the built element.<br>
+	 * Builds the xml element and converts it to an xml string representation.<br>
+	 * This method creates a complete xml document with declaration and the built element.<br>
 	 *
-	 * @return The XML string representation
+	 * @return The xml string representation
 	 * @throws IllegalStateException If no element has been built or if there are unclosed containers
 	 */
 	public @NonNull String toXml() {
@@ -437,10 +435,10 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Builds the XML element and converts it to an XML string representation with a custom declaration.<br>
+	 * Builds the xml element and converts it to an xml string representation with a custom declaration.<br>
 	 *
-	 * @param declaration The XML declaration to use
-	 * @return The XML string representation
+	 * @param declaration The xml declaration to use
+	 * @return The xml string representation
 	 * @throws NullPointerException If the declaration is null
 	 * @throws IllegalStateException If no element has been built or if there are unclosed containers
 	 */
@@ -458,10 +456,10 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Builds the XML element and returns it along with the declaration as an XML document container.<br>
+	 * Builds the xml element and returns it along with the declaration as an xml document container.<br>
 	 * This creates a document-like structure that can be used for further processing.<br>
 	 *
-	 * @return An XML document representation
+	 * @return An xml document representation
 	 * @throws IllegalStateException If no element has been built or if there are unclosed containers
 	 */
 	public @NonNull XmlDocument toDocument() {
@@ -469,10 +467,10 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Builds the XML element and returns it along with a custom declaration as an XML document container.<br>
+	 * Builds the xml element and returns it along with a custom declaration as an xml document container.<br>
 	 *
-	 * @param declaration The XML declaration to use
-	 * @return An XML document representation
+	 * @param declaration The xml declaration to use
+	 * @return An xml document representation
 	 * @throws NullPointerException If the declaration is null
 	 * @throws IllegalStateException If no element has been built or if there are unclosed containers
 	 */
@@ -482,9 +480,8 @@ public final class XmlBuilder {
 	}
 	
 	/**
-	 * Returns the current XML configuration used by this builder.<br>
-	 *
-	 * @return The XML configuration
+	 * Returns the current xml configuration used by this builder.<br>
+	 * @return The xml configuration
 	 */
 	public @NonNull XmlConfig getConfig() {
 		return this.config;
@@ -492,7 +489,6 @@ public final class XmlBuilder {
 	
 	/**
 	 * Checks if the builder is currently building a container.<br>
-	 *
 	 * @return True if currently building a container, false otherwise
 	 */
 	public boolean isInContainer() {
@@ -501,7 +497,6 @@ public final class XmlBuilder {
 	
 	/**
 	 * Returns the depth of nested containers currently being built.<br>
-	 *
 	 * @return The nesting depth (0 means no containers)
 	 */
 	public int getContainerDepth() {
@@ -563,6 +558,8 @@ public final class XmlBuilder {
 	
 	/**
 	 * Internal class to track container building context.<br>
+	 *
+	 * @author Luis-St
 	 *
 	 * @param container The container being built
 	 */

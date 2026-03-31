@@ -30,9 +30,9 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
- * Represents a TOML table.<br>
- * A TOML table is an ordered set of key/value pairs.<br>
- * Keys are strings and values can be any TOML element.<br>
+ * Represents a toml table.<br>
+ * A toml table is an ordered set of key/value pairs.<br>
+ * Keys are strings and values can be any toml element.<br>
  *
  * @author Luis-St
  */
@@ -50,12 +50,12 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	private boolean inline;
 	
 	/**
-	 * Constructs an empty TOML table.<br>
+	 * Constructs an empty toml table.<br>
 	 */
 	public TomlTable() {}
 	
 	/**
-	 * Constructs a TOML table with the given elements.<br>
+	 * Constructs a toml table with the given elements.<br>
 	 *
 	 * @param elements The map of elements to add
 	 * @throws NullPointerException If the given elements are null
@@ -63,73 +63,6 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	public TomlTable(@NonNull Map<String, ? extends TomlElement> elements) {
 		this.elements.putAll(Objects.requireNonNull(elements, "Elements must not be null"));
 	}
-	
-	//region Static helper methods
-	
-	/**
-	 * Checks if the given key is a valid bare key in TOML.<br>
-	 * Bare keys may only contain A-Za-z0-9_-.<br>
-	 *
-	 * @param key The key to check
-	 * @return True if the key is a valid bare key, false otherwise
-	 */
-	private static boolean isBareKey(@NonNull String key) {
-		if (key.isEmpty()) {
-			return false;
-		}
-		
-		for (int i = 0; i < key.length(); i++) {
-			char c = key.charAt(i);
-			if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' || c == '-')) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	/**
-	 * Formats a key for TOML output, quoting if necessary.<br>
-	 *
-	 * @param key The key to format
-	 * @return The formatted key
-	 */
-	private static @NonNull String formatKey(@NonNull String key) {
-		if (isBareKey(key)) {
-			return key;
-		}
-		return "\"" + escapeString(key) + "\"";
-	}
-	
-	/**
-	 * Escapes special characters in a string for TOML output.<br>
-	 *
-	 * @param str The string to escape
-	 * @return The escaped string
-	 */
-	private static @NonNull String escapeString(@NonNull String str) {
-		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < str.length(); i++) {
-			char c = str.charAt(i);
-			switch (c) {
-				case '"' -> result.append("\\\"");
-				case '\\' -> result.append("\\\\");
-				case '\b' -> result.append("\\b");
-				case '\f' -> result.append("\\f");
-				case '\n' -> result.append("\\n");
-				case '\r' -> result.append("\\r");
-				case '\t' -> result.append("\\t");
-				default -> {
-					if (c < 0x20) {
-						result.append(String.format("\\u%04X", (int) c));
-					} else {
-						result.append(c);
-					}
-				}
-			}
-		}
-		return result.toString();
-	}
-	//endregion
 	
 	/**
 	 * Returns whether this table should be formatted as an inline table.<br>
@@ -224,7 +157,7 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	
 	/**
 	 * Adds the given element with the given key to this table.<br>
-	 * If the element is null, it will be replaced with TOML null.<br>
+	 * If the element is null, it will be replaced with toml null.<br>
 	 * If the key is already present, the element will be replaced.<br>
 	 *
 	 * @param key The key to add
@@ -239,7 +172,7 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	
 	/**
 	 * Adds the given string with the given key to this table.<br>
-	 * If the string is null, it will be replaced with TOML null.<br>
+	 * If the string is null, it will be replaced with toml null.<br>
 	 *
 	 * @param key The key to add
 	 * @param value The string value to add
@@ -264,7 +197,7 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	
 	/**
 	 * Adds the given number with the given key to this table.<br>
-	 * If the number is null, it will be replaced with TOML null.<br>
+	 * If the number is null, it will be replaced with toml null.<br>
 	 *
 	 * @param key The key to add
 	 * @param value The number value to add
@@ -277,7 +210,7 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	
 	/**
 	 * Adds the given local date with the given key to this table.<br>
-	 * If the date is null, it will be replaced with TOML null.<br>
+	 * If the date is null, it will be replaced with toml null.<br>
 	 *
 	 * @param key The key to add
 	 * @param value The local date value to add
@@ -290,7 +223,7 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	
 	/**
 	 * Adds the given local time with the given key to this table.<br>
-	 * If the time is null, it will be replaced with TOML null.<br>
+	 * If the time is null, it will be replaced with toml null.<br>
 	 *
 	 * @param key The key to add
 	 * @param value The local time value to add
@@ -303,7 +236,7 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	
 	/**
 	 * Adds the given local date-time with the given key to this table.<br>
-	 * If the date-time is null, it will be replaced with TOML null.<br>
+	 * If the date-time is null, it will be replaced with toml null.<br>
 	 *
 	 * @param key The key to add
 	 * @param value The local date-time value to add
@@ -316,7 +249,7 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	
 	/**
 	 * Adds the given offset date-time with the given key to this table.<br>
-	 * If the date-time is null, it will be replaced with TOML null.<br>
+	 * If the date-time is null, it will be replaced with toml null.<br>
 	 *
 	 * @param key The key to add
 	 * @param value The offset date-time value to add
@@ -429,58 +362,58 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	}
 	
 	/**
-	 * Gets the element with the given key as a TOML value.<br>
+	 * Gets the element with the given key as a toml value.<br>
 	 *
 	 * @param key The key to get
-	 * @return The element as a TOML value
+	 * @return The element as a toml value
 	 * @throws NullPointerException If the given key is null
 	 * @throws NoSuchTomlElementException If no element was found for the given key
-	 * @throws TomlTypeException If the element is not a TOML value
+	 * @throws TomlTypeException If the element is not a toml value
 	 */
 	public @NonNull TomlValue getTomlValue(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		TomlElement element = this.get(key);
 		
 		if (element == null) {
-			throw new NoSuchTomlElementException("Expected TOML value for key '" + key + "', but found none");
+			throw new NoSuchTomlElementException("Expected toml value for key '" + key + "', but found none");
 		}
 		return element.getAsTomlValue();
 	}
 	
 	/**
-	 * Gets the element with the given key as a TOML array.<br>
+	 * Gets the element with the given key as a toml array.<br>
 	 *
 	 * @param key The key to get
-	 * @return The element as a TOML array
+	 * @return The element as a toml array
 	 * @throws NullPointerException If the given key is null
 	 * @throws NoSuchTomlElementException If no element was found for the given key
-	 * @throws TomlTypeException If the element is not a TOML array
+	 * @throws TomlTypeException If the element is not a toml array
 	 */
 	public @NonNull TomlArray getTomlArray(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		TomlElement element = this.get(key);
 		
 		if (element == null) {
-			throw new NoSuchTomlElementException("Expected TOML array for key '" + key + "', but found none");
+			throw new NoSuchTomlElementException("Expected toml array for key '" + key + "', but found none");
 		}
 		return element.getAsTomlArray();
 	}
 	
 	/**
-	 * Gets the element with the given key as a TOML table.<br>
+	 * Gets the element with the given key as a toml table.<br>
 	 *
 	 * @param key The key to get
-	 * @return The element as a TOML table
+	 * @return The element as a toml table
 	 * @throws NullPointerException If the given key is null
 	 * @throws NoSuchTomlElementException If no element was found for the given key
-	 * @throws TomlTypeException If the element is not a TOML table
+	 * @throws TomlTypeException If the element is not a toml table
 	 */
 	public @NonNull TomlTable getTomlTable(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		TomlElement element = this.get(key);
 		
 		if (element == null) {
-			throw new NoSuchTomlElementException("Expected TOML table for key '" + key + "', but found none");
+			throw new NoSuchTomlElementException("Expected toml table for key '" + key + "', but found none");
 		}
 		return element.getAsTomlTable();
 	}
@@ -673,7 +606,7 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	
 	/**
 	 * Replaces the element with the given key with the new given element.<br>
-	 * If the given element is null, it will be replaced with TOML null.<br>
+	 * If the given element is null, it will be replaced with toml null.<br>
 	 *
 	 * @param key The key to replace
 	 * @param newElement The new element to replace with
@@ -735,10 +668,12 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	/**
 	 * Formats this table as an inline table.<br>
 	 *
-	 * @param config The TOML config
+	 * @param config The toml config
 	 * @return The inline table string
+	 * @throws NullPointerException If the given config is null
 	 */
 	private @NonNull String toInlineString(@NonNull TomlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder();
 		builder.append("{");
 		
@@ -749,7 +684,7 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 			}
 			first = false;
 			
-			builder.append(formatKey(entry.getKey()));
+			builder.append(TomlHelper.formatKey(entry.getKey()));
 			builder.append(" = ");
 			builder.append(entry.getValue().toString(config));
 		}
@@ -761,30 +696,32 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 	/**
 	 * Formats this table as a block table (multi-line).<br>
 	 *
-	 * @param config The TOML config
+	 * @param config The toml config
 	 * @return The block table string
+	 * @throws NullPointerException If the given config is null
 	 */
 	private @NonNull String toBlockString(@NonNull TomlConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder();
 		
 		for (Map.Entry<String, TomlElement> entry : this.elements.entrySet()) {
-			builder.append(formatKey(entry.getKey()));
+			builder.append(TomlHelper.formatKey(entry.getKey()));
 			builder.append(" = ");
 			builder.append(entry.getValue().toString(config));
 			builder.append(System.lineSeparator());
 		}
-		
 		return builder.toString();
 	}
 	
 	/**
 	 * Returns a formatted string representation of this table with section headers.<br>
-	 * This is the standard TOML format with [section] headers.<br>
+	 * This is the standard toml format with [section] headers.<br>
 	 *
 	 * @param tablePath The path to this table (e.g., "server" or "server.database")
-	 * @param config The TOML config
+	 * @param config The toml config
 	 * @return The formatted table string with section header
 	 */
+	@SuppressWarnings("DuplicatedCode")
 	public @NonNull String toSectionString(@NonNull String tablePath, @NonNull TomlConfig config) {
 		Objects.requireNonNull(tablePath, "Table path must not be null");
 		Objects.requireNonNull(config, "Config must not be null");
@@ -794,14 +731,10 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 		List<Map.Entry<String, TomlElement>> arrayOfTables = new ArrayList<>();
 		
 		for (Map.Entry<String, TomlElement> entry : this.elements.entrySet()) {
-			TomlElement value = entry.getValue();
-			
-			if (value instanceof TomlTable table && !table.isInline()) {
-				nestedTables.add(entry);
-			} else if (value instanceof TomlArray array && array.isArrayOfTables()) {
-				arrayOfTables.add(entry);
-			} else {
-				simpleEntries.add(entry);
+			switch (entry.getValue()) {
+				case TomlTable nested when !nested.isInline() -> nestedTables.add(entry);
+				case TomlArray array when array.isArrayOfTables() -> arrayOfTables.add(entry);
+				default -> simpleEntries.add(entry);
 			}
 		}
 		
@@ -811,7 +744,7 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 			builder.append(System.lineSeparator());
 			
 			for (Map.Entry<String, TomlElement> entry : simpleEntries) {
-				builder.append(formatKey(entry.getKey()));
+				builder.append(TomlHelper.formatKey(entry.getKey()));
 				builder.append(" = ");
 				builder.append(entry.getValue().toString(config));
 				builder.append(System.lineSeparator());
@@ -823,13 +756,14 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 				builder.append(System.lineSeparator());
 			}
 			
-			String nestedPath = tablePath + "." + formatKey(entry.getKey());
+			String nestedPath = tablePath + "." + TomlHelper.formatKey(entry.getKey());
 			builder.append(((TomlTable) entry.getValue()).toSectionString(nestedPath, config));
 		}
 		
 		for (Map.Entry<String, TomlElement> entry : arrayOfTables) {
 			TomlArray array = (TomlArray) entry.getValue();
-			String arrayPath = tablePath + "." + formatKey(entry.getKey());
+			String arrayPath = tablePath + "." + TomlHelper.formatKey(entry.getKey());
+			
 			for (TomlElement element : array) {
 				if (!builder.isEmpty()) {
 					builder.append(System.lineSeparator());
@@ -840,7 +774,7 @@ public class TomlTable implements TomlElement, Iterable<Map.Entry<String, TomlEl
 				
 				if (element instanceof TomlTable table) {
 					for (Map.Entry<String, TomlElement> tableEntry : table.elements.entrySet()) {
-						builder.append(formatKey(tableEntry.getKey()));
+						builder.append(TomlHelper.formatKey(tableEntry.getKey()));
 						builder.append(" = ");
 						builder.append(tableEntry.getValue().toString(config));
 						builder.append(System.lineSeparator());

@@ -22,10 +22,7 @@ import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.OutputProvider;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,11 +32,11 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class JsonIntegrationTest {
-
+	
 	@Test
 	void applicationConfigRoundTrip() throws IOException {
 		JsonObject config = new JsonObject();
-
+		
 		JsonObject database = new JsonObject();
 		database.add("host", new JsonPrimitive("localhost"));
 		database.add("port", new JsonPrimitive(5432));
@@ -53,7 +50,7 @@ class JsonIntegrationTest {
 		pool.add("idleTimeout", new JsonPrimitive(600000));
 		database.add("pool", pool);
 		config.add("database", database);
-
+		
 		JsonObject logging = new JsonObject();
 		logging.add("level", new JsonPrimitive("INFO"));
 		logging.add("format", new JsonPrimitive("[%d{yyyy-MM-dd HH:mm:ss}] [%level] %logger - %msg%n"));
@@ -70,7 +67,7 @@ class JsonIntegrationTest {
 		appenders.add(fileAppender);
 		logging.add("appenders", appenders);
 		config.add("logging", logging);
-
+		
 		JsonObject features = new JsonObject();
 		features.add("enableCache", new JsonPrimitive(true));
 		features.add("enableMetrics", new JsonPrimitive(true));
@@ -80,7 +77,7 @@ class JsonIntegrationTest {
 		experimental.add("betaFeatures", new JsonPrimitive(true));
 		features.add("experimental", experimental);
 		config.add("features", features);
-
+		
 		JsonObject environments = new JsonObject();
 		JsonObject dev = new JsonObject();
 		dev.add("debug", new JsonPrimitive(true));
@@ -91,45 +88,45 @@ class JsonIntegrationTest {
 		prod.add("mockServices", new JsonPrimitive(false));
 		environments.add("production", prod);
 		config.add("environments", environments);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (JsonWriter writer = new JsonWriter(new OutputProvider(output))) {
 			writer.writeJson(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		JsonElement result;
 		try (JsonReader reader = new JsonReader(new InputProvider(input))) {
 			result = reader.readJson();
 		}
-
+		
 		assertTrue(result.isJsonObject());
 		JsonObject resultObj = result.getAsJsonObject();
-
+		
 		assertEquals("localhost", resultObj.getAsJsonObject("database").getAsString("host"));
 		assertEquals(5432, resultObj.getAsJsonObject("database").getAsLong("port"));
 		assertEquals("myapp_db", resultObj.getAsJsonObject("database").getAsString("name"));
 		assertEquals(20, resultObj.getAsJsonObject("database").getAsJsonObject("pool").getAsLong("maxSize"));
 		assertEquals(600000, resultObj.getAsJsonObject("database").getAsJsonObject("pool").getAsLong("idleTimeout"));
-
+		
 		assertEquals("INFO", resultObj.getAsJsonObject("logging").getAsString("level"));
 		assertEquals(2, resultObj.getAsJsonObject("logging").getAsJsonArray("appenders").size());
 		assertEquals("console", resultObj.getAsJsonObject("logging").getAsJsonArray("appenders").getAsJsonObject(0).getAsString("type"));
-
+		
 		assertTrue(resultObj.getAsJsonObject("features").getAsBoolean("enableCache"));
 		assertFalse(resultObj.getAsJsonObject("features").getAsBoolean("enableTracing"));
 		assertTrue(resultObj.getAsJsonObject("features").getAsJsonObject("experimental").getAsBoolean("betaFeatures"));
-
+		
 		assertTrue(resultObj.getAsJsonObject("environments").getAsJsonObject("development").getAsBoolean("debug"));
 		assertFalse(resultObj.getAsJsonObject("environments").getAsJsonObject("production").getAsBoolean("debug"));
 	}
-
+	
 	@Test
 	void eCommerceProductCatalogRoundTrip() throws IOException {
 		JsonObject catalog = new JsonObject();
-
+		
 		JsonArray products = new JsonArray();
-
+		
 		JsonObject product1 = new JsonObject();
 		product1.add("id", new JsonPrimitive("PROD-001"));
 		product1.add("name", new JsonPrimitive("Premium Wireless Headphones"));
@@ -169,7 +166,7 @@ class JsonIntegrationTest {
 		reviews1.add(review1b);
 		product1.add("reviews", reviews1);
 		products.add(product1);
-
+		
 		JsonObject product2 = new JsonObject();
 		product2.add("id", new JsonPrimitive("PROD-002"));
 		product2.add("name", new JsonPrimitive("Smart Watch Pro"));
@@ -198,16 +195,16 @@ class JsonIntegrationTest {
 		product2.add("variants", variants2);
 		product2.add("reviews", new JsonArray());
 		products.add(product2);
-
+		
 		catalog.add("products", products);
-
+		
 		JsonObject pagination = new JsonObject();
 		pagination.add("page", new JsonPrimitive(1));
 		pagination.add("limit", new JsonPrimitive(10));
 		pagination.add("total", new JsonPrimitive(2));
 		pagination.add("totalPages", new JsonPrimitive(1));
 		catalog.add("pagination", pagination);
-
+		
 		JsonObject filters = new JsonObject();
 		JsonArray priceRange = new JsonArray();
 		priceRange.add(new JsonPrimitive(0));
@@ -219,21 +216,21 @@ class JsonIntegrationTest {
 		availableCategories.add(new JsonPrimitive("Wearables"));
 		filters.add("categories", availableCategories);
 		catalog.add("filters", filters);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (JsonWriter writer = new JsonWriter(new OutputProvider(output))) {
 			writer.writeJson(catalog);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		JsonElement result;
 		try (JsonReader reader = new JsonReader(new InputProvider(input))) {
 			result = reader.readJson();
 		}
-
+		
 		assertTrue(result.isJsonObject());
 		JsonObject resultObj = result.getAsJsonObject();
-
+		
 		JsonArray resultProducts = resultObj.getAsJsonArray("products");
 		assertEquals(2, resultProducts.size());
 		assertEquals("PROD-001", resultProducts.getAsJsonObject(0).getAsString("id"));
@@ -243,15 +240,15 @@ class JsonIntegrationTest {
 		assertEquals(3, resultProducts.getAsJsonObject(0).getAsJsonArray("categories").size());
 		assertEquals(2, resultProducts.getAsJsonObject(0).getAsJsonArray("variants").size());
 		assertEquals(150, resultProducts.getAsJsonObject(0).getAsJsonArray("variants").getAsJsonObject(0).getAsLong("stock"));
-
+		
 		assertEquals(1, resultObj.getAsJsonObject("pagination").getAsLong("page"));
 		assertEquals(2, resultObj.getAsJsonObject("pagination").getAsLong("total"));
 	}
-
+	
 	@Test
 	void userProfileWithActivityRoundTrip() throws IOException {
 		JsonObject user = new JsonObject();
-
+		
 		JsonObject profile = new JsonObject();
 		profile.add("id", new JsonPrimitive("USR-789"));
 		profile.add("username", new JsonPrimitive("johndoe"));
@@ -273,7 +270,7 @@ class JsonIntegrationTest {
 		preferences.add("notifications", notifications);
 		profile.add("preferences", preferences);
 		user.add("profile", profile);
-
+		
 		JsonArray activity = new JsonArray();
 		JsonObject action1 = new JsonObject();
 		action1.add("type", new JsonPrimitive("login"));
@@ -298,7 +295,7 @@ class JsonIntegrationTest {
 		action3.add("fields", changes);
 		activity.add(action3);
 		user.add("activity", activity);
-
+		
 		JsonObject permissions = new JsonObject();
 		JsonArray roles = new JsonArray();
 		roles.add(new JsonPrimitive("user"));
@@ -315,7 +312,7 @@ class JsonIntegrationTest {
 		access.add("features", features);
 		permissions.add("access", access);
 		user.add("permissions", permissions);
-
+		
 		JsonArray connections = new JsonArray();
 		JsonObject conn1 = new JsonObject();
 		conn1.add("userId", new JsonPrimitive("USR-111"));
@@ -330,41 +327,41 @@ class JsonIntegrationTest {
 		conn2.add("since", new JsonPrimitive("2023-09-05T14:30:00Z"));
 		connections.add(conn2);
 		user.add("connections", connections);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (JsonWriter writer = new JsonWriter(new OutputProvider(output))) {
 			writer.writeJson(user);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		JsonElement result;
 		try (JsonReader reader = new JsonReader(new InputProvider(input))) {
 			result = reader.readJson();
 		}
-
+		
 		assertTrue(result.isJsonObject());
 		JsonObject resultObj = result.getAsJsonObject();
-
+		
 		assertEquals("johndoe", resultObj.getAsJsonObject("profile").getAsString("username"));
 		assertEquals("john.doe@example.com", resultObj.getAsJsonObject("profile").getAsString("email"));
 		assertTrue(resultObj.getAsJsonObject("profile").getAsBoolean("verified"));
 		assertEquals("dark", resultObj.getAsJsonObject("profile").getAsJsonObject("preferences").getAsString("theme"));
 		assertTrue(resultObj.getAsJsonObject("profile").getAsJsonObject("preferences").getAsJsonObject("notifications").getAsBoolean("email"));
-
+		
 		assertEquals(3, resultObj.getAsJsonArray("activity").size());
 		assertEquals("login", resultObj.getAsJsonArray("activity").getAsJsonObject(0).getAsString("type"));
-
+		
 		assertEquals(2, resultObj.getAsJsonObject("permissions").getAsJsonArray("roles").size());
 		assertTrue(resultObj.getAsJsonObject("permissions").getAsJsonObject("access").getAsBoolean("dashboard"));
-
+		
 		assertEquals(2, resultObj.getAsJsonArray("connections").size());
 		assertEquals("janedoe", resultObj.getAsJsonArray("connections").getAsJsonObject(0).getAsString("username"));
 	}
-
+	
 	@Test
 	void apiResponseWithPaginationRoundTrip() throws IOException {
 		JsonObject response = new JsonObject();
-
+		
 		JsonArray data = new JsonArray();
 		for (int i = 1; i <= 15; i++) {
 			JsonObject item = new JsonObject();
@@ -378,7 +375,7 @@ class JsonIntegrationTest {
 			data.add(item);
 		}
 		response.add("data", data);
-
+		
 		JsonObject pagination = new JsonObject();
 		pagination.add("page", new JsonPrimitive(2));
 		pagination.add("limit", new JsonPrimitive(15));
@@ -387,7 +384,7 @@ class JsonIntegrationTest {
 		pagination.add("hasNext", new JsonPrimitive(true));
 		pagination.add("hasPrev", new JsonPrimitive(true));
 		response.add("pagination", pagination);
-
+		
 		JsonObject links = new JsonObject();
 		links.add("self", new JsonPrimitive("/api/items?page=2&limit=15"));
 		links.add("first", new JsonPrimitive("/api/items?page=1&limit=15"));
@@ -395,59 +392,59 @@ class JsonIntegrationTest {
 		links.add("next", new JsonPrimitive("/api/items?page=3&limit=15"));
 		links.add("last", new JsonPrimitive("/api/items?page=4&limit=15"));
 		response.add("links", links);
-
+		
 		JsonObject meta = new JsonObject();
 		meta.add("requestId", new JsonPrimitive("req-abc123"));
 		meta.add("timestamp", new JsonPrimitive("2024-01-25T17:00:00Z"));
 		meta.add("processingTime", new JsonPrimitive(45));
 		meta.add("apiVersion", new JsonPrimitive("v2"));
 		response.add("meta", meta);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (JsonWriter writer = new JsonWriter(new OutputProvider(output))) {
 			writer.writeJson(response);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		JsonElement result;
 		try (JsonReader reader = new JsonReader(new InputProvider(input))) {
 			result = reader.readJson();
 		}
-
+		
 		assertTrue(result.isJsonObject());
 		JsonObject resultObj = result.getAsJsonObject();
-
+		
 		assertEquals(15, resultObj.getAsJsonArray("data").size());
 		assertEquals(1, resultObj.getAsJsonArray("data").getAsJsonObject(0).getAsLong("id"));
 		assertEquals("Item 1", resultObj.getAsJsonArray("data").getAsJsonObject(0).getAsString("title"));
 		assertEquals("pending", resultObj.getAsJsonArray("data").getAsJsonObject(0).getAsString("status"));
 		assertEquals(10, resultObj.getAsJsonArray("data").getAsJsonObject(0).getAsJsonObject("metadata").getAsLong("version"));
-
+		
 		assertEquals(47, resultObj.getAsJsonObject("pagination").getAsLong("total"));
 		assertEquals(4, resultObj.getAsJsonObject("pagination").getAsLong("totalPages"));
 		assertTrue(resultObj.getAsJsonObject("pagination").getAsBoolean("hasNext"));
 		assertTrue(resultObj.getAsJsonObject("pagination").getAsBoolean("hasPrev"));
-
+		
 		assertEquals("/api/items?page=2&limit=15", resultObj.getAsJsonObject("links").getAsString("self"));
 		assertEquals("req-abc123", resultObj.getAsJsonObject("meta").getAsString("requestId"));
 	}
-
+	
 	@Test
 	void deeplyNestedConfigurationRoundTrip() throws IOException {
 		JsonObject level1 = new JsonObject();
-
+		
 		JsonObject level2 = new JsonObject();
 		level2.add("name", new JsonPrimitive("level2"));
-
+		
 		JsonObject level3 = new JsonObject();
 		level3.add("name", new JsonPrimitive("level3"));
-
+		
 		JsonObject level4 = new JsonObject();
 		level4.add("name", new JsonPrimitive("level4"));
-
+		
 		JsonObject level5 = new JsonObject();
 		level5.add("name", new JsonPrimitive("level5"));
-
+		
 		JsonObject level6 = new JsonObject();
 		level6.add("name", new JsonPrimitive("level6"));
 		level6.add("value", new JsonPrimitive("deepest value"));
@@ -458,38 +455,38 @@ class JsonIntegrationTest {
 		deepArray.add(new JsonPrimitive("b"));
 		deepArray.add(new JsonPrimitive("c"));
 		level6.add("items", deepArray);
-
+		
 		level5.add("nested", level6);
 		level5.add("extra", new JsonPrimitive("level5 data"));
-
+		
 		level4.add("nested", level5);
 		level4.add("extra", new JsonPrimitive("level4 data"));
-
+		
 		level3.add("nested", level4);
 		level3.add("extra", new JsonPrimitive("level3 data"));
-
+		
 		level2.add("nested", level3);
 		level2.add("extra", new JsonPrimitive("level2 data"));
-
+		
 		level1.add("nested", level2);
 		level1.add("extra", new JsonPrimitive("level1 data"));
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (JsonWriter writer = new JsonWriter(new OutputProvider(output))) {
 			writer.writeJson(level1);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		JsonElement result;
 		try (JsonReader reader = new JsonReader(new InputProvider(input))) {
 			result = reader.readJson();
 		}
-
+		
 		assertTrue(result.isJsonObject());
 		JsonObject resultObj = result.getAsJsonObject();
-
+		
 		assertEquals("level1 data", resultObj.getAsString("extra"));
-
+		
 		JsonObject deepest = resultObj
 			.getAsJsonObject("nested")
 			.getAsJsonObject("nested")
@@ -503,11 +500,11 @@ class JsonIntegrationTest {
 		assertEquals(3, deepest.getAsJsonArray("items").size());
 		assertEquals("a", deepest.getAsJsonArray("items").getAsString(0));
 	}
-
+	
 	@Test
 	void largeArrayDataRoundTrip() throws IOException {
 		JsonObject data = new JsonObject();
-
+		
 		JsonArray items = new JsonArray();
 		for (int i = 0; i < 100; i++) {
 			JsonObject item = new JsonObject();
@@ -518,46 +515,46 @@ class JsonIntegrationTest {
 			item.add("price", new JsonPrimitive(i * 10.5));
 			item.add("quantity", new JsonPrimitive(i * 2));
 			item.add("active", new JsonPrimitive(i % 3 != 0));
-
+			
 			JsonArray tags = new JsonArray();
 			tags.add(new JsonPrimitive("tag-" + (i % 10)));
 			tags.add(new JsonPrimitive("category-" + (i % 5)));
 			tags.add(new JsonPrimitive("group-" + (i % 3)));
 			item.add("tags", tags);
-
+			
 			JsonObject attributes = new JsonObject();
 			attributes.add("weight", new JsonPrimitive(i * 0.5));
 			attributes.add("dimensions", new JsonPrimitive(i + "x" + (i + 1) + "x" + (i + 2)));
 			attributes.add("color", new JsonPrimitive(i % 2 == 0 ? "red" : "blue"));
 			item.add("attributes", attributes);
-
+			
 			items.add(item);
 		}
 		data.add("items", items);
-
+		
 		JsonObject summary = new JsonObject();
 		summary.add("count", new JsonPrimitive(100));
 		summary.add("activeCount", new JsonPrimitive(67));
 		summary.add("totalValue", new JsonPrimitive(49725.0));
 		data.add("summary", summary);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (JsonWriter writer = new JsonWriter(new OutputProvider(output))) {
 			writer.writeJson(data);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		JsonElement result;
 		try (JsonReader reader = new JsonReader(new InputProvider(input))) {
 			result = reader.readJson();
 		}
-
+		
 		assertTrue(result.isJsonObject());
 		JsonObject resultObj = result.getAsJsonObject();
-
+		
 		JsonArray resultItems = resultObj.getAsJsonArray("items");
 		assertEquals(100, resultItems.size());
-
+		
 		for (int i = 0; i < 100; i++) {
 			JsonObject item = resultItems.getAsJsonObject(i);
 			assertEquals(i, item.getAsLong("id"));
@@ -565,7 +562,7 @@ class JsonIntegrationTest {
 			assertEquals("Item Number " + i, item.getAsString("name"));
 			assertEquals(3, item.getAsJsonArray("tags").size());
 		}
-
+		
 		assertEquals(100, resultObj.getAsJsonObject("summary").getAsLong("count"));
 		assertEquals(67, resultObj.getAsJsonObject("summary").getAsLong("activeCount"));
 		assertEquals(49725.0, resultObj.getAsJsonObject("summary").getAsDouble("totalValue"), 0.001);

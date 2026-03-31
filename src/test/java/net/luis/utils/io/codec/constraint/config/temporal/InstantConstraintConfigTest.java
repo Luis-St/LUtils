@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -130,7 +130,18 @@ class InstantConstraintConfigTest {
 		assertTrue(config.withinLast().isEmpty());
 		assertTrue(config.withinNext().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(Instant.now()).isSuccess());
+		assertDoesNotThrow(() -> config.validate(Instant.now()));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(InstantConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withAfter(Instant.now());
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -249,120 +260,122 @@ class InstantConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withCustom(i -> i.isBefore(Instant.MAX) ? Result.success() : Result.error("Instant must be before MAX"));
+		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withCustom(i -> {
+			if (!i.isBefore(Instant.MAX)) throw new ConstraintViolateException("Instant must be before MAX");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		Instant instant = Instant.now();
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withEqualTo(instant);
-		assertTrue(config.matches(instant).isSuccess());
-		assertTrue(config.matches(instant.plusSeconds(1)).isError());
+		assertDoesNotThrow(() -> config.validate(instant));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(instant.plusSeconds(1)));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		Instant instant = Instant.now();
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withNotEqualTo(instant);
-		assertTrue(config.matches(instant.plusSeconds(1)).isSuccess());
-		assertTrue(config.matches(instant).isError());
+		assertDoesNotThrow(() -> config.validate(instant.plusSeconds(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(instant));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		Instant instant1 = Instant.now();
 		Instant instant2 = instant1.plusSeconds(100);
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withIn(List.of(instant1, instant2));
-		assertTrue(config.matches(instant1).isSuccess());
-		assertTrue(config.matches(instant2).isSuccess());
-		assertTrue(config.matches(instant1.plusSeconds(50)).isError());
+		assertDoesNotThrow(() -> config.validate(instant1));
+		assertDoesNotThrow(() -> config.validate(instant2));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(instant1.plusSeconds(50)));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		Instant instant1 = Instant.now();
 		Instant instant2 = instant1.plusSeconds(100);
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withNotIn(List.of(instant1, instant2));
-		assertTrue(config.matches(instant1.plusSeconds(50)).isSuccess());
-		assertTrue(config.matches(instant1).isError());
+		assertDoesNotThrow(() -> config.validate(instant1.plusSeconds(50)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(instant1));
 	}
 	
 	@Test
-	void matchesWithAfter() {
+	void validateWithAfter() {
 		Instant threshold = Instant.now();
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withAfter(threshold);
-		assertTrue(config.matches(threshold.plusSeconds(1)).isSuccess());
-		assertTrue(config.matches(threshold).isError());
-		assertTrue(config.matches(threshold.minusSeconds(1)).isError());
+		assertDoesNotThrow(() -> config.validate(threshold.plusSeconds(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold.minusSeconds(1)));
 	}
 	
 	@Test
-	void matchesWithAfterOrEqual() {
+	void validateWithAfterOrEqual() {
 		Instant threshold = Instant.now();
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withAfterOrEqual(threshold);
-		assertTrue(config.matches(threshold).isSuccess());
-		assertTrue(config.matches(threshold.plusSeconds(1)).isSuccess());
-		assertTrue(config.matches(threshold.minusSeconds(1)).isError());
+		assertDoesNotThrow(() -> config.validate(threshold));
+		assertDoesNotThrow(() -> config.validate(threshold.plusSeconds(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold.minusSeconds(1)));
 	}
 	
 	@Test
-	void matchesWithBefore() {
+	void validateWithBefore() {
 		Instant threshold = Instant.now();
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withBefore(threshold);
-		assertTrue(config.matches(threshold.minusSeconds(1)).isSuccess());
-		assertTrue(config.matches(threshold).isError());
-		assertTrue(config.matches(threshold.plusSeconds(1)).isError());
+		assertDoesNotThrow(() -> config.validate(threshold.minusSeconds(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold.plusSeconds(1)));
 	}
 	
 	@Test
-	void matchesWithBeforeOrEqual() {
+	void validateWithBeforeOrEqual() {
 		Instant threshold = Instant.now();
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withBeforeOrEqual(threshold);
-		assertTrue(config.matches(threshold).isSuccess());
-		assertTrue(config.matches(threshold.minusSeconds(1)).isSuccess());
-		assertTrue(config.matches(threshold.plusSeconds(1)).isError());
+		assertDoesNotThrow(() -> config.validate(threshold));
+		assertDoesNotThrow(() -> config.validate(threshold.minusSeconds(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(threshold.plusSeconds(1)));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		Instant after = Instant.now();
 		Instant before = after.plusSeconds(3600);
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withBetween(after, before);
-		assertTrue(config.matches(after.plusSeconds(1800)).isSuccess());
-		assertTrue(config.matches(after).isError());
-		assertTrue(config.matches(before).isError());
+		assertDoesNotThrow(() -> config.validate(after.plusSeconds(1800)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(after));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(before));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		Instant after = Instant.now();
 		Instant before = after.plusSeconds(3600);
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(after, before);
-		assertTrue(config.matches(after).isSuccess());
-		assertTrue(config.matches(before).isSuccess());
-		assertTrue(config.matches(after.plusSeconds(1800)).isSuccess());
-		assertTrue(config.matches(after.minusSeconds(1)).isError());
-		assertTrue(config.matches(before.plusSeconds(1)).isError());
+		assertDoesNotThrow(() -> config.validate(after));
+		assertDoesNotThrow(() -> config.validate(before));
+		assertDoesNotThrow(() -> config.validate(after.plusSeconds(1800)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(after.minusSeconds(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(before.plusSeconds(1)));
 	}
 	
 	@Test
-	void matchesWithWithinLast() {
+	void validateWithWithinLast() {
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withWithinLast(Duration.ofHours(1));
-		assertTrue(config.matches(Instant.now().minusSeconds(1800)).isSuccess());
-		assertTrue(config.matches(Instant.now().minusSeconds(7200)).isError());
+		assertDoesNotThrow(() -> config.validate(Instant.now().minusSeconds(1800)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Instant.now().minusSeconds(7200)));
 	}
 	
 	@Test
-	void matchesWithWithinNext() {
+	void validateWithWithinNext() {
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withWithinNext(Duration.ofHours(1));
-		assertTrue(config.matches(Instant.now().plusSeconds(1800)).isSuccess());
-		assertTrue(config.matches(Instant.now().plusSeconds(7200)).isError());
+		assertDoesNotThrow(() -> config.validate(Instant.now().plusSeconds(1800)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Instant.now().plusSeconds(7200)));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

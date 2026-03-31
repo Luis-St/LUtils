@@ -19,11 +19,9 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -87,12 +85,18 @@ public record HostConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact host value that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withEqualTo(@NonNull String value) {
@@ -104,6 +108,7 @@ public record HostConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The host value that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotEqualTo(@NonNull String value) {
@@ -115,6 +120,7 @@ public record HostConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of host values that are allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withIn(@NonNull Collection<String> values) {
@@ -126,6 +132,7 @@ public record HostConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of host values that are not allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotIn(@NonNull Collection<String> values) {
@@ -140,6 +147,7 @@ public record HostConstraintConfig(
 	 * </p>
 	 *
 	 * @param config The IP address constraint config
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withIp(@NonNull IpConstraintConfig config) {
@@ -154,6 +162,7 @@ public record HostConstraintConfig(
 	 * </p>
 	 *
 	 * @param config The domain name constraint config
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withDomain(@NonNull DomainConstraintConfig config) {
@@ -165,6 +174,7 @@ public record HostConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withCustom(@NonNull Constraint<String> constraint) {
@@ -174,15 +184,15 @@ public record HostConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull String value) {
+	public void validate(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchNestedConfig(value, this.ip, "Ip address"),
-			() -> ConstraintMatchers.matchNestedConfig(value, this.domain, "Domain"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateNestedConfig(value, this.ip, "Ip address"),
+			() -> ConstraintValidators.validateNestedConfig(value, this.domain, "Domain"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

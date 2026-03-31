@@ -27,13 +27,10 @@ import java.util.Objects;
  * When resolved, the alias points to the element defined by the corresponding anchor.<br>
  *
  * @author Luis-St
+ * @param anchorName
+The name of the anchor this alias references.<br>
  */
-public class YamlAlias implements YamlElement {
-	
-	/**
-	 * The name of the anchor this alias references.<br>
-	 */
-	private final String anchorName;
+public record YamlAlias(String anchorName) implements YamlElement {
 	
 	/**
 	 * Constructs a new yaml alias referencing the given anchor name.<br>
@@ -48,33 +45,17 @@ public class YamlAlias implements YamlElement {
 		if (anchorName.isBlank()) {
 			throw new IllegalArgumentException("Anchor name must not be blank");
 		}
-		if (!isValidAnchorName(anchorName)) {
+		if (!YamlHelper.isValidAnchorName(anchorName)) {
 			throw new IllegalArgumentException("Invalid anchor name: '" + anchorName + "'. Anchor names must contain only alphanumeric characters, underscores, and hyphens");
 		}
-	}
-	
-	/**
-	 * Checks if the given name is a valid anchor name.<br>
-	 * Valid anchor names contain only alphanumeric characters, underscores, and hyphens.<br>
-	 *
-	 * @param name The name to check
-	 * @return True if the name is valid, false otherwise
-	 */
-	private static boolean isValidAnchorName(@NonNull String name) {
-		for (int i = 0; i < name.length(); i++) {
-			char c = name.charAt(i);
-			if (!Character.isLetterOrDigit(c) && c != '_' && c != '-') {
-				return false;
-			}
-		}
-		return true;
 	}
 	
 	/**
 	 * Returns the name of the referenced anchor.<br>
 	 * @return The anchor name without the '*' prefix
 	 */
-	public @NonNull String getAnchorName() {
+	@Override
+	public @NonNull String anchorName() {
 		return this.anchorName;
 	}
 	
@@ -85,11 +66,6 @@ public class YamlAlias implements YamlElement {
 		if (!(o instanceof YamlAlias that)) return false;
 		
 		return this.anchorName.equals(that.anchorName);
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(this.anchorName);
 	}
 	
 	@Override

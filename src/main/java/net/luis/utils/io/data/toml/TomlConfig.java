@@ -27,11 +27,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
- * Configuration for reading and writing TOML files.<br>
+ * Configuration for reading and writing toml files.<br>
  *
  * @author Luis-St
  *
- * @param strict Whether to use strict TOML 1.0 parsing mode (read-only)
+ * @param strict Whether to use strict toml 1.0 parsing mode (read-only)
  * @param prettyPrint Whether to format output with proper indentation (write-only)
  * @param indent The indentation string to use for nested structures (write-only)
  * @param useInlineTables Whether to prefer inline tables for simple cases (write-only)
@@ -62,7 +62,7 @@ public record TomlConfig(
 ) {
 	
 	/**
-	 * The default TOML configuration.<br>
+	 * The default toml configuration.<br>
 	 * <ul>
 	 *     <li>Strict: true</li>
 	 *     <li>Pretty print: true</li>
@@ -96,7 +96,22 @@ public record TomlConfig(
 	);
 	
 	/**
-	 * Compact TOML configuration that prefers inline styles.<br>
+	 * Compact toml configuration that prefers inline styles.<br>
+	 * <ul>
+	 *     <li>Strict: true</li>
+	 *     <li>Pretty print: false</li>
+	 *     <li>Indent: ""</li>
+	 *     <li>Use inline tables: true</li>
+	 *     <li>Max inline table size: 5</li>
+	 *     <li>Use inline arrays: true</li>
+	 *     <li>Max inline array size: 20</li>
+	 *     <li>Use multi-line strings: false</li>
+	 *     <li>Multi-line string threshold: 120</li>
+	 *     <li>Use array of tables notation: false</li>
+	 *     <li>Date/time style: RFC_3339</li>
+	 *     <li>Allow duplicate keys: false</li>
+	 *     <li>Charset: UTF-8</li>
+	 * </ul>
 	 */
 	public static final TomlConfig COMPACT = new TomlConfig(
 		true,
@@ -115,7 +130,7 @@ public record TomlConfig(
 	);
 	
 	/**
-	 * Constructs a new TOML configuration.<br>
+	 * Constructs a new toml configuration.<br>
 	 *
 	 * @throws NullPointerException If any of the required parameters is null
 	 * @throws IllegalArgumentException If any size/threshold values are invalid
@@ -142,7 +157,7 @@ public record TomlConfig(
 	public enum DateTimeStyle {
 		/**
 		 * RFC 3339 format: 2006-01-02T15:04:05-07:00<br>
-		 * This is the standard TOML date/time format.<br>
+		 * This is the standard toml date/time format.<br>
 		 */
 		RFC_3339,
 		

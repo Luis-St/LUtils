@@ -18,18 +18,18 @@
 
 package net.luis.utils.io.codec.types.temporal.offset;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.temporal.offset.OffsetTimeConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.temporal.offset.OffsetTimeConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for offset times.<br>
@@ -40,12 +40,16 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstraintConfig> implements OffsetTimeConstraint<OffsetTimeCodec> {
+public class OffsetTimeCodec
+	extends AbstractConstrainableCodec<OffsetTime, OffsetTimeConstraintConfig, OffsetTimeCodec>
+	implements OffsetTimeConstraint<OffsetTimeCodec> {
 	
 	/**
 	 * Constructs a new offset time codec.<br>
 	 */
-	public OffsetTimeCodec() {}
+	public OffsetTimeCodec() {
+		super(OffsetTimeCodec::new, OffsetTimeConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new offset time codec with the specified constraint configuration.<br>
@@ -54,92 +58,52 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 	 * @throws NullPointerException If the constraint config is null
 	 */
 	private OffsetTimeCodec(@NonNull OffsetTimeConstraintConfig constraintConfig) {
-		super(constraintConfig);
+		super(OffsetTimeCodec::new, constraintConfig);
 	}
 	
 	@Override
-	public @NonNull OffsetTimeCodec apply(@NonNull UnaryOperator<OffsetTimeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new OffsetTimeCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(OffsetTimeConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable OffsetTime value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable OffsetTime value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as offset time using '" + this + "'");
+			throw new EncoderException("Unable to encode null as offset time", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(value.toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull OffsetTime key) {
+	public @NonNull String encodeKey(@NonNull OffsetTime key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key.toString());
+		return this.validateEncodeConstraints(key).toString();
 	}
 	
 	@Override
-	public <R> @NonNull Result<OffsetTime> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull OffsetTime decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as offset time using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as offset time", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			OffsetTime time = OffsetTime.parse(string);
-			
-			Result<Void> constraintResult = this.checkConstraints(time);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(time);
+			return this.validateDecodeConstraints(time);
 		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode offset time '" + string + "' using '" + this + "': Unable to parse offset time: " + e.getMessage());
+			throw new DecoderException("Unable to decode offset time '" + string + "': " + e.getMessage(), this, e);
 		}
 	}
 	
 	@Override
-	public @NonNull Result<OffsetTime> decodeKey(@NonNull String key) {
+	public @NonNull OffsetTime decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			OffsetTime time = OffsetTime.parse(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(time);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(time);
+			return this.validateDecodeConstraints(time);
 		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode key '" + key + "' as offset time using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode key '" + key + "' as offset time: " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedOffsetTimeCodec[constraints=" + config + "]";
-		}).orElse("OffsetTimeCodec");
 	}
 }

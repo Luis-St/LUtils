@@ -56,6 +56,7 @@ public class IniSection implements IniElement, Iterable<Map.Entry<String, IniEle
 	 */
 	public IniSection(@NonNull String name) {
 		Objects.requireNonNull(name, "Section name must not be null");
+		
 		if (name.isBlank()) {
 			throw new IllegalArgumentException("Section name must not be blank");
 		}
@@ -280,7 +281,6 @@ public class IniSection implements IniElement, Iterable<Map.Entry<String, IniEle
 		if (element instanceof IniValue value) {
 			return value;
 		}
-		
 		return element.getAsIniValue();
 	}
 	

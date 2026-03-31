@@ -19,11 +19,9 @@
 package net.luis.utils.io.codec.constraint.config.temporal.local;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Year;
@@ -94,12 +92,18 @@ public record YearConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact year that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withEqualTo(@NonNull Year value) {
@@ -111,6 +115,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The year that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withNotEqualTo(@NonNull Year value) {
@@ -122,6 +127,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of Years that are allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withIn(@NonNull Collection<Year> values) {
@@ -133,6 +139,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of Years that are not allowed
+	 * @throws NullPointerException If the values is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withNotIn(@NonNull Collection<Year> values) {
@@ -144,6 +151,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
 	 * @param value The threshold year (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withAfter(@NonNull Year value) {
@@ -155,6 +163,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold year (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withAfterOrEqual(@NonNull Year value) {
@@ -166,6 +175,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
 	 * @param value The threshold year (exclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBefore(@NonNull Year value) {
@@ -177,6 +187,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
 	 * @param value The threshold year (inclusive)
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBeforeOrEqual(@NonNull Year value) {
@@ -189,6 +200,7 @@ public record YearConstraintConfig(
 	 *
 	 * @param min The minimum year (exclusive)
 	 * @param max The maximum year (exclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBetween(@NonNull Year min, @NonNull Year max) {
@@ -202,6 +214,7 @@ public record YearConstraintConfig(
 	 *
 	 * @param min The minimum year (inclusive)
 	 * @param max The maximum year (inclusive)
+	 * @throws NullPointerException If the min or max is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBetweenOrEqual(@NonNull Year min, @NonNull Year max) {
@@ -214,6 +227,7 @@ public record YearConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withCustom(@NonNull Constraint<Year> constraint) {
@@ -223,14 +237,14 @@ public record YearConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Year value) {
+	public void validate(@NonNull Year value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.min, this.max),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

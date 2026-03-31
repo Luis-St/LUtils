@@ -114,7 +114,7 @@ public record XmlDeclaration(@NonNull Version version, @NonNull Charset encoding
 	}
 	
 	@Override
-	public String toString() {
+	public @NonNull String toString() {
 		return "<?xml version=\"" + this.version.toString().substring(1) + "\" encoding=\"" + this.encoding.name() + "\" standalone=\"" + this.standalone + "\"?>";
 	}
 	//endregion

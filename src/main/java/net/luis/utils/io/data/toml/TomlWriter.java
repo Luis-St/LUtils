@@ -26,8 +26,8 @@ import java.time.*;
 import java.util.*;
 
 /**
- * Represents a writer for TOML files.<br>
- * This writer writes TOML tables to a defined output.<br>
+ * Represents a writer for toml files.<br>
+ * This writer writes toml tables to a defined output.<br>
  * <p>
  * Supports writing:
  * <ul>
@@ -35,25 +35,25 @@ import java.util.*;
  *     <li>Tables with section headers</li>
  *     <li>Inline tables</li>
  *     <li>Arrays and array of tables</li>
- *     <li>All TOML value types including date/time</li>
+ *     <li>All toml value types including date/time</li>
  * </ul>
  *
  * @author Luis-St
  */
 public class TomlWriter implements AutoCloseable {
-
+	
 	/**
-	 * The configuration for the TOML writer.<br>
+	 * The configuration for the toml writer.<br>
 	 */
 	private final TomlConfig config;
-
+	
 	/**
-	 * The internal io writer for writing the TOML content.<br>
+	 * The internal io writer for writing the toml content.<br>
 	 */
 	private final BufferedWriter writer;
-
+	
 	/**
-	 * Constructs a new TOML writer for the given output with the default TOML configuration.<br>
+	 * Constructs a new toml writer for the given output with the default toml configuration.<br>
 	 *
 	 * @param output The output provider to create the writer for
 	 * @throws NullPointerException If the output is null
@@ -61,83 +61,85 @@ public class TomlWriter implements AutoCloseable {
 	public TomlWriter(@NonNull OutputProvider output) {
 		this(output, TomlConfig.DEFAULT);
 	}
-
+	
 	/**
-	 * Constructs a new TOML writer for the given output with the given TOML configuration.<br>
+	 * Constructs a new toml writer for the given output with the given toml configuration.<br>
 	 *
 	 * @param output The output to create the writer for
-	 * @param config The configuration for the TOML writer
+	 * @param config The configuration for the toml writer
 	 * @throws NullPointerException If the output or the configuration is null
 	 */
 	public TomlWriter(@NonNull OutputProvider output, @NonNull TomlConfig config) {
-		this.config = Objects.requireNonNull(config, "TOML config must not be null");
+		this.config = Objects.requireNonNull(config, "Toml config must not be null");
 		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(output, "Output must not be null").getStream(), config.charset()));
 	}
-
+	
 	/**
-	 * Writes the given TOML table to the underlying output.<br>
-	 * This writes the table as a complete TOML document with proper section headers.<br>
+	 * Writes the given toml table to the underlying output.<br>
+	 * This writes the table as a complete toml document with proper section headers.<br>
 	 *
-	 * @param table The TOML table to write
+	 * @param table The toml table to write
 	 * @throws NullPointerException If the table is null
 	 * @throws UncheckedIOException If an I/O error occurs
 	 */
 	public void writeToml(@NonNull TomlTable table) {
-		Objects.requireNonNull(table, "TOML table must not be null");
+		Objects.requireNonNull(table, "Toml table must not be null");
 		try {
 			this.writeTable(table, "");
 			this.writer.flush();
 		} catch (IOException e) {
-			throw new UncheckedIOException("An I/O error occurred while writing the TOML document", e);
+			throw new UncheckedIOException("An I/O error occurred while writing the toml document", e);
 		}
 	}
-
+	
 	/**
 	 * Writes a table and its contents.<br>
 	 *
 	 * @param table The table to write
 	 * @param path The current table path (empty for root)
+	 * @throws NullPointerException If the table or path is null
 	 * @throws IOException If an I/O error occurs
 	 */
+	@SuppressWarnings("DuplicatedCode")
 	private void writeTable(@NonNull TomlTable table, @NonNull String path) throws IOException {
+		Objects.requireNonNull(table, "Toml table must not be null");
+		Objects.requireNonNull(path, "Table path must not be null");
+		
 		List<Map.Entry<String, TomlElement>> simpleEntries = new ArrayList<>();
 		List<Map.Entry<String, TomlElement>> nestedTables = new ArrayList<>();
 		List<Map.Entry<String, TomlElement>> arrayOfTables = new ArrayList<>();
-
+		
 		for (Map.Entry<String, TomlElement> entry : table) {
-			TomlElement value = entry.getValue();
-			if (value instanceof TomlTable nested && !nested.isInline()) {
-				nestedTables.add(entry);
-			} else if (value instanceof TomlArray array && array.isArrayOfTables()) {
-				arrayOfTables.add(entry);
-			} else {
-				simpleEntries.add(entry);
+			switch (entry.getValue()) {
+				case TomlTable nested when !nested.isInline() -> nestedTables.add(entry);
+				case TomlArray array when array.isArrayOfTables() -> arrayOfTables.add(entry);
+				default -> simpleEntries.add(entry);
 			}
 		}
-
+		
 		if (!path.isEmpty() && (!simpleEntries.isEmpty() || (nestedTables.isEmpty() && arrayOfTables.isEmpty()))) {
 			this.writer.write("[");
 			this.writer.write(path);
 			this.writer.write("]");
 			this.writer.newLine();
 		}
-
+		
 		for (Map.Entry<String, TomlElement> entry : simpleEntries) {
 			this.writeKeyValue(entry.getKey(), entry.getValue());
 		}
-
+		
 		for (Map.Entry<String, TomlElement> entry : nestedTables) {
 			if (this.config.prettyPrint() && !simpleEntries.isEmpty()) {
 				this.writer.newLine();
 			}
-			String nestedPath = path.isEmpty() ? this.formatKey(entry.getKey()) : path + "." + this.formatKey(entry.getKey());
+			String nestedPath = path.isEmpty() ? TomlHelper.formatKey(entry.getKey()) : path + "." + TomlHelper.formatKey(entry.getKey());
 			this.writeTable((TomlTable) entry.getValue(), nestedPath);
 		}
-
+		
 		for (Map.Entry<String, TomlElement> entry : arrayOfTables) {
 			TomlArray array = (TomlArray) entry.getValue();
-			String arrayPath = path.isEmpty() ? this.formatKey(entry.getKey()) : path + "." + this.formatKey(entry.getKey());
-
+			String arrayPath = path.isEmpty() ? TomlHelper.formatKey(entry.getKey()) : path + "." + TomlHelper.formatKey(entry.getKey());
+			
 			for (TomlElement element : array) {
 				if (this.config.prettyPrint()) {
 					this.writer.newLine();
@@ -146,12 +148,13 @@ public class TomlWriter implements AutoCloseable {
 				this.writer.write(arrayPath);
 				this.writer.write("]]");
 				this.writer.newLine();
-
+				
 				if (element instanceof TomlTable arrayTable) {
 					for (Map.Entry<String, TomlElement> tableEntry : arrayTable) {
 						TomlElement value = tableEntry.getValue();
+						
 						if (value instanceof TomlTable nested && !nested.isInline()) {
-							String nestedPath = arrayPath + "." + this.formatKey(tableEntry.getKey());
+							String nestedPath = arrayPath + "." + TomlHelper.formatKey(tableEntry.getKey());
 							this.writeTable(nested, nestedPath);
 						} else if (!(value instanceof TomlArray a && a.isArrayOfTables())) {
 							this.writeKeyValue(tableEntry.getKey(), value);
@@ -161,21 +164,25 @@ public class TomlWriter implements AutoCloseable {
 			}
 		}
 	}
-
+	
 	/**
 	 * Writes a key-value pair to the underlying output.<br>
 	 *
 	 * @param key The key
 	 * @param value The value
+	 * @throws NullPointerException If the key or value is null
 	 * @throws IOException If an I/O error occurs
 	 */
 	private void writeKeyValue(@NonNull String key, @NonNull TomlElement value) throws IOException {
-		this.writer.write(this.formatKey(key));
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		this.writer.write(TomlHelper.formatKey(key));
 		this.writer.write(" = ");
 		this.writer.write(value.toString(this.config));
 		this.writer.newLine();
 	}
-
+	
 	/**
 	 * Writes a single key-value pair to the underlying output.<br>
 	 * This is a convenience method for writing standalone properties.<br>
@@ -193,10 +200,10 @@ public class TomlWriter implements AutoCloseable {
 			this.writeKeyValue(key, value);
 			this.writer.flush();
 		} catch (IOException e) {
-			throw new UncheckedIOException("An I/O error occurred while writing the TOML property", e);
+			throw new UncheckedIOException("An I/O error occurred while writing the toml property", e);
 		}
 	}
-
+	
 	/**
 	 * Writes a single property with a string value.<br>
 	 *
@@ -208,7 +215,7 @@ public class TomlWriter implements AutoCloseable {
 	public void writeProperty(@NonNull String key, String value) {
 		this.writeProperty(key, value == null ? TomlNull.INSTANCE : new TomlValue(value));
 	}
-
+	
 	/**
 	 * Writes a single property with a boolean value.<br>
 	 *
@@ -220,7 +227,7 @@ public class TomlWriter implements AutoCloseable {
 	public void writeProperty(@NonNull String key, boolean value) {
 		this.writeProperty(key, new TomlValue(value));
 	}
-
+	
 	/**
 	 * Writes a single property with a number value.<br>
 	 *
@@ -232,7 +239,7 @@ public class TomlWriter implements AutoCloseable {
 	public void writeProperty(@NonNull String key, Number value) {
 		this.writeProperty(key, value == null ? TomlNull.INSTANCE : new TomlValue(value));
 	}
-
+	
 	/**
 	 * Writes a single property with a local date value.<br>
 	 *
@@ -244,7 +251,7 @@ public class TomlWriter implements AutoCloseable {
 	public void writeProperty(@NonNull String key, LocalDate value) {
 		this.writeProperty(key, value == null ? TomlNull.INSTANCE : new TomlValue(value));
 	}
-
+	
 	/**
 	 * Writes a single property with a local time value.<br>
 	 *
@@ -256,7 +263,7 @@ public class TomlWriter implements AutoCloseable {
 	public void writeProperty(@NonNull String key, LocalTime value) {
 		this.writeProperty(key, value == null ? TomlNull.INSTANCE : new TomlValue(value));
 	}
-
+	
 	/**
 	 * Writes a single property with a local date-time value.<br>
 	 *
@@ -268,7 +275,7 @@ public class TomlWriter implements AutoCloseable {
 	public void writeProperty(@NonNull String key, LocalDateTime value) {
 		this.writeProperty(key, value == null ? TomlNull.INSTANCE : new TomlValue(value));
 	}
-
+	
 	/**
 	 * Writes a single property with an offset date-time value.<br>
 	 *
@@ -280,7 +287,7 @@ public class TomlWriter implements AutoCloseable {
 	public void writeProperty(@NonNull String key, OffsetDateTime value) {
 		this.writeProperty(key, value == null ? TomlNull.INSTANCE : new TomlValue(value));
 	}
-
+	
 	/**
 	 * Writes a table header to the underlying output.<br>
 	 *
@@ -296,16 +303,14 @@ public class TomlWriter implements AutoCloseable {
 				this.writer.newLine();
 			}
 			
-			this.writer.write("[");
-			this.writer.write(tablePath);
-			this.writer.write("]");
+			this.writer.write("[" + tablePath + "]");
 			this.writer.newLine();
 			this.writer.flush();
 		} catch (IOException e) {
 			throw new UncheckedIOException("An I/O error occurred while writing the table header", e);
 		}
 	}
-
+	
 	/**
 	 * Writes an array of tables header to the underlying output.<br>
 	 *
@@ -330,7 +335,7 @@ public class TomlWriter implements AutoCloseable {
 			throw new UncheckedIOException("An I/O error occurred while writing the array of tables header", e);
 		}
 	}
-
+	
 	/**
 	 * Writes a comment to the underlying output.<br>
 	 *
@@ -350,7 +355,7 @@ public class TomlWriter implements AutoCloseable {
 			throw new UncheckedIOException("An I/O error occurred while writing the comment", e);
 		}
 	}
-
+	
 	/**
 	 * Writes a blank line to the underlying output.<br>
 	 *
@@ -364,70 +369,7 @@ public class TomlWriter implements AutoCloseable {
 			throw new UncheckedIOException("An I/O error occurred while writing a blank line", e);
 		}
 	}
-
-	/**
-	 * Checks if the given key is a valid bare key in TOML.<br>
-	 *
-	 * @param key The key to check
-	 * @return True if the key is a valid bare key, false otherwise
-	 */
-	private boolean isBareKey(@NonNull String key) {
-		if (key.isEmpty()) {
-			return false;
-		}
-		
-		for (int i = 0; i < key.length(); i++) {
-			char c = key.charAt(i);
-			if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' || c == '-')) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Formats a key for TOML output, quoting if necessary.<br>
-	 *
-	 * @param key The key to format
-	 * @return The formatted key
-	 */
-	private @NonNull String formatKey(@NonNull String key) {
-		if (this.isBareKey(key)) {
-			return key;
-		}
-		return "\"" + this.escapeString(key) + "\"";
-	}
-
-	/**
-	 * Escapes special characters in a string for TOML output.<br>
-	 *
-	 * @param str The string to escape
-	 * @return The escaped string
-	 */
-	private @NonNull String escapeString(@NonNull String str) {
-		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < str.length(); i++) {
-			char c = str.charAt(i);
-			switch (c) {
-				case '"' -> result.append("\\\"");
-				case '\\' -> result.append("\\\\");
-				case '\b' -> result.append("\\b");
-				case '\f' -> result.append("\\f");
-				case '\n' -> result.append("\\n");
-				case '\r' -> result.append("\\r");
-				case '\t' -> result.append("\\t");
-				default -> {
-					if (c < 0x20) {
-						result.append(String.format("\\u%04X", (int) c));
-					} else {
-						result.append(c);
-					}
-				}
-			}
-		}
-		return result.toString();
-	}
-
+	
 	@Override
 	public void close() throws IOException {
 		this.writer.close();

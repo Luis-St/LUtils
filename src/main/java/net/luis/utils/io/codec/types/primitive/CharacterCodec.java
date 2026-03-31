@@ -18,28 +18,32 @@
 
 package net.luis.utils.io.codec.types.primitive;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.CharacterConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.CharacterConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for characters.<br>
  *
  * @author Luis-St
  */
-public class CharacterCodec extends AbstractCodec<Character, CharacterConstraintConfig> implements CharacterConstraint<CharacterCodec> {
+public class CharacterCodec
+	extends AbstractConstrainableCodec<Character, CharacterConstraintConfig, CharacterCodec>
+	implements CharacterConstraint<CharacterCodec> {
 	
 	/**
 	 * Constructs a new character codec.<br>
 	 */
-	public CharacterCodec() {}
+	public CharacterCodec() {
+		super(CharacterCodec::new, CharacterConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new character codec with the given configuration.<br>
@@ -48,87 +52,48 @@ public class CharacterCodec extends AbstractCodec<Character, CharacterConstraint
 	 * @throws NullPointerException If the config is null
 	 */
 	private CharacterCodec(@NonNull CharacterConstraintConfig config) {
-		super(config);
+		super(CharacterCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull CharacterCodec apply(@NonNull UnaryOperator<CharacterConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new CharacterCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(CharacterConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Character value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Character value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as character using '" + this + "'");
+			throw new EncoderException("Unable to encode null as character", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(String.valueOf(value));
+		this.validateEncodeConstraints(value);
+		return provider.createString(String.valueOf(value), EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull Character key) {
+	public @NonNull String encodeKey(@NonNull Character key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(String.valueOf(key));
+		return String.valueOf(this.validateEncodeConstraints(key));
 	}
 	
 	@Override
-	public <R> @NonNull Result<Character> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Character decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as character using '" + this + "'");
+			throw new DecoderException("Unable to decode null as character", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error("Unable to decode value as character from a string value using '" + this + "': " + result.errorOrThrow());
+		String string = provider.getString(value, DecoderException::new);
+		if (string.length() != 1) {
+			throw new DecoderException("Unable to decode value '" + string + "' as character: String must have exactly one character to decode as character", this);
 		}
-		
-		String str = result.resultOrThrow();
-		if (str.length() != 1) {
-			return Result.error("Unable to decode value '" + str + "' as character using '" + this + "': String must have exactly one character to decode as character");
-		}
-		
-		char ch = str.charAt(0);
-		Result<Void> constraintResult = this.checkConstraints(ch);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(ch);
+		return this.validateDecodeConstraints(string.charAt(0));
 	}
 	
 	@Override
-	public @NonNull Result<Character> decodeKey(@NonNull String key) {
+	public @NonNull Character decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
 		if (key.length() != 1) {
-			return Result.error("Unable to decode key '" + key + "' as character using '" + this + "': Key must have exactly one character to decode as character");
+			throw new DecoderException("Unable to decode key '" + key + "' as character: Key must have exactly one character to decode as character", this);
 		}
 		
-		char ch = key.charAt(0);
-		Result<Void> constraintResult = this.checkConstraints(ch);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(ch);
-	}
-	
-	@Override
-	public String toString() {
-		return "CharacterCodec";
+		return this.validateDecodeConstraints(key.charAt(0));
 	}
 }

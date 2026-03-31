@@ -71,15 +71,15 @@ class TomlNullTest {
 		TomlNull tomlNull = TomlNull.INSTANCE;
 		
 		TomlTypeException valueException = assertThrows(TomlTypeException.class, tomlNull::getAsTomlValue);
-		assertTrue(valueException.getMessage().contains("TOML value"));
+		assertTrue(valueException.getMessage().contains("toml value"));
 		assertTrue(valueException.getMessage().contains("toml null"));
 		
 		TomlTypeException arrayException = assertThrows(TomlTypeException.class, tomlNull::getAsTomlArray);
-		assertTrue(arrayException.getMessage().contains("TOML array"));
+		assertTrue(arrayException.getMessage().contains("toml array"));
 		assertTrue(arrayException.getMessage().contains("toml null"));
 		
 		TomlTypeException tableException = assertThrows(TomlTypeException.class, tomlNull::getAsTomlTable);
-		assertTrue(tableException.getMessage().contains("TOML table"));
+		assertTrue(tableException.getMessage().contains("toml table"));
 		assertTrue(tableException.getMessage().contains("toml null"));
 	}
 	
@@ -87,26 +87,26 @@ class TomlNullTest {
 	void primitiveTypeChecks() {
 		TomlNull tomlNull = TomlNull.INSTANCE;
 		
-		assertFalse(tomlNull.isBoolean());
-		assertFalse(tomlNull.isNumber());
-		assertFalse(tomlNull.isByte());
-		assertFalse(tomlNull.isShort());
-		assertFalse(tomlNull.isInteger());
-		assertFalse(tomlNull.isLong());
-		assertFalse(tomlNull.isFloat());
-		assertFalse(tomlNull.isDouble());
-		assertFalse(tomlNull.isString());
+		assertFalse(tomlNull.isTomlBoolean());
+		assertFalse(tomlNull.isTomlNumber());
+		assertFalse(tomlNull.isTomlByte());
+		assertFalse(tomlNull.isTomlShort());
+		assertFalse(tomlNull.isTomlInteger());
+		assertFalse(tomlNull.isTomlLong());
+		assertFalse(tomlNull.isTomlFloat());
+		assertFalse(tomlNull.isTomlDouble());
+		assertFalse(tomlNull.isTomlString());
 	}
 	
 	@Test
 	void dateTimeTypeChecks() {
 		TomlNull tomlNull = TomlNull.INSTANCE;
 		
-		assertFalse(tomlNull.isLocalDate());
-		assertFalse(tomlNull.isLocalTime());
-		assertFalse(tomlNull.isLocalDateTime());
-		assertFalse(tomlNull.isOffsetDateTime());
-		assertFalse(tomlNull.isDateTime());
+		assertFalse(tomlNull.isTomlLocalDate());
+		assertFalse(tomlNull.isTomlLocalTime());
+		assertFalse(tomlNull.isTomlLocalDateTime());
+		assertFalse(tomlNull.isTomlOffsetDateTime());
+		assertFalse(tomlNull.isTomlDateTime());
 	}
 	
 	@Test

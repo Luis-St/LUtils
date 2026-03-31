@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -37,216 +38,186 @@ import static org.junit.jupiter.api.Assertions.*;
 class UUIDCodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		UUID uuid = UUID.randomUUID();
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), uuid));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, uuid));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), uuid));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, uuid));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as UUID"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as uuid"));
 	}
 	
 	@Test
-	void encodeStartWithValidUUID() {
+	void encodeWithValidUUID() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		UUID uuid = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), uuid);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("550e8400-e29b-41d4-a716-446655440000"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), uuid);
+		assertEquals(new JsonPrimitive("550e8400-e29b-41d4-a716-446655440000"), result);
 	}
 	
 	@Test
-	void encodeStartWithRandomUUID() {
+	void encodeWithRandomUUID() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		UUID uuid = UUID.randomUUID();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), uuid);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(uuid.toString()), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), uuid);
+		assertEquals(new JsonPrimitive(uuid.toString()), result);
 	}
 	
 	@Test
-	void encodeStartWithNilUUID() {
+	void encodeWithNilUUID() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		UUID uuid = new UUID(0L, 0L);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), uuid);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("00000000-0000-0000-0000-000000000000"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), uuid);
+		assertEquals(new JsonPrimitive("00000000-0000-0000-0000-000000000000"), result);
 	}
 	
 	@Test
 	void encodeKeyNullChecks() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
-		UUID uuid = UUID.randomUUID();
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeKey(null));
 		assertThrows(NullPointerException.class, () -> codec.encodeKey(null));
 	}
 	
 	@Test
-	void encodeKeyWithValidUUID() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+	void encodeKeyWithValidUUID() throws EncoderException {
 		Codec<UUID> codec = new UUIDCodec();
 		UUID uuid = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
 		
-		Result<String> result = codec.encodeKey(uuid);
-		assertTrue(result.isSuccess());
-		assertEquals("550e8400-e29b-41d4-a716-446655440000", result.resultOrThrow());
+		String result = codec.encodeKey(uuid);
+		assertEquals("550e8400-e29b-41d4-a716-446655440000", result);
 	}
 	
 	@Test
-	void encodeKeyWithRandomUUID() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+	void encodeKeyWithRandomUUID() throws EncoderException {
 		Codec<UUID> codec = new UUIDCodec();
 		UUID uuid = UUID.randomUUID();
 		
-		Result<String> result = codec.encodeKey(uuid);
-		assertTrue(result.isSuccess());
-		assertEquals(uuid.toString(), result.resultOrThrow());
+		String result = codec.encodeKey(uuid);
+		assertEquals(uuid.toString(), result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("550e8400-e29b-41d4-a716-446655440000")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("550e8400-e29b-41d4-a716-446655440000")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as UUID"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as uuid"));
 	}
 	
 	@Test
-	void decodeStartWithValidString() {
+	void decodeWithValidString() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("550e8400-e29b-41d4-a716-446655440000"));
-		assertTrue(result.isSuccess());
-		assertEquals(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"), result.resultOrThrow());
+		UUID result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("550e8400-e29b-41d4-a716-446655440000"));
+		assertEquals(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"), result);
 	}
 	
 	@Test
-	void decodeStartWithNilUUID() {
+	void decodeWithNilUUID() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("00000000-0000-0000-0000-000000000000"));
-		assertTrue(result.isSuccess());
-		assertEquals(new UUID(0L, 0L), result.resultOrThrow());
+		UUID result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("00000000-0000-0000-0000-000000000000"));
+		assertEquals(new UUID(0L, 0L), result);
 	}
 	
 	@Test
-	void decodeStartWithUppercaseUUID() {
+	void decodeWithUppercaseUUID() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("550E8400-E29B-41D4-A716-446655440000"));
-		assertTrue(result.isSuccess());
-		assertEquals(UUID.fromString("550E8400-E29B-41D4-A716-446655440000"), result.resultOrThrow());
+		UUID result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("550E8400-E29B-41D4-A716-446655440000"));
+		assertEquals(UUID.fromString("550E8400-E29B-41D4-A716-446655440000"), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidFormat() {
+	void decodeWithInvalidFormat() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-uuid"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode UUID"));
-		assertTrue(result.errorOrThrow().contains("Unable to parse UUID"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-uuid")));
+		assertTrue(exception.getMessage().contains("Unable to decode uuid"));
 	}
 	
 	@Test
-	void decodeStartWithInvalidLength() {
+	void decodeWithInvalidLength() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("550e8400-e29b-41d4-a716"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode UUID"));
-		assertTrue(result.errorOrThrow().contains("Unable to parse UUID"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("550e8400-e29b-41d4-a716")));
+		assertTrue(exception.getMessage().contains("Unable to decode uuid"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<UUID> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test
 	void decodeKeyNullChecks() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
 	}
 	
 	@Test
-	void decodeKeyWithValidString() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+	void decodeKeyWithValidString() throws DecoderException {
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<UUID> result = codec.decodeKey("550e8400-e29b-41d4-a716-446655440000");
-		assertTrue(result.isSuccess());
-		assertEquals(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"), result.resultOrThrow());
+		UUID result = codec.decodeKey("550e8400-e29b-41d4-a716-446655440000");
+		assertEquals(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"), result);
 	}
 	
 	@Test
-	void decodeKeyWithNilUUID() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+	void decodeKeyWithNilUUID() throws DecoderException {
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<UUID> result = codec.decodeKey("00000000-0000-0000-0000-000000000000");
-		assertTrue(result.isSuccess());
-		assertEquals(new UUID(0L, 0L), result.resultOrThrow());
+		UUID result = codec.decodeKey("00000000-0000-0000-0000-000000000000");
+		assertEquals(new UUID(0L, 0L), result);
 	}
 	
 	@Test
 	void decodeKeyWithInvalidFormat() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<UUID> result = codec.decodeKey("invalid-uuid");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode UUID from key"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("invalid-uuid"));
+		assertTrue(exception.getMessage().contains("Unable to decode key 'invalid-uuid' as uuid"));
 	}
 	
 	@Test
 	void decodeKeyWithInvalidLength() {
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<UUID> codec = new UUIDCodec();
 		
-		Result<UUID> result = codec.decodeKey("550e8400-e29b-41d4-a716");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode UUID from key"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decodeKey("550e8400-e29b-41d4-a716"));
+		assertTrue(exception.getMessage().contains("Unable to decode key '550e8400-e29b-41d4-a716' as uuid"));
 	}
 	
 	@Test

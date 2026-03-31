@@ -19,13 +19,11 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -138,6 +136,11 @@ public record QueryConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
@@ -204,6 +207,7 @@ public record QueryConstraintConfig(
 	 * Creates a new config with the specified required keys constraint.<br>
 	 *
 	 * @param keys The collection of keys that must be present
+	 * @throws NullPointerException If the keys collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withRequiredKeys(@NonNull Collection<String> keys) {
@@ -215,6 +219,7 @@ public record QueryConstraintConfig(
 	 * Creates a new config with the specified forbidden keys constraint.<br>
 	 *
 	 * @param keys The collection of keys that must not be present
+	 * @throws NullPointerException If the keys collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withForbiddenKeys(@NonNull Collection<String> keys) {
@@ -226,6 +231,7 @@ public record QueryConstraintConfig(
 	 * Creates a new config with the specified allowed keys constraint.<br>
 	 *
 	 * @param keys The collection of keys that are allowed (others forbidden)
+	 * @throws NullPointerException If the keys collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withAllowedKeys(@NonNull Collection<String> keys) {
@@ -265,6 +271,7 @@ public record QueryConstraintConfig(
 	 *
 	 * @param key The query parameter key to constrain
 	 * @param config The string constraint config for value validation
+	 * @throws NullPointerException If the key or config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withValue(@NonNull String key, @NonNull StringConstraintConfig config) {
@@ -281,6 +288,7 @@ public record QueryConstraintConfig(
 	 *
 	 * @param regex The regex pattern to match query parameter keys
 	 * @param config The string constraint config for value validation
+	 * @throws NullPointerException If the regex or config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withValues(@NonNull String regex, @NonNull StringConstraintConfig config) {
@@ -293,6 +301,7 @@ public record QueryConstraintConfig(
 	 *
 	 * @param pattern The compiled pattern to match query parameter keys
 	 * @param config The string constraint config for value validation
+	 * @throws NullPointerException If the pattern or config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withValues(@NonNull Pattern pattern, @NonNull StringConstraintConfig config) {
@@ -318,6 +327,7 @@ public record QueryConstraintConfig(
 	 *
 	 * @param key The query parameter key to constrain
 	 * @param config The size constraint config for multi-value validation
+	 * @throws NullPointerException If the key or config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withMultiValued(@NonNull String key, @NonNull SizeConstraintConfig config) {
@@ -333,6 +343,7 @@ public record QueryConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withCustom(@NonNull Constraint<Map<String, List<String>>> constraint) {
@@ -342,24 +353,24 @@ public record QueryConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull Map<String, List<String>> value) {
+	public void validate(@NonNull Map<String, List<String>> value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.size, Map::size, "Size"),
-			() -> ConstraintMatchers.matchRequiredKeys(value.keySet(), this.requiredKeys, "Query"),
-			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Query"),
-			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Query"),
-			() -> ConstraintMatchers.matchFlag(value, this.nonNullKeys, v -> v.keySet().stream().noneMatch(Objects::isNull), "Query keys must not be null"),
-			() -> IOMatchers.matchQueryUniqueValues(value, this.uniqueValues),
-			() -> ConstraintMatchers.matchFlag(value, this.nonNullValues, v -> v.values().stream().flatMap(List::stream).noneMatch(Objects::isNull), "Query values must not be null"),
-			() -> IOMatchers.matchQueryValueConstraints(value, this.valueConstraints),
-			() -> IOMatchers.matchQueryPatternValueConstraints(value, this.patternValueConstraints),
-			() -> IOMatchers.matchQuerySingleValued(value, this.singleValued),
-			() -> IOMatchers.matchQueryMultiValuedConstraints(value, this.multiValuedConstraints),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateExtractedValue(value, this.size, Map::size, "Size"),
+			() -> ConstraintValidators.validateRequiredKeys(value.keySet(), this.requiredKeys, "Query"),
+			() -> ConstraintValidators.validateForbiddenKeys(value.keySet(), this.forbiddenKeys, "Query"),
+			() -> ConstraintValidators.validateAllowedKeys(value.keySet(), this.allowedKeys, "Query"),
+			() -> ConstraintValidators.validateFlag(value, this.nonNullKeys, v -> v.keySet().stream().noneMatch(Objects::isNull), "Query keys must not be null"),
+			() -> IOValidators.validateQueryUniqueValues(value, this.uniqueValues),
+			() -> ConstraintValidators.validateFlag(value, this.nonNullValues, v -> v.values().stream().flatMap(List::stream).noneMatch(Objects::isNull), "Query values must not be null"),
+			() -> IOValidators.validateQueryValueConstraints(value, this.valueConstraints),
+			() -> IOValidators.validateQueryPatternValueConstraints(value, this.patternValueConstraints),
+			() -> IOValidators.validateQuerySingleValued(value, this.singleValued),
+			() -> IOValidators.validateQueryMultiValuedConstraints(value, this.multiValuedConstraints),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

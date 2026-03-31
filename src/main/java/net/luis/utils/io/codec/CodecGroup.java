@@ -18,9 +18,10 @@
 
 package net.luis.utils.io.codec;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
-import net.luis.utils.util.result.ResultingFunction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -50,7 +51,7 @@ public final class CodecGroup<O> implements Codec<O> {
 	 * The factory function that creates the final object from the encoded components.<br>
 	 * This function takes a list of decoded components and returns the final object.<br>
 	 */
-	private final ResultingFunction<List<Object>, O> factory;
+	private final ThrowableFunction<List<Object>, O, DecoderException> factory;
 	
 	/**
 	 * Constructs a new codec group using the given list of codecs and factory function.<br>
@@ -60,64 +61,53 @@ public final class CodecGroup<O> implements Codec<O> {
 	 * @param factory The factory function to create the final object from the encoded components
 	 * @throws NullPointerException If the codecs list or factory function is null
 	 */
-	public CodecGroup(@NonNull List<FieldCodec<?, O>> codecs, @NonNull ResultingFunction<List<Object>, O> factory) {
+	public CodecGroup(@NonNull List<FieldCodec<?, O>> codecs, @NonNull ThrowableFunction<List<Object>, O, DecoderException> factory) {
 		this.codecs = Objects.requireNonNull(codecs, "Codecs list must not be null");
 		this.factory = Objects.requireNonNull(factory, "Factory function must not be null");
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable O value) {
-		Objects.requireNonNull(provider, "Type provider must not be null");
-		Objects.requireNonNull(current, "Current value must not be null");
-		if (value == null) {
-			return Result.error("Unable to encode null value with '" + this);
-		}
-		
-		Result<R> mergedMap = provider.merge(current, provider.createMap());
-		if (mergedMap.isError()) {
-			return Result.error("Unable to encode '" + value + "' with '" + this + "': " + mergedMap.errorOrThrow());
-		}
-		R map = mergedMap.resultOrThrow();
 		
 		for (int i = 0; i < this.codecs.size(); i++) {
-			FieldCodec<?, O> codec = this.codecs.get(i);
-			Objects.requireNonNull(codec, "Codec of component " + i + " must not be null");
-			
-			Result<R> encoded = codec.encodeStart(provider, map, value);
-			if (encoded.isError()) {
-				return Result.error("Unable to encode component of '" + value + "' with '" + codec + "': " + encoded.errorOrThrow());
-			}
+			Objects.requireNonNull(this.codecs.get(i), "Codec of component " + i + " must not be null");
 		}
-		
-		return Result.success(map);
 	}
 	
 	@Override
-	public <R> @NonNull Result<O> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable O value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value using '" + this + "'");
+			throw new EncoderException("Unable to encode null value", this);
 		}
 		
-		Result<Map<String, R>> decodedMap = provider.getMap(value);
-		if (decodedMap.isError()) {
-			return Result.error("Unable to decode '" + value + "' using '" + this + "': " + decodedMap.errorOrThrow());
+		R map = provider.merge(current, provider.createMap(EncoderException::new), EncoderException::new);
+		for (FieldCodec<?, O> codec : this.codecs) {
+			try {
+				codec.encode(provider, map, value);
+			} catch (EncoderException e) {
+				throw new EncoderException("Unable to encode component of '" + value + "': " + e.getMessage(), this, e);
+			}
 		}
+		return map;
+	}
+	
+	@Override
+	public <R> @NonNull O decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(current, "Current value must not be null");
+		if (value == null) {
+			throw new DecoderException("Unable to decode null value", this);
+		}
+		
+		provider.getMap(value, DecoderException::new); // Validate that value is a map
 		
 		List<Object> components = new ArrayList<>(this.codecs.size());
-		for (int i = 0; i < this.codecs.size(); i++) {
-			FieldCodec<?, O> codec = this.codecs.get(i);
-			Objects.requireNonNull(codec, "Codec of component " + i + " must not be null");
-			
-			Result<?> decoded = codec.decodeStart(provider, value, value);
-			if (decoded.isError()) {
-				return Result.error("Unable to decode component of '" + value + "' using '" + codec + "': " + decoded.errorOrThrow());
+		for (FieldCodec<?, O> codec : this.codecs) {
+			try {
+				Object decoded = codec.decode(provider, value, value);
+				components.add(decoded);
+			} catch (DecoderException e) {
+				throw new DecoderException("Unable to decode component of '" + value + "': " + e.getMessage(), this, e);
 			}
-			
-			components.add(decoded.resultOrThrow());
 		}
-		
 		return this.factory.apply(components);
 	}
 	

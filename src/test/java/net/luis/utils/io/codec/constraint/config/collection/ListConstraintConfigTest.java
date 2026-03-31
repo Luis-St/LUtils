@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -92,7 +92,18 @@ class ListConstraintConfigTest {
 		assertTrue(config.in().isEmpty());
 		assertTrue(config.size().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(List.of("a", "b")).isSuccess());
+		assertDoesNotThrow(() -> config.validate(List.of("a", "b")));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(ListConstraintConfig.<String>unconstrained().isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withMinSize(1);
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -206,7 +217,9 @@ class ListConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withCustom(list -> list.isEmpty() ? Result.error("List must not be empty") : Result.success());
+		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withCustom(list -> {
+			if (list.isEmpty()) throw new ConstraintViolateException("List must not be empty");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -216,84 +229,84 @@ class ListConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		List<String> list = List.of("a", "b");
 		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withEqualTo(list);
-		assertTrue(config.matches(List.of("a", "b")).isSuccess());
-		assertTrue(config.matches(List.of("c", "d")).isError());
+		assertDoesNotThrow(() -> config.validate(List.of("a", "b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of("c", "d")));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		List<String> list = List.of("a", "b");
 		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withNotEqualTo(list);
-		assertTrue(config.matches(List.of("c", "d")).isSuccess());
-		assertTrue(config.matches(List.of("a", "b")).isError());
+		assertDoesNotThrow(() -> config.validate(List.of("c", "d")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of("a", "b")));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		List<List<String>> lists = List.of(List.of("a"), List.of("b"));
 		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withIn(lists);
-		assertTrue(config.matches(List.of("a")).isSuccess());
-		assertTrue(config.matches(List.of("b")).isSuccess());
-		assertTrue(config.matches(List.of("c")).isError());
+		assertDoesNotThrow(() -> config.validate(List.of("a")));
+		assertDoesNotThrow(() -> config.validate(List.of("b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of("c")));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		List<List<String>> lists = List.of(List.of("a"), List.of("b"));
 		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withNotIn(lists);
-		assertTrue(config.matches(List.of("c")).isSuccess());
-		assertTrue(config.matches(List.of("a")).isError());
+		assertDoesNotThrow(() -> config.validate(List.of("c")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of("a")));
 	}
 	
 	@Test
-	void matchesWithMinSize() {
+	void validateWithMinSize() {
 		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withMinSize(2);
-		assertTrue(config.matches(List.of("a", "b")).isSuccess());
-		assertTrue(config.matches(List.of("a")).isError());
+		assertDoesNotThrow(() -> config.validate(List.of("a", "b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of("a")));
 	}
 	
 	@Test
-	void matchesWithMaxSize() {
+	void validateWithMaxSize() {
 		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withMaxSize(2);
-		assertTrue(config.matches(List.of("a", "b")).isSuccess());
-		assertTrue(config.matches(List.of("a", "b", "c")).isError());
+		assertDoesNotThrow(() -> config.validate(List.of("a", "b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of("a", "b", "c")));
 	}
 	
 	@Test
-	void matchesWithExactSize() {
+	void validateWithExactSize() {
 		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withExactSize(2);
-		assertTrue(config.matches(List.of("a", "b")).isSuccess());
-		assertTrue(config.matches(List.of("a")).isError());
-		assertTrue(config.matches(List.of("a", "b", "c")).isError());
+		assertDoesNotThrow(() -> config.validate(List.of("a", "b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of("a")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of("a", "b", "c")));
 	}
 	
 	@Test
-	void matchesWithSize() {
+	void validateWithSize() {
 		SizeConstraintConfig sizeConfig = SizeConstraintConfig.UNCONSTRAINED.withMinSize(1).withMaxSize(3);
 		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained().withSize(sizeConfig);
-		assertTrue(config.matches(List.of("a")).isSuccess());
-		assertTrue(config.matches(List.of("a", "b", "c")).isSuccess());
-		assertTrue(config.matches(List.of()).isError());
-		assertTrue(config.matches(List.of("a", "b", "c", "d")).isError());
+		assertDoesNotThrow(() -> config.validate(List.of("a")));
+		assertDoesNotThrow(() -> config.validate(List.of("a", "b", "c")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of()));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of("a", "b", "c", "d")));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		ListConstraintConfig<String> config = ListConstraintConfig.<String>unconstrained()
 			.withMinSize(1)
 			.withMaxSize(3);
 		
-		assertTrue(config.matches(List.of("a", "b")).isSuccess());
-		assertTrue(config.matches(List.of()).isError());
-		assertTrue(config.matches(List.of("a", "b", "c", "d")).isError());
+		assertDoesNotThrow(() -> config.validate(List.of("a", "b")));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of()));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(List.of("a", "b", "c", "d")));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		ListConstraintConfig<String> config = ListConstraintConfig.unconstrained();
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

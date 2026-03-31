@@ -18,12 +18,11 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.CharacterConstraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -165,6 +164,11 @@ public record CharacterConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
@@ -192,6 +196,7 @@ public record CharacterConstraintConfig(
 	 *
 	 * @param values The collection of characters that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull CharacterConstraintConfig withIn(@NonNull Collection<Character> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -203,6 +208,7 @@ public record CharacterConstraintConfig(
 	 *
 	 * @param values The collection of characters that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull CharacterConstraintConfig withNotIn(@NonNull Collection<Character> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -381,6 +387,7 @@ public record CharacterConstraintConfig(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull CharacterConstraintConfig withCustom(@NonNull Constraint<Character> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
@@ -389,25 +396,25 @@ public record CharacterConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull Character value) {
+	public void validate(@NonNull Character value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
-			() -> ConstraintMatchers.matchFlag(value, this.letter, Character::isLetter, "Character '" + value + "' must be a letter"),
-			() -> ConstraintMatchers.matchFlag(value, this.digit, Character::isDigit, "Character" + value + "' must be a digit"),
-			() -> ConstraintMatchers.matchFlag(value, this.alphanumeric, Character::isLetterOrDigit, "Character '" + value + "' must be alphanumeric"),
-			() -> ConstraintMatchers.matchFlag(value, this.whitespace, Character::isWhitespace, "Character '" + value + "' must be whitespace"),
-			() -> ConstraintMatchers.matchFlag(value, this.punctuation, c -> PUNCTUATION_TYPES.contains((byte) Character.getType(c)), "Character '" + value + "' must be punctuation"),
-			() -> ConstraintMatchers.matchFlag(value, this.symbol, c -> SYMBOL_TYPES.contains((byte) Character.getType(c)), "Character '" + value + "' must be a symbol"),
-			() -> ConstraintMatchers.matchFlag(value, this.control, Character::isISOControl, "Character '" + value + "' must be a control character"),
-			() -> ConstraintMatchers.matchFlag(value, this.upperCase, Character::isUpperCase, "Character '" + value + "' must be upper case"),
-			() -> ConstraintMatchers.matchFlag(value, this.lowerCase, Character::isLowerCase, "Character '" + value + "' must be lower case"),
-			() -> ConstraintMatchers.matchFlag(value, this.ascii, c -> c <= 127, "Character '" + value + "' must be an ASCII character (0-127)"),
-			() -> ConstraintMatchers.matchFlag(value, this.latin1, c -> c <= 255, "Character '" + value + "' must be a Latin-1 character (0-255)"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.min, this.max),
+			() -> ConstraintValidators.validateFlag(value, this.letter, Character::isLetter, "Character '" + value + "' must be a letter"),
+			() -> ConstraintValidators.validateFlag(value, this.digit, Character::isDigit, "Character" + value + "' must be a digit"),
+			() -> ConstraintValidators.validateFlag(value, this.alphanumeric, Character::isLetterOrDigit, "Character '" + value + "' must be alphanumeric"),
+			() -> ConstraintValidators.validateFlag(value, this.whitespace, Character::isWhitespace, "Character '" + value + "' must be whitespace"),
+			() -> ConstraintValidators.validateFlag(value, this.punctuation, c -> PUNCTUATION_TYPES.contains((byte) Character.getType(c)), "Character '" + value + "' must be punctuation"),
+			() -> ConstraintValidators.validateFlag(value, this.symbol, c -> SYMBOL_TYPES.contains((byte) Character.getType(c)), "Character '" + value + "' must be a symbol"),
+			() -> ConstraintValidators.validateFlag(value, this.control, Character::isISOControl, "Character '" + value + "' must be a control character"),
+			() -> ConstraintValidators.validateFlag(value, this.upperCase, Character::isUpperCase, "Character '" + value + "' must be upper case"),
+			() -> ConstraintValidators.validateFlag(value, this.lowerCase, Character::isLowerCase, "Character '" + value + "' must be lower case"),
+			() -> ConstraintValidators.validateFlag(value, this.ascii, c -> c <= 127, "Character '" + value + "' must be an ASCII character (0-127)"),
+			() -> ConstraintValidators.validateFlag(value, this.latin1, c -> c <= 255, "Character '" + value + "' must be a Latin-1 character (0-255)"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

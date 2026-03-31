@@ -19,11 +19,10 @@
 package net.luis.utils.io.codec.constraint.config.numeric;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -150,6 +149,11 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 		);
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.min.isEmpty() && this.max.isEmpty() && this.positive.isEmpty() && this.negative.isEmpty() && this.zero.isEmpty() && this.percentage.isEmpty() && this.even.isEmpty() && this.odd.isEmpty() && this.divisibleBy.isEmpty() && this.powerOf.isEmpty() && this.custom.isEmpty();
+	}
+	
 	//region With methods
 	
 	/**
@@ -157,6 +161,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The exact value that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withEqualTo(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -168,6 +173,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The value that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withNotEqualTo(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -179,6 +185,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param values The collection of values that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withIn(@NonNull Collection<T> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -190,6 +197,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param values The collection of values that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withNotIn(@NonNull Collection<T> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -201,6 +209,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withGreaterThan(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'greater than' constraint must not be null");
@@ -212,6 +221,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withGreaterThanOrEqual(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'greater than or equal' constraint must not be null");
@@ -223,6 +233,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withLessThan(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'less than' constraint must not be null");
@@ -234,6 +245,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param value The threshold value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withLessThanOrEqual(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'less than or equal' constraint must not be null");
@@ -246,6 +258,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @param min The minimum value (exclusive)
 	 * @param max The maximum value (exclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the min or max value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withBetween(@NonNull T min, @NonNull T max) {
 		Objects.requireNonNull(min, "Min value for 'between' constraint must not be null");
@@ -259,6 +272,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @param min The minimum value (inclusive)
 	 * @param max The maximum value (inclusive)
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the min or max value is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withBetweenOrEqual(@NonNull T min, @NonNull T max) {
 		Objects.requireNonNull(min, "Min value for 'between or equal' constraint must not be null");
@@ -381,6 +395,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull IntegerConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
@@ -389,19 +404,19 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull T value) {
+	public void validate(@NonNull T value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
-			() -> ConstraintMatchers.matchSign(value, this.positive, this.negative, this.zero),
-			() -> ConstraintMatchers.matchPercentage(value, this.percentage),
-			() -> ConstraintMatchers.matchParity(value.longValue(), this.even, this.odd),
-			() -> ConstraintMatchers.matchDivisibleBy(value.longValue(), this.divisibleBy),
-			() -> ConstraintMatchers.matchPowerOf(value.longValue(), this.powerOf),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateRange(value, this.min, this.max),
+			() -> ConstraintValidators.validateSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintValidators.validatePercentage(value, this.percentage),
+			() -> ConstraintValidators.validateParity(value.longValue(), this.even, this.odd),
+			() -> ConstraintValidators.validateDivisibleBy(value.longValue(), this.divisibleBy),
+			() -> ConstraintValidators.validatePowerOf(value.longValue(), this.powerOf),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

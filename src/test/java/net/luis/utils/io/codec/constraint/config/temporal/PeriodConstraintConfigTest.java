@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.temporal;
 
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Period;
@@ -154,7 +154,18 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.month().isEmpty());
 		assertTrue(config.year().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(Period.ofDays(1)).isSuccess());
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(1)));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(PeriodConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withPositive();
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -311,90 +322,92 @@ class PeriodConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withCustom(p -> p.getYears() < 100 ? Result.success() : Result.error("Period must be less than 100 years"));
+		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withCustom(p -> {
+			if (p.getYears() >= 100) throw new ConstraintViolateException("Period must be less than 100 years");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withEqualTo(Period.ofDays(10));
-		assertTrue(config.matches(Period.ofDays(10)).isSuccess());
-		assertTrue(config.matches(Period.ofDays(5)).isError());
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(10)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ofDays(5)));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNotEqualTo(Period.ofDays(10));
-		assertTrue(config.matches(Period.ofDays(5)).isSuccess());
-		assertTrue(config.matches(Period.ofDays(10)).isError());
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(5)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ofDays(10)));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withIn(List.of(Period.ofDays(1), Period.ofDays(2)));
-		assertTrue(config.matches(Period.ofDays(1)).isSuccess());
-		assertTrue(config.matches(Period.ofDays(2)).isSuccess());
-		assertTrue(config.matches(Period.ofDays(3)).isError());
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(1)));
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(2)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ofDays(3)));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNotIn(List.of(Period.ofDays(1), Period.ofDays(2)));
-		assertTrue(config.matches(Period.ofDays(3)).isSuccess());
-		assertTrue(config.matches(Period.ofDays(1)).isError());
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(3)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ofDays(1)));
 	}
 	
 	@Test
-	void matchesWithPositive() {
+	void validateWithPositive() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withPositive();
-		assertTrue(config.matches(Period.ofDays(1)).isSuccess());
-		assertTrue(config.matches(Period.ZERO).isError());
-		assertTrue(config.matches(Period.ofDays(-1)).isError());
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ZERO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ofDays(-1)));
 	}
 	
 	@Test
-	void matchesWithNonPositive() {
+	void validateWithNonPositive() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNonPositive();
-		assertTrue(config.matches(Period.ZERO).isSuccess());
-		assertTrue(config.matches(Period.ofDays(-1)).isSuccess());
-		assertTrue(config.matches(Period.ofDays(1)).isError());
+		assertDoesNotThrow(() -> config.validate(Period.ZERO));
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(-1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ofDays(1)));
 	}
 	
 	@Test
-	void matchesWithNegative() {
+	void validateWithNegative() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNegative();
-		assertTrue(config.matches(Period.ofDays(-1)).isSuccess());
-		assertTrue(config.matches(Period.ZERO).isError());
-		assertTrue(config.matches(Period.ofDays(1)).isError());
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(-1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ZERO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ofDays(1)));
 	}
 	
 	@Test
-	void matchesWithNonNegative() {
+	void validateWithNonNegative() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNonNegative();
-		assertTrue(config.matches(Period.ZERO).isSuccess());
-		assertTrue(config.matches(Period.ofDays(1)).isSuccess());
-		assertTrue(config.matches(Period.ofDays(-1)).isError());
+		assertDoesNotThrow(() -> config.validate(Period.ZERO));
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ofDays(-1)));
 	}
 	
 	@Test
-	void matchesWithZero() {
+	void validateWithZero() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withZero();
-		assertTrue(config.matches(Period.ZERO).isSuccess());
-		assertTrue(config.matches(Period.ofDays(1)).isError());
-		assertTrue(config.matches(Period.ofDays(-1)).isError());
+		assertDoesNotThrow(() -> config.validate(Period.ZERO));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ofDays(1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ofDays(-1)));
 	}
 	
 	@Test
-	void matchesWithNonZero() {
+	void validateWithNonZero() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNonZero();
-		assertTrue(config.matches(Period.ofDays(1)).isSuccess());
-		assertTrue(config.matches(Period.ofDays(-1)).isSuccess());
-		assertTrue(config.matches(Period.ZERO).isError());
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(1)));
+		assertDoesNotThrow(() -> config.validate(Period.ofDays(-1)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Period.ZERO));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

@@ -20,11 +20,10 @@ package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.collection.ListConstraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -93,6 +92,11 @@ public record ListConstraintConfig<T>(
 		return new ListConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.size.isEmpty() && this.custom.isEmpty();
+	}
+	
 	//region With methods
 	
 	/**
@@ -100,6 +104,7 @@ public record ListConstraintConfig<T>(
 	 *
 	 * @param value The exact list that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull ListConstraintConfig<T> withEqualTo(@NonNull List<T> value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -111,6 +116,7 @@ public record ListConstraintConfig<T>(
 	 *
 	 * @param value The list that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull ListConstraintConfig<T> withNotEqualTo(@NonNull List<T> value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -122,6 +128,7 @@ public record ListConstraintConfig<T>(
 	 *
 	 * @param values The collection of lists that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull ListConstraintConfig<T> withIn(@NonNull Collection<List<T>> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -138,6 +145,7 @@ public record ListConstraintConfig<T>(
 	 *
 	 * @param values The collection of lists that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull ListConstraintConfig<T> withNotIn(@NonNull Collection<List<T>> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -214,6 +222,7 @@ public record ListConstraintConfig<T>(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull ListConstraintConfig<T> withCustom(@NonNull Constraint<List<T>> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
@@ -222,14 +231,14 @@ public record ListConstraintConfig<T>(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull List<T> value) {
+	public void validate(@NonNull List<T> value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.size, List::size, "Size"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateExtractedValue(value, this.size, List::size, "Size"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

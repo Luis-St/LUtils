@@ -18,74 +18,18 @@
 
 package net.luis.utils.io.codec;
 
-import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.util.result.Result;
-import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
-import java.util.Optional;
-
 /**
  * Abstract non-sealed implementation of the {@link Codec} interface.<br>
  * Used by all default codecs in the {@link net.luis.utils.io.codec.types} package.<br>
- * <p>
- *     This class provides a way to store constraint configurations for codecs that support constraints.<br>
- *     If the codec does not support constraints, the constraint configuration will be null.
- * </p>
  *
  * @author Luis-St
  *
  * @param <C> The type of the codec
- * @param <T> The type of the constraint config, or {@link Void} if the codec does not support constraints
  */
-public abstract non-sealed class AbstractCodec<C, T> implements Codec<C> {
+public abstract non-sealed class AbstractCodec<C> implements Codec<C> {
 	
 	/**
-	 * The constraint configuration for this codec, empty if the codec does not support constraints.<br>
+	 * Constructs a new abstract codec.<br>
 	 */
-	private final @NonNull Optional<T> constraintConfig;
-	
-	/**
-	 * Constructs a new abstract codec without constraint configuration.<br>
-	 */
-	protected AbstractCodec() {
-		this.constraintConfig = Optional.empty();
-	}
-	
-	/**
-	 * Constructs a new abstract codec with the given constraint configuration.<br>
-	 *
-	 * @param constraintConfig The constraint configuration for this codec
-	 * @throws NullPointerException If the constraint configuration is null
-	 */
-	protected AbstractCodec(@NonNull T constraintConfig) {
-		Objects.requireNonNull(constraintConfig, "Constraint configuration must not be null");
-		this.constraintConfig = Optional.of(constraintConfig);
-	}
-	
-	/**
-	 * Gets the constraint configuration for this codec.<br>
-	 * @return The constraint configuration, empty if the codec does not support constraints
-	 */
-	protected @NonNull Optional<T> getConstraintConfig() {
-		return this.constraintConfig;
-	}
-	
-	/**
-	 * Checks the constraints for the given value.<br>
-	 * The value of the returned {@link Result} indicates whether the constraints were satisfied or not.<br>
-	 *
-	 * @param value The value to check
-	 * @return The result of the constraint check
-	 * @throws NullPointerException If the value is null
-	 */
-	@SuppressWarnings("unchecked")
-	protected @NonNull Result<Void> checkConstraints(@NonNull C value) {
-		if (this.constraintConfig.isPresent() && this.constraintConfig.get() instanceof ConstraintConfig<?>) {
-			ConstraintConfig<C> config = (ConstraintConfig<C>) this.constraintConfig.get();
-			
-			return config.matches(value);
-		}
-		return Result.success();
-	}
+	protected AbstractCodec() {}
 }

@@ -20,8 +20,9 @@ package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jspecify.annotations.NonNull;
@@ -57,7 +58,7 @@ import java.util.function.Supplier;
  *
  * @param <C> The type of the recursive value
  */
-public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
+public class RecursiveCodec<C> extends AbstractCodec<C> {
 	
 	/**
 	 * Supplier that lazily provides the actual codec.<br>
@@ -84,19 +85,19 @@ public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
 	}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
-		return this.codecSupplier.get().encodeStart(provider, current, value);
+		return this.codecSupplier.get().encode(provider, current, value);
 	}
 	
 	@Override
-	public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull C decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
-		return this.codecSupplier.get().decodeStart(provider, current, value);
+		return this.codecSupplier.get().decode(provider, current, value);
 	}
 	
 	@Override
@@ -110,7 +111,7 @@ public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
 	 *
 	 * @param <C> The type of the value
 	 */
-	private static final class LazyCodec<C> extends AbstractCodec<C, Object> {
+	private static final class LazyCodec<C> extends AbstractCodec<C> {
 		
 		/**
 		 * Supplier that provides the actual codec.<br>
@@ -127,13 +128,13 @@ public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
 		}
 		
 		@Override
-		public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
-			return this.codecSupplier.get().encodeStart(provider, current, value);
+		public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) throws EncoderException {
+			return this.codecSupplier.get().encode(provider, current, value);
 		}
 		
 		@Override
-		public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
-			return this.codecSupplier.get().decodeStart(provider, current, value);
+		public <R> @NonNull C decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
+			return this.codecSupplier.get().decode(provider, current, value);
 		}
 		
 		@Override

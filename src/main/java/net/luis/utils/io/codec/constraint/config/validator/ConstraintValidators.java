@@ -16,14 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint.config.matcher;
+package net.luis.utils.io.codec.constraint.config.validator;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
@@ -36,24 +35,22 @@ import java.util.stream.Collectors;
 /**
  * Utility class providing static methods for common constraint validation patterns.<br>
  * <p>
- *     This class contains reusable validation logic that is shared across multiple
- *     constraint configuration records. All methods return {@link Result Result&lt;Void&gt;}
- *     indicating success or failure of the validation.
+ *     This class contains reusable validation logic that is shared across multiple constraint configuration records.
  * </p>
  * <p>
- *     The validation methods use early-exit behavior through the {@link #allOf(Supplier[])} method,
+ *     The validation methods use early-exit behavior through the {@link #validateAll(Runnable[])} method,
  *     which stops at the first failed constraint for better performance.
  * </p>
  *
  * @author Luis-St
  */
 @SuppressWarnings("OptionalContainsCollection")
-public final class ConstraintMatchers {
+public final class ConstraintValidators {
 	
 	/**
 	 * Private constructor to prevent instantiation of this utility class.<br>
 	 */
-	private ConstraintMatchers() {}
+	private ConstraintValidators() {}
 	
 	/**
 	 * Formats a set for display in error messages.<br>
@@ -71,25 +68,20 @@ public final class ConstraintMatchers {
 	/**
 	 * Combines multiple constraint checks with early-exit behavior.<br>
 	 * <p>
-	 *     Evaluates each supplier in order and returns immediately when a failure is encountered.
+	 *     Evaluates each runnable in order and returns immediately when a failure is encountered.<br>
 	 *     This provides better performance than collecting all results when most validations pass.
 	 * </p>
 	 *
-	 * @param checks The constraint check suppliers to evaluate
-	 * @return A successful result if all checks pass, or the first failed result
+	 * @param checks The constraint check runnable to evaluate
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If any constraint is violated
 	 */
-	@SafeVarargs
-	public static @NonNull Result<Void> allOf(Supplier<Result<Void>> @NonNull ... checks) {
+	public static void validateAll(Runnable @NonNull ... checks) {
 		Objects.requireNonNull(checks, "Checks must not be null");
 		
-		for (Supplier<Result<Void>> check : checks) {
-			Result<Void> result = check.get();
-			if (result.isError()) {
-				return result;
-			}
+		for (Runnable check : checks) {
+			check.run();
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -98,11 +90,11 @@ public final class ConstraintMatchers {
 	 * @param value The value to validate
 	 * @param equalTo The equality constraint as a pair of (expected value, negated)
 	 * @param <T> The type of the value
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static <T> @NonNull Result<Void> matchEqualTo(@NonNull T value, @NonNull Optional<Pair<T, Boolean>> equalTo) {
-		return matchEqualTo(value, equalTo, Objects::equals);
+	public static <T> void validateEqualTo(@NonNull T value, @NonNull Optional<Pair<T, Boolean>> equalTo) {
+		validateEqualTo(value, equalTo, Objects::equals);
 	}
 	
 	/**
@@ -112,15 +104,15 @@ public final class ConstraintMatchers {
 	 * @param equalTo The equality constraint as a pair of (expected value, negated)
 	 * @param equalityTest The predicate to test equality between two values
 	 * @param <T> The type of the value
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static <T> @NonNull Result<Void> matchEqualTo(@NonNull T value, @NonNull Optional<Pair<T, Boolean>> equalTo, @NonNull BiPredicate<T, T> equalityTest) {
+	public static <T> void validateEqualTo(@NonNull T value, @NonNull Optional<Pair<T, Boolean>> equalTo, @NonNull BiPredicate<T, T> equalityTest) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(equalTo, "Equal to constraint must not be null");
 		Objects.requireNonNull(equalityTest, "Equality test must not be null");
 		if (equalTo.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		T expected = equalTo.get().getFirst();
@@ -128,14 +120,13 @@ public final class ConstraintMatchers {
 		boolean equals = equalityTest.test(value, expected);
 		if (negated) {
 			if (equals) {
-				return Result.error("Value '" + value + "' must not be equal to '" + expected + "'");
+				throw new ConstraintViolateException("Value '" + value + "' must not be equal to '" + expected + "'");
 			}
 		} else {
 			if (!equals) {
-				return Result.error("Value '" + value + "' must be equal to '" + expected + "'");
+				throw new ConstraintViolateException("Value '" + value + "' must be equal to '" + expected + "'");
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -144,15 +135,15 @@ public final class ConstraintMatchers {
 	 * @param value The value to validate
 	 * @param in The membership constraint as a pair of (set of values, negated)
 	 * @param <T> The type of the value
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
 	@SuppressWarnings("DuplicatedCode")
-	public static <T> @NonNull Result<Void> matchIn(@NonNull T value, @NonNull Optional<Pair<Set<T>, Boolean>> in) {
+	public static <T> void validateIn(@NonNull T value, @NonNull Optional<Pair<Set<T>, Boolean>> in) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(in, "In constraint must not be null");
 		if (in.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Set<T> set = in.get().getFirst();
@@ -160,14 +151,13 @@ public final class ConstraintMatchers {
 		boolean contains = set.contains(value);
 		if (negated) {
 			if (contains) {
-				return Result.error("Value '" + value + "' must not be in " + formatSet(set));
+				throw new ConstraintViolateException("Value '" + value + "' must not be in " + formatSet(set));
 			}
 		} else {
 			if (!contains) {
-				return Result.error("Value '" + value + "' must be in " + formatSet(set));
+				throw new ConstraintViolateException("Value '" + value + "' must be in " + formatSet(set));
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -181,17 +171,17 @@ public final class ConstraintMatchers {
 	 * @param in The membership constraint as a pair of (set of values, negated)
 	 * @param containsTest The predicate to test if a set element matches the value
 	 * @param <T> The type of the value
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
 	@SuppressWarnings("DuplicatedCode")
-	public static <T> @NonNull Result<Void> matchIn(@NonNull T value, @NonNull Optional<Pair<Set<T>, Boolean>> in, @NonNull BiPredicate<T, T> containsTest) {
+	public static <T> void validateIn(@NonNull T value, @NonNull Optional<Pair<Set<T>, Boolean>> in, @NonNull BiPredicate<T, T> containsTest) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(in, "In constraint must not be null");
 		Objects.requireNonNull(containsTest, "Contains test must not be null");
 		
 		if (in.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Set<T> set = in.get().getFirst();
@@ -200,14 +190,13 @@ public final class ConstraintMatchers {
 		
 		if (negated) {
 			if (contains) {
-				return Result.error("Value '" + value + "' must not be in " + formatSet(set));
+				throw new ConstraintViolateException("Value '" + value + "' must not be in " + formatSet(set));
 			}
 		} else {
 			if (!contains) {
-				return Result.error("Value '" + value + "' must be in " + formatSet(set));
+				throw new ConstraintViolateException("Value '" + value + "' must be in " + formatSet(set));
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -216,14 +205,16 @@ public final class ConstraintMatchers {
 	 * @param value The value to validate
 	 * @param custom The optional custom constraint
 	 * @param <T> The type of the value
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static <T> @NonNull Result<Void> matchCustom(@NonNull T value, @NonNull Optional<Constraint<T>> custom) {
+	public static <T> void validateCustom(@NonNull T value, @NonNull Optional<Constraint<T>> custom) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(custom, "Custom constraint must not be null");
 		
-		return custom.map(constraint -> constraint.validate(value)).orElseGet(Result::success);
+		if (custom.isPresent()) {
+			custom.orElseThrow().validate(value);
+		}
 	}
 	
 	/**
@@ -233,11 +224,11 @@ public final class ConstraintMatchers {
 	 * @param min The minimum bound constraint as a pair of (bound value, inclusive)
 	 * @param max The maximum bound constraint as a pair of (bound value, inclusive)
 	 * @param <T> The type of the value (must be Comparable)
-	 * @return A successful result if the constraints are satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraints are violated
 	 */
-	public static <T extends Comparable<T>> @NonNull Result<Void> matchRange(@NonNull T value, @NonNull Optional<Pair<T, Boolean>> min, @NonNull Optional<Pair<T, Boolean>> max) {
-		return matchRange(value, min, max, Comparator.naturalOrder());
+	public static <T extends Comparable<T>> void validateRange(@NonNull T value, @NonNull Optional<Pair<T, Boolean>> min, @NonNull Optional<Pair<T, Boolean>> max) {
+		validateRange(value, min, max, Comparator.naturalOrder());
 	}
 	
 	/**
@@ -248,10 +239,10 @@ public final class ConstraintMatchers {
 	 * @param max The maximum bound constraint as a pair of (bound value, inclusive)
 	 * @param comparator The comparator to use for comparisons
 	 * @param <T> The type of the value
-	 * @return A successful result if the constraints are satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraints are violated
 	 */
-	public static <T> @NonNull Result<Void> matchRange(@NonNull T value, @NonNull Optional<Pair<T, Boolean>> min, @NonNull Optional<Pair<T, Boolean>> max, @NonNull Comparator<T> comparator) {
+	public static <T> void validateRange(@NonNull T value, @NonNull Optional<Pair<T, Boolean>> min, @NonNull Optional<Pair<T, Boolean>> max, @NonNull Comparator<T> comparator) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(min, "Min constraint must not be null");
 		Objects.requireNonNull(max, "Max constraint must not be null");
@@ -264,11 +255,11 @@ public final class ConstraintMatchers {
 			
 			if (inclusive) {
 				if (cmp < 0) {
-					return Result.error("Value '" + value + "' must be greater than or equal to " + minValue);
+					throw new ConstraintViolateException("Value '" + value + "' must be greater than or equal to " + minValue);
 				}
 			} else {
 				if (cmp <= 0) {
-					return Result.error("Value '" + value + "' must be greater than " + minValue);
+					throw new ConstraintViolateException("Value '" + value + "' must be greater than " + minValue);
 				}
 			}
 		}
@@ -280,15 +271,14 @@ public final class ConstraintMatchers {
 			
 			if (inclusive) {
 				if (cmp > 0) {
-					return Result.error("Value '" + value + "' must be less than or equal to " + maxValue);
+					throw new ConstraintViolateException("Value '" + value + "' must be less than or equal to " + maxValue);
 				}
 			} else {
 				if (cmp >= 0) {
-					return Result.error("Value '" + value + "' must be less than " + maxValue);
+					throw new ConstraintViolateException("Value '" + value + "' must be less than " + maxValue);
 				}
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -303,43 +293,42 @@ public final class ConstraintMatchers {
 	 * @param condition The predicate that must be true for the constraint to pass
 	 * @param errorMessage The error message if the constraint fails
 	 * @param <T> The type of the value
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static <T> @NonNull Result<Void> matchFlag(@NonNull T value, @NonNull Optional<Unit> flag, @NonNull Predicate<T> condition, @NonNull String errorMessage) {
+	public static <T> void validateFlag(@NonNull T value, @NonNull Optional<Unit> flag, @NonNull Predicate<T> condition, @NonNull String errorMessage) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(flag, "Flag must not be null");
 		Objects.requireNonNull(condition, "Condition must not be null");
 		Objects.requireNonNull(errorMessage, "Error message must not be null");
 		if (flag.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		if (!condition.test(value)) {
-			return Result.error(errorMessage);
+			throw new ConstraintViolateException(errorMessage);
 		}
-		return Result.success();
 	}
 	
 	/**
 	 * Validates sign constraints for numeric values.<br>
 	 * <p>
 	 *     The boolean values in the optional fields have the following meanings:
-	 *     <ul>
-	 *         <li>positive: false = must be positive, true = must be non-positive</li>
-	 *         <li>negative: false = must be negative, true = must be non-negative</li>
-	 *         <li>zero: false = must be zero, true = must be non-zero</li>
-	 *     </ul>
 	 * </p>
+	 * <ul>
+	 *     <li>positive: false = must be positive, true = must be non-positive</li>
+	 *     <li>negative: false = must be negative, true = must be non-negative</li>
+	 *     <li>zero: false = must be zero, true = must be non-zero</li>
+	 * </ul>
 	 *
 	 * @param value The numeric value to validate
 	 * @param positive The positive/non-positive constraint
 	 * @param negative The negative/non-negative constraint
 	 * @param zero The zero/non-zero constraint
-	 * @return A successful result if the constraints are satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If any constraint is violated
 	 */
-	public static @NonNull Result<Void> matchSign(@NonNull Number value, @NonNull Optional<Boolean> positive, @NonNull Optional<Boolean> negative, @NonNull Optional<Boolean> zero) {
+	public static void validateSign(@NonNull Number value, @NonNull Optional<Boolean> positive, @NonNull Optional<Boolean> negative, @NonNull Optional<Boolean> zero) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(positive, "Positive constraint must not be null");
 		Objects.requireNonNull(negative, "Negative constraint must not be null");
@@ -350,11 +339,11 @@ public final class ConstraintMatchers {
 			boolean nonPositive = positive.get();
 			if (nonPositive) {
 				if (doubleValue > 0) {
-					return Result.error("Value '" + value + "' must be non-positive (less than or equal to zero)");
+					throw new ConstraintViolateException("Value '" + value + "' must be non-positive (less than or equal to zero)");
 				}
 			} else {
 				if (doubleValue <= 0) {
-					return Result.error("Value '" + value + "' must be positive (greater than zero)");
+					throw new ConstraintViolateException("Value '" + value + "' must be positive (greater than zero)");
 				}
 			}
 		}
@@ -363,11 +352,11 @@ public final class ConstraintMatchers {
 			boolean nonNegative = negative.get();
 			if (nonNegative) {
 				if (doubleValue < 0) {
-					return Result.error("Value '" + value + "' must be non-negative (greater than or equal to zero)");
+					throw new ConstraintViolateException("Value '" + value + "' must be non-negative (greater than or equal to zero)");
 				}
 			} else {
 				if (doubleValue >= 0) {
-					return Result.error("Value '" + value + "' must be negative (less than zero)");
+					throw new ConstraintViolateException("Value '" + value + "' must be negative (less than zero)");
 				}
 			}
 		}
@@ -376,15 +365,14 @@ public final class ConstraintMatchers {
 			boolean nonZero = zero.get();
 			if (nonZero) {
 				if (doubleValue == 0) {
-					return Result.error("Value '" + value + "' must be non-zero");
+					throw new ConstraintViolateException("Value '" + value + "' must be non-zero");
 				}
 			} else {
 				if (doubleValue != 0) {
-					return Result.error("Value '" + value + "' must be zero");
+					throw new ConstraintViolateException("Value '" + value + "' must be zero");
 				}
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -392,21 +380,20 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The numeric value to validate
 	 * @param percentage The percentage constraint flag
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchPercentage(@NonNull Number value, @NonNull Optional<Unit> percentage) {
+	public static void validatePercentage(@NonNull Number value, @NonNull Optional<Unit> percentage) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(percentage, "Percentage constraint must not be null");
 		if (percentage.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		double doubleValue = value.doubleValue();
 		if (doubleValue < 0 || doubleValue > 100) {
-			return Result.error("Value '" + value + "' must be a percentage (between 0 and 100 inclusive)");
+			throw new ConstraintViolateException("Value '" + value + "' must be a percentage (between 0 and 100 inclusive)");
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -415,20 +402,19 @@ public final class ConstraintMatchers {
 	 * @param value The integer value to validate
 	 * @param even The even constraint flag
 	 * @param odd The odd constraint flag
-	 * @return A successful result if the constraints are satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If any constraint is violated
 	 */
-	public static @NonNull Result<Void> matchParity(long value, @NonNull Optional<Unit> even, @NonNull Optional<Unit> odd) {
+	public static void validateParity(long value, @NonNull Optional<Unit> even, @NonNull Optional<Unit> odd) {
 		Objects.requireNonNull(even, "Even constraint must not be null");
 		Objects.requireNonNull(odd, "Odd constraint must not be null");
 		if (even.isPresent() && value % 2 != 0) {
-			return Result.error("Value '" + value + "' must be even");
+			throw new ConstraintViolateException("Value '" + value + "' must be even");
 		}
 		
 		if (odd.isPresent() && value % 2 == 0) {
-			return Result.error("Value '" + value + "' must be odd");
+			throw new ConstraintViolateException("Value '" + value + "' must be odd");
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -436,20 +422,19 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The integer value to validate
 	 * @param divisibleBy The divisor that the value must be divisible by
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchDivisibleBy(long value, @NonNull Optional<Long> divisibleBy) {
+	public static void validateDivisibleBy(long value, @NonNull Optional<Long> divisibleBy) {
 		Objects.requireNonNull(divisibleBy, "DivisibleBy constraint must not be null");
 		if (divisibleBy.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		long divisor = divisibleBy.get();
 		if (value % divisor != 0) {
-			return Result.error("Value '" + value + "' must be divisible by " + divisor);
+			throw new ConstraintViolateException("Value '" + value + "' must be divisible by " + divisor);
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -457,28 +442,27 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The integer value to validate
 	 * @param powerOf The base that the value must be a power of
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchPowerOf(long value, @NonNull Optional<Integer> powerOf) {
+	public static void validatePowerOf(long value, @NonNull Optional<Integer> powerOf) {
 		Objects.requireNonNull(powerOf, "Power of constraint must not be null");
 		if (powerOf.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		int base = powerOf.get();
 		if (value <= 0) {
-			return Result.error("Value '" + value + "' must be a power of " + base + " (must be positive)");
+			throw new ConstraintViolateException("Value '" + value + "' must be a power of " + base + " (must be positive)");
 		}
 		
 		long temp = value;
 		while (temp > 1) {
 			if (temp % base != 0) {
-				return Result.error("Value '" + value + "' must be a power of " + base);
+				throw new ConstraintViolateException("Value '" + value + "' must be a power of " + base);
 			}
 			temp /= base;
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -486,14 +470,14 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The string value to validate
 	 * @param startsWith The prefix constraint as a pair of (prefix, negated)
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchStartsWith(@NonNull String value, @NonNull Optional<Pair<String, Boolean>> startsWith) {
+	public static void validateStartsWith(@NonNull String value, @NonNull Optional<Pair<String, Boolean>> startsWith) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(startsWith, "Starts with constraint must not be null");
 		if (startsWith.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		String prefix = startsWith.get().getFirst();
@@ -501,14 +485,13 @@ public final class ConstraintMatchers {
 		boolean matches = value.startsWith(prefix);
 		if (negated) {
 			if (matches) {
-				return Result.error("Value '" + value + "' must not start with '" + prefix + "'");
+				throw new ConstraintViolateException("Value '" + value + "' must not start with '" + prefix + "'");
 			}
 		} else {
 			if (!matches) {
-				return Result.error("Value '" + value + "' must start with '" + prefix + "'");
+				throw new ConstraintViolateException("Value '" + value + "' must start with '" + prefix + "'");
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -516,14 +499,14 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The string value to validate
 	 * @param startsWithAny The prefix set constraint as a pair of (prefixes, negated)
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchStartsWithAny(@NonNull String value, @NonNull Optional<Pair<Set<String>, Boolean>> startsWithAny) {
+	public static void validateStartsWithAny(@NonNull String value, @NonNull Optional<Pair<Set<String>, Boolean>> startsWithAny) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(startsWithAny, "Starts with any constraint must not be null");
 		if (startsWithAny.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Set<String> prefixes = startsWithAny.get().getFirst();
@@ -531,14 +514,13 @@ public final class ConstraintMatchers {
 		boolean matchesAny = prefixes.stream().anyMatch(value::startsWith);
 		if (negated) {
 			if (matchesAny) {
-				return Result.error("Value '" + value + "' must not start with any of " + formatSet(prefixes));
+				throw new ConstraintViolateException("Value '" + value + "' must not start with any of " + formatSet(prefixes));
 			}
 		} else {
 			if (!matchesAny) {
-				return Result.error("Value '" + value + "' must start with one of " + formatSet(prefixes));
+				throw new ConstraintViolateException("Value '" + value + "' must start with one of " + formatSet(prefixes));
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -546,14 +528,14 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The string value to validate
 	 * @param contains The containment constraint as a pair of (substring, negated)
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchContains(@NonNull String value, @NonNull Optional<Pair<String, Boolean>> contains) {
+	public static void validateContains(@NonNull String value, @NonNull Optional<Pair<String, Boolean>> contains) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(contains, "Contains constraint must not be null");
 		if (contains.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		String substring = contains.get().getFirst();
@@ -561,14 +543,13 @@ public final class ConstraintMatchers {
 		boolean matches = value.contains(substring);
 		if (negated) {
 			if (matches) {
-				return Result.error("Value '" + value + "' must not contain '" + substring + "'");
+				throw new ConstraintViolateException("Value '" + value + "' must not contain '" + substring + "'");
 			}
 		} else {
 			if (!matches) {
-				return Result.error("Value '" + value + "' must contain '" + substring + "'");
+				throw new ConstraintViolateException("Value '" + value + "' must contain '" + substring + "'");
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -576,14 +557,14 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The string value to validate
 	 * @param containsAny The containment set constraint as a pair of (substrings, negated)
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchContainsAny(@NonNull String value, @NonNull Optional<Pair<Set<String>, Boolean>> containsAny) {
+	public static void validateContainsAny(@NonNull String value, @NonNull Optional<Pair<Set<String>, Boolean>> containsAny) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(containsAny, "Contains any constraint must not be null");
 		if (containsAny.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Set<String> substrings = containsAny.get().getFirst();
@@ -591,14 +572,13 @@ public final class ConstraintMatchers {
 		boolean matchesAny = substrings.stream().anyMatch(value::contains);
 		if (negated) {
 			if (matchesAny) {
-				return Result.error("Value '" + value + "' must not contain any of " + formatSet(substrings));
+				throw new ConstraintViolateException("Value '" + value + "' must not contain any of " + formatSet(substrings));
 			}
 		} else {
 			if (!matchesAny) {
-				return Result.error("Value '" + value + "' must contain at least one of " + formatSet(substrings));
+				throw new ConstraintViolateException("Value '" + value + "' must contain at least one of " + formatSet(substrings));
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -606,22 +586,21 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The string value to validate
 	 * @param containsAll The set of substrings that must all be contained
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchContainsAll(@NonNull String value, @NonNull Optional<Set<String>> containsAll) {
+	public static void validateContainsAll(@NonNull String value, @NonNull Optional<Set<String>> containsAll) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(containsAll, "Contains all constraint must not be null");
 		if (containsAll.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Set<String> substrings = containsAll.get();
 		Set<String> missing = substrings.stream().filter(s -> !value.contains(s)).collect(Collectors.toSet());
 		if (!missing.isEmpty()) {
-			return Result.error("Value '" + value + "' must contain all of " + formatSet(substrings) + ", missing: " + formatSet(missing));
+			throw new ConstraintViolateException("Value '" + value + "' must contain all of " + formatSet(substrings) + ", missing: " + formatSet(missing));
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -632,24 +611,23 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The string value to validate
 	 * @param containsOnly The set of allowed substrings/characters
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchContainsOnly(@NonNull String value, @NonNull Optional<Set<String>> containsOnly) {
+	public static void validateContainsOnly(@NonNull String value, @NonNull Optional<Set<String>> containsOnly) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(containsOnly, "Contains only constraint must not be null");
 		if (containsOnly.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Set<String> allowed = containsOnly.get();
 		String allowedChars = String.join("", allowed);
 		for (char c : value.toCharArray()) {
 			if (allowedChars.indexOf(c) == -1) {
-				return Result.error("Value '" + value + "' must contain only characters from " + formatSet(allowed));
+				throw new ConstraintViolateException("Value '" + value + "' must contain only characters from " + formatSet(allowed));
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -657,14 +635,14 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The string value to validate
 	 * @param endsWith The suffix constraint as a pair of (suffix, negated)
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchEndsWith(@NonNull String value, @NonNull Optional<Pair<String, Boolean>> endsWith) {
+	public static void validateEndsWith(@NonNull String value, @NonNull Optional<Pair<String, Boolean>> endsWith) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(endsWith, "Ends with constraint must not be null");
 		if (endsWith.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		String suffix = endsWith.get().getFirst();
@@ -672,14 +650,13 @@ public final class ConstraintMatchers {
 		boolean matches = value.endsWith(suffix);
 		if (negated) {
 			if (matches) {
-				return Result.error("Value '" + value + "' must not end with '" + suffix + "'");
+				throw new ConstraintViolateException("Value '" + value + "' must not end with '" + suffix + "'");
 			}
 		} else {
 			if (!matches) {
-				return Result.error("Value '" + value + "' must end with '" + suffix + "'");
+				throw new ConstraintViolateException("Value '" + value + "' must end with '" + suffix + "'");
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -687,14 +664,14 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The string value to validate
 	 * @param endsWithAny The suffix set constraint as a pair of (suffixes, negated)
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchEndsWithAny(@NonNull String value, @NonNull Optional<Pair<Set<String>, Boolean>> endsWithAny) {
+	public static void validateEndsWithAny(@NonNull String value, @NonNull Optional<Pair<Set<String>, Boolean>> endsWithAny) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(endsWithAny, "Ends with any constraint must not be null");
 		if (endsWithAny.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Set<String> suffixes = endsWithAny.get().getFirst();
@@ -702,14 +679,13 @@ public final class ConstraintMatchers {
 		boolean matchesAny = suffixes.stream().anyMatch(value::endsWith);
 		if (negated) {
 			if (matchesAny) {
-				return Result.error("Value '" + value + "' must not end with any of " + formatSet(suffixes));
+				throw new ConstraintViolateException("Value '" + value + "' must not end with any of " + formatSet(suffixes));
 			}
 		} else {
 			if (!matchesAny) {
-				return Result.error("Value '" + value + "' must end with one of " + formatSet(suffixes));
+				throw new ConstraintViolateException("Value '" + value + "' must end with one of " + formatSet(suffixes));
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -717,14 +693,14 @@ public final class ConstraintMatchers {
 	 *
 	 * @param value The string value to validate
 	 * @param matches The pattern constraint as a pair of (pattern, negated)
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchPattern(@NonNull String value, @NonNull Optional<Pair<Pattern, Boolean>> matches) {
+	public static void validatePattern(@NonNull String value, @NonNull Optional<Pair<Pattern, Boolean>> matches) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(matches, "Matches constraint must not be null");
 		if (matches.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Pattern pattern = matches.get().getFirst();
@@ -732,14 +708,13 @@ public final class ConstraintMatchers {
 		boolean patternMatches = pattern.matcher(value).matches();
 		if (negated) {
 			if (patternMatches) {
-				return Result.error("Value '" + value + "' must not match pattern '" + pattern.pattern() + "'");
+				throw new ConstraintViolateException("Value '" + value + "' must not match pattern '" + pattern.pattern() + "'");
 			}
 		} else {
 			if (!patternMatches) {
-				return Result.error("Value '" + value + "' must match pattern '" + pattern.pattern() + "'");
+				throw new ConstraintViolateException("Value '" + value + "' must match pattern '" + pattern.pattern() + "'");
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -749,24 +724,23 @@ public final class ConstraintMatchers {
 	 * @param flag The optional flag (present means the constraint is active)
 	 * @param classifier The predicate that each character must satisfy
 	 * @param className The name of the character class for error messages
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchCharacterClass(@NonNull String value, @NonNull Optional<Unit> flag, @NonNull Predicate<Character> classifier, @NonNull String className) {
+	public static void validateCharacterClass(@NonNull String value, @NonNull Optional<Unit> flag, @NonNull Predicate<Character> classifier, @NonNull String className) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(flag, "Flag must not be null");
 		Objects.requireNonNull(classifier, "Classifier must not be null");
 		Objects.requireNonNull(className, "Class name must not be null");
 		if (flag.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		for (char c : value.toCharArray()) {
 			if (!classifier.test(c)) {
-				return Result.error("Value '" + value + "' must contain only " + className + " characters");
+				throw new ConstraintViolateException("Value '" + value + "' must contain only " + className + " characters");
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -776,25 +750,24 @@ public final class ConstraintMatchers {
 	 * @param requiredKeys The optional set of required keys
 	 * @param typeName The name of the type for error messages (e.g., "Map", "Query")
 	 * @param <K> The type of the keys
-	 * @return A successful result if all required keys are present or no constraint is set
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If any required key is missing
 	 */
 	@SuppressWarnings("DuplicatedCode")
-	public static <K> @NonNull Result<Void> matchRequiredKeys(@NonNull Set<K> actualKeys, @NonNull Optional<Set<K>> requiredKeys, @NonNull String typeName) {
+	public static <K> void validateRequiredKeys(@NonNull Set<K> actualKeys, @NonNull Optional<Set<K>> requiredKeys, @NonNull String typeName) {
 		Objects.requireNonNull(actualKeys, "Actual keys must not be null");
 		Objects.requireNonNull(requiredKeys, "Required keys constraint must not be null");
 		Objects.requireNonNull(typeName, "Type name must not be null");
 		if (requiredKeys.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Set<K> required = requiredKeys.get();
 		Set<K> missing = new HashSet<>(required);
 		missing.removeAll(actualKeys);
 		if (!missing.isEmpty()) {
-			return Result.error(typeName + " must contain required keys: " + formatSet(missing));
+			throw new ConstraintViolateException(typeName + " must contain required keys: " + formatSet(missing));
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -804,25 +777,24 @@ public final class ConstraintMatchers {
 	 * @param forbiddenKeys The optional set of forbidden keys
 	 * @param typeName The name of the type for error messages (e.g., "Map", "Query")
 	 * @param <K> The type of the keys
-	 * @return A successful result if no forbidden keys are present or no constraint is set
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If any forbidden key is present
 	 */
 	@SuppressWarnings("DuplicatedCode")
-	public static <K> @NonNull Result<Void> matchForbiddenKeys(@NonNull Set<K> actualKeys, @NonNull Optional<Set<K>> forbiddenKeys, @NonNull String typeName) {
+	public static <K> void validateForbiddenKeys(@NonNull Set<K> actualKeys, @NonNull Optional<Set<K>> forbiddenKeys, @NonNull String typeName) {
 		Objects.requireNonNull(actualKeys, "Actual keys must not be null");
 		Objects.requireNonNull(forbiddenKeys, "Forbidden keys constraint must not be null");
 		Objects.requireNonNull(typeName, "Type name must not be null");
 		if (forbiddenKeys.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Set<K> forbidden = forbiddenKeys.get();
 		Set<K> present = new HashSet<>(actualKeys);
 		present.retainAll(forbidden);
 		if (!present.isEmpty()) {
-			return Result.error(typeName + " must not contain forbidden keys: " + formatSet(present));
+			throw new ConstraintViolateException(typeName + " must not contain forbidden keys: " + formatSet(present));
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -832,25 +804,24 @@ public final class ConstraintMatchers {
 	 * @param allowedKeys The optional set of allowed keys
 	 * @param typeName The name of the type for error messages (e.g., "Map", "Query")
 	 * @param <K> The type of the keys
-	 * @return A successful result if all keys are in the allowed set or no constraint is set
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If any disallowed key is present
 	 */
 	@SuppressWarnings("DuplicatedCode")
-	public static <K> @NonNull Result<Void> matchAllowedKeys(@NonNull Set<K> actualKeys, @NonNull Optional<Set<K>> allowedKeys, @NonNull String typeName) {
+	public static <K> void validateAllowedKeys(@NonNull Set<K> actualKeys, @NonNull Optional<Set<K>> allowedKeys, @NonNull String typeName) {
 		Objects.requireNonNull(actualKeys, "Actual keys must not be null");
 		Objects.requireNonNull(allowedKeys, "Allowed keys constraint must not be null");
 		Objects.requireNonNull(typeName, "Type name must not be null");
 		if (allowedKeys.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Set<K> allowed = allowedKeys.get();
 		Set<K> disallowed = new HashSet<>(actualKeys);
 		disallowed.removeAll(allowed);
 		if (!disallowed.isEmpty()) {
-			return Result.error(typeName + " contains keys that are not allowed: " + formatSet(disallowed));
+			throw new ConstraintViolateException(typeName + " contains keys that are not allowed: " + formatSet(disallowed));
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -864,23 +835,23 @@ public final class ConstraintMatchers {
 	 * @param config The optional nested constraint configuration
 	 * @param fieldName The name of the field for error messages
 	 * @param <T> The type of the value
-	 * @return A successful result if validation passes or no constraint is set
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
 	@SuppressWarnings("DuplicatedCode")
-	public static <T> @NonNull Result<Void> matchNestedConfig(@NonNull T value, @NonNull Optional<? extends ConstraintConfig<T>> config, @NonNull String fieldName) {
+	public static <T> void validateNestedConfig(@NonNull T value, @NonNull Optional<? extends ConstraintConfig<T>> config, @NonNull String fieldName) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(config, "Config constraint must not be null");
 		Objects.requireNonNull(fieldName, "Field name must not be null");
 		if (config.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
-		Result<Void> result = config.get().matches(value);
-		if (result.isError()) {
-			return Result.error(fieldName + " constraint failed: " + result.errorOrThrow());
+		try {
+			config.get().validate(value);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException(fieldName + " constraint failed: " + e.getMessage());
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -901,51 +872,51 @@ public final class ConstraintMatchers {
 	 * @param fieldName The name of the field for error messages
 	 * @param <T> The type of the input value
 	 * @param <V> The type of the extracted value to validate
-	 * @return A successful result if validation passes or no constraint is set
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static <T, V> @NonNull Result<Void> matchExtractedValue(@NonNull T value, @NonNull Optional<? extends ConstraintConfig<V>> config, @NonNull Function<T, V> extractor, @NonNull String fieldName) {
+	public static <T, V> void validateExtractedValue(@NonNull T value, @NonNull Optional<? extends ConstraintConfig<V>> config, @NonNull Function<T, V> extractor, @NonNull String fieldName) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(config, "Config constraint must not be null");
 		Objects.requireNonNull(extractor, "Extractor must not be null");
 		Objects.requireNonNull(fieldName, "Field name must not be null");
 		if (config.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		V extracted = extractor.apply(value);
-		Result<Void> result = config.get().matches(extracted);
-		if (result.isError()) {
-			return Result.error(fieldName + " constraint failed: " + result.errorOrThrow());
+		try {
+			config.get().validate(extracted);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException(fieldName + " constraint failed: " + e.getMessage());
 		}
-		return Result.success();
 	}
 	
 	/**
 	 * Validates an integer value against a numeric field constraint configuration.<br>
 	 * <p>
-	 *     This is a convenience method that delegates to {@link #matchNestedConfig(Object, Optional, String)}.
+	 *     This is a convenience method that delegates to {@link #validateNestedConfig(Object, Optional, String)}.
 	 * </p>
 	 *
 	 * @param value The integer value to validate
 	 * @param config The optional numeric field constraint configuration
 	 * @param fieldName The name of the field for error messages
-	 * @return A successful result if validation passes or no constraint is set
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
 	@SuppressWarnings("DuplicatedCode")
-	public static @NonNull Result<Void> matchNumericField(int value, @NonNull Optional<NumericConstraintConfig> config, @NonNull String fieldName) {
+	public static void validateNumericField(int value, @NonNull Optional<NumericConstraintConfig> config, @NonNull String fieldName) {
 		Objects.requireNonNull(config, "Config constraint must not be null");
 		Objects.requireNonNull(fieldName, "Field name must not be null");
 		if (config.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
-		Result<Void> result = config.get().matches(value);
-		if (result.isError()) {
-			return Result.error("Field '" + fieldName + "' constraint failed: " + result.errorOrThrow());
+		try {
+			config.get().validate(value);
+		} catch (ConstraintViolateException e) {
+			throw new ConstraintViolateException("Field '" + fieldName + "' constraint failed: " + e.getMessage(), e);
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -961,10 +932,10 @@ public final class ConstraintMatchers {
 	 * @param subtractor Function to subtract duration from a temporal value
 	 * @param typeName The name of the type for error messages (e.g., "Instant", "LocalDateTime")
 	 * @param <T> The type of the temporal value (must be Temporal and Comparable)
-	 * @return A successful result if the value is within the last duration or no constraint is set
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static <T extends Temporal & Comparable<? super T>> @NonNull Result<Void> matchWithinLast(
+	public static <T extends Temporal & Comparable<? super T>> void validateWithinLast(
 		@NonNull T value, @NonNull Optional<Duration> withinLast, @NonNull Supplier<T> nowSupplier, @NonNull BiFunction<T, Duration, T> subtractor, @NonNull String typeName
 	) {
 		Objects.requireNonNull(value, "Value must not be null");
@@ -973,15 +944,14 @@ public final class ConstraintMatchers {
 		Objects.requireNonNull(subtractor, "Subtractor must not be null");
 		Objects.requireNonNull(typeName, "Type name must not be null");
 		if (withinLast.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Duration duration = withinLast.get();
 		T threshold = subtractor.apply(nowSupplier.get(), duration);
 		if (value.compareTo(threshold) < 0) {
-			return Result.error(typeName + " '" + value + "' must be within last " + duration);
+			throw new ConstraintViolateException(typeName + " '" + value + "' must be within last " + duration);
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -997,10 +967,10 @@ public final class ConstraintMatchers {
 	 * @param adder Function to add duration to a temporal value
 	 * @param typeName The name of the type for error messages (e.g., "Instant", "LocalDateTime")
 	 * @param <T> The type of the temporal value (must be Temporal and Comparable)
-	 * @return A successful result if the value is within the next duration or no constraint is set
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static <T extends Temporal & Comparable<? super T>> @NonNull Result<Void> matchWithinNext(
+	public static <T extends Temporal & Comparable<? super T>> void validateWithinNext(
 		@NonNull T value, @NonNull Optional<Duration> withinNext, @NonNull Supplier<T> nowSupplier, @NonNull BiFunction<T, Duration, T> adder, @NonNull String typeName
 	) {
 		Objects.requireNonNull(value, "Value must not be null");
@@ -1009,14 +979,13 @@ public final class ConstraintMatchers {
 		Objects.requireNonNull(adder, "Adder must not be null");
 		Objects.requireNonNull(typeName, "Type name must not be null");
 		if (withinNext.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Duration duration = withinNext.get();
 		T threshold = adder.apply(nowSupplier.get(), duration);
 		if (value.compareTo(threshold) > 0) {
-			return Result.error(typeName + " '" + value + "' must be within next " + duration);
+			throw new ConstraintViolateException(typeName + " '" + value + "' must be within next " + duration);
 		}
-		return Result.success();
 	}
 }

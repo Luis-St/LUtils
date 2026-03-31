@@ -45,6 +45,7 @@ public class NoSuchIniElementException extends NoSuchElementException {
 	
 	/**
 	 * Constructs a new no such ini element exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */

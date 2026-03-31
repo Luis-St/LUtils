@@ -21,14 +21,14 @@ package net.luis.utils.io.codec.types.array;
 import net.luis.utils.io.codec.*;
 import net.luis.utils.io.codec.constraint.config.collection.PrimitiveArrayConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.collection.PrimitiveArrayConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for boolean arrays.<br>
@@ -36,7 +36,9 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class BooleanArrayCodec extends AbstractCodec<boolean[], PrimitiveArrayConstraintConfig<boolean[]>> implements PrimitiveArrayConstraint<boolean[], BooleanArrayCodec> {
+public class BooleanArrayCodec
+	extends AbstractConstrainableCodec<boolean[], PrimitiveArrayConstraintConfig<boolean[]>, BooleanArrayCodec>
+	implements PrimitiveArrayConstraint<boolean[], BooleanArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of booleans and the array representation.<br>
@@ -46,7 +48,9 @@ public class BooleanArrayCodec extends AbstractCodec<boolean[], PrimitiveArrayCo
 	/**
 	 * Constructs a new boolean array codec.<br>
 	 */
-	public BooleanArrayCodec() {}
+	public BooleanArrayCodec() {
+		super(BooleanArrayCodec::new, PrimitiveArrayConstraintConfig.booleanArray());
+	}
 	
 	/**
 	 * Constructs a new boolean array codec with the specified length constraint configuration.<br>
@@ -55,61 +59,31 @@ public class BooleanArrayCodec extends AbstractCodec<boolean[], PrimitiveArrayCo
 	 * @throws NullPointerException If the constraint config is null
 	 */
 	private BooleanArrayCodec(@NonNull PrimitiveArrayConstraintConfig<boolean[]> config) {
-		super(config);
+		super(BooleanArrayCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull BooleanArrayCodec apply(@NonNull UnaryOperator<PrimitiveArrayConstraintConfig<boolean[]>> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new BooleanArrayCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(PrimitiveArrayConstraintConfig.booleanArray()))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, boolean @Nullable [] value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, boolean @Nullable [] value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as boolean array using '" + this + "'");
+			throw new EncoderException("Unable to encode null as boolean array", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		
-		return this.internalCodec.encodeStart(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
+		this.validateEncodeConstraints(value);
+		return this.internalCodec.encode(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
 	}
 	
 	@Override
-	public <R> @NonNull Result<boolean[]> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> boolean @NonNull [] decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as boolean array using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as boolean array", this);
 		}
 		
-		Result<List<Boolean>> result = this.internalCodec.decodeStart(provider, current, value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		List<Boolean> list = result.resultOrThrow();
+		List<Boolean> list = this.internalCodec.decode(provider, current, value);
 		boolean[] array = ArrayUtils.toPrimitive(list.toArray(Boolean[]::new));
-		
-		Result<Void> constraintResult = this.checkConstraints(array);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(array);
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedBooleanArrayCodec[constraints=" + config + "]";
-		}).orElse("BooleanArrayCodec");
+		return this.validateDecodeConstraints(array);
 	}
 }

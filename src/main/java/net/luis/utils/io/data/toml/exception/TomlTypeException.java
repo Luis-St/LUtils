@@ -21,7 +21,7 @@ package net.luis.utils.io.data.toml.exception;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Thrown when a TOML element is not of the expected type.<br>
+ * Thrown when a toml element is not of the expected type.<br>
  * The exception message will contain the details about the expected and actual types.<br>
  *
  * @author Luis-St
@@ -29,12 +29,12 @@ import org.jspecify.annotations.Nullable;
 public class TomlTypeException extends RuntimeException {
 	
 	/**
-	 * Constructs a new TOML type exception with no details.<br>
+	 * Constructs a new toml type exception with no details.<br>
 	 */
 	public TomlTypeException() {}
 	
 	/**
-	 * Constructs a new TOML type exception with the specified message.<br>
+	 * Constructs a new toml type exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
 	public TomlTypeException(@Nullable String message) {
@@ -42,7 +42,8 @@ public class TomlTypeException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new TOML type exception with the specified message and cause.<br>
+	 * Constructs a new toml type exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
@@ -51,7 +52,7 @@ public class TomlTypeException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new TOML type exception with the specified cause.<br>
+	 * Constructs a new toml type exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
 	public TomlTypeException(@Nullable Throwable cause) {

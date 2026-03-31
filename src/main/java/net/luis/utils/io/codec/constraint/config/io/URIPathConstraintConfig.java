@@ -19,13 +19,11 @@
 package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
+import net.luis.utils.io.codec.constraint.config.validator.IOValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -145,12 +143,18 @@ public record URIPathConstraintConfig(
 		}
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equals(UNCONSTRAINED);
+	}
+	
 	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
 	 * @param value The exact path that should be matched
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withEqualTo(@NonNull String value) {
@@ -162,6 +166,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
 	 * @param value The path that should be excluded
+	 * @throws NullPointerException If the value is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withNotEqualTo(@NonNull String value) {
@@ -173,6 +178,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
 	 * @param values The collection of paths that are allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withIn(@NonNull Collection<String> values) {
@@ -184,6 +190,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
 	 * @param values The collection of paths that are not allowed
+	 * @throws NullPointerException If the values collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withNotIn(@NonNull Collection<String> values) {
@@ -195,6 +202,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified length constraint configuration.<br>
 	 *
 	 * @param config The length constraint configuration
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withLength(@NonNull LengthConstraintConfig config) {
@@ -206,6 +214,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified depth constraint configuration.<br>
 	 *
 	 * @param config The depth constraint configuration
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withDepth(@NonNull DepthConstraintConfig config) {
@@ -244,6 +253,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified path string constraint.<br>
 	 *
 	 * @param config The string constraint config for path validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withPath(@NonNull StringConstraintConfig config) {
@@ -255,6 +265,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified segment constraint.<br>
 	 *
 	 * @param config The string constraint config for segment validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withSegment(@NonNull StringConstraintConfig config) {
@@ -266,6 +277,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified file name constraint.<br>
 	 *
 	 * @param config The string constraint config for file name validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withFile(@NonNull StringConstraintConfig config) {
@@ -286,6 +298,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified extension constraint.<br>
 	 *
 	 * @param config The string constraint config for extension validation
+	 * @throws NullPointerException If the config is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withExtension(@NonNull StringConstraintConfig config) {
@@ -297,6 +310,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified ancestor-of constraint.<br>
 	 *
 	 * @param paths The collection of paths that constrained paths must be ancestors of
+	 * @throws NullPointerException If the paths collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withAncestorOf(@NonNull Collection<String> paths) {
@@ -308,6 +322,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified descendant-of constraint.<br>
 	 *
 	 * @param paths The collection of paths that constrained paths must be descendants of
+	 * @throws NullPointerException If the paths collection is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withDescendantOf(@NonNull Collection<String> paths) {
@@ -319,6 +334,7 @@ public record URIPathConstraintConfig(
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
 	 * @param constraint The custom constraint implementation
+	 * @throws NullPointerException If the constraint is null
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIPathConstraintConfig withCustom(@NonNull Constraint<String> constraint) {
@@ -328,25 +344,25 @@ public record URIPathConstraintConfig(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(@NonNull String value) {
+	public void validate(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.length, String::length, "Length"),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.depth, IOMatchers::calculateUriPathDepth, "Depth"),
-			() -> ConstraintMatchers.matchFlag(value, this.absolute, p -> p.startsWith("/"), "URI path '" + value + "' must be absolute"),
-			() -> ConstraintMatchers.matchFlag(value, this.relative, p -> !p.startsWith("/"), "URI path '" + value + "' must be relative"),
-			() -> ConstraintMatchers.matchFlag(value, this.normalized, IOMatchers::isUriPathNormalized, "URI path '" + value + "' must be normalized"),
-			() -> IOMatchers.matchUriPathStringConfig(value, this.path),
-			() -> IOMatchers.matchUriPathSegmentConfig(value, this.segment),
-			() -> IOMatchers.matchUriPathFileNameConfig(value, this.file),
-			() -> IOMatchers.matchUriPathWithoutExtension(value, this.withoutExtension),
-			() -> IOMatchers.matchUriPathExtensionConfig(value, this.extension),
-			() -> IOMatchers.matchUriPathAncestorOf(value, this.ancestorOf),
-			() -> IOMatchers.matchUriPathDescendantOf(value, this.descendantOf),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateExtractedValue(value, this.length, String::length, "Length"),
+			() -> ConstraintValidators.validateExtractedValue(value, this.depth, IOValidators::calculateUriPathDepth, "Depth"),
+			() -> ConstraintValidators.validateFlag(value, this.absolute, p -> p.startsWith("/"), "URI path '" + value + "' must be absolute"),
+			() -> ConstraintValidators.validateFlag(value, this.relative, p -> !p.startsWith("/"), "URI path '" + value + "' must be relative"),
+			() -> ConstraintValidators.validateFlag(value, this.normalized, IOValidators::isUriPathNormalized, "URI path '" + value + "' must be normalized"),
+			() -> IOValidators.validateUriPathStringConfig(value, this.path),
+			() -> IOValidators.validateUriPathSegmentConfig(value, this.segment),
+			() -> IOValidators.validateUriPathFileNameConfig(value, this.file),
+			() -> IOValidators.validateUriPathWithoutExtension(value, this.withoutExtension),
+			() -> IOValidators.validateUriPathExtensionConfig(value, this.extension),
+			() -> IOValidators.validateUriPathAncestorOf(value, this.ancestorOf),
+			() -> IOValidators.validateUriPathDescendantOf(value, this.descendantOf),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

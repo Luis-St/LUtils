@@ -43,6 +43,7 @@ public class NoSuchYamlElementException extends RuntimeException {
 	
 	/**
 	 * Constructs a new no such yaml element exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */

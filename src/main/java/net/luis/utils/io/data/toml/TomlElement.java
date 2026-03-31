@@ -25,8 +25,8 @@ import org.jspecify.annotations.NonNull;
 import java.time.*;
 
 /**
- * A generic interface representing a TOML element.<br>
- * A TOML element can be a TOML value, a TOML array, a TOML table, or a TOML null.<br>
+ * A generic interface representing a toml element.<br>
+ * A toml element can be a toml value, a toml array, a toml table, or a toml null.<br>
  *
  * @author Luis-St
  */
@@ -45,324 +45,324 @@ public interface TomlElement {
 	}
 	
 	/**
-	 * Checks if this TOML element is a TOML null.<br>
-	 * @return True if this TOML element is a TOML null, false otherwise
+	 * Checks if this toml element is a toml null.<br>
+	 * @return True if this toml element is a toml null, false otherwise
 	 */
 	default boolean isTomlNull() {
 		return this instanceof TomlNull;
 	}
 	
 	/**
-	 * Checks if this TOML element is a TOML value.<br>
-	 * @return True if this TOML element is a TOML value, false otherwise
+	 * Checks if this toml element is a toml value.<br>
+	 * @return True if this toml element is a toml value, false otherwise
 	 */
 	default boolean isTomlValue() {
 		return this instanceof TomlValue;
 	}
 	
 	/**
-	 * Checks if this TOML element is a TOML array.<br>
-	 * @return True if this TOML element is a TOML array, false otherwise
+	 * Checks if this toml element is a toml array.<br>
+	 * @return True if this toml element is a toml array, false otherwise
 	 */
 	default boolean isTomlArray() {
 		return this instanceof TomlArray;
 	}
 	
 	/**
-	 * Checks if this TOML element is a TOML table.<br>
-	 * @return True if this TOML element is a TOML table, false otherwise
+	 * Checks if this toml element is a toml table.<br>
+	 * @return True if this toml element is a toml table, false otherwise
 	 */
 	default boolean isTomlTable() {
 		return this instanceof TomlTable;
 	}
 	
 	/**
-	 * Checks if this TOML value is a boolean.<br>
-	 * @return True if this TOML value is a boolean, false otherwise
+	 * Checks if this toml value is a boolean.<br>
+	 * @return True if this toml value is a boolean, false otherwise
 	 */
-	default boolean isBoolean() {
-		return this.isTomlValue() && this.getAsTomlValue().isBoolean();
+	default boolean isTomlBoolean() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlBoolean();
 	}
 	
 	/**
-	 * Checks if this TOML value is a number.<br>
-	 * @return True if this TOML value is a number, false otherwise
+	 * Checks if this toml value is a number.<br>
+	 * @return True if this toml value is a number, false otherwise
 	 */
-	default boolean isNumber() {
-		return this.isTomlValue() && this.getAsTomlValue().isNumber();
+	default boolean isTomlNumber() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlNumber();
 	}
 	
 	/**
-	 * Checks if this TOML value is a byte.<br>
-	 * @return True if this TOML value is a byte, false otherwise
+	 * Checks if this toml value is a byte.<br>
+	 * @return True if this toml value is a byte, false otherwise
 	 */
-	default boolean isByte() {
-		return this.isTomlValue() && this.getAsTomlValue().isByte();
+	default boolean isTomlByte() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlByte();
 	}
 	
 	/**
-	 * Checks if this TOML value is a short.<br>
-	 * @return True if this TOML value is a short, false otherwise
+	 * Checks if this toml value is a short.<br>
+	 * @return True if this toml value is a short, false otherwise
 	 */
-	default boolean isShort() {
-		return this.isTomlValue() && this.getAsTomlValue().isShort();
+	default boolean isTomlShort() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlShort();
 	}
 	
 	/**
-	 * Checks if this TOML value is an integer.<br>
-	 * @return True if this TOML value is an integer, false otherwise
+	 * Checks if this toml value is an integer.<br>
+	 * @return True if this toml value is an integer, false otherwise
 	 */
-	default boolean isInteger() {
-		return this.isTomlValue() && this.getAsTomlValue().isInteger();
+	default boolean isTomlInteger() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlInteger();
 	}
 	
 	/**
-	 * Checks if this TOML value is a long.<br>
-	 * @return True if this TOML value is a long, false otherwise
+	 * Checks if this toml value is a long.<br>
+	 * @return True if this toml value is a long, false otherwise
 	 */
-	default boolean isLong() {
-		return this.isTomlValue() && this.getAsTomlValue().isLong();
+	default boolean isTomlLong() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlLong();
 	}
 	
 	/**
-	 * Checks if this TOML value is a float.<br>
-	 * @return True if this TOML value is a float, false otherwise
+	 * Checks if this toml value is a float.<br>
+	 * @return True if this toml value is a float, false otherwise
 	 */
-	default boolean isFloat() {
-		return this.isTomlValue() && this.getAsTomlValue().isFloat();
+	default boolean isTomlFloat() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlFloat();
 	}
 	
 	/**
-	 * Checks if this TOML value is a double.<br>
-	 * @return True if this TOML value is a double, false otherwise
+	 * Checks if this toml value is a double.<br>
+	 * @return True if this toml value is a double, false otherwise
 	 */
-	default boolean isDouble() {
-		return this.isTomlValue() && this.getAsTomlValue().isDouble();
+	default boolean isTomlDouble() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlDouble();
 	}
 	
 	/**
-	 * Checks if this TOML value is a string.<br>
-	 * @return True if this TOML value is a string, false otherwise
+	 * Checks if this toml value is a string.<br>
+	 * @return True if this toml value is a string, false otherwise
 	 */
-	default boolean isString() {
-		return this.isTomlValue() && this.getAsTomlValue().isString();
+	default boolean isTomlString() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlString();
 	}
 	
 	/**
-	 * Checks if this TOML value is a local date.<br>
-	 * @return True if this TOML value is a local date, false otherwise
+	 * Checks if this toml value is a local date.<br>
+	 * @return True if this toml value is a local date, false otherwise
 	 */
-	default boolean isLocalDate() {
-		return this.isTomlValue() && this.getAsTomlValue().isLocalDate();
+	default boolean isTomlLocalDate() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlLocalDate();
 	}
 	
 	/**
-	 * Checks if this TOML value is a local time.<br>
-	 * @return True if this TOML value is a local time, false otherwise
+	 * Checks if this toml value is a local time.<br>
+	 * @return True if this toml value is a local time, false otherwise
 	 */
-	default boolean isLocalTime() {
-		return this.isTomlValue() && this.getAsTomlValue().isLocalTime();
+	default boolean isTomlLocalTime() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlLocalTime();
 	}
 	
 	/**
-	 * Checks if this TOML value is a local date-time.<br>
-	 * @return True if this TOML value is a local date-time, false otherwise
+	 * Checks if this toml value is a local date-time.<br>
+	 * @return True if this toml value is a local date-time, false otherwise
 	 */
-	default boolean isLocalDateTime() {
-		return this.isTomlValue() && this.getAsTomlValue().isLocalDateTime();
+	default boolean isTomlLocalDateTime() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlLocalDateTime();
 	}
 	
 	/**
-	 * Checks if this TOML value is an offset date-time.<br>
-	 * @return True if this TOML value is an offset date-time, false otherwise
+	 * Checks if this toml value is an offset date-time.<br>
+	 * @return True if this toml value is an offset date-time, false otherwise
 	 */
-	default boolean isOffsetDateTime() {
-		return this.isTomlValue() && this.getAsTomlValue().isOffsetDateTime();
+	default boolean isTomlOffsetDateTime() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlOffsetDateTime();
 	}
 	
 	/**
-	 * Checks if this TOML value is any date/time type.<br>
-	 * @return True if this TOML value is a date/time type, false otherwise
+	 * Checks if this toml value is any date/time type.<br>
+	 * @return True if this toml value is a date/time type, false otherwise
 	 */
-	default boolean isDateTime() {
-		return this.isTomlValue() && this.getAsTomlValue().isDateTime();
+	default boolean isTomlDateTime() {
+		return this.isTomlValue() && this.getAsTomlValue().isTomlDateTime();
 	}
 	
 	/**
-	 * Converts this TOML element to a TOML value.<br>
+	 * Converts this toml element to a toml value.<br>
 	 *
-	 * @return This TOML element as a TOML value
-	 * @throws TomlTypeException If this TOML element is not a TOML value
+	 * @return This toml element as a toml value
+	 * @throws TomlTypeException If this toml element is not a toml value
 	 */
 	default @NonNull TomlValue getAsTomlValue() {
 		if (this instanceof TomlValue value) {
 			return value;
 		}
-		throw new TomlTypeException("Expected a TOML value, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml value, but found: " + this.getName());
 	}
 	
 	/**
-	 * Converts this TOML element to a TOML array.<br>
+	 * Converts this toml element to a toml array.<br>
 	 *
-	 * @return This TOML element as a TOML array
-	 * @throws TomlTypeException If this TOML element is not a TOML array
+	 * @return This toml element as a toml array
+	 * @throws TomlTypeException If this toml element is not a toml array
 	 */
 	default @NonNull TomlArray getAsTomlArray() {
 		if (this instanceof TomlArray array) {
 			return array;
 		}
-		throw new TomlTypeException("Expected a TOML array, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml array, but found: " + this.getName());
 	}
 	
 	/**
-	 * Converts this TOML element to a TOML table.<br>
+	 * Converts this toml element to a toml table.<br>
 	 *
-	 * @return This TOML element as a TOML table
-	 * @throws TomlTypeException If this TOML element is not a TOML table
+	 * @return This toml element as a toml table
+	 * @throws TomlTypeException If this toml element is not a toml table
 	 */
 	default @NonNull TomlTable getAsTomlTable() {
 		if (this instanceof TomlTable table) {
 			return table;
 		}
-		throw new TomlTypeException("Expected a TOML table, but found: " + this.getName());
+		throw new TomlTypeException("Expected a toml table, but found: " + this.getName());
 	}
 	
 	/**
-	 * Converts this TOML element to a boolean.<br>
+	 * Converts this toml element to a boolean.<br>
 	 *
-	 * @return This TOML value as a boolean
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not a boolean
+	 * @return This toml value as a boolean
+	 * @throws TomlTypeException If this toml element is not a toml value or not a boolean
 	 */
 	default boolean getAsBoolean() {
 		return this.getAsTomlValue().getAsBoolean();
 	}
 	
 	/**
-	 * Converts this TOML element to a number.<br>
+	 * Converts this toml element to a number.<br>
 	 *
-	 * @return This TOML value as a number
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not a number
+	 * @return This toml value as a number
+	 * @throws TomlTypeException If this toml element is not a toml value or not a number
 	 */
 	default @NonNull Number getAsNumber() {
 		return this.getAsTomlValue().getAsNumber();
 	}
 	
 	/**
-	 * Converts this TOML element to a byte.<br>
+	 * Converts this toml element to a byte.<br>
 	 *
-	 * @return This TOML value as a byte
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not a number
+	 * @return This toml value as a byte
+	 * @throws TomlTypeException If this toml element is not a toml value or not a number
 	 */
 	default byte getAsByte() {
 		return this.getAsTomlValue().getAsByte();
 	}
 	
 	/**
-	 * Converts this TOML element to a short.<br>
+	 * Converts this toml element to a short.<br>
 	 *
-	 * @return This TOML value as a short
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not a number
+	 * @return This toml value as a short
+	 * @throws TomlTypeException If this toml element is not a toml value or not a number
 	 */
 	default short getAsShort() {
 		return this.getAsTomlValue().getAsShort();
 	}
 	
 	/**
-	 * Converts this TOML element to an integer.<br>
+	 * Converts this toml element to an integer.<br>
 	 *
-	 * @return This TOML value as an integer
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not a number
+	 * @return This toml value as an integer
+	 * @throws TomlTypeException If this toml element is not a toml value or not a number
 	 */
 	default int getAsInteger() {
 		return this.getAsTomlValue().getAsInteger();
 	}
 	
 	/**
-	 * Converts this TOML element to a long.<br>
+	 * Converts this toml element to a long.<br>
 	 *
-	 * @return This TOML value as a long
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not a number
+	 * @return This toml value as a long
+	 * @throws TomlTypeException If this toml element is not a toml value or not a number
 	 */
 	default long getAsLong() {
 		return this.getAsTomlValue().getAsLong();
 	}
 	
 	/**
-	 * Converts this TOML element to a float.<br>
+	 * Converts this toml element to a float.<br>
 	 *
-	 * @return This TOML value as a float
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not a number
+	 * @return This toml value as a float
+	 * @throws TomlTypeException If this toml element is not a toml value or not a number
 	 */
 	default float getAsFloat() {
 		return this.getAsTomlValue().getAsFloat();
 	}
 	
 	/**
-	 * Converts this TOML element to a double.<br>
+	 * Converts this toml element to a double.<br>
 	 *
-	 * @return This TOML value as a double
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not a number
+	 * @return This toml value as a double
+	 * @throws TomlTypeException If this toml element is not a toml value or not a number
 	 */
 	default double getAsDouble() {
 		return this.getAsTomlValue().getAsDouble();
 	}
 	
 	/**
-	 * Converts this TOML element to a string.<br>
+	 * Converts this toml element to a string.<br>
 	 *
-	 * @return This TOML value as a string
-	 * @throws TomlTypeException If this TOML element is not a TOML value
+	 * @return This toml value as a string
+	 * @throws TomlTypeException If this toml element is not a toml value
 	 */
 	default @NonNull String getAsString() {
 		return this.getAsTomlValue().getAsString();
 	}
 	
 	/**
-	 * Converts this TOML element to a local date.<br>
+	 * Converts this toml element to a local date.<br>
 	 *
-	 * @return This TOML value as a local date
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not a local date
+	 * @return This toml value as a local date
+	 * @throws TomlTypeException If this toml element is not a toml value or not a local date
 	 */
 	default @NonNull LocalDate getAsLocalDate() {
 		return this.getAsTomlValue().getAsLocalDate();
 	}
 	
 	/**
-	 * Converts this TOML element to a local time.<br>
+	 * Converts this toml element to a local time.<br>
 	 *
-	 * @return This TOML value as a local time
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not a local time
+	 * @return This toml value as a local time
+	 * @throws TomlTypeException If this toml element is not a toml value or not a local time
 	 */
 	default @NonNull LocalTime getAsLocalTime() {
 		return this.getAsTomlValue().getAsLocalTime();
 	}
 	
 	/**
-	 * Converts this TOML element to a local date-time.<br>
+	 * Converts this toml element to a local date-time.<br>
 	 *
-	 * @return This TOML value as a local date-time
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not a local date-time
+	 * @return This toml value as a local date-time
+	 * @throws TomlTypeException If this toml element is not a toml value or not a local date-time
 	 */
 	default @NonNull LocalDateTime getAsLocalDateTime() {
 		return this.getAsTomlValue().getAsLocalDateTime();
 	}
 	
 	/**
-	 * Converts this TOML element to an offset date-time.<br>
+	 * Converts this toml element to an offset date-time.<br>
 	 *
-	 * @return This TOML value as an offset date-time
-	 * @throws TomlTypeException If this TOML element is not a TOML value or not an offset date-time
+	 * @return This toml value as an offset date-time
+	 * @throws TomlTypeException If this toml element is not a toml value or not an offset date-time
 	 */
 	default @NonNull OffsetDateTime getAsOffsetDateTime() {
 		return this.getAsTomlValue().getAsOffsetDateTime();
 	}
 	
 	/**
-	 * Returns a string representation of this TOML element based on the given TOML config.<br>
-	 * The TOML config specifies how the TOML element should be formatted.<br>
+	 * Returns a string representation of this toml element based on the given toml config.<br>
+	 * The toml config specifies how the toml element should be formatted.<br>
 	 *
-	 * @param config The TOML config to use
-	 * @return The string representation of this TOML element
+	 * @param config The toml config to use
+	 * @return The string representation of this toml element
 	 */
 	@NonNull String toString(@NonNull TomlConfig config);
 }

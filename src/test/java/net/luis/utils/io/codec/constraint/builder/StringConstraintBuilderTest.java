@@ -18,9 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
-import net.luis.utils.util.result.Result;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -49,7 +48,7 @@ class StringConstraintBuilderTest {
 		StringConstraintConfig initialConfig = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
 		StringConstraintBuilder builder = new StringConstraintBuilder(initialConfig);
 		StringConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
 		assertTrue(config.notBlank().isPresent());
@@ -167,7 +166,7 @@ class StringConstraintBuilderTest {
 	@Test
 	void customReturnsBuilder() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
-		Constraint<String> constraint = value -> Result.success(null);
+		Constraint<String> constraint = value -> {};
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
 	}
@@ -191,12 +190,12 @@ class StringConstraintBuilderTest {
 		assertSame(builder, builder.upperCase());
 		assertTrue(builder.build().upperCase().isPresent());
 	}
-
+	
 	@Test
 	void lengthReturnsBuilder() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
 		assertSame(builder, builder.length(l -> l.minLength(3).maxLength(10)));
-
+		
 		StringConstraintConfig config = builder.build();
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());
@@ -204,7 +203,7 @@ class StringConstraintBuilderTest {
 		assertEquals(3, config.length().get().min().get().getFirst());
 		assertEquals(10, config.length().get().max().get().getFirst());
 	}
-
+	
 	@Test
 	void lengthWithNullBuilder() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
@@ -505,27 +504,27 @@ class StringConstraintBuilderTest {
 	void buildReturnsCorrectConfig() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
 		builder.length(b -> b.minLength(5).maxLength(100)).startsWith("test");
-
+		
 		StringConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());
 		assertTrue(config.length().get().max().isPresent());
 		assertTrue(config.startsWith().isPresent());
 	}
-
+	
 	@Test
 	void methodChainingWorks() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
-
+		
 		StringConstraintConfig config = builder
 			.length(b -> b.minLength(5).maxLength(100))
 			.notBlank()
 			.startsWith("test")
 			.endsWith(".txt")
 			.build();
-
+		
 		assertNotNull(config);
 		assertTrue(config.length().isPresent());
 		assertTrue(config.length().get().min().isPresent());

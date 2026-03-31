@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal.local;
 
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintViolateException;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.time.Year;
@@ -85,7 +85,18 @@ class YearConstraintConfigTest {
 		assertTrue(config.min().isEmpty());
 		assertTrue(config.max().isEmpty());
 		assertTrue(config.custom().isEmpty());
-		assertTrue(config.matches(Year.of(2024)).isSuccess());
+		assertDoesNotThrow(() -> config.validate(Year.of(2024)));
+	}
+	
+	@Test
+	void isUnconstrainedWithUnconstrained() {
+		assertTrue(YearConstraintConfig.UNCONSTRAINED.isUnconstrained());
+	}
+	
+	@Test
+	void isUnconstrainedWithConstraint() {
+		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withAfter(Year.of(2020));
+		assertFalse(config.isUnconstrained());
 	}
 	
 	@Test
@@ -236,7 +247,9 @@ class YearConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withCustom(year -> year.isLeap() ? Result.success() : Result.error("Year must be a leap year"));
+		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withCustom(year -> {
+			if (!year.isLeap()) throw new ConstraintViolateException("Year must be a leap year");
+		});
 		assertTrue(config.custom().isPresent());
 	}
 	
@@ -246,111 +259,113 @@ class YearConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithEqualTo() {
+	void validateWithEqualTo() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withEqualTo(Year.of(2024));
-		assertTrue(config.matches(Year.of(2024)).isSuccess());
-		assertTrue(config.matches(Year.of(2023)).isError());
+		assertDoesNotThrow(() -> config.validate(Year.of(2024)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2023)));
 	}
 	
 	@Test
-	void matchesWithNotEqualTo() {
+	void validateWithNotEqualTo() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withNotEqualTo(Year.of(2024));
-		assertTrue(config.matches(Year.of(2023)).isSuccess());
-		assertTrue(config.matches(Year.of(2024)).isError());
+		assertDoesNotThrow(() -> config.validate(Year.of(2023)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2024)));
 	}
 	
 	@Test
-	void matchesWithIn() {
+	void validateWithIn() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withIn(List.of(Year.of(2020), Year.of(2024)));
-		assertTrue(config.matches(Year.of(2020)).isSuccess());
-		assertTrue(config.matches(Year.of(2024)).isSuccess());
-		assertTrue(config.matches(Year.of(2022)).isError());
+		assertDoesNotThrow(() -> config.validate(Year.of(2020)));
+		assertDoesNotThrow(() -> config.validate(Year.of(2024)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2022)));
 	}
 	
 	@Test
-	void matchesWithNotIn() {
+	void validateWithNotIn() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withNotIn(List.of(Year.of(2020), Year.of(2024)));
-		assertTrue(config.matches(Year.of(2022)).isSuccess());
-		assertTrue(config.matches(Year.of(2020)).isError());
-		assertTrue(config.matches(Year.of(2024)).isError());
+		assertDoesNotThrow(() -> config.validate(Year.of(2022)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2020)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2024)));
 	}
 	
 	@Test
-	void matchesWithAfter() {
+	void validateWithAfter() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withAfter(Year.of(2020));
-		assertTrue(config.matches(Year.of(2021)).isSuccess());
-		assertTrue(config.matches(Year.of(2020)).isError());
-		assertTrue(config.matches(Year.of(2019)).isError());
+		assertDoesNotThrow(() -> config.validate(Year.of(2021)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2020)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2019)));
 	}
 	
 	@Test
-	void matchesWithAfterOrEqual() {
+	void validateWithAfterOrEqual() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withAfterOrEqual(Year.of(2020));
-		assertTrue(config.matches(Year.of(2020)).isSuccess());
-		assertTrue(config.matches(Year.of(2021)).isSuccess());
-		assertTrue(config.matches(Year.of(2019)).isError());
+		assertDoesNotThrow(() -> config.validate(Year.of(2020)));
+		assertDoesNotThrow(() -> config.validate(Year.of(2021)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2019)));
 	}
 	
 	@Test
-	void matchesWithBefore() {
+	void validateWithBefore() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withBefore(Year.of(2030));
-		assertTrue(config.matches(Year.of(2029)).isSuccess());
-		assertTrue(config.matches(Year.of(2030)).isError());
-		assertTrue(config.matches(Year.of(2031)).isError());
+		assertDoesNotThrow(() -> config.validate(Year.of(2029)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2030)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2031)));
 	}
 	
 	@Test
-	void matchesWithBeforeOrEqual() {
+	void validateWithBeforeOrEqual() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withBeforeOrEqual(Year.of(2030));
-		assertTrue(config.matches(Year.of(2030)).isSuccess());
-		assertTrue(config.matches(Year.of(2029)).isSuccess());
-		assertTrue(config.matches(Year.of(2031)).isError());
+		assertDoesNotThrow(() -> config.validate(Year.of(2030)));
+		assertDoesNotThrow(() -> config.validate(Year.of(2029)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2031)));
 	}
 	
 	@Test
-	void matchesWithBetween() {
+	void validateWithBetween() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withBetween(Year.of(2020), Year.of(2030));
-		assertTrue(config.matches(Year.of(2025)).isSuccess());
-		assertTrue(config.matches(Year.of(2020)).isError());
-		assertTrue(config.matches(Year.of(2030)).isError());
+		assertDoesNotThrow(() -> config.validate(Year.of(2025)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2020)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2030)));
 	}
 	
 	@Test
-	void matchesWithBetweenOrEqual() {
+	void validateWithBetweenOrEqual() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(Year.of(2020), Year.of(2030));
-		assertTrue(config.matches(Year.of(2020)).isSuccess());
-		assertTrue(config.matches(Year.of(2030)).isSuccess());
-		assertTrue(config.matches(Year.of(2025)).isSuccess());
-		assertTrue(config.matches(Year.of(2019)).isError());
-		assertTrue(config.matches(Year.of(2031)).isError());
+		assertDoesNotThrow(() -> config.validate(Year.of(2020)));
+		assertDoesNotThrow(() -> config.validate(Year.of(2030)));
+		assertDoesNotThrow(() -> config.validate(Year.of(2025)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2019)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2031)));
 	}
 	
 	@Test
-	void matchesWithCustomLeapYear() {
-		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withCustom(year -> year.isLeap() ? Result.success() : Result.error("Year must be a leap year"));
-		assertTrue(config.matches(Year.of(2024)).isSuccess());
-		assertTrue(config.matches(Year.of(2020)).isSuccess());
-		assertTrue(config.matches(Year.of(2023)).isError());
-		assertTrue(config.matches(Year.of(2025)).isError());
+	void validateWithCustomLeapYear() {
+		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED.withCustom(year -> {
+			if (!year.isLeap()) throw new ConstraintViolateException("Year must be a leap year");
+		});
+		assertDoesNotThrow(() -> config.validate(Year.of(2024)));
+		assertDoesNotThrow(() -> config.validate(Year.of(2020)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2023)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2025)));
 	}
 	
 	@Test
-	void matchesWithMultipleConstraints() {
+	void validateWithMultipleConstraints() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED
 			.withAfterOrEqual(Year.of(2000))
 			.withBeforeOrEqual(Year.of(2100))
 			.withNotIn(List.of(Year.of(2050)));
 		
-		assertTrue(config.matches(Year.of(2000)).isSuccess());
-		assertTrue(config.matches(Year.of(2100)).isSuccess());
-		assertTrue(config.matches(Year.of(2049)).isSuccess());
-		assertTrue(config.matches(Year.of(2050)).isError());
-		assertTrue(config.matches(Year.of(1999)).isError());
+		assertDoesNotThrow(() -> config.validate(Year.of(2000)));
+		assertDoesNotThrow(() -> config.validate(Year.of(2100)));
+		assertDoesNotThrow(() -> config.validate(Year.of(2049)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(2050)));
+		assertThrows(ConstraintViolateException.class, () -> config.validate(Year.of(1999)));
 	}
 	
 	@Test
-	void matchesWithNullValue() {
+	void validateWithNullValue() {
 		YearConstraintConfig config = YearConstraintConfig.UNCONSTRAINED;
-		assertThrows(NullPointerException.class, () -> config.matches(null));
+		assertThrows(NullPointerException.class, () -> config.validate(null));
 	}
 }

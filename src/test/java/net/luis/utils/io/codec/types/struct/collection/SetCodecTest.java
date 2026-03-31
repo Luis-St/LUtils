@@ -20,9 +20,10 @@ package net.luis.utils.io.codec.types.struct.collection;
 
 import com.google.common.collect.Sets;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -44,35 +45,33 @@ class SetCodecTest {
 	}
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		Set<Integer> set = Set.of(1, 2, 3);
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), set));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, set));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), set));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, set));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null value as set"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as set"));
 	}
 	
 	@Test
-	void encodeStartWithValidSet() {
+	void encodeWithValidSet() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		Set<Integer> set = Set.of(1, 2, 3);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), set);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), set);
 		
-		JsonArray array = result.resultOrThrow().getAsJsonArray();
+		JsonArray array = result.getAsJsonArray();
 		assertEquals(3, array.size());
 		assertTrue(array.contains(new JsonPrimitive(1)));
 		assertTrue(array.contains(new JsonPrimitive(2)));
@@ -80,75 +79,67 @@ class SetCodecTest {
 	}
 	
 	@Test
-	void encodeStartWithEmptySet() {
+	void encodeWithEmptySet() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		Set<Integer> set = Set.of();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), set);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonArray(), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), set);
+		assertEquals(new JsonArray(), result);
 	}
 	
 	@Test
-	void encodeStartWithSingleElement() {
+	void encodeWithSingleElement() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<String>> codec = new SetCodec<>(STRING);
 		Set<String> set = Set.of("hello");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), set);
-		assertTrue(result.isSuccess());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), set);
 		
 		JsonArray expected = new JsonArray();
 		expected.add(new JsonPrimitive("hello"));
-		assertEquals(expected, result.resultOrThrow());
+		assertEquals(expected, result);
 	}
 	
 	@Test
-	void encodeStartWithDifferentTypes() {
+	void encodeWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Codec<Set<String>> stringCodec = new SetCodec<>(STRING);
-		Result<JsonElement> stringResult = stringCodec.encodeStart(typeProvider, typeProvider.empty(), Set.of("a", "b"));
-		assertTrue(stringResult.isSuccess());
+		assertDoesNotThrow(() -> stringCodec.encode(typeProvider, typeProvider.empty(), Set.of("a", "b")));
 		
 		Codec<Set<Boolean>> boolCodec = new SetCodec<>(BOOLEAN);
-		Result<JsonElement> boolResult = boolCodec.encodeStart(typeProvider, typeProvider.empty(), Set.of(true, false));
-		assertTrue(boolResult.isSuccess());
+		assertDoesNotThrow(() -> boolCodec.encode(typeProvider, typeProvider.empty(), Set.of(true, false)));
 	}
 	
 	@Test
-	void encodeStartWithInvalidElements() {
+	void encodeWithInvalidElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		Set<Integer> setWithNull = Sets.newHashSet(1, null, 3);
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), setWithNull);
-		assertTrue(result.isPartial());
-		assertTrue(result.hasError());
-		assertTrue(result.hasValue());
+		assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), setWithNull));
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonArray()));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonArray()));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		
-		Result<Set<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as set"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null value as set"));
 	}
 	
 	@Test
-	void decodeStartWithValidArray() {
+	void decodeWithValidArray() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		
@@ -157,46 +148,42 @@ class SetCodecTest {
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
 		
-		Result<Set<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertEquals(Set.of(1, 2, 3), result.resultOrThrow());
+		Set<Integer> result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertEquals(Set.of(1, 2, 3), result);
 	}
 	
 	@Test
-	void decodeStartWithEmptyArray() {
+	void decodeWithEmptyArray() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		
-		Result<Set<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonArray());
-		assertTrue(result.isSuccess());
-		assertTrue(result.resultOrThrow().isEmpty());
+		Set<Integer> result = codec.decode(typeProvider, typeProvider.empty(), new JsonArray());
+		assertTrue(result.isEmpty());
 	}
 	
 	@Test
-	void decodeStartWithSingleElement() {
+	void decodeWithSingleElement() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<String>> codec = new SetCodec<>(STRING);
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive("hello"));
 		
-		Result<Set<String>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertEquals(Set.of("hello"), result.resultOrThrow());
+		Set<String> result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertEquals(Set.of("hello"), result);
 	}
 	
 	@Test
-	void decodeStartWithNonArray() {
+	void decodeWithNonArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		
-		Result<Set<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode set"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
+		assertTrue(exception.getMessage().contains("Json element '42' is not a json array"));
 	}
 	
 	@Test
-	void decodeStartWithDifferentTypes() {
+	void decodeWithDifferentTypes() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		JsonArray stringArray = new JsonArray();
@@ -204,22 +191,20 @@ class SetCodecTest {
 		stringArray.add(new JsonPrimitive("b"));
 		
 		Codec<Set<String>> stringCodec = new SetCodec<>(STRING);
-		Result<Set<String>> stringResult = stringCodec.decodeStart(typeProvider, typeProvider.empty(), stringArray);
-		assertTrue(stringResult.isSuccess());
-		assertEquals(Set.of("a", "b"), stringResult.resultOrThrow());
+		Set<String> stringResult = stringCodec.decode(typeProvider, typeProvider.empty(), stringArray);
+		assertEquals(Set.of("a", "b"), stringResult);
 		
 		JsonArray boolArray = new JsonArray();
 		boolArray.add(new JsonPrimitive(true));
 		boolArray.add(new JsonPrimitive(false));
 		
 		Codec<Set<Boolean>> boolCodec = new SetCodec<>(BOOLEAN);
-		Result<Set<Boolean>> boolResult = boolCodec.decodeStart(typeProvider, typeProvider.empty(), boolArray);
-		assertTrue(boolResult.isSuccess());
-		assertEquals(Set.of(true, false), boolResult.resultOrThrow());
+		Set<Boolean> boolResult = boolCodec.decode(typeProvider, typeProvider.empty(), boolArray);
+		assertEquals(Set.of(true, false), boolResult);
 	}
 	
 	@Test
-	void decodeStartWithInvalidElements() {
+	void decodeWithInvalidElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		
@@ -228,14 +213,11 @@ class SetCodecTest {
 		array.add(new JsonPrimitive("not-a-number"));
 		array.add(new JsonPrimitive(3));
 		
-		Result<Set<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isPartial());
-		assertTrue(result.hasError());
-		assertTrue(result.hasValue());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), array));
 	}
 	
 	@Test
-	void decodeStartWithDuplicates() {
+	void decodeWithDuplicates() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Set<Integer>> codec = new SetCodec<>(INTEGER);
 		
@@ -245,18 +227,9 @@ class SetCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(3));
 		
-		Result<Set<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), array);
-		assertTrue(result.isSuccess());
-		assertEquals(Set.of(1, 2, 3), result.resultOrThrow());
-		assertEquals(3, result.resultOrThrow().size());
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		SetCodec<Integer> codec1 = new SetCodec<>(INTEGER);
-		SetCodec<Integer> codec2 = new SetCodec<>(INTEGER);
-		
-		assertEquals(codec1.hashCode(), codec2.hashCode());
+		Set<Integer> result = codec.decode(typeProvider, typeProvider.empty(), array);
+		assertEquals(Set.of(1, 2, 3), result);
+		assertEquals(3, result.size());
 	}
 	
 	@Test

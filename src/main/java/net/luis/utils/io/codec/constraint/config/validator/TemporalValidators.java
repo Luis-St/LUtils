@@ -16,10 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint.config.matcher;
+package net.luis.utils.io.codec.constraint.config.validator;
 
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.time.*;
@@ -29,18 +28,17 @@ import java.util.Optional;
 /**
  * Utility class providing static methods for Duration and Period-specific constraint validation patterns.<br>
  * <p>
- *     This class contains domain-specific matchers that don't fit in the generic {@link ConstraintMatchers}
- *     class due to their specialized semantics for Duration and Period types.
+ *     This class contains domain-specific matchers that don't fit in the generic {@link ConstraintValidators} class due to their specialized semantics for Duration and Period types.
  * </p>
  *
  * @author Luis-St
  */
-public final class TemporalMatchers {
+public final class TemporalValidators {
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 */
-	private TemporalMatchers() {}
+	private TemporalValidators() {}
 	
 	/**
 	 * Validates sign constraints (positive/negative/zero) for a Duration value.<br>
@@ -55,10 +53,10 @@ public final class TemporalMatchers {
 	 * @param positive The positive constraint flag
 	 * @param negative The negative constraint flag
 	 * @param zero The zero constraint flag
-	 * @return A successful result if all present constraints are satisfied
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If any constraint is violated
 	 */
-	public static @NonNull Result<Void> matchDurationSign(
+	public static void validateDurationSign(
 		@NonNull Duration value, @NonNull Optional<Boolean> positive, @NonNull Optional<Boolean> negative, @NonNull Optional<Boolean> zero
 	) {
 		Objects.requireNonNull(value, "Duration must not be null");
@@ -70,11 +68,11 @@ public final class TemporalMatchers {
 			boolean nonPositive = positive.get();
 			if (nonPositive) {
 				if (!value.isNegative() && !value.isZero()) {
-					return Result.error("Duration '" + value + "' must be non-positive");
+					throw new ConstraintViolateException("Duration '" + value + "' must be non-positive");
 				}
 			} else {
 				if (value.isNegative() || value.isZero()) {
-					return Result.error("Duration '" + value + "' must be positive");
+					throw new ConstraintViolateException("Duration '" + value + "' must be positive");
 				}
 			}
 		}
@@ -83,11 +81,11 @@ public final class TemporalMatchers {
 			boolean nonNegative = negative.get();
 			if (nonNegative) {
 				if (value.isNegative()) {
-					return Result.error("Duration '" + value + "' must be non-negative");
+					throw new ConstraintViolateException("Duration '" + value + "' must be non-negative");
 				}
 			} else {
 				if (!value.isNegative()) {
-					return Result.error("Duration '" + value + "' must be negative");
+					throw new ConstraintViolateException("Duration '" + value + "' must be negative");
 				}
 			}
 		}
@@ -96,15 +94,14 @@ public final class TemporalMatchers {
 			boolean nonZero = zero.get();
 			if (nonZero) {
 				if (value.isZero()) {
-					return Result.error("Duration '" + value + "' must be non-zero");
+					throw new ConstraintViolateException("Duration '" + value + "' must be non-zero");
 				}
 			} else {
 				if (!value.isZero()) {
-					return Result.error("Duration '" + value + "' must be zero");
+					throw new ConstraintViolateException("Duration '" + value + "' must be zero");
 				}
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -117,21 +114,20 @@ public final class TemporalMatchers {
 	 *
 	 * @param value The Duration value to validate
 	 * @param withinLast The optional duration threshold
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchDurationWithinLast(@NonNull Duration value, @NonNull Optional<Duration> withinLast) {
+	public static void validateDurationWithinLast(@NonNull Duration value, @NonNull Optional<Duration> withinLast) {
 		Objects.requireNonNull(value, "Duration must not be null");
 		Objects.requireNonNull(withinLast, "Within last constraint must not be null");
 		if (withinLast.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		Duration threshold = withinLast.get().negated();
 		if (value.compareTo(threshold) < 0) {
-			return Result.error("Duration '" + value + "' must be within last " + withinLast.get());
+			throw new ConstraintViolateException("Duration '" + value + "' must be within last " + withinLast.get());
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -143,20 +139,19 @@ public final class TemporalMatchers {
 	 *
 	 * @param value The Duration value to validate
 	 * @param withinNext The optional duration threshold
-	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If the constraint is violated
 	 */
-	public static @NonNull Result<Void> matchDurationWithinNext(@NonNull Duration value, @NonNull Optional<Duration> withinNext) {
+	public static void validateDurationWithinNext(@NonNull Duration value, @NonNull Optional<Duration> withinNext) {
 		Objects.requireNonNull(value, "Duration must not be null");
 		Objects.requireNonNull(withinNext, "Within next constraint must not be null");
 		if (withinNext.isEmpty()) {
-			return Result.success();
+			return;
 		}
 		
 		if (value.compareTo(withinNext.get()) > 0) {
-			return Result.error("Duration '" + value + "' must be within next " + withinNext.get());
+			throw new ConstraintViolateException("Duration '" + value + "' must be within next " + withinNext.get());
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -172,10 +167,10 @@ public final class TemporalMatchers {
 	 * @param positive The positive constraint flag
 	 * @param negative The negative constraint flag
 	 * @param zero The zero constraint flag
-	 * @return A successful result if all present constraints are satisfied
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If any constraint is violated
 	 */
-	public static @NonNull Result<Void> matchPeriodSign(
+	public static void validatePeriodSign(
 		@NonNull Period value, @NonNull Optional<Boolean> positive, @NonNull Optional<Boolean> negative, @NonNull Optional<Boolean> zero
 	) {
 		Objects.requireNonNull(value, "Period must not be null");
@@ -188,11 +183,11 @@ public final class TemporalMatchers {
 			boolean isPositive = !value.isNegative() && !value.isZero();
 			if (nonPositive) {
 				if (isPositive) {
-					return Result.error("Period '" + value + "' must be non-positive");
+					throw new ConstraintViolateException("Period '" + value + "' must be non-positive");
 				}
 			} else {
 				if (!isPositive) {
-					return Result.error("Period '" + value + "' must be positive");
+					throw new ConstraintViolateException("Period '" + value + "' must be positive");
 				}
 			}
 		}
@@ -202,11 +197,11 @@ public final class TemporalMatchers {
 			boolean isNegative = value.isNegative();
 			if (nonNegative) {
 				if (isNegative) {
-					return Result.error("Period '" + value + "' must be non-negative");
+					throw new ConstraintViolateException("Period '" + value + "' must be non-negative");
 				}
 			} else {
 				if (!isNegative) {
-					return Result.error("Period '" + value + "' must be negative");
+					throw new ConstraintViolateException("Period '" + value + "' must be negative");
 				}
 			}
 		}
@@ -216,15 +211,14 @@ public final class TemporalMatchers {
 			boolean isZero = value.isZero();
 			if (nonZero) {
 				if (isZero) {
-					return Result.error("Period '" + value + "' must be non-zero");
+					throw new ConstraintViolateException("Period '" + value + "' must be non-zero");
 				}
 			} else {
 				if (!isZero) {
-					return Result.error("Period '" + value + "' must be zero");
+					throw new ConstraintViolateException("Period '" + value + "' must be zero");
 				}
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -237,11 +231,11 @@ public final class TemporalMatchers {
 	 * @param value The Period value to validate
 	 * @param min The optional minimum bound as a pair of (value, inclusive)
 	 * @param max The optional maximum bound as a pair of (value, inclusive)
-	 * @return A successful result if the value is within the specified range
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If any constraint is violated
 	 */
 	@SuppressWarnings("DuplicatedCode")
-	public static @NonNull Result<Void> matchPeriodRange(
+	public static void validatePeriodRange(
 		@NonNull Period value, @NonNull Optional<Pair<Period, Boolean>> min, @NonNull Optional<Pair<Period, Boolean>> max
 	) {
 		Objects.requireNonNull(value, "Period must not be null");
@@ -264,11 +258,11 @@ public final class TemporalMatchers {
 			
 			if (inclusive) {
 				if (cmp < 0) {
-					return Result.error("Period '" + value + "' must be greater than or equal to " + minPeriod);
+					throw new ConstraintViolateException("Period '" + value + "' must be greater than or equal to " + minPeriod);
 				}
 			} else {
 				if (cmp <= 0) {
-					return Result.error("Period '" + value + "' must be greater than " + minPeriod);
+					throw new ConstraintViolateException("Period '" + value + "' must be greater than " + minPeriod);
 				}
 			}
 		}
@@ -286,15 +280,14 @@ public final class TemporalMatchers {
 			
 			if (inclusive) {
 				if (cmp > 0) {
-					return Result.error("Period '" + value + "' must be less than or equal to " + maxPeriod);
+					throw new ConstraintViolateException("Period '" + value + "' must be less than or equal to " + maxPeriod);
 				}
 			} else {
 				if (cmp >= 0) {
-					return Result.error("Period '" + value + "' must be less than " + maxPeriod);
+					throw new ConstraintViolateException("Period '" + value + "' must be less than " + maxPeriod);
 				}
 			}
 		}
-		return Result.success();
 	}
 	
 	/**
@@ -310,10 +303,10 @@ public final class TemporalMatchers {
 	 * @param positive The positive constraint flag
 	 * @param negative The negative constraint flag
 	 * @param zero The zero constraint flag
-	 * @return A successful result if all present constraints are satisfied
 	 * @throws NullPointerException If any parameter is null
+	 * @throws ConstraintViolateException If any constraint is violated
 	 */
-	public static @NonNull Result<Void> matchZoneOffsetSign(
+	public static void validateZoneOffsetSign(
 		@NonNull ZoneOffset value, @NonNull Optional<Boolean> positive, @NonNull Optional<Boolean> negative, @NonNull Optional<Boolean> zero
 	) {
 		Objects.requireNonNull(value, "Zone offset must not be null");
@@ -327,11 +320,11 @@ public final class TemporalMatchers {
 			boolean nonPositive = positive.get();
 			if (nonPositive) {
 				if (totalSeconds > 0) {
-					return Result.error("Zone offset '" + value + "' must be non-positive");
+					throw new ConstraintViolateException("Zone offset '" + value + "' must be non-positive");
 				}
 			} else {
 				if (totalSeconds <= 0) {
-					return Result.error("Zone offset '" + value + "' must be positive");
+					throw new ConstraintViolateException("Zone offset '" + value + "' must be positive");
 				}
 			}
 		}
@@ -340,11 +333,11 @@ public final class TemporalMatchers {
 			boolean nonNegative = negative.get();
 			if (nonNegative) {
 				if (totalSeconds < 0) {
-					return Result.error("Zone offset '" + value + "' must be non-negative");
+					throw new ConstraintViolateException("Zone offset '" + value + "' must be non-negative");
 				}
 			} else {
 				if (totalSeconds >= 0) {
-					return Result.error("Zone offset '" + value + "' must be negative");
+					throw new ConstraintViolateException("Zone offset '" + value + "' must be negative");
 				}
 			}
 		}
@@ -353,14 +346,13 @@ public final class TemporalMatchers {
 			boolean nonZero = zero.get();
 			if (nonZero) {
 				if (totalSeconds == 0) {
-					return Result.error("Zone offset '" + value + "' must be non-zero");
+					throw new ConstraintViolateException("Zone offset '" + value + "' must be non-zero");
 				}
 			} else {
 				if (totalSeconds != 0) {
-					return Result.error("Zone offset '" + value + "' must be zero (UTC)");
+					throw new ConstraintViolateException("Zone offset '" + value + "' must be zero (UTC)");
 				}
 			}
 		}
-		return Result.success();
 	}
 }

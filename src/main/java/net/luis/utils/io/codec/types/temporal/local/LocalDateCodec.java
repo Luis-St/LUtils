@@ -18,18 +18,18 @@
 
 package net.luis.utils.io.codec.types.temporal.local;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.temporal.local.LocalDateConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.temporal.local.LocalDateConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for local dates.<br>
@@ -40,12 +40,16 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class LocalDateCodec extends AbstractCodec<LocalDate, LocalDateConstraintConfig> implements LocalDateConstraint<LocalDateCodec> {
+public class LocalDateCodec
+	extends AbstractConstrainableCodec<LocalDate, LocalDateConstraintConfig, LocalDateCodec>
+	implements LocalDateConstraint<LocalDateCodec> {
 	
 	/**
 	 * Constructs a new local date codec.<br>
 	 */
-	public LocalDateCodec() {}
+	public LocalDateCodec() {
+		super(LocalDateCodec::new, LocalDateConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new local date codec with the specified constraint configuration.<br>
@@ -54,93 +58,52 @@ public class LocalDateCodec extends AbstractCodec<LocalDate, LocalDateConstraint
 	 * @throws NullPointerException If the constraint config is null
 	 */
 	private LocalDateCodec(@NonNull LocalDateConstraintConfig constraintConfig) {
-		super(constraintConfig);
+		super(LocalDateCodec::new, constraintConfig);
 	}
 	
 	@Override
-	public @NonNull LocalDateCodec apply(@NonNull UnaryOperator<LocalDateConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new LocalDateCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(LocalDateConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalDate value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalDate value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
-			return Result.error("Unable to encode null as local date using '" + this + "'");
+			throw new EncoderException("Unable to encode null as local date", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createString(value.toString());
+		return provider.createString(this.validateEncodeConstraints(value).toString(), EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull LocalDate key) {
+	public @NonNull String encodeKey(@NonNull LocalDate key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(key.toString());
+		return this.validateEncodeConstraints(key).toString();
 	}
 	
 	@Override
-	public <R> @NonNull Result<LocalDate> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull LocalDate decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as local date using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as local date", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error(result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			LocalDate date = LocalDate.parse(string);
-			
-			Result<Void> constraintResult = this.checkConstraints(date);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(date);
+			return this.validateDecodeConstraints(date);
 		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode local date '" + string + "' using '" + this + "': Unable to parse local date: " + e.getMessage());
+			throw new DecoderException("Unable to decode local date '" + string + "': " + e.getMessage(), this, e);
 		}
 	}
 	
 	@Override
-	public @NonNull Result<LocalDate> decodeKey(@NonNull String key) {
+	public @NonNull LocalDate decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			LocalDate date = LocalDate.parse(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(date);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(date);
+			return this.validateDecodeConstraints(date);
 		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode key '" + key + "' as local date using '" + this + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode key '" + key + "' as local date: " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedLocalDateCodec[constraints=" + config + "]";
-		}).orElse("LocalDateCodec");
 	}
 }

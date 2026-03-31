@@ -242,7 +242,6 @@ public class IpConstraintBuilder implements IpConstraint<String, IpConstraintBui
 	
 	/**
 	 * Builds and returns the IP constraint configuration.<br>
-	 *
 	 * @return The built constraint configuration
 	 */
 	public @NonNull IpConstraintConfig build() {

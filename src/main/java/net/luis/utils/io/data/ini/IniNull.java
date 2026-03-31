@@ -31,13 +31,13 @@ import java.util.Objects;
  */
 @Singleton
 public final class IniNull implements IniElement {
-
+	
 	/**
 	 * The singleton instance of {@link IniNull}.<br>
 	 * This instance is immutable and can be used for all null values.<br>
 	 */
 	public static final IniNull INSTANCE = new IniNull();
-
+	
 	/**
 	 * Constructs a new ini null.<br>
 	 * Should not be used, use {@link #INSTANCE} instead.<br>
@@ -45,14 +45,16 @@ public final class IniNull implements IniElement {
 	private IniNull() {}
 	
 	//region Object overrides
+	
 	@Override
 	public String toString() {
 		return this.toString(IniConfig.DEFAULT);
 	}
-
+	
 	@Override
 	public @NonNull String toString(@NonNull IniConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
+		
 		return switch (config.nullStyle()) {
 			case EMPTY, SKIP -> "";
 			case NULL_STRING -> "null";

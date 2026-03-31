@@ -20,12 +20,10 @@ package net.luis.utils.io.codec.constraint.config.collection;
 
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.collection.ArrayConstraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -95,6 +93,11 @@ public record ArrayConstraintConfig<T>(
 		return new ArrayConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.length.isEmpty() && this.custom.isEmpty();
+	}
+	
 	//region With methods
 	
 	/**
@@ -102,6 +105,7 @@ public record ArrayConstraintConfig<T>(
 	 *
 	 * @param value The exact array that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull ArrayConstraintConfig<T> withEqualTo(T @NonNull [] value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -113,6 +117,7 @@ public record ArrayConstraintConfig<T>(
 	 *
 	 * @param value The array that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull ArrayConstraintConfig<T> withNotEqualTo(T @NonNull [] value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -124,6 +129,7 @@ public record ArrayConstraintConfig<T>(
 	 *
 	 * @param values The collection of arrays that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull ArrayConstraintConfig<T> withIn(@NonNull Collection<T[]> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -140,6 +146,7 @@ public record ArrayConstraintConfig<T>(
 	 *
 	 * @param values The collection of arrays that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull ArrayConstraintConfig<T> withNotIn(@NonNull Collection<T[]> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -216,6 +223,7 @@ public record ArrayConstraintConfig<T>(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull ArrayConstraintConfig<T> withCustom(@NonNull Constraint<T[]> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
@@ -224,14 +232,14 @@ public record ArrayConstraintConfig<T>(
 	//endregion
 	
 	@Override
-	public @NotNull Result<Void> matches(T @NonNull [] value) {
+	public void validate(T @NonNull [] value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo, Arrays::equals),
-			() -> ConstraintMatchers.matchIn(value, this.in, Arrays::equals),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.length, arr -> arr.length, "Length"),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo, Arrays::equals),
+			() -> ConstraintValidators.validateIn(value, this.in, Arrays::equals),
+			() -> ConstraintValidators.validateExtractedValue(value, this.length, arr -> arr.length, "Length"),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

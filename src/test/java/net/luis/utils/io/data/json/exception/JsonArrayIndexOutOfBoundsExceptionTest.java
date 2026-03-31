@@ -43,7 +43,7 @@ class JsonArrayIndexOutOfBoundsExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
 		
-		JsonArrayIndexOutOfBoundsException nullMessageException = new JsonArrayIndexOutOfBoundsException((String) null);
+		JsonArrayIndexOutOfBoundsException nullMessageException = new JsonArrayIndexOutOfBoundsException(null);
 		assertNull(nullMessageException.getMessage());
 	}
 	

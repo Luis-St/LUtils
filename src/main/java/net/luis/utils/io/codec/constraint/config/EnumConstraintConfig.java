@@ -18,10 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint.config.validator.ConstraintValidators;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -75,6 +74,11 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 		return new EnumConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty());
 	}
 	
+	@Override
+	public boolean isUnconstrained() {
+		return this.equalTo.isEmpty() && this.in.isEmpty() && this.custom.isEmpty();
+	}
+	
 	//region With methods
 	
 	/**
@@ -82,6 +86,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 *
 	 * @param value The exact enum value that should be matched
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull EnumConstraintConfig<T> withEqualTo(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
@@ -93,6 +98,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 *
 	 * @param value The enum value that should be excluded
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the value is null
 	 */
 	public @NonNull EnumConstraintConfig<T> withNotEqualTo(@NonNull T value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
@@ -104,6 +110,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 *
 	 * @param values The collection of enum values that are allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull EnumConstraintConfig<T> withIn(@NonNull Collection<T> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
@@ -115,6 +122,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 *
 	 * @param values The collection of enum values that are not allowed
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the values collection is null
 	 */
 	public @NonNull EnumConstraintConfig<T> withNotIn(@NonNull Collection<T> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
@@ -126,6 +134,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 *
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the constraint is null
 	 */
 	public @NonNull EnumConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
@@ -134,13 +143,13 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	//endregion
 	
 	@Override
-	public @NonNull Result<Void> matches(@NonNull T value) {
+	public void validate(@NonNull T value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		return ConstraintMatchers.allOf(
-			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
-			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		ConstraintValidators.validateAll(
+			() -> ConstraintValidators.validateEqualTo(value, this.equalTo),
+			() -> ConstraintValidators.validateIn(value, this.in),
+			() -> ConstraintValidators.validateCustom(value, this.custom)
 		);
 	}
 }

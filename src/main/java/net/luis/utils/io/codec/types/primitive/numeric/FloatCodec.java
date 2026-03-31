@@ -18,116 +18,80 @@
 
 package net.luis.utils.io.codec.types.primitive.numeric;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.numeric.DecimalConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.numeric.DecimalConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for floats.<br>
  *
  * @author Luis-St
  */
-public class FloatCodec extends AbstractCodec<Float, DecimalConstraintConfig<Float>> implements DecimalConstraint<Float, FloatCodec> {
+public class FloatCodec
+	extends AbstractConstrainableCodec<Float, DecimalConstraintConfig<Float>, FloatCodec>
+	implements DecimalConstraint<Float, FloatCodec> {
 	
 	/**
 	 * Constructs a new float codec.<br>
 	 */
-	public FloatCodec() {}
+	public FloatCodec() {
+		super(FloatCodec::new, DecimalConstraintConfig.unconstrained());
+	}
 	
 	/**
 	 * Constructs a new float codec with the specified decimal constraint configuration.<br>
 	 *
-	 * @param constraintConfig The decimal constraint configuration
+	 * @param config The decimal constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	private FloatCodec(@NonNull DecimalConstraintConfig<Float> constraintConfig) {
-		super(constraintConfig);
+	private FloatCodec(@NonNull DecimalConstraintConfig<Float> config) {
+		super(FloatCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull FloatCodec apply(@NonNull UnaryOperator<DecimalConstraintConfig<Float>> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new FloatCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(DecimalConstraintConfig.unconstrained()))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Float value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Float value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as float using '" + this + "'");
+			throw new EncoderException("Unable to encode null as float", this);
 		}
 		
-		Result<Void> constraintResult = this.checkConstraints(value);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return provider.createFloat(value);
+		return provider.createFloat(this.validateEncodeConstraints(value), EncoderException::new);
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull Float key) {
+	public @NonNull String encodeKey(@NonNull Float key) throws EncoderException {
 		Objects.requireNonNull(key, "Key must not be null");
-		
-		Result<Void> constraintResult = this.checkConstraints(key);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(Float.toString(key));
+		return Float.toString(this.validateEncodeConstraints(key));
 	}
 	
 	@Override
-	public <R> @NonNull Result<Float> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Float decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as float using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as float", this);
 		}
 		
-		Result<Float> result = provider.getFloat(value);
-		if (result.isError()) {
-			return result;
-		}
-		
-		Float floatValue = result.resultOrThrow();
-		Result<Void> constraintResult = this.checkConstraints(floatValue);
-		if (constraintResult.isError()) {
-			return Result.error(constraintResult.errorOrThrow());
-		}
-		return Result.success(floatValue);
+		return this.validateDecodeConstraints(provider.getFloat(value, DecoderException::new));
 	}
 	
 	@Override
-	public @NonNull Result<Float> decodeKey(@NonNull String key) {
+	public @NonNull Float decodeKey(@NonNull String key) throws DecoderException {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
 			Float floatValue = Float.parseFloat(key);
-			
-			Result<Void> constraintResult = this.checkConstraints(floatValue);
-			if (constraintResult.isError()) {
-				return Result.error(constraintResult.errorOrThrow());
-			}
-			return Result.success(floatValue);
-		} catch (Exception e) {
-			return Result.error("Unable to decode key '" + key + "' as float using '" + this + "': " + e.getMessage());
+			return this.validateDecodeConstraints(floatValue);
+		} catch (NumberFormatException e) {
+			throw new DecoderException("Unable to decode key '" + key + "' as float: " + e.getMessage(), this);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedFloatCodec[constraints=" + config + "]";
-		}).orElse("FloatCodec");
 	}
 }

@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -37,145 +38,132 @@ import static org.junit.jupiter.api.Assertions.*;
 class URICodecTest {
 	
 	@Test
-	void encodeStartNullChecks() {
+	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		URI uri = URI.create("https://example.com");
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), uri));
-		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, uri));
+		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), uri));
+		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, uri));
 	}
 	
 	@Test
-	void encodeStartWithNull() {
+	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as URI"));
+		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to encode null as uri"));
 	}
 	
 	@Test
-	void encodeStartWithValidURI() {
+	void encodeWithValidURI() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		URI uri = URI.create("https://example.com");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), uri);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("https://example.com"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), uri);
+		assertEquals(new JsonPrimitive("https://example.com"), result);
 	}
 	
 	@Test
-	void encodeStartWithURIWithPath() {
+	void encodeWithURIWithPath() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		URI uri = URI.create("https://example.com/path/to/resource");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), uri);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("https://example.com/path/to/resource"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), uri);
+		assertEquals(new JsonPrimitive("https://example.com/path/to/resource"), result);
 	}
 	
 	@Test
-	void encodeStartWithURIWithQuery() {
+	void encodeWithURIWithQuery() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		URI uri = URI.create("https://example.com?key=value");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), uri);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("https://example.com?key=value"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), uri);
+		assertEquals(new JsonPrimitive("https://example.com?key=value"), result);
 	}
 	
 	@Test
-	void encodeStartWithFileURI() {
+	void encodeWithFileURI() throws EncoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		URI uri = URI.create("file:///tmp/test");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), uri);
-		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("file:///tmp/test"), result.resultOrThrow());
+		JsonElement result = codec.encode(typeProvider, typeProvider.empty(), uri);
+		assertEquals(new JsonPrimitive("file:///tmp/test"), result);
 	}
 	
 	@Test
-	void decodeStartNullChecks() {
+	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("https://example.com")));
+		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("https://example.com")));
 	}
 	
 	@Test
-	void decodeStartWithNull() {
+	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		
-		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as URI"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
+		assertTrue(exception.getMessage().contains("Unable to decode null as uri"));
 	}
 	
 	@Test
-	void decodeStartWithValidString() {
+	void decodeWithValidString() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		
-		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com"));
-		assertTrue(result.isSuccess());
-		assertEquals(URI.create("https://example.com"), result.resultOrThrow());
+		URI result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com"));
+		assertEquals(URI.create("https://example.com"), result);
 	}
 	
 	@Test
-	void decodeStartWithURIWithPath() {
+	void decodeWithURIWithPath() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		
-		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com/path/to/resource"));
-		assertTrue(result.isSuccess());
-		assertEquals(URI.create("https://example.com/path/to/resource"), result.resultOrThrow());
+		URI result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com/path/to/resource"));
+		assertEquals(URI.create("https://example.com/path/to/resource"), result);
 	}
 	
 	@Test
-	void decodeStartWithURIWithQuery() {
+	void decodeWithURIWithQuery() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		
-		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com?key=value"));
-		assertTrue(result.isSuccess());
-		assertEquals(URI.create("https://example.com?key=value"), result.resultOrThrow());
+		URI result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("https://example.com?key=value"));
+		assertEquals(URI.create("https://example.com?key=value"), result);
 	}
 	
 	@Test
-	void decodeStartWithFileURI() {
+	void decodeWithFileURI() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		
-		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("file:///tmp/test"));
-		assertTrue(result.isSuccess());
-		assertEquals(URI.create("file:///tmp/test"), result.resultOrThrow());
+		URI result = codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("file:///tmp/test"));
+		assertEquals(URI.create("file:///tmp/test"), result);
 	}
 	
 	@Test
-	void decodeStartWithInvalidURI() {
+	void decodeWithInvalidURI() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		
-		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("ht tp://invalid uri"));
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode URI"));
-		assertTrue(result.errorOrThrow().contains("Unable to parse URI"));
+		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("ht tp://invalid uri")));
+		assertTrue(exception.getMessage().contains("Unable to decode uri"));
 	}
 	
 	@Test
-	void decodeStartWithNonString() {
+	void decodeWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<URI> codec = new URICodec();
 		
-		Result<URI> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
-		assertTrue(result.isError());
+		assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42)));
 	}
 	
 	@Test

@@ -151,7 +151,6 @@ public class ZoneIdConstraintBuilder implements ZoneIdConstraint<ZoneIdConstrain
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
-	 *
 	 * @return The built zone id constraint config
 	 */
 	public @NonNull ZoneIdConstraintConfig build() {

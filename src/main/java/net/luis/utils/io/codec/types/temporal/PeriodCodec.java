@@ -18,17 +18,17 @@
 
 package net.luis.utils.io.codec.types.temporal;
 
-import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.AbstractConstrainableCodec;
 import net.luis.utils.io.codec.constraint.config.temporal.PeriodConstraintConfig;
 import net.luis.utils.io.codec.constraint.merged.temporal.PeriodConstraint;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Period;
 import java.util.*;
-import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +38,9 @@ import java.util.regex.Pattern;
  *
  * @author Luis-St
  */
-public class PeriodCodec extends AbstractCodec<Period, PeriodConstraintConfig> implements PeriodConstraint<PeriodCodec> {
+public class PeriodCodec
+	extends AbstractConstrainableCodec<Period, PeriodConstraintConfig, PeriodCodec>
+	implements PeriodConstraint<PeriodCodec> {
 	
 	/**
 	 * Pattern to match period parts (e.g., "1y", "2mo", "3d").<br>
@@ -49,7 +51,9 @@ public class PeriodCodec extends AbstractCodec<Period, PeriodConstraintConfig> i
 	/**
 	 * Constructs a new period codec.<br>
 	 */
-	public PeriodCodec() {}
+	public PeriodCodec() {
+		super(PeriodCodec::new, PeriodConstraintConfig.UNCONSTRAINED);
+	}
 	
 	/**
 	 * Constructs a new period codec with the given configuration.<br>
@@ -58,64 +62,47 @@ public class PeriodCodec extends AbstractCodec<Period, PeriodConstraintConfig> i
 	 * @throws NullPointerException If the config is null
 	 */
 	private PeriodCodec(@NonNull PeriodConstraintConfig config) {
-		super(config);
+		super(PeriodCodec::new, config);
 	}
 	
 	@Override
-	public @NonNull PeriodCodec apply(@NonNull UnaryOperator<PeriodConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new PeriodCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(PeriodConstraintConfig.UNCONSTRAINED))
-		);
-	}
-	
-	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Period value) {
+	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Period value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as period using '" + this + "'");
+			throw new EncoderException("Unable to encode null as period", this);
 		}
 		
-		Result<Void> constraint = this.checkConstraints(value);
-		if (constraint.isError()) {
-			return Result.error(constraint.errorOrThrow());
-		}
+		Period validated = this.validateEncodeConstraints(value);
 		
-		if (value.isZero()) {
-			return provider.createString("0d");
+		if (validated.isZero()) {
+			return provider.createString("0d", EncoderException::new);
 		}
 		
 		List<String> parts = new ArrayList<>();
-		if (value.getYears() != 0) {
-			parts.add(value.getYears() + "y");
+		if (validated.getYears() != 0) {
+			parts.add(validated.getYears() + "y");
 		}
-		if (value.getMonths() != 0) {
-			parts.add(value.getMonths() + "m");
+		if (validated.getMonths() != 0) {
+			parts.add(validated.getMonths() + "m");
 		}
-		if (value.getDays() != 0) {
-			parts.add(value.getDays() + "d");
+		if (validated.getDays() != 0) {
+			parts.add(validated.getDays() + "d");
 		}
-		return provider.createString(String.join(" ", parts));
+		return provider.createString(String.join(" ", parts), EncoderException::new);
 	}
 	
 	@Override
-	public <R> @NonNull Result<Period> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Period decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as period using '" + this + "'");
+			throw new DecoderException("Unable to decode null value as period", this);
 		}
 		
-		Result<String> result = provider.getString(value);
-		if (result.isError()) {
-			return Result.error("Unable to decode period from non-string value using '" + this + "': " + result.errorOrThrow());
-		}
-		
-		String string = result.resultOrThrow();
+		String string = provider.getString(value, DecoderException::new);
 		try {
 			if ("0d".equalsIgnoreCase(string)) {
-				return Result.success(Period.ZERO);
+				return Period.ZERO;
 			}
 			
 			String[] parts = string.split("\\s+");
@@ -130,7 +117,7 @@ public class PeriodCodec extends AbstractCodec<Period, PeriodConstraintConfig> i
 				
 				Matcher matcher = PERIOD_PATTERN.matcher(part);
 				if (!matcher.matches()) {
-					return Result.error("Unable to decode period '" + string + "' using '" + this + "': Invalid period format, expected format like '1y 2m 3d' but got '" + part + "'");
+					throw new DecoderException("Unable to decode period '" + string + "': Invalid period format, expected format like '1y 2m 3d' but got '" + part + "'", this);
 				}
 				
 				int partValue = Integer.parseInt(matcher.group(1));
@@ -140,27 +127,16 @@ public class PeriodCodec extends AbstractCodec<Period, PeriodConstraintConfig> i
 					case "y" -> years += partValue;
 					case "m" -> months += partValue;
 					case "d" -> days += partValue;
-					default -> {
-						return Result.error("Unable to decode period '" + string + "' using '" + this + "': Unknown time unit, expected one of 'y', 'm', or 'd' but got '" + unit + "'");
-					}
+					default -> throw new DecoderException("Unable to decode period '" + string + "': Unknown time unit, expected one of 'y', 'm', or 'd' but got '" + unit + "'", this);
 				}
 			}
 			
 			Period period = Period.of(years, months, days);
-			Result<Void> constraint = this.checkConstraints(period);
-			if (constraint.isError()) {
-				return Result.error(constraint.errorOrThrow());
-			}
-			return Result.success(period);
+			return this.validateDecodeConstraints(period);
+		} catch (DecoderException e) {
+			throw e;
 		} catch (Exception e) {
-			return Result.error("Unable to decode period '" + string + "' using '" + this + "': Failed to parse period '" + string + "': " + e.getMessage());
+			throw new DecoderException("Unable to decode period '" + string + "': " + e.getMessage(), this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getConstraintConfig().map(config -> {
-			return "ConstrainedPeriodCodec[constraints=" + config + "]";
-		}).orElse("PeriodCodec");
 	}
 }
