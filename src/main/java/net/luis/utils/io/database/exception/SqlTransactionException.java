@@ -18,8 +18,6 @@
 
 package net.luis.utils.io.database.exception;
 
-import net.luis.utils.io.database.transaction.SqlTransaction;
-import net.luis.utils.io.database.exception.SqlException;
 import org.jspecify.annotations.Nullable;
 
 /**

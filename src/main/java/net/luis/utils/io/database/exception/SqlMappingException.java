@@ -20,8 +20,6 @@ package net.luis.utils.io.database.exception;
 
 import org.jspecify.annotations.Nullable;
 
-import java.sql.SQLException;
-
 /**
  *
  * @author Luis-St

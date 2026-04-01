@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.database.transaction;
 
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 /**

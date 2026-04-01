@@ -20,8 +20,8 @@ package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.condition.SqlExpression;
 import net.luis.utils.io.database.query.crud.*;
-import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.query.row.*;
+import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
@@ -98,7 +98,7 @@ public class SqlQueryProvider<E> {
 		@NonNull SqlExpression<E5> e5, @NonNull SqlExpression<E6> e6,
 		@NonNull SqlExpression<E7> e7, @NonNull SqlExpression<E8> e8,
 		@NonNull SqlExpression<E9> e9
-	)  {
+	) {
 		return null;
 	}
 	

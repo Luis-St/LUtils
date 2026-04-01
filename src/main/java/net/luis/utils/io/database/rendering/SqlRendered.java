@@ -33,6 +33,7 @@ public interface SqlRendered {
 	
 	@NonNull String sql();
 	
-	@NonNull @Unmodifiable
+	@NonNull
+	@Unmodifiable
 	List<Object> parameters();
 }

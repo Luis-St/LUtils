@@ -37,7 +37,7 @@ public record SqlDataType<T>(
 	@NonNull Class<T> javaType,
 	int columnType
 ) {
-
+	
 	public static final SqlDataType<String> STRING = new SqlDataType<>("VARCHAR", String.class, Types.VARCHAR);
 	public static final SqlDataType<Boolean> BOOLEAN = new SqlDataType<>("BOOLEAN", Boolean.class, Types.BOOLEAN);
 	public static final SqlDataType<Short> SHORT = new SqlDataType<>("SMALLINT", Short.class, Types.SMALLINT);
@@ -54,11 +54,11 @@ public record SqlDataType<T>(
 	public static final SqlDataType<OffsetDateTime> OFFSET_DATE_TIME = new SqlDataType<>("TIMESTAMP_TZ", OffsetDateTime.class, Types.TIMESTAMP_WITH_TIMEZONE);
 	public static final SqlDataType<byte[]> BYTE_ARRAY = new SqlDataType<>("BLOB", byte[].class, Types.BLOB);
 	public static final SqlDataType<Character> CHARACTER = new SqlDataType<>("CHAR", Character.class, Types.CHAR);
-
+	
 	public SqlDataType {
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(javaType, "Java type must not be null");
-
+		
 		if (name.isBlank()) {
 			throw new IllegalArgumentException("Name must not be blank");
 		}

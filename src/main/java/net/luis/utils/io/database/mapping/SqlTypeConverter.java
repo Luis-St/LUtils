@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.database.mapping;
 
-import net.luis.utils.io.database.SqlDataType;
 import org.jspecify.annotations.NonNull;
 
 /**

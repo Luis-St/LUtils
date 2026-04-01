@@ -35,12 +35,12 @@ import java.util.*;
 
 public class SqlForeignKey<E, T> {
 	
-	private SqlTable<E> referencingTable;
-	private List<SqlColumn<E, ?>> referencingColumns;
 	private final SqlTable<T> referencedTable;
 	private final List<SqlColumn<T, ?>> referencedColumns = Lists.newArrayList();
 	private final SqlReferentialAction onUpdate;
 	private final SqlReferentialAction onDelete;
+	private SqlTable<E> referencingTable;
+	private List<SqlColumn<E, ?>> referencingColumns;
 	
 	public SqlForeignKey(@NonNull SqlTable<T> referencedTable) {
 		Objects.requireNonNull(referencedTable, "Referenced table must not be null");
