@@ -28,15 +28,15 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlJoinableQuery<T> extends SqlQuery<T> {
+public interface SqlJoinableQuery<E> extends SqlQuery<E> {
 	
-	@NonNull SqlJoinableQuery<T> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	@NonNull SqlJoinableQuery<E> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
 	
-	@NonNull SqlJoinableQuery<T> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	@NonNull SqlJoinableQuery<E> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
 	
-	@NonNull SqlJoinableQuery<T> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	@NonNull SqlJoinableQuery<E> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
 	
-	@NonNull SqlJoinableQuery<T> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
+	@NonNull SqlJoinableQuery<E> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
 	
-	@NonNull SqlJoinableQuery<T> crossJoin(@NonNull SqlTable<?> table);
+	@NonNull SqlJoinableQuery<E> crossJoin(@NonNull SqlTable<?> table);
 }

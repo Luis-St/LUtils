@@ -21,6 +21,7 @@ package net.luis.utils.io.database.table;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.exception.SqlAlreadyBindException;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
@@ -33,26 +34,26 @@ import java.util.stream.Collectors;
  *
  */
 
-public class SqlTable<T> {
+public class SqlTable<E> {
 	
-	private final Class<T> type;
+	private final Class<E> type;
 	private final String name;
 	private final String schema;
-	private final Optional<SqlCompositePrimaryKey> compositePrimaryKey;
-	private final List<SqlForeignKey> foreignKeys = Lists.newArrayList();
-	private final List<List<SqlColumn<?>>> uniqueConstraints = Lists.newArrayList();
+	private final Optional<SqlCompositePrimaryKey<E>> compositePrimaryKey;
+	private final List<SqlForeignKey<E, ?>> foreignKeys = Lists.newArrayList();
+	private final List<List<SqlColumn<E, ?>>> uniqueConstraints = Lists.newArrayList();
 	private final List<SqlCondition> checkConstraints = Lists.newArrayList();
-	private final Map</*Name*/ String, SqlColumn<?>> columns = Maps.newHashMap();
+	private final Map</*Name*/ String, SqlColumn<E, ?>> columns = Maps.newHashMap();
 	
 	SqlTable(
-		@NonNull Class<T> type,
+		@NonNull Class<E> type,
 		@NonNull String name,
 		@NonNull String schema,
-		@NonNull Optional<SqlCompositePrimaryKey> compositePrimaryKey,
-		@NonNull List<SqlForeignKey> foreignKeys,
-		@NonNull List<List<SqlColumn<?>>> uniqueConstraints,
+		@NonNull Optional<SqlCompositePrimaryKey<E>> compositePrimaryKey,
+		@NonNull List<SqlForeignKey<E, ?>> foreignKeys,
+		@NonNull List<List<SqlColumn<E, ?>>> uniqueConstraints,
 		@NonNull List<SqlCondition> checkConstraints,
-		@NonNull Map<String, SqlColumn<?>> columns
+		@NonNull Map<String, SqlColumn<E, ?>> columns
 	) {
 		this.type = Objects.requireNonNull(type, "Type must not be null");
 		this.name = Objects.requireNonNull(name, "Name must not be null");
@@ -70,16 +71,20 @@ public class SqlTable<T> {
 			throw new IllegalArgumentException("Table schema must not be blank");
 		}
 		
-		for (List<SqlColumn<?>> uniqueConstraint : uniqueConstraints) {
-			for (SqlColumn<?> column : uniqueConstraint) {
+		for (List<SqlColumn<E, ?>> uniqueConstraint : uniqueConstraints) {
+			for (SqlColumn<E, ?> column : uniqueConstraint) {
 				this.validateColumn(column);
 			}
 		}
 		
 		this.validatePrimaryKey();
 		
-		for (SqlColumn<?> column : this.columns.values()) {
-			column.setOwningTable(this);
+		for (SqlColumn<E, ?> column : this.columns.values()) {
+			try {
+				column.bindTo(this);
+			} catch (SqlAlreadyBindException e) {
+				throw new IllegalStateException("Fail to bind column " + column.getName() + " to table " + this.name, e);
+			}
 		}
 	}
 	
@@ -94,7 +99,7 @@ public class SqlTable<T> {
 	//region Validation
 	
 	private void validatePrimaryKey() {
-		List<SqlColumn<?>> primaryKeyColumns = this.columns.values().stream().filter(SqlColumn::isPrimaryKey).toList();
+		List<SqlColumn<E, ?>> primaryKeyColumns = this.columns.values().stream().filter(SqlColumn::isPrimaryKey).toList();
 		if (this.compositePrimaryKey.isEmpty()) {
 			if (primaryKeyColumns.size() > 1) {
 				throw new IllegalStateException(
@@ -102,16 +107,16 @@ public class SqlTable<T> {
 				);
 			}
 		} else {
-			List<SqlColumn<?>> compositePrimaryKeyColumns = this.compositePrimaryKey.get().columns();
+			List<SqlColumn<E, ?>> compositePrimaryKeyColumns = this.compositePrimaryKey.get().columns();
 			if (compositePrimaryKeyColumns.isEmpty()) {
 				throw new IllegalStateException("Composite primary key defined in table " + this.name + " but it does not contain any columns");
 			}
 			
-			for (SqlColumn<?> column : compositePrimaryKeyColumns) {
+			for (SqlColumn<E, ?> column : compositePrimaryKeyColumns) {
 				this.validatePrimaryKeyColumn(column);
 			}
 			
-			for (SqlColumn<?> primaryKeyColumn : primaryKeyColumns) {
+			for (SqlColumn<E, ?> primaryKeyColumn : primaryKeyColumns) {
 				if (compositePrimaryKeyColumns.stream().noneMatch(column -> column.getName().equals(primaryKeyColumn.getName()))) {
 					throw new IllegalStateException("Primary key column '" + primaryKeyColumn.getName() + "' is defined in table " + this.name + " but not included in the composite primary key");
 				}
@@ -119,7 +124,7 @@ public class SqlTable<T> {
 		}
 	}
 	
-	private void validatePrimaryKeyColumn(@NonNull SqlColumn<?> column) {
+	private void validatePrimaryKeyColumn(@NonNull SqlColumn<E, ?> column) {
 		Objects.requireNonNull(column, "Column must not be null");
 		this.validateColumn(column);
 		
@@ -128,7 +133,7 @@ public class SqlTable<T> {
 		}
 	}
 	
-	private void validateColumn(@NonNull SqlColumn<?> column) {
+	private void validateColumn(@NonNull SqlColumn<E, ?> column) {
 		Objects.requireNonNull(column, "Column must not be null");
 		if (column.getOwningTable() != null) {
 			throw new IllegalStateException("Column '" + column.getName() + "' does already belong to another table " + column.getOwningTable().getName());
@@ -140,7 +145,7 @@ public class SqlTable<T> {
 	}
 	//endregion
 	
-	public @NonNull Class<T> getType() {
+	public @NonNull Class<E> getType() {
 		return this.type;
 	}
 	
@@ -152,13 +157,13 @@ public class SqlTable<T> {
 		return this.schema;
 	}
 	
-	public @NonNull @Unmodifiable List<SqlColumn<?>> getPrimaryKeyColumns() {
+	public @NonNull @Unmodifiable List<SqlColumn<E, ?>> getPrimaryKeyColumns() {
 		if (this.compositePrimaryKey.isPresent()) {
 			return this.compositePrimaryKey.get().columns();
 		}
 		
-		List<SqlColumn<?>> primaryKeyColumns = Lists.newArrayList();
-		for (SqlColumn<?> column : this.columns.values()) {
+		List<SqlColumn<E, ?>> primaryKeyColumns = Lists.newArrayList();
+		for (SqlColumn<E, ?> column : this.columns.values()) {
 			if (column.isPrimaryKey()) {
 				primaryKeyColumns.add(column);
 			}
@@ -166,15 +171,15 @@ public class SqlTable<T> {
 		return Collections.unmodifiableList(primaryKeyColumns);
 	}
 	
-	public @NonNull Optional<SqlCompositePrimaryKey> getCompositePrimaryKey() {
+	public @NonNull Optional<SqlCompositePrimaryKey<E>> getCompositePrimaryKey() {
 		return this.compositePrimaryKey;
 	}
 	
-	public @NonNull @Unmodifiable List<SqlForeignKey> getForeignKeys() {
+	public @NonNull @Unmodifiable List<SqlForeignKey<E, ?>> getForeignKeys() {
 		return Collections.unmodifiableList(this.foreignKeys);
 	}
 	
-	public @NonNull @Unmodifiable List<List<SqlColumn<?>>> getUniqueConstraints() {
+	public @NonNull @Unmodifiable List<List<SqlColumn<E, ?>>> getUniqueConstraints() {
 		return Collections.unmodifiableList(this.uniqueConstraints);
 	}
 	
@@ -182,7 +187,7 @@ public class SqlTable<T> {
 		return Collections.unmodifiableList(this.checkConstraints);
 	}
 	
-	public @NonNull @Unmodifiable List<SqlColumn<?>> getColumns() {
+	public @NonNull @Unmodifiable List<SqlColumn<E, ?>> getColumns() {
 		return List.copyOf(this.columns.values());
 	}
 }

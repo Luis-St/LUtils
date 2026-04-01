@@ -36,62 +36,62 @@ import java.util.List;
  *
  */
 
-public class SqlUpdateQuery<T> implements SqlJoinableQuery<T> {
+public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	
 	@Override
-	public @NonNull SqlUpdateQuery<T> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlUpdateQuery<T> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
+	public @NonNull SqlUpdateQuery<E> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlUpdateQuery<T> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
+	public @NonNull SqlUpdateQuery<E> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlUpdateQuery<T> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
+	public @NonNull SqlUpdateQuery<E> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlUpdateQuery<T> crossJoin(@NonNull SqlTable<?> table) {
+	public @NonNull SqlUpdateQuery<E> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
-	public <V> @NonNull SqlUpdateQuery<T> set(@NonNull SqlColumn<V> column, @NonNull V value) {
+	@Override
+	public @NonNull SqlUpdateQuery<E> crossJoin(@NonNull SqlTable<?> table) {
 		return null;
 	}
 	
-	public <V> @NonNull SqlUpdateQuery<T> set(@NonNull SqlColumn<V> column, @NonNull SqlExpression<V> expression) {
+	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @NonNull V value) {
 		return null;
 	}
 	
-	public <V extends Number> @NonNull SqlUpdateQuery<T> increment(@NonNull SqlColumn<V> column, @NonNull V incrementBy) {
+	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> expression) {
 		return null;
 	}
 	
-	public <V extends Number> @NonNull SqlUpdateQuery<T> increment(@NonNull SqlColumn<V> column, @NonNull SqlExpression<V> incrementByExpression) {
+	public <V extends Number> @NonNull SqlUpdateQuery<E> increment(@NonNull SqlColumn<E, V> column, @NonNull V incrementBy) {
 		return null;
 	}
 	
-	public <V extends Number> @NonNull SqlUpdateQuery<T> decrement(@NonNull SqlColumn<V> column, @NonNull V decrementBy) {
+	public <V extends Number> @NonNull SqlUpdateQuery<E> increment(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> incrementByExpression) {
 		return null;
 	}
 	
-	public <V extends Number> @NonNull SqlUpdateQuery<T> decrement(@NonNull SqlColumn<V> column, @NonNull SqlExpression<V> decrementByExpression) {
+	public <V extends Number> @NonNull SqlUpdateQuery<E> decrement(@NonNull SqlColumn<E, V> column, @NonNull V decrementBy) {
 		return null;
 	}
 	
-	public @NonNull SqlUpdateQuery<T> where(@NonNull SqlCondition condition) {
+	public <V extends Number> @NonNull SqlUpdateQuery<E> decrement(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> decrementByExpression) {
 		return null;
 	}
 	
-	public @NonNull SqlUpdateQuery<T> batchSize(int batchSize) {
+	public @NonNull SqlUpdateQuery<E> where(@NonNull SqlCondition condition) {
+		return null;
+	}
+	
+	public @NonNull SqlUpdateQuery<E> batchSize(int batchSize) {
 		return null;
 	}
 	
@@ -99,7 +99,7 @@ public class SqlUpdateQuery<T> implements SqlJoinableQuery<T> {
 		return 0;
 	}
 	
-	public @NonNull List<T> returning() throws SqlException {
+	public @NonNull List<E> returning() throws SqlException {
 		return null;
 	}
 	

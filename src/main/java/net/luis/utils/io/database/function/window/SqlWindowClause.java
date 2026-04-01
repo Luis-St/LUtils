@@ -35,7 +35,7 @@ public interface SqlWindowClause extends SqlRenderable {
 		return null;
 	}
 	
-	static @NonNull SqlWindowClause partitionBy(SqlColumn<?> @NonNull ... columns) {
+	static @NonNull SqlWindowClause partitionBy(SqlColumn<?, ?> @NonNull ... columns) {
 		return null;
 	}
 	

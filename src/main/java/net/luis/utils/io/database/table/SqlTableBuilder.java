@@ -21,11 +21,12 @@ package net.luis.utils.io.database.table;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.database.SqlDataType;
-import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.SqlReferentialAction;
+import net.luis.utils.io.database.condition.SqlCondition;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -34,18 +35,18 @@ import java.util.function.UnaryOperator;
  *
  */
 
-public class SqlTableBuilder<T> {
+public class SqlTableBuilder<E> {
 	
-	private final Class<T> type;
+	private final Class<E> type;
 	private final String name;
 	private final String schema;
-	private Optional<SqlCompositePrimaryKey> compositePrimaryKey = Optional.empty();
-	private final List<SqlForeignKey> foreignKeys = Lists.newArrayList();
-	private final List<List<SqlColumn<?>>> uniqueConstraints = Lists.newArrayList();
+	private Optional<SqlCompositePrimaryKey<E>> compositePrimaryKey = Optional.empty();
+	private final List<SqlForeignKey<E, ?>> foreignKeys = Lists.newArrayList();
+	private final List<List<SqlColumn<E, ?>>> uniqueConstraints = Lists.newArrayList();
 	private final List<SqlCondition> checkConstraints = Lists.newArrayList();
-	private final Map</*Name*/ String, SqlColumn<?>> columns = Maps.newHashMap();
+	private final Map</*Name*/ String, SqlColumn<E, ?>> columns = Maps.newHashMap();
 	
-	SqlTableBuilder(@NonNull Class<T> type, @NonNull String name, @NonNull String schema) {
+	SqlTableBuilder(@NonNull Class<E> type, @NonNull String name, @NonNull String schema) {
 		this.type = Objects.requireNonNull(type, "Type must not be null");
 		this.name = Objects.requireNonNull(name, "Name must not be null");
 		this.schema = Objects.requireNonNull(schema, "Schema must not be null");
@@ -58,45 +59,46 @@ public class SqlTableBuilder<T> {
 		}
 	}
 	
-	public <C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull SqlDataType<C> dataType) {
-		return this.column(name, dataType, UnaryOperator.identity());
+	public <C> @NonNull SqlColumn<E, C> column(@NonNull String name, @NonNull SqlDataType<C> dataType, @NonNull Function<E, C> getter) {
+		return this.column(name, dataType, getter, UnaryOperator.identity());
 	}
 	
-	public <C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull SqlDataType<C> dataType, @NonNull UnaryOperator<SqlColumnBuilder<C>> action) {
+	public <C> @NonNull SqlColumn<E, C> column(@NonNull String name, @NonNull SqlDataType<C> dataType, @NonNull Function<E, C> getter, @NonNull UnaryOperator<SqlColumnBuilder<E, C>> action) {
 		Objects.requireNonNull(action, "Column configuration action must not be null");
 		
-		SqlColumn<C> column = action.apply(SqlColumn.builder(name, dataType)).build();
+		SqlColumn<E, C> column = action.apply(SqlColumn.builder(name, dataType, getter)).build();
 		if (this.columns.containsKey(column.getName())) {
-			throw new IllegalStateException("Column with name '" + name + "' already exists in table " + this.name);
+			throw new IllegalStateException("Column with name " + name + " already exists in table " + this.name);
 		}
 		if (column.isPrimaryKey() && this.compositePrimaryKey.isPresent()) {
-			throw new IllegalStateException("Unable to add primary key column '" + name + "' to table " + this.name + " because a composite primary key is already defined");
+			throw new IllegalStateException("Unable to add primary key column " + name + " to table " + this.name + " because a composite primary key is already defined");
 		}
 		
 		this.columns.put(column.getName(), column);
 		return column;
 	}
 	
-	public @NonNull SqlCompositePrimaryKey compositePrimaryKey(SqlColumn<?> @NonNull  ... columns) {
+	@SafeVarargs
+	public final @NonNull SqlCompositePrimaryKey<E> compositePrimaryKey(SqlColumn<E, ?> @NonNull ... columns) {
 		Objects.requireNonNull(columns, "Columns must not be null");
 		return this.compositePrimaryKey(Lists.newArrayList(columns));
 	}
 	
-	public @NonNull SqlCompositePrimaryKey compositePrimaryKey(@NonNull List<SqlColumn<?>> columns) {
-		return this.compositePrimaryKey(new SqlCompositePrimaryKey(columns));
+	public @NonNull SqlCompositePrimaryKey<E> compositePrimaryKey(@NonNull List<SqlColumn<E, ?>> columns) {
+		return this.compositePrimaryKey(new SqlCompositePrimaryKey<>(columns));
 	}
 	
-	public @NonNull SqlCompositePrimaryKey compositePrimaryKey(@NonNull List<SqlColumn<?>> columns, @NonNull SqlReferentialAction onUpdate, @NonNull SqlReferentialAction onDelete) {
-		return this.compositePrimaryKey(new SqlCompositePrimaryKey(columns, onUpdate, onDelete));
+	public @NonNull SqlCompositePrimaryKey<E> compositePrimaryKey(@NonNull List<SqlColumn<E, ?>> columns, @NonNull SqlReferentialAction onUpdate, @NonNull SqlReferentialAction onDelete) {
+		return this.compositePrimaryKey(new SqlCompositePrimaryKey<>(columns, onUpdate, onDelete));
 	}
 	
-	public @NonNull SqlCompositePrimaryKey generateCompositePrimaryKey() {
+	public @NonNull SqlCompositePrimaryKey<E> generateCompositePrimaryKey() {
 		if (this.compositePrimaryKey.isPresent()) {
 			throw new IllegalStateException("Unable to generate composite primary key for table " + this.name + " because a composite primary key is already defined");
 		}
 		
-		List<SqlColumn<?>> columns = Lists.newArrayList();
-		for (SqlColumn<?> column : this.columns.values()) {
+		List<SqlColumn<E, ?>> columns = Lists.newArrayList();
+		for (SqlColumn<E, ?> column : this.columns.values()) {
 			if (column.isPrimaryKey()) {
 				columns.add(column);
 			}
@@ -105,10 +107,10 @@ public class SqlTableBuilder<T> {
 		if (columns.isEmpty()) {
 			throw new IllegalStateException("Unable to generate composite primary key for table " + this.name + " because no primary key columns are defined");
 		}
-		return this.compositePrimaryKey(new SqlCompositePrimaryKey(columns));
+		return this.compositePrimaryKey(new SqlCompositePrimaryKey<>(columns));
 	}
 	
-	private @NonNull SqlCompositePrimaryKey compositePrimaryKey(@NonNull SqlCompositePrimaryKey reference) {
+	private @NonNull SqlCompositePrimaryKey<E> compositePrimaryKey(@NonNull SqlCompositePrimaryKey<E> reference) {
 		if (this.compositePrimaryKey.isPresent()) {
 			throw new IllegalStateException("Composite primary key already defined for table " + this.name);
 		}
@@ -117,41 +119,44 @@ public class SqlTableBuilder<T> {
 		return reference;
 	}
 	
-	public @NonNull SqlForeignKey foreignKey(@NonNull List<SqlColumn<?>> referencingColumns, @NonNull SqlTable<?> referencedTable, @NonNull SqlColumn<?> referencedColumn) {
+	public <T> @NonNull SqlForeignKey<E, T> foreignKey(@NonNull List<SqlColumn<E, ?>> referencingColumns, @NonNull SqlTable<T> referencedTable, @NonNull SqlColumn<T, ?> referencedColumn) {
 		Objects.requireNonNull(referencedColumn, "Referenced column must not be null");
-		return this.foreignKey(new SqlForeignKey(referencingColumns, referencedTable, Lists.newArrayList(referencedColumn)));
+		return this.foreignKey(new SqlForeignKey<>(referencingColumns, referencedTable, Lists.newArrayList(referencedColumn)));
 	}
 	
-	public @NonNull SqlForeignKey foreignKey(@NonNull List<SqlColumn<?>> referencingColumns, @NonNull SqlTable<?> referencedTable, @NonNull List<SqlColumn<?>> referencedColumns) {
-		return this.foreignKey(new SqlForeignKey(referencingColumns, referencedTable, referencedColumns));
+	public <T> @NonNull SqlForeignKey<E, T> foreignKey(@NonNull List<SqlColumn<E, ?>> referencingColumns, @NonNull SqlTable<T> referencedTable, @NonNull List<SqlColumn<T, ?>> referencedColumns) {
+		return this.foreignKey(new SqlForeignKey<>(referencingColumns, referencedTable, referencedColumns));
 	}
 	
-	public @NonNull SqlForeignKey foreignKey(@NonNull List<SqlColumn<?>> referencingColumns, @NonNull SqlTable<?> referencedTable, @NonNull List<SqlColumn<?>> referencedColumns, @NonNull SqlReferentialAction onUpdate, @NonNull SqlReferentialAction onDelete) {
-		return this.foreignKey(new SqlForeignKey(referencingColumns, referencedTable, referencedColumns, onUpdate, onDelete));
+	public <T> @NonNull SqlForeignKey<E, T> foreignKey(
+		@NonNull List<SqlColumn<E, ?>> referencingColumns, @NonNull SqlTable<T> referencedTable, @NonNull List<SqlColumn<T, ?>> referencedColumns, @NonNull SqlReferentialAction onUpdate, @NonNull SqlReferentialAction onDelete
+	) {
+		return this.foreignKey(new SqlForeignKey<>(referencingColumns, referencedTable, referencedColumns, onUpdate, onDelete));
 	}
 	
-	private @NonNull SqlForeignKey foreignKey(@NonNull SqlForeignKey foreignKey) {
+	private <T> @NonNull SqlForeignKey<E, T> foreignKey(@NonNull SqlForeignKey<E, T> foreignKey) {
 		this.foreignKeys.add(foreignKey);
 		return foreignKey;
 	}
 	
-	public void uniqueConstraint(SqlColumn<?> @NonNull ... columns) {
+	@SafeVarargs
+	public final void uniqueConstraint(SqlColumn<E, ?> @NonNull ... columns) {
 		Objects.requireNonNull(columns, "Columns must not be null");
 		
 		this.uniqueConstraint(Lists.newArrayList(columns));
 	}
 	
-	public void uniqueConstraint(@NonNull List<SqlColumn<?>> columns) {
+	public void uniqueConstraint(@NonNull List<SqlColumn<E, ?>> columns) {
 		Objects.requireNonNull(columns, "Columns must not be null");
 		if (columns.isEmpty()) {
 			throw new IllegalArgumentException("Unique constraint must contain at least one column");
 		}
 		
-		for (SqlColumn<?> column : columns) {
+		for (SqlColumn<E, ?> column : columns) {
 			Objects.requireNonNull(column, "Unique constraint columns must not contain null values");
 			
 			if (!this.columns.containsKey(column.getName())) {
-				throw new IllegalArgumentException("Column '" + column.getName() + "' is not defined in table " + this.name);
+				throw new IllegalArgumentException("Column " + column.getName() + " is not defined in table " + this.name);
 			}
 		}
 		
@@ -164,7 +169,7 @@ public class SqlTableBuilder<T> {
 		this.checkConstraints.add(condition);
 	}
 	
-	public @NonNull SqlTable<T> build() {
+	public @NonNull SqlTable<E> build() {
 		return new SqlTable<>(this.type, this.name, this.schema, this.compositePrimaryKey, this.foreignKeys, this.uniqueConstraints, this.checkConstraints, this.columns);
 	}
 }

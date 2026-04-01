@@ -27,4 +27,4 @@ import net.luis.utils.io.database.rendering.SqlRenderable;
  */
 
 @FunctionalInterface
-public interface SqlQuery<T> extends SqlRenderable {}
+public interface SqlQuery<E> extends SqlRenderable {}

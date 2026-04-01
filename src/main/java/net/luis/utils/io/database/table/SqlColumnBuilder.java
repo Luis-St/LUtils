@@ -24,6 +24,7 @@ import net.luis.utils.io.database.condition.SqlCondition;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  *
@@ -31,66 +32,68 @@ import java.util.*;
  *
  */
 
-public class SqlColumnBuilder<T> {
+public class SqlColumnBuilder<E, C> {
 	
 	private final String name;
-	private final SqlDataType<T> dataType;
+	private final SqlDataType<C> dataType;
+	private final Function<E, C> getter;
 	private boolean nullable = true;
-	private Optional<T> defaultValue = Optional.empty();
+	private Optional<C> defaultValue = Optional.empty();
 	private boolean autoIncrement;
 	private boolean unique;
 	private boolean primaryKey;
-	private Optional<SqlForeignKey> foreignKey = Optional.empty();
+	private Optional<SqlForeignKey<E, ?>> foreignKey = Optional.empty();
 	private final List<SqlCondition> constraints = Lists.newArrayList();
 	
-	public SqlColumnBuilder(@NonNull String name, @NonNull SqlDataType<T> dataType) {
+	public SqlColumnBuilder(@NonNull String name, @NonNull SqlDataType<C> dataType, @NonNull Function<E, C> getter) {
 		this.name = Objects.requireNonNull(name, "Column name must not be null");
 		this.dataType = Objects.requireNonNull(dataType, "Data type must not be null");
+		this.getter = Objects.requireNonNull(getter, "Getter function must not be null");
 	}
 	
-	public @NonNull SqlColumnBuilder<T> notNull() {
+	public @NonNull SqlColumnBuilder<E, C> notNull() {
 		this.nullable = false;
 		return this;
 	}
 	
-	public @NonNull SqlColumnBuilder<T> defaultValue(@NonNull T defaultValue) {
+	public @NonNull SqlColumnBuilder<E, C> defaultValue(@NonNull C defaultValue) {
 		Objects.requireNonNull(defaultValue, "Default value must not be null");
 		this.defaultValue = Optional.of(defaultValue);
 		return this;
 	}
 	
-	public @NonNull SqlColumnBuilder<T> autoIncrement() {
+	public @NonNull SqlColumnBuilder<E, C> autoIncrement() {
 		this.autoIncrement = true;
 		return this;
 	}
 	
-	public @NonNull SqlColumnBuilder<T> unique() {
+	public @NonNull SqlColumnBuilder<E, C> unique() {
 		this.unique = true;
 		return this;
 	}
 	
-	public @NonNull SqlColumnBuilder<T> primaryKey() {
+	public @NonNull SqlColumnBuilder<E, C> primaryKey() {
 		this.primaryKey = true;
 		return this;
 	}
 	
-	public @NonNull SqlColumnBuilder<T> addConstraint(@NonNull SqlCondition constraint) {
+	public @NonNull SqlColumnBuilder<E, C> addConstraint(@NonNull SqlCondition constraint) {
 		Objects.requireNonNull(constraint, "Constraint must not be null");
 		this.constraints.add(constraint);
 		return this;
 	}
 	
-	public @NonNull SqlColumnBuilder<T> foreignKey(@NonNull SqlTable<?> referencedTable) {
-		this.foreignKey = Optional.of(new SqlForeignKey(referencedTable));
+	public <T> @NonNull SqlColumnBuilder<E, C> foreignKey(@NonNull SqlTable<T> referencedTable) {
+		this.foreignKey = Optional.of(new SqlForeignKey<>(referencedTable));
 		return this;
 	}
 	
-	public @NonNull SqlColumnBuilder<T> foreignKey(@NonNull SqlTable<?> referencedTable, @NonNull SqlColumn<?> referencedColumn) {
-		this.foreignKey = Optional.of(new SqlForeignKey(referencedTable, referencedColumn));
+	public <T> @NonNull SqlColumnBuilder<E, C> foreignKey(@NonNull SqlTable<T> referencedTable, @NonNull SqlColumn<T, ?> referencedColumn) {
+		this.foreignKey = Optional.of(new SqlForeignKey<>(referencedTable, referencedColumn));
 		return this;
 	}
 	
-	public @NonNull SqlColumn<T> build() {
-		return new SqlColumn<>(this.name, this.dataType, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.foreignKey, this.constraints);
+	public @NonNull SqlColumn<E, C> build() {
+		return new SqlColumn<>(this.name, this.dataType, this.getter, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.foreignKey, this.constraints);
 	}
 }

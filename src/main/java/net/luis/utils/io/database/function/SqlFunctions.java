@@ -122,27 +122,27 @@ public final class SqlFunctions {
 		return null;
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column) {
+	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<?, T> column) {
 		return null;
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column, int offset) {
+	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<?, T> column, int offset) {
 		return null;
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<T> column, int offset, @NonNull T defaultValue) {
+	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<?, T> column, int offset, @NonNull T defaultValue) {
 		return null;
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column) {
+	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<?, T> column) {
 		return null;
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column, int offset) {
+	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<?, T> column, int offset) {
 		return null;
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<T> column, int offset, @NonNull T defaultValue) {
+	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<?, T> column, int offset, @NonNull T defaultValue) {
 		return null;
 	}
 	
@@ -154,15 +154,15 @@ public final class SqlFunctions {
 		return null;
 	}
 	
-	public static <T> @NonNull SqlExpression<T> firstValue(@NonNull SqlColumn<T> column) {
+	public static <T> @NonNull SqlExpression<T> firstValue(@NonNull SqlColumn<?, T> column) {
 		return null;
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lastValue(@NonNull SqlColumn<T> column) {
+	public static <T> @NonNull SqlExpression<T> lastValue(@NonNull SqlColumn<?, T> column) {
 		return null;
 	}
 	
-	public static <T> @NonNull SqlExpression<T> valueAt(@NonNull SqlColumn<T> column, int position) {
+	public static <T> @NonNull SqlExpression<T> valueAt(@NonNull SqlColumn<?, T> column, int position) {
 		return null;
 	}
 }

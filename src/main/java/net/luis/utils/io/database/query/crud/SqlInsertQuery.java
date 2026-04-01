@@ -32,17 +32,17 @@ import java.util.List;
  *
  */
 
-public class SqlInsertQuery<T> implements SqlQuery<T> {
+public class SqlInsertQuery<E> implements SqlQuery<E> {
 	
 	public int execute() throws SqlException {
 		return 0;
 	}
 	
-	public @NonNull List<T> returning() throws SqlException {
+	public @NonNull List<E> returning() throws SqlException {
 		return null;
 	}
 	
-	public @NonNull List<T> fetchInserted() throws SqlException {
+	public @NonNull List<E> fetchInserted() throws SqlException {
 		return null;
 	}
 	

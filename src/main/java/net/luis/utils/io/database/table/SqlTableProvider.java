@@ -35,7 +35,7 @@ import java.util.List;
  *
  */
 
-public class SqlTableProvider<T> {
+public class SqlTableProvider<E> {
 	
 	public void create() throws SqlException {
 	
@@ -61,15 +61,15 @@ public class SqlTableProvider<T> {
 	
 	}
 	
-	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<?>> columns, @NonNull SqlIndexMethod method) throws SqlException {
+	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<E, ?>> columns, @NonNull SqlIndexMethod method) throws SqlException {
 	
 	}
 	
-	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<?>> columns, boolean unique, @NonNull SqlIndexMethod method) throws SqlException {
+	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<E, ?>> columns, boolean unique, @NonNull SqlIndexMethod method) throws SqlException {
 	
 	}
 	
-	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<?>> columns, boolean unique, @Nullable SqlCondition whereCondition, @NonNull SqlIndexMethod method) throws SqlException {
+	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<E, ?>> columns, boolean unique, @Nullable SqlCondition whereCondition, @NonNull SqlIndexMethod method) throws SqlException {
 	
 	}
 	

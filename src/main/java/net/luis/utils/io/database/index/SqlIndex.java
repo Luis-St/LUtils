@@ -34,13 +34,13 @@ import java.util.List;
 
 public record SqlIndex(
 	@NonNull String name,
-	@NonNull List<SqlColumn<?>> columns,
+	@NonNull List<SqlColumn<?, ?>> columns,
 	boolean unique,
 	@Nullable SqlCondition whereCondition,
 	@NonNull SqlIndexMethod method
 ) {
 	
-	public SqlIndex(@NonNull String name, @NonNull List<SqlColumn<?>> columns, boolean unique, @NotNull SqlIndexMethod method) {
+	public SqlIndex(@NonNull String name, @NonNull List<SqlColumn<?, ?>> columns, boolean unique, @NotNull SqlIndexMethod method) {
 		this(name, columns, unique, null, method);
 	}
 }

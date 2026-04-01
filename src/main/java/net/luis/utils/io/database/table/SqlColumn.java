@@ -23,12 +23,15 @@ import net.luis.utils.io.database.SqlDataType;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlExpression;
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlAlreadyBindException;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRendered;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.UnknownNullability;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  *
@@ -36,32 +39,35 @@ import java.util.*;
  *
  */
 
-public class SqlColumn<T> implements SqlExpression<T> {
+public class SqlColumn<E, T> implements SqlExpression<T> {
 	
 	private final String name;
-	private final @NonNull SqlDataType<T> dataType;
+	private final SqlDataType<T> dataType;
+	private final Function<E, T> getter;
 	private final boolean nullable;
-	private final @NonNull Optional<T> defaultValue;
+	private final Optional<T> defaultValue;
 	private final boolean autoIncrement;
 	private final boolean unique;
 	private final boolean primaryKey;
-	private final Optional<SqlForeignKey> foreignKey;
+	private final Optional<SqlForeignKey<E, ?>> foreignKey;
 	private final List<SqlCondition> checks = Lists.newArrayList();
-	private SqlTable<?> table;
+	private SqlTable<E> table;
 	
 	SqlColumn(
 		@NonNull String name,
 		@NonNull SqlDataType<T> dataType,
+		@NonNull Function<E, T> getter,
 		boolean nullable,
 		@NonNull Optional<T> defaultValue,
 		boolean autoIncrement,
 		boolean unique,
 		boolean primaryKey,
-		Optional<SqlForeignKey> foreignKey,
+		Optional<SqlForeignKey<E, ?>> foreignKey,
 		@NonNull List<SqlCondition> checks
 	) {
 		this.name = Objects.requireNonNull(name, "Column name must not be null");
 		this.dataType = Objects.requireNonNull(dataType, "Data type must not be null");
+		this.getter = Objects.requireNonNull(getter, "Getter function must not be null");
 		this.nullable = nullable;
 		this.defaultValue = Objects.requireNonNull(defaultValue, "Default value must not be null");
 		this.autoIncrement = autoIncrement;
@@ -73,27 +79,30 @@ public class SqlColumn<T> implements SqlExpression<T> {
 		if (name.isBlank()) {
 			throw new IllegalArgumentException("Column name must not be blank");
 		}
-		if (autoIncrement && !dataType.columnType().isNumeric()) {
+		/*if (autoIncrement && !dataType.columnType().isNumeric()) {
+			// ToDo: Fix validation
 			throw new IllegalArgumentException("Auto-increment is only supported for numeric data types");
-		}
-		foreignKey.ifPresent(sqlForeignKey -> sqlForeignKey.setReferencingColumn(this));
+		}*/
 	}
 	
-	public static <T> @NonNull SqlColumnBuilder<T> builder(@NonNull String name, @NonNull SqlDataType<T> dataType) {
-		return new SqlColumnBuilder<>(name, dataType);
+	public static <E, T> @NonNull SqlColumnBuilder<E, T> builder(@NonNull String name, @NonNull SqlDataType<T> dataType, @NonNull Function<E, T> getter) {
+		return new SqlColumnBuilder<>(name, dataType, getter);
+	}
+	
+	public void bindTo(@NonNull SqlTable<E> table) throws SqlAlreadyBindException {
+		Objects.requireNonNull(table, "Owning table must not be null");
+		if (this.table != null) {
+			throw new SqlAlreadyBindException("Column " + this.name + " is already associated with table " + this.table.getName());
+		}
+		
+		this.table = table;
+		if (this.foreignKey.isPresent()) {
+			this.foreignKey.get().bindTo(table, this);
+		}
 	}
 	
 	public @UnknownNullability SqlTable<?> getOwningTable() {
 		return this.table;
-	}
-	
-	@ApiStatus.Internal
-	void setOwningTable(@NonNull SqlTable<?> table) {
-		Objects.requireNonNull(table, "Owning table must not be null");
-		if (this.table != null) {
-			throw new IllegalStateException("Column '" + this.name + "' is already associated with table " + this.table.getName());
-		}
-		this.table = table;
 	}
 	
 	public @NonNull String getName() {
@@ -102,6 +111,10 @@ public class SqlColumn<T> implements SqlExpression<T> {
 	
 	public @NonNull SqlDataType<T> getDataType() {
 		return this.dataType;
+	}
+	
+	public @NonNull Function<E, T> getGetter() {
+		return this.getter;
 	}
 	
 	public boolean isNullable() {
@@ -122,6 +135,10 @@ public class SqlColumn<T> implements SqlExpression<T> {
 	
 	public boolean isPrimaryKey() {
 		return this.primaryKey;
+	}
+	
+	public @NonNull Optional<SqlForeignKey<E, ?>> getForeignKey() {
+		return this.foreignKey;
 	}
 	
 	public @NonNull @Unmodifiable List<SqlCondition> getChecks() {

@@ -34,38 +34,38 @@ import java.util.List;
  *
  */
 
-public class SqlDeleteQuery<T> implements SqlJoinableQuery<T> {
+public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	
 	@Override
-	public @NonNull SqlDeleteQuery<T> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlDeleteQuery<T> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
+	public @NonNull SqlDeleteQuery<E> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlDeleteQuery<T> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
+	public @NonNull SqlDeleteQuery<E> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlDeleteQuery<T> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
+	public @NonNull SqlDeleteQuery<E> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlDeleteQuery<T> crossJoin(@NonNull SqlTable<?> table) {
+	public @NonNull SqlDeleteQuery<E> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
-	public @NonNull SqlDeleteQuery<T> where(@NonNull SqlCondition condition) {
+	@Override
+	public @NonNull SqlDeleteQuery<E> crossJoin(@NonNull SqlTable<?> table) {
 		return null;
 	}
 	
-	public @NonNull SqlDeleteQuery<T> batchSize(int batchSize) {
+	public @NonNull SqlDeleteQuery<E> where(@NonNull SqlCondition condition) {
+		return null;
+	}
+	
+	public @NonNull SqlDeleteQuery<E> batchSize(int batchSize) {
 		return null;
 	}
 	
@@ -73,7 +73,7 @@ public class SqlDeleteQuery<T> implements SqlJoinableQuery<T> {
 		return 0;
 	}
 	
-	public @NonNull List<T> returning() throws SqlException {
+	public @NonNull List<E> returning() throws SqlException {
 		return null;
 	}
 	

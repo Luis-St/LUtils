@@ -41,98 +41,99 @@ import java.util.stream.Stream;
  *
  */
 
-public class SqlSelectQuery<T> implements SqlJoinableQuery<T> {
+public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	
-	public @NonNull SqlSelectQuery<T> forUpdate() {
+	public @NonNull SqlSelectQuery<E> forUpdate() {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> skipLocked() {
+	public @NonNull SqlSelectQuery<E> skipLocked() {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> forShare() {
+	public @NonNull SqlSelectQuery<E> forShare() {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> noWait() throws SqlException {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlSelectQuery<T> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
+	public @NonNull SqlSelectQuery<E> noWait() throws SqlException {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlSelectQuery<T> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
+	public @NonNull SqlSelectQuery<E> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlSelectQuery<T> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
+	public @NonNull SqlSelectQuery<E> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlSelectQuery<T> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
+	public @NonNull SqlSelectQuery<E> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlSelectQuery<T> crossJoin(@NonNull SqlTable<?> table) {
+	public @NonNull SqlSelectQuery<E> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> lateralJoin(@NonNull SqlSelectQuery<?> subquery, @NonNull SqlAlias alias) {
+	@Override
+	public @NonNull SqlSelectQuery<E> crossJoin(@NonNull SqlTable<?> table) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> where(@NonNull SqlCondition condition) {
+	public @NonNull SqlSelectQuery<E> lateralJoin(@NonNull SqlSelectQuery<?> subquery, @NonNull SqlAlias alias) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> whereExists(@NonNull SqlSelectQuery<?> subquery) {
+	public @NonNull SqlSelectQuery<E> where(@NonNull SqlCondition condition) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> groupBy(SqlColumn<?> @NonNull ... columns) {
+	public @NonNull SqlSelectQuery<E> whereExists(@NonNull SqlSelectQuery<?> subquery) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> having(@NonNull SqlCondition condition) {
+	@SafeVarargs
+	public final @NonNull SqlSelectQuery<E> groupBy(SqlColumn<E, ?> @NonNull ... columns) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> orderBy(SqlOrderable @NonNull ... orderables) {
+	public @NonNull SqlSelectQuery<E> having(@NonNull SqlCondition condition) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> limit(int limit) {
+	public @NonNull SqlSelectQuery<E> orderBy(SqlOrderable @NonNull ... orderables) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> offset(long offset) {
+	public @NonNull SqlSelectQuery<E> limit(int limit) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> distinct() {
+	public @NonNull SqlSelectQuery<E> offset(long offset) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> union(@NonNull SqlSelectQuery<T> other) {
+	public @NonNull SqlSelectQuery<E> distinct() {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> unionAll(@NonNull SqlSelectQuery<T> other) {
+	public @NonNull SqlSelectQuery<E> union(@NonNull SqlSelectQuery<E> other) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> intersect(@NonNull SqlSelectQuery<T> other) {
+	public @NonNull SqlSelectQuery<E> unionAll(@NonNull SqlSelectQuery<E> other) {
 		return null;
 	}
 	
-	public @NonNull SqlSelectQuery<T> except(@NonNull SqlSelectQuery<T> other) {
+	public @NonNull SqlSelectQuery<E> intersect(@NonNull SqlSelectQuery<E> other) {
+		return null;
+	}
+	
+	public @NonNull SqlSelectQuery<E> except(@NonNull SqlSelectQuery<E> other) {
 		return null;
 	}
 	
@@ -148,19 +149,19 @@ public class SqlSelectQuery<T> implements SqlJoinableQuery<T> {
 		return null;
 	}
 	
-	public @NonNull List<T> fetch() throws SqlException {
+	public @NonNull List<E> fetch() throws SqlException {
 		return null;
 	}
 	
-	public @NonNull Optional<T> fetchFirst() throws SqlException {
+	public @NonNull Optional<E> fetchFirst() throws SqlException {
 		return null;
 	}
 	
-	public @NonNull T fetchOne() throws SqlException {
+	public @NonNull E fetchOne() throws SqlException {
 		return null;
 	}
 	
-	public @Nullable T fetchOneOrNull() throws SqlException {
+	public @Nullable E fetchOneOrNull() throws SqlException {
 		return null;
 	}
 	
@@ -172,11 +173,11 @@ public class SqlSelectQuery<T> implements SqlJoinableQuery<T> {
 		return false;
 	}
 	
-	public @NonNull Stream<T> stream() throws SqlException {
+	public @NonNull Stream<E> stream() throws SqlException {
 		return null;
 	}
 	
-	public @NonNull SqlPage<T> fetchPage(int page, int pageSize) throws SqlException {
+	public @NonNull SqlPage<E> fetchPage(int page, int pageSize) throws SqlException {
 		return null;
 	}
 	

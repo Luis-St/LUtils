@@ -31,13 +31,13 @@ import java.util.Objects;
  *
  */
 
-public record SqlCompositePrimaryKey(
-	@NonNull @Unmodifiable List<SqlColumn<?>> columns,
+public record SqlCompositePrimaryKey<E>(
+	@NonNull @Unmodifiable List<SqlColumn<E, ?>> columns,
 	@NonNull SqlReferentialAction onUpdate,
 	@NonNull SqlReferentialAction onDelete
 ) {
 	
-	public SqlCompositePrimaryKey(@NonNull List<SqlColumn<?>> columns) {
+	public SqlCompositePrimaryKey(@NonNull List<SqlColumn<E, ?>> columns) {
 		this(columns, SqlReferentialAction.NO_ACTION, SqlReferentialAction.NO_ACTION);
 	}
 	
@@ -52,7 +52,7 @@ public record SqlCompositePrimaryKey(
 		
 		SqlTable<?> owningTable = columns.getFirst().getOwningTable();
 		for (int i = 1; i < columns.size(); i++) {
-			SqlColumn<?> column = columns.get(i);
+			SqlColumn<E, ?> column = columns.get(i);
 			
 			if (column.getOwningTable() != owningTable) {
 				throw new IllegalArgumentException(
@@ -64,7 +64,7 @@ public record SqlCompositePrimaryKey(
 		columns = List.copyOf(columns);
 	}
 	
-	public @NonNull @Unmodifiable List<SqlColumn<?>> referenceTarget() {
+	public @NonNull @Unmodifiable List<SqlColumn<E, ?>> referenceTarget() {
 		return this.columns;
 	}
 }

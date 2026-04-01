@@ -24,18 +24,11 @@ import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.function.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
-import net.luis.utils.io.database.table.*;
-import net.luis.utils.io.database.table.SqlColumnBuilder;
-import net.luis.utils.io.database.table.SqlTableBuilder;
-import net.luis.utils.io.database.table.SqlCompositePrimaryKey;
 import net.luis.utils.io.database.query.row.SqlRow2;
+import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.transaction.SqlTransaction;
-import net.luis.utils.io.databasev1.dialect.postgres.PostgresQueryProvider;
-import net.luis.utils.io.databasev1.dialect.postgres.PostgresTable;
-import net.luis.utils.io.databasev1.migration.*;
-import net.luis.utils.util.Version;
-import org.jspecify.annotations.NonNull;
 
+import javax.sql.DataSource;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -54,45 +47,47 @@ public class DatabaseTest {
 	
 	public record PersonRole(int personId, int roleId) {}
 	
+	private static final DataSource DATA_SOURCE = null;
+	
 	public static final SqlTable<Person> PERSON_TABLE;
-	public static final SqlColumn<Integer> ID;
-	public static final SqlColumn<String> NAME;
-	public static final SqlColumn<String> EMAIL;
-	public static final SqlColumn<Long> VERSION;
-	public static final SqlColumn<Instant> CREATED_AT;
+	public static final SqlColumn<Person, Integer> ID;
+	public static final SqlColumn<Person, String> NAME;
+	public static final SqlColumn<Person, String> EMAIL;
+	public static final SqlColumn<Person, Long> VERSION;
+	public static final SqlColumn<Person, Instant> CREATED_AT;
 	
 	public static final SqlTable<Role> ROLE_TABLE;
-	public static final SqlColumn<Integer> ROLE_ID;
-	public static final SqlColumn<String> ROLE_NAME;
+	public static final SqlColumn<Role, Integer> ROLE_ID;
+	public static final SqlColumn<Role, String> ROLE_NAME;
 	
 	public static final SqlTable<PersonRole> PERSON_ROLE_TABLE;
-	public static final SqlColumn<Integer> PR_PERSON_ID;
-	public static final SqlColumn<Integer> PR_ROLE_ID;
-	public static final SqlCompositePrimaryKey PERSON_ROLE_PK;
+	public static final SqlColumn<PersonRole, Integer> PR_PERSON_ID;
+	public static final SqlColumn<PersonRole, Integer> PR_ROLE_ID;
+	public static final SqlCompositePrimaryKey<PersonRole> PERSON_ROLE_PK;
 	
 	static {
 		SqlTableBuilder<Person> personTableBuilder = SqlTable.of(Person.class, "person");
-		ID = personTableBuilder.column("id", SqlDataType.INTEGER, col -> col.primaryKey().notNull().autoIncrement());
-		NAME = personTableBuilder.column("name", SqlDataType.STRING, SqlColumnBuilder::notNull);
-		EMAIL = personTableBuilder.column("email", SqlDataType.STRING, col -> col.notNull().unique());
-		VERSION = personTableBuilder.column("version", SqlDataType.LONG, col -> col.notNull().defaultValue(0L));
-		CREATED_AT = personTableBuilder.column("created_at", SqlDataType.INSTANT, SqlColumnBuilder::notNull);
+		ID = personTableBuilder.column("id", SqlDataType.INTEGER, Person::id, col -> col.primaryKey().notNull().autoIncrement());
+		NAME = personTableBuilder.column("name", SqlDataType.STRING, Person::name, SqlColumnBuilder::notNull);
+		EMAIL = personTableBuilder.column("email", SqlDataType.STRING, Person::email, col -> col.notNull().unique());
+		VERSION = personTableBuilder.column("version", SqlDataType.LONG, Person::version, col -> col.notNull().defaultValue(0L));
+		CREATED_AT = personTableBuilder.column("created_at", SqlDataType.INSTANT, Person::createdAt, SqlColumnBuilder::notNull);
 		PERSON_TABLE = personTableBuilder.build();
 		
 		SqlTableBuilder<Role> roleTableBuilder = SqlTable.of(Role.class, "role");
-		ROLE_ID = roleTableBuilder.column("id", SqlDataType.INTEGER, col -> col.primaryKey().notNull().autoIncrement());
-		ROLE_NAME = roleTableBuilder.column("name", SqlDataType.STRING, SqlColumnBuilder::notNull);
+		ROLE_ID = roleTableBuilder.column("id", SqlDataType.INTEGER, Role::id, col -> col.primaryKey().notNull().autoIncrement());
+		ROLE_NAME = roleTableBuilder.column("name", SqlDataType.STRING, Role::name, SqlColumnBuilder::notNull);
 		ROLE_TABLE = roleTableBuilder.build();
 		
 		SqlTableBuilder<PersonRole> personRoleTableBuilder = SqlTable.of(PersonRole.class, "person_role");
-		PR_PERSON_ID = personRoleTableBuilder.column("person_id", SqlDataType.INTEGER, col -> col.primaryKey().notNull().foreignKey(PERSON_TABLE));
-		PR_ROLE_ID = personRoleTableBuilder.column("role_id", SqlDataType.INTEGER, col -> col.primaryKey().notNull().foreignKey(ROLE_TABLE));
+		PR_PERSON_ID = personRoleTableBuilder.column("person_id", SqlDataType.INTEGER, PersonRole::personId, col -> col.primaryKey().notNull().foreignKey(PERSON_TABLE));
+		PR_ROLE_ID = personRoleTableBuilder.column("role_id", SqlDataType.INTEGER, PersonRole::roleId, col -> col.primaryKey().notNull().foreignKey(ROLE_TABLE));
 		PERSON_ROLE_PK = personRoleTableBuilder.compositePrimaryKey(PR_PERSON_ID, PR_ROLE_ID);
 		PERSON_ROLE_TABLE = personRoleTableBuilder.build();
 	}
 	
 	void databaseLifecycle() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder().build()) {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE).build()) {
 			// DDL via db.table(table)
 			db.table(PERSON_TABLE).createIfNotExists();
 			
@@ -106,7 +101,7 @@ public class DatabaseTest {
 	}
 	
 	void selectQueries() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder().build()) {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE).build()) {
 			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
 			
 			// Full entity select
@@ -147,7 +142,7 @@ public class DatabaseTest {
 	}
 	
 	void transactions() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder().build()) {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE).build()) {
 			try (SqlTransaction tx = db.beginTransaction()) {
 				SqlQueryProvider<Person> persons = tx.from(PERSON_TABLE);
 				persons.insert(new Person(10, "Dave", "dave@example.com", 0, Instant.now())).execute();
@@ -161,7 +156,7 @@ public class DatabaseTest {
 	}
 	
 	void updateAndDelete() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder().build()) {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE).build()) {
 			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
 			
 			// Update with SET
@@ -202,7 +197,7 @@ public class DatabaseTest {
 	}
 	
 	void lockingQueries() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder().build()) {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE).build()) {
 			try (SqlTransaction tx = db.beginTransaction()) {
 				// FOR UPDATE locking
 				tx.from(PERSON_TABLE).select()
