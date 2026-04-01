@@ -16,9 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.mapping;
+package net.luis.utils.io.database;
 
-import net.luis.utils.io.database.SqlDataType;
+import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.query.SqlQueryProvider;
+import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.table.SqlTableProvider;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -27,14 +31,17 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlTypeConverter<J, D> {
+public interface SqlProvider {
 	
-	@NonNull D toDatabase(@NonNull J value);
+	void createSchema(@NotNull String name) throws SqlException;
 	
-	@NonNull J fromDatabase(@NonNull D value);
+	void createSchemaIfNotExists(@NotNull String name) throws SqlException;
 	
-	@NonNull Class<J> javaType();
+	boolean existsSchema(@NotNull String name) throws SqlException;
 	
-	@NonNull Class<D> databaseType();
+	void dropSchema(@NotNull String name, boolean cascade) throws SqlException;
+	
+	<T> @NonNull SqlTableProvider<T> table(@NonNull SqlTable<T> table);
+	
+	<T> @NonNull SqlQueryProvider<T> from(@NonNull SqlTable<T> table);
 }
-

@@ -1,0 +1,65 @@
+package net.luis.utils.io.database.type;
+
+import net.luis.utils.function.throwable.ThrowableBiFunction;
+import net.luis.utils.function.throwable.ThrowableTriFunction;
+import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.decoder.Decoder;
+import net.luis.utils.io.codec.decoder.DecoderException;
+import net.luis.utils.io.codec.encoder.Encoder;
+import net.luis.utils.io.codec.encoder.EncoderException;
+import net.luis.utils.io.codec.provider.TypeProvider;
+import net.luis.utils.io.database.type.value.SqlValue;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.io.InputStream;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.time.*;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.function.Function;
+
+/**
+ *
+ * @author Luis-St
+ *
+ */
+
+public final class SqlDataTypes {
+	
+	public static final Codec<Boolean> BOOLEAN = Codecs.BOOLEAN;
+	public static final Codec<Byte> BYTE = Codecs.BYTE;
+	public static final Codec<Short> SHORT = Codecs.SHORT;
+	public static final Codec<Integer> INTEGER = Codecs.INTEGER;
+	public static final Codec<Long> LONG = Codecs.LONG;
+	public static final Codec<Float> FLOAT = Codecs.FLOAT;
+	public static final Codec<Double> DOUBLE = Codecs.DOUBLE;
+	public static final Codec<BigDecimal> BIG_DECIMAL = Codecs.BIG_DECIMAL;
+	
+	public static final Codec<String> FIXED_STRING = Codecs.STRING.length(l -> l.maxLength(255));
+	public static final Codec<String> STRING = Codecs.STRING.length(l -> l.maxLength(65535));
+	public static final Codec<String> TEXT = Codecs.STRING;
+	public static final Codec<Clob> CLOB = new SqlCodec<>("sql clob", SqlTypeProvider::getClob);
+	public static final Codec<Reader> CHARACTER_STREAM = new SqlCodec<>("sql character stream", SqlTypeProvider::getCharacterStream);
+	public static final Codec<NClob> NCLOB = new SqlCodec<>("sql nclob", SqlTypeProvider::getNClob);
+	public static final Codec<Reader> N_CHARACTER_STREAM = new SqlCodec<>("sql n character stream", SqlTypeProvider::getNCharacterStream);
+	
+	public static final Codec<byte[]> BYTES = new SqlCodec<>("sql bytes", SqlTypeProvider::getBytes);
+	public static final Codec<Blob> BLOB = new SqlCodec<>("sql blob", SqlTypeProvider::getBlob);
+	public static final Codec<InputStream> BINARY_STREAM = new SqlCodec<>("sql binary stream", SqlTypeProvider::getBinaryStream);
+	
+	public static final Codec<LocalDate> LOCAL_DATE = Codecs.LOCAL_DATE;
+	public static final Codec<LocalTime> LOCAL_TIME = Codecs.LOCAL_TIME;
+	public static final Codec<LocalDateTime> LOCAL_DATE_TIME = Codecs.LOCAL_DATE_TIME;
+	public static final Codec<OffsetTime> OFFSET_TIME = Codecs.OFFSET_TIME;
+	public static final Codec<OffsetDateTime> OFFSET_DATE_TIME = Codecs.OFFSET_DATE_TIME;
+//	public static final Codec<Instant> INSTANT = Codecs.INSTANT;
+	
+	public static final Codec<UUID> UUID = Codecs.UUID;
+	public static final Codec<Character> CHARACTER = Codecs.CHARACTER;
+	
+	private SqlDataTypes() {}
+}
