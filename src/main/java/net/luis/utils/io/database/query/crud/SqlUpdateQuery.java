@@ -71,6 +71,22 @@ public class SqlUpdateQuery<T> implements SqlJoinableQuery<T> {
 		return null;
 	}
 	
+	public <V extends Number> @NonNull SqlUpdateQuery<T> increment(@NonNull SqlColumn<V> column, @NonNull V incrementBy) {
+		return null;
+	}
+	
+	public <V extends Number> @NonNull SqlUpdateQuery<T> increment(@NonNull SqlColumn<V> column, @NonNull SqlExpression<V> incrementByExpression) {
+		return null;
+	}
+	
+	public <V extends Number> @NonNull SqlUpdateQuery<T> decrement(@NonNull SqlColumn<V> column, @NonNull V decrementBy) {
+		return null;
+	}
+	
+	public <V extends Number> @NonNull SqlUpdateQuery<T> decrement(@NonNull SqlColumn<V> column, @NonNull SqlExpression<V> decrementByExpression) {
+		return null;
+	}
+	
 	public @NonNull SqlUpdateQuery<T> where(@NonNull SqlCondition condition) {
 		return null;
 	}

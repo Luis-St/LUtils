@@ -16,12 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.rendering;
+package net.luis.utils.io.database.query.row;
 
-import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
-
-import java.util.List;
 
 /**
  *
@@ -29,10 +26,18 @@ import java.util.List;
  *
  */
 
-public interface SqlRendered {
-	
-	@NonNull String sql();
-	
-	@NonNull @Unmodifiable
-	List<Object> parameters();
-}
+public record SqlRow13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(
+	@NonNull T1 first,
+	@NonNull T2 second,
+	@NonNull T3 third,
+	@NonNull T4 fourth,
+	@NonNull T5 fifth,
+	@NonNull T6 sixth,
+	@NonNull T7 seventh,
+	@NonNull T8 eighth,
+	@NonNull T9 ninth,
+	@NonNull T10 tenth,
+	@NonNull T11 eleventh,
+	@NonNull T12 twelfth,
+	@NonNull T13 thirteenth
+) {}
