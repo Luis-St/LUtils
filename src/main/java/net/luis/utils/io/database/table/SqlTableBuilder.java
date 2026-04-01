@@ -1,14 +1,32 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package net.luis.utils.io.database.table;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.database.SqlDataType;
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.table.key.*;
+import net.luis.utils.io.database.SqlReferentialAction;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 /**
  *
@@ -41,22 +59,20 @@ public class SqlTableBuilder<T> {
 	}
 	
 	public <C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull SqlDataType<C> dataType) {
-		return this.column(name, dataType, _ -> {});
+		return this.column(name, dataType, UnaryOperator.identity());
 	}
 	
-	public <C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull SqlDataType<C> dataType, @NonNull Consumer<SqlColumnBuilder<C>> action) {
+	public <C> @NonNull SqlColumn<C> column(@NonNull String name, @NonNull SqlDataType<C> dataType, @NonNull UnaryOperator<SqlColumnBuilder<C>> action) {
 		Objects.requireNonNull(action, "Column configuration action must not be null");
 		
-		SqlColumnBuilder<C> builder = SqlColumn.builder(name, dataType);
-		action.accept(builder);
-		
-		SqlColumn<C> column = builder.build();
+		SqlColumn<C> column = action.apply(SqlColumn.builder(name, dataType)).build();
 		if (this.columns.containsKey(column.getName())) {
 			throw new IllegalStateException("Column with name '" + name + "' already exists in table " + this.name);
 		}
 		if (column.isPrimaryKey() && this.compositePrimaryKey.isPresent()) {
 			throw new IllegalStateException("Unable to add primary key column '" + name + "' to table " + this.name + " because a composite primary key is already defined");
 		}
+		
 		this.columns.put(column.getName(), column);
 		return column;
 	}
@@ -101,16 +117,13 @@ public class SqlTableBuilder<T> {
 		return reference;
 	}
 	
-	public @NonNull SqlForeignKey foreignKey(@NonNull SqlColumn<?> referencingColumn, @NonNull SqlTable<?> referencedTable) {
-		return this.foreignKey(new SqlForeignKey(referencingColumn, referencedTable));
+	public @NonNull SqlForeignKey foreignKey(@NonNull List<SqlColumn<?>> referencingColumns, @NonNull SqlTable<?> referencedTable, @NonNull SqlColumn<?> referencedColumn) {
+		Objects.requireNonNull(referencedColumn, "Referenced column must not be null");
+		return this.foreignKey(new SqlForeignKey(referencingColumns, referencedTable, Lists.newArrayList(referencedColumn)));
 	}
 	
-	public @NonNull SqlForeignKey foreignKey(@NonNull SqlColumn<?> referencingColumn, @NonNull SqlTable<?> referencedTable, @NonNull SqlColumn<?> referencedColumn) {
-		return this.foreignKey(new SqlForeignKey(referencingColumn, referencedTable, referencedColumn));
-	}
-	
-	public @NonNull SqlForeignKey foreignKey(@NonNull List<SqlColumn<?>> columns, @NonNull SqlTable<?> referencedTable, @NonNull List<SqlColumn<?>> referencedColumns) {
-		return this.foreignKey(new SqlForeignKey(columns, referencedTable, referencedColumns));
+	public @NonNull SqlForeignKey foreignKey(@NonNull List<SqlColumn<?>> referencingColumns, @NonNull SqlTable<?> referencedTable, @NonNull List<SqlColumn<?>> referencedColumns) {
+		return this.foreignKey(new SqlForeignKey(referencingColumns, referencedTable, referencedColumns));
 	}
 	
 	public @NonNull SqlForeignKey foreignKey(@NonNull List<SqlColumn<?>> referencingColumns, @NonNull SqlTable<?> referencedTable, @NonNull List<SqlColumn<?>> referencedColumns, @NonNull SqlReferentialAction onUpdate, @NonNull SqlReferentialAction onDelete) {

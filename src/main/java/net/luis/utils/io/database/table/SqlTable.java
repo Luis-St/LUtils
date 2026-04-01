@@ -21,8 +21,6 @@ package net.luis.utils.io.database.table;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.table.key.SqlCompositePrimaryKey;
-import net.luis.utils.io.database.table.key.SqlForeignKey;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 

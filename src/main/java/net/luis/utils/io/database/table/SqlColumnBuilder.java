@@ -40,6 +40,7 @@ public class SqlColumnBuilder<T> {
 	private boolean autoIncrement;
 	private boolean unique;
 	private boolean primaryKey;
+	private Optional<SqlForeignKey> foreignKey = Optional.empty();
 	private final List<SqlCondition> constraints = Lists.newArrayList();
 	
 	public SqlColumnBuilder(@NonNull String name, @NonNull SqlDataType<T> dataType) {
@@ -79,7 +80,17 @@ public class SqlColumnBuilder<T> {
 		return this;
 	}
 	
+	public @NonNull SqlColumnBuilder<T> foreignKey(@NonNull SqlTable<?> referencedTable) {
+		this.foreignKey = Optional.of(new SqlForeignKey(referencedTable));
+		return this;
+	}
+	
+	public @NonNull SqlColumnBuilder<T> foreignKey(@NonNull SqlTable<?> referencedTable, @NonNull SqlColumn<?> referencedColumn) {
+		this.foreignKey = Optional.of(new SqlForeignKey(referencedTable, referencedColumn));
+		return this;
+	}
+	
 	public @NonNull SqlColumn<T> build() {
-		return new SqlColumn<>(this.name, this.dataType, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.constraints);
+		return new SqlColumn<>(this.name, this.dataType, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.foreignKey, this.constraints);
 	}
 }

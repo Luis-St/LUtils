@@ -45,6 +45,7 @@ public class SqlColumn<T> implements SqlExpression<T> {
 	private final boolean autoIncrement;
 	private final boolean unique;
 	private final boolean primaryKey;
+	private final Optional<SqlForeignKey> foreignKey;
 	private final List<SqlCondition> checks = Lists.newArrayList();
 	private SqlTable<?> table;
 	
@@ -56,6 +57,7 @@ public class SqlColumn<T> implements SqlExpression<T> {
 		boolean autoIncrement,
 		boolean unique,
 		boolean primaryKey,
+		Optional<SqlForeignKey> foreignKey,
 		@NonNull List<SqlCondition> checks
 	) {
 		this.name = Objects.requireNonNull(name, "Column name must not be null");
@@ -65,7 +67,16 @@ public class SqlColumn<T> implements SqlExpression<T> {
 		this.autoIncrement = autoIncrement;
 		this.unique = unique;
 		this.primaryKey = primaryKey;
+		this.foreignKey = Objects.requireNonNull(foreignKey, "Foreign key must not be null");
 		this.checks.addAll(Objects.requireNonNull(checks, "Checks must not be null"));
+		
+		if (name.isBlank()) {
+			throw new IllegalArgumentException("Column name must not be blank");
+		}
+		if (autoIncrement && !dataType.columnType().isNumeric()) {
+			throw new IllegalArgumentException("Auto-increment is only supported for numeric data types");
+		}
+		foreignKey.ifPresent(sqlForeignKey -> sqlForeignKey.setReferencingColumn(this));
 	}
 	
 	public static <T> @NonNull SqlColumnBuilder<T> builder(@NonNull String name, @NonNull SqlDataType<T> dataType) {
@@ -78,10 +89,11 @@ public class SqlColumn<T> implements SqlExpression<T> {
 	
 	@ApiStatus.Internal
 	void setOwningTable(@NonNull SqlTable<?> table) {
+		Objects.requireNonNull(table, "Owning table must not be null");
 		if (this.table != null) {
 			throw new IllegalStateException("Column '" + this.name + "' is already associated with table " + this.table.getName());
 		}
-		this.table = Objects.requireNonNull(table, "Owning table must not be null");
+		this.table = table;
 	}
 	
 	public @NonNull String getName() {

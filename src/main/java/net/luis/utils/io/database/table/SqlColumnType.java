@@ -29,15 +29,15 @@ public enum SqlColumnType {
 	/**
 	 * Represents a variable-length string type. The actual SQL type (e.g., {@code VARCHAR}, {@code NVARCHAR}) is determined by the dialect.<br>
 	 */
-	VARCHAR,
+	VARCHAR(true, false, false),
 	/**
 	 * Represents a fixed-length string type. The actual SQL type (e.g., {@code CHAR}, {@code NCHAR}) is determined by the dialect.<br>
 	 */
-	TEXT,
+	TEXT(true, false, false),
 	/**
 	 * Represents a single character type. The actual SQL type (e.g., {@code CHAR}, {@code NCHAR}) is determined by the dialect.<br>
 	 */
-	CHAR,
+	CHAR(true, false, false),
 	/**
 	 * Represents a boolean type. The actual SQL type (e.g., {@code BOOLEAN}, {@code BIT}) is determined by the dialect.<br>
 	 */
@@ -45,15 +45,15 @@ public enum SqlColumnType {
 	/**
 	 * Represents a small integer type. The actual SQL type (e.g., {@code SMALLINT}, {@code TINYINT}) is determined by the dialect.<br>
 	 */
-	SMALLINT,
+	SMALLINT(false, true, false),
 	/**
 	 * Represents a standard integer type. The actual SQL type (e.g., {@code INTEGER}, {@code INT}) is determined by the dialect.<br>
 	 */
-	INTEGER,
+	INTEGER(false, true, false),
 	/**
 	 * Represents a large integer type. The actual SQL type (e.g., {@code BIGINT}, {@code LONG}) is determined by the dialect.<br>
 	 */
-	BIGINT,
+	BIGINT(false, true, false),
 	/**
 	 * Represents a floating-point number type. The actual SQL type (e.g., {@code REAL}, {@code FLOAT}) is determined by the dialect.<br>
 	 */
@@ -61,11 +61,11 @@ public enum SqlColumnType {
 	/**
 	 * Represents a double-precision floating-point number type. The actual SQL type (e.g., {@code DOUBLE}, {@code FLOAT}) is determined by the dialect.<br>
 	 */
-	DOUBLE,
+	DOUBLE(false, true, false),
 	/**
 	 * Represents a decimal number type. The actual SQL type (e.g., {@code DECIMAL}, {@code NUMERIC}) is determined by the dialect.<br>
 	 */
-	DECIMAL,
+	DECIMAL(false, true, false),
 	/**
 	 * Represents a universally unique identifier type. The actual SQL type (e.g., {@code UUID}, {@code UNIQUEIDENTIFIER}) is determined by the dialect.<br>
 	 */
@@ -73,19 +73,19 @@ public enum SqlColumnType {
 	/**
 	 * Represents a date type. The actual SQL type (e.g., {@code DATE}, {@code DATETIME}) is determined by the dialect.<br>
 	 */
-	DATE,
+	DATE(false, false, true),
 	/**
 	 * Represents a time type. The actual SQL type (e.g., {@code TIME}, {@code TIMESTAMP}) is determined by the dialect.<br>
 	 */
-	TIME,
+	TIME(false, false, true),
 	/**
 	 * Represents a timestamp type. The actual SQL type (e.g., {@code TIMESTAMP}, {@code DATETIME}) is determined by the dialect.<br>
 	 */
-	TIMESTAMP,
+	TIMESTAMP(false, false, true),
 	/**
 	 * Represents a timestamp with time zone type. The actual SQL type (e.g., {@code TIMESTAMP WITH TIME ZONE}, {@code DATETIMEOFFSET}) is determined by the dialect.<br>
 	 */
-	TIMESTAMP_TZ,
+	TIMESTAMP_TZ(false, false, true),
 	/**
 	 * Represents a binary large object type. The actual SQL type (e.g., {@code BLOB}, {@code BYTEA}) is determined by the dialect.<br>
 	 */
@@ -105,5 +105,31 @@ public enum SqlColumnType {
 	/**
 	 * Represents an XML type. The actual SQL type (e.g., {@code XML}, {@code CLOB}) is determined by the dialect.<br>
 	 */
-	XML
+	XML;
+	
+	private final boolean textual;
+	private final boolean numeric;
+	private final boolean temporal;
+	
+	SqlColumnType() {
+		this(false, false, false);
+	}
+	
+	SqlColumnType(boolean textual, boolean numeric, boolean temporal) {
+		this.textual = textual;
+		this.numeric = numeric;
+		this.temporal = temporal;
+	}
+	
+	public boolean isTextual() {
+		return this.textual;
+	}
+	
+	public boolean isNumeric() {
+		return this.numeric;
+	}
+	
+	public boolean isTemporal() {
+		return this.temporal;
+	}
 }
