@@ -18,6 +18,8 @@
 
 package net.luis.utils.io.database.exception;
 
+import net.luis.utils.io.database.transaction.SqlTransaction;
+import net.luis.utils.io.database.exception.SqlException;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -26,17 +28,17 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlException extends Exception {
+public class SqlTransactionException extends SqlException {
 	
-	public SqlException(@Nullable String message) {
+	public SqlTransactionException(@Nullable String message) {
 		super(message);
 	}
 	
-	public SqlException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlTransactionException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	public SqlException(@Nullable Throwable cause) {
+	public SqlTransactionException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

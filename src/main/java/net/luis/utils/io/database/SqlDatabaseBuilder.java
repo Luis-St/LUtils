@@ -16,9 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database;
 
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+
+import javax.sql.DataSource;
+import java.util.Objects;
 
 /**
  *
@@ -26,17 +29,15 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlException extends Exception {
+public class SqlDatabaseBuilder {
 	
-	public SqlException(@Nullable String message) {
-		super(message);
+	private final DataSource dataSource;
+	
+	public SqlDatabaseBuilder(@NonNull DataSource dataSource) {
+		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");
 	}
 	
-	public SqlException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
-	}
-	
-	public SqlException(@Nullable Throwable cause) {
-		super(cause);
+	public @NonNull SqlDatabase build() {
+		return new SqlDatabase(this.dataSource);
 	}
 }

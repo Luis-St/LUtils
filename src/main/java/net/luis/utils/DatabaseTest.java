@@ -19,11 +19,26 @@
 package net.luis.utils;
 
 import net.luis.utils.io.database.SqlDataType;
+import net.luis.utils.io.database.SqlDatabase;
+import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.function.*;
+import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.*;
-import net.luis.utils.io.database.table.key.SqlCompositePrimaryKey;
-import net.luis.utils.io.database.table.key.SqlForeignKey;
+import net.luis.utils.io.database.table.SqlColumnBuilder;
+import net.luis.utils.io.database.table.SqlTableBuilder;
+import net.luis.utils.io.database.table.SqlCompositePrimaryKey;
+import net.luis.utils.io.database.query.row.SqlRow2;
+import net.luis.utils.io.database.transaction.SqlTransaction;
+import net.luis.utils.io.databasev1.dialect.postgres.PostgresQueryProvider;
+import net.luis.utils.io.databasev1.dialect.postgres.PostgresTable;
+import net.luis.utils.io.databasev1.migration.*;
+import net.luis.utils.util.Version;
+import org.jspecify.annotations.NonNull;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Demonstrates the complete database API after the refactoring.<br>
@@ -53,8 +68,6 @@ public class DatabaseTest {
 	public static final SqlTable<PersonRole> PERSON_ROLE_TABLE;
 	public static final SqlColumn<Integer> PR_PERSON_ID;
 	public static final SqlColumn<Integer> PR_ROLE_ID;
-	public static final SqlForeignKey FK_PR_PERSON_ID;
-	public static final SqlForeignKey FK_PR_ROLE_ID;
 	public static final SqlCompositePrimaryKey PERSON_ROLE_PK;
 	
 	static {
@@ -72,48 +85,20 @@ public class DatabaseTest {
 		ROLE_TABLE = roleTableBuilder.build();
 		
 		SqlTableBuilder<PersonRole> personRoleTableBuilder = SqlTable.of(PersonRole.class, "person_role");
-		PR_PERSON_ID = personRoleTableBuilder.column("person_id", SqlDataType.INTEGER, col -> col.primaryKey().notNull());
-		PR_ROLE_ID = personRoleTableBuilder.column("role_id", SqlDataType.INTEGER, col -> col.primaryKey().notNull());
+		PR_PERSON_ID = personRoleTableBuilder.column("person_id", SqlDataType.INTEGER, col -> col.primaryKey().notNull().foreignKey(PERSON_TABLE));
+		PR_ROLE_ID = personRoleTableBuilder.column("role_id", SqlDataType.INTEGER, col -> col.primaryKey().notNull().foreignKey(ROLE_TABLE));
 		PERSON_ROLE_PK = personRoleTableBuilder.compositePrimaryKey(PR_PERSON_ID, PR_ROLE_ID);
-		FK_PR_PERSON_ID = personRoleTableBuilder.foreignKey(PR_PERSON_ID, PERSON_TABLE);
-		FK_PR_ROLE_ID = personRoleTableBuilder.foreignKey(PR_ROLE_ID, ROLE_TABLE);
 		PERSON_ROLE_TABLE = personRoleTableBuilder.build();
 	}
 	
-	/*record Person(int id, String name, String email, long version, Instant createdAt) {}
-	
-	record Role(int id, String name) {}
-	
-	record PersonRole(int personId, int roleId) {}
-	
-	// --- Table definition (pure schema, no queries) ---
-	
-	static final SqlTable<Person> PERSON_TABLE = SqlTable.of("person", Person.class);
-	static final SqlPrimaryKeyColumn<Person, Integer> ID = PERSON_TABLE.primaryKeyColumn("id", Integer.class, col -> col.notNull().autoIncrement());
-	static final SqlColumn<String> NAME = PERSON_TABLE.column("name", String.class, SqlColumnBuilder::notNull);
-	static final SqlColumn<String> EMAIL = PERSON_TABLE.column("email", String.class, col -> col.notNull().unique());
-	static final SqlVersionColumn<Person, Long> VERSION = PERSON_TABLE.versionColumn("version", Long.class, col -> col.notNull().defaultValue(0L));
-	static final SqlCreationColumn<Person, Instant> CREATED_AT = PERSON_TABLE.creationColumn("created_at", Instant.class, SqlColumnBuilder::notNull);
-	
-	static final SqlTable<Role> ROLE_TABLE = SqlTable.of("role", Role.class);
-	static final SqlPrimaryKeyColumn<Role, Integer> ROLE_ID = ROLE_TABLE.primaryKeyColumn("id", Integer.class, col -> col.notNull().autoIncrement());
-	static final SqlColumn<String> ROLE_NAME = ROLE_TABLE.column("name", String.class, SqlColumnBuilder::notNull);
-	
-	// Junction table: composite PK over two FK columns
-	static final SqlTable<PersonRole> PERSON_ROLE_TABLE = SqlTable.of("person_role", PersonRole.class);
-	static final SqlForeignColumn<Integer, Person> PR_PERSON_ID = PERSON_ROLE_TABLE.foreignColumn("person_id", Integer.class, PERSON_TABLE);
-	static final SqlForeignColumn<Integer, Role> PR_ROLE_ID = PERSON_ROLE_TABLE.foreignColumn("role_id", Integer.class, ROLE_TABLE);
-	static final SqlCompositePrimaryKey<PersonRole> PERSON_ROLE_PK = PERSON_ROLE_TABLE.compositePrimaryKey(PR_PERSON_ID, PR_ROLE_ID);
-	
 	void databaseLifecycle() throws SqlException {
 		try (SqlDatabase db = SqlDatabase.builder().build()) {
-			// DDL via db.from(table)
-			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
-			persons.createIfNotExists();
+			// DDL via db.table(table)
+			db.table(PERSON_TABLE).createIfNotExists();
 			
-			// Insert with record-based mapping
-			persons.insert(new Person(1, "Alice", "alice@example.com", 0, Instant.now())).execute();
-			persons.insert(
+			SqlQueryProvider<Person> query = db.from(PERSON_TABLE);
+			query.insert(new Person(1, "Alice", "alice@example.com", 0, Instant.now())).execute();
+			query.insert(
 				new Person(2, "Bob", "bob@example.com", 0, Instant.now()),
 				new Person(3, "Charlie", "charlie@example.com", 0, Instant.now())
 			).execute();
@@ -132,32 +117,32 @@ public class DatabaseTest {
 			
 			// Two-column typed select returning SqlRow2
 			List<SqlRow2<Integer, String>> rows = persons.select(ID, NAME)
-				.where(NAME.string().startsWith("A"))
+				.where(SqlStringFunctions.startsWith(NAME, "A"))
 				.fetch();
 			
 			// Conditions — static combinators or instance chaining
 			persons.select()
-				.where(SqlCondition.allOf(ID.greaterThan(5), NAME.isNotNull()))
-				.orderBy(NAME.asc())
+				.where(SqlCondition.allOf(SqlOrderableFunctions.greaterThan(ID, 5), SqlFunctions.isNull(NAME).not()))
+				.orderBy(NAME.ascending())
 				.limit(10)
 				.fetch();
 			
 			// Fetch variants
-			persons.select().where(ID.equalTo(1)).fetchOne();
-			persons.select().where(ID.equalTo(999)).fetchFirst();
-			persons.select().where(ID.equalTo(1)).fetchOneOrNull();
+			persons.select().where(SqlFunctions.equalTo(ID, 5)).fetchOne();
+			persons.select().where(SqlFunctions.equalTo(ID, 999)).fetchFirst();
+			persons.select().where(SqlFunctions.equalTo(ID, 1)).fetchOneOrNull();
 			
 			// Count and exists
 			long count = persons.select().count();
-			boolean exists = persons.select().where(NAME.equalTo("Alice")).exists();
+			boolean exists = persons.select().where(SqlFunctions.equalTo(NAME, "Alice")).exists();
 			
 			// Pagination
 			persons.select().fetchPage(0, 20);
 			
 			// Type-specific column operations
-			persons.select().where(NAME.string().contains("li")).fetch();
-			persons.select().where(ID.between(1, 100)).fetch();
-			persons.select().where(CREATED_AT.temporal().withinLast(Duration.ofHours(24))).fetch();
+			persons.select().where(SqlStringFunctions.contains(NAME, "li")).fetch();
+			persons.select().where(SqlOrderableFunctions.between(ID, 1, 100)).fetch();
+			persons.select().where(SqlTemporalFunctions.withinLast(CREATED_AT, Duration.ofHours(24))).fetch();
 		}
 	}
 	
@@ -168,7 +153,7 @@ public class DatabaseTest {
 				persons.insert(new Person(10, "Dave", "dave@example.com", 0, Instant.now())).execute();
 				persons.update()
 					.set(NAME, "David")
-					.where(ID.equalTo(10))
+					.where(SqlFunctions.equalTo(ID, 10))
 					.execute();
 				tx.commit();
 			}
@@ -182,31 +167,37 @@ public class DatabaseTest {
 			// Update with SET
 			int updated = persons.update()
 				.set(NAME, "Alice Updated")
-				.where(ID.equalTo(1))
+				.where(SqlFunctions.equalTo(ID, 1))
 				.execute();
 			
 			// Increment numeric column
 			persons.update()
 				.increment(ID, 1)
-				.where(NAME.equalTo("Bob"))
+				.where(SqlFunctions.equalTo(NAME, "Bob"))
+				.execute();
+			
+			// Decrement numeric column
+			persons.update()
+				.increment(ID, 1)
+				.where(SqlFunctions.equalTo(NAME, "Alice"))
 				.execute();
 			
 			// Update with RETURNING
 			List<Person> updatedPersons = persons.update()
 				.set(EMAIL, "new@example.com")
-				.where(ID.equalTo(2))
+				.where(SqlFunctions.equalTo(ID, 2))
 				.returning();
 			
 			// Delete
 			int deleted = persons.delete()
-				.where(ID.lessThan(0))
+				.where(SqlOrderableFunctions.lessThan(ID, 0))
 				.execute();
 			
-			// Skip version check for bulk operations
+			/*// Skip version check for bulk operations
 			persons.skipVersionCheck().update()
 				.set(NAME, "Bulk Updated")
 				.where(NAME.string().like("%old%"))
-				.execute();
+				.execute();*/
 		}
 	}
 	
@@ -215,13 +206,13 @@ public class DatabaseTest {
 			try (SqlTransaction tx = db.beginTransaction()) {
 				// FOR UPDATE locking
 				tx.from(PERSON_TABLE).select()
-					.where(ID.equalTo(1))
+					.where(SqlOrderableFunctions.lessThan(ID, 1))
 					.forUpdate()
 					.fetch();
 				
 				// SKIP LOCKED for job queue pattern
 				tx.from(PERSON_TABLE).select()
-					.where(NAME.isNotNull())
+					.where(SqlFunctions.isNull(NAME).not())
 					.forUpdate()
 					.skipLocked()
 					.limit(5)
@@ -232,7 +223,7 @@ public class DatabaseTest {
 		}
 	}
 	
-	void postgresSpecific() throws SqlException {
+/*	void postgresSpecific() throws SqlException {
 		PostgresTable<Person> pgTable = PostgresTable.of("person", Person.class);
 		
 		try (SqlDatabase db = SqlDatabase.builder().build()) {
@@ -252,9 +243,9 @@ public class DatabaseTest {
 				.distinctOn(NAME)
 				.fetch();
 		}
-	}
+	}*/
 	
-	void compositePrimaryKeyExample() throws SqlException {
+/*	void compositePrimaryKeyExample() throws SqlException {
 		SqlMigration migration = new SqlMigration() {
 			@Override
 			public @NonNull Version version() {
@@ -311,9 +302,9 @@ public class DatabaseTest {
 				builder.dropConstraint(PERSON_ROLE_TABLE, "pk_person_role");
 			}
 		};
-	}
+	}*/
 	
-	void migrationExample() throws SqlException {
+/*	void migrationExample() throws SqlException {
 		SqlMigration migration = new SqlMigration() {
 			@Override
 			public @NonNull Version version() {

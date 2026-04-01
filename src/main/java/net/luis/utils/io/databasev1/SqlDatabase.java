@@ -81,28 +81,7 @@ public interface SqlDatabase extends AutoCloseable {
 	 * @return The result of the action
 	 * @throws SqlException If the action or the transaction fails
 	 */
-	default <R> R inTransaction(@NonNull Function<SqlTransaction, R> action) throws SqlException {
-		try (SqlTransaction tx = this.beginTransaction()) {
-			try {
-				R result = action.apply(tx);
-				tx.commit();
-				return result;
-			} catch (Exception e) {
-				try {
-					tx.rollback();
-				} catch (SqlTransactionException rollbackEx) {
-					e.addSuppressed(rollbackEx);
-				}
-				if (e instanceof SqlException sqlEx) {
-					throw sqlEx;
-				}
-				if (e instanceof RuntimeException rte) {
-					throw rte;
-				}
-				throw new SqlException("Transaction failed", e);
-			}
-		}
-	}
+	<R> R inTransaction(@NonNull Function<SqlTransaction, R> action) throws SqlException;
 	
 	/**
 	 * Begins a new transaction.<br>

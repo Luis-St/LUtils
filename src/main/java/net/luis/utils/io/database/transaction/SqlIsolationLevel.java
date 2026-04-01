@@ -16,9 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
-
-import org.jspecify.annotations.Nullable;
+package net.luis.utils.io.database.transaction;
 
 /**
  *
@@ -26,17 +24,10 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlException extends Exception {
+public enum SqlIsolationLevel {
 	
-	public SqlException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
-	}
-	
-	public SqlException(@Nullable Throwable cause) {
-		super(cause);
-	}
+	SERIALIZABLE,
+	REPEATABLE_READ,
+	READ_COMMITTED,
+	READ_UNCOMMITTED
 }
