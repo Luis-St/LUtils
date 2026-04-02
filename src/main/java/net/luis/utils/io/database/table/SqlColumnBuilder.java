@@ -35,6 +35,7 @@ import java.util.function.Function;
 public class SqlColumnBuilder<E, C> {
 	
 	private final String name;
+	private final int index;
 	private final SqlDataType<C> dataType;
 	private final Function<E, C> getter;
 	private boolean nullable = true;
@@ -45,8 +46,9 @@ public class SqlColumnBuilder<E, C> {
 	private Optional<SqlForeignKey<E, ?>> foreignKey = Optional.empty();
 	private final List<SqlCondition> constraints = Lists.newArrayList();
 	
-	public SqlColumnBuilder(@NonNull String name, @NonNull SqlDataType<C> dataType, @NonNull Function<E, C> getter) {
+	public SqlColumnBuilder(@NonNull String name, int index, @NonNull SqlDataType<C> dataType, @NonNull Function<E, C> getter) {
 		this.name = Objects.requireNonNull(name, "Column name must not be null");
+		this.index = index;
 		this.dataType = Objects.requireNonNull(dataType, "Data type must not be null");
 		this.getter = Objects.requireNonNull(getter, "Getter function must not be null");
 	}
@@ -94,6 +96,6 @@ public class SqlColumnBuilder<E, C> {
 	}
 	
 	public @NonNull SqlColumn<E, C> build() {
-		return new SqlColumn<>(this.name, this.dataType, this.getter, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.foreignKey, this.constraints);
+		return new SqlColumn<>(this.name, this.index, this.dataType, this.getter, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.foreignKey, this.constraints);
 	}
 }

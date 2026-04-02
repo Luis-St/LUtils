@@ -42,6 +42,7 @@ import java.util.function.Function;
 public class SqlColumn<E, T> implements SqlExpression<T> {
 	
 	private final String name;
+	private final int index;
 	private final SqlDataType<T> dataType;
 	private final Function<E, T> getter;
 	private final boolean nullable;
@@ -55,6 +56,7 @@ public class SqlColumn<E, T> implements SqlExpression<T> {
 	
 	SqlColumn(
 		@NonNull String name,
+		int index,
 		@NonNull SqlDataType<T> dataType,
 		@NonNull Function<E, T> getter,
 		boolean nullable,
@@ -66,6 +68,7 @@ public class SqlColumn<E, T> implements SqlExpression<T> {
 		@NonNull List<SqlCondition> checks
 	) {
 		this.name = Objects.requireNonNull(name, "Column name must not be null");
+		this.index = index;
 		this.dataType = Objects.requireNonNull(dataType, "Data type must not be null");
 		this.getter = Objects.requireNonNull(getter, "Getter function must not be null");
 		this.nullable = nullable;
@@ -85,8 +88,8 @@ public class SqlColumn<E, T> implements SqlExpression<T> {
 		}*/
 	}
 	
-	public static <E, T> @NonNull SqlColumnBuilder<E, T> builder(@NonNull String name, @NonNull SqlDataType<T> dataType, @NonNull Function<E, T> getter) {
-		return new SqlColumnBuilder<>(name, dataType, getter);
+	public static <E, T> @NonNull SqlColumnBuilder<E, T> builder(@NonNull String name, int index, @NonNull SqlDataType<T> dataType, @NonNull Function<E, T> getter) {
+		return new SqlColumnBuilder<>(name, index, dataType, getter);
 	}
 	
 	public void bindTo(@NonNull SqlTable<E> table) throws SqlAlreadyBindException {
@@ -107,6 +110,10 @@ public class SqlColumn<E, T> implements SqlExpression<T> {
 	
 	public @NonNull String getName() {
 		return this.name;
+	}
+	
+	public int getIndex() {
+		return this.index;
 	}
 	
 	public @NonNull SqlDataType<T> getDataType() {

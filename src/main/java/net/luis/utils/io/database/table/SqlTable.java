@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.database.table;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlAlreadyBindException;
 import org.jetbrains.annotations.Unmodifiable;
@@ -79,7 +78,13 @@ public class SqlTable<E> {
 		
 		this.validatePrimaryKey();
 		
+		Map<Integer, SqlColumn<E, ?>> indexes = Maps.newHashMap();
 		for (SqlColumn<E, ?> column : this.columns.values()) {
+			SqlColumn<E, ?> previous = indexes.put(column.getIndex(), column);
+			if (previous != null) {
+				throw new IllegalStateException("Multiple columns (" + column.getName() + " and " + previous.getName() + ") in table " + this.name + " share the same index " + column.getIndex());
+			}
+			
 			try {
 				column.bindTo(this);
 			} catch (SqlAlreadyBindException e) {

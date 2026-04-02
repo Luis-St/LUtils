@@ -26,6 +26,7 @@ import net.luis.utils.io.database.condition.SqlCondition;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -45,6 +46,7 @@ public class SqlTableBuilder<E> {
 	private final List<List<SqlColumn<E, ?>>> uniqueConstraints = Lists.newArrayList();
 	private final List<SqlCondition> checkConstraints = Lists.newArrayList();
 	private final Map</*Name*/ String, SqlColumn<E, ?>> columns = Maps.newHashMap();
+	private final AtomicInteger columnCounter = new AtomicInteger(0);
 	
 	SqlTableBuilder(@NonNull Class<E> type, @NonNull String name, @NonNull String schema) {
 		this.type = Objects.requireNonNull(type, "Type must not be null");
@@ -66,7 +68,7 @@ public class SqlTableBuilder<E> {
 	public <C> @NonNull SqlColumn<E, C> column(@NonNull String name, @NonNull SqlDataType<C> dataType, @NonNull Function<E, C> getter, @NonNull UnaryOperator<SqlColumnBuilder<E, C>> action) {
 		Objects.requireNonNull(action, "Column configuration action must not be null");
 		
-		SqlColumn<E, C> column = action.apply(SqlColumn.builder(name, dataType, getter)).build();
+		SqlColumn<E, C> column = action.apply(SqlColumn.builder(name, this.columnCounter.getAndIncrement(), dataType, getter)).build();
 		if (this.columns.containsKey(column.getName())) {
 			throw new IllegalStateException("Column with name " + name + " already exists in table " + this.name);
 		}
