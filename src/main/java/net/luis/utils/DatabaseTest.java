@@ -28,6 +28,9 @@ import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import net.luis.utils.io.database.type.SqlCodecs;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import javax.sql.DataSource;
 import java.time.Duration;
 import java.time.Instant;
@@ -47,7 +50,7 @@ public class DatabaseTest {
 	
 	public record PersonRole(int personId, int roleId) {}
 	
-	private static final DataSource DATA_SOURCE = null;
+	private static final DataSource DATA_SOURCE;
 	
 	public static final SqlTable<Person> PERSON_TABLE;
 	public static final SqlColumn<Person, Integer> ID;
@@ -66,6 +69,12 @@ public class DatabaseTest {
 	public static final SqlCompositePrimaryKey<PersonRole> PERSON_ROLE_PK;
 	
 	static {
+		HikariConfig config = new HikariConfig();
+		config.setJdbcUrl("jdbc:postgresql://localhost:5432/test");
+		config.setUsername("test");
+		config.setPassword("test");
+		DATA_SOURCE = new HikariDataSource(config);
+
 		SqlTableBuilder<Person> personTableBuilder = SqlTable.of(Person.class, "person");
 		ID = personTableBuilder.column("id", SqlCodecs.INTEGER, Person::id, col -> col.primaryKey().notNull().autoIncrement());
 		NAME = personTableBuilder.column("name", SqlCodecs.STRING, Person::name, SqlColumnBuilder::notNull);

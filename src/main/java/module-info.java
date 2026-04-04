@@ -24,6 +24,7 @@
 module net.luis.utils {
 	requires org.jspecify;
 	requires com.google.common;
+	requires com.zaxxer.hikari;
 	requires org.apache.commons.lang3;
 	requires org.apache.logging.log4j;
 	requires org.jetbrains.annotations;
