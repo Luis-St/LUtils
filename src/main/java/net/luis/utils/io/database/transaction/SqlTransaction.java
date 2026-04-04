@@ -20,16 +20,17 @@ package net.luis.utils.io.database.transaction;
 
 import net.luis.utils.io.database.SqlProvider;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.SqlTransactionException;
+import net.luis.utils.io.database.exception.transaction.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.table.SqlTableProvider;
-import net.luis.utils.io.databasev1.transaction.SqlPropagation;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
+import java.sql.*;
 import java.time.Duration;
-import java.util.Objects;
+import java.util.*;
 
 /**
  *
@@ -39,21 +40,49 @@ import java.util.Objects;
 
 public class SqlTransaction implements SqlProvider, AutoCloseable {
 	
+	private final Connection connection;
 	private final boolean readOnly;
 	private final Duration timeout;
 	private final SqlIsolationLevel isolationLevel;
-	private final SqlPropagation propagationBehavior;
+	private final boolean ownsConnection;
+	private final boolean ownsCommit;
+	private final boolean nonTransactional;
+	private final @Nullable SqlTransaction suspended;
+	private final Map<String, Savepoint> savepoints = new LinkedHashMap<>();
+	private @Nullable Savepoint nestedSavepoint;
+	private @Nullable Runnable onClose;
 	private SqlTransactionState state = SqlTransactionState.ACTIVE;
 	
-	public SqlTransaction() {
-		this(false, Duration.ofSeconds(30), SqlIsolationLevel.READ_COMMITTED, SqlPropagation.REQUIRED);
-	}
-	
-	public SqlTransaction(boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagationBehavior) {
+	public SqlTransaction(
+		@NonNull Connection connection,
+		boolean readOnly,
+		@NonNull Duration timeout,
+		@NonNull SqlIsolationLevel isolationLevel,
+		boolean ownsConnection,
+		boolean ownsCommit,
+		boolean nonTransactional,
+		@Nullable SqlTransaction suspended
+	) {
+		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
 		this.readOnly = readOnly;
 		this.timeout = Objects.requireNonNull(timeout, "Timeout must not be null");
 		this.isolationLevel = Objects.requireNonNull(isolationLevel, "Isolation level must not be null");
-		this.propagationBehavior = Objects.requireNonNull(propagationBehavior, "Propagation behavior must not be null");
+		this.ownsConnection = ownsConnection;
+		this.ownsCommit = ownsCommit;
+		this.nonTransactional = nonTransactional;
+		this.suspended = suspended;
+	}
+	
+	void setNestedSavepoint(@NonNull Savepoint nestedSavepoint) {
+		this.nestedSavepoint = Objects.requireNonNull(nestedSavepoint, "Nested savepoint must not be null");
+	}
+	
+	public void setOnClose(@Nullable Runnable onClose) {
+		this.onClose = onClose;
+	}
+	
+	public @NonNull Connection getConnection() {
+		return this.connection;
 	}
 	
 	public boolean isReadOnly() {
@@ -68,8 +97,8 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		return this.isolationLevel;
 	}
 	
-	public @NonNull SqlPropagation getPropagationBehavior() {
-		return this.propagationBehavior;
+	public @Nullable SqlTransaction getSuspended() {
+		return this.suspended;
 	}
 	
 	public boolean isActive() {
@@ -85,19 +114,101 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	}
 	
 	public void commit() throws SqlTransactionException {
-	
+		if (!this.isActive()) {
+			throw new SqlTransactionException("Transaction is not active");
+		}
+		if (this.nonTransactional) {
+			return;
+		}
+		
+		if (this.nestedSavepoint != null) {
+			try {
+				this.connection.releaseSavepoint(this.nestedSavepoint);
+			} catch (SQLException e) {
+				throw new SqlTransactionSavepointException("Failed to release nested savepoint", e);
+			}
+			return;
+		}
+		
+		if (!this.ownsCommit) {
+			return;
+		}
+		
+		try {
+			this.connection.commit();
+			this.state = SqlTransactionState.COMMITTED;
+		} catch (SQLException e) {
+			throw new SqlTransactionCommitException("Failed to commit transaction", e);
+		}
 	}
 	
 	public void rollback() throws SqlTransactionException {
-	
+		if (!this.isActive()) {
+			throw new SqlTransactionException("Transaction is not active");
+		}
+		if (this.nonTransactional) {
+			return;
+		}
+		
+		if (this.nestedSavepoint != null) {
+			try {
+				this.connection.rollback(this.nestedSavepoint);
+				this.state = SqlTransactionState.ROLLED_BACK;
+			} catch (SQLException e) {
+				throw new SqlTransactionRollbackException("Failed to rollback to nested savepoint", e);
+			}
+			return;
+		}
+		
+		if (!this.ownsCommit) {
+			throw new SqlTransactionException("Joining transaction must not rollback the outer transaction");
+		}
+		
+		try {
+			this.connection.rollback();
+			this.state = SqlTransactionState.ROLLED_BACK;
+		} catch (SQLException e) {
+			throw new SqlTransactionRollbackException("Failed to rollback transaction", e);
+		}
 	}
 	
 	public void rollbackTo(@NonNull SqlSavepoint savepoint) throws SqlTransactionException {
-	
+		Objects.requireNonNull(savepoint, "Savepoint must not be null");
+		if (!this.isActive()) {
+			throw new SqlTransactionException("Transaction is not active");
+		}
+		
+		Savepoint jdbcSavepoint = this.savepoints.get(savepoint.name());
+		if (jdbcSavepoint == null) {
+			throw new SqlTransactionSavepointException("Savepoint '" + savepoint.name() + "' not found");
+		}
+		
+		try {
+			this.connection.rollback(jdbcSavepoint);
+		} catch (SQLException e) {
+			throw new SqlTransactionRollbackException("Failed to rollback to savepoint '" + savepoint.name() + "'", e);
+		}
 	}
 	
 	public @NonNull SqlSavepoint savepoint(@NonNull String name) throws SqlTransactionException {
-		return null;
+		Objects.requireNonNull(name, "Savepoint name must not be null");
+		if (!this.isActive()) {
+			throw new SqlTransactionException("Transaction is not active");
+		}
+		if (this.savepoints.containsKey(name)) {
+			throw new SqlTransactionSavepointException("Savepoint with name '" + name + "' already exists");
+		}
+		if (this.nonTransactional) {
+			throw new SqlTransactionSavepointException("Cannot create savepoint in non-transactional execution");
+		}
+		
+		try {
+			Savepoint jdbcSavepoint = this.connection.setSavepoint(name);
+			this.savepoints.put(name, jdbcSavepoint);
+			return new SqlSavepoint(name);
+		} catch (SQLException e) {
+			throw new SqlTransactionSavepointException("Failed to create savepoint '" + name + "'", e);
+		}
 	}
 	
 	@Override
@@ -132,7 +243,27 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	
 	@Override
 	public void close() throws SqlTransactionException {
-	
+		try {
+			if (this.isActive() && this.ownsCommit && !this.nonTransactional) {
+				this.rollback();
+			}
+			
+			if (this.nestedSavepoint != null) {
+				try {
+					this.connection.releaseSavepoint(this.nestedSavepoint);
+				} catch (SQLException _) {}
+			}
+			
+			if (this.ownsConnection) {
+				this.connection.close();
+			}
+		} catch (SQLException e) {
+			throw new SqlTransactionException("Failed to close transaction", e);
+		} finally {
+			if (this.onClose != null) {
+				this.onClose.run();
+			}
+		}
 	}
 	
 	private enum SqlTransactionState {

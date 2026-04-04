@@ -16,9 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.transaction;
+package net.luis.utils.io.database.exception.transaction;
 
-import java.sql.Connection;
+import org.jspecify.annotations.Nullable;
 
 /**
  *
@@ -26,20 +26,17 @@ import java.sql.Connection;
  *
  */
 
-public enum SqlIsolationLevel {
-	
-	SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE),
-	REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ),
-	READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED),
-	READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED);
-	
-	private final int jdbcLevel;
-	
-	SqlIsolationLevel(int jdbcLevel) {
-		this.jdbcLevel = jdbcLevel;
+public class SqlTransactionRollbackException extends SqlTransactionException {
+
+	public SqlTransactionRollbackException(@Nullable String message) {
+		super(message);
 	}
-	
-	public int jdbcLevel() {
-		return this.jdbcLevel;
+
+	public SqlTransactionRollbackException(@Nullable String message, @Nullable Throwable cause) {
+		super(message, cause);
+	}
+
+	public SqlTransactionRollbackException(@Nullable Throwable cause) {
+		super(cause);
 	}
 }

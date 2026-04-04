@@ -18,6 +18,8 @@
 
 package net.luis.utils;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
@@ -27,9 +29,6 @@ import net.luis.utils.io.database.query.row.SqlRow2;
 import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import net.luis.utils.io.database.type.SqlCodecs;
-
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
 import java.time.Duration;
@@ -74,7 +73,7 @@ public class DatabaseTest {
 		config.setUsername("test");
 		config.setPassword("test");
 		DATA_SOURCE = new HikariDataSource(config);
-
+		
 		SqlTableBuilder<Person> personTableBuilder = SqlTable.of(Person.class, "person");
 		ID = personTableBuilder.column("id", SqlCodecs.INTEGER, Person::id, col -> col.primaryKey().notNull().autoIncrement());
 		NAME = personTableBuilder.column("name", SqlCodecs.STRING, Person::name, SqlColumnBuilder::notNull);
@@ -96,7 +95,7 @@ public class DatabaseTest {
 	}
 	
 	void databaseLifecycle() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE).build()) {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
 			// DDL via db.table(table)
 			db.table(PERSON_TABLE).createIfNotExists();
 			
@@ -110,7 +109,7 @@ public class DatabaseTest {
 	}
 	
 	void selectQueries() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE).build()) {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
 			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
 			
 			// Full entity select
@@ -151,7 +150,7 @@ public class DatabaseTest {
 	}
 	
 	void transactions() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE).build()) {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
 			try (SqlTransaction tx = db.beginTransaction()) {
 				SqlQueryProvider<Person> persons = tx.from(PERSON_TABLE);
 				persons.insert(new Person(10, "Dave", "dave@example.com", 0, Instant.now())).execute();
@@ -165,7 +164,7 @@ public class DatabaseTest {
 	}
 	
 	void updateAndDelete() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE).build()) {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
 			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
 			
 			// Update with SET
@@ -206,7 +205,7 @@ public class DatabaseTest {
 	}
 	
 	void lockingQueries() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE).build()) {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
 			try (SqlTransaction tx = db.beginTransaction()) {
 				// FOR UPDATE locking
 				tx.from(PERSON_TABLE).select()

@@ -22,17 +22,17 @@ import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.function.throwable.ThrowableSupplier;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.*;
+import net.luis.utils.io.database.exception.transaction.SqlTransactionException;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.table.SqlTableProvider;
-import net.luis.utils.io.database.transaction.SqlIsolationLevel;
-import net.luis.utils.io.database.transaction.SqlTransaction;
-import net.luis.utils.io.databasev1.transaction.SqlPropagation;
+import net.luis.utils.io.database.transaction.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
+import java.io.Closeable;
 import java.time.Duration;
 import java.util.Objects;
 
@@ -45,17 +45,42 @@ import java.util.Objects;
 public class SqlDatabase implements SqlProvider, AutoCloseable {
 	
 	private final DataSource dataSource;
+	private final SqlDialect dialect;
+	private final String defaultSchema;
+	private final Duration queryTimeout;
+	private final Duration defaultTransactionTimeout;
+	private final SqlIsolationLevel defaultTransactionIsolationLevel;
+	private final SqlPropagation defaultTransactionPropagation;
+	private final boolean autoCloseDataSource;
+	private final SqlTransactionManager transactionManager;
 	
-	SqlDatabase(@NonNull DataSource dataSource) {
+	SqlDatabase(
+		@NonNull DataSource dataSource,
+		@NotNull SqlDialect dialect,
+		@NotNull String defaultSchema,
+		@NonNull Duration queryTimeout,
+		@NonNull Duration defaultTransactionTimeout,
+		@NonNull SqlIsolationLevel defaultTransactionIsolationLevel,
+		@NonNull SqlPropagation defaultTransactionPropagation,
+		boolean autoCloseDataSource
+	) throws SqlConnectionException {
 		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");
+		this.dialect = Objects.requireNonNull(dialect, "SQL dialect must not be null");
+		this.defaultSchema = Objects.requireNonNull(defaultSchema, "Default schema must not be null");
+		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
+		this.defaultTransactionTimeout = Objects.requireNonNull(defaultTransactionTimeout, "Default transaction timeout must not be null");
+		this.defaultTransactionIsolationLevel = Objects.requireNonNull(defaultTransactionIsolationLevel, "Default transaction isolation level must not be null");
+		this.defaultTransactionPropagation = Objects.requireNonNull(defaultTransactionPropagation, "Default transaction propagation behavior must not be null");
+		this.autoCloseDataSource = autoCloseDataSource;
+		this.transactionManager = new SqlTransactionManager(dataSource);
 	}
 	
-	public static @NonNull SqlDatabaseBuilder builder(@NonNull DataSource dataSource) {
-		return new SqlDatabaseBuilder(dataSource);
+	public static @NonNull SqlDatabaseBuilder builder(@NonNull DataSource dataSource, @NotNull SqlDialect dialect) {
+		return new SqlDatabaseBuilder(dataSource, dialect);
 	}
 	
 	public @NotNull SqlDialect getDialect() {
-		return null;
+		return this.dialect;
 	}
 	
 	public boolean health() {
@@ -64,10 +89,6 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	
 	public boolean ping() {
 		return false;
-	}
-	
-	public void connect() throws SqlConnectionException {
-	
 	}
 	
 	@Override
@@ -100,20 +121,20 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		return null;
 	}
 	
-	public @NonNull SqlTransaction beginTransaction() {
-		return null;
+	public @NonNull SqlTransaction beginTransaction() throws SqlTransactionException {
+		return this.transactionManager.begin(false, this.defaultTransactionTimeout, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation);
 	}
 	
-	public @NonNull SqlTransaction beginTransaction(@NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagationBehavior) {
-		return null;
+	public @NonNull SqlTransaction beginTransaction(@NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlTransactionException {
+		return this.transactionManager.begin(false, timeout, isolationLevel, propagation);
 	}
 	
-	public @NonNull SqlTransaction beginReadOnlyTransaction() {
-		return null;
+	public @NonNull SqlTransaction beginReadOnlyTransaction() throws SqlTransactionException {
+		return this.transactionManager.begin(true, this.defaultTransactionTimeout, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation);
 	}
 	
-	public @NonNull SqlTransaction beginReadOnlyTransaction(@NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagationBehavior) {
-		return null;
+	public @NonNull SqlTransaction beginReadOnlyTransaction(@NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlTransactionException {
+		return this.transactionManager.begin(true, timeout, isolationLevel, propagation);
 	}
 	
 	public <T> @UnknownNullability T inTransaction(@NonNull ThrowableFunction<SqlTransaction, T, SqlException> action) throws SqlException {
@@ -123,42 +144,49 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	}
 	
 	public <T> @UnknownNullability T inTransaction(@NonNull SqlTransaction transaction, @NonNull ThrowableSupplier<T, SqlException> action) throws SqlException {
-		// Should be used when the transaction is provided from in the same scope and can be accessed in the lambda expression
-		
 		Objects.requireNonNull(action, "Transaction action must not be null");
 		return this.inTransaction(transaction, _ -> action.get());
 	}
 	
 	public <T> @UnknownNullability T inTransaction(@NonNull SqlTransaction transaction, @NonNull ThrowableFunction<SqlTransaction, T, SqlException> action) throws SqlException {
-		// Should be used when the transaction can not be accessed in the lambda expression, like where a method is passed: this::execute -> T execute(@NonNull SqlTransaction tx)
-		
-		try (SqlTransaction tx = this.beginTransaction()) {
+		try {
+			T result = action.apply(transaction);
+			transaction.commit();
+			return result;
+		} catch (Exception e) {
 			try {
-				T result = action.apply(tx);
-				tx.commit();
-				return result;
-			} catch (Exception e) {
-				try {
-					tx.rollback();
-				} catch (SqlTransactionException rollbackEx) {
-					e.addSuppressed(rollbackEx);
-				}
-				
-				if (e instanceof SqlException sqlEx) {
-					throw sqlEx;
-				}
-				
-				if (e instanceof RuntimeException rte) {
-					throw rte;
-				}
-				throw new SqlException("Transaction failed", e);
+				transaction.rollback();
+			} catch (SqlTransactionException rollbackEx) {
+				e.addSuppressed(rollbackEx);
 			}
+			
+			if (e instanceof SqlException sqlEx) {
+				throw sqlEx;
+			}
+			
+			if (e instanceof RuntimeException rte) {
+				throw rte;
+			}
+			throw new SqlException("Transaction failed", e);
 		}
 	}
 	
 	@Override
-	public void close() {
-	
+	public void close() throws SqlConnectionException {
+		if (this.autoCloseDataSource) {
+			if (this.dataSource instanceof Closeable closeable) {
+				try {
+					closeable.close();
+				} catch (Exception e) {
+					throw new SqlConnectionException("Failed to close data source", e);
+				}
+			} else if (this.dataSource instanceof AutoCloseable autoCloseable) {
+				try {
+					autoCloseable.close();
+				} catch (Exception e) {
+					throw new SqlConnectionException("Failed to close data source", e);
+				}
+			}
+		}
 	}
 }
- 
