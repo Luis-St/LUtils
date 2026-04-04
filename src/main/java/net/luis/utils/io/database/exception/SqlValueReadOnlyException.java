@@ -16,7 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.index;
+package net.luis.utils.io.database.exception;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  *
@@ -24,16 +26,17 @@ package net.luis.utils.io.database.index;
  *
  */
 
-public enum SqlIndexMethod {
+public class SqlValueReadOnlyException extends SqlException {
 	
-	BTREE,
-	HASH,
-	GIN,
-	GIST,
-	BRIN,
-	SPGIST,
-	CLUSTERED,
-	NONCLUSTERED,
-	COLUMNSTORE,
-	BITMAP
+	public SqlValueReadOnlyException(@Nullable String message) {
+		super(message);
+	}
+	
+	public SqlValueReadOnlyException(@Nullable String message, @Nullable Throwable cause) {
+		super(message, cause);
+	}
+	
+	public SqlValueReadOnlyException(@Nullable Throwable cause) {
+		super(cause);
+	}
 }

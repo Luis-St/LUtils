@@ -19,13 +19,13 @@
 package net.luis.utils.io.database.table;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.io.database.SqlDataType;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlExpression;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlAlreadyBindException;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.type.SqlCodec;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
@@ -39,14 +39,14 @@ import java.util.function.Function;
  *
  */
 
-public class SqlColumn<E, T> implements SqlExpression<T> {
+public class SqlColumn<E, C> implements SqlExpression<C> {
 	
 	private final String name;
 	private final int index;
-	private final SqlDataType<T> dataType;
-	private final Function<E, T> getter;
+	private final SqlCodec<C> codec;
+	private final Function<E, C> getter;
 	private final boolean nullable;
-	private final Optional<T> defaultValue;
+	private final Optional<C> defaultValue;
 	private final boolean autoIncrement;
 	private final boolean unique;
 	private final boolean primaryKey;
@@ -57,10 +57,10 @@ public class SqlColumn<E, T> implements SqlExpression<T> {
 	SqlColumn(
 		@NonNull String name,
 		int index,
-		@NonNull SqlDataType<T> dataType,
-		@NonNull Function<E, T> getter,
+		@NonNull SqlCodec<C> codec,
+		@NonNull Function<E, C> getter,
 		boolean nullable,
-		@NonNull Optional<T> defaultValue,
+		@NonNull Optional<C> defaultValue,
 		boolean autoIncrement,
 		boolean unique,
 		boolean primaryKey,
@@ -69,7 +69,7 @@ public class SqlColumn<E, T> implements SqlExpression<T> {
 	) {
 		this.name = Objects.requireNonNull(name, "Column name must not be null");
 		this.index = index;
-		this.dataType = Objects.requireNonNull(dataType, "Data type must not be null");
+		this.codec = Objects.requireNonNull(codec, "Column codec must not be null");
 		this.getter = Objects.requireNonNull(getter, "Getter function must not be null");
 		this.nullable = nullable;
 		this.defaultValue = Objects.requireNonNull(defaultValue, "Default value must not be null");
@@ -88,8 +88,8 @@ public class SqlColumn<E, T> implements SqlExpression<T> {
 		}*/
 	}
 	
-	public static <E, T> @NonNull SqlColumnBuilder<E, T> builder(@NonNull String name, int index, @NonNull SqlDataType<T> dataType, @NonNull Function<E, T> getter) {
-		return new SqlColumnBuilder<>(name, index, dataType, getter);
+	public static <E, C> @NonNull SqlColumnBuilder<E, C> builder(@NonNull String name, int index, @NonNull SqlCodec<C> codec, @NonNull Function<E, C> getter) {
+		return new SqlColumnBuilder<>(name, index, codec, getter);
 	}
 	
 	public void bindTo(@NonNull SqlTable<E> table) throws SqlAlreadyBindException {
@@ -116,11 +116,11 @@ public class SqlColumn<E, T> implements SqlExpression<T> {
 		return this.index;
 	}
 	
-	public @NonNull SqlDataType<T> getDataType() {
-		return this.dataType;
+	public @NonNull SqlCodec<C> getCodec() {
+		return this.codec;
 	}
 	
-	public @NonNull Function<E, T> getGetter() {
+	public @NonNull Function<E, C> getGetter() {
 		return this.getter;
 	}
 	
@@ -128,7 +128,7 @@ public class SqlColumn<E, T> implements SqlExpression<T> {
 		return this.nullable;
 	}
 	
-	public @NonNull Optional<T> getDefaultValue() {
+	public @NonNull Optional<C> getDefaultValue() {
 		return this.defaultValue;
 	}
 	
@@ -152,33 +152,33 @@ public class SqlColumn<E, T> implements SqlExpression<T> {
 		return Collections.unmodifiableList(this.checks);
 	}
 	
-	public @NonNull SqlExpression<T> of(@NonNull SqlAlias alias) {
+	public @NonNull SqlExpression<C> of(@NonNull SqlAlias alias) {
 		// Binds the column to the given alias, used for nested queries, common table expressions, joins, etc.
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
+	public @NonNull SqlExpression<C> as(@NonNull SqlAlias alias) {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlExpression<T> ascending() {
+	public @NonNull SqlExpression<C> ascending() {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlExpression<T> descending() {
+	public @NonNull SqlExpression<C> descending() {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlExpression<T> nullsFirst() {
+	public @NonNull SqlExpression<C> nullsFirst() {
 		return null;
 	}
 	
 	@Override
-	public @NonNull SqlExpression<T> nullsLast() {
+	public @NonNull SqlExpression<C> nullsLast() {
 		return null;
 	}
 	

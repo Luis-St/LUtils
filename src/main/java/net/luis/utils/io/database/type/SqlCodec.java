@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.database.type;
 
-import net.luis.utils.function.throwable.ThrowableTriFunction;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.decoder.DecoderException;
 import net.luis.utils.io.codec.encoder.EncoderException;
@@ -29,7 +28,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  *
@@ -37,35 +35,43 @@ import java.util.function.Function;
  *
  */
 
-public record SqlCodec<C>(
-	@NonNull String name,
-	@NonNull ThrowableTriFunction<SqlTypeProvider, SqlValue, Function<String, DecoderException>, C, DecoderException> getter
-) implements Codec<C> {
+public sealed interface SqlCodec<C> extends Codec<C> permits WrappedSqlCodec, DefaultSqlCodec {
 	
-	public SqlCodec {
-		Objects.requireNonNull(name, "Codec name must not be null");
-		Objects.requireNonNull(getter, "Codec getter function must not be null");
-	}
+	@NonNull String name();
 	
 	@Override
-	public <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) throws EncoderException {
-		throw new EncoderException(StringUtils.capitalize(this.name) + " codec is read-only and does not support encoding");
-	}
-	
-	@Override
-	public <R> @NonNull C decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
+	@SuppressWarnings("unchecked")
+	default <R> @NonNull R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) throws EncoderException {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			throw new DecoderException("Unable to decode null value as " + this.name);
+			throw new EncoderException("Unable to encode null value as " + this.name());
+		}
+		
+		if (provider instanceof SqlTypeProvider sqlProvider) {
+			return (R) this.encodeSql(sqlProvider, value);
+		}
+		throw new EncoderException(StringUtils.capitalize(this.name()) + " codec requires " + SqlTypeProvider.class.getName() + ", got " + provider.getClass().getName());
+	}
+	
+	@NonNull SqlValue encodeSql(@NonNull SqlTypeProvider provider, @NonNull C value) throws EncoderException;
+	
+	@Override
+	default <R> @NonNull C decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) throws DecoderException {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(current, "Current value must not be null");
+		if (value == null) {
+			throw new DecoderException("Unable to decode null value as " + this.name());
 		}
 		
 		if (!(value instanceof SqlValue sqlValue)) {
-			throw new DecoderException("Unable to decode value of type " + value.getClass().getSimpleName() + " as " + this.name + " codec requires " + SqlValue.class.getSimpleName());
+			throw new DecoderException("Unable to decode value of type " + value.getClass().getName() + " as " + this.name() + " codec requires " + SqlValue.class.getName());
 		}
 		if (provider instanceof SqlTypeProvider sqlProvider) {
-			return this.getter.apply(sqlProvider, sqlValue, DecoderException::new);
+			return this.decodeSql(sqlProvider, sqlValue);
 		}
-		throw new DecoderException(StringUtils.capitalize(this.name) + " codec requires " + SqlTypeProvider.class.getSimpleName() + ", got " + provider.getClass().getSimpleName());
+		throw new DecoderException(StringUtils.capitalize(this.name()) + " codec requires " + SqlTypeProvider.class.getName() + ", got " + provider.getClass().getName());
 	}
+	
+	@NonNull C decodeSql(@NonNull SqlTypeProvider provider, @NonNull SqlValue value) throws DecoderException;
 }

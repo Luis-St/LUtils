@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.type.value;
 
 import net.luis.utils.function.throwable.ThrowableBiFunction;
+import net.luis.utils.io.database.exception.SqlValueReadOnlyException;
 import net.luis.utils.io.database.exception.SqlValueRetrievalException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -36,12 +37,12 @@ import java.util.Objects;
  *
  */
 
-record SqlIndexValue(
+record SqlReadValue(
 	int columnIndex,
 	@NonNull ResultSet resultSet
 ) implements SqlValue {
 	
-	SqlIndexValue {
+	SqlReadValue {
 		Objects.requireNonNull(resultSet, "Result set must not be null");
 		
 		try {
@@ -54,8 +55,18 @@ record SqlIndexValue(
 	}
 	
 	@Override
-	public @NonNull ResultSet getRawResult() {
-		return this.resultSet;
+	public boolean isEmpty() {
+		return false;
+	}
+	
+	@Override
+	public @Nullable Object getRawObject() {
+		throw new UnsupportedOperationException("Raw object retrieval is not supported for read values");
+	}
+	
+	@Override
+	public int getJdbcType() {
+		throw new UnsupportedOperationException("JDBC type retrieval is not supported for read values");
 	}
 	
 	private <T> @Nullable T get(@NonNull String dataType, @NonNull ThrowableBiFunction<ResultSet, Integer, T, SQLException> getter) throws SqlValueRetrievalException {
@@ -76,8 +87,18 @@ record SqlIndexValue(
 	}
 	
 	@Override
+	public void setBoolean(@Nullable Boolean value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
+	}
+	
+	@Override
 	public @Nullable Byte getByte() throws SqlValueRetrievalException {
 		return this.get("byte", ResultSet::getByte);
+	}
+	
+	@Override
+	public void setByte(@Nullable Byte value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
 	}
 	
 	@Override
@@ -86,8 +107,18 @@ record SqlIndexValue(
 	}
 	
 	@Override
+	public void setShort(@Nullable Short value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
+	}
+	
+	@Override
 	public @Nullable Integer getInteger() throws SqlValueRetrievalException {
 		return this.get("integer", ResultSet::getInt);
+	}
+	
+	@Override
+	public void setInteger(@Nullable Integer value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
 	}
 	
 	@Override
@@ -96,8 +127,18 @@ record SqlIndexValue(
 	}
 	
 	@Override
+	public void setLong(@Nullable Long value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
+	}
+	
+	@Override
 	public @Nullable Float getFloat() throws SqlValueRetrievalException {
 		return this.get("float", ResultSet::getFloat);
+	}
+	
+	@Override
+	public void setFloat(@Nullable Float value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
 	}
 	
 	@Override
@@ -106,8 +147,18 @@ record SqlIndexValue(
 	}
 	
 	@Override
+	public void setDouble(@Nullable Double value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
+	}
+	
+	@Override
 	public @Nullable BigDecimal getBigDecimal() throws SqlValueRetrievalException {
 		return this.get("big decimal", ResultSet::getBigDecimal);
+	}
+	
+	@Override
+	public void setBigDecimal(@Nullable BigDecimal value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
 	}
 	
 	@Override
@@ -116,8 +167,18 @@ record SqlIndexValue(
 	}
 	
 	@Override
+	public void setString(@Nullable String value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
+	}
+	
+	@Override
 	public @Nullable Clob getClob() throws SqlValueRetrievalException {
 		return this.get("clob", ResultSet::getClob);
+	}
+	
+	@Override
+	public void setClob(@Nullable Clob value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
 	}
 	
 	@Override
@@ -126,8 +187,18 @@ record SqlIndexValue(
 	}
 	
 	@Override
+	public void setCharacterStream(@Nullable Reader value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
+	}
+	
+	@Override
 	public @Nullable NClob getNClob() throws SqlValueRetrievalException {
 		return this.get("nclob", ResultSet::getNClob);
+	}
+	
+	@Override
+	public void setNClob(@Nullable NClob value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
 	}
 	
 	@Override
@@ -136,8 +207,18 @@ record SqlIndexValue(
 	}
 	
 	@Override
+	public void setNCharacterStream(@Nullable Reader value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
+	}
+	
+	@Override
 	public byte @Nullable [] getBytes() throws SqlValueRetrievalException {
 		return this.get("bytes", ResultSet::getBytes);
+	}
+	
+	@Override
+	public void setBytes(byte @Nullable [] value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
 	}
 	
 	@Override
@@ -146,8 +227,18 @@ record SqlIndexValue(
 	}
 	
 	@Override
+	public void setBlob(@Nullable Blob value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
+	}
+	
+	@Override
 	public @Nullable InputStream getBinaryStream() throws SqlValueRetrievalException {
 		return this.get("binary stream", ResultSet::getBinaryStream);
+	}
+	
+	@Override
+	public void setBinaryStream(@Nullable InputStream value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
 	}
 	
 	@Override
@@ -156,8 +247,18 @@ record SqlIndexValue(
 	}
 	
 	@Override
+	public void setLocalDate(@Nullable LocalDate value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
+	}
+	
+	@Override
 	public @Nullable LocalTime getLocalTime() throws SqlValueRetrievalException {
 		return this.get("local time", (result, index) -> result.getObject(index, LocalTime.class));
+	}
+	
+	@Override
+	public void setLocalTime(@Nullable LocalTime value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
 	}
 	
 	@Override
@@ -166,12 +267,27 @@ record SqlIndexValue(
 	}
 	
 	@Override
+	public void setLocalDateTime(@Nullable LocalDateTime value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
+	}
+	
+	@Override
 	public @Nullable OffsetTime getOffsetTime() throws SqlValueRetrievalException {
 		return this.get("offset time", (result, index) -> result.getObject(index, OffsetTime.class));
 	}
 	
 	@Override
+	public void setOffsetTime(@Nullable OffsetTime value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
+	}
+	
+	@Override
 	public @Nullable OffsetDateTime getOffsetDateTime() throws SqlValueRetrievalException {
 		return this.get("offset date time", (result, index) -> result.getObject(index, OffsetDateTime.class));
+	}
+	
+	@Override
+	public void setOffsetDateTime(@Nullable OffsetDateTime value) throws SqlValueReadOnlyException {
+		throw new SqlValueReadOnlyException("SqlReadValue is read-only");
 	}
 }

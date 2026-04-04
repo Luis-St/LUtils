@@ -20,6 +20,7 @@ package net.luis.utils.io.database.type;
 
 import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.codec.provider.TypeProvider;
+import net.luis.utils.io.database.exception.SqlValueReadOnlyException;
 import net.luis.utils.io.database.exception.SqlValueRetrievalException;
 import net.luis.utils.io.database.type.value.SqlValue;
 import org.jetbrains.annotations.UnknownNullability;
@@ -49,79 +50,333 @@ public final class SqlTypeProvider implements TypeProvider<SqlValue> {
 	
 	@Override
 	public @NonNull SqlValue empty() {
-		throw new UnsupportedOperationException("Sql type provider does not support empty values");
+		return SqlValue.ofWrite();
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createNull(@NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating null values");
+		return SqlValue.ofNull();
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createBoolean(boolean value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating boolean values");
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setBoolean(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create boolean sql value: " + e.getMessage());
+		}
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createByte(byte value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating byte values");
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setByte(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create byte sql value: " + e.getMessage());
+		}
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createShort(short value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating short values");
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setShort(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create short sql value: " + e.getMessage());
+		}
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createInteger(int value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating integer values");
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setInteger(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create integer sql value: " + e.getMessage());
+		}
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createLong(long value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating long values");
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setLong(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create long sql value: " + e.getMessage());
+		}
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createFloat(float value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating float values");
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setFloat(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create float sql value: " + e.getMessage());
+		}
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createDouble(double value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating double values");
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setDouble(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create double sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createBigDecimal(@Nullable BigDecimal value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a big decimal");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setBigDecimal(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create big decimal sql value: " + e.getMessage());
+		}
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createString(@Nullable String value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating string values");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a string");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setString(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create string sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createClob(@Nullable Clob value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a clob");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setClob(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create clob sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createCharacterStream(@Nullable Reader value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a character stream");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setCharacterStream(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create character stream sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createNClob(@Nullable NClob value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a nclob");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setNClob(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create nclob sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createNCharacterStream(@Nullable Reader value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a n character stream");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setNCharacterStream(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create n character stream sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createBytes(byte @Nullable [] value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a byte array");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setBytes(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create byte array sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createBlob(@Nullable Blob value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a blob");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setBlob(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create blob sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createBinaryStream(@Nullable InputStream value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a binary stream");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setBinaryStream(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create binary stream sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createLocalDate(@Nullable LocalDate value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a local date");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setLocalDate(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create local date sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createLocalTime(@Nullable LocalTime value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a local time");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setLocalTime(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create local time sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createLocalDateTime(@Nullable LocalDateTime value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a local date time");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setLocalDateTime(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create local date time sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createOffsetTime(@Nullable OffsetTime value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not an offset time");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setOffsetTime(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create offset time sql value: " + e.getMessage());
+		}
+	}
+	
+	public <X extends Exception> @NonNull SqlValue createOffsetDateTime(@Nullable OffsetDateTime value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not an offset date time");
+		}
+		
+		try {
+			SqlValue sqlValue = SqlValue.ofWrite();
+			sqlValue.setOffsetDateTime(value);
+			return sqlValue;
+		} catch (SqlValueReadOnlyException e) {
+			throw exceptionConstructor.apply("Failed to create offset date time sql value: " + e.getMessage());
+		}
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createList(@Nullable List<? extends SqlValue> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating list values");
+		throw exceptionConstructor.apply("Sql type provider does not support list values");
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createMap(@NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating map values");
+		throw exceptionConstructor.apply("Sql type provider does not support map values");
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull SqlValue createMap(@Nullable Map<String, ? extends SqlValue> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support creating map values");
+		throw exceptionConstructor.apply("Sql type provider does not support map values");
 	}
 	
 	@Override
@@ -131,13 +386,17 @@ public final class SqlTypeProvider implements TypeProvider<SqlValue> {
 			throw exceptionConstructor.apply("Value 'null' is not a valid sql value");
 		}
 		
-		return false;
+		return type.isEmpty();
 	}
 	
 	@Override
 	public <X extends Exception> boolean isNull(@Nullable SqlValue type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		return type == null;
+		if (type == null) {
+			throw exceptionConstructor.apply("Value 'null' is not a valid sql value");
+		}
+		
+		return !type.isEmpty() && type.getRawObject() == null;
 	}
 	
 	@Override
@@ -532,12 +791,15 @@ public final class SqlTypeProvider implements TypeProvider<SqlValue> {
 	@Override
 	public <X extends Exception> void set(@Nullable SqlValue type, @Nullable String key, @Nullable SqlValue value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support set operations");
+		throw exceptionConstructor.apply("Sql type provider does not support map values");
 	}
 	
 	@Override
 	public <X extends Exception> @UnknownNullability SqlValue merge(@Nullable SqlValue current, @Nullable SqlValue value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		throw exceptionConstructor.apply("Sql type provider is read-only and does not support merge operations");
+		if (value == null) {
+			return current;
+		}
+		return value;
 	}
 }

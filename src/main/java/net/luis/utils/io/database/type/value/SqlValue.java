@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.type.value;
 
+import net.luis.utils.io.database.exception.SqlValueReadOnlyException;
 import net.luis.utils.io.database.exception.SqlValueRetrievalException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -34,57 +35,107 @@ import java.time.*;
  *
  */
 
-public sealed interface SqlValue permits SqlColumnValue, SqlIndexValue {
+public sealed interface SqlValue permits SqlReadValue, SqlWriteValue {
 	
-	static @NonNull SqlValue ofIndexed(int columnIndex, @NonNull ResultSet resultSet) {
-		return new SqlIndexValue(columnIndex, resultSet);
+	static @NonNull SqlValue ofRead(int columnIndex, @NonNull ResultSet resultSet) {
+		return new SqlReadValue(columnIndex, resultSet);
 	}
 	
-	static @NonNull SqlValue ofNamed(@NonNull String columnName, @NonNull ResultSet resultSet) {
-		return new SqlColumnValue(columnName, resultSet);
+	static @NonNull SqlValue ofWrite() {
+		return new SqlWriteValue();
 	}
 	
-	@NonNull ResultSet getRawResult();
+	static @NonNull SqlValue ofNull() {
+		return new SqlWriteValue(false);
+	}
+	
+	boolean isEmpty();
+	
+	@Nullable Object getRawObject();
+	
+	int getJdbcType();
 	
 	@Nullable Boolean getBoolean() throws SqlValueRetrievalException;
 	
+	void setBoolean(@Nullable Boolean value) throws SqlValueReadOnlyException;
+	
 	@Nullable Byte getByte() throws SqlValueRetrievalException;
+	
+	void setByte(@Nullable Byte value) throws SqlValueReadOnlyException;
 	
 	@Nullable Short getShort() throws SqlValueRetrievalException;
 	
+	void setShort(@Nullable Short value) throws SqlValueReadOnlyException;
+	
 	@Nullable Integer getInteger() throws SqlValueRetrievalException;
+	
+	void setInteger(@Nullable Integer value) throws SqlValueReadOnlyException;
 	
 	@Nullable Long getLong() throws SqlValueRetrievalException;
 	
+	void setLong(@Nullable Long value) throws SqlValueReadOnlyException;
+	
 	@Nullable Float getFloat() throws SqlValueRetrievalException;
+	
+	void setFloat(@Nullable Float value) throws SqlValueReadOnlyException;
 	
 	@Nullable Double getDouble() throws SqlValueRetrievalException;
 	
+	void setDouble(@Nullable Double value) throws SqlValueReadOnlyException;
+	
 	@Nullable BigDecimal getBigDecimal() throws SqlValueRetrievalException;
+	
+	void setBigDecimal(@Nullable BigDecimal value) throws SqlValueReadOnlyException;
 	
 	@Nullable String getString() throws SqlValueRetrievalException;
 	
+	void setString(@Nullable String value) throws SqlValueReadOnlyException;
+	
 	@Nullable Clob getClob() throws SqlValueRetrievalException;
+	
+	void setClob(@Nullable Clob value) throws SqlValueReadOnlyException;
 	
 	@Nullable Reader getCharacterStream() throws SqlValueRetrievalException;
 	
+	void setCharacterStream(@Nullable Reader value) throws SqlValueReadOnlyException;
+	
 	@Nullable NClob getNClob() throws SqlValueRetrievalException;
+	
+	void setNClob(@Nullable NClob value) throws SqlValueReadOnlyException;
 	
 	@Nullable Reader getNCharacterStream() throws SqlValueRetrievalException;
 	
+	void setNCharacterStream(@Nullable Reader value) throws SqlValueReadOnlyException;
+	
 	byte @Nullable [] getBytes() throws SqlValueRetrievalException;
+	
+	void setBytes(byte @Nullable [] value) throws SqlValueReadOnlyException;
 	
 	@Nullable Blob getBlob() throws SqlValueRetrievalException;
 	
+	void setBlob(@Nullable Blob value) throws SqlValueReadOnlyException;
+	
 	@Nullable InputStream getBinaryStream() throws SqlValueRetrievalException;
+	
+	void setBinaryStream(@Nullable InputStream value) throws SqlValueReadOnlyException;
 	
 	@Nullable LocalDate getLocalDate() throws SqlValueRetrievalException;
 	
+	void setLocalDate(@Nullable LocalDate value) throws SqlValueReadOnlyException;
+	
 	@Nullable LocalTime getLocalTime() throws SqlValueRetrievalException;
+	
+	void setLocalTime(@Nullable LocalTime value) throws SqlValueReadOnlyException;
 	
 	@Nullable LocalDateTime getLocalDateTime() throws SqlValueRetrievalException;
 	
+	void setLocalDateTime(@Nullable LocalDateTime value) throws SqlValueReadOnlyException;
+	
 	@Nullable OffsetTime getOffsetTime() throws SqlValueRetrievalException;
 	
+	void setOffsetTime(@Nullable OffsetTime value) throws SqlValueReadOnlyException;
+	
 	@Nullable OffsetDateTime getOffsetDateTime() throws SqlValueRetrievalException;
+	
+	void setOffsetDateTime(@Nullable OffsetDateTime value) throws SqlValueReadOnlyException;
 }
