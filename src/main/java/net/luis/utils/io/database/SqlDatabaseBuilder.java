@@ -39,7 +39,6 @@ public class SqlDatabaseBuilder {
 	
 	private final DataSource dataSource;
 	private final SqlDialect dialect;
-	private String defaultSchema = "public";
 	private Duration queryTimeout = Duration.ofSeconds(30);
 	private Duration defaultTransactionTimeout = Duration.ofSeconds(60);
 	private SqlIsolationLevel defaultTransactionIsolationLevel = SqlIsolationLevel.READ_COMMITTED;
@@ -49,11 +48,6 @@ public class SqlDatabaseBuilder {
 	public SqlDatabaseBuilder(@NonNull DataSource dataSource, @NotNull SqlDialect dialect) {
 		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "SQL dialect must not be null");
-	}
-	
-	public @NonNull SqlDatabaseBuilder defaultSchema(@NotNull String defaultSchema) {
-		this.defaultSchema = Objects.requireNonNull(defaultSchema, "Default schema must not be null");
-		return this;
 	}
 	
 	public @NonNull SqlDatabaseBuilder queryTimeout(@NotNull Duration queryTimeout) {
@@ -82,6 +76,6 @@ public class SqlDatabaseBuilder {
 	}
 	
 	public @NonNull SqlDatabase build() throws SqlConnectionException {
-		return new SqlDatabase(this.dataSource, this.dialect, this.defaultSchema, this.queryTimeout, this.defaultTransactionTimeout, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation, this.autoCloseDataSource);
+		return new SqlDatabase(this.dataSource, this.dialect, this.queryTimeout, this.defaultTransactionTimeout, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation, this.autoCloseDataSource);
 	}
 }

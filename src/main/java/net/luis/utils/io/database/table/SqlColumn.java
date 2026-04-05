@@ -30,6 +30,7 @@ import org.jetbrains.annotations.UnknownNullability;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
+import java.sql.Types;
 import java.util.*;
 import java.util.function.Function;
 
@@ -40,6 +41,18 @@ import java.util.function.Function;
  */
 
 public class SqlColumn<E, C> implements SqlExpression<C> {
+	
+	private static final Set<Integer> NUMERIC_TYPES = Set.of(
+		Types.TINYINT,
+		Types.SMALLINT,
+		Types.INTEGER,
+		Types.BIGINT,
+		Types.FLOAT,
+		Types.REAL,
+		Types.DOUBLE,
+		Types.NUMERIC,
+		Types.DECIMAL
+	);
 	
 	private final String name;
 	private final int index;
@@ -82,10 +95,12 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 		if (name.isBlank()) {
 			throw new IllegalArgumentException("Column name must not be blank");
 		}
-		/*if (autoIncrement && !dataType.columnType().isNumeric()) {
-			// ToDo: Fix validation
+		if (index < 1) {
+			throw new IllegalArgumentException("Column index must be greater than 0");
+		}
+		if (autoIncrement && !NUMERIC_TYPES.contains(type.jdbcType())) {
 			throw new IllegalArgumentException("Auto-increment is only supported for numeric data types");
-		}*/
+		}
 	}
 	
 	public static <E, C> @NonNull SqlColumnBuilder<E, C> builder(@NonNull String name, int index, @NonNull SqlType<C> codec, @NonNull Function<E, C> getter) {

@@ -47,7 +47,6 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	
 	private final DataSource dataSource;
 	private final SqlDialect dialect;
-	private final String defaultSchema;
 	private final Duration queryTimeout;
 	private final Duration defaultTransactionTimeout;
 	private final SqlIsolationLevel defaultTransactionIsolationLevel;
@@ -58,7 +57,6 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	SqlDatabase(
 		@NonNull DataSource dataSource,
 		@NotNull SqlDialect dialect,
-		@NotNull String defaultSchema,
 		@NonNull Duration queryTimeout,
 		@NonNull Duration defaultTransactionTimeout,
 		@NonNull SqlIsolationLevel defaultTransactionIsolationLevel,
@@ -67,7 +65,6 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	) throws SqlConnectionException {
 		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "SQL dialect must not be null");
-		this.defaultSchema = Objects.requireNonNull(defaultSchema, "Default schema must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 		this.defaultTransactionTimeout = Objects.requireNonNull(defaultTransactionTimeout, "Default transaction timeout must not be null");
 		this.defaultTransactionIsolationLevel = Objects.requireNonNull(defaultTransactionIsolationLevel, "Default transaction isolation level must not be null");

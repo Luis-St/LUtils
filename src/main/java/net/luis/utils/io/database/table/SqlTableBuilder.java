@@ -46,7 +46,7 @@ public class SqlTableBuilder<E> {
 	private final List<List<SqlColumn<E, ?>>> uniqueConstraints = Lists.newArrayList();
 	private final List<SqlCondition> checkConstraints = Lists.newArrayList();
 	private final Map</*Name*/ String, SqlColumn<E, ?>> columns = Maps.newHashMap();
-	private final AtomicInteger columnCounter = new AtomicInteger(0);
+	private final AtomicInteger columnCounter = new AtomicInteger(1);
 	
 	SqlTableBuilder(@NonNull Class<E> type, @NonNull String name, @NonNull String schema) {
 		this.type = Objects.requireNonNull(type, "Type must not be null");

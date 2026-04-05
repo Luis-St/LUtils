@@ -23,7 +23,6 @@ import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.SqlOrderable;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.mapping.SqlMapper;
 import net.luis.utils.io.database.query.*;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
@@ -138,10 +137,6 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public <R> @NonNull SqlSelectQuery<R> projectInto(@NonNull Class<R> type) {
-		return null;
-	}
-	
-	public <R> @NonNull SqlSelectQuery<R> projectInto(@NonNull Class<R> type, @NonNull SqlMapper mapper) {
 		return null;
 	}
 	
