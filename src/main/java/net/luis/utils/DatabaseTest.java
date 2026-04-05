@@ -28,7 +28,8 @@ import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.query.row.SqlRow2;
 import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.transaction.SqlTransaction;
-import net.luis.utils.io.database.type.SqlCodecs;
+import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
 
 import javax.sql.DataSource;
 import java.time.Duration;
@@ -75,21 +76,21 @@ public class DatabaseTest {
 		DATA_SOURCE = new HikariDataSource(config);
 		
 		SqlTableBuilder<Person> personTableBuilder = SqlTable.of(Person.class, "person");
-		ID = personTableBuilder.column("id", SqlCodecs.INTEGER, Person::id, col -> col.primaryKey().notNull().autoIncrement());
-		NAME = personTableBuilder.column("name", SqlCodecs.STRING, Person::name, SqlColumnBuilder::notNull);
-		EMAIL = personTableBuilder.column("email", SqlCodecs.STRING, Person::email, col -> col.notNull().unique());
-		VERSION = personTableBuilder.column("version", SqlCodecs.LONG, Person::version, col -> col.notNull().defaultValue(0L));
-		CREATED_AT = personTableBuilder.column("created_at", SqlCodecs.INSTANT, Person::createdAt, SqlColumnBuilder::notNull);
+		ID = personTableBuilder.column("id", SqlTypes.INTEGER, Person::id, col -> col.primaryKey().notNull().autoIncrement());
+		NAME = personTableBuilder.column("name", SqlTypes.STRING.configure(SqlParameter.length(64)), Person::name, SqlColumnBuilder::notNull);
+		EMAIL = personTableBuilder.column("email", SqlTypes.STRING.configure(SqlParameter.length(320)), Person::email, col -> col.notNull().unique());
+		VERSION = personTableBuilder.column("version", SqlTypes.LONG, Person::version, col -> col.notNull().defaultValue(0L));
+		CREATED_AT = personTableBuilder.column("created_at", SqlTypes.INSTANT.configure(SqlParameter.fractional(3)), Person::createdAt, SqlColumnBuilder::notNull);
 		PERSON_TABLE = personTableBuilder.build();
 		
 		SqlTableBuilder<Role> roleTableBuilder = SqlTable.of(Role.class, "role");
-		ROLE_ID = roleTableBuilder.column("id", SqlCodecs.INTEGER, Role::id, col -> col.primaryKey().notNull().autoIncrement());
-		ROLE_NAME = roleTableBuilder.column("name", SqlCodecs.STRING, Role::name, SqlColumnBuilder::notNull);
+		ROLE_ID = roleTableBuilder.column("id", SqlTypes.INTEGER, Role::id, col -> col.primaryKey().notNull().autoIncrement());
+		ROLE_NAME = roleTableBuilder.column("name", SqlTypes.STRING.configure(SqlParameter.length(64)), Role::name, SqlColumnBuilder::notNull);
 		ROLE_TABLE = roleTableBuilder.build();
 		
 		SqlTableBuilder<PersonRole> personRoleTableBuilder = SqlTable.of(PersonRole.class, "person_role");
-		PR_PERSON_ID = personRoleTableBuilder.column("person_id", SqlCodecs.INTEGER, PersonRole::personId, col -> col.primaryKey().notNull().foreignKey(PERSON_TABLE));
-		PR_ROLE_ID = personRoleTableBuilder.column("role_id", SqlCodecs.INTEGER, PersonRole::roleId, col -> col.primaryKey().notNull().foreignKey(ROLE_TABLE));
+		PR_PERSON_ID = personRoleTableBuilder.column("person_id", SqlTypes.INTEGER, PersonRole::personId, col -> col.primaryKey().notNull().foreignKey(PERSON_TABLE));
+		PR_ROLE_ID = personRoleTableBuilder.column("role_id", SqlTypes.INTEGER, PersonRole::roleId, col -> col.primaryKey().notNull().foreignKey(ROLE_TABLE));
 		PERSON_ROLE_PK = personRoleTableBuilder.compositePrimaryKey(PR_PERSON_ID, PR_ROLE_ID);
 		PERSON_ROLE_TABLE = personRoleTableBuilder.build();
 	}

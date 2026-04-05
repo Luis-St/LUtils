@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.type.SqlCodec;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -61,14 +61,14 @@ public class SqlTableBuilder<E> {
 		}
 	}
 	
-	public <C> @NonNull SqlColumn<E, C> column(@NonNull String name, @NonNull SqlCodec<C> codec, @NonNull Function<E, C> getter) {
-		return this.column(name, codec, getter, UnaryOperator.identity());
+	public <C> @NonNull SqlColumn<E, C> column(@NonNull String name, @NonNull SqlType<C> type, @NonNull Function<E, C> getter) {
+		return this.column(name, type, getter, UnaryOperator.identity());
 	}
 	
-	public <C> @NonNull SqlColumn<E, C> column(@NonNull String name, @NonNull SqlCodec<C> codec, @NonNull Function<E, C> getter, @NonNull UnaryOperator<SqlColumnBuilder<E, C>> action) {
+	public <C> @NonNull SqlColumn<E, C> column(@NonNull String name, @NonNull SqlType<C> type, @NonNull Function<E, C> getter, @NonNull UnaryOperator<SqlColumnBuilder<E, C>> action) {
 		Objects.requireNonNull(action, "Column configuration action must not be null");
 		
-		SqlColumn<E, C> column = action.apply(SqlColumn.builder(name, this.columnCounter.getAndIncrement(), codec, getter)).build();
+		SqlColumn<E, C> column = action.apply(SqlColumn.builder(name, this.columnCounter.getAndIncrement(), type, getter)).build();
 		if (this.columns.containsKey(column.getName())) {
 			throw new IllegalStateException("Column with name " + name + " already exists in table " + this.name);
 		}

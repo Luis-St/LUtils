@@ -20,7 +20,7 @@ package net.luis.utils.io.database.table;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.type.SqlCodec;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -36,7 +36,7 @@ public class SqlColumnBuilder<E, C> {
 	
 	private final String name;
 	private final int index;
-	private final SqlCodec<C> codec;
+	private final SqlType<C> type;
 	private final Function<E, C> getter;
 	private boolean nullable = true;
 	private Optional<C> defaultValue = Optional.empty();
@@ -46,10 +46,10 @@ public class SqlColumnBuilder<E, C> {
 	private Optional<SqlForeignKey<E, ?>> foreignKey = Optional.empty();
 	private final List<SqlCondition> constraints = Lists.newArrayList();
 	
-	public SqlColumnBuilder(@NonNull String name, int index, @NonNull SqlCodec<C> codec, @NonNull Function<E, C> getter) {
+	public SqlColumnBuilder(@NonNull String name, int index, @NonNull SqlType<C> type, @NonNull Function<E, C> getter) {
 		this.name = Objects.requireNonNull(name, "Column name must not be null");
 		this.index = index;
-		this.codec = Objects.requireNonNull(codec, "Column codec must not be null");
+		this.type = Objects.requireNonNull(type, "Column type must not be null");
 		this.getter = Objects.requireNonNull(getter, "Getter function must not be null");
 	}
 	
@@ -96,6 +96,6 @@ public class SqlColumnBuilder<E, C> {
 	}
 	
 	public @NonNull SqlColumn<E, C> build() {
-		return new SqlColumn<>(this.name, this.index, this.codec, this.getter, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.foreignKey, this.constraints);
+		return new SqlColumn<>(this.name, this.index, this.type, this.getter, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.foreignKey, this.constraints);
 	}
 }

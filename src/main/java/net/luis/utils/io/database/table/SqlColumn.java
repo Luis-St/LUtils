@@ -25,7 +25,7 @@ import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlAlreadyBindException;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRendered;
-import net.luis.utils.io.database.type.SqlCodec;
+import net.luis.utils.io.database.type.SqlType;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
@@ -43,7 +43,7 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 	
 	private final String name;
 	private final int index;
-	private final SqlCodec<C> codec;
+	private final SqlType<C> type;
 	private final Function<E, C> getter;
 	private final boolean nullable;
 	private final Optional<C> defaultValue;
@@ -57,7 +57,7 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 	SqlColumn(
 		@NonNull String name,
 		int index,
-		@NonNull SqlCodec<C> codec,
+		@NonNull SqlType<C> type,
 		@NonNull Function<E, C> getter,
 		boolean nullable,
 		@NonNull Optional<C> defaultValue,
@@ -69,7 +69,7 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 	) {
 		this.name = Objects.requireNonNull(name, "Column name must not be null");
 		this.index = index;
-		this.codec = Objects.requireNonNull(codec, "Column codec must not be null");
+		this.type = Objects.requireNonNull(type, "Column type must not be null");
 		this.getter = Objects.requireNonNull(getter, "Getter function must not be null");
 		this.nullable = nullable;
 		this.defaultValue = Objects.requireNonNull(defaultValue, "Default value must not be null");
@@ -88,7 +88,7 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 		}*/
 	}
 	
-	public static <E, C> @NonNull SqlColumnBuilder<E, C> builder(@NonNull String name, int index, @NonNull SqlCodec<C> codec, @NonNull Function<E, C> getter) {
+	public static <E, C> @NonNull SqlColumnBuilder<E, C> builder(@NonNull String name, int index, @NonNull SqlType<C> codec, @NonNull Function<E, C> getter) {
 		return new SqlColumnBuilder<>(name, index, codec, getter);
 	}
 	
@@ -116,8 +116,8 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 		return this.index;
 	}
 	
-	public @NonNull SqlCodec<C> getCodec() {
-		return this.codec;
+	public @NonNull SqlType<C> getType() {
+		return this.type;
 	}
 	
 	public @NonNull Function<E, C> getGetter() {

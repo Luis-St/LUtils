@@ -27,15 +27,15 @@ import org.jspecify.annotations.Nullable;
  */
 
 public class SqlTransactionPropagationException extends SqlTransactionException {
-
+	
 	public SqlTransactionPropagationException(@Nullable String message) {
 		super(message);
 	}
-
+	
 	public SqlTransactionPropagationException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	public SqlTransactionPropagationException(@Nullable Throwable cause) {
 		super(cause);
 	}

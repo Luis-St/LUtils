@@ -27,15 +27,15 @@ import org.jspecify.annotations.Nullable;
  */
 
 public class SqlTransactionRollbackException extends SqlTransactionException {
-
+	
 	public SqlTransactionRollbackException(@Nullable String message) {
 		super(message);
 	}
-
+	
 	public SqlTransactionRollbackException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	public SqlTransactionRollbackException(@Nullable Throwable cause) {
 		super(cause);
 	}

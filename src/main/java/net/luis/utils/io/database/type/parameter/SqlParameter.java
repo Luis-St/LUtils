@@ -16,9 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.transaction;
+package net.luis.utils.io.database.type.parameter;
 
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 /**
  *
@@ -26,17 +26,17 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlTransactionCommitException extends SqlTransactionException {
+public interface SqlParameter {
 	
-	public SqlTransactionCommitException(@Nullable String message) {
-		super(message);
+	static @NonNull SqlLengthParameter length(int length) {
+		return new SqlLengthParameter(length);
 	}
 	
-	public SqlTransactionCommitException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
+	static @NonNull SqlPrecisionParameter precision(int precision, int scale) {
+		return new SqlPrecisionParameter(precision, scale);
 	}
 	
-	public SqlTransactionCommitException(@Nullable Throwable cause) {
-		super(cause);
+	static @NonNull SqlFractionalParameter fractional(int digits) {
+		return new SqlFractionalParameter(digits);
 	}
 }

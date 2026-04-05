@@ -16,8 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.transaction;
+package net.luis.utils.io.database.exception.type;
 
+import net.luis.utils.io.database.exception.SqlException;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -26,17 +27,17 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlTransactionCommitException extends SqlTransactionException {
+public class SqlTypeException extends SqlException {
 	
-	public SqlTransactionCommitException(@Nullable String message) {
+	public SqlTypeException(@Nullable String message) {
 		super(message);
 	}
 	
-	public SqlTransactionCommitException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlTypeException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	public SqlTransactionCommitException(@Nullable Throwable cause) {
+	public SqlTypeException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

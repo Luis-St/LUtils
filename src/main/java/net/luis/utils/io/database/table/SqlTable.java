@@ -18,7 +18,8 @@
 
 package net.luis.utils.io.database.table;
 
-import com.google.common.collect.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlAlreadyBindException;
 import org.jetbrains.annotations.Unmodifiable;

@@ -16,9 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.transaction;
+package net.luis.utils.io.database.type;
 
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -26,17 +28,13 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlTransactionCommitException extends SqlTransactionException {
+public record SqlScalarType<T>(int jdbcType, @NonNull Class<T> javaType) implements SqlType<T> {
 	
-	public SqlTransactionCommitException(@Nullable String message) {
-		super(message);
+	public SqlScalarType {
+		Objects.requireNonNull(javaType, "Java type must not be null");
 	}
 	
-	public SqlTransactionCommitException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
-	}
-	
-	public SqlTransactionCommitException(@Nullable Throwable cause) {
-		super(cause);
+	public @NonNull SqlArrayType<T> array() {
+		return new SqlArrayType<>(this);
 	}
 }

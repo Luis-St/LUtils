@@ -28,15 +28,15 @@ import org.jspecify.annotations.Nullable;
  */
 
 public class SqlTransactionException extends SqlException {
-
+	
 	public SqlTransactionException(@Nullable String message) {
 		super(message);
 	}
-
+	
 	public SqlTransactionException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	public SqlTransactionException(@Nullable Throwable cause) {
 		super(cause);
 	}

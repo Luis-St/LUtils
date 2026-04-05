@@ -16,9 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.transaction;
-
-import org.jspecify.annotations.Nullable;
+package net.luis.utils.io.database.type.parameter;
 
 /**
  *
@@ -26,17 +24,14 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlTransactionCommitException extends SqlTransactionException {
+public record SqlPrecisionParameter(int precision, int scale) implements SqlParameter {
 	
-	public SqlTransactionCommitException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlTransactionCommitException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
-	}
-	
-	public SqlTransactionCommitException(@Nullable Throwable cause) {
-		super(cause);
+	public SqlPrecisionParameter {
+		if (precision < 0) {
+			throw new IllegalArgumentException("Precision must be non-negative");
+		}
+		if (scale < 0) {
+			throw new IllegalArgumentException("Scale must be non-negative");
+		}
 	}
 }

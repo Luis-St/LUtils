@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.type;
 
 import org.jspecify.annotations.Nullable;
 
@@ -26,17 +26,17 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlValueReadOnlyException extends SqlException {
+public class SqlStatementBindException extends SqlTypeException {
 	
-	public SqlValueReadOnlyException(@Nullable String message) {
+	public SqlStatementBindException(@Nullable String message) {
 		super(message);
 	}
 	
-	public SqlValueReadOnlyException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlStatementBindException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	public SqlValueReadOnlyException(@Nullable Throwable cause) {
+	public SqlStatementBindException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

@@ -44,7 +44,7 @@ public class SqlDatabaseBuilder {
 	private Duration defaultTransactionTimeout = Duration.ofSeconds(60);
 	private SqlIsolationLevel defaultTransactionIsolationLevel = SqlIsolationLevel.READ_COMMITTED;
 	private SqlPropagation defaultTransactionPropagation = SqlPropagation.REQUIRED;
-	private boolean autoCloseDataSource = false;
+	private boolean autoCloseDataSource;
 	
 	public SqlDatabaseBuilder(@NonNull DataSource dataSource, @NotNull SqlDialect dialect) {
 		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");

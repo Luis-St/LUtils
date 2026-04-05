@@ -16,9 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.type;
 
-import org.jspecify.annotations.Nullable;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -26,17 +29,15 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlMappingException extends SqlException {
+record DirectParameterizableSqlType<T, P extends SqlParameter>(int jdbcType, @NonNull Class<T> javaType, @NonNull Class<P> parameterType) implements ParameterizableSqlType<T, P> {
 	
-	public SqlMappingException(@Nullable String message) {
-		super(message);
+	DirectParameterizableSqlType {
+		Objects.requireNonNull(javaType, "Java type must not be null");
+		Objects.requireNonNull(parameterType, "Parameter type must not be null");
 	}
 	
-	public SqlMappingException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
-	}
-	
-	public SqlMappingException(@Nullable Throwable cause) {
-		super(cause);
+	@Override
+	public @NonNull ParameterizedSqlType<T, P> configure(@NonNull P parameter) {
+		return new ParameterizedSqlType<>(this.jdbcType, this.javaType, parameter);
 	}
 }

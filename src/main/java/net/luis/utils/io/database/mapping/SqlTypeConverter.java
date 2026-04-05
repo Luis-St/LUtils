@@ -28,12 +28,12 @@ import org.jspecify.annotations.NonNull;
 
 public interface SqlTypeConverter<J, D> {
 	
-	@NonNull D toDatabase(@NonNull J value);
-	
-	@NonNull J fromDatabase(@NonNull D value);
-	
 	@NonNull Class<J> javaType();
 	
 	@NonNull Class<D> databaseType();
+	
+	@NonNull D toDatabase(@NonNull J value);
+	
+	@NonNull J fromDatabase(@NonNull D value);
 }
 

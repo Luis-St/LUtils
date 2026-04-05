@@ -16,8 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.type;
 
+import net.luis.utils.io.database.exception.SqlException;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -26,17 +27,17 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlValueRetrievalException extends SqlException {
+public class SqlResultRetrievalException extends SqlException {
 	
-	public SqlValueRetrievalException(@Nullable String message) {
+	public SqlResultRetrievalException(@Nullable String message) {
 		super(message);
 	}
 	
-	public SqlValueRetrievalException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlResultRetrievalException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	public SqlValueRetrievalException(@Nullable Throwable cause) {
+	public SqlResultRetrievalException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

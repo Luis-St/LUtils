@@ -26,7 +26,6 @@ import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.codec.types.struct.*;
 import net.luis.utils.io.codec.types.struct.collection.*;
-import net.luis.utils.io.database.type.SqlCodec;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.result.ResultingFunction;
@@ -53,7 +52,7 @@ import java.util.stream.Stream;
  *
  * @param <C> The type of the value that is encoded and decoded by this codec
  */
-public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits AbstractCodec, AbstractConstrainableCodec, AnonymousCodec, CodecGroup, SqlCodec {
+public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits AbstractCodec, AbstractConstrainableCodec, AnonymousCodec, CodecGroup {
 	
 	/**
 	 * Creates a new codec from the given type, encoder, decoder, and name.<br>

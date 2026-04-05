@@ -16,9 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.transaction;
-
-import org.jspecify.annotations.Nullable;
+package net.luis.utils.io.database.type.parameter;
 
 /**
  *
@@ -26,17 +24,11 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlTransactionCommitException extends SqlTransactionException {
+public record SqlFractionalParameter(int digits) implements SqlParameter {
 	
-	public SqlTransactionCommitException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlTransactionCommitException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
-	}
-	
-	public SqlTransactionCommitException(@Nullable Throwable cause) {
-		super(cause);
+	public SqlFractionalParameter {
+		if (digits < 0) {
+			throw new IllegalArgumentException("Digits must be non-negative");
+		}
 	}
 }
