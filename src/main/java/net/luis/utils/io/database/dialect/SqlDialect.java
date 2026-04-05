@@ -18,10 +18,15 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFunctionException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
+import net.luis.utils.io.database.exception.dialect.*;
 import net.luis.utils.io.database.function.SqlFunctionType;
+import net.luis.utils.io.database.index.SqlIndex;
+import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.query.SqlLockMode;
+import net.luis.utils.io.database.query.SqlSetOperation;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
@@ -44,4 +49,38 @@ public interface SqlDialect {
 	boolean isFunctionSupported(@NonNull SqlFunctionType type);
 	
 	@NonNull SqlRendered renderFunction(@NonNull SqlFunctionType type, @NonNull List<SqlRendered> arguments) throws SqlDialectUnsupportedFunctionException;
+	
+	boolean isFeatureSupported(@NonNull SqlFeature feature);
+	
+	boolean isIndexMethodSupported(@NonNull SqlIndexMethod method);
+	
+	@NonNull String getIndexMethodName(@NonNull SqlIndexMethod method) throws SqlDialectUnsupportedIndexMethodException;
+	
+	@NonNull String quoteIdentifier(@NonNull String identifier);
+	
+	@NonNull String renderQualifiedName(@NonNull String schema, @NonNull String name);
+	
+	@NonNull SqlRendered renderCreateTable(@NonNull SqlTable<?> table, boolean ifNotExists);
+	
+	@NonNull SqlRendered renderDropTable(@NonNull SqlTable<?> table, boolean ifExists);
+	
+	@NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table);
+	
+	@NonNull SqlRendered renderColumnDefinition(@NonNull SqlColumn<?, ?> column);
+	
+	@NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index);
+	
+	@NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index);
+	
+	@NonNull SqlRendered renderLimitOffset(long limit, long offset);
+	
+	@NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlDialectUnsupportedFeatureException;
+	
+	@NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlDialectUnsupportedFeatureException;
+	
+	@NonNull String renderSetOperation(@NonNull SqlSetOperation operation);
+	
+	@NonNull String renderLateralJoin() throws SqlDialectUnsupportedFeatureException;
+	
+	@NonNull String renderBooleanLiteral(boolean value);
 }
