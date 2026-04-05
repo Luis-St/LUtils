@@ -20,6 +20,7 @@ package net.luis.utils.io.database.type;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.type.SqlResultRetrievalException;
 import net.luis.utils.io.database.exception.type.SqlStatementBindException;
 import org.jspecify.annotations.NonNull;
@@ -47,7 +48,7 @@ record MappedSqlType<S, T>(
 	}
 	
 	@Override
-	public @Nullable T get(@NonNull ResultSet resultSet, int columnIndex) throws SqlResultRetrievalException {
+	public @Nullable T get(@NonNull ResultSet resultSet, int columnIndex) throws SqlException {
 		S source = this.sourceType.get(resultSet, columnIndex);
 		if (source == null) {
 			return null;
@@ -56,7 +57,7 @@ record MappedSqlType<S, T>(
 	}
 	
 	@Override
-	public void set(@NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, @Nullable T value) throws SqlStatementBindException {
+	public void set(@NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, @Nullable T value) throws SqlException {
 		this.sourceType.set(dialect, preparedStatement, columnIndex, this.fromTargetToSource.apply(value));
 	}
 }

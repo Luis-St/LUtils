@@ -19,6 +19,8 @@
 package net.luis.utils.io.database.type;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
 import net.luis.utils.io.database.exception.type.SqlResultRetrievalException;
 import net.luis.utils.io.database.exception.type.SqlStatementBindException;
 import org.jspecify.annotations.NonNull;
@@ -86,7 +88,7 @@ public record SqlArrayType<E>(@NonNull SqlType<E> elementType) implements SqlTyp
 	}
 	
 	@Override
-	public void set(@NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, E @Nullable [] value) throws SqlStatementBindException {
+	public void set(@NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, E @Nullable [] value) throws SqlException {
 		Objects.requireNonNull(dialect, "Dialect must not be null");
 		Objects.requireNonNull(preparedStatement, "Prepared statement must not be null");
 		if (columnIndex < 1) {
@@ -100,7 +102,7 @@ public record SqlArrayType<E>(@NonNull SqlType<E> elementType) implements SqlTyp
 			}
 			
 			if (!dialect.isTypeSupported(this.elementType)) {
-				throw new SqlStatementBindException("Element type " + this.elementType + " is not supported by the current sql dialect " + dialect.name());
+				throw new SqlDialectUnsupportedTypeException("Element type " + this.elementType + " is not supported by the current sql dialect " + dialect.name());
 			}
 			
 			java.sql.Array array = preparedStatement.getConnection().createArrayOf(dialect.getTypeName(this.elementType), value);

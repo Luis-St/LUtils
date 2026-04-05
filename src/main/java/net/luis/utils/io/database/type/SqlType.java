@@ -20,6 +20,7 @@ package net.luis.utils.io.database.type;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.type.SqlResultRetrievalException;
 import net.luis.utils.io.database.exception.type.SqlStatementBindException;
 import org.jspecify.annotations.NonNull;
@@ -40,7 +41,7 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 	
 	@NonNull Class<T> javaType();
 	
-	default @Nullable T get(@NonNull ResultSet resultSet, int columnIndex) throws SqlResultRetrievalException {
+	default @Nullable T get(@NonNull ResultSet resultSet, int columnIndex) throws SqlException {
 		Objects.requireNonNull(resultSet, "Result set must not be null");
 		if (columnIndex < 1) {
 			throw new IllegalArgumentException("Column index must be greater than or equal to 1");
@@ -53,7 +54,7 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		}
 	}
 	
-	default void set(@NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, @Nullable T value) throws SqlStatementBindException {
+	default void set(@NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, @Nullable T value) throws SqlException {
 		Objects.requireNonNull(dialect, "Dialect must not be null");
 		Objects.requireNonNull(preparedStatement, "Prepared statement must not be null");
 		if (columnIndex < 1) {

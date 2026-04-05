@@ -18,6 +18,8 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFunctionException;
+import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
 import net.luis.utils.io.database.function.SqlFunctionType;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.type.SqlType;
@@ -37,9 +39,9 @@ public interface SqlDialect {
 	
 	boolean isTypeSupported(@NonNull SqlType<?> type);
 	
-	@NonNull String getTypeName(@NonNull SqlType<?> type);
+	@NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlDialectUnsupportedTypeException;
 	
 	boolean isFunctionSupported(@NonNull SqlFunctionType type);
 	
-	@NonNull SqlRendered render(@NonNull SqlFunctionType type, @NonNull List<SqlRendered> arguments);
+	@NonNull SqlRendered renderFunction(@NonNull SqlFunctionType type, @NonNull List<SqlRendered> arguments) throws SqlDialectUnsupportedFunctionException;
 }
