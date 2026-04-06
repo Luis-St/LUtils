@@ -18,17 +18,47 @@
 
 package net.luis.utils.io.database.type.parameter;
 
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record SqlFractionalParameter(int digits) implements SqlParameter {
+public final class SqlFractionalParameter implements SqlParameter {
 	
-	public SqlFractionalParameter {
+	private final int digits;
+	
+	SqlFractionalParameter(int digits) {
 		if (digits < 0) {
 			throw new IllegalArgumentException("Digits must be non-negative");
 		}
+		this.digits = digits;
 	}
+	
+	public int digits() {
+		return this.digits;
+	}
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof SqlFractionalParameter that)) return false;
+		
+		return this.digits == that.digits;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.digits);
+	}
+	
+	@Override
+	public @NonNull String toString() {
+		return "SqlFractionalParameter[digits=" + this.digits + "]";
+	}
+	//endregion
 }

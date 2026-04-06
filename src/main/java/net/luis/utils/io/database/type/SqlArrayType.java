@@ -36,14 +36,21 @@ import java.util.Objects;
  *
  */
 
-public record SqlArrayType<E>(@NonNull SqlType<E> elementType) implements SqlType<E[]> {
+public final class SqlArrayType<E> implements SqlType<E[]> {
 	
-	public SqlArrayType {
+	private final SqlType<E> elementType;
+	
+	SqlArrayType(@NonNull SqlType<E> elementType) {
 		Objects.requireNonNull(elementType, "Element type must not be null");
 		
 		if (elementType instanceof SqlArrayType) {
 			throw new IllegalArgumentException("Element type must not be nested array type");
 		}
+		this.elementType = elementType;
+	}
+	
+	public @NonNull SqlType<E> elementType() {
+		return this.elementType;
 	}
 	
 	@Override
@@ -115,4 +122,23 @@ public record SqlArrayType<E>(@NonNull SqlType<E> elementType) implements SqlTyp
 			throw new SqlStatementBindException("Failed to bind array value to prepared statement at column index " + columnIndex, e);
 		}
 	}
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof SqlArrayType<?> that)) return false;
+		
+		return this.elementType.equals(that.elementType);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.elementType);
+	}
+	
+	@Override
+	public @NonNull String toString() {
+		return "SqlArrayType[elementType=" + this.elementType + "]";
+	}
+	//endregion
 }

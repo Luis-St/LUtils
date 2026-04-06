@@ -28,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Objects;
 
 /**
  *
@@ -35,12 +36,41 @@ import java.sql.ResultSet;
  *
  */
 
-record MappedSqlType<S, T>(
-	@NonNull SqlType<S> sourceType,
-	@NonNull Class<T> javaType,
-	@NonNull ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource,
-	@NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlResultRetrievalException> fromSourceToTarget
-) implements SqlType<T> {
+public final class MappedSqlType<S, T> implements SqlType<T> {
+	
+	private final SqlType<S> sourceType;
+	private final Class<T> javaType;
+	private final ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource;
+	private final ThrowableFunction<@NonNull S, @Nullable T, SqlResultRetrievalException> fromSourceToTarget;
+	
+	MappedSqlType(
+		@NonNull SqlType<S> sourceType,
+		@NonNull Class<T> javaType,
+		@NonNull ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource,
+		@NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlResultRetrievalException> fromSourceToTarget
+	) {
+		this.sourceType = Objects.requireNonNull(sourceType, "Source type must not be null");
+		this.javaType = Objects.requireNonNull(javaType, "Java type must not be null");
+		this.fromTargetToSource = Objects.requireNonNull(fromTargetToSource, "Getter function must not be null");
+		this.fromSourceToTarget = Objects.requireNonNull(fromSourceToTarget, "Setter function must not be null");
+	}
+	
+	public @NonNull SqlType<S> sourceType() {
+		return this.sourceType;
+	}
+	
+	@Override
+	public @NonNull Class<T> javaType() {
+		return this.javaType;
+	}
+	
+	public @NonNull ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource() {
+		return this.fromTargetToSource;
+	}
+	
+	public @NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlResultRetrievalException> fromSourceToTarget() {
+		return this.fromSourceToTarget;
+	}
 	
 	@Override
 	public int jdbcType() {
@@ -60,4 +90,26 @@ record MappedSqlType<S, T>(
 	public void set(@NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, @Nullable T value) throws SqlException {
 		this.sourceType.set(dialect, preparedStatement, columnIndex, this.fromTargetToSource.apply(value));
 	}
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof MappedSqlType<?, ?> that)) return false;
+		
+		if (!this.sourceType.equals(that.sourceType)) return false;
+		if (!this.javaType.equals(that.javaType)) return false;
+		if (!this.fromTargetToSource.equals(that.fromTargetToSource)) return false;
+		return this.fromSourceToTarget.equals(that.fromSourceToTarget);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.sourceType, this.javaType, this.fromTargetToSource, this.fromSourceToTarget);
+	}
+	
+	@Override
+	public @NonNull String toString() {
+		return "MappedSqlType[sourceType=" + this.sourceType + ", javaType=" + this.javaType + "]";
+	}
+	//endregion
 }

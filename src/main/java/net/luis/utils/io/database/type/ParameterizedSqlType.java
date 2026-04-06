@@ -29,14 +29,54 @@ import java.util.Objects;
  *
  */
 
-public record ParameterizedSqlType<T, P extends SqlParameter>(int jdbcType, @NonNull Class<T> javaType, @NonNull P parameter) implements SqlType<T> {
+public final class ParameterizedSqlType<T, P extends SqlParameter> implements SqlType<T> {
 	
-	public ParameterizedSqlType {
-		Objects.requireNonNull(javaType, "Java type must not be null");
-		Objects.requireNonNull(parameter, "Parameter must not be null");
+	private final int jdbcType;
+	private final Class<T> javaType;
+	private final P parameter;
+	
+	ParameterizedSqlType(int jdbcType, @NonNull Class<T> javaType, @NonNull P parameter) {
+		this.jdbcType = jdbcType;
+		this.javaType = Objects.requireNonNull(javaType, "Java type must not be null");
+		this.parameter = Objects.requireNonNull(parameter, "Parameter must not be null");
+	}
+	
+	@Override
+	public int jdbcType() {
+		return this.jdbcType;
+	}
+	
+	@Override
+	public @NonNull Class<T> javaType() {
+		return this.javaType;
+	}
+	
+	public @NonNull P parameter() {
+		return this.parameter;
 	}
 	
 	public @NonNull SqlArrayType<T> array() {
 		return new SqlArrayType<>(this);
 	}
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof ParameterizedSqlType<?, ?> that)) return false;
+		
+		if (this.jdbcType != that.jdbcType) return false;
+		if (!this.javaType.equals(that.javaType)) return false;
+		return this.parameter.equals(that.parameter);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.jdbcType, this.javaType, this.parameter);
+	}
+	
+	@Override
+	public @NonNull String toString() {
+		return "ParameterizedSqlType[jdbcType=" + this.jdbcType + ", javaType=" + this.javaType + ", parameter=" + this.parameter + "]";
+	}
+	//endregion
 }

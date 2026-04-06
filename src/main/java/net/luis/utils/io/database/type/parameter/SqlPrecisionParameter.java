@@ -18,20 +18,57 @@
 
 package net.luis.utils.io.database.type.parameter;
 
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record SqlPrecisionParameter(int precision, int scale) implements SqlParameter {
+public final class SqlPrecisionParameter implements SqlParameter {
 	
-	public SqlPrecisionParameter {
+	private final int precision;
+	private final int scale;
+	
+	SqlPrecisionParameter(int precision, int scale) {
 		if (precision < 0) {
 			throw new IllegalArgumentException("Precision must be non-negative");
 		}
 		if (scale < 0) {
 			throw new IllegalArgumentException("Scale must be non-negative");
 		}
+		this.precision = precision;
+		this.scale = scale;
 	}
+	
+	public int precision() {
+		return this.precision;
+	}
+	
+	public int scale() {
+		return this.scale;
+	}
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof SqlPrecisionParameter that)) return false;
+		
+		if (this.precision != that.precision) return false;
+		return this.scale == that.scale;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.precision, this.scale);
+	}
+	
+	@Override
+	public @NonNull String toString() {
+		return "SqlPrecisionParameter[precision=" + this.precision + ", scale=" + this.scale + "]";
+	}
+	//endregion
 }

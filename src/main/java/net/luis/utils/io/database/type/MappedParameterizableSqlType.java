@@ -33,18 +33,39 @@ import java.util.Objects;
  *
  */
 
-record MappedParameterizableSqlType<S, T, P extends SqlParameter>(
-	@NonNull ParameterizableSqlType<S, P> sourceType,
-	@NonNull Class<T> javaType,
-	@NonNull ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource,
-	@NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlResultRetrievalException> fromSourceToTarget
-) implements ParameterizableSqlType<T, P> {
+public final class MappedParameterizableSqlType<S, T, P extends SqlParameter> implements ParameterizableSqlType<T, P> {
 	
-	MappedParameterizableSqlType {
-		Objects.requireNonNull(sourceType, "Source type must not be null");
-		Objects.requireNonNull(javaType, "Java type must not be null");
-		Objects.requireNonNull(fromTargetToSource, "Getter function must not be null");
-		Objects.requireNonNull(fromSourceToTarget, "Setter function must not be null");
+	private final ParameterizableSqlType<S, P> sourceType;
+	private final Class<T> javaType;
+	private final ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource;
+	private final ThrowableFunction<@NonNull S, @Nullable T, SqlResultRetrievalException> fromSourceToTarget;
+	
+	MappedParameterizableSqlType(
+		@NonNull ParameterizableSqlType<S, P> sourceType,
+		@NonNull Class<T> javaType,
+		@NonNull ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource,
+		@NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlResultRetrievalException> fromSourceToTarget
+	) {
+		this.sourceType = Objects.requireNonNull(sourceType, "Source type must not be null");
+		this.javaType = Objects.requireNonNull(javaType, "Java type must not be null");
+		this.fromTargetToSource = Objects.requireNonNull(fromTargetToSource, "Getter function must not be null");
+		this.fromSourceToTarget = Objects.requireNonNull(fromSourceToTarget, "Setter function must not be null");
+	}
+	
+	public @NonNull ParameterizableSqlType<S, P> sourceType() {
+		return this.sourceType;
+	}
+	
+	public @NonNull Class<T> javaType() {
+		return this.javaType;
+	}
+	
+	public @NonNull ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource() {
+		return this.fromTargetToSource;
+	}
+	
+	public @NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlResultRetrievalException> fromSourceToTarget() {
+		return this.fromSourceToTarget;
 	}
 	
 	@Override
@@ -56,4 +77,26 @@ record MappedParameterizableSqlType<S, T, P extends SqlParameter>(
 	public @NonNull SqlType<T> configure(@NonNull P parameter) {
 		return this.sourceType.configure(parameter).map(this.javaType, this.fromTargetToSource, this.fromSourceToTarget);
 	}
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof MappedParameterizableSqlType<?, ?, ?> that)) return false;
+		
+		if (!this.sourceType.equals(that.sourceType)) return false;
+		if (!this.javaType.equals(that.javaType)) return false;
+		if (!this.fromTargetToSource.equals(that.fromTargetToSource)) return false;
+		return this.fromSourceToTarget.equals(that.fromSourceToTarget);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.sourceType, this.javaType, this.fromTargetToSource, this.fromSourceToTarget);
+	}
+	
+	@Override
+	public @NonNull String toString() {
+		return "MappedParameterizableSqlType[sourceType=" + this.sourceType + ", javaType=" + this.javaType + "]";
+	}
+	//endregion
 }

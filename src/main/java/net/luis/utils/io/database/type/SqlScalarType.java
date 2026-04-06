@@ -28,13 +28,47 @@ import java.util.Objects;
  *
  */
 
-public record SqlScalarType<T>(int jdbcType, @NonNull Class<T> javaType) implements SqlType<T> {
+public final class SqlScalarType<T> implements SqlType<T> {
 	
-	public SqlScalarType {
-		Objects.requireNonNull(javaType, "Java type must not be null");
+	private final int jdbcType;
+	private final Class<T> javaType;
+	
+	SqlScalarType(int jdbcType, @NonNull Class<T> javaType) {
+		this.jdbcType = jdbcType;
+		this.javaType = Objects.requireNonNull(javaType, "Java type must not be null");
+	}
+	
+	@Override
+	public int jdbcType() {
+		return this.jdbcType;
+	}
+	
+	@Override
+	public @NonNull Class<T> javaType() {
+		return this.javaType;
 	}
 	
 	public @NonNull SqlArrayType<T> array() {
 		return new SqlArrayType<>(this);
 	}
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof SqlScalarType<?> that)) return false;
+		
+		if (this.jdbcType != that.jdbcType) return false;
+		return this.javaType.equals(that.javaType);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.jdbcType, this.javaType);
+	}
+	
+	@Override
+	public @NonNull String toString() {
+		return "SqlScalarType[jdbcType=" + this.jdbcType + ", javaType=" + this.javaType + "]";
+	}
+	//endregion
 }

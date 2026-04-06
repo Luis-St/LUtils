@@ -18,17 +18,47 @@
 
 package net.luis.utils.io.database.type.parameter;
 
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record SqlLengthParameter(int length) implements SqlParameter {
+public final class SqlLengthParameter implements SqlParameter {
 	
-	public SqlLengthParameter {
+	private final int length;
+	
+	SqlLengthParameter(int length) {
 		if (length < 0) {
 			throw new IllegalArgumentException("Length must be non-negative");
 		}
+		this.length = length;
 	}
+	
+	public int length() {
+		return this.length;
+	}
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof SqlLengthParameter that)) return false;
+		
+		return this.length == that.length;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.length);
+	}
+	
+	@Override
+	public @NonNull String toString() {
+		return "SqlLengthParameter[length=" + this.length + "]";
+	}
+	//endregion
 }
