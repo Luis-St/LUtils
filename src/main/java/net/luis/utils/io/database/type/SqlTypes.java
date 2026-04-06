@@ -55,7 +55,7 @@ public final class SqlTypes {
 	public static final ParameterizableSqlType<BigInteger, SqlPrecisionParameter> BIG_INTEGER = NUMERIC.map(BigInteger.class, nullable(BigDecimal::new), BigDecimal::toBigInteger);
 	
 	public static final ParameterizableSqlType<String, SqlLengthParameter> FIXED_STRING = new DirectParameterizableSqlType<>(Types.CHAR, String.class, SqlLengthParameter.class);
-	public static final SqlType<Character> CHARACTER = FIXED_STRING.configure(new SqlLengthParameter(1)).map(Character.class, nullable(String::valueOf), s -> s.charAt(0));
+	public static final SqlType<Character> CHARACTER = FIXED_STRING.configure(SqlParameter.length(1)).map(Character.class, nullable(String::valueOf), s -> s.charAt(0));
 	public static final ParameterizableSqlType<String, SqlLengthParameter> STRING = new DirectParameterizableSqlType<>(Types.VARCHAR, String.class, SqlLengthParameter.class);
 	public static final SqlScalarType<String> TEXT = new SqlScalarType<>(Types.LONGVARCHAR, String.class);
 	public static final ParameterizableSqlType<String, SqlLengthParameter> UNICODE_FIXED_STRING = new DirectParameterizableSqlType<>(Types.NCHAR, String.class, SqlLengthParameter.class);
@@ -81,7 +81,7 @@ public final class SqlTypes {
 	public static final SqlType<DayOfWeek> DAY_OF_WEEK = INTEGER.map(DayOfWeek.class, nullable(DayOfWeek::getValue), DayOfWeek::of);
 	public static final SqlType<Duration> DURATION = LONG.map(Duration.class, nullable(Duration::toNanos), Duration::ofNanos);
 	
-	public static final SqlType<UUID> UUID = FIXED_STRING.configure(new SqlLengthParameter(36)).map(UUID.class, nullable(java.util.UUID::toString), java.util.UUID::fromString);
+	public static final SqlType<UUID> UUID = FIXED_STRING.configure(SqlParameter.length(36)).map(UUID.class, nullable(java.util.UUID::toString), java.util.UUID::fromString);
 	
 	private SqlTypes() {}
 	
