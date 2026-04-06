@@ -18,10 +18,11 @@
 
 package net.luis.utils.io.database.rendering;
 
-import net.luis.utils.io.database.function.SqlFunctionType;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -29,9 +30,20 @@ import java.util.List;
  *
  */
 
-public interface SqlFunctionRenderer {
-	
-	boolean canRender(@NonNull SqlFunctionType type);
-	
-	@NonNull SqlRendered render(@NonNull SqlFunctionType type, @NonNull List<SqlRendered> arguments);
+public record SimpleSqlRendered(@NonNull String sql, @NonNull @Unmodifiable List<Object> parameters) implements SqlRendered {
+
+	public SimpleSqlRendered {
+		Objects.requireNonNull(sql, "SQL must not be null");
+		Objects.requireNonNull(parameters, "Parameters must not be null");
+		parameters = List.copyOf(parameters);
+	}
+
+	public static @NonNull SimpleSqlRendered of(@NonNull String sql) {
+		Objects.requireNonNull(sql, "SQL must not be null");
+		return new SimpleSqlRendered(sql, List.of());
+	}
+
+	public static @NonNull SimpleSqlRendered of(@NonNull String sql, @NonNull List<Object> parameters) {
+		return new SimpleSqlRendered(sql, parameters);
+	}
 }
