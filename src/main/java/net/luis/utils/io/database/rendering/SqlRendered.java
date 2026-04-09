@@ -31,9 +31,13 @@ import java.util.List;
 
 public interface SqlRendered {
 	
-	@NonNull String sql();
+	@NonNull
+	@Unmodifiable
+	List<String> statements();
 	
 	@NonNull
 	@Unmodifiable
 	List<Object> parameters();
+	
+	@NonNull String sql();
 }

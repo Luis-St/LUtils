@@ -30,20 +30,15 @@ import java.util.Objects;
  *
  */
 
-public record SimpleSqlRendered(@NonNull String sql, @NonNull @Unmodifiable List<Object> parameters) implements SqlRendered {
-
+public record SimpleSqlRendered(@NonNull @Unmodifiable List<String> statements, @NonNull @Unmodifiable List<Object> parameters) implements SqlRendered {
+	
 	public SimpleSqlRendered {
-		Objects.requireNonNull(sql, "SQL must not be null");
-		Objects.requireNonNull(parameters, "Parameters must not be null");
-		parameters = List.copyOf(parameters);
+		statements = List.copyOf(Objects.requireNonNull(statements, "Statements must not be null"));
+		parameters = List.copyOf(Objects.requireNonNull(parameters, "Parameters must not be null"));
 	}
-
-	public static @NonNull SimpleSqlRendered of(@NonNull String sql) {
-		Objects.requireNonNull(sql, "SQL must not be null");
-		return new SimpleSqlRendered(sql, List.of());
-	}
-
-	public static @NonNull SimpleSqlRendered of(@NonNull String sql, @NonNull List<Object> parameters) {
-		return new SimpleSqlRendered(sql, parameters);
+	
+	@Override
+	public @NonNull String sql() {
+		return String.join(" ", this.statements);
 	}
 }

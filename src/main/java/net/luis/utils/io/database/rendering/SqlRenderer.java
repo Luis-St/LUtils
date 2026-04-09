@@ -86,16 +86,16 @@ public class SqlRenderer implements SqlRenderable {
 	
 	public @NonNull SqlRenderer parameter(@NonNull Object parameter) {
 		Objects.requireNonNull(parameter, "Sql parameter must not be null");
-
+		
 		this.statements.add("?");
 		this.parameters.add(parameter);
 		return this;
 	}
-
+	
 	public @NonNull SqlRenderer rendered(@NonNull SqlRendered rendered) {
 		Objects.requireNonNull(rendered, "Sql rendered must not be null");
-
-		this.statements.add(rendered.sql());
+		
+		this.statements.addAll(rendered.statements());
 		this.parameters.addAll(rendered.parameters());
 		return this;
 	}
@@ -674,6 +674,6 @@ public class SqlRenderer implements SqlRenderable {
 	
 	@Override
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) {
-		return new SimpleSqlRendered(String.join(" ", this.statements), this.parameters);
+		return new SimpleSqlRendered(this.statements, this.parameters);
 	}
 }
