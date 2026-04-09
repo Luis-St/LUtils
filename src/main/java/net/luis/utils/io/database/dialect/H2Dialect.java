@@ -22,8 +22,8 @@ import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFeature
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
-import net.luis.utils.io.database.rendering.SimpleSqlRendered;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.type.parameter.SqlLengthParameter;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
@@ -105,6 +105,8 @@ public class H2Dialect extends AbstractSqlDialect {
 		if (noWait) {
 			throw new SqlDialectUnsupportedFeatureException("NOWAIT is not supported by dialect " + this.name());
 		}
-		return SimpleSqlRendered.of("FOR UPDATE");
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.for_().update();
+		return renderer.toSql(this);
 	}
 }

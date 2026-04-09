@@ -18,12 +18,11 @@
 
 package net.luis.utils.io.database.dialect;
 
-import com.google.common.collect.Lists;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFeatureException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
 import net.luis.utils.io.database.query.SqlLockMode;
-import net.luis.utils.io.database.rendering.SimpleSqlRendered;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
@@ -31,7 +30,6 @@ import org.jspecify.annotations.NonNull;
 
 import java.sql.Types;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -84,21 +82,20 @@ public class SqliteDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String renderAutoIncrement(@NonNull SqlColumn<?, ?> column) {
-		return " AUTOINCREMENT";
+	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) {
+		renderer.keyword("AUTOINCREMENT");
 	}
 	
 	@Override
 	protected @NonNull SqlRendered renderColumnForTable(@NonNull SqlColumn<?, ?> column, boolean skipPrimaryKey) {
 		if (column.isPrimaryKey() && column.isAutoIncrement() && column.getType().jdbcType() == Types.INTEGER) {
-			StringBuilder sql = new StringBuilder();
-			sql.append(this.quoteIdentifier(column.getName()));
-			sql.append(" INTEGER PRIMARY KEY AUTOINCREMENT");
-			
+			SqlRenderer renderer = new SqlRenderer();
+			renderer.literal(this.quoteIdentifier(column.getName()));
+			renderer.literal("INTEGER").primary().key().keyword("AUTOINCREMENT");
 			if (!column.isNullable()) {
-				sql.append(" NOT NULL");
+				renderer.not().null_();
 			}
-			return SimpleSqlRendered.of(sql.toString(), Lists.newArrayList());
+			return renderer.toSql(this);
 		}
 		return super.renderColumnForTable(column, skipPrimaryKey);
 	}
@@ -106,18 +103,27 @@ public class SqliteDialect extends AbstractSqlDialect {
 	@Override
 	public @NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table) {
 		Objects.requireNonNull(table, "Table must not be null");
-		return SimpleSqlRendered.of("DELETE FROM " + this.quoteIdentifier(table.getName()));
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.delete().from().literal(this.quoteIdentifier(table.getName()));
+		return renderer.toSql(this);
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlDialectUnsupportedFeatureException {
 		Objects.requireNonNull(columns, "Columns must not be null");
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.returning();
 		if (columns.isEmpty()) {
-			return SimpleSqlRendered.of("RETURNING *");
+			renderer.literal("*");
+		} else {
+			for (int i = 0; i < columns.size(); i++) {
+				if (i > 0) {
+					renderer.comma();
+				}
+				renderer.literal(this.quoteIdentifier(columns.get(i).getName()));
+			}
 		}
-		
-		String cols = columns.stream().map(c -> this.quoteIdentifier(c.getName())).collect(Collectors.joining(", "));
-		return SimpleSqlRendered.of("RETURNING " + cols);
+		return renderer.toSql(this);
 	}
 	
 	@Override

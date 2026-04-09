@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.rendering;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
@@ -31,7 +32,8 @@ import java.util.Objects;
  *
  */
 
-public class SqlRenderer {
+@SuppressWarnings("NewMethodNamingConvention")
+public class SqlRenderer implements SqlRenderable {
 	
 	private final List<String> statements = Lists.newArrayList();
 	private final List<Object> parameters = Lists.newArrayList();
@@ -84,9 +86,17 @@ public class SqlRenderer {
 	
 	public @NonNull SqlRenderer parameter(@NonNull Object parameter) {
 		Objects.requireNonNull(parameter, "Sql parameter must not be null");
-		
+
 		this.statements.add("?");
 		this.parameters.add(parameter);
+		return this;
+	}
+
+	public @NonNull SqlRenderer rendered(@NonNull SqlRendered rendered) {
+		Objects.requireNonNull(rendered, "Sql rendered must not be null");
+
+		this.statements.add(rendered.sql());
+		this.parameters.addAll(rendered.parameters());
 		return this;
 	}
 	
@@ -105,83 +115,23 @@ public class SqlRenderer {
 		return this;
 	}
 	
-	public @NonNull SqlRenderer cast() {
-		this.statements.add("CAST");
+	public @NonNull SqlRenderer true_() {
+		this.statements.add("TRUE");
 		return this;
 	}
 	
-	public @NonNull SqlRenderer as() {
-		this.statements.add("AS");
+	public @NonNull SqlRenderer false_() {
+		this.statements.add("FALSE");
 		return this;
 	}
 	
-	/*public @NonNull SqlRenderer case() {
-		this.statements.add("CASE");
-		return this;
-	}*/
-	
-	public @NonNull SqlRenderer when() {
-		this.statements.add("WHEN");
+	public @NonNull SqlRenderer unknown() {
+		this.statements.add("UNKNOWN");
 		return this;
 	}
 	
-	public @NonNull SqlRenderer then() {
-		this.statements.add("THEN");
-		return this;
-	}
-	
-	/*public @NonNull SqlRenderer else() {
-		this.statements.add("ELSE");
-		return this;
-	}*/
-	
-	public @NonNull SqlRenderer end() {
-		this.statements.add("END");
-		return this;
-	}
-	
-	/*public @NonNull SqlRenderer if() {
-		this.statements.add("IF");
-		return this;
-	}*/
-	
-	public @NonNull SqlRenderer and() {
-		this.statements.add("AND");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer or() {
-		this.statements.add("OR");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer not() {
-		this.statements.add("NOT");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer is() {
-		this.statements.add("IS");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer in() {
-		this.statements.add("IN");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer create() {
-		this.statements.add("CREATE");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer drop() {
-		this.statements.add("DROP");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer alter() {
-		this.statements.add("ALTER");
+	public @NonNull SqlRenderer null_() {
+		this.statements.add("NULL");
 		return this;
 	}
 	
@@ -190,8 +140,38 @@ public class SqlRenderer {
 		return this;
 	}
 	
+	public @NonNull SqlRenderer distinct() {
+		this.statements.add("DISTINCT");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer all() {
+		this.statements.add("ALL");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer from() {
+		this.statements.add("FROM");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer where() {
+		this.statements.add("WHERE");
+		return this;
+	}
+	
 	public @NonNull SqlRenderer insert() {
 		this.statements.add("INSERT");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer into() {
+		this.statements.add("INTO");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer values() {
+		this.statements.add("VALUES");
 		return this;
 	}
 	
@@ -200,13 +180,28 @@ public class SqlRenderer {
 		return this;
 	}
 	
+	public @NonNull SqlRenderer set() {
+		this.statements.add("SET");
+		return this;
+	}
+	
 	public @NonNull SqlRenderer delete() {
 		this.statements.add("DELETE");
 		return this;
 	}
 	
+	public @NonNull SqlRenderer truncate() {
+		this.statements.add("TRUNCATE");
+		return this;
+	}
+	
 	public @NonNull SqlRenderer join() {
 		this.statements.add("JOIN");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer natural() {
+		this.statements.add("NATURAL");
 		return this;
 	}
 	
@@ -245,16 +240,6 @@ public class SqlRenderer {
 		return this;
 	}
 	
-	public @NonNull SqlRenderer from() {
-		this.statements.add("FROM");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer where() {
-		this.statements.add("WHERE");
-		return this;
-	}
-	
 	public @NonNull SqlRenderer groupBy() {
 		this.statements.add("GROUP BY");
 		return this;
@@ -270,13 +255,208 @@ public class SqlRenderer {
 		return this;
 	}
 	
+	public @NonNull SqlRenderer asc() {
+		this.statements.add("ASC");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer desc() {
+		this.statements.add("DESC");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer nulls() {
+		this.statements.add("NULLS");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer limit() {
+		this.statements.add("LIMIT");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer offset() {
+		this.statements.add("OFFSET");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer fetch() {
+		this.statements.add("FETCH");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer first() {
+		this.statements.add("FIRST");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer next() {
+		this.statements.add("NEXT");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer rows() {
+		this.statements.add("ROWS");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer only() {
+		this.statements.add("ONLY");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer with() {
+		this.statements.add("WITH");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer recursive() {
+		this.statements.add("RECURSIVE");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer and() {
+		this.statements.add("AND");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer or() {
+		this.statements.add("OR");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer not() {
+		this.statements.add("NOT");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer is() {
+		this.statements.add("IS");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer in() {
+		this.statements.add("IN");
+		return this;
+	}
+	
 	public @NonNull SqlRenderer exists() {
 		this.statements.add("EXISTS");
 		return this;
 	}
 	
+	public @NonNull SqlRenderer between() {
+		this.statements.add("BETWEEN");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer like() {
+		this.statements.add("LIKE");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer escape() {
+		this.statements.add("ESCAPE");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer any() {
+		this.statements.add("ANY");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer some() {
+		this.statements.add("SOME");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer case_() {
+		this.statements.add("CASE");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer when() {
+		this.statements.add("WHEN");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer then() {
+		this.statements.add("THEN");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer else_() {
+		this.statements.add("ELSE");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer end() {
+		this.statements.add("END");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer if_() {
+		this.statements.add("IF");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer cast() {
+		this.statements.add("CAST");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer as() {
+		this.statements.add("AS");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer create() {
+		this.statements.add("CREATE");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer drop() {
+		this.statements.add("DROP");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer alter() {
+		this.statements.add("ALTER");
+		return this;
+	}
+	
 	public @NonNull SqlRenderer table() {
 		this.statements.add("TABLE");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer column() {
+		this.statements.add("COLUMN");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer add() {
+		this.statements.add("ADD");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer rename() {
+		this.statements.add("RENAME");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer to() {
+		this.statements.add("TO");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer index() {
+		this.statements.add("INDEX");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer using() {
+		this.statements.add("USING");
 		return this;
 	}
 	
@@ -315,30 +495,10 @@ public class SqlRenderer {
 		return this;
 	}
 	
-	public @NonNull SqlRenderer index() {
-		this.statements.add("INDEX");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer using() {
-		this.statements.add("USING");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer values() {
-		this.statements.add("VALUES");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer set() {
-		this.statements.add("SET");
-		return this;
-	}
-	
-	/*public @NonNull SqlRenderer default() {
+	public @NonNull SqlRenderer default_() {
 		this.statements.add("DEFAULT");
 		return this;
-	}*/
+	}
 	
 	public @NonNull SqlRenderer noAction() {
 		this.statements.add("NO ACTION");
@@ -357,15 +517,163 @@ public class SqlRenderer {
 	
 	public @NonNull SqlRenderer setNull() {
 		this.set();
-	/*	this.null();*/
+		this.null_();
 		return this;
 	}
 	
 	public @NonNull SqlRenderer setDefault() {
 		this.set();
-	/*	this.default();*/
+		this.default_();
 		return this;
 	}
 	
+	public @NonNull SqlRenderer union() {
+		this.statements.add("UNION");
+		return this;
+	}
 	
+	public @NonNull SqlRenderer intersect() {
+		this.statements.add("INTERSECT");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer except() {
+		this.statements.add("EXCEPT");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer over() {
+		this.statements.add("OVER");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer partition() {
+		this.statements.add("PARTITION");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer window() {
+		this.statements.add("WINDOW");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer range() {
+		this.statements.add("RANGE");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer groups() {
+		this.statements.add("GROUPS");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer unbounded() {
+		this.statements.add("UNBOUNDED");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer preceding() {
+		this.statements.add("PRECEDING");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer following() {
+		this.statements.add("FOLLOWING");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer currentRow() {
+		this.statements.add("CURRENT ROW");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer exclude() {
+		this.statements.add("EXCLUDE");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer ties() {
+		this.statements.add("TIES");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer filter() {
+		this.statements.add("FILTER");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer for_() {
+		this.statements.add("FOR");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer share() {
+		this.statements.add("SHARE");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer nowait() {
+		this.statements.add("NOWAIT");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer wait_() {
+		this.statements.add("WAIT");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer skip() {
+		this.statements.add("SKIP");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer locked() {
+		this.statements.add("LOCKED");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer returning() {
+		this.statements.add("RETURNING");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer lateral() {
+		this.statements.add("LATERAL");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer begin() {
+		this.statements.add("BEGIN");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer commit() {
+		this.statements.add("COMMIT");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer rollback() {
+		this.statements.add("ROLLBACK");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer savepoint() {
+		this.statements.add("SAVEPOINT");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer start() {
+		this.statements.add("START");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer transaction() {
+		this.statements.add("TRANSACTION");
+		return this;
+	}
+	
+	@Override
+	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) {
+		return new SimpleSqlRendered(String.join(" ", this.statements), this.parameters);
+	}
 }

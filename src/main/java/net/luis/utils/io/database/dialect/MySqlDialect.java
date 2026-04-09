@@ -23,8 +23,7 @@ import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeExc
 import net.luis.utils.io.database.function.SqlDefaultFunctionType;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
-import net.luis.utils.io.database.rendering.SimpleSqlRendered;
-import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.rendering.*;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.type.parameter.SqlFractionalParameter;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
@@ -107,17 +106,17 @@ public class MySqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String renderAutoIncrement(@NonNull SqlColumn<?, ?> column) {
-		return " AUTO_INCREMENT";
+	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) {
+		renderer.literal("AUTO_INCREMENT");
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index) {
 		Objects.requireNonNull(index, "Index must not be null");
-		
-		return SimpleSqlRendered.of(
-			"DROP INDEX " + this.quoteIdentifier(index.name()) + " ON " + this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName())
-		);
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.drop().index().literal(this.quoteIdentifier(index.name()))
+			.on().literal(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
+		return renderer.toSql(this);
 	}
 	
 	@Override

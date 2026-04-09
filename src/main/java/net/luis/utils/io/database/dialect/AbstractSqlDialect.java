@@ -28,15 +28,15 @@ import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.query.SqlSetOperation;
-import net.luis.utils.io.database.rendering.SimpleSqlRendered;
-import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.rendering.*;
 import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.*;
 import org.jspecify.annotations.NonNull;
 
 import java.sql.Types;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -46,11 +46,6 @@ import java.util.stream.Collectors;
  */
 
 public abstract class AbstractSqlDialect implements SqlDialect {
-	
-	// ToDo:
-	//  - Update sql rendering to use SqlRenderer
-	//  - Function rendering must check parameter count and types, and throw exceptions if they don't match the function definition
-	//    Properly a function renderer is needed
 	
 	@Override
 	public boolean isTypeSupported(@NonNull SqlType<?> type) {
@@ -363,20 +358,21 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	}
 	
 	protected @NonNull SqlRendered renderCaseWhen(@NonNull List<SqlRendered> arguments) {
-		StringBuilder sql = new StringBuilder("CASE");
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.case_();
 		
 		int i = 0;
 		while (i + 1 < arguments.size()) {
-			sql.append(" WHEN ").append(arguments.get(i).sql());
-			sql.append(" THEN ").append(arguments.get(i + 1).sql());
+			renderer.when().rendered(arguments.get(i));
+			renderer.then().rendered(arguments.get(i + 1));
 			i += 2;
 		}
 		
 		if (i < arguments.size()) {
-			sql.append(" ELSE ").append(arguments.get(i).sql());
+			renderer.else_().rendered(arguments.get(i));
 		}
-		sql.append(" END");
-		return SimpleSqlRendered.of(sql.toString(), this.collectParameters(arguments));
+		renderer.end();
+		return renderer.toSql(this);
 	}
 	
 	protected @NonNull List<Object> collectParameters(@NonNull List<SqlRendered> arguments) {
@@ -424,54 +420,51 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	@Override
 	public @NonNull SqlRendered renderCreateTable(@NonNull SqlTable<?> table, boolean ifNotExists) {
 		Objects.requireNonNull(table, "Table must not be null");
-		List<Object> parameters = Lists.newArrayList();
-		StringBuilder sql = new StringBuilder("CREATE TABLE ");
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.create().table();
 		if (ifNotExists) {
-			sql.append("IF NOT EXISTS ");
+			renderer.if_().not().exists();
 		}
 		
-		sql.append(this.quoteIdentifier(table.getName()));
-		sql.append(" (");
+		renderer.literal(this.quoteIdentifier(table.getName()));
+		renderer.openingBracket();
 		
 		boolean hasCompositeKey = table.getCompositePrimaryKey().isPresent();
 		List<? extends SqlColumn<?, ?>> columns = table.getColumns();
 		for (int i = 0; i < columns.size(); i++) {
 			if (i > 0) {
-				sql.append(", ");
+				renderer.comma();
 			}
-			
-			SqlRendered columnDef = this.renderColumnForTable(columns.get(i), hasCompositeKey);
-			sql.append(columnDef.sql());
-			parameters.addAll(columnDef.parameters());
+			renderer.rendered(this.renderColumnForTable(columns.get(i), hasCompositeKey));
 		}
 		
 		SqlRendered tableConstraints = this.renderTableConstraints(table);
 		if (!tableConstraints.sql().isEmpty()) {
-			sql.append(", ").append(tableConstraints.sql());
-			parameters.addAll(tableConstraints.parameters());
+			renderer.comma().rendered(tableConstraints);
 		}
 		
-		sql.append(")");
-		return SimpleSqlRendered.of(sql.toString(), parameters);
+		renderer.closingBracket();
+		return renderer.toSql(this);
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderDropTable(@NonNull SqlTable<?> table, boolean ifExists) {
 		Objects.requireNonNull(table, "Table must not be null");
-		StringBuilder sql = new StringBuilder("DROP TABLE ");
-		
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.drop().table();
 		if (ifExists) {
-			sql.append("IF EXISTS ");
+			renderer.if_().exists();
 		}
-		
-		sql.append(this.quoteIdentifier(table.getName()));
-		return SimpleSqlRendered.of(sql.toString());
+		renderer.literal(this.quoteIdentifier(table.getName()));
+		return renderer.toSql(this);
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table) {
 		Objects.requireNonNull(table, "Table must not be null");
-		return SimpleSqlRendered.of("TRUNCATE TABLE " + this.quoteIdentifier(table.getName()));
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.truncate().table().literal(this.quoteIdentifier(table.getName()));
+		return renderer.toSql(this);
 	}
 	
 	@Override
@@ -480,145 +473,183 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		return this.renderColumnForTable(column, false);
 	}
 	
-	protected @NonNull String renderForeignKey(@NonNull SqlForeignKey<?, ?> fk) {
+	protected void renderForeignKey(@NonNull SqlRenderer renderer, @NonNull SqlForeignKey<?, ?> fk) {
 		Objects.requireNonNull(fk, "Foreign key must not be null");
 		
-		StringBuilder sql = new StringBuilder();
-		sql.append(this.quoteIdentifier(fk.getReferencedTable().getName()));
-		sql.append("(");
-		sql.append(fk.getReferencedColumns().stream().map(c -> this.quoteIdentifier(c.getName())).collect(Collectors.joining(", ")));
-		sql.append(")");
+		renderer.literal(this.quoteIdentifier(fk.getReferencedTable().getName()));
+		renderer.openingBracket();
+		List<? extends SqlColumn<?, ?>> referencedColumns = fk.getReferencedColumns();
+		for (int i = 0; i < referencedColumns.size(); i++) {
+			if (i > 0) {
+				renderer.comma();
+			}
+			renderer.literal(this.quoteIdentifier(referencedColumns.get(i).getName()));
+		}
+		renderer.closingBracket();
 		
 		if (fk.getOnUpdate() != SqlReferentialAction.NO_ACTION) {
-			sql.append(" ON UPDATE ").append(this.renderReferentialAction(fk.getOnUpdate()));
+			renderer.on().update();
+			this.renderReferentialAction(renderer, fk.getOnUpdate());
 		}
 		if (fk.getOnDelete() != SqlReferentialAction.NO_ACTION) {
-			sql.append(" ON DELETE ").append(this.renderReferentialAction(fk.getOnDelete()));
+			renderer.on().delete();
+			this.renderReferentialAction(renderer, fk.getOnDelete());
 		}
-		return sql.toString();
 	}
 	
 	protected @NonNull SqlRendered renderColumnForTable(@NonNull SqlColumn<?, ?> column, boolean skipPrimaryKey) {
-		List<Object> parameters = Lists.newArrayList();
-		StringBuilder sql = new StringBuilder();
-		sql.append(this.quoteIdentifier(column.getName()));
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.literal(this.quoteIdentifier(column.getName()));
 		
 		try {
-			sql.append(" ").append(this.getTypeName(column.getType()));
+			renderer.literal(this.getTypeName(column.getType()));
 		} catch (SqlDialectUnsupportedTypeException e) {
 			throw new IllegalArgumentException("Column type is not supported by dialect " + this.name(), e);
 		}
 		
 		if (!column.isNullable()) {
-			sql.append(" NOT NULL");
+			renderer.not().null_();
 		}
 		if (column.getDefaultValue().isPresent()) {
-			sql.append(" DEFAULT ?");
-			parameters.add(column.getDefaultValue().get());
+			renderer.default_().parameter(column.getDefaultValue().get());
 		}
 		if (column.isAutoIncrement()) {
-			sql.append(this.renderAutoIncrement(column));
+			this.renderAutoIncrement(renderer, column);
 		}
 		if (column.isPrimaryKey() && !skipPrimaryKey) {
-			sql.append(" PRIMARY KEY");
+			renderer.primary().key();
 		}
 		if (column.isUnique()) {
-			sql.append(" UNIQUE");
+			renderer.unique();
 		}
 		
 		if (column.getForeignKey().isPresent()) {
-			SqlForeignKey<?, ?> fk = column.getForeignKey().get();
-			sql.append(" REFERENCES ").append(this.renderForeignKey(fk));
+			renderer.references();
+			this.renderForeignKey(renderer, column.getForeignKey().get());
 		}
 		
 		for (SqlCondition check : column.getChecks()) {
-			SqlRendered checkRendered = check.toSql(this);
-			sql.append(" CHECK (").append(checkRendered.sql()).append(")");
-			parameters.addAll(checkRendered.parameters());
+			renderer.check().openingBracket().rendered(check.toSql(this)).closingBracket();
 		}
 		
-		return SimpleSqlRendered.of(sql.toString(), parameters);
+		return renderer.toSql(this);
 	}
 	
-	protected @NonNull String renderAutoIncrement(@NonNull SqlColumn<?, ?> column) {
-		return " GENERATED ALWAYS AS IDENTITY";
+	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) {
+		renderer.keyword("GENERATED").keyword("ALWAYS").as().keyword("IDENTITY");
+	}
+	
+	protected void renderReferentialAction(@NonNull SqlRenderer renderer, @NonNull SqlReferentialAction action) {
+		switch (action) {
+			case NO_ACTION -> renderer.noAction();
+			case RESTRICT -> renderer.restrict();
+			case CASCADE -> renderer.cascade();
+			case SET_NULL -> renderer.setNull();
+			case SET_DEFAULT -> renderer.setDefault();
+		}
 	}
 	
 	protected @NonNull SqlRendered renderTableConstraints(@NonNull SqlTable<?> table) {
-		List<Object> parameters = Lists.newArrayList();
-		List<String> constraints = Lists.newArrayList();
+		SqlRenderer renderer = new SqlRenderer();
+		boolean first = true;
 		
 		if (table.getCompositePrimaryKey().isPresent()) {
 			SqlCompositePrimaryKey<?> pk = table.getCompositePrimaryKey().get();
-			String cols = pk.columns().stream().map(c -> this.quoteIdentifier(c.getName())).collect(Collectors.joining(", "));
-			constraints.add("PRIMARY KEY (" + cols + ")");
+			renderer.primary().key().openingBracket();
+			List<? extends SqlColumn<?, ?>> pkColumns = pk.columns();
+			for (int i = 0; i < pkColumns.size(); i++) {
+				if (i > 0) {
+					renderer.comma();
+				}
+				renderer.literal(this.quoteIdentifier(pkColumns.get(i).getName()));
+			}
+			renderer.closingBracket();
+			first = false;
 		}
 		
 		for (SqlForeignKey<?, ?> fk : table.getForeignKeys()) {
-			StringBuilder constraint = new StringBuilder("FOREIGN KEY (");
-			
-			constraint.append(fk.getReferencingColumns().stream().map(c -> this.quoteIdentifier(c.getName())).collect(Collectors.joining(", ")));
-			constraint.append(") REFERENCES ").append(this.renderForeignKey(fk));
-			
-			constraints.add(constraint.toString());
+			if (!first) {
+				renderer.comma();
+			}
+			renderer.foreign().key().openingBracket();
+			List<? extends SqlColumn<?, ?>> referencingColumns = fk.getReferencingColumns();
+			for (int i = 0; i < referencingColumns.size(); i++) {
+				if (i > 0) {
+					renderer.comma();
+				}
+				renderer.literal(this.quoteIdentifier(referencingColumns.get(i).getName()));
+			}
+			renderer.closingBracket().references();
+			this.renderForeignKey(renderer, fk);
+			first = false;
 		}
 		
 		for (List<? extends SqlColumn<?, ?>> uniqueColumns : table.getUniqueConstraints()) {
-			String cols = uniqueColumns.stream().map(c -> this.quoteIdentifier(c.getName())).collect(Collectors.joining(", "));
-			constraints.add("UNIQUE (" + cols + ")");
+			if (!first) {
+				renderer.comma();
+			}
+			renderer.unique().openingBracket();
+			for (int i = 0; i < uniqueColumns.size(); i++) {
+				if (i > 0) {
+					renderer.comma();
+				}
+				renderer.literal(this.quoteIdentifier(uniqueColumns.get(i).getName()));
+			}
+			renderer.closingBracket();
+			first = false;
 		}
 		
 		for (SqlCondition check : table.getCheckConstraints()) {
-			SqlRendered checkRendered = check.toSql(this);
-			constraints.add("CHECK (" + checkRendered.sql() + ")");
-			parameters.addAll(checkRendered.parameters());
+			if (!first) {
+				renderer.comma();
+			}
+			renderer.check().openingBracket().rendered(check.toSql(this)).closingBracket();
+			first = false;
 		}
 		
-		return SimpleSqlRendered.of(String.join(", ", constraints), parameters);
-	}
-	
-	protected @NonNull String renderReferentialAction(@NonNull SqlReferentialAction action) {
-		return switch (action) {
-			case NO_ACTION -> "NO ACTION";
-			case RESTRICT -> "RESTRICT";
-			case CASCADE -> "CASCADE";
-			case SET_NULL -> "SET NULL";
-			case SET_DEFAULT -> "SET DEFAULT";
-		};
+		return renderer.toSql(this);
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index) {
 		Objects.requireNonNull(index, "Index must not be null");
-		StringBuilder sql = new StringBuilder("CREATE ");
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.create();
 		if (index.unique()) {
-			sql.append("UNIQUE ");
+			renderer.unique();
 		}
 		
-		sql.append("INDEX ").append(this.quoteIdentifier(index.name()));
-		sql.append(" ON ").append(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
+		renderer.index().literal(this.quoteIdentifier(index.name()));
+		renderer.on().literal(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
 		
 		try {
-			sql.append(" USING ").append(this.getIndexMethodName(index.method()));
+			renderer.using().literal(this.getIndexMethodName(index.method()));
 		} catch (SqlDialectUnsupportedIndexMethodException e) {
 			throw new IllegalArgumentException("Index method is not supported by dialect " + this.name(), e);
 		}
 		
-		sql.append(" (");
-		sql.append(index.columns().stream().map(c -> this.quoteIdentifier(c.getName())).collect(Collectors.joining(", ")));
-		sql.append(")");
-		if (index.whereCondition() != null) {
-			SqlRendered where = index.whereCondition().toSql(this);
-			sql.append(" WHERE ").append(where.sql());
-			return SimpleSqlRendered.of(sql.toString(), where.parameters());
+		renderer.openingBracket();
+		List<? extends SqlColumn<?, ?>> columns = index.columns();
+		for (int i = 0; i < columns.size(); i++) {
+			if (i > 0) {
+				renderer.comma();
+			}
+			renderer.literal(this.quoteIdentifier(columns.get(i).getName()));
 		}
-		return SimpleSqlRendered.of(sql.toString());
+		renderer.closingBracket();
+		
+		if (index.whereCondition() != null) {
+			renderer.where().rendered(index.whereCondition().toSql(this));
+		}
+		return renderer.toSql(this);
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index) {
 		Objects.requireNonNull(index, "Index must not be null");
-		return SimpleSqlRendered.of("DROP INDEX " + this.quoteIdentifier(index.name()));
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.drop().index().literal(this.quoteIdentifier(index.name()));
+		return renderer.toSql(this);
 	}
 	
 	@Override
@@ -630,18 +661,14 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			throw new IllegalArgumentException("Offset must be non-negative");
 		}
 		
-		StringBuilder sql = new StringBuilder();
+		SqlRenderer renderer = new SqlRenderer();
 		if (limit > 0) {
-			sql.append("LIMIT ").append(limit);
+			renderer.limit().literal(String.valueOf(limit));
 		}
-		
 		if (offset > 0) {
-			if (!sql.isEmpty()) {
-				sql.append(" ");
-			}
-			sql.append("OFFSET ").append(offset);
+			renderer.offset().literal(String.valueOf(offset));
 		}
-		return SimpleSqlRendered.of(sql.toString());
+		return renderer.toSql(this);
 	}
 	
 	@Override
@@ -652,19 +679,19 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	@Override
 	public @NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlDialectUnsupportedFeatureException {
 		Objects.requireNonNull(mode, "Lock mode must not be null");
-		StringBuilder sql = new StringBuilder();
+		SqlRenderer renderer = new SqlRenderer();
 		
 		switch (mode) {
-			case FOR_UPDATE -> sql.append("FOR UPDATE");
-			case FOR_SHARE -> sql.append("FOR SHARE");
+			case FOR_UPDATE -> renderer.for_().update();
+			case FOR_SHARE -> renderer.for_().share();
 		}
 		if (skipLocked) {
-			sql.append(" SKIP LOCKED");
+			renderer.skip().locked();
 		}
 		if (noWait) {
-			sql.append(" NOWAIT");
+			renderer.nowait();
 		}
-		return SimpleSqlRendered.of(sql.toString());
+		return renderer.toSql(this);
 	}
 	
 	@Override

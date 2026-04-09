@@ -23,8 +23,7 @@ import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeExc
 import net.luis.utils.io.database.function.SqlDefaultFunctionType;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
-import net.luis.utils.io.database.rendering.SimpleSqlRendered;
-import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.rendering.*;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.type.parameter.SqlFractionalParameter;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
@@ -32,7 +31,6 @@ import org.jspecify.annotations.NonNull;
 
 import java.sql.Types;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -110,44 +108,50 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String renderAutoIncrement(@NonNull SqlColumn<?, ?> column) {
-		return " IDENTITY(1, 1)";
+	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) {
+		renderer.keyword("IDENTITY").openingBracket().literal("1").comma().literal("1").closingBracket();
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index) {
 		Objects.requireNonNull(index, "Index must not be null");
-		StringBuilder sql = new StringBuilder("CREATE ");
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.create();
 		if (index.unique()) {
-			sql.append("UNIQUE ");
+			renderer.unique();
 		}
 		
 		if (index.method() == SqlIndexMethod.CLUSTERED) {
-			sql.append("CLUSTERED ");
+			renderer.keyword("CLUSTERED");
 		} else if (index.method() == SqlIndexMethod.NONCLUSTERED) {
-			sql.append("NONCLUSTERED ");
+			renderer.keyword("NONCLUSTERED");
 		}
 		
-		sql.append("INDEX ").append(this.quoteIdentifier(index.name()));
-		sql.append(" ON ").append(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
-		sql.append(" (");
-		sql.append(index.columns().stream().map(c -> this.quoteIdentifier(c.getName())).collect(Collectors.joining(", ")));
-		sql.append(")");
+		renderer.index().literal(this.quoteIdentifier(index.name()));
+		renderer.on().literal(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
+		renderer.openingBracket();
+		List<? extends SqlColumn<?, ?>> columns = index.columns();
+		for (int i = 0; i < columns.size(); i++) {
+			if (i > 0) {
+				renderer.comma();
+			}
+			renderer.literal(this.quoteIdentifier(columns.get(i).getName()));
+		}
+		renderer.closingBracket();
 		
 		if (index.whereCondition() != null) {
-			SqlRendered where = index.whereCondition().toSql(this);
-			sql.append(" WHERE ").append(where.sql());
-			return SimpleSqlRendered.of(sql.toString(), where.parameters());
+			renderer.where().rendered(index.whereCondition().toSql(this));
 		}
-		return SimpleSqlRendered.of(sql.toString());
+		return renderer.toSql(this);
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index) {
 		Objects.requireNonNull(index, "Index must not be null");
-		return SimpleSqlRendered.of(
-			"DROP INDEX " + this.quoteIdentifier(index.name()) + " ON " + this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName())
-		);
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.drop().index().literal(this.quoteIdentifier(index.name()))
+			.on().literal(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
+		return renderer.toSql(this);
 	}
 	
 	@Override
@@ -159,12 +163,12 @@ public class SqlServerDialect extends AbstractSqlDialect {
 			throw new IllegalArgumentException("Offset must be non-negative");
 		}
 		
-		StringBuilder sql = new StringBuilder();
-		sql.append("OFFSET ").append(offset).append(" ROWS");
+		SqlRenderer renderer = new SqlRenderer();
+		renderer.offset().literal(String.valueOf(offset)).rows();
 		if (limit > 0) {
-			sql.append(" FETCH NEXT ").append(limit).append(" ROWS ONLY");
+			renderer.fetch().next().literal(String.valueOf(limit)).rows().only();
 		}
-		return SimpleSqlRendered.of(sql.toString());
+		return renderer.toSql(this);
 	}
 	
 	@Override
