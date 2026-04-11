@@ -39,6 +39,8 @@ public enum SqlDefaultFunctionType implements SqlFunctionType {
 	NULLIF,
 	CASE_WHEN,
 	UNSAFE,
+	
+	// SqlWindowFunctions
 	ROW_NUMBER,
 	RANK,
 	DENSE_RANK,
