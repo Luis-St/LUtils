@@ -20,9 +20,9 @@ package net.luis.utils.io.database.table;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlAlreadyBindException;
+import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.type.SqlType;

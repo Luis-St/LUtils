@@ -20,9 +20,9 @@ package net.luis.utils.io.database.query.crud;
 
 import net.luis.utils.io.database.SqlPage;
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.expression.SqlOrderable;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.expression.SqlOrderable;
 import net.luis.utils.io.database.query.*;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;

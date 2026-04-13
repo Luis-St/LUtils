@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.database.condition.conditions.comparison;
 
-import net.luis.utils.io.database.condition.conditions.SqlComparisonCondition;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.condition.conditions.SqlComparisonCondition;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.crud.SqlSelectQuery;
 import org.jspecify.annotations.NonNull;
