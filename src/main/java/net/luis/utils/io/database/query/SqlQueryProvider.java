@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.query;
 
-import net.luis.utils.io.database.condition.SqlExpression;
+import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.crud.*;
 import net.luis.utils.io.database.query.row.*;
 import net.luis.utils.io.database.table.SqlColumn;

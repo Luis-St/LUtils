@@ -18,7 +18,12 @@
 
 package net.luis.utils.io.database.function.functions.window;
 
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlWindowFunction;
+import net.luis.utils.io.database.function.window.SqlWindowClause;
+import net.luis.utils.io.database.query.SqlAlias;
+import org.jspecify.annotations.NonNull;
 
 /**
  *
@@ -26,4 +31,30 @@ import net.luis.utils.io.database.function.functions.SqlWindowFunction;
  *
  */
 
-public record SqlDenseRankFunction() implements SqlWindowFunction {}
+public record SqlDenseRankFunction(@NonNull SqlWindowClause over) implements SqlWindowFunction<Long> {
+	
+	@Override
+	public @NonNull SqlExpression<Long> as(@NonNull SqlAlias alias) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Long> ascending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Long> descending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Long> nullsFirst() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Long> nullsLast() {
+		return null;
+	}
+}

@@ -23,7 +23,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.function.*;
+import net.luis.utils.io.database.expression.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.query.row.SqlRow2;
 import net.luis.utils.io.database.table.*;
@@ -121,32 +121,32 @@ public class DatabaseTest {
 			
 			// Two-column typed select returning SqlRow2
 			List<SqlRow2<Integer, String>> rows = persons.select(ID, NAME)
-				.where(SqlStringFunctions.startsWith(NAME, "A"))
+				.where(SqlStringExpressions.startsWith(NAME, "A"))
 				.fetch();
 			
 			// Conditions — static combinators or instance chaining
 			persons.select()
-				.where(SqlCondition.allOf(SqlOrderableFunctions.greaterThan(ID, 5), SqlFunctions.isNull(NAME).not()))
+				.where(SqlCondition.allOf(SqlOrderableExpressions.greaterThan(ID, 5), SqlExpressions.isNull(NAME).not()))
 				.orderBy(NAME.ascending())
 				.limit(10)
 				.fetch();
 			
 			// Fetch variants
-			persons.select().where(SqlFunctions.equalTo(ID, 5)).fetchOne();
-			persons.select().where(SqlFunctions.equalTo(ID, 999)).fetchFirst();
-			persons.select().where(SqlFunctions.equalTo(ID, 1)).fetchOneOrNull();
+			persons.select().where(SqlExpressions.equalTo(ID, 5)).fetchOne();
+			persons.select().where(SqlExpressions.equalTo(ID, 999)).fetchFirst();
+			persons.select().where(SqlExpressions.equalTo(ID, 1)).fetchOneOrNull();
 			
 			// Count and exists
 			long count = persons.select().count();
-			boolean exists = persons.select().where(SqlFunctions.equalTo(NAME, "Alice")).exists();
+			boolean exists = persons.select().where(SqlExpressions.equalTo(NAME, "Alice")).exists();
 			
 			// Pagination
 			persons.select().fetchPage(0, 20);
 			
 			// Type-specific column operations
-			persons.select().where(SqlStringFunctions.contains(NAME, "li")).fetch();
-			persons.select().where(SqlOrderableFunctions.between(ID, 1, 100)).fetch();
-			persons.select().where(SqlTemporalFunctions.withinLast(CREATED_AT, Duration.ofHours(24))).fetch();
+			persons.select().where(SqlStringExpressions.contains(NAME, "li")).fetch();
+			persons.select().where(SqlOrderableExpressions.between(ID, 1, 100)).fetch();
+			persons.select().where(SqlTemporalExpressions.withinLast(CREATED_AT, Duration.ofHours(24))).fetch();
 		}
 	}
 	
@@ -157,7 +157,7 @@ public class DatabaseTest {
 				persons.insert(new Person(10, "Dave", "dave@example.com", 0, Instant.now())).execute();
 				persons.update()
 					.set(NAME, "David")
-					.where(SqlFunctions.equalTo(ID, 10))
+					.where(SqlExpressions.equalTo(ID, 10))
 					.execute();
 				tx.commit();
 			}
@@ -171,30 +171,30 @@ public class DatabaseTest {
 			// Update with SET
 			int updated = persons.update()
 				.set(NAME, "Alice Updated")
-				.where(SqlFunctions.equalTo(ID, 1))
+				.where(SqlExpressions.equalTo(ID, 1))
 				.execute();
 			
 			// Increment numeric column
 			persons.update()
 				.increment(ID, 1)
-				.where(SqlFunctions.equalTo(NAME, "Bob"))
+				.where(SqlExpressions.equalTo(NAME, "Bob"))
 				.execute();
 			
 			// Decrement numeric column
 			persons.update()
 				.increment(ID, 1)
-				.where(SqlFunctions.equalTo(NAME, "Alice"))
+				.where(SqlExpressions.equalTo(NAME, "Alice"))
 				.execute();
 			
 			// Update with RETURNING
 			List<Person> updatedPersons = persons.update()
 				.set(EMAIL, "new@example.com")
-				.where(SqlFunctions.equalTo(ID, 2))
+				.where(SqlExpressions.equalTo(ID, 2))
 				.returning();
 			
 			// Delete
 			int deleted = persons.delete()
-				.where(SqlOrderableFunctions.lessThan(ID, 0))
+				.where(SqlOrderableExpressions.lessThan(ID, 0))
 				.execute();
 			
 			/*// Skip version check for bulk operations
@@ -210,13 +210,13 @@ public class DatabaseTest {
 			try (SqlTransaction tx = db.beginTransaction()) {
 				// FOR UPDATE locking
 				tx.from(PERSON_TABLE).select()
-					.where(SqlOrderableFunctions.lessThan(ID, 1))
+					.where(SqlOrderableExpressions.lessThan(ID, 1))
 					.forUpdate()
 					.fetch();
 				
 				// SKIP LOCKED for job queue pattern
 				tx.from(PERSON_TABLE).select()
-					.where(SqlFunctions.isNull(NAME).not())
+					.where(SqlExpressions.isNull(NAME).not())
 					.forUpdate()
 					.skipLocked()
 					.limit(5)

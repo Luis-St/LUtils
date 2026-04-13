@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.database.function.functions.numeric;
 
-import net.luis.utils.io.database.condition.SqlExpression;
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
+import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -28,4 +30,30 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlAbsFunction(@NonNull SqlExpression<?> value) implements SqlNumericFunction {}
+public record SqlAbsFunction<T extends Number>(@NonNull SqlExpression<T> value) implements SqlNumericFunction<T> {
+	
+	@Override
+	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> ascending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> descending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> nullsFirst() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> nullsLast() {
+		return null;
+	}
+}

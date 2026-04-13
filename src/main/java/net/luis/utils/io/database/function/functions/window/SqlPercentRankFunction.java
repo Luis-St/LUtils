@@ -18,7 +18,12 @@
 
 package net.luis.utils.io.database.function.functions.window;
 
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlWindowFunction;
+import net.luis.utils.io.database.function.window.SqlWindowClause;
+import net.luis.utils.io.database.query.SqlAlias;
+import org.jspecify.annotations.NonNull;
 
 /**
  *
@@ -26,4 +31,30 @@ import net.luis.utils.io.database.function.functions.SqlWindowFunction;
  *
  */
 
-public record SqlPercentRankFunction() implements SqlWindowFunction {}
+public record SqlPercentRankFunction(@NonNull SqlWindowClause over) implements SqlWindowFunction<Double> {
+	
+	@Override
+	public @NonNull SqlExpression<Double> as(@NonNull SqlAlias alias) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Double> ascending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Double> descending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Double> nullsFirst() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Double> nullsLast() {
+		return null;
+	}
+}

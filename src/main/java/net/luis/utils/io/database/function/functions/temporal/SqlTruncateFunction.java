@@ -18,8 +18,12 @@
 
 package net.luis.utils.io.database.function.functions.temporal;
 
-import net.luis.utils.io.database.condition.SqlExpression;
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
+import net.luis.utils.io.database.query.SqlAlias;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -28,4 +32,34 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlTruncateFunction(@NonNull SqlExpression<?> expression, @NonNull SqlExpression<?> part) implements SqlTemporalFunction {}
+public record SqlTruncateFunction<T>(
+	@NonNull SqlExpression<?> value,
+	@NonNull SqlTemporalPart part,
+	@NonNull SqlType<T> type
+) implements SqlTemporalFunction<T> {
+	
+	@Override
+	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> ascending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> descending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> nullsFirst() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> nullsLast() {
+		return null;
+	}
+}

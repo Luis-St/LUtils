@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.function.window;
 
-import net.luis.utils.io.database.condition.SqlOrderable;
+import net.luis.utils.io.database.expression.SqlOrderable;
 import net.luis.utils.io.database.rendering.SqlRenderable;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
@@ -39,7 +39,7 @@ public interface SqlWindowClause extends SqlRenderable {
 		return null;
 	}
 	
-	@NonNull SqlWindowClause orderBy(SqlOrderable @NonNull ... orderables);
+	@NonNull SqlWindowClause orderBy(SqlOrderable<?> @NonNull ... orderables);
 	
 	@NonNull SqlWindowClause frame(@NonNull SqlWindowFrame frame);
 	

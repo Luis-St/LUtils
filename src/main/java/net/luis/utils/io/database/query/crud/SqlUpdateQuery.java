@@ -19,7 +19,7 @@
 package net.luis.utils.io.database.query.crud;
 
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.condition.SqlExpression;
+import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.query.SqlJoinableQuery;

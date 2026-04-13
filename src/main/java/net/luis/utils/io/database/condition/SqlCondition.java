@@ -18,8 +18,12 @@
 
 package net.luis.utils.io.database.condition;
 
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.rendering.SqlRenderable;
+import net.luis.utils.io.database.rendering.SqlRendered;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -27,6 +31,7 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
+@FunctionalInterface
 public interface SqlCondition extends SqlRenderable {
 	
 	static @NonNull SqlCondition always() {
@@ -54,4 +59,9 @@ public interface SqlCondition extends SqlRenderable {
 	}
 	
 	@NonNull SqlCondition not();
+	
+	@Override
+	default @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+	}
 }

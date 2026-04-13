@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.database.function.functions.string;
 
-import net.luis.utils.io.database.condition.SqlExpression;
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
+import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -28,4 +30,30 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlHexFunction(@NonNull SqlExpression<?> value) implements SqlStringFunction {}
+public record SqlHexFunction(@NonNull SqlExpression<?> value) implements SqlStringFunction<String> {
+	
+	@Override
+	public @NonNull SqlExpression<String> as(@NonNull SqlAlias alias) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<String> ascending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<String> descending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<String> nullsFirst() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<String> nullsLast() {
+		return null;
+	}
+}

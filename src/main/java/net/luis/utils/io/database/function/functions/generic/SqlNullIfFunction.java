@@ -18,8 +18,9 @@
 
 package net.luis.utils.io.database.function.functions.generic;
 
-import net.luis.utils.io.database.condition.SqlExpression;
-import net.luis.utils.io.database.function.functions.SqlFunction;
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.SqlFunction;
+import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -28,4 +29,33 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlNullIfFunction(@NonNull SqlExpression<?> expression, @NonNull SqlExpression<?> fallback) implements SqlFunction {}
+public record SqlNullIfFunction<T>(
+	@NonNull SqlExpression<T> expression,
+	@NonNull SqlExpression<T> fallback
+) implements SqlFunction<T> {
+	
+	@Override
+	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> ascending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> descending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> nullsFirst() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> nullsLast() {
+		return null;
+	}
+}

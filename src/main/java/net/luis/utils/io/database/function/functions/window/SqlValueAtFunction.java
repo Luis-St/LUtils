@@ -18,8 +18,11 @@
 
 package net.luis.utils.io.database.function.functions.window;
 
-import net.luis.utils.io.database.condition.SqlExpression;
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlWindowFunction;
+import net.luis.utils.io.database.function.window.SqlWindowClause;
+import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -28,4 +31,34 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlValueAtFunction(@NonNull SqlExpression<?> column, @NonNull SqlExpression<?> position) implements SqlWindowFunction {}
+public record SqlValueAtFunction<T>(
+	@NonNull SqlExpression<T> column,
+	@NonNull SqlExpression<? extends Number> position,
+	@NonNull SqlWindowClause over
+) implements SqlWindowFunction<T> {
+	
+	@Override
+	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> ascending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> descending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> nullsFirst() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> nullsLast() {
+		return null;
+	}
+}

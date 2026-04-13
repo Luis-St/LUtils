@@ -18,7 +18,10 @@
 
 package net.luis.utils.io.database.function.functions.numeric.trigonometric;
 
-import net.luis.utils.io.database.condition.SqlExpression;
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.SqlFunction;
+import net.luis.utils.io.database.function.functions.SqlNumericFunction;
+import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -27,4 +30,33 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlAtan2Function(@NonNull SqlExpression<?> y, @NonNull SqlExpression<?> x) implements SqlTrigonometricFunction {}
+public record SqlAtan2Function(
+	@NonNull SqlExpression<? extends Number> y,
+	@NonNull SqlExpression<? extends Number> x
+) implements SqlNumericFunction<Double> {
+	
+	@Override
+	public @NonNull SqlExpression<Double> as(@NonNull SqlAlias alias) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Double> ascending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Double> descending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Double> nullsFirst() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<Double> nullsLast() {
+		return null;
+	}
+}

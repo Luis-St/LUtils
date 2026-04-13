@@ -18,10 +18,12 @@
 
 package net.luis.utils.io.database.function.functions;
 
+import net.luis.utils.io.database.function.SqlFunction;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public interface SqlTemporalFunction extends SqlFunction {}
+public interface SqlTemporalFunction<T> extends SqlFunction<T> {}

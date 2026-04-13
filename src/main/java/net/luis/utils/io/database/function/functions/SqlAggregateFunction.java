@@ -18,10 +18,22 @@
 
 package net.luis.utils.io.database.function.functions;
 
+import net.luis.utils.io.database.function.SqlFunction;
+import net.luis.utils.io.database.function.window.SqlWindowClause;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public interface SqlAggregateFunction extends SqlFunction {}
+public interface SqlAggregateFunction<T> extends SqlFunction<T> {
+	
+	default @NonNull SqlWindowFunction<T> over(@NonNull SqlWindowClause clause) {
+		Objects.requireNonNull(clause, "Window clause must not be null");
+		return new SqlWindowedAggregate<>(this, clause);
+	}
+}

@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.database.function.functions.string;
 
-import net.luis.utils.io.database.condition.SqlExpression;
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
+import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -31,4 +33,35 @@ import java.util.Optional;
  *
  */
 
-public record SqlConcatFunction(@NonNull List<SqlExpression<?>> values, @NonNull Optional<String> separator, boolean distinct, boolean ordered) implements SqlStringFunction {}
+public record SqlConcatFunction<T extends CharSequence>(
+	@NonNull List<SqlExpression<T>> values,
+	@NonNull Optional<String> separator,
+	boolean distinct,
+	boolean ordered
+) implements SqlStringFunction<T> {
+	
+	@Override
+	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> ascending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> descending() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> nullsFirst() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlFunction<T> nullsLast() {
+		return null;
+	}
+}

@@ -26,12 +26,6 @@ package net.luis.utils.io.database.function;
 
 public enum SqlDefaultFunctionType implements SqlFunctionType {
 	
-	// SqlFunctions
-	EQUAL_TO,
-	IN_LIST,
-	IN_SUBQUERY,
-	IS_DISTINCT_FROM,
-	IS_NULL,
 	COUNT,
 	COUNT_DISTINCT,
 	CAST,
@@ -40,7 +34,6 @@ public enum SqlDefaultFunctionType implements SqlFunctionType {
 	CASE_WHEN,
 	UNSAFE,
 	
-	// SqlWindowFunctions
 	ROW_NUMBER,
 	RANK,
 	DENSE_RANK,
@@ -53,22 +46,11 @@ public enum SqlDefaultFunctionType implements SqlFunctionType {
 	LAST_VALUE,
 	VALUE_AT,
 	
-	// SqlOrderableFunctions
-	GREATER_THAN,
-	GREATER_THAN_OR_EQUAL_TO,
-	LESS_THAN,
-	LESS_THAN_OR_EQUAL_TO,
-	BETWEEN,
 	MIN,
 	MAX,
 	GREATEST,
 	LEAST,
 	
-	// SqlNumericFunctions
-	IS_POSITIVE,
-	IS_NEGATIVE,
-	IS_ZERO,
-	MOD_EQUALS,
 	RANDOM,
 	PI,
 	NEGATE,
@@ -101,12 +83,6 @@ public enum SqlDefaultFunctionType implements SqlFunctionType {
 	BITWISE_XOR,
 	BITWISE_NOT,
 	
-	// SqlStringFunctions
-	STARTS_WITH,
-	CONTAINS,
-	ENDS_WITH,
-	LIKE,
-	EQUALS_IGNORE_CASE,
 	LOWER,
 	UPPER,
 	TRIM,
@@ -128,11 +104,6 @@ public enum SqlDefaultFunctionType implements SqlFunctionType {
 	HEX,
 	UNHEX,
 	
-	// SqlTemporalFunctions
-	WITHIN_LAST,
-	WITHIN_NEXT,
-	BEFORE,
-	AFTER,
 	NOW,
 	CURRENT_DATE,
 	CURRENT_TIME,
@@ -146,5 +117,5 @@ public enum SqlDefaultFunctionType implements SqlFunctionType {
 	SUBTRACT_TEMPORAL,
 	TO_EPOCH,
 	TO_DATE,
-	TO_TIME,
+	TO_TIME
 }
