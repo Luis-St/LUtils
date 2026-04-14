@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFeatureException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
 import net.luis.utils.io.database.query.SqlLockMode;
@@ -57,9 +58,8 @@ public class SqliteDialect extends AbstractSqlDialect {
 		return switch (jdbcType) {
 			case Types.BOOLEAN, Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT -> "INTEGER";
 			case Types.REAL, Types.FLOAT, Types.DOUBLE -> "REAL";
-			case Types.LONGVARCHAR, Types.LONGNVARCHAR, Types.CLOB, Types.NCLOB -> "TEXT";
+			case Types.LONGVARCHAR, Types.LONGNVARCHAR, Types.CLOB, Types.NCLOB, Types.DATE -> "TEXT";
 			case Types.LONGVARBINARY, Types.BLOB -> "BLOB";
-			case Types.DATE -> "TEXT";
 			default -> throw new SqlDialectUnsupportedTypeException("Unsupported scalar JDBC type: " + jdbcType + " in dialect " + this.name());
 		};
 	}
@@ -67,67 +67,68 @@ public class SqliteDialect extends AbstractSqlDialect {
 	@Override
 	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedTypeException {
 		return switch (jdbcType) {
-			case Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR -> "TEXT";
+			case Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR, Types.TIME, Types.TIMESTAMP, Types.TIME_WITH_TIMEZONE, Types.TIMESTAMP_WITH_TIMEZONE -> "TEXT";
 			case Types.BINARY, Types.VARBINARY -> "BLOB";
 			case Types.NUMERIC, Types.DECIMAL -> "REAL";
-			case Types.TIME, Types.TIMESTAMP, Types.TIME_WITH_TIMEZONE, Types.TIMESTAMP_WITH_TIMEZONE -> "TEXT";
 			default -> throw new SqlDialectUnsupportedTypeException("Unsupported parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
 		};
 	}
 	
 	@Override
 	public boolean isFeatureSupported(@NonNull SqlFeature feature) {
-		Objects.requireNonNull(feature, "Feature must not be null");
+		Objects.requireNonNull(feature, "Sql feature must not be null");
 		return SUPPORTED_FEATURES.contains(feature);
 	}
 	
 	@Override
-	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) {
+	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) throws SqlException {
+		Objects.requireNonNull(renderer, "Sql renderer must not be null");
+		Objects.requireNonNull(column, "Sql column must not be null");
+		
 		renderer.keyword("AUTOINCREMENT");
 	}
 	
 	@Override
-	protected @NonNull SqlRendered renderColumnForTable(@NonNull SqlColumn<?, ?> column, boolean skipPrimaryKey) {
+	protected @NonNull SqlRendered renderColumnForTable(@NonNull SqlColumn<?, ?> column, boolean skipPrimaryKey) throws SqlException {
 		if (column.isPrimaryKey() && column.isAutoIncrement() && column.getType().jdbcType() == Types.INTEGER) {
-			SqlRenderer renderer = new SqlRenderer();
+			
+			SqlRenderer renderer = SqlRenderer.empty();
 			renderer.literal(this.quoteIdentifier(column.getName()));
 			renderer.literal("INTEGER").primary().key().keyword("AUTOINCREMENT");
 			if (!column.isNullable()) {
 				renderer.not().null_();
 			}
-			return renderer.toSql(this);
+			return renderer.toSql();
 		}
 		return super.renderColumnForTable(column, skipPrimaryKey);
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table) {
+	public @NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table) throws SqlException {
 		Objects.requireNonNull(table, "Table must not be null");
-		SqlRenderer renderer = new SqlRenderer();
+		
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.delete().from().literal(this.quoteIdentifier(table.getName()));
-		return renderer.toSql(this);
+		return renderer.toSql();
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlDialectUnsupportedFeatureException {
+	@SuppressWarnings("DuplicatedCode")
+	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
 		Objects.requireNonNull(columns, "Columns must not be null");
-		SqlRenderer renderer = new SqlRenderer();
+		
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.returning();
 		if (columns.isEmpty()) {
 			renderer.literal("*");
 		} else {
-			for (int i = 0; i < columns.size(); i++) {
-				if (i > 0) {
-					renderer.comma();
-				}
-				renderer.literal(this.quoteIdentifier(columns.get(i).getName()));
-			}
+			this.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 		}
-		return renderer.toSql(this);
+		return renderer.toSql();
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlDialectUnsupportedFeatureException {
+	public @NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlException {
 		throw new SqlDialectUnsupportedFeatureException("Row-level locking is not supported by dialect " + this.name());
 	}
 }

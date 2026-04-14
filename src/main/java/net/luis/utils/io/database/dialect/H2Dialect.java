@@ -63,14 +63,15 @@ public class H2Dialect extends AbstractSqlDialect {
 	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedTypeException {
 		return switch (jdbcType) {
 			case Types.CLOB -> "CHARACTER LARGE OBJECT";
-			case Types.BLOB -> "BINARY LARGE OBJECT";
-			case Types.LONGVARBINARY -> "BINARY LARGE OBJECT";
+			case Types.BLOB, Types.LONGVARBINARY -> "BINARY LARGE OBJECT";
 			default -> super.getScalarTypeName(jdbcType);
 		};
 	}
 	
 	@Override
 	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedTypeException {
+		Objects.requireNonNull(parameter, "Sql parameter must not be null");
+		
 		if (parameter instanceof SqlLengthParameter length) {
 			return switch (jdbcType) {
 				case Types.VARCHAR -> "CHARACTER VARYING(" + length.length() + ")";
@@ -83,19 +84,20 @@ public class H2Dialect extends AbstractSqlDialect {
 	
 	@Override
 	public boolean isFeatureSupported(@NonNull SqlFeature feature) {
-		Objects.requireNonNull(feature, "Feature must not be null");
+		Objects.requireNonNull(feature, "Sql feature must not be null");
 		return SUPPORTED_FEATURES.contains(feature);
 	}
 	
 	@Override
 	public boolean isIndexMethodSupported(@NonNull SqlIndexMethod method) {
-		Objects.requireNonNull(method, "Index method must not be null");
+		Objects.requireNonNull(method, "Sql index method must not be null");
 		return SUPPORTED_INDEX_METHODS.contains(method);
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlDialectUnsupportedFeatureException {
-		Objects.requireNonNull(mode, "Lock mode must not be null");
+		Objects.requireNonNull(mode, "Sql Lock mode must not be null");
+		
 		if (mode == SqlLockMode.FOR_SHARE) {
 			throw new SqlDialectUnsupportedFeatureException("FOR SHARE is not supported by dialect " + this.name());
 		}
@@ -105,8 +107,9 @@ public class H2Dialect extends AbstractSqlDialect {
 		if (noWait) {
 			throw new SqlDialectUnsupportedFeatureException("NOWAIT is not supported by dialect " + this.name());
 		}
-		SqlRenderer renderer = new SqlRenderer();
+		
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.for_().update();
-		return renderer.toSql(this);
+		return renderer.toSql();
 	}
 }

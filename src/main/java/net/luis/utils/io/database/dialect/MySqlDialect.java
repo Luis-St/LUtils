@@ -18,12 +18,17 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFunctionException;
+import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
-import net.luis.utils.io.database.function.SqlDefaultFunctionType;
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.SqlFunction;
+import net.luis.utils.io.database.function.functions.numeric.SqlRandomFunction;
+import net.luis.utils.io.database.function.functions.string.SqlConcatFunction;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
-import net.luis.utils.io.database.rendering.*;
+import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.type.parameter.SqlFractionalParameter;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
@@ -65,18 +70,16 @@ public class MySqlDialect extends AbstractSqlDialect {
 		return switch (jdbcType) {
 			case Types.BOOLEAN -> "TINYINT(1)";
 			case Types.TINYINT -> "TINYINT";
-			case Types.LONGVARCHAR -> "LONGTEXT";
-			case Types.LONGNVARCHAR -> "LONGTEXT";
-			case Types.CLOB -> "LONGTEXT";
-			case Types.NCLOB -> "LONGTEXT";
-			case Types.LONGVARBINARY -> "LONGBLOB";
-			case Types.BLOB -> "LONGBLOB";
+			case Types.LONGVARCHAR, Types.LONGNVARCHAR, Types.NCLOB, Types.CLOB -> "LONGTEXT";
+			case Types.LONGVARBINARY, Types.BLOB -> "LONGBLOB";
 			default -> super.getScalarTypeName(jdbcType);
 		};
 	}
 	
 	@Override
 	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedTypeException {
+		Objects.requireNonNull(parameter, "Sql parameter must not be null");
+		
 		if (parameter instanceof SqlFractionalParameter fractional) {
 			return switch (jdbcType) {
 				case Types.TIMESTAMP_WITH_TIMEZONE -> "DATETIME(" + fractional.digits() + ")";
@@ -88,14 +91,66 @@ public class MySqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	@SuppressWarnings("DuplicatedCode")
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderConcatFunction(@NonNull SqlConcatFunction<?> function) {
+		Objects.requireNonNull(function, "Concat function must not be null");
+		
+		return renderer -> {
+			List<? extends SqlExpression<? extends CharSequence>> values = function.values();
+			Optional<String> separator = function.separator();
+			boolean distinct = function.distinct();
+			boolean ordered = function.ordered();
+			
+			if (distinct || ordered) {
+				renderer.literal(separator.isEmpty() ? "CONCAT" : "CONCAT_WS").openingBracket();
+				
+				if (distinct) {
+					renderer.distinct();
+				}
+				
+				SqlExpression<? extends CharSequence> first = values.isEmpty() ? null : values.getFirst();
+				if (first != null) {
+					renderer.rendered(first.toSql(this));
+				}
+				
+				renderer.comma().parameter(separator.orElse(""));
+				
+				if (ordered && first != null) {
+					renderer.orderBy().rendered(first.toSql(this));
+				}
+				renderer.closingBracket();
+			} else {
+				for (int i = 0; i < values.size(); i++) {
+					if (i > 0) {
+						renderer.literal("||");
+						separator.ifPresent(s -> renderer.parameter(s).literal("||"));
+					}
+					
+					renderer.rendered(values.get(i).toSql(this));
+				}
+			}
+			
+			return renderer.toSql();
+		};
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderFunction(@NonNull SqlFunction<?> function) throws SqlException {
+		if (function instanceof SqlRandomFunction) {
+			return this.renderLiteral("RAND()").apply(SqlRenderer.empty());
+		}
+		return super.renderFunction(function);
+	}
+	
+	@Override
 	public boolean isFeatureSupported(@NonNull SqlFeature feature) {
-		Objects.requireNonNull(feature, "Feature must not be null");
+		Objects.requireNonNull(feature, "Sql feature must not be null");
 		return SUPPORTED_FEATURES.contains(feature);
 	}
 	
 	@Override
 	public boolean isIndexMethodSupported(@NonNull SqlIndexMethod method) {
-		Objects.requireNonNull(method, "Index method must not be null");
+		Objects.requireNonNull(method, "Sql index method must not be null");
 		return SUPPORTED_INDEX_METHODS.contains(method);
 	}
 	
@@ -106,26 +161,19 @@ public class MySqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) {
+	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) throws SqlException {
+		Objects.requireNonNull(renderer, "Sql renderer must not be null");
+		Objects.requireNonNull(column, "Sql column must not be null");
+		
 		renderer.literal("AUTO_INCREMENT");
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index) {
-		Objects.requireNonNull(index, "Index must not be null");
-		SqlRenderer renderer = new SqlRenderer();
-		renderer.drop().index().literal(this.quoteIdentifier(index.name()))
-			.on().literal(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
-		return renderer.toSql(this);
-	}
-	
-	@Override
-	protected @NonNull SqlRendered renderDefaultFunction(@NonNull SqlDefaultFunctionType type, @NonNull List<SqlRendered> arguments) throws SqlDialectUnsupportedFunctionException {
-		return switch (type) {
-			case RANDOM -> SimpleSqlRendered.of("RAND()");
-			case CONCAT -> this.renderFunctionCall("CONCAT", arguments);
-			case CONCAT_WITH_SEPARATOR -> this.renderFunctionCall("CONCAT_WS", arguments);
-			default -> super.renderDefaultFunction(type, arguments);
-		};
+	public @NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index) throws SqlException {
+		Objects.requireNonNull(index, "Sql index must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.drop().index().literal(this.quoteIdentifier(index.name())).on().literal(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
+		return renderer.toSql();
 	}
 }

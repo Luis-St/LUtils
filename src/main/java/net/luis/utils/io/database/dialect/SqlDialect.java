@@ -60,29 +60,29 @@ public interface SqlDialect {
 	
 	@NonNull String quoteIdentifier(@NonNull String identifier);
 	
-	@NonNull String renderQualifiedName(@NonNull String schema, @NonNull String name);
+	@NonNull String renderQualifiedName(@NonNull String schema, @NonNull String name) throws SqlException;
 	
-	@NonNull SqlRendered renderCreateTable(@NonNull SqlTable<?> table, boolean ifNotExists);
+	@NonNull SqlRendered renderCreateTable(@NonNull SqlTable<?> table, boolean ifNotExists) throws SqlException;
 	
-	@NonNull SqlRendered renderDropTable(@NonNull SqlTable<?> table, boolean ifExists);
+	@NonNull SqlRendered renderDropTable(@NonNull SqlTable<?> table, boolean ifExists) throws SqlException;
 	
-	@NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table);
+	@NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table) throws SqlException;
 	
-	@NonNull SqlRendered renderColumnDefinition(@NonNull SqlColumn<?, ?> column);
+	@NonNull SqlRendered renderColumnDefinition(@NonNull SqlColumn<?, ?> column) throws SqlException;
 	
-	@NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index);
+	@NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index) throws SqlException;
 	
-	@NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index);
+	@NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index) throws SqlException;
 	
-	@NonNull SqlRendered renderLimitOffset(long limit, long offset);
+	@NonNull SqlRendered renderLimitOffset(long limit, long offset) throws SqlException;
 	
-	@NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlDialectUnsupportedFeatureException;
+	@NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException;
 	
-	@NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlDialectUnsupportedFeatureException;
+	@NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlException;
 	
-	@NonNull String renderSetOperation(@NonNull SqlSetOperation operation);
+	@NonNull String renderSetOperation(@NonNull SqlSetOperation operation) throws SqlException;
 	
-	@NonNull String renderLateralJoin() throws SqlDialectUnsupportedFeatureException;
+	@NonNull String renderLateralJoin()  throws SqlException;
 	
-	@NonNull String renderBooleanLiteral(boolean value);
+	@NonNull String renderBooleanLiteral(boolean value) throws SqlException;
 }

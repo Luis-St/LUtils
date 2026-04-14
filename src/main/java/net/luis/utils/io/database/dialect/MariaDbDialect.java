@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFeatureException;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
@@ -52,25 +52,22 @@ public class MariaDbDialect extends MySqlDialect {
 	
 	@Override
 	public boolean isFeatureSupported(@NonNull SqlFeature feature) {
-		Objects.requireNonNull(feature, "Feature must not be null");
+		Objects.requireNonNull(feature, "Sql feature must not be null");
 		return SUPPORTED_FEATURES.contains(feature);
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlDialectUnsupportedFeatureException {
-		Objects.requireNonNull(columns, "Columns must not be null");
-		SqlRenderer renderer = new SqlRenderer();
+	@SuppressWarnings("DuplicatedCode")
+	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
+		Objects.requireNonNull(columns, "Sql columns must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.returning();
 		if (columns.isEmpty()) {
 			renderer.literal("*");
 		} else {
-			for (int i = 0; i < columns.size(); i++) {
-				if (i > 0) {
-					renderer.comma();
-				}
-				renderer.literal(this.quoteIdentifier(columns.get(i).getName()));
-			}
+			this.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 		}
-		return renderer.toSql(this);
+		return renderer.toSql();
 	}
 }

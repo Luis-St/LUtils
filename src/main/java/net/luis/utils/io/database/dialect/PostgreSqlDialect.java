@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFeatureException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
 import net.luis.utils.io.database.index.SqlIndexMethod;
@@ -71,15 +72,15 @@ public class PostgreSqlDialect extends AbstractSqlDialect {
 	
 	@Override
 	public boolean isTypeSupported(@NonNull SqlType<?> type) {
-		Objects.requireNonNull(type, "Type must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
 		return true;
 	}
 	
 	@Override
 	public @NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlDialectUnsupportedTypeException {
-		Objects.requireNonNull(type, "Type must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
 		
-		if (this.resolveBaseType(type) instanceof SqlArrayType<?> arrayType) {
+		if (type.getBaseType() instanceof SqlArrayType<?> arrayType) {
 			return this.getTypeName(arrayType.elementType()) + "[]";
 		}
 		return super.getTypeName(type);
@@ -88,53 +89,53 @@ public class PostgreSqlDialect extends AbstractSqlDialect {
 	@Override
 	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedTypeException {
 		return switch (jdbcType) {
-			case Types.LONGVARBINARY -> "BYTEA";
-			case Types.BLOB -> "BYTEA";
+			case Types.LONGVARBINARY, Types.BLOB -> "BYTEA";
 			default -> super.getScalarTypeName(jdbcType);
 		};
 	}
 	
 	@Override
-	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) {
+	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) throws SqlException {
+		Objects.requireNonNull(renderer, "Sql renderer must not be null");
+		Objects.requireNonNull(column, "Sql column must not be null");
+		
 		renderer.keyword("GENERATED").keyword("BY").default_().as().keyword("IDENTITY");
 	}
 	
 	@Override
 	public boolean isFeatureSupported(@NonNull SqlFeature feature) {
-		Objects.requireNonNull(feature, "Feature must not be null");
+		Objects.requireNonNull(feature, "Sql feature must not be null");
 		return SUPPORTED_FEATURES.contains(feature);
 	}
 	
 	@Override
 	public boolean isIndexMethodSupported(@NonNull SqlIndexMethod method) {
-		Objects.requireNonNull(method, "Index method must not be null");
+		Objects.requireNonNull(method, "Sql index method must not be null");
 		return SUPPORTED_INDEX_METHODS.contains(method);
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table) {
-		Objects.requireNonNull(table, "Table must not be null");
-		SqlRenderer renderer = new SqlRenderer();
+	public @NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.truncate().table().literal(this.quoteIdentifier(table.getName())).cascade();
-		return renderer.toSql(this);
+		return renderer.toSql();
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlDialectUnsupportedFeatureException {
-		Objects.requireNonNull(columns, "Columns must not be null");
-		SqlRenderer renderer = new SqlRenderer();
+	@SuppressWarnings("DuplicatedCode")
+	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
+		Objects.requireNonNull(columns, "Sql columns must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.returning();
 		if (columns.isEmpty()) {
 			renderer.literal("*");
 		} else {
-			for (int i = 0; i < columns.size(); i++) {
-				if (i > 0) {
-					renderer.comma();
-				}
-				renderer.literal(this.quoteIdentifier(columns.get(i).getName()));
-			}
+			this.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 		}
-		return renderer.toSql(this);
+		return renderer.toSql();
 	}
 	
 	@Override

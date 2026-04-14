@@ -16,12 +16,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.function.functions.numeric;
+package net.luis.utils.io.database.function.functions.temporal;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
-import net.luis.utils.io.database.function.functions.SqlNumericFunction;
+import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
 import net.luis.utils.io.database.query.SqlAlias;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -30,7 +32,11 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlTruncateFunction<T extends Number>(@NonNull SqlExpression<T> value) implements SqlNumericFunction<T> {
+public record SqlTemporalTruncateFunction<T>(
+	@NonNull SqlExpression<?> value,
+	@NonNull SqlTemporalPart part,
+	@NonNull SqlType<T> type
+) implements SqlTemporalFunction<T> {
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

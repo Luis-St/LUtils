@@ -30,8 +30,8 @@ import org.jspecify.annotations.NonNull;
  */
 
 public record SqlLessThanCondition(
-	@NonNull SqlExpression<?> left,
-	@NonNull SqlExpression<?> right,
+	@NonNull SqlExpression<?> value,
+	@NonNull SqlExpression<?> threshold,
 	boolean equalTo
 ) implements SqlComparisonCondition {
 	

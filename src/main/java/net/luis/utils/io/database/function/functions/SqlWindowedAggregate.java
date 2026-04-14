@@ -30,7 +30,7 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-record SqlWindowedAggregate<T>(
+public record SqlWindowedAggregate<T>(
 	@NonNull SqlAggregateFunction<T> aggregate,
 	@NonNull SqlWindowClause over
 ) implements SqlWindowFunction<T> {

@@ -79,4 +79,11 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		
 		return new MappedSqlType<>(this, targetType, fromTargetToSource, fromSourceToTarget);
 	}
+	
+	default @NonNull SqlType<?> getBaseType() {
+		if (this instanceof MappedSqlType<?, ?> mapped) {
+			return mapped.sourceType().getBaseType();
+		}
+		return this;
+	}
 }

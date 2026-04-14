@@ -16,12 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.condition.conditions.comparison;
+package net.luis.utils.io.database.exception.dialect;
 
-import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.condition.conditions.SqlComparisonCondition;
-import net.luis.utils.io.database.expression.SqlExpression;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  *
@@ -29,14 +26,17 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlGreaterThanCondition(
-	@NonNull SqlExpression<?> value,
-	@NonNull SqlExpression<?> threshold,
-	boolean equalTo
-) implements SqlComparisonCondition {
+public class SqlDialectUnsupportedConditionException extends SqlDialectException {
 	
-	@Override
-	public @NonNull SqlCondition not() {
-		return null;
+	public SqlDialectUnsupportedConditionException(@Nullable String message) {
+		super(message);
+	}
+	
+	public SqlDialectUnsupportedConditionException(@Nullable String message, @Nullable Throwable cause) {
+		super(message, cause);
+	}
+	
+	public SqlDialectUnsupportedConditionException(@Nullable Throwable cause) {
+		super(cause);
 	}
 }

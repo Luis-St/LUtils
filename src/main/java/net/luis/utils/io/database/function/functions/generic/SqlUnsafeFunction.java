@@ -21,6 +21,7 @@ package net.luis.utils.io.database.function.functions.generic;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.query.SqlAlias;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -31,7 +32,7 @@ import org.jspecify.annotations.NonNull;
 
 public record SqlUnsafeFunction<T>(
 	@NonNull String expression,
-	@NonNull Class<T> type
+	@NonNull SqlType<T> type
 ) implements SqlFunction<T> {
 	
 	@Override

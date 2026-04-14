@@ -18,12 +18,19 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFunctionException;
+import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
-import net.luis.utils.io.database.function.SqlDefaultFunctionType;
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.SqlFunction;
+import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateFunction;
+import net.luis.utils.io.database.function.functions.numeric.SqlRandomFunction;
+import net.luis.utils.io.database.function.functions.string.SqlConcatFunction;
+import net.luis.utils.io.database.function.functions.string.SqlLengthFunction;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
-import net.luis.utils.io.database.rendering.*;
+import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.type.parameter.SqlFractionalParameter;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
@@ -67,18 +74,17 @@ public class SqlServerDialect extends AbstractSqlDialect {
 		return switch (jdbcType) {
 			case Types.BOOLEAN -> "BIT";
 			case Types.TINYINT -> "TINYINT";
-			case Types.LONGVARCHAR -> "NVARCHAR(MAX)";
-			case Types.LONGNVARCHAR -> "NVARCHAR(MAX)";
+			case Types.LONGVARCHAR, Types.LONGNVARCHAR, Types.NCLOB -> "NVARCHAR(MAX)";
 			case Types.CLOB -> "VARCHAR(MAX)";
-			case Types.NCLOB -> "NVARCHAR(MAX)";
-			case Types.LONGVARBINARY -> "VARBINARY(MAX)";
-			case Types.BLOB -> "VARBINARY(MAX)";
+			case Types.LONGVARBINARY, Types.BLOB -> "VARBINARY(MAX)";
 			default -> super.getScalarTypeName(jdbcType);
 		};
 	}
 	
 	@Override
 	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedTypeException {
+		Objects.requireNonNull(parameter, "Sql parameter must not be null");
+		
 		if (parameter instanceof SqlFractionalParameter fractional) {
 			return switch (jdbcType) {
 				case Types.TIMESTAMP -> "DATETIME2(" + fractional.digits() + ")";
@@ -90,14 +96,68 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	@SuppressWarnings("DuplicatedCode")
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderConcatFunction(@NonNull SqlConcatFunction<?> function) {
+		Objects.requireNonNull(function, "Concat function must not be null");
+		
+		return renderer -> {
+			List<? extends SqlExpression<? extends CharSequence>> values = function.values();
+			Optional<String> separator = function.separator();
+			boolean distinct = function.distinct();
+			boolean ordered = function.ordered();
+			
+			if (distinct || ordered) {
+				renderer.literal(separator.isEmpty() ? "CONCAT" : "CONCAT_WS").openingBracket();
+				
+				if (distinct) {
+					renderer.distinct();
+				}
+				
+				SqlExpression<? extends CharSequence> first = values.isEmpty() ? null : values.getFirst();
+				if (first != null) {
+					renderer.rendered(first.toSql(this));
+				}
+				
+				renderer.comma().parameter(separator.orElse(""));
+				
+				if (ordered && first != null) {
+					renderer.orderBy().rendered(first.toSql(this));
+				}
+				renderer.closingBracket();
+			} else {
+				for (int i = 0; i < values.size(); i++) {
+					if (i > 0) {
+						renderer.literal("||");
+						separator.ifPresent(s -> renderer.parameter(s).literal("||"));
+					}
+					
+					renderer.rendered(values.get(i).toSql(this));
+				}
+			}
+			
+			return renderer.toSql();
+		};
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderFunction(@NonNull SqlFunction<?> function) throws SqlException {
+		return switch (function) {
+			case SqlRandomFunction _ -> this.renderLiteral("RAND()").apply(SqlRenderer.empty());
+			case SqlLengthFunction func -> this.renderFunction("LEN", func.value()).apply(SqlRenderer.empty());
+			case SqlNumericTruncateFunction<?> func -> this.renderFunction("ROUND", func.value()).apply(SqlRenderer.empty());
+			default -> super.renderFunction(function);
+		};
+	}
+	
+	@Override
 	public boolean isFeatureSupported(@NonNull SqlFeature feature) {
-		Objects.requireNonNull(feature, "Feature must not be null");
+		Objects.requireNonNull(feature, "Sql feature must not be null");
 		return SUPPORTED_FEATURES.contains(feature);
 	}
 	
 	@Override
 	public boolean isIndexMethodSupported(@NonNull SqlIndexMethod method) {
-		Objects.requireNonNull(method, "Index method must not be null");
+		Objects.requireNonNull(method, "Sql index method must not be null");
 		return SUPPORTED_INDEX_METHODS.contains(method);
 	}
 	
@@ -108,14 +168,18 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) {
+	protected void renderAutoIncrement(@NonNull SqlRenderer renderer, @NonNull SqlColumn<?, ?> column) throws SqlException {
+		Objects.requireNonNull(renderer, "Sql renderer must not be null");
+		Objects.requireNonNull(column, "Sql column must not be null");
+		
 		renderer.keyword("IDENTITY").openingBracket().literal("1").comma().literal("1").closingBracket();
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index) {
+	public @NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index) throws SqlException {
 		Objects.requireNonNull(index, "Index must not be null");
-		SqlRenderer renderer = new SqlRenderer();
+		
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.create();
 		if (index.unique()) {
 			renderer.unique();
@@ -130,28 +194,22 @@ public class SqlServerDialect extends AbstractSqlDialect {
 		renderer.index().literal(this.quoteIdentifier(index.name()));
 		renderer.on().literal(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
 		renderer.openingBracket();
-		List<? extends SqlColumn<?, ?>> columns = index.columns();
-		for (int i = 0; i < columns.size(); i++) {
-			if (i > 0) {
-				renderer.comma();
-			}
-			renderer.literal(this.quoteIdentifier(columns.get(i).getName()));
-		}
+		this.renderList(renderer, index.columns(), (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 		renderer.closingBracket();
 		
 		if (index.whereCondition() != null) {
 			renderer.where().rendered(index.whereCondition().toSql(this));
 		}
-		return renderer.toSql(this);
+		return renderer.toSql();
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index) {
+	public @NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index) throws SqlException {
 		Objects.requireNonNull(index, "Index must not be null");
-		SqlRenderer renderer = new SqlRenderer();
-		renderer.drop().index().literal(this.quoteIdentifier(index.name()))
-			.on().literal(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
-		return renderer.toSql(this);
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.drop().index().literal(this.quoteIdentifier(index.name())).on().literal(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
+		return renderer.toSql();
 	}
 	
 	@Override
@@ -163,28 +221,16 @@ public class SqlServerDialect extends AbstractSqlDialect {
 			throw new IllegalArgumentException("Offset must be non-negative");
 		}
 		
-		SqlRenderer renderer = new SqlRenderer();
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.offset().literal(String.valueOf(offset)).rows();
 		if (limit > 0) {
 			renderer.fetch().next().literal(String.valueOf(limit)).rows().only();
 		}
-		return renderer.toSql(this);
+		return renderer.toSql();
 	}
 	
 	@Override
-	public @NonNull String renderBooleanLiteral(boolean value) {
+	public @NonNull String renderBooleanLiteral(boolean value) throws SqlException {
 		return value ? "1" : "0";
-	}
-	
-	@Override
-	protected @NonNull SqlRendered renderDefaultFunction(@NonNull SqlDefaultFunctionType type, @NonNull List<SqlRendered> arguments) throws SqlDialectUnsupportedFunctionException {
-		return switch (type) {
-			case RANDOM -> SimpleSqlRendered.of("RAND()");
-			case CONCAT -> this.renderFunctionCall("CONCAT", arguments);
-			case CONCAT_WITH_SEPARATOR -> this.renderFunctionCall("CONCAT_WS", arguments);
-			case LENGTH -> this.renderFunctionCall("LEN", arguments);
-			case TRUNCATE -> this.renderFunctionCall("ROUND", arguments);
-			default -> super.renderDefaultFunction(type, arguments);
-		};
 	}
 }
