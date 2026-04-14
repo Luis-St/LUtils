@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.*;
-import net.luis.utils.io.database.function.SqlFunctionType;
+import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
@@ -46,9 +48,9 @@ public interface SqlDialect {
 	
 	@NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlDialectUnsupportedTypeException;
 	
-	boolean isFunctionSupported(@NonNull SqlFunctionType type);
+	@NonNull SqlRendered renderFunction(@NonNull SqlFunction<?> function) throws SqlException;
 	
-	@NonNull SqlRendered renderFunction(@NonNull SqlFunctionType type, @NonNull List<SqlRendered> arguments) throws SqlDialectUnsupportedFunctionException;
+	@NonNull SqlRendered renderCondition(@NonNull SqlCondition condition) throws SqlException;
 	
 	boolean isFeatureSupported(@NonNull SqlFeature feature);
 	

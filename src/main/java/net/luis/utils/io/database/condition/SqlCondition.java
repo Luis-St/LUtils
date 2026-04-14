@@ -64,5 +64,6 @@ public interface SqlCondition extends SqlRenderable {
 	@Override
 	default @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		return dialect.renderCondition(this);
 	}
 }

@@ -53,5 +53,6 @@ public interface SqlFunction<T> extends SqlExpression<T> {
 	@Override
 	default @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		return dialect.renderFunction(this);
 	}
 }
