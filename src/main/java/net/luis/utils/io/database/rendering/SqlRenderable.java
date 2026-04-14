@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.rendering;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlException;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -30,5 +31,5 @@ import org.jspecify.annotations.NonNull;
 @FunctionalInterface
 public interface SqlRenderable {
 	
-	@NonNull SqlRendered toSql(@NonNull SqlDialect dialect);
+	@NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException;
 }

@@ -33,16 +33,18 @@ import java.util.Objects;
  */
 
 @SuppressWarnings("NewMethodNamingConvention")
-public class SqlRenderer implements SqlRenderable {
+public class SqlRenderer {
 	
 	private final List<String> statements = Lists.newArrayList();
 	private final List<Object> parameters = Lists.newArrayList();
 	
-	public SqlRenderer() {}
-	
 	public SqlRenderer(@NonNull List<String> statements, @NonNull List<Object> parameters) {
 		this.statements.addAll(Objects.requireNonNull(statements, "Sql statements must not be null"));
 		this.parameters.addAll(Objects.requireNonNull(parameters, "Sql parameters must not be null"));
+	}
+	
+	public static @NonNull SqlRenderer empty() {
+		return new SqlRenderer(Lists.newArrayList(), Lists.newArrayList());
 	}
 	
 	public @NonNull @Unmodifiable List<String> getStatements() {
@@ -672,8 +674,7 @@ public class SqlRenderer implements SqlRenderable {
 		return this;
 	}
 	
-	@Override
-	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) {
+	public @NonNull SqlRendered toSql() {
 		return new SimpleSqlRendered(this.statements, this.parameters);
 	}
 }

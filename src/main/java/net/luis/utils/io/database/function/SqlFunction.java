@@ -19,8 +19,8 @@
 package net.luis.utils.io.database.function;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.expression.SqlOrderable;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import org.jspecify.annotations.NonNull;
@@ -51,7 +51,7 @@ public interface SqlFunction<T> extends SqlExpression<T> {
 	@NonNull SqlFunction<T> nullsLast();
 	
 	@Override
-	default @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) {
+	default @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 	}
 }

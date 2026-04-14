@@ -78,7 +78,7 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	@Override
-	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) {
+	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		return null;
 	}
 }
