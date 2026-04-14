@@ -29,7 +29,10 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlContainsCondition(@NonNull SqlExpression<?> expression, @NonNull SqlExpression<?> substring) implements SqlStringCondition {
+public record SqlContainsCondition(
+	@NonNull SqlExpression<?> value,
+	@NonNull SqlExpression<?> substring
+) implements SqlStringCondition {
 	
 	@Override
 	public @NonNull SqlCondition not() {

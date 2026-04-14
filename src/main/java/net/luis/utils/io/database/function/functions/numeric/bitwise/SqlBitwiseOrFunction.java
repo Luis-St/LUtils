@@ -31,8 +31,8 @@ import org.jspecify.annotations.NonNull;
  */
 
 public record SqlBitwiseOrFunction<T extends Number>(
-	@NonNull SqlExpression<T> left,
-	@NonNull SqlExpression<T> right
+	@NonNull SqlExpression<T> firstOperand,
+	@NonNull SqlExpression<T> secondOperand
 ) implements SqlNumericFunction<T> {
 	
 	@Override

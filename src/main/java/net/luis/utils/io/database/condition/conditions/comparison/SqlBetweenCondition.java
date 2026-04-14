@@ -29,7 +29,11 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlBetweenCondition(@NonNull SqlExpression<?> value, @NonNull SqlExpression<?> lower, @NonNull SqlExpression<?> upper) implements SqlComparisonCondition {
+public record SqlBetweenCondition(
+	@NonNull SqlExpression<?> value,
+	@NonNull SqlExpression<?> lower,
+	@NonNull SqlExpression<?> upper
+) implements SqlComparisonCondition {
 	
 	@Override
 	public @NonNull SqlCondition not() {

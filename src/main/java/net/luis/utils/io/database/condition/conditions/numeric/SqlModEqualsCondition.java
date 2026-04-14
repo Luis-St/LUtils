@@ -29,7 +29,11 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlModEqualsCondition(@NonNull SqlExpression<?> value, @NonNull SqlExpression<?> divisor, @NonNull SqlExpression<?> remainder) implements SqlNumericCondition {
+public record SqlModEqualsCondition(
+	@NonNull SqlExpression<?> value,
+	@NonNull SqlExpression<?> divisor,
+	@NonNull SqlExpression<?> remainder
+) implements SqlNumericCondition {
 	
 	@Override
 	public @NonNull SqlCondition not() {

@@ -29,7 +29,10 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlBeforeCondition(@NonNull SqlExpression<?> left, @NonNull SqlExpression<?> right) implements SqlTemporalCondition {
+public record SqlBeforeCondition(
+	@NonNull SqlExpression<?> value,
+	@NonNull SqlExpression<?> laterBound
+) implements SqlTemporalCondition {
 	
 	@Override
 	public @NonNull SqlCondition not() {

@@ -32,9 +32,9 @@ import org.jspecify.annotations.NonNull;
  */
 
 public record SqlMakeTimeFunction<T>(
-	@NonNull SqlExpression<?> hour,
-	@NonNull SqlExpression<?> minute,
-	@NonNull SqlExpression<?> second,
+	@NonNull SqlExpression<? extends Number> hour,
+	@NonNull SqlExpression<? extends Number> minute,
+	@NonNull SqlExpression<? extends Number> second,
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	

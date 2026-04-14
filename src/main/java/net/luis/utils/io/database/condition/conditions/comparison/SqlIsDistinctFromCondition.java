@@ -29,7 +29,10 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlIsDistinctFromCondition(@NonNull SqlExpression<?> left, @NonNull SqlExpression<?> right) implements SqlComparisonCondition {
+public record SqlIsDistinctFromCondition(
+	@NonNull SqlExpression<?> first,
+	@NonNull SqlExpression<?> second
+) implements SqlComparisonCondition {
 	
 	@Override
 	public @NonNull SqlCondition not() {

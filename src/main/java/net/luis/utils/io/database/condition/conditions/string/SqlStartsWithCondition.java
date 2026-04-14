@@ -29,7 +29,10 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlStartsWithCondition(@NonNull SqlExpression<?> expression, @NonNull SqlExpression<?> prefix) implements SqlStringCondition {
+public record SqlStartsWithCondition(
+	@NonNull SqlExpression<?> value,
+	@NonNull SqlExpression<?> prefix
+) implements SqlStringCondition {
 	
 	@Override
 	public @NonNull SqlCondition not() {

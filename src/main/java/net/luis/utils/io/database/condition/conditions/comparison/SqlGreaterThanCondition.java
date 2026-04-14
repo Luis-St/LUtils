@@ -29,7 +29,11 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlGreaterThanCondition(@NonNull SqlExpression<?> left, @NonNull SqlExpression<?> right, boolean equalTo) implements SqlComparisonCondition {
+public record SqlGreaterThanCondition(
+	@NonNull SqlExpression<?> left,
+	@NonNull SqlExpression<?> right,
+	boolean equalTo
+) implements SqlComparisonCondition {
 	
 	@Override
 	public @NonNull SqlCondition not() {

@@ -30,7 +30,10 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlInQueryCondition(@NonNull SqlExpression<?> value, @NonNull SqlSelectQuery<?> query) implements SqlComparisonCondition {
+public record SqlInQueryCondition(
+	@NonNull SqlExpression<?> value,
+	@NonNull SqlSelectQuery<?> query
+) implements SqlComparisonCondition {
 	
 	@Override
 	public @NonNull SqlCondition not() {

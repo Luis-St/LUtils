@@ -29,7 +29,10 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlEqualsIgnoreCaseCondition(@NonNull SqlExpression<?> left, @NonNull SqlExpression<?> right) implements SqlStringCondition {
+public record SqlEqualsIgnoreCaseCondition(
+	@NonNull SqlExpression<?> first,
+	@NonNull SqlExpression<?> second
+) implements SqlStringCondition {
 	
 	@Override
 	public @NonNull SqlCondition not() {

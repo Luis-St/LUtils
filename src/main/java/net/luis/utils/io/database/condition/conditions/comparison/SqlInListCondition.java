@@ -31,7 +31,10 @@ import java.util.List;
  *
  */
 
-public record SqlInListCondition(@NonNull SqlExpression<?> value, @NonNull List<SqlExpression<?>> options) implements SqlComparisonCondition {
+public record SqlInListCondition(
+	@NonNull SqlExpression<?> value,
+	@NonNull List<SqlExpression<?>> options
+) implements SqlComparisonCondition {
 	
 	@Override
 	public @NonNull SqlCondition not() {
