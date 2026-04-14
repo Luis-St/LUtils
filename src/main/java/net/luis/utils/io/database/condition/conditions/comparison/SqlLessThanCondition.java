@@ -23,6 +23,8 @@ import net.luis.utils.io.database.condition.conditions.SqlComparisonCondition;
 import net.luis.utils.io.database.expression.SqlExpression;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -34,6 +36,11 @@ public record SqlLessThanCondition(
 	@NonNull SqlExpression<?> threshold,
 	boolean equalTo
 ) implements SqlComparisonCondition {
+	
+	public SqlLessThanCondition {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(threshold, "Threshold expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlCondition not() {

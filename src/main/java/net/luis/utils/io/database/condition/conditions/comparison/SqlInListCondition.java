@@ -24,6 +24,7 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -35,6 +36,15 @@ public record SqlInListCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull List<SqlExpression<?>> options
 ) implements SqlComparisonCondition {
+	
+	public SqlInListCondition {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(options, "Options list must not be null");
+		
+		if (options.isEmpty()) {
+			throw new IllegalArgumentException("Options list must not be empty");
+		}
+	}
 	
 	@Override
 	public @NonNull SqlCondition not() {

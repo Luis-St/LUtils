@@ -24,6 +24,8 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.crud.SqlSelectQuery;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -34,6 +36,11 @@ public record SqlInQueryCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlSelectQuery<?> query
 ) implements SqlComparisonCondition {
+	
+	public SqlInQueryCondition {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(query, "Query must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlCondition not() {

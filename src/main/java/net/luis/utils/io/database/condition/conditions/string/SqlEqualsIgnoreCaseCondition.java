@@ -23,6 +23,8 @@ import net.luis.utils.io.database.condition.conditions.SqlStringCondition;
 import net.luis.utils.io.database.expression.SqlExpression;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -33,6 +35,11 @@ public record SqlEqualsIgnoreCaseCondition(
 	@NonNull SqlExpression<?> first,
 	@NonNull SqlExpression<?> second
 ) implements SqlStringCondition {
+	
+	public SqlEqualsIgnoreCaseCondition {
+		Objects.requireNonNull(first, "First expression must not be null");
+		Objects.requireNonNull(second, "Second expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlCondition not() {

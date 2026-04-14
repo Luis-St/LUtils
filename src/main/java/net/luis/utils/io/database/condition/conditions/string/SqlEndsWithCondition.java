@@ -23,6 +23,8 @@ import net.luis.utils.io.database.condition.conditions.SqlStringCondition;
 import net.luis.utils.io.database.expression.SqlExpression;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -33,6 +35,11 @@ public record SqlEndsWithCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlExpression<?> suffix
 ) implements SqlStringCondition {
+	
+	public SqlEndsWithCondition {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(suffix, "Suffix expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlCondition not() {

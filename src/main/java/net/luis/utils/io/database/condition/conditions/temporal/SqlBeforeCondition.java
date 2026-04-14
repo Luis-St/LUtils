@@ -23,6 +23,8 @@ import net.luis.utils.io.database.condition.conditions.SqlTemporalCondition;
 import net.luis.utils.io.database.expression.SqlExpression;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -33,6 +35,11 @@ public record SqlBeforeCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlExpression<?> laterBound
 ) implements SqlTemporalCondition {
+	
+	public SqlBeforeCondition {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(laterBound, "Later bound expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlCondition not() {
