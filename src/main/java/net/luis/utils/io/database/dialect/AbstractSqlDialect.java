@@ -469,7 +469,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderGenericFunction(@NonNull SqlFunction<?> function) throws SqlDialectUnsupportedFunctionException {
 		return switch (function) {
 			case SqlCaseWhenFunction<?> func -> this.renderCaseWhenFunction(func);
-			case SqlCastFunction(var expression, var targetType) -> renderer -> renderer.cast().openingBracket().rendered(expression.toSql(this)).as().literal(this.getTypeName(targetType)).closingBracket().toSql();
+			case SqlCastFunction(var value, var targetType) -> renderer -> renderer.cast().openingBracket().rendered(value.toSql(this)).as().literal(this.getTypeName(targetType)).closingBracket().toSql();
 			case SqlCoalesceFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("COALESCE"), func.values());
 			case SqlGreatestFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("GREATEST"), func.values());
 			case SqlLeastFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("LEAST"), func.values());

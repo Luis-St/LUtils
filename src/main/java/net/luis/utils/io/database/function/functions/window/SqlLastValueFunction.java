@@ -25,6 +25,8 @@ import net.luis.utils.io.database.function.window.SqlWindowClause;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -35,6 +37,11 @@ public record SqlLastValueFunction<T>(
 	@NonNull SqlExpression<T> column,
 	@NonNull SqlWindowClause over
 ) implements SqlWindowFunction<T> {
+	
+	public SqlLastValueFunction {
+		Objects.requireNonNull(column, "Column expression must not be null");
+		Objects.requireNonNull(over, "Window clause must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

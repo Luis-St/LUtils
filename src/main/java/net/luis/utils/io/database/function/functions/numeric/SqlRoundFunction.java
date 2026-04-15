@@ -25,6 +25,8 @@ import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -35,6 +37,10 @@ public record SqlRoundFunction<T extends Number>(
 	@NonNull SqlExpression<T> value,
 	@Nullable SqlExpression<? extends Number> precision
 ) implements SqlNumericFunction<T> {
+	
+	public SqlRoundFunction {
+		Objects.requireNonNull(value, "Value expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

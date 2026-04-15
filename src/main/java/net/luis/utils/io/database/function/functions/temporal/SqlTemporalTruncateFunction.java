@@ -26,6 +26,8 @@ import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -37,6 +39,12 @@ public record SqlTemporalTruncateFunction<T>(
 	@NonNull SqlTemporalPart part,
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
+	
+	public SqlTemporalTruncateFunction {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(part, "Temporal part must not be null");
+		Objects.requireNonNull(type, "Type must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

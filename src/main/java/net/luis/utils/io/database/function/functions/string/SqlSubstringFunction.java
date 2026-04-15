@@ -25,6 +25,8 @@ import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -36,6 +38,11 @@ public record SqlSubstringFunction<T extends CharSequence>(
 	@NonNull SqlExpression<? extends Number> start,
 	@Nullable SqlExpression<? extends Number> length
 ) implements SqlStringFunction<T> {
+	
+	public SqlSubstringFunction {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(start, "Start expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

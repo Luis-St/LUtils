@@ -24,6 +24,8 @@ import net.luis.utils.io.database.function.functions.SqlAggregateFunction;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -31,6 +33,10 @@ import org.jspecify.annotations.NonNull;
  */
 
 public record SqlMinFunction<T>(@NonNull SqlExpression<T> value) implements SqlAggregateFunction<T> {
+	
+	public SqlMinFunction {
+		Objects.requireNonNull(value, "Value expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

@@ -25,6 +25,8 @@ import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -37,6 +39,13 @@ public record SqlMakeTimeFunction<T>(
 	@NonNull SqlExpression<? extends Number> second,
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
+	
+	public SqlMakeTimeFunction {
+		Objects.requireNonNull(hour, "Hour expression must not be null");
+		Objects.requireNonNull(minute, "Minute expression must not be null");
+		Objects.requireNonNull(second, "Second expression must not be null");
+		Objects.requireNonNull(type, "Type must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

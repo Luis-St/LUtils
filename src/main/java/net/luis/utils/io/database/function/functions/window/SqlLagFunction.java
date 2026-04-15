@@ -26,6 +26,8 @@ import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -38,6 +40,11 @@ public record SqlLagFunction<T>(
 	@Nullable SqlExpression<T> defaultValue,
 	@NonNull SqlWindowClause over
 ) implements SqlWindowFunction<T> {
+	
+	public SqlLagFunction {
+		Objects.requireNonNull(column, "Column expression must not be null");
+		Objects.requireNonNull(over, "Window clause must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

@@ -24,6 +24,8 @@ import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -34,6 +36,11 @@ public record SqlPowFunction<T extends Number>(
 	@NonNull SqlExpression<T> value,
 	@NonNull SqlExpression<? extends Number> exponent
 ) implements SqlNumericFunction<T> {
+	
+	public SqlPowFunction {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(exponent, "Exponent expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

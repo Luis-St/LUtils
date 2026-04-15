@@ -24,6 +24,8 @@ import net.luis.utils.io.database.function.functions.SqlStringFunction;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -35,6 +37,12 @@ public record SqlReplaceFunction<T extends CharSequence>(
 	@NonNull SqlExpression<? extends CharSequence> search,
 	@NonNull SqlExpression<? extends CharSequence> replacement
 ) implements SqlStringFunction<T> {
+	
+	public SqlReplaceFunction {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(search, "Search expression must not be null");
+		Objects.requireNonNull(replacement, "Replacement expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

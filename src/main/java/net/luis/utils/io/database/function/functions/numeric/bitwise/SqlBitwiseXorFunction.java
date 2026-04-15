@@ -24,6 +24,8 @@ import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -34,6 +36,11 @@ public record SqlBitwiseXorFunction<T extends Number>(
 	@NonNull SqlExpression<T> firstOperand,
 	@NonNull SqlExpression<T> secondOperand
 ) implements SqlNumericFunction<T> {
+	
+	public SqlBitwiseXorFunction {
+		Objects.requireNonNull(firstOperand, "First operand expression must not be null");
+		Objects.requireNonNull(secondOperand, "Second operand expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

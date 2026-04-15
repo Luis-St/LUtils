@@ -25,6 +25,8 @@ import net.luis.utils.io.database.function.window.SqlWindowClause;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -32,6 +34,10 @@ import org.jspecify.annotations.NonNull;
  */
 
 public record SqlDenseRankFunction(@NonNull SqlWindowClause over) implements SqlWindowFunction<Long> {
+	
+	public SqlDenseRankFunction {
+		Objects.requireNonNull(over, "Window clause must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<Long> as(@NonNull SqlAlias alias) {

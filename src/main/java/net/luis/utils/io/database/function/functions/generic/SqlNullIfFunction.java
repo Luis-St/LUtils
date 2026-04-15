@@ -23,6 +23,8 @@ import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -33,6 +35,11 @@ public record SqlNullIfFunction<T>(
 	@NonNull SqlExpression<T> expression,
 	@NonNull SqlExpression<T> fallback
 ) implements SqlFunction<T> {
+	
+	public SqlNullIfFunction {
+		Objects.requireNonNull(expression, "Expression must not be null");
+		Objects.requireNonNull(fallback, "Fallback expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

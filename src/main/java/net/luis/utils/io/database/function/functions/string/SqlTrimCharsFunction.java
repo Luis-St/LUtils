@@ -24,6 +24,8 @@ import net.luis.utils.io.database.function.functions.SqlStringFunction;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -34,6 +36,11 @@ public record SqlTrimCharsFunction<T extends CharSequence>(
 	@NonNull SqlExpression<T> value,
 	@NonNull SqlExpression<? extends CharSequence> characters
 ) implements SqlStringFunction<T> {
+	
+	public SqlTrimCharsFunction {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(characters, "Characters expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

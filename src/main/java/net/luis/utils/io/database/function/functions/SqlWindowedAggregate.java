@@ -24,6 +24,8 @@ import net.luis.utils.io.database.function.window.SqlWindowClause;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -34,6 +36,11 @@ public record SqlWindowedAggregate<T>(
 	@NonNull SqlAggregateFunction<T> aggregate,
 	@NonNull SqlWindowClause over
 ) implements SqlWindowFunction<T> {
+	
+	public SqlWindowedAggregate {
+		Objects.requireNonNull(aggregate, "Aggregate function must not be null");
+		Objects.requireNonNull(over, "Window clause must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

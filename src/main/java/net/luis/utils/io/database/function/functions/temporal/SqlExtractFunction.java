@@ -25,6 +25,8 @@ import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -35,6 +37,11 @@ public record SqlExtractFunction(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlTemporalPart part
 ) implements SqlTemporalFunction<Integer> {
+	
+	public SqlExtractFunction {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(part, "Temporal part must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<Integer> as(@NonNull SqlAlias alias) {

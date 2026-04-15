@@ -24,6 +24,7 @@ import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -32,6 +33,14 @@ import java.util.List;
  */
 
 public record SqlLeastFunction<T>(@NonNull List<SqlExpression<T>> values) implements SqlFunction<T> {
+	
+	public SqlLeastFunction {
+		Objects.requireNonNull(values, "Values expression list must not be null");
+		
+		if (values.isEmpty()) {
+			throw new IllegalArgumentException("Values expression list must not be empty");
+		}
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

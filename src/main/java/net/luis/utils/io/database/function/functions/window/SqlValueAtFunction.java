@@ -25,6 +25,8 @@ import net.luis.utils.io.database.function.window.SqlWindowClause;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -36,6 +38,12 @@ public record SqlValueAtFunction<T>(
 	@NonNull SqlExpression<? extends Number> position,
 	@NonNull SqlWindowClause over
 ) implements SqlWindowFunction<T> {
+	
+	public SqlValueAtFunction {
+		Objects.requireNonNull(column, "Column expression must not be null");
+		Objects.requireNonNull(position, "Position expression must not be null");
+		Objects.requireNonNull(over, "Window clause must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

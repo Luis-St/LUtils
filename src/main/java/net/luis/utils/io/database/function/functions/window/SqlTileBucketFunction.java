@@ -25,6 +25,8 @@ import net.luis.utils.io.database.function.window.SqlWindowClause;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -35,6 +37,11 @@ public record SqlTileBucketFunction(
 	@NonNull SqlExpression<? extends Number> buckets,
 	@NonNull SqlWindowClause over
 ) implements SqlWindowFunction<Long> {
+	
+	public SqlTileBucketFunction {
+		Objects.requireNonNull(buckets, "Buckets expression must not be null");
+		Objects.requireNonNull(over, "Window clause must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<Long> as(@NonNull SqlAlias alias) {

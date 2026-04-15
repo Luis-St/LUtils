@@ -24,6 +24,8 @@ import net.luis.utils.io.database.function.functions.SqlStringFunction;
 import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -34,6 +36,11 @@ public record SqlPositionFunction<T>(
 	@NonNull SqlExpression<T> substring,
 	@NonNull SqlExpression<? extends CharSequence> expression
 ) implements SqlStringFunction<T> {
+	
+	public SqlPositionFunction {
+		Objects.requireNonNull(substring, "Substring expression must not be null");
+		Objects.requireNonNull(expression, "Expression must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {

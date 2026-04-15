@@ -31,9 +31,7 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public record SqlCountDistinctFunction(
-	@Nullable SqlExpression<?> value
-) implements SqlAggregateFunction<Long> {
+public record SqlCountDistinctFunction(@Nullable SqlExpression<?> value) implements SqlAggregateFunction<Long> {
 	
 	@Override
 	public @NonNull SqlExpression<Long> as(@NonNull SqlAlias alias) {

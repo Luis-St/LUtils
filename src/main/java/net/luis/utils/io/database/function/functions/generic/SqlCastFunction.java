@@ -24,6 +24,8 @@ import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -31,9 +33,14 @@ import org.jspecify.annotations.NonNull;
  */
 
 public record SqlCastFunction<T>(
-	@NonNull SqlExpression<?> expression,
+	@NonNull SqlExpression<?> value,
 	@NonNull SqlType<T> targetType
 ) implements SqlFunction<T> {
+	
+	public SqlCastFunction {
+		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(targetType, "Target type must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
