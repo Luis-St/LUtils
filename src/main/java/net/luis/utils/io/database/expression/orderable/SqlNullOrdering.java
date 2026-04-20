@@ -16,9 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.expression;
-
-import org.jspecify.annotations.NonNull;
+package net.luis.utils.io.database.expression.orderable;
 
 /**
  *
@@ -26,13 +24,9 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlOrderable<T> {
+public enum SqlNullOrdering {
 	
-	@NonNull SqlOrderable<T> ascending();
-	
-	@NonNull SqlOrderable<T> descending();
-	
-	@NonNull SqlOrderable<T> nullsFirst();
-	
-	@NonNull SqlOrderable<T> nullsLast();
+	DEFAULT,
+	NULLS_FIRST,
+	NULLS_LAST
 }

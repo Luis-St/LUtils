@@ -16,12 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.function.functions.temporal;
-
-import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
-import net.luis.utils.io.database.type.SqlType;
-import org.jspecify.annotations.NonNull;
+package net.luis.utils.io.database.expression.orderable;
 
 /**
  *
@@ -29,8 +24,9 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlSubtractFunction<T>(
-	@NonNull SqlExpression<?> minuend,
-	@NonNull SqlExpression<?> subtrahend,
-	@NonNull SqlType<T> type
-) implements SqlTemporalFunction<T> {}
+public enum SqlOrdering {
+	
+	DEFAULT,
+	ASCENDING,
+	DESCENDING
+}

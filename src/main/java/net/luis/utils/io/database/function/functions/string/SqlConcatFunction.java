@@ -19,12 +19,11 @@
 package net.luis.utils.io.database.function.functions.string;
 
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
-import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -37,39 +36,4 @@ public record SqlConcatFunction<T extends CharSequence>(
 	@NonNull Optional<String> separator,
 	boolean distinct,
 	boolean ordered
-) implements SqlStringFunction<T> {
-	
-	public SqlConcatFunction {
-		Objects.requireNonNull(values, "Values expression list must not be null");
-		Objects.requireNonNull(separator, "Separator must not be null");
-		
-		if (values.isEmpty()) {
-			throw new IllegalArgumentException("Values expression list must not be empty");
-		}
-	}
-	
-	@Override
-	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsLast() {
-		return null;
-	}
-}
+) implements SqlStringFunction<T> {}

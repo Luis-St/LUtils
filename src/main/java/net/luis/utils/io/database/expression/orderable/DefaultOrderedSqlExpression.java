@@ -16,11 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.function;
+package net.luis.utils.io.database.expression.orderable;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import org.jspecify.annotations.NonNull;
 
@@ -32,11 +33,29 @@ import java.util.Objects;
  *
  */
 
-public interface SqlFunction<T> extends SqlExpression<T> {
+public record DefaultOrderedSqlExpression<T>(
+	@NonNull SqlExpression<T> expression,
+	@NonNull SqlNullOrdering nullOrdering
+) implements OrderedSqlExpression<T> {
+	
+	public DefaultOrderedSqlExpression {
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		Objects.requireNonNull(nullOrdering, "Sql null ordering must not be null");
+	}
 	
 	@Override
-	default @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
+	public @NonNull SqlOrdering ordering() {
+		return SqlOrdering.DEFAULT;
+	}
+	
+	@Override
+	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		return dialect.renderFunction(this);
+		return dialect.renderExpression(this);
 	}
 }

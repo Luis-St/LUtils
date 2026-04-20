@@ -174,31 +174,6 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 	}
 	
 	@Override
-	public @NonNull SqlExpression<C> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlExpression<C> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlExpression<C> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlExpression<C> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlExpression<C> nullsLast() {
-		return null;
-	}
-	
-	@Override
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		return null;
 	}

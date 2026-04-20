@@ -19,12 +19,8 @@
 package net.luis.utils.io.database.function.functions.numeric;
 
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
-import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -35,35 +31,4 @@ import java.util.Objects;
 public record SqlModFunction<T extends Number>(
 	@NonNull SqlExpression<T> value,
 	@NonNull SqlExpression<? extends Number> divisor
-) implements SqlNumericFunction<T> {
-	
-	public SqlModFunction {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(divisor, "Divisor expression must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsLast() {
-		return null;
-	}
-}
+) implements SqlNumericFunction<T> {}

@@ -18,11 +18,7 @@
 
 package net.luis.utils.io.database.function.functions.temporal;
 
-import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
-import net.luis.utils.io.database.query.SqlAlias;
-import org.jspecify.annotations.NonNull;
 
 import java.time.Instant;
 
@@ -32,30 +28,4 @@ import java.time.Instant;
  *
  */
 
-public record SqlCurrentTimestampFunction() implements SqlTemporalFunction<Instant> {
-	
-	@Override
-	public @NonNull SqlExpression<Instant> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Instant> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Instant> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Instant> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Instant> nullsLast() {
-		return null;
-	}
-}
+public record SqlCurrentTimestampFunction() implements SqlTemporalFunction<Instant> {}

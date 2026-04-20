@@ -19,13 +19,9 @@
 package net.luis.utils.io.database.function.functions.window;
 
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlWindowFunction;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
-import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -36,35 +32,4 @@ import java.util.Objects;
 public record SqlFirstValueFunction<T>(
 	@NonNull SqlExpression<T> column,
 	@NonNull SqlWindowClause over
-) implements SqlWindowFunction<T> {
-	
-	public SqlFirstValueFunction {
-		Objects.requireNonNull(column, "Column expression must not be null");
-		Objects.requireNonNull(over, "Window clause must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsLast() {
-		return null;
-	}
-}
+) implements SqlWindowFunction<T> {}

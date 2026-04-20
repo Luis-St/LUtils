@@ -19,13 +19,9 @@
 package net.luis.utils.io.database.function.functions.temporal;
 
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
-import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -38,37 +34,4 @@ public record SqlMakeDateFunction<T>(
 	@NonNull SqlExpression<? extends Number> month,
 	@NonNull SqlExpression<? extends Number> day,
 	@NonNull SqlType<T> type
-) implements SqlTemporalFunction<T> {
-	
-	public SqlMakeDateFunction {
-		Objects.requireNonNull(year, "Year expression must not be null");
-		Objects.requireNonNull(month, "Month expression must not be null");
-		Objects.requireNonNull(day, "Day expression must not be null");
-		Objects.requireNonNull(type, "Type must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsLast() {
-		return null;
-	}
-}
+) implements SqlTemporalFunction<T> {}

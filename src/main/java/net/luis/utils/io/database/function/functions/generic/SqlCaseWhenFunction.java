@@ -20,13 +20,11 @@ package net.luis.utils.io.database.function.functions.generic;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
-import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.util.SqlCaseWhenBranch;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -37,38 +35,4 @@ import java.util.Objects;
 public record SqlCaseWhenFunction<T>(
 	@NonNull List<SqlCaseWhenBranch<T>> branches,
 	@Nullable SqlExpression<T> elseValue
-) implements SqlFunction<T> {
-	
-	public SqlCaseWhenFunction {
-		Objects.requireNonNull(branches, "Branches list must not be null");
-		
-		if (branches.isEmpty()) {
-			throw new IllegalArgumentException("Branches list must not be empty");
-		}
-	}
-	
-	@Override
-	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsLast() {
-		return null;
-	}
-}
+) implements SqlFunction<T> {}

@@ -19,13 +19,9 @@
 package net.luis.utils.io.database.function.functions.temporal;
 
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
-import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -36,35 +32,4 @@ import java.util.Objects;
 public record SqlExtractFunction(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlTemporalPart part
-) implements SqlTemporalFunction<Integer> {
-	
-	public SqlExtractFunction {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(part, "Temporal part must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlExpression<Integer> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Integer> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Integer> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Integer> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Integer> nullsLast() {
-		return null;
-	}
-}
+) implements SqlTemporalFunction<Integer> {}

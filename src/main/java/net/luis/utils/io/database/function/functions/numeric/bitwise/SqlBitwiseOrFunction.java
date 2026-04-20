@@ -19,12 +19,8 @@
 package net.luis.utils.io.database.function.functions.numeric.bitwise;
 
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
-import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -35,35 +31,4 @@ import java.util.Objects;
 public record SqlBitwiseOrFunction<T extends Number>(
 	@NonNull SqlExpression<T> firstOperand,
 	@NonNull SqlExpression<T> secondOperand
-) implements SqlNumericFunction<T> {
-	
-	public SqlBitwiseOrFunction {
-		Objects.requireNonNull(firstOperand, "First operand expression must not be null");
-		Objects.requireNonNull(secondOperand, "Second operand expression must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsLast() {
-		return null;
-	}
-}
+) implements SqlNumericFunction<T> {}

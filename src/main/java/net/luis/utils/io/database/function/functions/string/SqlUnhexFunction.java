@@ -19,12 +19,8 @@
 package net.luis.utils.io.database.function.functions.string;
 
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
-import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -32,34 +28,4 @@ import java.util.Objects;
  *
  */
 
-public record SqlUnhexFunction(@NonNull SqlExpression<? extends CharSequence> value) implements SqlStringFunction<byte[]> {
-	
-	public SqlUnhexFunction {
-		Objects.requireNonNull(value, "Value expression must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlExpression<byte[]> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<byte[]> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<byte[]> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<byte[]> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<byte[]> nullsLast() {
-		return null;
-	}
-}
+public record SqlUnhexFunction(@NonNull SqlExpression<? extends CharSequence> value) implements SqlStringFunction<byte[]> {}

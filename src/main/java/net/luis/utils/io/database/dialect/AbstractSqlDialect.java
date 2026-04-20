@@ -32,6 +32,7 @@ import net.luis.utils.io.database.condition.conditions.temporal.*;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.*;
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.expression.orderable.*;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.*;
 import net.luis.utils.io.database.function.functions.aggregate.*;
@@ -156,7 +157,13 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderExpression(@NonNull SqlExpression<?> expression) throws SqlException {
-		return null;
+		return switch (expression) {
+			case OrderedSqlExpression<?> expr -> this.renderExpression(expr.expression());
+			case SqlFunction<?> func -> this.renderFunction(func);
+			
+			case null -> throw new NullPointerException("Sql expression must not be null");
+			default -> throw new SqlDialectUnsupportedExpressionException("Unknown sql expression type: " + expression.getClass().getName() + " in dialect " + this.name());
+		};
 	}
 	
 	protected <T> void renderList(@NonNull SqlRenderer renderer, @NonNull List<T> values, @NonNull ThrowableBiConsumer<SqlRenderer, T, SqlException> itemRenderer) throws SqlException {

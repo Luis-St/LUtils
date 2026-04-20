@@ -19,13 +19,9 @@
 package net.luis.utils.io.database.function.functions.window;
 
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlWindowFunction;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
-import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -36,35 +32,4 @@ import java.util.Objects;
 public record SqlTileBucketFunction(
 	@NonNull SqlExpression<? extends Number> buckets,
 	@NonNull SqlWindowClause over
-) implements SqlWindowFunction<Long> {
-	
-	public SqlTileBucketFunction {
-		Objects.requireNonNull(buckets, "Buckets expression must not be null");
-		Objects.requireNonNull(over, "Window clause must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlExpression<Long> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Long> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Long> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Long> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Long> nullsLast() {
-		return null;
-	}
-}
+) implements SqlWindowFunction<Long> {}

@@ -19,12 +19,8 @@
 package net.luis.utils.io.database.function.functions.aggregate;
 
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlAggregateFunction;
-import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -32,34 +28,4 @@ import java.util.Objects;
  *
  */
 
-public record SqlMaxFunction<T>(@NonNull SqlExpression<T> value) implements SqlAggregateFunction<T> {
-	
-	public SqlMaxFunction {
-		Objects.requireNonNull(value, "Value expression must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsLast() {
-		return null;
-	}
-}
+public record SqlMaxFunction<T>(@NonNull SqlExpression<T> value) implements SqlAggregateFunction<T> {}

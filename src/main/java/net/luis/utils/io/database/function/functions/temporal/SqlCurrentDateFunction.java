@@ -18,11 +18,7 @@
 
 package net.luis.utils.io.database.function.functions.temporal;
 
-import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
-import net.luis.utils.io.database.query.SqlAlias;
-import org.jspecify.annotations.NonNull;
 
 import java.time.LocalDate;
 
@@ -32,30 +28,4 @@ import java.time.LocalDate;
  *
  */
 
-public record SqlCurrentDateFunction() implements SqlTemporalFunction<LocalDate> {
-	
-	@Override
-	public @NonNull SqlExpression<LocalDate> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<LocalDate> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<LocalDate> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<LocalDate> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<LocalDate> nullsLast() {
-		return null;
-	}
-}
+public record SqlCurrentDateFunction() implements SqlTemporalFunction<LocalDate> {}

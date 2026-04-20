@@ -19,12 +19,8 @@
 package net.luis.utils.io.database.function.functions.numeric;
 
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
-import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -32,34 +28,4 @@ import java.util.Objects;
  *
  */
 
-public record SqlSignFunction(@NonNull SqlExpression<? extends Number> value) implements SqlNumericFunction<Integer> {
-	
-	public SqlSignFunction {
-		Objects.requireNonNull(value, "Value expression must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlExpression<Integer> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Integer> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Integer> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Integer> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<Integer> nullsLast() {
-		return null;
-	}
-}
+public record SqlSignFunction(@NonNull SqlExpression<? extends Number> value) implements SqlNumericFunction<Integer> {}

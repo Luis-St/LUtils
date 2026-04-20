@@ -19,12 +19,8 @@
 package net.luis.utils.io.database.function.functions.string;
 
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
-import net.luis.utils.io.database.query.SqlAlias;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -36,36 +32,4 @@ public record SqlLeftPadFunction<T extends CharSequence>(
 	@NonNull SqlExpression<T> value,
 	@NonNull SqlExpression<? extends Number> length,
 	@NonNull SqlExpression<? extends CharSequence> fill
-) implements SqlStringFunction<T> {
-	
-	public SqlLeftPadFunction {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(length, "Length expression must not be null");
-		Objects.requireNonNull(fill, "Fill expression must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> ascending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> descending() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsFirst() {
-		return null;
-	}
-	
-	@Override
-	public @NonNull SqlFunction<T> nullsLast() {
-		return null;
-	}
-}
+) implements SqlStringFunction<T> {}
