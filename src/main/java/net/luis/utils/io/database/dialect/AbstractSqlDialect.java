@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import net.luis.utils.function.throwable.ThrowableBiConsumer;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.SqlReferentialAction;
+import net.luis.utils.io.database.condition.NegatedSqlCondition;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.conditions.*;
 import net.luis.utils.io.database.condition.conditions.comparison.*;
@@ -151,6 +152,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case Types.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP(" + fractional.digits() + ") WITH TIME ZONE";
 			default -> throw new SqlDialectUnsupportedTypeException("Unsupported fractional-parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
 		};
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderExpression(@NonNull SqlExpression<?> expression) throws SqlException {
+		return null;
 	}
 	
 	protected <T> void renderList(@NonNull SqlRenderer renderer, @NonNull List<T> values, @NonNull ThrowableBiConsumer<SqlRenderer, T, SqlException> itemRenderer) throws SqlException {
@@ -484,6 +490,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	@Override
 	public @NonNull SqlRendered renderCondition(@NonNull SqlCondition condition) throws SqlException {
 		return (switch (condition) {
+			case NegatedSqlCondition cond -> (ThrowableFunction<SqlRenderer, SqlRendered, SqlException>) renderer -> renderer.not().openingBracket().rendered(this.renderCondition(cond.condition())).closingBracket().toSql();
 			case SqlComparisonCondition cond -> this.renderComparisonCondition(cond);
 			case SqlNumericCondition cond -> this.renderNumericCondition(cond);
 			case SqlStringCondition cond -> this.renderStringCondition(cond);

@@ -26,5 +26,4 @@ import net.luis.utils.io.database.condition.SqlCondition;
  *
  */
 
-@FunctionalInterface
 public interface SqlTemporalCondition extends SqlCondition {}

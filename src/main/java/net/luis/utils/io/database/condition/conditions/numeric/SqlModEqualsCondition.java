@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.database.condition.conditions.numeric;
 
-import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.conditions.SqlNumericCondition;
 import net.luis.utils.io.database.expression.SqlExpression;
 import org.jspecify.annotations.NonNull;
@@ -41,10 +40,5 @@ public record SqlModEqualsCondition(
 		Objects.requireNonNull(value, "Value expression must not be null");
 		Objects.requireNonNull(divisor, "Divisor expression must not be null");
 		Objects.requireNonNull(remainder, "Remainder expression must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlCondition not() {
-		return null;
 	}
 }

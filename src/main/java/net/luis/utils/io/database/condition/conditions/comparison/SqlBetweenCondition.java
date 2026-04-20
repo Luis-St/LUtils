@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.database.condition.conditions.comparison;
 
-import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.conditions.SqlComparisonCondition;
 import net.luis.utils.io.database.expression.SqlExpression;
 import org.jspecify.annotations.NonNull;
@@ -41,10 +40,5 @@ public record SqlBetweenCondition(
 		Objects.requireNonNull(value, "Value expression must not be null");
 		Objects.requireNonNull(lower, "Lower bound expression must not be null");
 		Objects.requireNonNull(upper, "Upper bound expression must not be null");
-	}
-	
-	@Override
-	public @NonNull SqlCondition not() {
-		return null;
 	}
 }

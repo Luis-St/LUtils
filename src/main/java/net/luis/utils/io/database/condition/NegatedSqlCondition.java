@@ -16,13 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.condition.conditions.comparison;
+package net.luis.utils.io.database.condition;
 
-import net.luis.utils.io.database.condition.conditions.SqlComparisonCondition;
-import net.luis.utils.io.database.expression.SqlExpression;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -30,9 +26,10 @@ import java.util.Objects;
  *
  */
 
-public record SqlIsNullCondition(@NonNull SqlExpression<?> value) implements SqlComparisonCondition {
+public record NegatedSqlCondition(@NonNull SqlCondition condition) implements SqlCondition {
 	
-	public SqlIsNullCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
+	@Override
+	public @NonNull SqlCondition not() {
+		return this.condition;
 	}
 }

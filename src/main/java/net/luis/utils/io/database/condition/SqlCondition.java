@@ -32,7 +32,6 @@ import java.util.Objects;
  *
  */
 
-@FunctionalInterface
 public interface SqlCondition extends SqlRenderable {
 	
 	static @NonNull SqlCondition always() {
@@ -59,7 +58,9 @@ public interface SqlCondition extends SqlRenderable {
 		return anyOf(this, other);
 	}
 	
-	@NonNull SqlCondition not();
+	default @NonNull SqlCondition not() {
+		return new NegatedSqlCondition(this);
+	}
 	
 	@Override
 	default @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {

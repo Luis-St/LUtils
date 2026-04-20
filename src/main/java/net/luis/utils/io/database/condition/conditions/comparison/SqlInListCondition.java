@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.database.condition.conditions.comparison;
 
-import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.conditions.SqlComparisonCondition;
 import net.luis.utils.io.database.expression.SqlExpression;
 import org.jspecify.annotations.NonNull;
@@ -44,10 +43,5 @@ public record SqlInListCondition(
 		if (options.isEmpty()) {
 			throw new IllegalArgumentException("Options list must not be empty");
 		}
-	}
-	
-	@Override
-	public @NonNull SqlCondition not() {
-		return null;
 	}
 }

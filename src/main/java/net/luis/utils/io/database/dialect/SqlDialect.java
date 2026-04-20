@@ -21,6 +21,7 @@ package net.luis.utils.io.database.dialect;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.*;
+import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
@@ -47,6 +48,8 @@ public interface SqlDialect {
 	boolean isTypeSupported(@NonNull SqlType<?> type);
 	
 	@NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlDialectUnsupportedTypeException;
+	
+	@NonNull SqlRendered renderExpression(@NonNull SqlExpression<?> expression) throws SqlException;
 	
 	@NonNull SqlRendered renderFunction(@NonNull SqlFunction<?> function) throws SqlException;
 	
