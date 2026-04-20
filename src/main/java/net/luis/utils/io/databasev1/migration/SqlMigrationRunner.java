@@ -16,10 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.migration;
+/*package net.luis.utils.io.databasev1.migration;
 
-import net.luis.utils.io.databasev1.SqlDatabase;
-import net.luis.utils.io.databasev1.SqlRendered;
 import net.luis.utils.io.databasev1.exception.SqlException;
 import net.luis.utils.io.databasev1.exception.SqlMigrationException;
 import net.luis.utils.io.databasev1.table.SqlTable;
@@ -28,7 +26,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
-/**
+*//**
  * Interface for running SQL migrations against a database.<br>
  * <p>
  *     Provides methods to apply, rollback, inspect status, and dry-run migrations.<br>
@@ -36,56 +34,56 @@ import java.util.List;
  * </p>
  *
  * @author Luis-St
- */
+ *//*
 public interface SqlMigrationRunner {
 	
-	/**
+	*//**
 	 * Creates a new migration runner for the specified database.<br>
 	 *
 	 * @param database The database to run migrations against
 	 * @return A new migration runner instance
-	 */
+	 *//*
 	static @NonNull SqlMigrationRunner of(@NonNull SqlDatabase database) {
 		throw new UnsupportedOperationException();
 	}
 	
-	/**
+	*//**
 	 * Applies all pending migrations in version order.<br>
 	 * @throws SqlException If a migration fails
-	 */
+	 *//*
 	void migrate() throws SqlException;
 	
-	/**
+	*//**
 	 * Applies all pending migrations up to and including the specified version.<br>
 	 *
 	 * @param targetVersion The target migration version
 	 * @throws SqlException If a migration fails
-	 */
+	 *//*
 	void migrateTo(@NonNull Version targetVersion) throws SqlException;
 	
-	/**
+	*//**
 	 * Rolls back the most recently applied migration.<br>
 	 * @throws SqlException If the rollback fails
-	 */
+	 *//*
 	void rollback() throws SqlException;
 	
-	/**
+	*//**
 	 * Rolls back the specified number of most recently applied migrations.<br>
 	 *
 	 * @param count The number of migrations to roll back
 	 * @throws SqlException If a rollback fails
-	 */
+	 *//*
 	void rollback(int count) throws SqlException;
 	
-	/**
+	*//**
 	 * Rolls back all migrations down to and including the specified version.<br>
 	 *
 	 * @param targetVersion The target migration version to roll back to
 	 * @throws SqlException If a rollback fails
-	 */
+	 *//*
 	void rollbackTo(@NonNull Version targetVersion) throws SqlException;
 	
-	/**
+	*//**
 	 * Validates that all applied migrations still have matching checksums.<br>
 	 * Compares the stored checksum of each applied migration against its current computed checksum.<br>
 	 * <p>
@@ -94,59 +92,59 @@ public interface SqlMigrationRunner {
 	 *
 	 * @throws SqlMigrationException If a checksum mismatch is detected for any applied migration
 	 * @throws SqlException If the validation cannot be performed due to a database access error
-	 */
+	 *//*
 	void validate() throws SqlMigrationException, SqlException;
 	
-	/**
+	*//**
 	 * Returns the status of all registered migrations.<br>
 	 *
 	 * @return The list of migration info entries
 	 * @throws SqlException If the status cannot be retrieved
-	 */
+	 *//*
 	@NonNull List<SqlMigrationInfo> status() throws SqlException;
 	
-	/**
+	*//**
 	 * Performs a dry run of all pending migrations without applying them.<br>
 	 * Returns the SQL statements that would be executed.<br>
 	 *
 	 * @return The list of rendered SQL statements
 	 * @throws SqlException If the dry run fails
-	 */
+	 *//*
 	@NonNull List<SqlRendered> dryRun() throws SqlException;
 	
-	/**
+	*//**
 	 * Performs a dry run of rolling back the most recently applied migration.<br>
 	 * Returns the SQL statements that would be executed.<br>
 	 *
 	 * @return The list of rendered SQL statements for rollback
 	 * @throws SqlException If the dry run fails
-	 */
+	 *//*
 	@NonNull List<SqlRendered> dryRunRollback() throws SqlException;
 	
-	/**
+	*//**
 	 * Registers a single migration with this runner.<br>
 	 * The checksum is computed at registration time by dry-running {@link SqlMigration#up(SqlMigrationBuilder)}
 	 * against a capturing builder and hashing the resulting SQL statements.<br>
 	 *
 	 * @param migration The migration to register
-	 */
+	 *//*
 	void register(@NonNull SqlMigration migration);
 	
-	/**
+	*//**
 	 * Registers a list of migrations with this runner.<br>
 	 * The checksum for each migration is computed at registration time.<br>
 	 *
 	 * @param migrations The migrations to register
-	 */
+	 *//*
 	void register(@NonNull List<SqlMigration> migrations);
 	
-	/**
+	*//**
 	 * Computes the diff between the registered Java {@link SqlTable} definitions and the live database schema.<br>
 	 * Useful for detecting schema drift between code and the database without applying any migrations.<br>
 	 *
 	 * @param tables The Java table definitions to compare against
 	 * @return The schema diff
 	 * @throws SqlException If the live schema cannot be introspected
-	 */
+	 *//*
 	@NonNull SqlSchemaDiff diff(SqlTable<?> @NonNull ... tables) throws SqlException;
-}
+}*/

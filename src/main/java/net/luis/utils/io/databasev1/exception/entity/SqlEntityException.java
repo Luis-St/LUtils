@@ -16,46 +16,46 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.exception.entity;
+/*package net.luis.utils.io.databasev1.exception.entity;
 
 import net.luis.utils.io.databasev1.exception.SqlDatabaseException;
 import org.jspecify.annotations.Nullable;
 
-/**
+*//**
  * Base exception for SQL entity-related errors.<br>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlEntityException extends SqlDatabaseException {
 	
-	/**
+	*//**
 	 * Constructs a new SQL entity exception with no details.<br>
-	 */
+	 *//*
 	public SqlEntityException() {}
 	
-	/**
+	*//**
 	 * Constructs a new SQL entity exception with the specified message.<br>
 	 * @param message The message of the exception
-	 */
+	 *//*
 	public SqlEntityException(@Nullable String message) {
 		super(message);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL entity exception with the specified message and cause.<br>
 	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlEntityException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL entity exception with the specified cause.<br>
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlEntityException(@Nullable Throwable cause) {
 		super(cause);
 	}
-}
+}*/

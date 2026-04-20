@@ -16,12 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.exception.entity;
+/*package net.luis.utils.io.databasev1.exception.entity;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-/**
+*//**
  * Exception thrown when a SQL entity is stale.<br>
  * <p>
  *     A stale entity indicates that the row was modified or deleted by another
@@ -30,68 +30,68 @@ import org.jspecify.annotations.Nullable;
  * </p>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlStaleEntityException extends SqlEntityException {
 	
-	/**
+	*//**
 	 * Constructs a new SQL stale entity exception with no details.<br>
-	 */
+	 *//*
 	public SqlStaleEntityException() {}
 	
-	/**
+	*//**
 	 * Constructs a new SQL stale entity exception with the specified message.<br>
 	 * @param message The message of the exception
-	 */
+	 *//*
 	public SqlStaleEntityException(@Nullable String message) {
 		super(message);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL stale entity exception with the specified message and cause.<br>
 	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlStaleEntityException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL stale entity exception with the specified cause.<br>
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlStaleEntityException(@Nullable Throwable cause) {}
 	
-	/**
+	*//**
 	 * Constructs a new SQL stale entity exception with version context information.<br>
 	 *
 	 * @param entityType The type of the stale entity
 	 * @param entityId The identifier of the stale entity
 	 * @param expectedVersion The version that was expected but not found
-	 */
+	 *//*
 	public SqlStaleEntityException(@NonNull Class<?> entityType, @NonNull Object entityId, long expectedVersion) {}
 	
-	/**
+	*//**
 	 * Returns the type of the stale entity.<br>
 	 * @return The entity type, or {@code null} if not available
-	 */
+	 *//*
 	public @Nullable Class<?> getEntityType() {
 		throw new UnsupportedOperationException();
 	}
 	
-	/**
+	*//**
 	 * Returns the identifier of the stale entity.<br>
 	 * @return The entity identifier, or {@code null} if not available
-	 */
+	 *//*
 	public @Nullable Object getEntityId() {
 		throw new UnsupportedOperationException();
 	}
 	
-	/**
+	*//**
 	 * Returns the version that was expected but not found in the database.<br>
 	 * @return The expected version, or {@code -1} if not available
-	 */
+	 *//*
 	public long getExpectedVersion() {
 		throw new UnsupportedOperationException();
 	}
-}
+}*/

@@ -16,70 +16,70 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.exception.constraint;
+/*package net.luis.utils.io.databasev1.exception.constraint;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-/**
+*//**
  * Exception thrown when a SQL foreign key constraint is violated.<br>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlForeignKeyViolationException extends SqlConstraintViolationException {
 	
-	/**
+	*//**
 	 * Constructs a new SQL foreign key violation exception with no details.<br>
-	 */
+	 *//*
 	public SqlForeignKeyViolationException() {}
 	
-	/**
+	*//**
 	 * Constructs a new SQL foreign key violation exception with the specified message.<br>
 	 * @param message The message of the exception
-	 */
+	 *//*
 	public SqlForeignKeyViolationException(@Nullable String message) {
 		super(message);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL foreign key violation exception with the specified message and cause.<br>
 	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlForeignKeyViolationException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL foreign key violation exception with the specified cause.<br>
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlForeignKeyViolationException(@Nullable Throwable cause) {
 		super(cause);
 	}
 	
-	/**
+	*//**
 	 * Returns the name of the violated foreign key constraint.<br>
 	 * @return The constraint name
-	 */
+	 *//*
 	public @NonNull String getConstraintName() {
 		throw new UnsupportedOperationException();
 	}
 	
-	/**
+	*//**
 	 * Returns the name of the referenced table.<br>
 	 * @return The referenced table name
-	 */
+	 *//*
 	public @NonNull String getReferencedTableName() {
 		throw new UnsupportedOperationException();
 	}
 	
-	/**
+	*//**
 	 * Returns the missing key value that caused the violation.<br>
 	 * @return The missing key value or {@code null} if not available
-	 */
+	 *//*
 	public @Nullable Object getMissingKeyValue() {
 		throw new UnsupportedOperationException();
 	}
-}
+}*/

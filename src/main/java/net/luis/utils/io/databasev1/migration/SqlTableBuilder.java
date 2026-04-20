@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.migration;
+/*package net.luis.utils.io.databasev1.migration;
 
 import net.luis.utils.io.databasev1.dialect.SqlColumnType;
 import net.luis.utils.io.databasev1.table.SqlColumn;
@@ -25,24 +25,24 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.function.Consumer;
 
-/**
+*//**
  * Builder for table definitions in migrations.<br>
  * Provides a fluent API for defining columns and primary keys when creating a new table.<br>
  *
  * @author Luis-St
- */
+ *//*
 public interface SqlTableBuilder {
 	
-	/**
+	*//**
 	 * Adds a column with the specified column reference and type.<br>
 	 *
 	 * @param column The column reference
 	 * @param type The column type
 	 * @return This builder for chaining
-	 */
+	 *//*
 	@NonNull SqlTableBuilder column(@NonNull SqlColumn<?> column, @NonNull SqlColumnType type);
 	
-	/**
+	*//**
 	 * Adds a column with the specified column reference, type, and additional options.<br>
 	 *
 	 * @param column The column reference
@@ -50,24 +50,24 @@ public interface SqlTableBuilder {
 	 * @param options A consumer to configure column options
 	 * @param <V> The column value type
 	 * @return This builder for chaining
-	 */
+	 *//*
 	<V> @NonNull SqlTableBuilder column(@NonNull SqlColumn<V> column, @NonNull SqlColumnType type, @NonNull Consumer<SqlColumnBuilder<V>> options);
 	
-	/**
+	*//**
 	 * Sets the primary key for the table.<br>
 	 *
 	 * @param columns The primary key columns
 	 * @return This builder for chaining
-	 */
+	 *//*
 	@NonNull SqlTableBuilder primaryKey(SqlPrimaryKeyColumn<?, ?> @NonNull ... columns);
 	
-	/**
+	*//**
 	 * Sets a composite primary key for the table using any column types.<br>
 	 * Use this when the composite key includes columns that are not individually declared as primary key columns,
 	 * such as foreign key columns in a junction table.<br>
 	 *
 	 * @param columns The columns forming the composite primary key
 	 * @return This builder for chaining
-	 */
+	 *//*
 	@NonNull SqlTableBuilder compositePrimaryKey(SqlColumn<?> @NonNull ... columns);
-}
+}*/

@@ -16,45 +16,45 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.exception.entity;
+/*package net.luis.utils.io.databasev1.exception.entity;
 
 import org.jspecify.annotations.Nullable;
 
-/**
+*//**
  * Exception thrown when a SQL entity is not found.<br>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlEntityNotFoundException extends SqlEntityException {
 	
-	/**
+	*//**
 	 * Constructs a new SQL entity not found exception with no details.<br>
-	 */
+	 *//*
 	public SqlEntityNotFoundException() {}
 	
-	/**
+	*//**
 	 * Constructs a new SQL entity not found exception with the specified message.<br>
 	 * @param message The message of the exception
-	 */
+	 *//*
 	public SqlEntityNotFoundException(@Nullable String message) {
 		super(message);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL entity not found exception with the specified message and cause.<br>
 	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlEntityNotFoundException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL entity not found exception with the specified cause.<br>
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlEntityNotFoundException(@Nullable Throwable cause) {
 		super(cause);
 	}
-}
+}*/

@@ -16,45 +16,45 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.exception;
+/*package net.luis.utils.io.databasev1.exception;
 
 import org.jspecify.annotations.Nullable;
 
-/**
+*//**
  * General exception for SQL database operations.<br>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlDatabaseException extends SqlException {
 	
-	/**
+	*//**
 	 * Constructs a new SQL database exception with no details.<br>
-	 */
+	 *//*
 	public SqlDatabaseException() {}
 	
-	/**
+	*//**
 	 * Constructs a new SQL database exception with the specified message.<br>
 	 * @param message The message of the exception
-	 */
+	 *//*
 	public SqlDatabaseException(@Nullable String message) {
 		super(message);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL database exception with the specified message and cause.<br>
 	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlDatabaseException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL database exception with the specified cause.<br>
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlDatabaseException(@Nullable Throwable cause) {
 		super(cause);
 	}
-}
+}*/

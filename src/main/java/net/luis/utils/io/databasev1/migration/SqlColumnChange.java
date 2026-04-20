@@ -16,60 +16,60 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.migration;
+/*package net.luis.utils.io.databasev1.migration;
 
 import net.luis.utils.io.databasev1.dialect.SqlColumnType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
 
-/**
+*//**
  * Interface describing changes applied to a column during a migration.<br>
  * Each method returns an {@link Optional} that is present only if the corresponding property was changed.<br>
  *
  * @author Luis-St
- */
+ *//*
 public interface SqlColumnChange {
 	
-	/**
+	*//**
 	 * Returns the name of the column being changed.<br>
 	 * @return An optional containing the column name
-	 */
+	 *//*
 	@NonNull Optional<String> columnName();
 	
-	/**
+	*//**
 	 * Returns the previous column type before the change.<br>
 	 * @return An optional containing the old column type
-	 */
+	 *//*
 	@NonNull Optional<SqlColumnType> oldType();
 	
-	/**
+	*//**
 	 * Returns the new column type after the change.<br>
 	 * @return An optional containing the new column type
-	 */
+	 *//*
 	@NonNull Optional<SqlColumnType> newType();
 	
-	/**
+	*//**
 	 * Returns the previous nullability setting before the change.<br>
 	 * @return An optional containing the old nullable flag
-	 */
+	 *//*
 	@NonNull Optional<Boolean> oldNullable();
 	
-	/**
+	*//**
 	 * Returns the new nullability setting after the change.<br>
 	 * @return An optional containing the new nullable flag
-	 */
+	 *//*
 	@NonNull Optional<Boolean> newNullable();
 	
-	/**
+	*//**
 	 * Returns the previous default value before the change.<br>
 	 * @return An optional containing the old default value
-	 */
+	 *//*
 	@NonNull Optional<Object> oldDefault();
 	
-	/**
+	*//**
 	 * Returns the new default value after the change.<br>
 	 * @return An optional containing the new default value
-	 */
+	 *//*
 	@NonNull Optional<Object> newDefault();
-}
+}*/

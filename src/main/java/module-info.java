@@ -87,32 +87,6 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.types.temporal.local;
 	exports net.luis.utils.io.codec.types.temporal.offset;
 	exports net.luis.utils.io.codec.types.temporal.zoned;
-	
-	exports net.luis.utils.io.databasev1;
-	exports net.luis.utils.io.databasev1.audit;
-	exports net.luis.utils.io.databasev1.condition;
-	exports net.luis.utils.io.databasev1.connection;
-	exports net.luis.utils.io.databasev1.dialect;
-	exports net.luis.utils.io.databasev1.dialect.postgres;
-	exports net.luis.utils.io.databasev1.dialect.postgres.ops;
-	exports net.luis.utils.io.databasev1.exception;
-	exports net.luis.utils.io.databasev1.exception.constraint;
-	exports net.luis.utils.io.databasev1.exception.entity;
-	exports net.luis.utils.io.databasev1.exception.locking;
-	exports net.luis.utils.io.databasev1.exception.query;
-	exports net.luis.utils.io.databasev1.function;
-	exports net.luis.utils.io.databasev1.function.scalar;
-	exports net.luis.utils.io.databasev1.function.window;
-	exports net.luis.utils.io.databasev1.index;
-	exports net.luis.utils.io.databasev1.listener;
-	exports net.luis.utils.io.databasev1.mapping;
-	exports net.luis.utils.io.databasev1.migration;
-	exports net.luis.utils.io.databasev1.query;
-	exports net.luis.utils.io.databasev1.query.row;
-	exports net.luis.utils.io.databasev1.renderer;
-exports net.luis.utils.io.databasev1.table;
-	exports net.luis.utils.io.databasev1.table.ops;
-	exports net.luis.utils.io.databasev1.transaction;
 
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;

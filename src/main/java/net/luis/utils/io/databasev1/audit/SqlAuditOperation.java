@@ -16,28 +16,28 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.audit;
+/*package net.luis.utils.io.databasev1.audit;
 
-/**
+*//**
  * Enum representing the type of audited SQL operation.<br>
  *
  * @author Luis-St
- */
+ *//*
 public enum SqlAuditOperation {
 	
-	/**
+	*//**
 	 * An {@code INSERT} operation.<br>
-	 */
+	 *//*
 	CREATE,
 	
-	/**
+	*//**
 	 * An {@code UPDATE} operation.<br>
-	 */
+	 *//*
 	UPDATE,
 	
-	/**
+	*//**
 	 * A {@code DELETE} operation.<br>
-	 */
+	 *//*
 	DELETE
-}
+}*/
 

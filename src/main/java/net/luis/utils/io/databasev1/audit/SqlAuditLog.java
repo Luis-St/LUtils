@@ -16,11 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.audit;
+/*package net.luis.utils.io.databasev1.audit;
 
 import org.jspecify.annotations.NonNull;
 
-/**
+*//**
  * Pluggable sink for audit entries produced by INSERT, UPDATE, and DELETE operations.<br>
  * Register via {@link net.luis.utils.io.databasev1.table.SqlTable#setAuditLog(SqlAuditLog)}.<br>
  * Called by the framework after each successful mutation, after entity listeners fire.<br>
@@ -28,13 +28,13 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  *
  * @param <T> The type of the audited entity
- */
+ *//*
 public interface SqlAuditLog<T> {
 	
-	/**
+	*//**
 	 * Records an audit entry for a completed database operation.<br>
 	 *
 	 * @param entry The audit entry describing what happened
-	 */
+	 *//*
 	void record(@NonNull SqlAuditEntry<T> entry);
-}
+}*/

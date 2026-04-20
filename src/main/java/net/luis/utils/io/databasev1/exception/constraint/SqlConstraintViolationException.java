@@ -16,46 +16,46 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.exception.constraint;
+/*package net.luis.utils.io.databasev1.exception.constraint;
 
 import net.luis.utils.io.databasev1.exception.SqlDatabaseException;
 import org.jspecify.annotations.Nullable;
 
-/**
+*//**
  * Base exception for SQL constraint violations.<br>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlConstraintViolationException extends SqlDatabaseException {
 	
-	/**
+	*//**
 	 * Constructs a new SQL constraint violation exception with no details.<br>
-	 */
+	 *//*
 	public SqlConstraintViolationException() {}
 	
-	/**
+	*//**
 	 * Constructs a new SQL constraint violation exception with the specified message.<br>
 	 * @param message The message of the exception
-	 */
+	 *//*
 	public SqlConstraintViolationException(@Nullable String message) {
 		super(message);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL constraint violation exception with the specified message and cause.<br>
 	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlConstraintViolationException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL constraint violation exception with the specified cause.<br>
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlConstraintViolationException(@Nullable Throwable cause) {
 		super(cause);
 	}
-}
+}*/

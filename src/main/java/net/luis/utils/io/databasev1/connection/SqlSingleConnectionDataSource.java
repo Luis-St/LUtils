@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.connection;
+/*package net.luis.utils.io.databasev1.connection;
 
 import org.jspecify.annotations.NonNull;
 
@@ -25,28 +25,28 @@ import java.io.PrintWriter;
 import java.sql.*;
 import java.util.logging.Logger;
 
-/**
+*//**
  * A single-connection {@link DataSource} implementation for simple database access.<br>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlSingleConnectionDataSource implements DataSource {
 	
-	/**
+	*//**
 	 * Constructs a new single-connection data source with the given JDBC URL.<br>
 	 * @param jdbcUrl The JDBC connection URL
-	 */
+	 *//*
 	public SqlSingleConnectionDataSource(@NonNull String jdbcUrl) {
 		throw new UnsupportedOperationException();
 	}
 	
-	/**
+	*//**
 	 * Constructs a new single-connection data source with the given JDBC URL and credentials.<br>
 	 *
 	 * @param jdbcUrl The JDBC connection URL
 	 * @param username The database username
 	 * @param password The database password
-	 */
+	 *//*
 	public SqlSingleConnectionDataSource(@NonNull String jdbcUrl, @NonNull String username, @NonNull String password) {
 		throw new UnsupportedOperationException();
 	}
@@ -95,4 +95,4 @@ public class SqlSingleConnectionDataSource implements DataSource {
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		throw new UnsupportedOperationException();
 	}
-}
+}*/

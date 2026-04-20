@@ -16,45 +16,45 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.exception.locking;
+/*package net.luis.utils.io.databasev1.exception.locking;
 
 import org.jspecify.annotations.Nullable;
 
-/**
+*//**
  * Exception thrown when a SQL deadlock is detected.<br>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlDeadlockException extends SqlLockingException {
 	
-	/**
+	*//**
 	 * Constructs a new SQL deadlock exception with no details.<br>
-	 */
+	 *//*
 	public SqlDeadlockException() {}
 	
-	/**
+	*//**
 	 * Constructs a new SQL deadlock exception with the specified message.<br>
 	 * @param message The message of the exception
-	 */
+	 *//*
 	public SqlDeadlockException(@Nullable String message) {
 		super(message);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL deadlock exception with the specified message and cause.<br>
 	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlDeadlockException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL deadlock exception with the specified cause.<br>
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlDeadlockException(@Nullable Throwable cause) {
 		super(cause);
 	}
-}
+}*/

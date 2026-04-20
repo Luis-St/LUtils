@@ -16,45 +16,45 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.exception;
+/*package net.luis.utils.io.databasev1.exception;
 
 import org.jspecify.annotations.Nullable;
 
-/**
+*//**
  * Exception thrown when a SQL connection error occurs.<br>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlConnectionException extends SqlDatabaseException {
 	
-	/**
+	*//**
 	 * Constructs a new SQL connection exception with no details.<br>
-	 */
+	 *//*
 	public SqlConnectionException() {}
 	
-	/**
+	*//**
 	 * Constructs a new SQL connection exception with the specified message.<br>
 	 * @param message The message of the exception
-	 */
+	 *//*
 	public SqlConnectionException(@Nullable String message) {
 		super(message);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL connection exception with the specified message and cause.<br>
 	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlConnectionException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL connection exception with the specified cause.<br>
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlConnectionException(@Nullable Throwable cause) {
 		super(cause);
 	}
-}
+}*/

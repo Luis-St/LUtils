@@ -16,27 +16,27 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.migration;
+/*package net.luis.utils.io.databasev1.migration;
 
-/**
+*//**
  * Enum representing the status of a SQL migration.<br>
  *
  * @author Luis-St
- */
+ *//*
 public enum SqlMigrationStatus {
 	
-	/**
+	*//**
 	 * The migration has not yet been applied.<br>
-	 */
+	 *//*
 	PENDING,
 	
-	/**
+	*//**
 	 * The migration has been successfully applied.<br>
-	 */
+	 *//*
 	APPLIED,
 	
-	/**
+	*//**
 	 * The migration has been rolled back.<br>
-	 */
+	 *//*
 	ROLLED_BACK
-}
+}*/

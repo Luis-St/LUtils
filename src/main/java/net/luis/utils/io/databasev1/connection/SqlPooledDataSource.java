@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.connection;
+/*package net.luis.utils.io.databasev1.connection;
 
 import org.jspecify.annotations.NonNull;
 
@@ -25,26 +25,26 @@ import java.io.PrintWriter;
 import java.sql.*;
 import java.util.logging.Logger;
 
-/**
+*//**
  * A pooled {@link DataSource} implementation for connection pooling.<br>
  * Implements {@link AutoCloseable} to allow proper shutdown of the connection pool and release of all pooled connections.<br>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlPooledDataSource implements DataSource, AutoCloseable {
 	
-	/**
+	*//**
 	 * Constructs a new pooled data source with the given JDBC URL and pool bounds.<br>
 	 *
 	 * @param jdbcUrl The JDBC connection URL
 	 * @param minConnections The minimum number of connections in the pool
 	 * @param maxConnections The maximum number of connections in the pool
-	 */
+	 *//*
 	public SqlPooledDataSource(@NonNull String jdbcUrl, int minConnections, int maxConnections) {
 		throw new UnsupportedOperationException();
 	}
 	
-	/**
+	*//**
 	 * Constructs a new pooled data source with the given JDBC URL, credentials, and pool bounds.<br>
 	 *
 	 * @param jdbcUrl The JDBC connection URL
@@ -52,7 +52,7 @@ public class SqlPooledDataSource implements DataSource, AutoCloseable {
 	 * @param password The database password
 	 * @param minConnections The minimum number of connections in the pool
 	 * @param maxConnections The maximum number of connections in the pool
-	 */
+	 *//*
 	public SqlPooledDataSource(@NonNull String jdbcUrl, @NonNull String username, @NonNull String password, int minConnections, int maxConnections) {
 		throw new UnsupportedOperationException();
 	}
@@ -102,12 +102,12 @@ public class SqlPooledDataSource implements DataSource, AutoCloseable {
 		throw new UnsupportedOperationException();
 	}
 	
-	/**
+	*//**
 	 * Closes this pooled data source and releases all pooled connections.<br>
 	 * After calling this method, no new connections can be obtained from this data source.<br>
-	 */
+	 *//*
 	@Override
 	public void close() {
 		throw new UnsupportedOperationException();
 	}
-}
+}*/

@@ -16,13 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.migration;
+/*package net.luis.utils.io.databasev1.migration;
 
 import net.luis.utils.io.databasev1.exception.SqlException;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 
-/**
+*//**
  * Interface representing a SQL migration with manual {@code up()} and {@code down()} methods.<br>
  * <p>
  *     Migrations define schema changes using a DSL provided by {@link SqlMigrationBuilder}.<br>
@@ -34,36 +34,36 @@ import org.jspecify.annotations.NonNull;
  * </p>
  *
  * @author Luis-St
- */
+ *//*
 public interface SqlMigration {
 	
-	/**
+	*//**
 	 * Returns the version of this migration.<br>
 	 * Migrations are applied in ascending version order.<br>
 	 *
 	 * @return The migration version
-	 */
+	 *//*
 	@NonNull Version version();
 	
-	/**
+	*//**
 	 * Returns the description of this migration.<br>
 	 * @return The migration description
-	 */
+	 *//*
 	@NonNull String description();
 	
-	/**
+	*//**
 	 * Applies this migration (forward).<br>
 	 *
 	 * @param builder The migration builder providing DSL operations
 	 * @throws SqlException If the migration fails
-	 */
+	 *//*
 	void up(@NonNull SqlMigrationBuilder builder) throws SqlException;
 	
-	/**
+	*//**
 	 * Reverts this migration (rollback).<br>
 	 *
 	 * @param builder The migration builder providing DSL operations
 	 * @throws SqlException If the rollback fails
-	 */
+	 *//*
 	void down(@NonNull SqlMigrationBuilder builder) throws SqlException;
-}
+}*/

@@ -16,46 +16,46 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.exception.locking;
+/*package net.luis.utils.io.databasev1.exception.locking;
 
 import net.luis.utils.io.databasev1.exception.SqlDatabaseException;
 import org.jspecify.annotations.Nullable;
 
-/**
+*//**
  * Base exception for SQL locking errors.<br>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlLockingException extends SqlDatabaseException {
 	
-	/**
+	*//**
 	 * Constructs a new SQL locking exception with no details.<br>
-	 */
+	 *//*
 	public SqlLockingException() {}
 	
-	/**
+	*//**
 	 * Constructs a new SQL locking exception with the specified message.<br>
 	 * @param message The message of the exception
-	 */
+	 *//*
 	public SqlLockingException(@Nullable String message) {
 		super(message);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL locking exception with the specified message and cause.<br>
 	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlLockingException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL locking exception with the specified cause.<br>
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlLockingException(@Nullable Throwable cause) {
 		super(cause);
 	}
-}
+}*/

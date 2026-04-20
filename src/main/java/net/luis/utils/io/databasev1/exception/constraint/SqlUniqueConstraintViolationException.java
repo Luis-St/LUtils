@@ -16,72 +16,72 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.databasev1.exception.constraint;
+/*package net.luis.utils.io.databasev1.exception.constraint;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-/**
+*//**
  * Exception thrown when a SQL unique constraint is violated.<br>
  *
  * @author Luis-St
- */
+ *//*
 public class SqlUniqueConstraintViolationException extends SqlConstraintViolationException {
 	
-	/**
+	*//**
 	 * Constructs a new SQL unique constraint violation exception with no details.<br>
-	 */
+	 *//*
 	public SqlUniqueConstraintViolationException() {}
 	
-	/**
+	*//**
 	 * Constructs a new SQL unique constraint violation exception with the specified message.<br>
 	 * @param message The message of the exception
-	 */
+	 *//*
 	public SqlUniqueConstraintViolationException(@Nullable String message) {
 		super(message);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL unique constraint violation exception with the specified message and cause.<br>
 	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlUniqueConstraintViolationException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	/**
+	*//**
 	 * Constructs a new SQL unique constraint violation exception with the specified cause.<br>
 	 * @param cause The cause of the exception
-	 */
+	 *//*
 	public SqlUniqueConstraintViolationException(@Nullable Throwable cause) {
 		super(cause);
 	}
 	
-	/**
+	*//**
 	 * Returns the name of the violated unique constraint.<br>
 	 * @return The constraint name
-	 */
+	 *//*
 	public @NonNull String getConstraintName() {
 		throw new UnsupportedOperationException();
 	}
 	
-	/**
+	*//**
 	 * Returns the names of the columns involved in the constraint violation.<br>
 	 * @return The list of column names
-	 */
+	 *//*
 	public @NonNull List<String> getColumnNames() {
 		throw new UnsupportedOperationException();
 	}
 	
-	/**
+	*//**
 	 * Returns the duplicate value that caused the violation.<br>
 	 * @return The duplicate value or {@code null} if not available
-	 */
+	 *//*
 	public @Nullable Object getDuplicateValue() {
 		throw new UnsupportedOperationException();
 	}
-}
+}*/
