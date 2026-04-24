@@ -23,6 +23,8 @@ import net.luis.utils.io.database.function.functions.SqlWindowFunction;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -32,4 +34,10 @@ import org.jspecify.annotations.NonNull;
 public record SqlLastValueFunction<T>(
 	@NonNull SqlExpression<T> column,
 	@NonNull SqlWindowClause over
-) implements SqlWindowFunction<T> {}
+) implements SqlWindowFunction<T> {
+	
+	public SqlLastValueFunction {
+		Objects.requireNonNull(column, "Sql column expression must not be null");
+		Objects.requireNonNull(over, "Sql window clause must not be null");
+	}
+}

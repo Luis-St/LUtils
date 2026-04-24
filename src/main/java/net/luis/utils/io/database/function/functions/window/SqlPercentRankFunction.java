@@ -22,10 +22,17 @@ import net.luis.utils.io.database.function.functions.SqlWindowFunction;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record SqlPercentRankFunction(@NonNull SqlWindowClause over) implements SqlWindowFunction<Double> {}
+public record SqlPercentRankFunction(@NonNull SqlWindowClause over) implements SqlWindowFunction<Double> {
+	
+	public SqlPercentRankFunction {
+		Objects.requireNonNull(over, "Sql window clause must not be null");
+	}
+}

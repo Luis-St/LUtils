@@ -23,6 +23,8 @@ import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -33,4 +35,11 @@ public record SqlAddFunction<T>(
 	@NonNull SqlExpression<?> firstSummand,
 	@NonNull SqlExpression<?> secondSummand,
 	@NonNull SqlType<T> type
-) implements SqlTemporalFunction<T> {}
+) implements SqlTemporalFunction<T> {
+	
+	public SqlAddFunction {
+		Objects.requireNonNull(firstSummand, "Sql first summand expression must not be null");
+		Objects.requireNonNull(secondSummand, "Sql second summand expression must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
+	}
+}

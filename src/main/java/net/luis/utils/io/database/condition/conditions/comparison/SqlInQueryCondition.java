@@ -37,7 +37,7 @@ public record SqlInQueryCondition(
 ) implements SqlComparisonCondition {
 	
 	public SqlInQueryCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(query, "Query must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(query, "Sql query must not be null");
 	}
 }

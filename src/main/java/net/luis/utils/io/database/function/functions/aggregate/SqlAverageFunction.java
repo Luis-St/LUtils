@@ -33,6 +33,6 @@ import java.util.Objects;
 public record SqlAverageFunction(@NonNull SqlExpression<? extends Number> value) implements SqlAggregateFunction<Number> {
 	
 	public SqlAverageFunction {
-		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
 	}
 }

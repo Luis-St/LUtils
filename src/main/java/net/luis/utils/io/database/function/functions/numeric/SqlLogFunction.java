@@ -23,6 +23,8 @@ import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -32,4 +34,9 @@ import org.jspecify.annotations.Nullable;
 public record SqlLogFunction(
 	@NonNull SqlExpression<? extends Number> value,
 	@Nullable SqlExpression<? extends Number> base
-) implements SqlNumericFunction<Double> {}
+) implements SqlNumericFunction<Double> {
+	
+	public SqlLogFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+	}
+}

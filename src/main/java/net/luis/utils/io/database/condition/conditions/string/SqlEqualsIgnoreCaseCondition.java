@@ -36,7 +36,7 @@ public record SqlEqualsIgnoreCaseCondition(
 ) implements SqlStringCondition {
 	
 	public SqlEqualsIgnoreCaseCondition {
-		Objects.requireNonNull(first, "First expression must not be null");
-		Objects.requireNonNull(second, "Second expression must not be null");
+		Objects.requireNonNull(first, "Sql first expression must not be null");
+		Objects.requireNonNull(second, "Sql second expression must not be null");
 	}
 }

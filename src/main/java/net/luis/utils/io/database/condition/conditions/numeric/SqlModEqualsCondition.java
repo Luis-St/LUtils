@@ -37,8 +37,8 @@ public record SqlModEqualsCondition(
 ) implements SqlNumericCondition {
 	
 	public SqlModEqualsCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(divisor, "Divisor expression must not be null");
-		Objects.requireNonNull(remainder, "Remainder expression must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(divisor, "Sql divisor expression must not be null");
+		Objects.requireNonNull(remainder, "Sql remainder expression must not be null");
 	}
 }

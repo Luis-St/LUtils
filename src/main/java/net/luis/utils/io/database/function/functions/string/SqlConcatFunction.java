@@ -22,8 +22,7 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
 import org.jspecify.annotations.NonNull;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  *
@@ -36,4 +35,20 @@ public record SqlConcatFunction<T extends CharSequence>(
 	@NonNull Optional<String> separator,
 	boolean distinct,
 	boolean ordered
-) implements SqlStringFunction<T> {}
+) implements SqlStringFunction<T> {
+	
+	public SqlConcatFunction {
+		Objects.requireNonNull(values, "Sql values expression list must not be null");
+		Objects.requireNonNull(separator, "Separator must not be null");
+		
+		if (values.isEmpty()) {
+			throw new IllegalArgumentException("Sql values expression list must not be empty");
+		}
+		if (values.contains(null)) {
+			throw new IllegalArgumentException("Sql values expression list must not contain null");
+		}
+		if (separator.isPresent() && separator.get().isEmpty()) {
+			throw new IllegalArgumentException("Separator must not be empty");
+		}
+	}
+}

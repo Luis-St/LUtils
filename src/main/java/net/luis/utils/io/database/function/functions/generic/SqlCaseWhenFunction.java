@@ -25,6 +25,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -35,4 +36,16 @@ import java.util.List;
 public record SqlCaseWhenFunction<T>(
 	@NonNull List<SqlCaseWhenBranch<T>> branches,
 	@Nullable SqlExpression<T> elseValue
-) implements SqlFunction<T> {}
+) implements SqlFunction<T> {
+	
+	public SqlCaseWhenFunction {
+		Objects.requireNonNull(branches, "Sql branches list must not be null");
+		
+		if (branches.isEmpty()) {
+			throw new IllegalArgumentException("Sql branches list must not be empty");
+		}
+		if (branches.contains(null)) {
+			throw new IllegalArgumentException("Sql branches list must not contain null sql case when branches");
+		}
+	}
+}

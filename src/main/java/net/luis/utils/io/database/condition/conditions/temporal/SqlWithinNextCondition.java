@@ -36,7 +36,7 @@ public record SqlWithinNextCondition(
 ) implements SqlTemporalCondition {
 	
 	public SqlWithinNextCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(duration, "Duration expression must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(duration, "Sql duration expression must not be null");
 	}
 }

@@ -22,6 +22,8 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -31,4 +33,10 @@ import org.jspecify.annotations.NonNull;
 public record SqlLeftFunction<T extends CharSequence>(
 	@NonNull SqlExpression<T> value,
 	@NonNull SqlExpression<? extends Number> length
-) implements SqlStringFunction<T> {}
+) implements SqlStringFunction<T> {
+	
+	public SqlLeftFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(length, "Sql Sql length expression must not be null");
+	}
+}

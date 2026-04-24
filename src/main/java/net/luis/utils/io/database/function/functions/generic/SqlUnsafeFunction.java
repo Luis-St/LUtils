@@ -18,9 +18,13 @@
 
 package net.luis.utils.io.database.function.functions.generic;
 
+import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -30,5 +34,20 @@ import org.jspecify.annotations.NonNull;
 
 public record SqlUnsafeFunction<T>(
 	@NonNull String expression,
+	@NonNull List<SqlExpression<?>> arguments,
 	@NonNull SqlType<T> type
-) implements SqlFunction<T> {}
+) implements SqlFunction<T> {
+	
+	public SqlUnsafeFunction {
+		Objects.requireNonNull(expression, "Sql expression string must not be null");
+		Objects.requireNonNull(arguments, "Sql function arguments must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
+		
+		if (expression.isBlank()) {
+			throw new IllegalArgumentException("Sql expression string must not be blank");
+		}
+		if (arguments.contains(null)) {
+			throw new IllegalArgumentException("Sql function arguments must not contain null sql expressions");
+		}
+	}
+}

@@ -33,6 +33,6 @@ import java.util.Objects;
 public record SqlIsNullCondition(@NonNull SqlExpression<?> value) implements SqlComparisonCondition {
 	
 	public SqlIsNullCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
 	}
 }

@@ -22,6 +22,8 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -31,4 +33,10 @@ import org.jspecify.annotations.NonNull;
 public record SqlPositionFunction<T>(
 	@NonNull SqlExpression<T> substring,
 	@NonNull SqlExpression<? extends CharSequence> expression
-) implements SqlStringFunction<T> {}
+) implements SqlStringFunction<T> {
+	
+	public SqlPositionFunction {
+		Objects.requireNonNull(substring, "Sql substring expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+	}
+}

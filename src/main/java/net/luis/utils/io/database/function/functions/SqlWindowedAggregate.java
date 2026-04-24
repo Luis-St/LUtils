@@ -21,6 +21,8 @@ package net.luis.utils.io.database.function.functions;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -30,4 +32,10 @@ import org.jspecify.annotations.NonNull;
 public record SqlWindowedAggregate<T>(
 	@NonNull SqlAggregateFunction<T> aggregate,
 	@NonNull SqlWindowClause over
-) implements SqlWindowFunction<T> {}
+) implements SqlWindowFunction<T> {
+	
+	public SqlWindowedAggregate {
+		Objects.requireNonNull(aggregate, "Aggregate function must not be null");
+		Objects.requireNonNull(over, "Window clause must not be null");
+	}
+}

@@ -37,8 +37,8 @@ public record SqlBetweenCondition(
 ) implements SqlComparisonCondition {
 	
 	public SqlBetweenCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(lower, "Lower bound expression must not be null");
-		Objects.requireNonNull(upper, "Upper bound expression must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(lower, "Sql lower bound expression must not be null");
+		Objects.requireNonNull(upper, "Sql upper bound expression must not be null");
 	}
 }

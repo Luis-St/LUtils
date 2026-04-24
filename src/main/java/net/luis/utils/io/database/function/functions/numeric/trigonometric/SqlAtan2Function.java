@@ -22,6 +22,8 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -31,4 +33,10 @@ import org.jspecify.annotations.NonNull;
 public record SqlAtan2Function(
 	@NonNull SqlExpression<? extends Number> y,
 	@NonNull SqlExpression<? extends Number> x
-) implements SqlNumericFunction<Double> {}
+) implements SqlNumericFunction<Double> {
+	
+	public SqlAtan2Function {
+		Objects.requireNonNull(y, "Sql y expression must not be null");
+		Objects.requireNonNull(x, "Sql x expression must not be null");
+	}
+}

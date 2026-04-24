@@ -22,10 +22,17 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record SqlTanFunction(@NonNull SqlExpression<? extends Number> value) implements SqlNumericFunction<Double> {}
+public record SqlTanFunction(@NonNull SqlExpression<? extends Number> value) implements SqlNumericFunction<Double> {
+	
+	public SqlTanFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+	}
+}

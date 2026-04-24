@@ -23,6 +23,8 @@ import net.luis.utils.io.database.function.functions.SqlWindowFunction;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -32,4 +34,10 @@ import org.jspecify.annotations.NonNull;
 public record SqlTileBucketFunction(
 	@NonNull SqlExpression<? extends Number> buckets,
 	@NonNull SqlWindowClause over
-) implements SqlWindowFunction<Long> {}
+) implements SqlWindowFunction<Long> {
+	
+	public SqlTileBucketFunction {
+		Objects.requireNonNull(buckets, "Sql buckets expression must not be null");
+		Objects.requireNonNull(over, "Sql window clause must not be null");
+	}
+}

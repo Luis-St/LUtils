@@ -22,6 +22,8 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -32,4 +34,11 @@ public record SqlReplaceFunction<T extends CharSequence>(
 	@NonNull SqlExpression<T> value,
 	@NonNull SqlExpression<? extends CharSequence> search,
 	@NonNull SqlExpression<? extends CharSequence> replacement
-) implements SqlStringFunction<T> {}
+) implements SqlStringFunction<T> {
+	
+	public SqlReplaceFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(search, "Sql search expression must not be null");
+		Objects.requireNonNull(replacement, "Sql replacement expression must not be null");
+	}
+}

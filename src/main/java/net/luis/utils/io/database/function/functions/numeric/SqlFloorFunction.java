@@ -22,10 +22,17 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record SqlFloorFunction<T extends Number>(@NonNull SqlExpression<T> value) implements SqlNumericFunction<T> {}
+public record SqlFloorFunction<T extends Number>(@NonNull SqlExpression<T> value) implements SqlNumericFunction<T> {
+	
+	public SqlFloorFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+	}
+}

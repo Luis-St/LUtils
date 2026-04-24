@@ -22,10 +22,17 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlAggregateFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record SqlMinFunction<T>(@NonNull SqlExpression<T> value) implements SqlAggregateFunction<T> {}
+public record SqlMinFunction<T>(@NonNull SqlExpression<T> value) implements SqlAggregateFunction<T> {
+	
+	public SqlMinFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+	}
+}

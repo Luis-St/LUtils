@@ -22,10 +22,17 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record SqlToEpochFunction(@NonNull SqlExpression<?> value) implements SqlTemporalFunction<Long> {}
+public record SqlToEpochFunction(@NonNull SqlExpression<?> value) implements SqlTemporalFunction<Long> {
+	
+	public SqlToEpochFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+	}
+}

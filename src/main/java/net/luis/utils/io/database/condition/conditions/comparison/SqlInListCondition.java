@@ -37,11 +37,11 @@ public record SqlInListCondition(
 ) implements SqlComparisonCondition {
 	
 	public SqlInListCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(options, "Options list must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(options, "Sql options list must not be null");
 		
 		if (options.isEmpty()) {
-			throw new IllegalArgumentException("Options list must not be empty");
+			throw new IllegalArgumentException("Sql options list must not be empty");
 		}
 	}
 }
