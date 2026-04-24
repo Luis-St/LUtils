@@ -20,9 +20,6 @@ package net.luis.utils.io.database.expression;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.expression.orderable.*;
-import net.luis.utils.io.database.query.SqlAlias;
-import net.luis.utils.io.database.rendering.SqlRenderable;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import org.jspecify.annotations.NonNull;
 
@@ -34,36 +31,15 @@ import java.util.Objects;
  *
  */
 
-@FunctionalInterface
-public interface SqlExpression<T> extends SqlOrderable<T>, SqlRenderable {
+public record ValueSqlExpression<T>(@NonNull T value) implements SqlExpression<T> {
 	
-	static <T> @NonNull SqlExpression<T> of(@NonNull T value) {
+	public ValueSqlExpression {
 		Objects.requireNonNull(value, "Sql value must not be null");
-		return new ValueSqlExpression<>(value);
-	}
-	
-	default @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
-		Objects.requireNonNull(alias, "Sql alias must not be null");
-		return new AliasedSqlExpression<>(this, alias);
 	}
 	
 	@Override
-	default @NonNull OrderedSqlExpression<T> ascending() {
-		return new AscendingOrderedSqlExpression<>(this);
-	}
-	
-	@Override
-	default @NonNull OrderedSqlExpression<T> descending() {
-		return new DescendingOrderedSqlExpression<>(this);
-	}
-	
-	@Override
-	default @NonNull OrderedSqlExpression<T> nullsFirst() {
-		return new DefaultOrderedSqlExpression<>(this, SqlNullOrdering.NULLS_FIRST);
-	}
-	
-	@Override
-	default @NonNull OrderedSqlExpression<T> nullsLast() {
-		return new DefaultOrderedSqlExpression<>(this, SqlNullOrdering.NULLS_LAST);
+	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		return dialect.renderExpression(this);
 	}
 }
