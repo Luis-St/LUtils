@@ -494,7 +494,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlGreatestFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("GREATEST"), func.values());
 			case SqlLeastFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("LEAST"), func.values());
 			case SqlNullIfFunction(var expression, var fallback) -> this.renderFunction("NULLIF", expression, fallback);
-			case SqlUnsafeFunction(var expression, var type) -> this.renderCast(renderer -> renderer.literal(expression).toSql(), type);
+			case SqlUnsafeFunction(var expression, var arguments, var type) -> this.renderCast(renderer -> renderer.literal(expression).rendered(this.renderFunctionWithList(renderer, arguments)).toSql(), type);
 			
 			case null -> throw new NullPointerException("Sql function must not be null");
 			default -> throw new SqlDialectUnsupportedFunctionException("Unknown sql function type: " + function.getClass().getName() + " in dialect " + this.name());

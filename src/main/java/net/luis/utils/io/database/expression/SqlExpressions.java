@@ -18,11 +18,23 @@
 
 package net.luis.utils.io.database.expression;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.condition.conditions.comparison.*;
+import net.luis.utils.io.database.function.functions.SqlAggregateFunction;
+import net.luis.utils.io.database.function.functions.SqlWindowedAggregate;
+import net.luis.utils.io.database.function.functions.aggregate.SqlCountDistinctFunction;
+import net.luis.utils.io.database.function.functions.aggregate.SqlCountFunction;
+import net.luis.utils.io.database.function.functions.generic.*;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
 import net.luis.utils.io.database.query.crud.SqlSelectQuery;
 import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.util.SqlCaseWhenBranch;
 import org.jspecify.annotations.NonNull;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -33,76 +45,114 @@ import org.jspecify.annotations.NonNull;
 public final class SqlExpressions {
 	
 	public static <T> @NonNull SqlCondition equalTo(@NonNull SqlExpression<T> expression, @NonNull T value) {
-		return null;
+		return new SqlEqualToCondition(expression, SqlExpression.of(value));
 	}
 	
 	public static <T> @NonNull SqlCondition equalTo(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> other) {
-		return null;
+		return new SqlEqualToCondition(expression, other);
 	}
 	
+	@SafeVarargs
 	public static <T> @NonNull SqlCondition in(@NonNull SqlExpression<T> expression, T @NonNull ... values) {
-		return null;
+		Objects.requireNonNull(values, "Sql values must not be null");
+		
+		List<SqlExpression<?>> options = Lists.newArrayList();
+		for (T value : values) {
+			options.add(SqlExpression.of(value));
+		}
+		return new SqlInListCondition(expression, options);
 	}
 	
+	@SafeVarargs
 	public static <T> @NonNull SqlCondition in(@NonNull SqlExpression<T> expression, SqlExpression<T> @NonNull ... otherExpressions) {
-		return null;
+		Objects.requireNonNull(otherExpressions, "Other sql expressions must not be null");
+		
+		List<SqlExpression<?>> options = Lists.newArrayList();
+		for (SqlExpression<T> other : otherExpressions) {
+			options.add(Objects.requireNonNull(other, "Other sql expression must not be null"));
+		}
+		return new SqlInListCondition(expression, options);
 	}
 	
 	public static <T> @NonNull SqlCondition in(@NonNull SqlExpression<T> expression, @NonNull SqlSelectQuery<T> subquery) {
-		return null;
+		return new SqlInQueryCondition(expression, subquery);
 	}
 	
 	public static <T> @NonNull SqlCondition isDistinctFrom(@NonNull SqlExpression<T> expression, @NonNull T value) {
-		return null;
+		return new SqlIsDistinctFromCondition(expression, SqlExpression.of(value));
 	}
 	
 	public static <T> @NonNull SqlCondition isDistinctFrom(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> other) {
-		return null;
+		return new SqlIsDistinctFromCondition(expression, other);
 	}
 	
 	public static <T> @NonNull SqlCondition isNull(@NonNull SqlExpression<T> expression) {
-		return null;
+		return new SqlIsNullCondition(expression);
 	}
 	
 	public static <T> @NonNull SqlExpression<Long> count(@NonNull SqlExpression<T> expression, boolean distinct) {
-		return null;
+		return distinct ? new SqlCountDistinctFunction(expression) : new SqlCountFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> cast(@NonNull SqlExpression<?> expression, @NonNull Class<T> targetType) {
-		return null;
+	public static <T> @NonNull SqlExpression<T> cast(@NonNull SqlExpression<?> expression, @NonNull SqlType<T> targetType) {
+		Objects.requireNonNull(expression, "Sql Expression must not be null");
+		Objects.requireNonNull(targetType, "Sql target type must not be null");
+		
+		return new SqlCastFunction<>(expression, targetType);
 	}
 	
 	@SafeVarargs
 	public static <T> @NonNull SqlExpression<T> coalesce(@NonNull SqlExpression<T> @NonNull ... values) {
-		return null;
+		Objects.requireNonNull(values, "Sql values must not be null");
+		
+		List<SqlExpression<T>> list = Lists.newArrayList();
+		for (SqlExpression<T> value : values) {
+			list.add(Objects.requireNonNull(value, "Sql value expression must not be null"));
+		}
+		return new SqlCoalesceFunction<>(list);
 	}
 	
 	public static <T> @NonNull SqlExpression<T> nullIf(@NonNull SqlExpression<T> expression, @NonNull T fallback) {
-		return null;
+		return new SqlNullIfFunction<>(expression, SqlExpression.of(fallback));
 	}
 	
 	public static <T> @NonNull SqlExpression<T> nullIf(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> fallback) {
-		return null;
+		return new SqlNullIfFunction<>(expression, fallback);
 	}
 	
 	public static <T> @NonNull SqlExpression<T> caseWhen(@NonNull SqlCondition condition, @NonNull T thenValue, @NonNull T elseValue) {
-		return null;
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
+		List<SqlCaseWhenBranch<T>> branches = List.of(new SqlCaseWhenBranch<>(condition, SqlExpression.of(thenValue)));
+		return new SqlCaseWhenFunction<>(branches, SqlExpression.of(elseValue));
 	}
 	
 	public static <T> @NonNull SqlExpression<T> caseWhen(@NonNull SqlCondition condition, @NonNull SqlExpression<T> thenValue, @NonNull SqlExpression<T> elseValue) {
-		return null;
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		Objects.requireNonNull(thenValue, "SQl then value must not be null");
+		
+		List<SqlCaseWhenBranch<T>> branches = List.of(new SqlCaseWhenBranch<>(condition, thenValue));
+		return new SqlCaseWhenFunction<>(branches, elseValue);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> ofUnsafe(@NonNull String functionName, @NonNull Class<T> resultType, SqlExpression<?> @NonNull ... args) {
-		return null;
+	public static <T> @NonNull SqlExpression<T> ofUnsafe(@NonNull String functionName, @NonNull SqlType<T> resultType, SqlExpression<?> @NonNull ... args) {
+		Objects.requireNonNull(functionName, "Sql function name must not be null");
+		Objects.requireNonNull(resultType, "Sql result type must not be null");
+		Objects.requireNonNull(args, "Sql arguments must not be null");
+		
+		return new SqlUnsafeFunction<>(functionName, List.of(args), resultType);
 	}
 	
 	public static <T> @NonNull SqlExpression<T> over() {
-		return null;
+		return null; // Needed???
 	}
 	
+	@Deprecated // Use SqlAggregateFunction#over instead
 	public static <T> @NonNull SqlExpression<T> over(@NonNull SqlExpression<T> expression, @NonNull SqlWindowClause clause) {
-		return null;
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		Objects.requireNonNull(clause, "Sql window clause must not be null");
+		
+		return new SqlWindowedAggregate<>((SqlAggregateFunction<T>) expression, clause);
 	}
 	
 	public static @NonNull SqlExpression<Long> rowNumber() {

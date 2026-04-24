@@ -30,10 +30,10 @@ import java.util.Objects;
  *
  */
 
-public record SqlPositionFunction<T>(
-	@NonNull SqlExpression<T> substring,
+public record SqlPositionFunction(
+	@NonNull SqlExpression<? extends CharSequence> substring,
 	@NonNull SqlExpression<? extends CharSequence> expression
-) implements SqlStringFunction<T> {
+) implements SqlStringFunction<Integer> {
 	
 	public SqlPositionFunction {
 		Objects.requireNonNull(substring, "Sql substring expression must not be null");
