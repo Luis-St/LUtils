@@ -21,6 +21,7 @@ package net.luis.utils.io.database.function.functions.generic;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.util.SqlCaseWhenBranch;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -34,7 +35,7 @@ import java.util.Objects;
  */
 
 public record SqlCaseWhenFunction<T>(
-	@NonNull List<SqlCaseWhenBranch<T>> branches,
+	@NonNull @Unmodifiable List<SqlCaseWhenBranch<T>> branches,
 	@Nullable SqlExpression<T> elseValue
 ) implements SqlFunction<T> {
 	
@@ -47,5 +48,6 @@ public record SqlCaseWhenFunction<T>(
 		if (branches.contains(null)) {
 			throw new IllegalArgumentException("Sql branches list must not contain null sql case when branches");
 		}
+		branches = List.copyOf(branches);
 	}
 }

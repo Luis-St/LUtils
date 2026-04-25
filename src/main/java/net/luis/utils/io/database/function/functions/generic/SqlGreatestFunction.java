@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.generic;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -31,7 +32,7 @@ import java.util.Objects;
  *
  */
 
-public record SqlGreatestFunction<T>(@NonNull List<SqlExpression<T>> values) implements SqlFunction<T> {
+public record SqlGreatestFunction<T>(@NonNull @Unmodifiable List<SqlExpression<T>> values) implements SqlFunction<T> {
 	
 	public SqlGreatestFunction {
 		Objects.requireNonNull(values, "Sql values expression list must not be null");
@@ -42,5 +43,6 @@ public record SqlGreatestFunction<T>(@NonNull List<SqlExpression<T>> values) imp
 		if (values.contains(null)) {
 			throw new IllegalArgumentException("Sql values expression list must not contain null sql expressions");
 		}
+		values = List.copyOf(values);
 	}
 }

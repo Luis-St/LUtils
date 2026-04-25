@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.string;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -31,7 +32,7 @@ import java.util.*;
  */
 
 public record SqlConcatFunction<T extends CharSequence>(
-	@NonNull List<SqlExpression<T>> values,
+	@NonNull @Unmodifiable List<SqlExpression<T>> values,
 	@NonNull Optional<String> separator,
 	boolean distinct,
 	boolean ordered
@@ -50,5 +51,6 @@ public record SqlConcatFunction<T extends CharSequence>(
 		if (separator.isPresent() && separator.get().isEmpty()) {
 			throw new IllegalArgumentException("Separator must not be empty");
 		}
+		values = List.copyOf(values);
 	}
 }

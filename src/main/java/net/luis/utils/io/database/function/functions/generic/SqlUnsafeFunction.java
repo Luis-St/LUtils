@@ -21,6 +21,7 @@ package net.luis.utils.io.database.function.functions.generic;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.type.SqlType;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -34,7 +35,7 @@ import java.util.Objects;
 
 public record SqlUnsafeFunction<T>(
 	@NonNull String expression,
-	@NonNull List<SqlExpression<?>> arguments,
+	@NonNull @Unmodifiable List<SqlExpression<?>> arguments,
 	@NonNull SqlType<T> type
 ) implements SqlFunction<T> {
 	
@@ -49,5 +50,6 @@ public record SqlUnsafeFunction<T>(
 		if (arguments.contains(null)) {
 			throw new IllegalArgumentException("Sql function arguments must not contain null sql expressions");
 		}
+		arguments = List.copyOf(arguments);
 	}
 }
