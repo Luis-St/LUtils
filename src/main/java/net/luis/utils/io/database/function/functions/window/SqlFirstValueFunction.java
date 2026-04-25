@@ -37,7 +37,7 @@ public record SqlFirstValueFunction<T>(
 ) implements SqlWindowFunction<T> {
 	
 	public SqlFirstValueFunction {
-		Objects.requireNonNull(column, "Sql Sql column expression must not be null");
+		Objects.requireNonNull(column, "Sql column expression must not be null");
 		Objects.requireNonNull(over, "Sql window clause must not be null");
 	}
 }

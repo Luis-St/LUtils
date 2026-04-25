@@ -22,6 +22,7 @@ import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
+import net.luis.utils.io.database.function.window.*;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
@@ -53,6 +54,12 @@ public interface SqlDialect {
 	@NonNull SqlRendered renderFunction(@NonNull SqlFunction<?> function) throws SqlException;
 	
 	@NonNull SqlRendered renderCondition(@NonNull SqlCondition condition) throws SqlException;
+	
+	@NonNull SqlRendered renderWindowClause(@NonNull SqlWindowClause clause) throws SqlException;
+	
+	@NonNull SqlRendered renderWindowFrame(@NonNull SqlWindowFrame frame) throws SqlException;
+	
+	@NonNull SqlRendered renderFrameBound(@NonNull SqlFrameBound bound) throws SqlException;
 	
 	boolean isFeatureSupported(@NonNull SqlFeature feature);
 	

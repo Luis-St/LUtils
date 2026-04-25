@@ -19,7 +19,6 @@
 package net.luis.utils.io.database.rendering;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.io.database.dialect.SqlDialect;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
@@ -242,13 +241,20 @@ public class SqlRenderer {
 		return this;
 	}
 	
+	public @NonNull SqlRenderer by() {
+		this.statements.add("BY");
+		return this;
+	}
+	
 	public @NonNull SqlRenderer groupBy() {
-		this.statements.add("GROUP BY");
+		this.statements.add("GROUP");
+		this.by();
 		return this;
 	}
 	
 	public @NonNull SqlRenderer orderBy() {
-		this.statements.add("ORDER BY");
+		this.statements.add("ORDER");
+		this.by();
 		return this;
 	}
 	

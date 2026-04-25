@@ -35,6 +35,7 @@ import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderi
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.ValueSqlExpression;
 import net.luis.utils.io.database.expression.orderable.OrderedSqlExpression;
+import net.luis.utils.io.database.expression.orderable.SqlOrderable;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.*;
 import net.luis.utils.io.database.function.functions.aggregate.*;
@@ -45,7 +46,9 @@ import net.luis.utils.io.database.function.functions.numeric.trigonometric.*;
 import net.luis.utils.io.database.function.functions.string.*;
 import net.luis.utils.io.database.function.functions.temporal.*;
 import net.luis.utils.io.database.function.functions.window.*;
-import net.luis.utils.io.database.function.window.SqlWindowClause;
+import net.luis.utils.io.database.function.window.*;
+import net.luis.utils.io.database.function.window.frame.*;
+import net.luis.utils.io.database.function.window.frame.bound.*;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
@@ -567,8 +570,88 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlWithinLastCondition(var value, var duration) -> renderer -> renderer.rendered(value.toSql(this)).literal(">=").keyword("CURRENT_TIMESTAMP").literal("-").rendered(duration.toSql(this)).toSql();
 			
 			case null -> throw new NullPointerException("Sql temporal condition must not be null");
-			default -> throw new SqlDialectUnsupportedConditionException("Unknown sql temporal condition type: " + condition.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql temporal condition type: " + condition.getClass().getName() + " in dialect " + this.name());
 		};
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderWindowClause(@NonNull SqlWindowClause clause) throws SqlException {
+		Objects.requireNonNull(clause, "Sql window clause must not be null");
+		SqlRenderer renderer = SqlRenderer.empty();
+		
+		List<SqlColumn<?, ?>> partitions = clause.partitions();
+		if (!partitions.isEmpty()) {
+			renderer.partition().by();
+			this.renderList(renderer, partitions, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+		}
+		
+		List<SqlOrderable<?>> orderings = clause.orderings();
+		if (!partitions.isEmpty()) {
+			renderer.orderBy();
+			this.renderList(renderer, orderings, this::renderOrderingItem);
+		}
+		
+		SqlWindowFrame frame = clause.frame();
+		if (frame != null) {
+			renderer.rendered(this.renderWindowFrame(frame));
+		}
+		return renderer.toSql();
+	}
+	
+	protected void renderOrderingItem(@NonNull SqlRenderer renderer, @NonNull SqlOrderable<?> orderable) throws SqlException {
+		Objects.requireNonNull(renderer, "Renderer must not be null");
+		Objects.requireNonNull(orderable, "Orderable must not be null");
+		
+		if (orderable instanceof OrderedSqlExpression<?> ordered) {
+			renderer.rendered(this.renderExpression(ordered.expression()));
+			switch (ordered.ordering()) {
+				case ASCENDING -> renderer.asc();
+				case DESCENDING -> renderer.desc();
+				case DEFAULT -> {}
+			}
+			switch (ordered.nullOrdering()) {
+				case NULLS_FIRST -> renderer.nulls().first();
+				case NULLS_LAST -> renderer.nulls().literal("LAST");
+				case DEFAULT -> {}
+			}
+		} else if (orderable instanceof SqlExpression<?> expression) {
+			renderer.rendered(this.renderExpression(expression));
+		} else {
+			throw new SqlDialectException("Unknown orderable type: " + orderable.getClass().getName() + " in dialect " + this.name());
+		}
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderWindowFrame(@NonNull SqlWindowFrame frame) throws SqlException {
+		Objects.requireNonNull(frame, "Sql window frame must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		switch (frame) {
+			case RowsWindowFrame _ -> renderer.rows();
+			case RangeWindowFrame _ -> renderer.range();
+			case GroupsWindowFrame _ -> renderer.groups();
+			
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql window frame type: " + frame.getClass().getName() + " in dialect " + this.name());
+		}
+		
+		renderer.between().rendered(this.renderFrameBound(frame.start())).and().rendered(this.renderFrameBound(frame.end()));
+		return renderer.toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderFrameBound(@NonNull SqlFrameBound bound) throws SqlException {
+		SqlRenderer renderer = SqlRenderer.empty();
+		
+		return (switch (bound) {
+			case UnboundedPrecedingFrameBound _ -> renderer.unbounded().preceding();
+			case PrecedingFrameBound(int offset) -> renderer.parameter(offset).preceding();
+			case CurrentRowFrameBound _ -> renderer.currentRow();
+			case FollowingFrameBound(int offset) -> renderer.parameter(offset).following();
+			case UnboundedFollowingFrameBound _ -> renderer.unbounded().following();
+			
+			case null -> throw new NullPointerException("Sql frame bound must not be null");
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql frame bound type: " + bound.getClass().getName() + " in dialect " + this.name());
+		}).toSql();
 	}
 	
 	@Override

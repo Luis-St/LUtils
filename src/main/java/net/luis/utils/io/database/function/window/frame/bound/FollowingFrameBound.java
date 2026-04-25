@@ -16,10 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.function.window;
+package net.luis.utils.io.database.function.window.frame.bound;
 
-import net.luis.utils.io.database.function.window.frame.bound.*;
-import org.jspecify.annotations.NonNull;
+import net.luis.utils.io.database.function.window.SqlFrameBound;
 
 /**
  *
@@ -27,25 +26,11 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlFrameBound {
+public record FollowingFrameBound(int offset) implements SqlFrameBound {
 	
-	static @NonNull SqlFrameBound unboundedPreceding() {
-		return new UnboundedPrecedingFrameBound();
-	}
-	
-	static @NonNull SqlFrameBound preceding(int offset) {
-		return new PrecedingFrameBound(offset);
-	}
-	
-	static @NonNull SqlFrameBound currentRow() {
-		return new CurrentRowFrameBound();
-	}
-	
-	static @NonNull SqlFrameBound following(int offset) {
-		return new FollowingFrameBound(offset);
-	}
-	
-	static @NonNull SqlFrameBound unboundedFollowing() {
-		return new UnboundedFollowingFrameBound();
+	public FollowingFrameBound {
+		if (offset < 0) {
+			throw new IllegalArgumentException("Sql frame bound offset must not be negative");
+		}
 	}
 }

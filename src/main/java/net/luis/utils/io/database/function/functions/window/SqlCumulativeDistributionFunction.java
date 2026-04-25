@@ -33,6 +33,6 @@ import java.util.Objects;
 public record SqlCumulativeDistributionFunction(@NonNull SqlWindowClause over) implements SqlWindowFunction<Double> {
 	
 	public SqlCumulativeDistributionFunction {
-		Objects.requireNonNull(over, "Sql Sql window clause must not be null");
+		Objects.requireNonNull(over, "Sql window clause must not be null");
 	}
 }
