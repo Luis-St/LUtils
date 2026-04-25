@@ -69,7 +69,7 @@ public interface SqlDialect {
 	
 	@NonNull String quoteIdentifier(@NonNull String identifier);
 	
-	@NonNull String renderQualifiedName(@NonNull String schema, @NonNull String name) throws SqlException;
+	@NonNull SqlRendered renderQualifiedName(@NonNull String schema, @NonNull String name) throws SqlException;
 	
 	@NonNull SqlRendered renderCreateTable(@NonNull SqlTable<?> table, boolean ifNotExists) throws SqlException;
 	
@@ -89,9 +89,9 @@ public interface SqlDialect {
 	
 	@NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlException;
 	
-	@NonNull String renderSetOperation(@NonNull SqlSetOperation operation) throws SqlException;
+	@NonNull SqlRendered renderSetOperation(@NonNull SqlSetOperation operation) throws SqlException;
 	
-	@NonNull String renderLateralJoin() throws SqlException;
+	@NonNull SqlRendered renderLateralJoin() throws SqlException;
 	
-	@NonNull String renderBooleanLiteral(boolean value) throws SqlException;
+	@NonNull SqlRendered renderBooleanLiteral(boolean value) throws SqlException;
 }

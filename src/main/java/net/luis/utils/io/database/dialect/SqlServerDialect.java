@@ -230,7 +230,7 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	public @NonNull String renderBooleanLiteral(boolean value) throws SqlException {
-		return value ? "1" : "0";
+	public @NonNull SqlRendered renderBooleanLiteral(boolean value) throws SqlException {
+		return SqlRendered.of(value ? "1" : "0");
 	}
 }

@@ -138,7 +138,7 @@ public class PostgreSqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	public @NonNull String renderLateralJoin() {
-		return "LATERAL";
+	public @NonNull SqlRendered renderLateralJoin() {
+		return SqlRendered.of("LATERAL");
 	}
 }

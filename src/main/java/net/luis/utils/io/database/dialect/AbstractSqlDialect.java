@@ -510,8 +510,8 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		
 		return switch (condition) {
 			case SqlNegatedCondition cond -> renderer.not().openingBracket().rendered(this.renderCondition(cond.condition())).closingBracket().toSql();
-			case SqlAlwaysCondition _ -> renderer.literal(this.renderBooleanLiteral(true)).toSql();
-			case SqlNeverCondition _ -> renderer.literal(this.renderBooleanLiteral(false)).toSql();
+			case SqlAlwaysCondition _ -> renderer.rendered(this.renderBooleanLiteral(true)).toSql();
+			case SqlNeverCondition _ -> renderer.rendered(this.renderBooleanLiteral(false)).toSql();
 			case SqlAllOfCondition cond -> {
 				List<SqlCondition> conditions = cond.conditions();
 				for (int i = 0; i < conditions.size(); i++) {
@@ -706,11 +706,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	}
 	
 	@Override
-	public @NonNull String renderQualifiedName(@NonNull String schema, @NonNull String name) throws SqlException {
+	public @NonNull SqlRendered renderQualifiedName(@NonNull String schema, @NonNull String name) throws SqlException {
 		Objects.requireNonNull(schema, "Schema must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		
-		return this.quoteIdentifier(schema) + "." + this.quoteIdentifier(name);
+		return SqlRendered.of(this.quoteIdentifier(schema) + "." + this.quoteIdentifier(name));
 	}
 	
 	@Override
@@ -995,24 +995,24 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	}
 	
 	@Override
-	public @NonNull String renderSetOperation(@NonNull SqlSetOperation operation) throws SqlException {
+	public @NonNull SqlRendered renderSetOperation(@NonNull SqlSetOperation operation) throws SqlException {
 		Objects.requireNonNull(operation, "Sql set operation must not be null");
 		
-		return switch (operation) {
+		return SqlRendered.of(switch (operation) {
 			case UNION -> "UNION";
 			case UNION_ALL -> "UNION ALL";
 			case INTERSECT -> "INTERSECT";
 			case EXCEPT -> "EXCEPT";
-		};
+		});
 	}
 	
 	@Override
-	public @NonNull String renderLateralJoin() throws SqlException {
+	public @NonNull SqlRendered renderLateralJoin() throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("LATERAL join is not supported by dialect " + this.name());
 	}
 	
 	@Override
-	public @NonNull String renderBooleanLiteral(boolean value) throws SqlException {
-		return value ? "TRUE" : "FALSE";
+	public @NonNull SqlRendered renderBooleanLiteral(boolean value) throws SqlException {
+		return SqlRendered.of(value ? "TRUE" : "FALSE");
 	}
 }
