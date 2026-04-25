@@ -36,12 +36,12 @@ public interface SqlExpression<T> extends SqlOrderable<T>, SqlRenderable {
 	
 	static <T> @NonNull SqlExpression<T> of(@NonNull T value) {
 		Objects.requireNonNull(value, "Sql value must not be null");
-		return new ValueSqlExpression<>(value);
+		return new SqlValueExpression<>(value);
 	}
 	
 	default @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
 		Objects.requireNonNull(alias, "Sql alias must not be null");
-		return new AliasedSqlExpression<>(this, alias);
+		return new SqlAliasedExpression<>(this, alias);
 	}
 	
 	@Override

@@ -26,7 +26,7 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record NegatedSqlCondition(@NonNull SqlCondition condition) implements SqlCondition {
+public record SqlNegatedCondition(@NonNull SqlCondition condition) implements SqlCondition {
 	
 	@Override
 	public @NonNull SqlCondition not() {

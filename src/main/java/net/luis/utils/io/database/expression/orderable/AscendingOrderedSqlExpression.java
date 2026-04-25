@@ -20,7 +20,7 @@ package net.luis.utils.io.database.expression.orderable;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.expression.AliasedSqlExpression;
+import net.luis.utils.io.database.expression.SqlAliasedExpression;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -55,7 +55,7 @@ public record AscendingOrderedSqlExpression<T>(
 	
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
-		return new AliasedSqlExpression<>(this, alias);
+		return new SqlAliasedExpression<>(this, alias);
 	}
 	
 	@Override

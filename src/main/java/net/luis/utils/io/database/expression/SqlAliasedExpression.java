@@ -20,6 +20,7 @@ package net.luis.utils.io.database.expression;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import org.jspecify.annotations.NonNull;
 
@@ -31,10 +32,20 @@ import java.util.Objects;
  *
  */
 
-public record ValueSqlExpression<T>(@NonNull T value) implements SqlExpression<T> {
+public record SqlAliasedExpression<T>(
+	@NonNull SqlExpression<T> expression,
+	@NonNull SqlAlias alias
+) implements SqlExpression<T> {
 	
-	public ValueSqlExpression {
-		Objects.requireNonNull(value, "Sql value must not be null");
+	public SqlAliasedExpression {
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		Objects.requireNonNull(alias, "Sql alias must not be null");
+	}
+	
+	@Override
+	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
+		Objects.requireNonNull(alias, "Sql alias must not be null");
+		return new SqlAliasedExpression<>(this.expression, alias);
 	}
 	
 	@Override

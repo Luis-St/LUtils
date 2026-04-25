@@ -59,7 +59,7 @@ public interface SqlCondition extends SqlRenderable {
 	}
 	
 	default @NonNull SqlCondition not() {
-		return new NegatedSqlCondition(this);
+		return new SqlNegatedCondition(this);
 	}
 	
 	@Override

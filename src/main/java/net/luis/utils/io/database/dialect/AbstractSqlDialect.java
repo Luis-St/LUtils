@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 import net.luis.utils.function.throwable.ThrowableBiConsumer;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.SqlReferentialAction;
-import net.luis.utils.io.database.condition.NegatedSqlCondition;
+import net.luis.utils.io.database.condition.SqlNegatedCondition;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.conditions.*;
 import net.luis.utils.io.database.condition.conditions.comparison.*;
@@ -33,7 +33,7 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.expression.ValueSqlExpression;
+import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.expression.orderable.OrderedSqlExpression;
 import net.luis.utils.io.database.expression.orderable.SqlOrderable;
 import net.luis.utils.io.database.function.SqlFunction;
@@ -165,14 +165,14 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		return switch (expression) {
 			case OrderedSqlExpression<?> expr -> this.renderExpression(expr.expression());
 			case SqlFunction<?> func -> this.renderFunction(func);
-			case ValueSqlExpression<?> value -> this.renderValueExpression(value);
+			case SqlValueExpression<?> value -> this.renderValueExpression(value);
 			
 			case null -> throw new NullPointerException("Sql expression must not be null");
 			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql expression type: " + expression.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull SqlRendered renderValueExpression(@NonNull ValueSqlExpression<?> expression) throws SqlException {
+	protected @NonNull SqlRendered renderValueExpression(@NonNull SqlValueExpression<?> expression) throws SqlException {
 		Objects.requireNonNull(expression, "Sql value expression must not be null");
 		return SqlRenderer.empty().parameter(expression.value()).toSql();
 	}
@@ -508,7 +508,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	@Override
 	public @NonNull SqlRendered renderCondition(@NonNull SqlCondition condition) throws SqlException {
 		return (switch (condition) {
-			case NegatedSqlCondition cond -> (ThrowableFunction<SqlRenderer, SqlRendered, SqlException>) renderer -> renderer.not().openingBracket().rendered(this.renderCondition(cond.condition())).closingBracket().toSql();
+			case SqlNegatedCondition cond -> (ThrowableFunction<SqlRenderer, SqlRendered, SqlException>) renderer -> renderer.not().openingBracket().rendered(this.renderCondition(cond.condition())).closingBracket().toSql();
 			case SqlComparisonCondition cond -> this.renderComparisonCondition(cond);
 			case SqlNumericCondition cond -> this.renderNumericCondition(cond);
 			case SqlStringCondition cond -> this.renderStringCondition(cond);
