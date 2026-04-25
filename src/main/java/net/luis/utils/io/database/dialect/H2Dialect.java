@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFeatureException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
+import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.dialect.*;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -60,7 +60,7 @@ public class H2Dialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
 		return switch (jdbcType) {
 			case Types.CLOB -> "CHARACTER LARGE OBJECT";
 			case Types.BLOB, Types.LONGVARBINARY -> "BINARY LARGE OBJECT";
@@ -69,7 +69,7 @@ public class H2Dialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedRenderingException {
 		Objects.requireNonNull(parameter, "Sql parameter must not be null");
 		
 		if (parameter instanceof SqlLengthParameter length) {
@@ -95,17 +95,17 @@ public class H2Dialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlDialectUnsupportedFeatureException {
+	public @NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlException {
 		Objects.requireNonNull(mode, "Sql Lock mode must not be null");
 		
 		if (mode == SqlLockMode.FOR_SHARE) {
-			throw new SqlDialectUnsupportedFeatureException("FOR SHARE is not supported by dialect " + this.name());
+			throw new SqlDialectUnsupportedRenderingException("FOR SHARE is not supported by dialect " + this.name());
 		}
 		if (skipLocked) {
-			throw new SqlDialectUnsupportedFeatureException("SKIP LOCKED is not supported by dialect " + this.name());
+			throw new SqlDialectUnsupportedRenderingException("SKIP LOCKED is not supported by dialect " + this.name());
 		}
 		if (noWait) {
-			throw new SqlDialectUnsupportedFeatureException("NOWAIT is not supported by dialect " + this.name());
+			throw new SqlDialectUnsupportedRenderingException("NOWAIT is not supported by dialect " + this.name());
 		}
 		
 		SqlRenderer renderer = SqlRenderer.empty();

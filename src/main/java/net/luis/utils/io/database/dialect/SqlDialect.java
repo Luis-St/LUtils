@@ -20,7 +20,6 @@ package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.*;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.index.SqlIndex;
@@ -47,7 +46,7 @@ public interface SqlDialect {
 	
 	boolean isTypeSupported(@NonNull SqlType<?> type);
 	
-	@NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlDialectUnsupportedTypeException;
+	@NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlException;
 	
 	@NonNull SqlRendered renderExpression(@NonNull SqlExpression<?> expression) throws SqlException;
 	
@@ -59,7 +58,7 @@ public interface SqlDialect {
 	
 	boolean isIndexMethodSupported(@NonNull SqlIndexMethod method);
 	
-	@NonNull String getIndexMethodName(@NonNull SqlIndexMethod method) throws SqlDialectUnsupportedIndexMethodException;
+	@NonNull String getIndexMethodName(@NonNull SqlIndexMethod method) throws SqlException;
 	
 	@NonNull String quoteIdentifier(@NonNull String identifier);
 	
@@ -85,7 +84,7 @@ public interface SqlDialect {
 	
 	@NonNull String renderSetOperation(@NonNull SqlSetOperation operation) throws SqlException;
 	
-	@NonNull String renderLateralJoin()  throws SqlException;
+	@NonNull String renderLateralJoin() throws SqlException;
 	
 	@NonNull String renderBooleanLiteral(boolean value) throws SqlException;
 }

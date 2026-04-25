@@ -20,7 +20,7 @@ package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
+import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.numeric.SqlRandomFunction;
@@ -66,7 +66,7 @@ public class MySqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
 		return switch (jdbcType) {
 			case Types.BOOLEAN -> "TINYINT(1)";
 			case Types.TINYINT -> "TINYINT";
@@ -77,7 +77,7 @@ public class MySqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedRenderingException {
 		Objects.requireNonNull(parameter, "Sql parameter must not be null");
 		
 		if (parameter instanceof SqlFractionalParameter fractional) {

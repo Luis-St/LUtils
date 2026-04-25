@@ -30,7 +30,8 @@ import net.luis.utils.io.database.condition.conditions.numeric.*;
 import net.luis.utils.io.database.condition.conditions.string.*;
 import net.luis.utils.io.database.condition.conditions.temporal.*;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.*;
+import net.luis.utils.io.database.exception.dialect.SqlDialectException;
+import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.ValueSqlExpression;
 import net.luis.utils.io.database.expression.orderable.OrderedSqlExpression;
@@ -77,20 +78,20 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	}
 	
 	@Override
-	public @NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlDialectUnsupportedTypeException {
+	public @NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlException {
 		Objects.requireNonNull(type, "Sql type must not be null");
 		if (!this.isTypeSupported(type)) {
-			throw new SqlDialectUnsupportedTypeException("Sql type " + type + " is not supported by dialect " + this.name());
+			throw new SqlDialectUnsupportedRenderingException("Sql type " + type + " is not supported by dialect " + this.name());
 		}
 		
 		return switch (type.getBaseType()) {
 			case SqlScalarType<?> scalar -> this.getScalarTypeName(scalar.jdbcType());
 			case ParameterizedSqlType<?, ?> parameterized -> this.getParameterizedTypeName(parameterized.jdbcType(), parameterized.parameter());
-			default -> throw new SqlDialectUnsupportedTypeException("Unknown sql type structure: " + type);
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql type structure: " + type);
 		};
 	}
 	
-	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
 		return switch (jdbcType) {
 			case Types.BOOLEAN -> "BOOLEAN";
 			case Types.TINYINT -> "TINYINT";
@@ -105,22 +106,22 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case Types.CLOB -> "CLOB";
 			case Types.LONGVARBINARY, Types.BLOB -> "BLOB";
 			case Types.DATE -> "DATE";
-			default -> throw new SqlDialectUnsupportedTypeException("Unsupported JDBC scalar type: " + jdbcType + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported JDBC scalar type: " + jdbcType + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedRenderingException {
 		Objects.requireNonNull(parameter, "Sql parameter must not be null");
 		
 		return switch (parameter) {
 			case SqlLengthParameter length -> this.getLengthParameterizedTypeName(jdbcType, length);
 			case SqlPrecisionParameter precision -> this.getPrecisionParameterizedTypeName(jdbcType, precision);
 			case SqlFractionalParameter fractional -> this.getFractionalParameterizedTypeName(jdbcType, fractional);
-			default -> throw new SqlDialectUnsupportedTypeException("Unsupported sql parameter type: " + parameter.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported sql parameter type: " + parameter.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull String getLengthParameterizedTypeName(int jdbcType, @NonNull SqlLengthParameter length) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getLengthParameterizedTypeName(int jdbcType, @NonNull SqlLengthParameter length) throws SqlDialectUnsupportedRenderingException {
 		Objects.requireNonNull(length, "Length parameter must not be null");
 		
 		return switch (jdbcType) {
@@ -130,21 +131,21 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case Types.NVARCHAR -> "NVARCHAR(" + length.length() + ")";
 			case Types.BINARY -> "BINARY(" + length.length() + ")";
 			case Types.VARBINARY -> "VARBINARY(" + length.length() + ")";
-			default -> throw new SqlDialectUnsupportedTypeException("Unsupported length-parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported length-parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull String getPrecisionParameterizedTypeName(int jdbcType, @NonNull SqlPrecisionParameter precision) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getPrecisionParameterizedTypeName(int jdbcType, @NonNull SqlPrecisionParameter precision) throws SqlDialectUnsupportedRenderingException {
 		Objects.requireNonNull(precision, "Precision parameter must not be null");
 		
 		return switch (jdbcType) {
 			case Types.NUMERIC -> "NUMERIC(" + precision.precision() + ", " + precision.scale() + ")";
 			case Types.DECIMAL -> "DECIMAL(" + precision.precision() + ", " + precision.scale() + ")";
-			default -> throw new SqlDialectUnsupportedTypeException("Unsupported precision-parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported precision-parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull String getFractionalParameterizedTypeName(int jdbcType, @NonNull SqlFractionalParameter fractional) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getFractionalParameterizedTypeName(int jdbcType, @NonNull SqlFractionalParameter fractional) throws SqlDialectUnsupportedRenderingException {
 		Objects.requireNonNull(fractional, "Fractional parameter must not be null");
 		
 		return switch (jdbcType) {
@@ -152,7 +153,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case Types.TIMESTAMP -> "TIMESTAMP(" + fractional.digits() + ")";
 			case Types.TIME_WITH_TIMEZONE -> "TIME(" + fractional.digits() + ") WITH TIME ZONE";
 			case Types.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP(" + fractional.digits() + ") WITH TIME ZONE";
-			default -> throw new SqlDialectUnsupportedTypeException("Unsupported fractional-parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported fractional-parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
 		};
 	}
 	
@@ -164,7 +165,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case ValueSqlExpression<?> value -> this.renderValueExpression(value);
 			
 			case null -> throw new NullPointerException("Sql expression must not be null");
-			default -> throw new SqlDialectUnsupportedExpressionException("Unknown sql expression type: " + expression.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql expression type: " + expression.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
@@ -367,7 +368,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		}).apply(SqlRenderer.empty());
 	}
 	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderAggregateFunction(@NonNull SqlAggregateFunction<?> function) throws SqlDialectUnsupportedFunctionException {
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderAggregateFunction(@NonNull SqlAggregateFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
 			case SqlAverageFunction func -> this.renderFunction("AVG", func.value());
 			case SqlCountFunction(@Nullable SqlExpression<?> value) -> value != null ? this.renderFunction("COUNT", value) : this.renderLiteral("COUNT(*)");
@@ -377,11 +378,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlSumFunction<?> func -> this.renderFunction("SUM", func.value());
 			
 			case null -> throw new NullPointerException("Sql aggregate function must not be null");
-			default -> throw new SqlDialectUnsupportedFunctionException("Unknown sql aggregate function type: " + function.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql aggregate function type: " + function.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderNumericFunction(@NonNull SqlNumericFunction<?> function) throws SqlDialectUnsupportedFunctionException {
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderNumericFunction(@NonNull SqlNumericFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
 			case SqlBitwiseAndFunction<?> func -> this.renderInfix(func.firstOperand(), "&", func.secondOperand());
 			case SqlBitwiseNotFunction<?> func -> renderer -> renderer.literal("~").openingBracket().rendered(func.value().toSql(this)).closingBracket().toSql();
@@ -414,11 +415,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlNumericTruncateFunction<?> func -> this.renderFunction("TRUNCATE", func.value());
 			
 			case null -> throw new NullPointerException("Sql numeric function must not be null");
-			default -> throw new SqlDialectUnsupportedFunctionException("Unknown sql numeric function type: " + function.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql numeric function type: " + function.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderStringFunction(@NonNull SqlStringFunction<?> function) throws SqlDialectUnsupportedFunctionException {
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderStringFunction(@NonNull SqlStringFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
 			case SqlConcatFunction<?> func -> this.renderConcatFunction(func);
 			case SqlHexFunction func -> this.renderFunction("HEX", func.value());
@@ -439,11 +440,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlUpperFunction<?> func -> this.renderFunction("UPPER", func.value());
 			
 			case null -> throw new NullPointerException("Sql string function must not be null");
-			default -> throw new SqlDialectUnsupportedFunctionException("Unknown sql string function type: " + function.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql string function type: " + function.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderTemporalFunction(@NonNull SqlTemporalFunction<?> function) throws SqlDialectUnsupportedFunctionException {
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderTemporalFunction(@NonNull SqlTemporalFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
 			case SqlAddFunction(var firstSummand, var secondSummand, var type) -> this.renderCast(this.renderInfix(firstSummand, "+", secondSummand), type);
 			case SqlCurrentDateFunction() -> this.renderLiteral("CURRENT_DATE");
@@ -462,11 +463,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 				this.renderCast(renderer -> renderer.literal("DATE_TRUNC").openingBracket().keyword(part.name()).comma().rendered(value.toSql(this)).closingBracket().toSql(), type);
 			
 			case null -> throw new NullPointerException("Sql temporal function must not be null");
-			default -> throw new SqlDialectUnsupportedFunctionException("Unknown sql temporal function type: " + function.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql temporal function type: " + function.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderWindowFunction(@NonNull SqlWindowFunction<?> function) throws SqlDialectUnsupportedFunctionException {
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderWindowFunction(@NonNull SqlWindowFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
 			case SqlCumulativeDistributionFunction func -> this.renderWindowCall("CUME_DIST", func.over());
 			case SqlDenseRankFunction func -> this.renderWindowCall("DENSE_RANK", func.over());
@@ -482,11 +483,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlWindowedAggregate(var aggregate, var over) -> renderer -> renderer.rendered(this.renderFunction(aggregate)).over().openingBracket().rendered(over.toSql(this)).closingBracket().toSql();
 			
 			case null -> throw new NullPointerException("Sql window function must not be null");
-			default -> throw new SqlDialectUnsupportedFunctionException("Unknown sql window function type: " + function.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql window function type: " + function.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderGenericFunction(@NonNull SqlFunction<?> function) throws SqlDialectUnsupportedFunctionException {
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderGenericFunction(@NonNull SqlFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
 			case SqlCaseWhenFunction<?> func -> this.renderCaseWhenFunction(func);
 			case SqlCastFunction(var value, var targetType) -> renderer -> renderer.cast().openingBracket().rendered(value.toSql(this)).as().literal(this.getTypeName(targetType)).closingBracket().toSql();
@@ -497,7 +498,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlUnsafeFunction(var expression, var arguments, var type) -> this.renderCast(renderer -> renderer.literal(expression).rendered(this.renderFunctionWithList(renderer, arguments)).toSql(), type);
 			
 			case null -> throw new NullPointerException("Sql function must not be null");
-			default -> throw new SqlDialectUnsupportedFunctionException("Unknown sql function type: " + function.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql function type: " + function.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
@@ -511,11 +512,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlTemporalCondition cond -> this.renderTemporalCondition(cond);
 			
 			case null -> throw new NullPointerException("Sql condition must not be null");
-			default -> throw new SqlDialectUnsupportedConditionException("Unknown sql condition type: " + condition.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql condition type: " + condition.getClass().getName() + " in dialect " + this.name());
 		}).apply(SqlRenderer.empty());
 	}
 	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderComparisonCondition(@NonNull SqlComparisonCondition condition) throws SqlDialectUnsupportedConditionException {
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderComparisonCondition(@NonNull SqlComparisonCondition condition) throws SqlDialectUnsupportedRenderingException {
 		return switch (condition) {
 			case SqlBetweenCondition(var value, var lower, var upper) -> renderer -> renderer.rendered(value.toSql(this)).between().rendered(lower.toSql(this)).and().rendered(upper.toSql(this)).toSql();
 			case SqlEqualToCondition(var first, var second) -> this.renderInfix(first, "=", second);
@@ -527,11 +528,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlLessThanCondition(var value, var threshold, var equalTo) -> this.renderInfix(value, equalTo ? "<=" : "<", threshold);
 			
 			case null -> throw new NullPointerException("Sql comparison condition must not be null");
-			default -> throw new SqlDialectUnsupportedConditionException("Unknown sql comparison condition type: " + condition.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql comparison condition type: " + condition.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderNumericCondition(@NonNull SqlNumericCondition condition) throws SqlDialectUnsupportedConditionException {
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderNumericCondition(@NonNull SqlNumericCondition condition) throws SqlDialectUnsupportedRenderingException {
 		return switch (condition) {
 			case SqlIsNegativeCondition func -> renderer -> renderer.rendered(func.value().toSql(this)).literal("<").literal("0").toSql();
 			case SqlIsPositiveCondition func -> renderer -> renderer.rendered(func.value().toSql(this)).literal(">").literal("0").toSql();
@@ -540,11 +541,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 				renderer -> renderer.literal("MOD").openingBracket().rendered(value.toSql(this)).comma().rendered(divisor.toSql(this)).closingBracket().literal("=").rendered(remainder.toSql(this)).toSql();
 			
 			case null -> throw new NullPointerException("Sql numeric condition must not be null");
-			default -> throw new SqlDialectUnsupportedConditionException("Unknown sql numeric condition type: " + condition.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql numeric condition type: " + condition.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderStringCondition(@NonNull SqlStringCondition condition) throws SqlDialectUnsupportedConditionException {
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderStringCondition(@NonNull SqlStringCondition condition) throws SqlDialectUnsupportedRenderingException {
 		return switch (condition) {
 			case SqlContainsCondition(var value, var substring) -> renderer -> renderer.rendered(value.toSql(this)).like().literal("'%'").literal("||").rendered(substring.toSql(this)).literal("||").literal("'%'").toSql();
 			case SqlEndsWithCondition(var value, var suffix) -> renderer -> renderer.rendered(value.toSql(this)).like().literal("'%'").literal("||").rendered(suffix.toSql(this)).toSql();
@@ -554,11 +555,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlStartsWithCondition(var value, var prefix) -> renderer -> renderer.rendered(value.toSql(this)).like().rendered(prefix.toSql(this)).literal("||").literal("'%'").toSql();
 			
 			case null -> throw new NullPointerException("Sql string condition must not be null");
-			default -> throw new SqlDialectUnsupportedConditionException("Unknown sql string condition type: " + condition.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql string condition type: " + condition.getClass().getName() + " in dialect " + this.name());
 		};
 	}
 	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderTemporalCondition(@NonNull SqlTemporalCondition condition) throws SqlDialectUnsupportedConditionException {
+	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderTemporalCondition(@NonNull SqlTemporalCondition condition) throws SqlDialectUnsupportedRenderingException {
 		return switch (condition) {
 			case SqlAfterCondition(var value, var earlierBound) -> this.renderInfix(value, ">", earlierBound);
 			case SqlBeforeCondition(var value, var laterBound) -> this.renderInfix(value, "<", laterBound);
@@ -583,11 +584,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	}
 	
 	@Override
-	public @NonNull String getIndexMethodName(@NonNull SqlIndexMethod method) throws SqlDialectUnsupportedIndexMethodException {
+	public @NonNull String getIndexMethodName(@NonNull SqlIndexMethod method) throws SqlException {
 		Objects.requireNonNull(method, "Sql index method must not be null");
 		
 		if (!this.isIndexMethodSupported(method)) {
-			throw new SqlDialectUnsupportedIndexMethodException("Sql index method " + method + " is not supported by dialect " + this.name());
+			throw new SqlDialectUnsupportedRenderingException("Sql index method " + method + " is not supported by dialect " + this.name());
 		}
 		return method.name();
 	}
@@ -702,8 +703,8 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		
 		try {
 			renderer.literal(this.getTypeName(column.getType()));
-		} catch (SqlDialectUnsupportedTypeException e) {
-			throw new IllegalArgumentException("Column type is not supported by dialect " + this.name(), e);
+		} catch (SqlDialectUnsupportedRenderingException e) {
+			throw new SqlDialectUnsupportedRenderingException("Column type is not supported by dialect " + this.name(), e);
 		}
 		
 		if (!column.isNullable()) {
@@ -820,8 +821,8 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		
 		try {
 			renderer.using().literal(this.getIndexMethodName(index.method()));
-		} catch (SqlDialectUnsupportedIndexMethodException e) {
-			throw new IllegalArgumentException("Index method is not supported by dialect " + this.name(), e);
+		} catch (SqlDialectUnsupportedRenderingException e) {
+			throw new SqlDialectUnsupportedRenderingException("Index method is not supported by dialect " + this.name(), e);
 		}
 		
 		renderer.openingBracket();
@@ -864,7 +865,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
-		throw new SqlDialectUnsupportedFeatureException("RETURNING clause is not supported by dialect " + this.name());
+		throw new SqlDialectUnsupportedRenderingException("RETURNING clause is not supported by dialect " + this.name());
 	}
 	
 	@Override
@@ -901,7 +902,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull String renderLateralJoin() throws SqlException {
-		throw new SqlDialectUnsupportedFeatureException("LATERAL join is not supported by dialect " + this.name());
+		throw new SqlDialectUnsupportedRenderingException("LATERAL join is not supported by dialect " + this.name());
 	}
 	
 	@Override
