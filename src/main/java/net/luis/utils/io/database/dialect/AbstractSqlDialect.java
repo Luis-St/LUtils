@@ -22,8 +22,7 @@ import com.google.common.collect.Lists;
 import net.luis.utils.function.throwable.ThrowableBiConsumer;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.SqlReferentialAction;
-import net.luis.utils.io.database.condition.SqlNegatedCondition;
-import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.condition.*;
 import net.luis.utils.io.database.condition.conditions.*;
 import net.luis.utils.io.database.condition.conditions.comparison.*;
 import net.luis.utils.io.database.condition.conditions.numeric.*;
@@ -507,16 +506,40 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderCondition(@NonNull SqlCondition condition) throws SqlException {
-		return (switch (condition) {
-			case SqlNegatedCondition cond -> (ThrowableFunction<SqlRenderer, SqlRendered, SqlException>) renderer -> renderer.not().openingBracket().rendered(this.renderCondition(cond.condition())).closingBracket().toSql();
-			case SqlComparisonCondition cond -> this.renderComparisonCondition(cond);
-			case SqlNumericCondition cond -> this.renderNumericCondition(cond);
-			case SqlStringCondition cond -> this.renderStringCondition(cond);
-			case SqlTemporalCondition cond -> this.renderTemporalCondition(cond);
+		SqlRenderer renderer = SqlRenderer.empty();
+		
+		return switch (condition) {
+			case SqlNegatedCondition cond -> renderer.not().openingBracket().rendered(this.renderCondition(cond.condition())).closingBracket().toSql();
+			case SqlAlwaysCondition _ -> renderer.literal(this.renderBooleanLiteral(true)).toSql();
+			case SqlNeverCondition _ -> renderer.literal(this.renderBooleanLiteral(false)).toSql();
+			case SqlAllOfCondition cond -> {
+				List<SqlCondition> conditions = cond.conditions();
+				for (int i = 0; i < conditions.size(); i++) {
+					if (i > 0) {
+						renderer.and();
+					}
+					renderer.rendered(this.renderCondition(conditions.get(i)));
+				}
+				yield renderer.toSql();
+			}
+			case SqlAnyOfCondition cond -> {
+				List<SqlCondition> conditions = cond.conditions();
+				for (int i = 0; i < conditions.size(); i++) {
+					if (i > 0) {
+						renderer.or();
+					}
+					renderer.rendered(this.renderCondition(conditions.get(i)));
+				}
+				yield renderer.toSql();
+			}
+			case SqlComparisonCondition cond -> this.renderComparisonCondition(cond).apply(SqlRenderer.empty());
+			case SqlNumericCondition cond -> this.renderNumericCondition(cond).apply(SqlRenderer.empty());
+			case SqlStringCondition cond -> this.renderStringCondition(cond).apply(SqlRenderer.empty());
+			case SqlTemporalCondition cond -> this.renderTemporalCondition(cond).apply(SqlRenderer.empty());
 			
 			case null -> throw new NullPointerException("Sql condition must not be null");
 			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql condition type: " + condition.getClass().getName() + " in dialect " + this.name());
-		}).apply(SqlRenderer.empty());
+		};
 	}
 	
 	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderComparisonCondition(@NonNull SqlComparisonCondition condition) throws SqlDialectUnsupportedRenderingException {
