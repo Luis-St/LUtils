@@ -26,9 +26,9 @@ import net.luis.utils.io.database.function.functions.SqlWindowedAggregate;
 import net.luis.utils.io.database.function.functions.aggregate.SqlCountDistinctFunction;
 import net.luis.utils.io.database.function.functions.aggregate.SqlCountFunction;
 import net.luis.utils.io.database.function.functions.generic.*;
+import net.luis.utils.io.database.function.functions.window.*;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
 import net.luis.utils.io.database.query.crud.SqlSelectQuery;
-import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.util.SqlCaseWhenBranch;
 import org.jspecify.annotations.NonNull;
@@ -121,97 +121,82 @@ public final class SqlExpressions {
 	}
 	
 	public static <T> @NonNull SqlExpression<T> caseWhen(@NonNull SqlCondition condition, @NonNull T thenValue, @NonNull T elseValue) {
-		Objects.requireNonNull(condition, "Sql condition must not be null");
-		
 		List<SqlCaseWhenBranch<T>> branches = List.of(new SqlCaseWhenBranch<>(condition, SqlExpression.of(thenValue)));
 		return new SqlCaseWhenFunction<>(branches, SqlExpression.of(elseValue));
 	}
 	
 	public static <T> @NonNull SqlExpression<T> caseWhen(@NonNull SqlCondition condition, @NonNull SqlExpression<T> thenValue, @NonNull SqlExpression<T> elseValue) {
-		Objects.requireNonNull(condition, "Sql condition must not be null");
-		Objects.requireNonNull(thenValue, "SQl then value must not be null");
-		
 		List<SqlCaseWhenBranch<T>> branches = List.of(new SqlCaseWhenBranch<>(condition, thenValue));
 		return new SqlCaseWhenFunction<>(branches, elseValue);
 	}
 	
 	public static <T> @NonNull SqlExpression<T> ofUnsafe(@NonNull String functionName, @NonNull SqlType<T> resultType, SqlExpression<?> @NonNull ... args) {
-		Objects.requireNonNull(functionName, "Sql function name must not be null");
-		Objects.requireNonNull(resultType, "Sql result type must not be null");
 		Objects.requireNonNull(args, "Sql arguments must not be null");
 		
 		return new SqlUnsafeFunction<>(functionName, List.of(args), resultType);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> over() {
-		return null; // Needed???
+	public static <T> @NonNull SqlExpression<T> over(@NonNull SqlAggregateFunction<T> aggregate, @NonNull SqlWindowClause clause) {
+		return new SqlWindowedAggregate<>(aggregate, clause);
 	}
 	
-	@Deprecated // Use SqlAggregateFunction#over instead
-	public static <T> @NonNull SqlExpression<T> over(@NonNull SqlExpression<T> expression, @NonNull SqlWindowClause clause) {
-		Objects.requireNonNull(expression, "Sql expression must not be null");
-		Objects.requireNonNull(clause, "Sql window clause must not be null");
-		
-		return new SqlWindowedAggregate<>((SqlAggregateFunction<T>) expression, clause);
+	public static @NonNull SqlExpression<Long> rowNumber(@NonNull SqlWindowClause over) {
+		return new SqlRowNumberFunction(over);
 	}
 	
-	public static @NonNull SqlExpression<Long> rowNumber() {
-		return null;
+	public static @NonNull SqlExpression<Long> rank(@NonNull SqlWindowClause over) {
+		return new SqlRankFunction(over);
 	}
 	
-	public static @NonNull SqlExpression<Long> rank() {
-		return null;
+	public static @NonNull SqlExpression<Long> denseRank(@NonNull SqlWindowClause over) {
+		return new SqlDenseRankFunction(over);
 	}
 	
-	public static @NonNull SqlExpression<Long> denseRank() {
-		return null;
+	public static @NonNull SqlExpression<Long> tileBucket(int buckets, @NonNull SqlWindowClause over) {
+		return new SqlTileBucketFunction(SqlExpression.of(buckets), over);
 	}
 	
-	public static @NonNull SqlExpression<Long> tileBucket(int buckets) {
-		return null;
+	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlExpression<T> expression, @NonNull SqlWindowClause over) {
+		return new SqlLagFunction<>(expression, null, null, over);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<?, T> column) {
-		return null;
+	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlExpression<T> expression, int offset, @NonNull SqlWindowClause over) {
+		return new SqlLagFunction<>(expression, SqlExpression.of(offset), null, over);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<?, T> column, int offset) {
-		return null;
+	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlExpression<T> expression, int offset, @NonNull T defaultValue, @NonNull SqlWindowClause over) {
+		return new SqlLagFunction<>(expression, SqlExpression.of(offset), SqlExpression.of(defaultValue), over);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlColumn<?, T> column, int offset, @NonNull T defaultValue) {
-		return null;
+	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlExpression<T> expression, @NonNull SqlWindowClause over) {
+		return new SqlLeadFunction<>(expression, null, null, over);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<?, T> column) {
-		return null;
+	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlExpression<T> expression, int offset, @NonNull SqlWindowClause over) {
+		return new SqlLeadFunction<>(expression, SqlExpression.of(offset), null, over);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<?, T> column, int offset) {
-		return null;
+	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlExpression<T> expression, int offset, @NonNull T defaultValue, @NonNull SqlWindowClause over) {
+		return new SqlLeadFunction<>(expression, SqlExpression.of(offset), SqlExpression.of(defaultValue), over);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lead(@NonNull SqlColumn<?, T> column, int offset, @NonNull T defaultValue) {
-		return null;
+	public static @NonNull SqlExpression<Double> percentRank(@NonNull SqlWindowClause over) {
+		return new SqlPercentRankFunction(over);
 	}
 	
-	public static @NonNull SqlExpression<Double> percentRank() {
-		return null;
+	public static @NonNull SqlExpression<Double> cumulativeDistribution(@NonNull SqlWindowClause over) {
+		return new SqlCumulativeDistributionFunction(over);
 	}
 	
-	public static @NonNull SqlExpression<Double> cumulativeDistribution() {
-		return null;
+	public static <T> @NonNull SqlExpression<T> firstValue(@NonNull SqlExpression<T> expression, @NonNull SqlWindowClause over) {
+		return new SqlFirstValueFunction<>(expression, over);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> firstValue(@NonNull SqlColumn<?, T> column) {
-		return null;
+	public static <T> @NonNull SqlExpression<T> lastValue(@NonNull SqlExpression<T> expression, @NonNull SqlWindowClause over) {
+		return new SqlLastValueFunction<>(expression, over);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> lastValue(@NonNull SqlColumn<?, T> column) {
-		return null;
-	}
-	
-	public static <T> @NonNull SqlExpression<T> valueAt(@NonNull SqlColumn<?, T> column, int position) {
-		return null;
+	public static <T> @NonNull SqlExpression<T> valueAt(@NonNull SqlExpression<T> expression, int position, @NonNull SqlWindowClause over) {
+		return new SqlValueAtFunction<>(expression, SqlExpression.of(position), over);
 	}
 }
