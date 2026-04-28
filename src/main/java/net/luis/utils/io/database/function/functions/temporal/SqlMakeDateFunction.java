@@ -23,6 +23,8 @@ import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -34,4 +36,12 @@ public record SqlMakeDateFunction<T>(
 	@NonNull SqlExpression<? extends Number> month,
 	@NonNull SqlExpression<? extends Number> day,
 	@NonNull SqlType<T> type
-) implements SqlTemporalFunction<T> {}
+) implements SqlTemporalFunction<T> {
+	
+	public SqlMakeDateFunction {
+		Objects.requireNonNull(year, "Sql year expression must not be null");
+		Objects.requireNonNull(month, "Sql month expression must not be null");
+		Objects.requireNonNull(day, "Sql day expression must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
+	}
+}

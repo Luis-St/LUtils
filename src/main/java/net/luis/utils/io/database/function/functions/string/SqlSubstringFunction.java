@@ -23,6 +23,8 @@ import net.luis.utils.io.database.function.functions.SqlStringFunction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -33,4 +35,10 @@ public record SqlSubstringFunction<T extends CharSequence>(
 	@NonNull SqlExpression<T> value,
 	@NonNull SqlExpression<? extends Number> start,
 	@Nullable SqlExpression<? extends Number> length
-) implements SqlStringFunction<T> {}
+) implements SqlStringFunction<T> {
+	
+	public SqlSubstringFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(start, "Sql start expression must not be null");
+	}
+}

@@ -18,12 +18,14 @@
 
 package net.luis.utils.io.database.condition;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.rendering.SqlRenderable;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import org.jspecify.annotations.NonNull;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -35,19 +37,51 @@ import java.util.Objects;
 public interface SqlCondition extends SqlRenderable {
 	
 	static @NonNull SqlCondition always() {
-		return null;
+		return new SqlAlwaysCondition();
 	}
 	
 	static @NonNull SqlCondition never() {
-		return null;
+		return new SqlNeverCondition();
 	}
 	
+	@SuppressWarnings("DuplicatedCode")
 	static @NonNull SqlCondition allOf(@NonNull SqlCondition first, @NonNull SqlCondition second, SqlCondition @NonNull ... others) {
-		return null;
+		Objects.requireNonNull(first, "First sql condition must not be null");
+		Objects.requireNonNull(second, "Second sql condition must not be null");
+		Objects.requireNonNull(others, "Other sql conditions must not be null");
+		
+		List<SqlCondition> conditions = Lists.newArrayListWithCapacity(2 + others.length);
+		conditions.add(first);
+		conditions.add(second);
+		for (SqlCondition condition : others) {
+			Objects.requireNonNull(condition, "Other sql condition must not be null");
+			conditions.add(condition);
+		}
+		return new SqlAllOfCondition(conditions);
 	}
 	
+	static @NonNull SqlCondition allOf(@NonNull List<SqlCondition> conditions) {
+		return new SqlAllOfCondition(conditions);
+	}
+	
+	@SuppressWarnings("DuplicatedCode")
 	static @NonNull SqlCondition anyOf(@NonNull SqlCondition first, @NonNull SqlCondition second, SqlCondition @NonNull ... others) {
-		return null;
+		Objects.requireNonNull(first, "First sql condition must not be null");
+		Objects.requireNonNull(second, "Second sql condition must not be null");
+		Objects.requireNonNull(others, "Other sql conditions must not be null");
+		
+		List<SqlCondition> conditions = Lists.newArrayListWithCapacity(2 + others.length);
+		conditions.add(first);
+		conditions.add(second);
+		for (SqlCondition condition : others) {
+			Objects.requireNonNull(condition, "Other sql condition must not be null");
+			conditions.add(condition);
+		}
+		return new SqlAnyOfCondition(conditions);
+	}
+	
+	static @NonNull SqlCondition anyOf(@NonNull List<SqlCondition> conditions) {
+		return new SqlAnyOfCondition(conditions);
 	}
 	
 	default @NonNull SqlCondition and(@NonNull SqlCondition other) {
@@ -59,7 +93,7 @@ public interface SqlCondition extends SqlRenderable {
 	}
 	
 	default @NonNull SqlCondition not() {
-		return new NegatedSqlCondition(this);
+		return new SqlNegatedCondition(this);
 	}
 	
 	@Override

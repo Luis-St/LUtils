@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.function.window;
 
-import net.luis.utils.io.database.rendering.SqlRenderable;
+import net.luis.utils.io.database.function.window.frame.bound.*;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -27,26 +27,25 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-@FunctionalInterface
-public interface SqlFrameBound extends SqlRenderable {
+public interface SqlFrameBound {
 	
 	static @NonNull SqlFrameBound unboundedPreceding() {
-		return null;
+		return new UnboundedPrecedingFrameBound();
 	}
 	
 	static @NonNull SqlFrameBound preceding(int offset) {
-		return null;
+		return new PrecedingFrameBound(offset);
 	}
 	
 	static @NonNull SqlFrameBound currentRow() {
-		return null;
+		return new CurrentRowFrameBound();
 	}
 	
 	static @NonNull SqlFrameBound following(int offset) {
-		return null;
+		return new FollowingFrameBound(offset);
 	}
 	
 	static @NonNull SqlFrameBound unboundedFollowing() {
-		return null;
+		return new UnboundedFollowingFrameBound();
 	}
 }

@@ -18,7 +18,11 @@
 
 package net.luis.utils.io.database.condition;
 
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -26,10 +30,25 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record NegatedSqlCondition(@NonNull SqlCondition condition) implements SqlCondition {
+public record SqlAnyOfCondition(@NonNull @Unmodifiable List<SqlCondition> conditions) implements SqlCondition {
+	
+	public SqlAnyOfCondition {
+		Objects.requireNonNull(conditions, "Sql conditions list must not be null");
+		
+		if (conditions.isEmpty()) {
+			throw new IllegalArgumentException("Sql conditions list must not be empty");
+		}
+		if (conditions.size() == 1) {
+			throw new IllegalArgumentException("Sql conditions list must contain at least 2 conditions");
+		}
+		if (conditions.contains(null)) {
+			throw new IllegalArgumentException("Sql conditions list must not contain null conditions");
+		}
+		conditions = List.copyOf(conditions);
+	}
 	
 	@Override
 	public @NonNull SqlCondition not() {
-		return this.condition;
+		return SqlCondition.allOf(this.conditions.stream().map(SqlCondition::not).toList()); // De Morgan's law
 	}
 }

@@ -20,9 +20,9 @@ package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.*;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
+import net.luis.utils.io.database.function.window.*;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
@@ -47,7 +47,7 @@ public interface SqlDialect {
 	
 	boolean isTypeSupported(@NonNull SqlType<?> type);
 	
-	@NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlDialectUnsupportedTypeException;
+	@NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlException;
 	
 	@NonNull SqlRendered renderExpression(@NonNull SqlExpression<?> expression) throws SqlException;
 	
@@ -55,15 +55,21 @@ public interface SqlDialect {
 	
 	@NonNull SqlRendered renderCondition(@NonNull SqlCondition condition) throws SqlException;
 	
+	@NonNull SqlRendered renderWindowClause(@NonNull SqlWindowClause clause) throws SqlException;
+	
+	@NonNull SqlRendered renderWindowFrame(@NonNull SqlWindowFrame frame) throws SqlException;
+	
+	@NonNull SqlRendered renderFrameBound(@NonNull SqlFrameBound bound) throws SqlException;
+	
 	boolean isFeatureSupported(@NonNull SqlFeature feature);
 	
 	boolean isIndexMethodSupported(@NonNull SqlIndexMethod method);
 	
-	@NonNull String getIndexMethodName(@NonNull SqlIndexMethod method) throws SqlDialectUnsupportedIndexMethodException;
+	@NonNull String getIndexMethodName(@NonNull SqlIndexMethod method) throws SqlException;
 	
 	@NonNull String quoteIdentifier(@NonNull String identifier);
 	
-	@NonNull String renderQualifiedName(@NonNull String schema, @NonNull String name) throws SqlException;
+	@NonNull SqlRendered renderQualifiedName(@NonNull String schema, @NonNull String name) throws SqlException;
 	
 	@NonNull SqlRendered renderCreateTable(@NonNull SqlTable<?> table, boolean ifNotExists) throws SqlException;
 	
@@ -83,9 +89,9 @@ public interface SqlDialect {
 	
 	@NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlException;
 	
-	@NonNull String renderSetOperation(@NonNull SqlSetOperation operation) throws SqlException;
+	@NonNull SqlRendered renderSetOperation(@NonNull SqlSetOperation operation) throws SqlException;
 	
-	@NonNull String renderLateralJoin()  throws SqlException;
+	@NonNull SqlRendered renderLateralJoin() throws SqlException;
 	
-	@NonNull String renderBooleanLiteral(boolean value) throws SqlException;
+	@NonNull SqlRendered renderBooleanLiteral(boolean value) throws SqlException;
 }

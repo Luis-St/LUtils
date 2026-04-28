@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.function.window;
 
-import net.luis.utils.io.database.rendering.SqlRenderable;
+import net.luis.utils.io.database.function.window.frame.*;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -27,18 +27,21 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-@FunctionalInterface
-public interface SqlWindowFrame extends SqlRenderable {
+public interface SqlWindowFrame {
 	
 	static @NonNull SqlWindowFrame rows(@NonNull SqlFrameBound start, @NonNull SqlFrameBound end) {
-		return null;
+		return new RowsWindowFrame(start, end);
 	}
 	
 	static @NonNull SqlWindowFrame range(@NonNull SqlFrameBound start, @NonNull SqlFrameBound end) {
-		return null;
+		return new RangeWindowFrame(start, end);
 	}
 	
 	static @NonNull SqlWindowFrame groups(@NonNull SqlFrameBound start, @NonNull SqlFrameBound end) {
-		return null;
+		return new GroupsWindowFrame(start, end);
 	}
+	
+	@NonNull SqlFrameBound start();
+	
+	@NonNull SqlFrameBound end();
 }

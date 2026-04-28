@@ -16,9 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.dialect;
+package net.luis.utils.io.database.function.window.frame;
 
-import org.jspecify.annotations.Nullable;
+import net.luis.utils.io.database.function.window.SqlFrameBound;
+import net.luis.utils.io.database.function.window.SqlWindowFrame;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -26,17 +30,13 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlDialectUnsupportedFeatureException extends SqlDialectException {
+public record GroupsWindowFrame(
+	@NonNull SqlFrameBound start,
+	@NonNull SqlFrameBound end
+) implements SqlWindowFrame {
 	
-	public SqlDialectUnsupportedFeatureException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlDialectUnsupportedFeatureException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
-	}
-	
-	public SqlDialectUnsupportedFeatureException(@Nullable Throwable cause) {
-		super(cause);
+	public GroupsWindowFrame {
+		Objects.requireNonNull(start, "Sql start frame bound must not be null");
+		Objects.requireNonNull(end, "Sql end frame bound must not be null");
 	}
 }

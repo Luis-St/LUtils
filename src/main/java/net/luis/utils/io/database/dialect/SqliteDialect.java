@@ -19,8 +19,7 @@
 package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFeatureException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
+import net.luis.utils.io.database.exception.dialect.*;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
@@ -54,23 +53,23 @@ public class SqliteDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
 		return switch (jdbcType) {
 			case Types.BOOLEAN, Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT -> "INTEGER";
 			case Types.REAL, Types.FLOAT, Types.DOUBLE -> "REAL";
 			case Types.LONGVARCHAR, Types.LONGNVARCHAR, Types.CLOB, Types.NCLOB, Types.DATE -> "TEXT";
 			case Types.LONGVARBINARY, Types.BLOB -> "BLOB";
-			default -> throw new SqlDialectUnsupportedTypeException("Unsupported scalar JDBC type: " + jdbcType + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported scalar JDBC type: " + jdbcType + " in dialect " + this.name());
 		};
 	}
 	
 	@Override
-	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedRenderingException {
 		return switch (jdbcType) {
 			case Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR, Types.TIME, Types.TIMESTAMP, Types.TIME_WITH_TIMEZONE, Types.TIMESTAMP_WITH_TIMEZONE -> "TEXT";
 			case Types.BINARY, Types.VARBINARY -> "BLOB";
 			case Types.NUMERIC, Types.DECIMAL -> "REAL";
-			default -> throw new SqlDialectUnsupportedTypeException("Unsupported parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
+			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
 		};
 	}
 	
@@ -129,6 +128,6 @@ public class SqliteDialect extends AbstractSqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlException {
-		throw new SqlDialectUnsupportedFeatureException("Row-level locking is not supported by dialect " + this.name());
+		throw new SqlDialectUnsupportedRenderingException("Row-level locking is not supported by dialect " + this.name());
 	}
 }

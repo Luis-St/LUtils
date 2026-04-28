@@ -22,10 +22,17 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record SqlHexFunction(@NonNull SqlExpression<?> value) implements SqlStringFunction<String> {}
+public record SqlHexFunction(@NonNull SqlExpression<?> value) implements SqlStringFunction<String> {
+	
+	public SqlHexFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+	}
+}

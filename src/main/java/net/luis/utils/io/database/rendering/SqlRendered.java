@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -30,6 +31,12 @@ import java.util.List;
  */
 
 public interface SqlRendered {
+	
+	static @NonNull SqlRendered of(@NonNull String sql) {
+		Objects.requireNonNull(sql, "Sql statement must not be null");
+		
+		return new SimpleSqlRendered(List.of(sql), List.of());
+	}
 	
 	@NonNull
 	@Unmodifiable

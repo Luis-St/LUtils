@@ -32,12 +32,12 @@ import java.util.Objects;
  *
  */
 
-public record AliasedSqlExpression<T>(
+public record SqlAliasedExpression<T>(
 	@NonNull SqlExpression<T> expression,
 	@NonNull SqlAlias alias
 ) implements SqlExpression<T> {
 	
-	public AliasedSqlExpression {
+	public SqlAliasedExpression {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(alias, "Sql alias must not be null");
 	}
@@ -45,7 +45,7 @@ public record AliasedSqlExpression<T>(
 	@Override
 	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
 		Objects.requireNonNull(alias, "Sql alias must not be null");
-		return new AliasedSqlExpression<>(this.expression, alias);
+		return new SqlAliasedExpression<>(this.expression, alias);
 	}
 	
 	@Override

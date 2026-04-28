@@ -36,7 +36,7 @@ public record SqlEndsWithCondition(
 ) implements SqlStringCondition {
 	
 	public SqlEndsWithCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(suffix, "Suffix expression must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(suffix, "Sql suffix expression must not be null");
 	}
 }

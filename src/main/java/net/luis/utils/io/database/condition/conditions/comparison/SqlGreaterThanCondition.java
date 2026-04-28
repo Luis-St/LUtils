@@ -37,7 +37,7 @@ public record SqlGreaterThanCondition(
 ) implements SqlComparisonCondition {
 	
 	public SqlGreaterThanCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(threshold, "Threshold expression must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(threshold, "Sql threshold expression must not be null");
 	}
 }

@@ -23,6 +23,8 @@ import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -33,4 +35,11 @@ public record SqlSubtractFunction<T>(
 	@NonNull SqlExpression<?> minuend,
 	@NonNull SqlExpression<?> subtrahend,
 	@NonNull SqlType<T> type
-) implements SqlTemporalFunction<T> {}
+) implements SqlTemporalFunction<T> {
+	
+	public SqlSubtractFunction {
+		Objects.requireNonNull(minuend, "Sql minuend expression must not be null");
+		Objects.requireNonNull(subtrahend, "Sql subtrahend expression must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
+	}
+}

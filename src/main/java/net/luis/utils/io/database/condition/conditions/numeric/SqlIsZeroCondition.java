@@ -33,6 +33,6 @@ import java.util.Objects;
 public record SqlIsZeroCondition(@NonNull SqlExpression<?> value) implements SqlNumericCondition {
 	
 	public SqlIsZeroCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
 	}
 }

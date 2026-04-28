@@ -18,10 +18,18 @@
 
 package net.luis.utils.io.database.function.window;
 
+import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.orderable.SqlOrderable;
 import net.luis.utils.io.database.rendering.SqlRenderable;
+import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -29,23 +37,33 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlWindowClause extends SqlRenderable {
+public record SqlWindowClause(
+	@NonNull @Unmodifiable List<SqlColumn<?, ?>> partitions,
+	@NonNull @Unmodifiable List<SqlOrderable<?>> orderings,
+	@Nullable SqlWindowFrame frame
+) implements SqlRenderable {
 	
-	static @NonNull SqlWindowClause of() {
-		return null;
+	public static @NonNull SqlWindowClause of() {
+		return new SqlWindowClause(List.of(), List.of(), null);
 	}
 	
-	static @NonNull SqlWindowClause partitionBy(SqlColumn<?, ?> @NonNull ... columns) {
-		return null;
+	public static @NonNull SqlWindowClause partitionBy(SqlColumn<?, ?> @NonNull ... columns) {
+		Objects.requireNonNull(columns, "Sql partition columns must not be null");
+		return new SqlWindowClause(List.of(columns), List.of(), null);
 	}
 	
-	@NonNull SqlWindowClause orderBy(SqlOrderable<?> @NonNull ... orderables);
+	public @NonNull SqlWindowClause orderBy(SqlOrderable<?> @NonNull ... orderables) {
+		return new SqlWindowClause(this.partitions, List.of(orderables), this.frame);
+	}
 	
-	@NonNull SqlWindowClause frame(@NonNull SqlWindowFrame frame);
+	public @NonNull SqlWindowClause frame(@NonNull SqlWindowFrame frame) {
+		Objects.requireNonNull(frame, "Sql window frame must not be null");
+		return new SqlWindowClause(this.partitions, this.orderings, frame);
+	}
 	
-	@NonNull SqlWindowClause rows(@NonNull SqlFrameBound start, @NonNull SqlFrameBound end);
-	
-	@NonNull SqlWindowClause range(@NonNull SqlFrameBound start, @NonNull SqlFrameBound end);
-	
-	@NonNull SqlWindowClause groups(@NonNull SqlFrameBound start, @NonNull SqlFrameBound end);
+	@Override
+	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		return dialect.renderWindowClause(this);
+	}
 }

@@ -20,6 +20,7 @@ package net.luis.utils.io.database.condition.conditions.comparison;
 
 import net.luis.utils.io.database.condition.conditions.SqlComparisonCondition;
 import net.luis.utils.io.database.expression.SqlExpression;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -33,15 +34,19 @@ import java.util.Objects;
 
 public record SqlInListCondition(
 	@NonNull SqlExpression<?> value,
-	@NonNull List<SqlExpression<?>> options
+	@NonNull @Unmodifiable List<SqlExpression<?>> options
 ) implements SqlComparisonCondition {
 	
 	public SqlInListCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(options, "Options list must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(options, "Sql options list must not be null");
 		
 		if (options.isEmpty()) {
-			throw new IllegalArgumentException("Options list must not be empty");
+			throw new IllegalArgumentException("Sql options list must not be empty");
 		}
+		if (options.contains(null)) {
+			throw new IllegalArgumentException("Sql options list must not contain null values");
+		}
+		options = List.copyOf(options);
 	}
 }

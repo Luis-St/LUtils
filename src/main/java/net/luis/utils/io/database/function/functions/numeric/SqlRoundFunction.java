@@ -23,6 +23,8 @@ import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -32,4 +34,9 @@ import org.jspecify.annotations.Nullable;
 public record SqlRoundFunction<T extends Number>(
 	@NonNull SqlExpression<T> value,
 	@Nullable SqlExpression<? extends Number> precision
-) implements SqlNumericFunction<T> {}
+) implements SqlNumericFunction<T> {
+	
+	public SqlRoundFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+	}
+}

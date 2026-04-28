@@ -20,7 +20,7 @@ package net.luis.utils.io.database.type;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
+import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.exception.type.SqlResultRetrievalException;
 import net.luis.utils.io.database.exception.type.SqlStatementBindException;
 import org.jspecify.annotations.NonNull;
@@ -109,7 +109,7 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 			}
 			
 			if (!dialect.isTypeSupported(this.elementType)) {
-				throw new SqlDialectUnsupportedTypeException("Element type " + this.elementType + " is not supported by the current sql dialect " + dialect.name());
+				throw new SqlDialectUnsupportedRenderingException("Element type " + this.elementType + " is not supported by the current sql dialect " + dialect.name());
 			}
 			
 			java.sql.Array array = preparedStatement.getConnection().createArrayOf(dialect.getTypeName(this.elementType), value);

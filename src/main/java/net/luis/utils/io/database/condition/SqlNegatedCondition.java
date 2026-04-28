@@ -16,9 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.dialect;
+package net.luis.utils.io.database.condition;
 
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 /**
  *
@@ -26,17 +26,10 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlDialectUnsupportedConditionException extends SqlDialectException {
+public record SqlNegatedCondition(@NonNull SqlCondition condition) implements SqlCondition {
 	
-	public SqlDialectUnsupportedConditionException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlDialectUnsupportedConditionException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
-	}
-	
-	public SqlDialectUnsupportedConditionException(@Nullable Throwable cause) {
-		super(cause);
+	@Override
+	public @NonNull SqlCondition not() {
+		return this.condition;
 	}
 }

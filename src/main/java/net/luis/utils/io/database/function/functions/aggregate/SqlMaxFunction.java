@@ -22,10 +22,17 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlAggregateFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record SqlMaxFunction<T>(@NonNull SqlExpression<T> value) implements SqlAggregateFunction<T> {}
+public record SqlMaxFunction<T>(@NonNull SqlExpression<T> value) implements SqlAggregateFunction<T> {
+	
+	public SqlMaxFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+	}
+}

@@ -26,17 +26,17 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlDialectUnsupportedIndexMethodException extends SqlDialectException {
+public class SqlDialectUnsupportedRenderingException extends SqlDialectException {
 	
-	public SqlDialectUnsupportedIndexMethodException(@Nullable String message) {
+	public SqlDialectUnsupportedRenderingException(@Nullable String message) {
 		super(message);
 	}
 	
-	public SqlDialectUnsupportedIndexMethodException(@Nullable String message, @Nullable Throwable cause) {
+	public SqlDialectUnsupportedRenderingException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
-	public SqlDialectUnsupportedIndexMethodException(@Nullable Throwable cause) {
+	public SqlDialectUnsupportedRenderingException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

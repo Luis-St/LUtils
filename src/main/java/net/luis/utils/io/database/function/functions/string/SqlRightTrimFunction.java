@@ -22,10 +22,17 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record SqlRightTrimFunction<T extends CharSequence>(@NonNull SqlExpression<T> value) implements SqlStringFunction<T> {}
+public record SqlRightTrimFunction<T extends CharSequence>(@NonNull SqlExpression<T> value) implements SqlStringFunction<T> {
+	
+	public SqlRightTrimFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+	}
+}

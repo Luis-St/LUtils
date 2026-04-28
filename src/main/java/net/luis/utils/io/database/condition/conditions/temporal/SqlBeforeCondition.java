@@ -36,7 +36,7 @@ public record SqlBeforeCondition(
 ) implements SqlTemporalCondition {
 	
 	public SqlBeforeCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(laterBound, "Later bound expression must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(laterBound, "Sql later bound expression must not be null");
 	}
 }

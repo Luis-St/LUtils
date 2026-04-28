@@ -19,6 +19,9 @@
 package net.luis.utils.io.database.expression;
 
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.condition.conditions.temporal.*;
+import net.luis.utils.io.database.function.functions.temporal.*;
+import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
 
@@ -31,97 +34,98 @@ import java.time.temporal.Temporal;
  *
  */
 
+@SuppressWarnings("unchecked")
 public final class SqlTemporalExpressions {
 	
 	public static @NonNull SqlCondition withinLast(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Duration duration) {
-		return null;
+		return new SqlWithinLastCondition(expression, SqlExpression.of(duration));
 	}
 	
 	public static @NonNull SqlCondition withinNext(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Duration duration) {
-		return null;
+		return new SqlWithinNextCondition(expression, SqlExpression.of(duration));
 	}
 	
 	public static @NonNull SqlCondition before(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Temporal timestamp) {
-		return null;
+		return new SqlBeforeCondition(expression, SqlExpression.of(timestamp));
 	}
 	
 	public static @NonNull SqlCondition before(@NonNull SqlExpression<? extends Temporal> expression, @NonNull SqlExpression<? extends Temporal> timestamp) {
-		return null;
+		return new SqlBeforeCondition(expression, timestamp);
 	}
 	
 	public static @NonNull SqlCondition after(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Temporal timestamp) {
-		return null;
+		return new SqlAfterCondition(expression, SqlExpression.of(timestamp));
 	}
 	
 	public static @NonNull SqlCondition after(@NonNull SqlExpression<? extends Temporal> expression, @NonNull SqlExpression<? extends Temporal> timestamp) {
-		return null;
+		return new SqlAfterCondition(expression, timestamp);
 	}
 	
 	public static @NonNull SqlExpression<LocalDateTime> now() {
-		return null;
+		return (SqlExpression<LocalDateTime>) (SqlExpression<?>) new SqlNowFunction();
 	}
 	
 	public static @NonNull SqlExpression<LocalDate> currentDate() {
-		return null;
+		return new SqlCurrentDateFunction();
 	}
 	
 	public static @NonNull SqlExpression<LocalTime> currentTime() {
-		return null;
+		return new SqlCurrentTimeFunction();
 	}
 	
 	public static @NonNull SqlExpression<LocalDateTime> currentTimestamp() {
-		return null;
+		return (SqlExpression<LocalDateTime>) (SqlExpression<?>) new SqlCurrentTimestampFunction();
 	}
 	
-	public static @NonNull SqlExpression<LocalDateTime> fromEpoch(long epoch) {
-		return null;
+	public static <T extends Temporal> @NonNull SqlExpression<T> fromEpoch(long epoch, @NonNull SqlType<T> temporalType) {
+		return new SqlFromEpochFunction<>(SqlExpression.of(epoch), temporalType);
 	}
 	
-	public static <T extends Number> @NonNull SqlExpression<LocalDateTime> fromEpoch(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static <T extends Number, V extends Temporal> @NonNull SqlExpression<V> fromEpoch(@NonNull SqlExpression<T> expression, @NonNull SqlType<V> temporalType) {
+		return new SqlFromEpochFunction<>(expression, temporalType);
 	}
 	
-	public static @NonNull SqlExpression<LocalDate> makeDate(int year, int month, int day) {
-		return null;
+	public static <T extends Temporal> @NonNull SqlExpression<T> makeDate(int year, int month, int day, @NonNull SqlType<T> temporalType) {
+		return new SqlMakeDateFunction<>(SqlExpression.of(year), SqlExpression.of(month), SqlExpression.of(day), temporalType);
 	}
 	
-	public static @NonNull SqlExpression<LocalDate> makeDate(@NonNull SqlExpression<Integer> year, @NonNull SqlExpression<Integer> month, @NonNull SqlExpression<Integer> day) {
-		return null;
+	public static <T extends Temporal> @NonNull SqlExpression<T> makeDate(@NonNull SqlExpression<Integer> year, @NonNull SqlExpression<Integer> month, @NonNull SqlExpression<Integer> day, @NonNull SqlType<T> temporalType) {
+		return new SqlMakeDateFunction<>(year, month, day, temporalType);
 	}
 	
-	public static @NonNull SqlExpression<LocalTime> makeTime(int hour, int minute, int second) {
-		return null;
+	public static <T extends Temporal> @NonNull SqlExpression<T> makeTime(int hour, int minute, int second, @NonNull SqlType<T> temporalType) {
+		return new SqlMakeTimeFunction<>(SqlExpression.of(hour), SqlExpression.of(minute), SqlExpression.of(second), temporalType);
 	}
 	
-	public static @NonNull SqlExpression<LocalTime> makeTime(@NonNull SqlExpression<Integer> hour, @NonNull SqlExpression<Integer> minute, @NonNull SqlExpression<Integer> second) {
-		return null;
+	public static <T extends Temporal> @NonNull SqlExpression<T> makeTime(@NonNull SqlExpression<Integer> hour, @NonNull SqlExpression<Integer> minute, @NonNull SqlExpression<Integer> second, @NonNull SqlType<T> temporalType) {
+		return new SqlMakeTimeFunction<>(hour, minute, second, temporalType);
 	}
 	
 	public static @NonNull SqlExpression<Integer> extract(@NonNull SqlExpression<?> expression, @NonNull SqlTemporalPart part) {
-		return null;
+		return new SqlExtractFunction(expression, part);
 	}
 	
-	public static <T extends Temporal> @NonNull SqlExpression<T> truncate(@NonNull SqlExpression<T> expression, @NonNull SqlTemporalPart part) {
-		return null;
+	public static <T extends Temporal> @NonNull SqlExpression<T> truncate(@NonNull SqlExpression<T> expression, @NonNull SqlTemporalPart part, @NonNull SqlType<T> temporalType) {
+		return new SqlTemporalTruncateFunction<>(expression, part, temporalType);
 	}
 	
-	public static <T extends Temporal> @NonNull SqlExpression<T> add(@NonNull SqlExpression<T> expression, @NonNull SqlTemporalPart part, int amount) {
-		return null;
+	public static <T extends Temporal> @NonNull SqlExpression<T> add(@NonNull SqlExpression<T> expression, @NonNull SqlTemporalPart part, int amount, @NonNull SqlType<T> temporalType) {
+		return new SqlAddFunction<>(expression, SqlExpression.of(amount), temporalType);
 	}
 	
-	public static <T extends Temporal> @NonNull SqlExpression<T> subtract(@NonNull SqlExpression<T> expression, @NonNull SqlTemporalPart part, int amount) {
-		return add(expression, part, -amount);
+	public static <T extends Temporal> @NonNull SqlExpression<T> subtract(@NonNull SqlExpression<T> expression, @NonNull SqlTemporalPart part, int amount, @NonNull SqlType<T> temporalType) {
+		return add(expression, part, -amount, temporalType);
 	}
 	
 	public static @NonNull SqlExpression<Long> toEpoch(@NonNull SqlExpression<?> expression) {
-		return null;
+		return new SqlToEpochFunction(expression);
 	}
 	
-	public static @NonNull SqlExpression<LocalDate> toDate(@NonNull SqlExpression<?> expression) {
-		return null;
+	public static <T extends Temporal> @NonNull SqlExpression<T> toDate(@NonNull SqlExpression<?> expression, @NonNull SqlType<T> temporalType) {
+		return new SqlToDateFunction<>(expression, temporalType);
 	}
 	
-	public static @NonNull SqlExpression<LocalTime> toTime(@NonNull SqlExpression<?> expression) {
-		return null;
+	public static <T extends Temporal> @NonNull SqlExpression<T> toTime(@NonNull SqlExpression<?> expression, @NonNull SqlType<T> temporalType) {
+		return new SqlToTimeFunction<>(expression, temporalType);
 	}
 }

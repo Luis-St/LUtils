@@ -22,6 +22,8 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -31,4 +33,10 @@ import org.jspecify.annotations.NonNull;
 public record SqlModFunction<T extends Number>(
 	@NonNull SqlExpression<T> value,
 	@NonNull SqlExpression<? extends Number> divisor
-) implements SqlNumericFunction<T> {}
+) implements SqlNumericFunction<T> {
+	
+	public SqlModFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(divisor, "Sql divisor expression must not be null");
+	}
+}

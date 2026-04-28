@@ -19,6 +19,12 @@
 package net.luis.utils.io.database.expression;
 
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.condition.conditions.numeric.*;
+import net.luis.utils.io.database.function.functions.aggregate.SqlAverageFunction;
+import net.luis.utils.io.database.function.functions.aggregate.SqlSumFunction;
+import net.luis.utils.io.database.function.functions.numeric.*;
+import net.luis.utils.io.database.function.functions.numeric.bitwise.*;
+import net.luis.utils.io.database.function.functions.numeric.trigonometric.*;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -27,181 +33,182 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class SqlNumericExpressions {
 	
 	public static @NonNull SqlCondition isPositive(@NonNull SqlExpression<? extends Number> expression) {
-		return null;
+		return new SqlIsPositiveCondition(expression);
 	}
 	
 	public static @NonNull SqlCondition isNegative(@NonNull SqlExpression<? extends Number> expression) {
-		return null;
+		return new SqlIsNegativeCondition(expression);
 	}
 	
 	public static @NonNull SqlCondition isZero(@NonNull SqlExpression<? extends Number> expression) {
-		return null;
+		return new SqlIsZeroCondition(expression);
 	}
 	
 	public static @NonNull SqlCondition modEquals(@NonNull SqlExpression<? extends Number> expression, @NonNull Number divisor, @NonNull Number remainder) {
-		return null;
+		return new SqlModEqualsCondition(expression, SqlExpression.of(divisor), SqlExpression.of(remainder));
 	}
 	
 	public static @NonNull SqlCondition modEquals(@NonNull SqlExpression<? extends Number> expression, @NonNull SqlExpression<? extends Number> divisor, @NonNull SqlExpression<? extends Number> remainder) {
-		return null;
+		return new SqlModEqualsCondition(expression, divisor, remainder);
 	}
 	
 	public static @NonNull SqlExpression<Double> random() {
-		return null;
+		return new SqlRandomFunction();
 	}
 	
 	public static @NonNull SqlExpression<Double> pi() {
-		return null;
+		return new SqlPiFunction();
 	}
 	
-	public static <T> @NonNull SqlExpression<T> negate(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> negate(@NonNull SqlExpression<T> expression) {
+		return new SqlNegateFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> sum(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> sum(@NonNull SqlExpression<T> expression) {
+		return new SqlSumFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> average(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Number> average(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlAverageFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> abs(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> abs(@NonNull SqlExpression<T> expression) {
+		return new SqlAbsFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> round(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> round(@NonNull SqlExpression<T> expression) {
+		return new SqlRoundFunction(expression, null);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> round(@NonNull SqlExpression<T> expression, int precision) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> round(@NonNull SqlExpression<T> expression, int precision) {
+		return new SqlRoundFunction(expression, SqlExpression.of(precision));
 	}
 	
-	public static <T> @NonNull SqlExpression<T> round(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> precision) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> round(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> precision) {
+		return new SqlRoundFunction(expression, precision);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> ceil(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> ceil(@NonNull SqlExpression<T> expression) {
+		return new SqlCeilFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> floor(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> floor(@NonNull SqlExpression<T> expression) {
+		return new SqlFloorFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> truncate(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> truncate(@NonNull SqlExpression<T> expression) {
+		return new SqlNumericTruncateFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> mod(@NonNull SqlExpression<T> expression, @NonNull Number divisor) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> mod(@NonNull SqlExpression<T> expression, @NonNull Number divisor) {
+		return new SqlModFunction(expression, SqlExpression.of(divisor));
 	}
 	
-	public static <T> @NonNull SqlExpression<T> mod(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> divisor) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> mod(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> divisor) {
+		return new SqlModFunction(expression, divisor);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> pow(@NonNull SqlExpression<T> expression, @NonNull Number exponent) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> pow(@NonNull SqlExpression<T> expression, @NonNull Number exponent) {
+		return new SqlPowFunction(expression, SqlExpression.of(exponent));
 	}
 	
-	public static <T> @NonNull SqlExpression<T> pow(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> exponent) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> pow(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> exponent) {
+		return new SqlPowFunction(expression, exponent);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> sqrt(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> sqrt(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlSqrtFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> sign(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Integer> sign(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlSignFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> exp(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> exp(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlExpFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> log2(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> log2(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlLogFunction(expression, SqlExpression.of(2));
 	}
 	
-	public static <T> @NonNull SqlExpression<T> ln(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> ln(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlLogFunction(expression, SqlExpression.of(Math.E));
 	}
 	
-	public static <T> @NonNull SqlExpression<T> log10(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> log10(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlLogFunction(expression, SqlExpression.of(10));
 	}
 	
-	public static <T> @NonNull SqlExpression<T> sin(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> sin(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlSinFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> cos(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> cos(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlCosFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> tan(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> tan(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlTanFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> asin(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> asin(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlAsinFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> acos(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> acos(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlAcosFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> atan(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> atan(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlAtanFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> atan2(@NonNull SqlExpression<T> expression, @NonNull Number x) {
-		return null;
+	public static @NonNull SqlExpression<Double> atan2(@NonNull SqlExpression<? extends Number> expression, @NonNull Number x) {
+		return new SqlAtan2Function(expression, SqlExpression.of(x));
 	}
 	
-	public static <T> @NonNull SqlExpression<T> atan2(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> x) {
-		return null;
+	public static @NonNull SqlExpression<Double> atan2(@NonNull SqlExpression<? extends Number> expression, @NonNull SqlExpression<? extends Number> x) {
+		return new SqlAtan2Function(expression, x);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> radians(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> radians(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlRadiansFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> degrees(@NonNull SqlExpression<T> expression) {
-		return null;
+	public static @NonNull SqlExpression<Double> degrees(@NonNull SqlExpression<? extends Number> expression) {
+		return new SqlDegreesFunction(expression);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> bitwiseAnd(@NonNull SqlExpression<T> expression, @NonNull Number other) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseAnd(@NonNull SqlExpression<T> expression, @NonNull Number other) {
+		return new SqlBitwiseAndFunction(expression, SqlExpression.of(other));
 	}
 	
-	public static <T> @NonNull SqlExpression<T> bitwiseAnd(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseAnd(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other) {
+		return new SqlBitwiseAndFunction(expression, other);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull Number other) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull Number other) {
+		return new SqlBitwiseOrFunction(expression, SqlExpression.of(other));
 	}
 	
-	public static <T> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other) {
+		return new SqlBitwiseOrFunction(expression, other);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> bitwiseXor(@NonNull SqlExpression<T> expression, @NonNull Number other) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseXor(@NonNull SqlExpression<T> expression, @NonNull Number other) {
+		return new SqlBitwiseXorFunction(expression, SqlExpression.of(other));
 	}
 	
-	public static <T> @NonNull SqlExpression<T> bitwiseXor(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other) {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseXor(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other) {
+		return new SqlBitwiseXorFunction(expression, other);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> bitwiseNot() {
-		return null;
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseNot(@NonNull SqlExpression<T> expression) {
+		return new SqlBitwiseNotFunction(expression);
 	}
 }

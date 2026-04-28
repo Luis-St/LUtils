@@ -36,7 +36,7 @@ public record SqlContainsCondition(
 ) implements SqlStringCondition {
 	
 	public SqlContainsCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(substring, "Substring expression must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(substring, "Sql substring expression must not be null");
 	}
 }

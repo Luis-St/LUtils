@@ -23,6 +23,8 @@ import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
 import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -32,4 +34,10 @@ import org.jspecify.annotations.NonNull;
 public record SqlExtractFunction(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlTemporalPart part
-) implements SqlTemporalFunction<Integer> {}
+) implements SqlTemporalFunction<Integer> {
+	
+	public SqlExtractFunction {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(part, "Sql temporal part must not be null");
+	}
+}

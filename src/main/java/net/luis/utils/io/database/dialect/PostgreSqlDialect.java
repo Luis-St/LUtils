@@ -19,8 +19,7 @@
 package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedFeatureException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedTypeException;
+import net.luis.utils.io.database.exception.dialect.*;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
@@ -77,7 +76,7 @@ public class PostgreSqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	public @NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlDialectUnsupportedTypeException {
+	public @NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlException {
 		Objects.requireNonNull(type, "Sql type must not be null");
 		
 		if (type.getBaseType() instanceof SqlArrayType<?> arrayType) {
@@ -87,7 +86,7 @@ public class PostgreSqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedTypeException {
+	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
 		return switch (jdbcType) {
 			case Types.LONGVARBINARY, Types.BLOB -> "BYTEA";
 			default -> super.getScalarTypeName(jdbcType);
@@ -139,7 +138,7 @@ public class PostgreSqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	public @NonNull String renderLateralJoin() {
-		return "LATERAL";
+	public @NonNull SqlRendered renderLateralJoin() {
+		return SqlRendered.of("LATERAL");
 	}
 }

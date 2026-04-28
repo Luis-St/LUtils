@@ -24,6 +24,8 @@ import net.luis.utils.io.database.function.window.SqlWindowClause;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -35,4 +37,10 @@ public record SqlLagFunction<T>(
 	@Nullable SqlExpression<? extends Number> offset,
 	@Nullable SqlExpression<T> defaultValue,
 	@NonNull SqlWindowClause over
-) implements SqlWindowFunction<T> {}
+) implements SqlWindowFunction<T> {
+	
+	public SqlLagFunction {
+		Objects.requireNonNull(column, "Sql column expression must not be null");
+		Objects.requireNonNull(over, "Sql window clause must not be null");
+	}
+}

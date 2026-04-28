@@ -18,8 +18,13 @@
 
 package net.luis.utils.io.database.expression;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.condition.conditions.string.*;
+import net.luis.utils.io.database.function.functions.string.*;
 import org.jspecify.annotations.NonNull;
+
+import java.util.*;
 
 /**
  *
@@ -27,125 +32,156 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
+@SuppressWarnings("unchecked")
 public final class SqlStringExpressions {
 	
 	public static @NonNull SqlCondition startsWith(@NonNull SqlExpression<String> expression, @NonNull String prefix) {
-		return null;
+		return new SqlStartsWithCondition(expression, SqlExpression.of(prefix));
 	}
 	
 	public static @NonNull SqlCondition startsWith(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> prefix) {
-		return null;
+		return new SqlStartsWithCondition(expression, prefix);
 	}
 	
 	public static @NonNull SqlCondition contains(@NonNull SqlExpression<String> expression, @NonNull String substring) {
-		return null;
+		return new SqlContainsCondition(expression, SqlExpression.of(substring));
 	}
 	
 	public static @NonNull SqlCondition contains(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> substring) {
-		return null;
+		return new SqlContainsCondition(expression, substring);
 	}
 	
 	public static @NonNull SqlCondition endsWith(@NonNull SqlExpression<String> expression, @NonNull String suffix) {
-		return null;
+		return new SqlEndsWithCondition(expression, SqlExpression.of(suffix));
 	}
 	
 	public static @NonNull SqlCondition endsWith(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> suffix) {
-		return null;
+		return new SqlEndsWithCondition(expression, suffix);
 	}
 	
 	public static @NonNull SqlCondition like(@NonNull SqlExpression<String> expression, @NonNull String pattern) {
-		return null;
+		return new SqlLikeCondition(expression, SqlExpression.of(pattern));
 	}
 	
 	public static @NonNull SqlCondition like(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> pattern) {
-		return null;
+		return new SqlLikeCondition(expression, pattern);
 	}
 	
 	public static @NonNull SqlCondition equalsIgnoreCase(@NonNull SqlExpression<String> expression, @NonNull String value) {
-		return null;
+		return new SqlEqualsIgnoreCaseCondition(expression, SqlExpression.of(value));
 	}
 	
 	public static @NonNull SqlCondition equalsIgnoreCase(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> value) {
-		return null;
+		return new SqlEqualsIgnoreCaseCondition(expression, value);
 	}
 	
 	public static @NonNull SqlExpression<String> lower(@NonNull SqlExpression<String> expression) {
-		return null;
+		return new SqlLowerFunction<>(expression);
 	}
 	
 	public static @NonNull SqlExpression<String> upper(@NonNull SqlExpression<String> expression) {
-		return null;
+		return new SqlUpperFunction<>(expression);
 	}
 	
 	public static @NonNull SqlExpression<String> trim(@NonNull SqlExpression<String> expression) {
-		return null;
+		return new SqlTrimFunction<>(expression);
 	}
 	
 	public static @NonNull SqlExpression<String> leftTrim(@NonNull SqlExpression<String> expression) {
-		return null;
+		return new SqlLeftTrimFunction<>(expression);
 	}
 	
 	public static @NonNull SqlExpression<String> rightTrim(@NonNull SqlExpression<String> expression) {
-		return null;
+		return new SqlRightTrimFunction<>(expression);
 	}
 	
 	public static @NonNull SqlExpression<String> trimChars(@NonNull SqlExpression<String> expression, @NonNull String characters) {
-		return null;
+		return new SqlTrimCharsFunction<>(expression, SqlExpression.of(characters));
 	}
 	
 	public static @NonNull SqlExpression<Integer> length(@NonNull SqlExpression<String> expression) {
-		return null;
+		return new SqlLengthFunction(expression);
 	}
 	
 	public static @NonNull SqlExpression<String> substring(@NonNull SqlExpression<String> expression, int start, int length) {
-		return null;
+		return new SqlSubstringFunction<>(expression, SqlExpression.of(start), SqlExpression.of(length));
 	}
 	
-	public static @NonNull SqlExpression<String> concat(SqlExpression<?> @NonNull ... values) {
-		return null;
+	public static @NonNull SqlExpression<String> concat(SqlExpression<String> @NonNull ... values) {
+		Objects.requireNonNull(values, "Sql values must not be null");
+		
+		List<SqlExpression<String>> list = Lists.newArrayList();
+		for (SqlExpression<String> value : values) {
+			list.add(Objects.requireNonNull(value, "Sql value expression must not be null"));
+		}
+		return new SqlConcatFunction<>(list, Optional.empty(), false, false);
 	}
 	
-	public static @NonNull SqlExpression<String> concatWithSeparator(@NonNull String separator, SqlExpression<?> @NonNull ... values) {
-		return null;
+	@SuppressWarnings("DuplicatedCode")
+	public static @NonNull SqlExpression<String> concatWithSeparator(@NonNull String separator, SqlExpression<String> @NonNull ... values) {
+		Objects.requireNonNull(separator, "Separator must not be null");
+		Objects.requireNonNull(values, "Sql values must not be null");
+		
+		List<SqlExpression<String>> list = Lists.newArrayList();
+		for (SqlExpression<String> value : values) {
+			list.add(Objects.requireNonNull(value, "Sql value expression must not be null"));
+		}
+		return new SqlConcatFunction<>(list, Optional.of(separator), false, false);
 	}
 	
-	public static @NonNull SqlExpression<String> concatDistinctWithSeparator(@NonNull String separator, SqlExpression<?> @NonNull ... values) {
-		return null;
+	@SuppressWarnings("DuplicatedCode")
+	public static @NonNull SqlExpression<String> concatDistinctWithSeparator(@NonNull String separator, SqlExpression<String> @NonNull ... values) {
+		Objects.requireNonNull(separator, "Separator must not be null");
+		Objects.requireNonNull(values, "Sql values must not be null");
+		
+		List<SqlExpression<String>> list = Lists.newArrayList();
+		for (SqlExpression<String> value : values) {
+			list.add(Objects.requireNonNull(value, "Sql value expression must not be null"));
+		}
+		return new SqlConcatFunction<>(list, Optional.of(separator), true, false);
 	}
 	
-	public static @NonNull SqlExpression<String> concatOrderedWithSeparator(@NonNull String separator, SqlExpression<?> @NonNull ... values) {
-		return null;
+	@SuppressWarnings("DuplicatedCode")
+	public static @NonNull SqlExpression<String> concatOrderedWithSeparator(@NonNull String separator, SqlExpression<String> @NonNull ... values) {
+		Objects.requireNonNull(separator, "Separator must not be null");
+		Objects.requireNonNull(values, "Sql values must not be null");
+		
+		List<SqlExpression<String>> list = Lists.newArrayList();
+		for (SqlExpression<String> value : values) {
+			list.add(Objects.requireNonNull(value, "Sql value expression must not be null"));
+		}
+		return new SqlConcatFunction<>(list, Optional.of(separator), false, true);
 	}
 	
 	public static @NonNull SqlExpression<String> replace(@NonNull SqlExpression<String> expression, @NonNull String search, @NonNull String replacement) {
-		return null;
+		return new SqlReplaceFunction<>(expression, SqlExpression.of(search), SqlExpression.of(replacement));
 	}
 	
 	public static @NonNull SqlExpression<Integer> position(@NonNull SqlExpression<String> expression, @NonNull String substring) {
-		return null;
+		return new SqlPositionFunction(SqlExpression.of(substring), expression);
 	}
 	
 	public static @NonNull SqlExpression<String> left(@NonNull SqlExpression<String> expression, int n) {
-		return null;
+		return new SqlLeftFunction<>(expression, SqlExpression.of(n));
 	}
 	
 	public static @NonNull SqlExpression<String> right(@NonNull SqlExpression<String> expression, int n) {
-		return null;
+		return new SqlRightFunction<>(expression, SqlExpression.of(n));
 	}
 	
 	public static @NonNull SqlExpression<String> leftPad(@NonNull SqlExpression<String> expression, int length, @NonNull String fill) {
-		return null;
+		return new SqlLeftPadFunction<>(expression, SqlExpression.of(length), SqlExpression.of(fill));
 	}
 	
 	public static @NonNull SqlExpression<String> rightPad(@NonNull SqlExpression<String> expression, int length, @NonNull String fill) {
-		return null;
+		return new SqlRightPadFunction<>(expression, SqlExpression.of(length), SqlExpression.of(fill));
 	}
 	
 	public static @NonNull SqlExpression<String> hex(@NonNull SqlExpression<String> expression) {
-		return null;
+		return new SqlHexFunction(expression);
 	}
 	
 	public static @NonNull SqlExpression<String> unhex(@NonNull SqlExpression<String> expression) {
-		return null;
+		return (SqlExpression<String>) (SqlExpression<?>) new SqlUnhexFunction(expression);
 	}
 }

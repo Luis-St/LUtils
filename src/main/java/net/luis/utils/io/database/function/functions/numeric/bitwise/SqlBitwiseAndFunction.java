@@ -22,6 +22,8 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -31,4 +33,10 @@ import org.jspecify.annotations.NonNull;
 public record SqlBitwiseAndFunction<T extends Number>(
 	@NonNull SqlExpression<T> firstOperand,
 	@NonNull SqlExpression<T> secondOperand
-) implements SqlNumericFunction<T> {}
+) implements SqlNumericFunction<T> {
+	
+	public SqlBitwiseAndFunction {
+		Objects.requireNonNull(firstOperand, "Sql first operand expression must not be null");
+		Objects.requireNonNull(secondOperand, "Sql second operand expression must not be null");
+	}
+}

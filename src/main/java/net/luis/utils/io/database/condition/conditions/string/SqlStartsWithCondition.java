@@ -36,7 +36,7 @@ public record SqlStartsWithCondition(
 ) implements SqlStringCondition {
 	
 	public SqlStartsWithCondition {
-		Objects.requireNonNull(value, "Value expression must not be null");
-		Objects.requireNonNull(prefix, "Prefix expression must not be null");
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(prefix, "Sql prefix expression must not be null");
 	}
 }

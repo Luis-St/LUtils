@@ -22,6 +22,8 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -31,4 +33,10 @@ import org.jspecify.annotations.NonNull;
 public record SqlNullIfFunction<T>(
 	@NonNull SqlExpression<T> expression,
 	@NonNull SqlExpression<T> fallback
-) implements SqlFunction<T> {}
+) implements SqlFunction<T> {
+	
+	public SqlNullIfFunction {
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		Objects.requireNonNull(fallback, "Sql fallback expression must not be null");
+	}
+}
