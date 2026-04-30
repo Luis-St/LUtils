@@ -26,6 +26,4 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlSavepoint(
-	@NonNull String name
-) {}
+public record SqlSavepoint(@NonNull String name) {}

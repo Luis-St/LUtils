@@ -18,11 +18,51 @@
 
 package net.luis.utils.io.database.query;
 
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+import java.util.function.Supplier;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public class SqlAlias {
+public class SqlAlias implements Supplier<String> {
+	
+	private final String alias;
+	
+	SqlAlias(@NonNull String alias) {
+		this.alias = Objects.requireNonNull(alias, "Alias must not be null");
+	}
+	
+	public static @NonNull SqlAlias of(@NonNull String alias) {
+		return new SqlAlias(alias);
+	}
+	
+	@Override
+	public @NonNull String get() {
+		return this.alias;
+	}
+	
+	//region Object overrides
+	
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof SqlAlias sqlAlias)) return false;
+		
+		return this.alias.equals(sqlAlias.alias);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.alias);
+	}
+	
+	@Override
+	public String toString() {
+		return this.alias;
+	}
+	//endregion
 }

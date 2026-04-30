@@ -18,9 +18,11 @@
 
 package net.luis.utils.io.database;
 
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -28,19 +30,41 @@ import java.util.List;
  *
  */
 
-public interface SqlPage<T> {
+public record SqlPage<T>(
+	@NonNull @Unmodifiable List<T> content,
+	int page,
+	int pageSize,
+	long totalElements
+) {
 	
-	@NonNull List<T> content();
+	public SqlPage {
+		Objects.requireNonNull(content, "Sql page content must not be null");
+		
+		if (content.isEmpty()) {
+			throw new IllegalArgumentException("Sql page content must not be empty");
+		}
+		if (page < 0) {
+			throw new IllegalArgumentException("Sql page index must be non-negative");
+		}
+		if (pageSize <= 0) {
+			throw new IllegalArgumentException("Sql page size must be positive");
+		}
+		if (totalElements < 0) {
+			throw new IllegalArgumentException("Total elements must be non-negative");
+		}
+		
+		content = List.copyOf(content);
+	}
 	
-	int page();
+	public int totalPages() {
+		return (int) Math.ceil((double) this.totalElements / this.pageSize);
+	}
 	
-	int pageSize();
+	public boolean hasNext() {
+		return this.page < this.totalPages() - 1;
+	}
 	
-	long totalElements();
-	
-	int totalPages();
-	
-	boolean hasNext();
-	
-	boolean hasPrevious();
+	public boolean hasPrevious() {
+		return this.page > 0;
+	}
 }
