@@ -16,10 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.expression;
+package net.luis.utils.io.database.table;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import org.jspecify.annotations.NonNull;
@@ -32,24 +33,19 @@ import java.util.Objects;
  *
  */
 
-public record SqlAliasedExpression<T>(
-	@NonNull SqlExpression<T> expression,
+record SqlAliasColumnExpression<C>(
+	@NonNull SqlColumn<?, C> column,
 	@NonNull SqlAlias alias
-) implements SqlExpression<T> {
-	
-	public SqlAliasedExpression {
-		Objects.requireNonNull(expression, "Sql expression must not be null");
+) implements SqlExpression<C> {
+
+	SqlAliasColumnExpression {
+		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(alias, "Sql alias must not be null");
 	}
-	
-	@Override
-	public @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
-		return new SqlAliasedExpression<>(this.expression, alias);
-	}
-	
+
 	@Override
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		return dialect.renderExpression(this);
+		return SqlRendered.of(dialect.quoteIdentifier(this.alias.get()) + "." + dialect.quoteIdentifier(this.column.getName()));
 	}
 }

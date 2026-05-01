@@ -169,12 +169,16 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 	}
 	
 	public @NonNull SqlExpression<C> of(@NonNull SqlAlias alias) {
-		// Binds the column to the given alias, used for nested queries, common table expressions, joins, etc.
-		return null;
+		return new SqlAliasColumnExpression<>(this, alias);
 	}
-	
+
 	@Override
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
-		return null;
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		
+		if (this.table != null) {
+			return SqlRendered.of(dialect.quoteIdentifier(this.table.getName()) + "." + dialect.quoteIdentifier(this.name));
+		}
+		return SqlRendered.of(dialect.quoteIdentifier(this.name));
 	}
 }
