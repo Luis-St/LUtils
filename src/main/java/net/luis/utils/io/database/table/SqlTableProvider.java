@@ -18,16 +18,21 @@
 
 package net.luis.utils.io.database.table;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.rendering.SqlRendered;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
+import java.sql.*;
+import java.time.Duration;
+import java.util.*;
 
 /**
  *
@@ -37,47 +42,139 @@ import java.util.List;
 
 public class SqlTableProvider<E> {
 	
-	public void create() throws SqlException {
+	private final SqlTable<E> table;
+	private final SqlDialect dialect;
+	private final Connection connection;
+	private final Duration queryTimeout;
 	
+	public SqlTableProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout) {
+		this.table = Objects.requireNonNull(table, "Sql table must not be null");
+		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
+		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
+	}
+	
+	private void executeStatement(@NonNull SqlRendered rendered) throws SqlException {
+		Objects.requireNonNull(rendered, "Sql rendered must not be null");
+		
+		try (PreparedStatement statement = this.connection.prepareStatement(rendered.sql())) {
+			List<Object> parameters = rendered.parameters();
+			
+			for (int i = 0; i < parameters.size(); i++) {
+				statement.setObject(i + 1, parameters.get(i));
+			}
+			
+			statement.setQueryTimeout((int) this.queryTimeout.toSeconds());
+			statement.execute();
+		} catch (SQLException e) {
+			throw new SqlException("Failed to execute statement: " + rendered.sql(), e);
+		}
+	}
+	
+	public void create() throws SqlException {
+		this.executeStatement(this.dialect.renderCreateTable(this.table, false));
 	}
 	
 	public void createIfNotExists() throws SqlException {
-	
+		this.executeStatement(this.dialect.renderCreateTable(this.table, true));
 	}
 	
 	public boolean exists() throws SqlException {
-		return false;
+		try {
+			ResultSet resultSet = this.connection.getMetaData().getTables(null, this.table.getSchema(), this.table.getName(), new String[] { "TABLE" });
+			boolean exists = resultSet.next();
+			resultSet.close();
+			return exists;
+		} catch (SQLException e) {
+			throw new SqlException("Failed to check if table " + this.table.getName() + " exists", e);
+		}
 	}
 	
 	public void truncate() throws SqlException {
-	
+		this.executeStatement(this.dialect.renderTruncateTable(this.table));
 	}
 	
 	public void drop() throws SqlException {
-	
+		this.executeStatement(this.dialect.renderDropTable(this.table, false));
 	}
 	
 	public void dropIfExists() throws SqlException {
-	
+		this.executeStatement(this.dialect.renderDropTable(this.table, true));
 	}
 	
 	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<E, ?>> columns, @NonNull SqlIndexMethod method) throws SqlException {
-	
+		this.createIndex(name, columns, false, null, method);
 	}
 	
 	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<E, ?>> columns, boolean unique, @NonNull SqlIndexMethod method) throws SqlException {
-	
+		this.createIndex(name, columns, unique, null, method);
 	}
 	
 	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<E, ?>> columns, boolean unique, @Nullable SqlCondition whereCondition, @NonNull SqlIndexMethod method) throws SqlException {
-	
+		Objects.requireNonNull(name, "Index name must not be null");
+		Objects.requireNonNull(columns, "Index columns must not be null");
+		Objects.requireNonNull(method, "Index method must not be null");
+		if (columns.isEmpty()) {
+			throw new IllegalArgumentException("Index columns must not be empty");
+		}
+		
+		for (SqlColumn<E, ?> column : columns) {
+			if (column.getOwningTable() != this.table) {
+				throw new IllegalArgumentException("Column " + column.getName() + " does not belong to table " + this.table.getName());
+			}
+		}
+		
+		if (!this.dialect.isIndexMethodSupported(method)) {
+			throw new SqlException("Index method " + method + " is not supported by dialect " + this.dialect.name());
+		}
+		
+		SqlIndex index = new SqlIndex(name, List.copyOf(columns), unique, whereCondition, method);
+		this.executeStatement(this.dialect.renderCreateIndex(index));
 	}
 	
 	public @NotNull @Unmodifiable List<SqlIndex> getIndexes() throws SqlException {
-		return null;
+		try {
+			
+			ResultSet resultSet = this.connection.getMetaData().getIndexInfo(null, this.table.getSchema(), this.table.getName(), false, false);
+			Map<String, List<SqlColumn<?, ?>>> indexColumns = new LinkedHashMap<>();
+			Map<String, Boolean> indexUnique = new LinkedHashMap<>();
+			
+			while (resultSet.next()) {
+				String indexName = resultSet.getString("INDEX_NAME");
+				
+				if (indexName == null) {
+					continue;
+				}
+				
+				String columnName = resultSet.getString("COLUMN_NAME");
+				boolean nonUnique = resultSet.getBoolean("NON_UNIQUE");
+				indexColumns.computeIfAbsent(indexName, k -> Lists.newArrayList());
+				indexUnique.putIfAbsent(indexName, !nonUnique);
+				
+				if (columnName != null) {
+					for (SqlColumn<E, ?> column : this.table.getColumns()) {
+						if (column.getName().equals(columnName)) {
+							indexColumns.get(indexName).add(column);
+							break;
+						}
+					}
+				}
+			}
+			
+			resultSet.close();
+			
+			List<SqlIndex> indexes = Lists.newArrayList();
+			for (Map.Entry<String, List<SqlColumn<?, ?>>> entry : indexColumns.entrySet()) {
+				indexes.add(new SqlIndex(entry.getKey(), List.copyOf(entry.getValue()), indexUnique.getOrDefault(entry.getKey(), false), SqlIndexMethod.BTREE));
+			}
+			return Collections.unmodifiableList(indexes);
+		} catch (SQLException e) {
+			throw new SqlException("Failed to get indexes for table " + this.table.getName(), e);
+		}
 	}
 	
 	public void dropIndex(@NotNull String name) throws SqlException {
-	
+		Objects.requireNonNull(name, "Index name must not be null");
+		this.executeStatement(this.dialect.renderDropIndex(this.table, name));
 	}
 }

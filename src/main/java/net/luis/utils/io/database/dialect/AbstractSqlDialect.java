@@ -31,8 +31,7 @@ import net.luis.utils.io.database.condition.conditions.temporal.*;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
-import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.expression.SqlValueExpression;
+import net.luis.utils.io.database.expression.*;
 import net.luis.utils.io.database.expression.orderable.OrderedSqlExpression;
 import net.luis.utils.io.database.expression.orderable.SqlOrderable;
 import net.luis.utils.io.database.function.SqlFunction;
@@ -163,12 +162,23 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	public @NonNull SqlRendered renderExpression(@NonNull SqlExpression<?> expression) throws SqlException {
 		return switch (expression) {
 			case OrderedSqlExpression<?> expr -> this.renderExpression(expr.expression());
+			case SqlAliasedExpression<?> aliased -> this.renderAliasedExpression(aliased);
+			case SqlColumn<?, ?> column -> column.toSql(this);
 			case SqlFunction<?> func -> this.renderFunction(func);
 			case SqlValueExpression<?> value -> this.renderValueExpression(value);
 			
 			case null -> throw new NullPointerException("Sql expression must not be null");
 			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql expression type: " + expression.getClass().getName() + " in dialect " + this.name());
 		};
+	}
+	
+	protected @NonNull SqlRendered renderAliasedExpression(@NonNull SqlAliasedExpression<?> expression) throws SqlException {
+		Objects.requireNonNull(expression, "Sql aliased expression must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.rendered(this.renderExpression(expression.expression()));
+		renderer.as().literal(this.quoteIdentifier(expression.alias().get()));
+		return renderer.toSql();
 	}
 	
 	protected @NonNull SqlRendered renderValueExpression(@NonNull SqlValueExpression<?> expression) throws SqlException {
@@ -942,11 +952,12 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index) throws SqlException {
-		Objects.requireNonNull(index, "Sql index must not be null");
+	public @NonNull SqlRendered renderDropIndex(@NonNull SqlTable<?> owningTable, @NonNull String indexName) throws SqlException {
+		Objects.requireNonNull(owningTable, "Sql index owning table must not be null");
+		Objects.requireNonNull(indexName, "Sql index name must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.drop().index().literal(this.quoteIdentifier(index.name()));
+		renderer.drop().index().literal(this.quoteIdentifier(indexName));
 		return renderer.toSql();
 	}
 	

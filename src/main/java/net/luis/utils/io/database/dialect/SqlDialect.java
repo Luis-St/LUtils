@@ -81,7 +81,7 @@ public interface SqlDialect {
 	
 	@NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index) throws SqlException;
 	
-	@NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index) throws SqlException;
+	@NonNull SqlRendered renderDropIndex(@NonNull SqlTable<?> owningTable, @NonNull String indexName) throws SqlException;
 	
 	@NonNull SqlRendered renderLimitOffset(long limit, long offset) throws SqlException;
 	

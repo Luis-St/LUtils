@@ -32,6 +32,7 @@ import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.parameter.SqlFractionalParameter;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
@@ -204,11 +205,13 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderDropIndex(@NonNull SqlIndex index) throws SqlException {
-		Objects.requireNonNull(index, "Index must not be null");
+	@SuppressWarnings("DuplicatedCode")
+	public @NonNull SqlRendered renderDropIndex(@NonNull SqlTable<?> owningTable, @NonNull String indexName) throws SqlException {
+		Objects.requireNonNull(owningTable, "Sql index owning table must not be null");
+		Objects.requireNonNull(indexName, "Sql index name must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.drop().index().literal(this.quoteIdentifier(index.name())).on().literal(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
+		renderer.drop().index().literal(this.quoteIdentifier(indexName)).on().literal(this.quoteIdentifier(owningTable.getName()));
 		return renderer.toSql();
 	}
 	
