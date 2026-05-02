@@ -21,6 +21,8 @@ package net.luis.utils.io.database.dialect;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.expression.orderable.SqlNullOrdering;
+import net.luis.utils.io.database.expression.orderable.SqlOrdering;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.window.*;
 import net.luis.utils.io.database.index.SqlIndex;
@@ -94,4 +96,6 @@ public interface SqlDialect {
 	@NonNull SqlRendered renderLateralJoin() throws SqlException;
 	
 	@NonNull SqlRendered renderBooleanLiteral(boolean value) throws SqlException;
+	
+	@NonNull SqlRendered renderOrdering(@NonNull SqlOrdering ordering, @NonNull SqlNullOrdering nullOrdering) throws SqlException;
 }

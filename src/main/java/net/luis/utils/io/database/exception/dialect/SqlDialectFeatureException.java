@@ -16,9 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query;
+package net.luis.utils.io.database.exception.dialect;
 
-import net.luis.utils.io.database.query.crud.SqlSelectQuery;
+import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlFeature;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -29,14 +31,12 @@ import java.util.Objects;
  *
  */
 
-public record SqlCommonTableExpression(
-	@NonNull SqlAlias alias,
-	@NonNull SqlSelectQuery<?> query,
-	boolean recursive
-) {
-
-	public SqlCommonTableExpression {
-		Objects.requireNonNull(alias, "Sql common table expression alias must not be null");
-		Objects.requireNonNull(query, "Sql common table expression query must not be null");
+public class SqlDialectFeatureException extends SqlDialectException {
+	
+	public SqlDialectFeatureException(@NotNull SqlFeature feature, @NonNull SqlDialect dialect) {
+		Objects.requireNonNull(feature, "Sql feature must not be null");
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		
+		super("Sql feature '" + feature + "' is not supported by dialect " + dialect.name());
 	}
 }

@@ -303,6 +303,11 @@ public class SqlRenderer {
 		return this;
 	}
 	
+	public @NonNull SqlRenderer last() {
+		this.statements.add("LAST");
+		return this;
+	}
+	
 	public @NonNull SqlRenderer rows() {
 		this.statements.add("ROWS");
 		return this;

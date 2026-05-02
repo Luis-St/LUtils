@@ -34,7 +34,8 @@ public record SqlPage<T>(
 	@NonNull @Unmodifiable List<T> content,
 	int page,
 	int pageSize,
-	long totalElements
+	boolean hasNext,
+	boolean hasPrevious
 ) {
 	
 	public SqlPage {
@@ -49,22 +50,7 @@ public record SqlPage<T>(
 		if (pageSize <= 0) {
 			throw new IllegalArgumentException("Sql page size must be positive");
 		}
-		if (totalElements < 0) {
-			throw new IllegalArgumentException("Total elements must be non-negative");
-		}
 		
 		content = List.copyOf(content);
-	}
-	
-	public int totalPages() {
-		return (int) Math.ceil((double) this.totalElements / this.pageSize);
-	}
-	
-	public boolean hasNext() {
-		return this.page < this.totalPages() - 1;
-	}
-	
-	public boolean hasPrevious() {
-		return this.page > 0;
 	}
 }

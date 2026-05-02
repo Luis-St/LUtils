@@ -32,8 +32,7 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.*;
-import net.luis.utils.io.database.expression.orderable.OrderedSqlExpression;
-import net.luis.utils.io.database.expression.orderable.SqlOrderable;
+import net.luis.utils.io.database.expression.orderable.*;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.*;
 import net.luis.utils.io.database.function.functions.aggregate.*;
@@ -637,16 +636,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		
 		if (orderable instanceof OrderedSqlExpression<?> ordered) {
 			renderer.rendered(this.renderExpression(ordered.expression()));
-			switch (ordered.ordering()) {
-				case ASCENDING -> renderer.asc();
-				case DESCENDING -> renderer.desc();
-				case DEFAULT -> {}
-			}
-			switch (ordered.nullOrdering()) {
-				case NULLS_FIRST -> renderer.nulls().first();
-				case NULLS_LAST -> renderer.nulls().literal("LAST");
-				case DEFAULT -> {}
-			}
+			renderer.rendered(this.renderOrdering(ordered.ordering(), ordered.nullOrdering()));
 		} else if (orderable instanceof SqlExpression<?> expression) {
 			renderer.rendered(this.renderExpression(expression));
 		} else {
@@ -1025,5 +1015,26 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	@Override
 	public @NonNull SqlRendered renderBooleanLiteral(boolean value) throws SqlException {
 		return SqlRendered.of(value ? "TRUE" : "FALSE");
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderOrdering(@NonNull SqlOrdering ordering, @NonNull SqlNullOrdering nullOrdering) throws SqlException {
+		Objects.requireNonNull(ordering, "Sql ordering must not be null");
+		Objects.requireNonNull(nullOrdering, "Sql null ordering must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		switch (ordering) {
+			case ASCENDING -> renderer.asc();
+			case DESCENDING -> renderer.desc();
+			case DEFAULT -> {}
+		}
+		
+		switch (nullOrdering) {
+			case NULLS_FIRST -> renderer.nulls().first();
+			case NULLS_LAST -> renderer.nulls().last();
+			case DEFAULT -> {}
+		}
+		
+		return renderer.toSql();
 	}
 }

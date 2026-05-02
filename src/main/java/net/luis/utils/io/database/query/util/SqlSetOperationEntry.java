@@ -16,8 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query;
+package net.luis.utils.io.database.query.util;
 
+import net.luis.utils.io.database.query.SqlSetOperation;
 import net.luis.utils.io.database.query.crud.SqlSelectQuery;
 import org.jspecify.annotations.NonNull;
 
@@ -29,14 +30,13 @@ import java.util.Objects;
  *
  */
 
-public record SqlCommonTableExpression(
-	@NonNull SqlAlias alias,
-	@NonNull SqlSelectQuery<?> query,
-	boolean recursive
+public record SqlSetOperationEntry<E>(
+	@NonNull SqlSetOperation operation,
+	@NonNull SqlSelectQuery<E> query
 ) {
-
-	public SqlCommonTableExpression {
-		Objects.requireNonNull(alias, "Sql common table expression alias must not be null");
-		Objects.requireNonNull(query, "Sql common table expression query must not be null");
+	
+	public SqlSetOperationEntry {
+		Objects.requireNonNull(operation, "Sql set operation must not be null");
+		Objects.requireNonNull(query, "Sql query must not be null");
 	}
 }
