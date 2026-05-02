@@ -19,6 +19,9 @@
 package net.luis.utils.io.database.query;
 
 import net.luis.utils.io.database.rendering.SqlRenderable;
+import org.jspecify.annotations.NonNull;
+
+import java.util.*;
 
 /**
  *
@@ -27,4 +30,25 @@ import net.luis.utils.io.database.rendering.SqlRenderable;
  */
 
 @FunctionalInterface
-public interface SqlQuery<E> extends SqlRenderable {}
+public interface SqlQuery<E> extends SqlRenderable {
+	
+	static <T> @NonNull List<T> copyAndAdd(@NonNull List<T> list, @NonNull T element) {
+		Objects.requireNonNull(list, "List must not be null");
+		Objects.requireNonNull(element, "Element must not be null");
+		
+		List<T> copy = new ArrayList<>(list.size() + 1);
+		copy.addAll(list);
+		copy.add(element);
+		return Collections.unmodifiableList(copy);
+	}
+	
+	static <T> @NonNull List<T> copyAndAddAll(@NonNull List<T> list, @NonNull Collection<? extends T> elements) {
+		Objects.requireNonNull(list, "List must not be null");
+		Objects.requireNonNull(elements, "Elements must not be null");
+		
+		List<T> copy = new ArrayList<>(list.size() + elements.size());
+		copy.addAll(list);
+		copy.addAll(elements);
+		return Collections.unmodifiableList(copy);
+	}
+}

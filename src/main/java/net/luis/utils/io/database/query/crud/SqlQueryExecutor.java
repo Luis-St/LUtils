@@ -89,7 +89,7 @@ final class SqlQueryExecutor {
 		Objects.requireNonNull(rowMapper, "Sql row mapper must not be null");
 		
 		List<T> results = Lists.newArrayList();
-		try (ResultSet resultSet = SqlQueryExecutor.executeQuery(connection, rendered, timeout)) {
+		try (ResultSet resultSet = executeQuery(connection, rendered, timeout)) {
 			while (resultSet.next()) {
 				results.add(rowMapper.apply(resultSet));
 			}
