@@ -26,8 +26,11 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlRow3<T1, T2, T3>(
-	@NonNull T1 first,
-	@NonNull T2 second,
-	@NonNull T3 third
-) {}
+public interface SqlRow3<T1, T2, T3> {
+	
+	@NonNull T1 first();
+	
+	@NonNull T2 second();
+	
+	@NonNull T3 third();
+}

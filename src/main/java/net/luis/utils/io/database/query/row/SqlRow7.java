@@ -26,12 +26,19 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public record SqlRow7<T1, T2, T3, T4, T5, T6, T7>(
-	@NonNull T1 first,
-	@NonNull T2 second,
-	@NonNull T3 third,
-	@NonNull T4 fourth,
-	@NonNull T5 fifth,
-	@NonNull T6 sixth,
-	@NonNull T7 seventh
-) {}
+public interface SqlRow7<T1, T2, T3, T4, T5, T6, T7> {
+	
+	@NonNull T1 first();
+	
+	@NonNull T2 second();
+	
+	@NonNull T3 third();
+	
+	@NonNull T4 fourth();
+	
+	@NonNull T5 fifth();
+	
+	@NonNull T6 sixth();
+	
+	@NonNull T7 seventh();
+}
