@@ -79,7 +79,7 @@ public class PostgreSqlDialect extends AbstractSqlDialect {
 	public @NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlException {
 		Objects.requireNonNull(type, "Sql type must not be null");
 		
-		if (type.getBaseType() instanceof SqlArrayType<?> arrayType) {
+		if (type.baseType() instanceof SqlArrayType<?> arrayType) {
 			return this.getTypeName(arrayType.elementType()) + "[]";
 		}
 		return super.getTypeName(type);

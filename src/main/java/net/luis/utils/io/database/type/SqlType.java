@@ -41,6 +41,13 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 	
 	@NonNull Class<T> javaType();
 	
+	default @NonNull SqlType<?> baseType() {
+		if (this instanceof MappedSqlType<?, ?> mapped) {
+			return mapped.sourceType().baseType();
+		}
+		return this;
+	}
+	
 	default @Nullable T get(@NonNull ResultSet resultSet, int columnIndex) throws SqlException {
 		Objects.requireNonNull(resultSet, "Result set must not be null");
 		if (columnIndex < 1) {
@@ -78,12 +85,5 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		Objects.requireNonNull(fromSourceToTarget, "Setter function must not be null");
 		
 		return new MappedSqlType<>(this, targetType, fromTargetToSource, fromSourceToTarget);
-	}
-	
-	default @NonNull SqlType<?> getBaseType() {
-		if (this instanceof MappedSqlType<?, ?> mapped) {
-			return mapped.sourceType().getBaseType();
-		}
-		return this;
 	}
 }

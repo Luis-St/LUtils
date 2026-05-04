@@ -74,7 +74,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	@Override
 	public boolean isTypeSupported(@NonNull SqlType<?> type) {
 		Objects.requireNonNull(type, "Sql type must not be null");
-		return !(type.getBaseType() instanceof SqlArrayType<?>);
+		return !(type.baseType() instanceof SqlArrayType<?>);
 	}
 	
 	@Override
@@ -84,7 +84,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			throw new SqlDialectUnsupportedRenderingException("Sql type " + type + " is not supported by dialect " + this.name());
 		}
 		
-		return switch (type.getBaseType()) {
+		return switch (type.baseType()) {
 			case SqlScalarType<?> scalar -> this.getScalarTypeName(scalar.jdbcType());
 			case ParameterizedSqlType<?, ?> parameterized -> this.getParameterizedTypeName(parameterized.jdbcType(), parameterized.parameter());
 			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql type structure: " + type);
