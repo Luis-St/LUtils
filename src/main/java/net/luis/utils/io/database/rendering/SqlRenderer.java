@@ -19,11 +19,13 @@
 package net.luis.utils.io.database.rendering;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.util.Pair;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  *
@@ -35,9 +37,9 @@ import java.util.Objects;
 public class SqlRenderer {
 	
 	private final List<String> statements = Lists.newArrayList();
-	private final List<Object> parameters = Lists.newArrayList();
+	private final List<Pair<SqlType<?>, Object>> parameters = Lists.newArrayList();
 	
-	public SqlRenderer(@NonNull List<String> statements, @NonNull List<Object> parameters) {
+	public SqlRenderer(@NonNull List<String> statements, @NonNull List<Pair<SqlType<?>, Object>> parameters) {
 		this.statements.addAll(Objects.requireNonNull(statements, "Sql statements must not be null"));
 		this.parameters.addAll(Objects.requireNonNull(parameters, "Sql parameters must not be null"));
 	}
@@ -85,11 +87,11 @@ public class SqlRenderer {
 		return this;
 	}
 	
-	public @NonNull SqlRenderer parameter(@NonNull Object parameter) {
-		Objects.requireNonNull(parameter, "Sql parameter must not be null");
+	public <T> @NonNull SqlRenderer parameter(@NonNull SqlType<T> type, @Nullable T value) {
+		Objects.requireNonNull(type, "Sql type must not be null");
 		
 		this.statements.add("?");
-		this.parameters.add(parameter);
+		this.parameters.add(Pair.of(type, value));
 		return this;
 	}
 	
@@ -686,6 +688,6 @@ public class SqlRenderer {
 	}
 	
 	public @NonNull SqlRendered toSql() {
-		return new SimpleSqlRendered(this.statements, this.parameters);
+		return new SqlRendered(this.statements, this.parameters);
 	}
 }

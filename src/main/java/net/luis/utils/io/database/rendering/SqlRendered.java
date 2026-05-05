@@ -18,6 +18,8 @@
 
 package net.luis.utils.io.database.rendering;
 
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.util.Pair;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
@@ -30,21 +32,24 @@ import java.util.Objects;
  *
  */
 
-public interface SqlRendered {
+public record SqlRendered(
+	@NonNull @Unmodifiable List<String> statements,
+	@NonNull @Unmodifiable List<Pair<SqlType<?>, Object>> parameters
+) {
 	
-	static @NonNull SqlRendered of(@NonNull String sql) {
-		Objects.requireNonNull(sql, "Sql statement must not be null");
-		
-		return new SimpleSqlRendered(List.of(sql), List.of());
+	
+	public SqlRendered {
+		statements = List.copyOf(Objects.requireNonNull(statements, "Sql statements must not be null"));
+		parameters = List.copyOf(Objects.requireNonNull(parameters, "Sql parameters must not be null"));
 	}
 	
-	@NonNull
-	@Unmodifiable
-	List<String> statements();
+	public static @NonNull SqlRendered of(@NonNull String sql) {
+		Objects.requireNonNull(sql, "Sql statement must not be null");
+		
+		return new SqlRendered(List.of(sql), List.of());
+	}
 	
-	@NonNull
-	@Unmodifiable
-	List<Object> parameters();
-	
-	@NonNull String sql();
+	public @NonNull String sql() {
+		return String.join(" ", this.statements);
+	}
 }
