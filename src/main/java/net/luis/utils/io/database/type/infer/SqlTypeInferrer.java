@@ -16,16 +16,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.expression;
+package net.luis.utils.io.database.type.infer;
 
-import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.type.SqlTypeNotFoundException;
-import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.type.SqlType;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Objects;
+import java.util.Map;
 
 /**
  *
@@ -33,24 +31,15 @@ import java.util.Objects;
  *
  */
 
-public record SqlValueExpression<T>(
-	@NonNull T value,
-	@NonNull SqlType<T> type
-) implements SqlExpression<T> {
+public interface SqlTypeInferrer {
 	
-	public SqlValueExpression(@NonNull T value) throws SqlTypeNotFoundException {
-		Objects.requireNonNull(value, "Sql value must not be null");
-		this(value, SqlType.inferType(value));
+	static @NonNull SqlTypeInferrer standard() {
+		return SqlStandardTypeInferrer.INSTANCE;
 	}
 	
-	public SqlValueExpression {
-		Objects.requireNonNull(value, "Sql value must not be null");
-		Objects.requireNonNull(type, "Sql type must not be null");
+	static @NonNull SqlTypeInferrer of(@NonNull Map<Class<?>, SqlType<?>> lookup) {
+		return new SqlLookupTypeInferrer(lookup);
 	}
 	
-	@Override
-	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
-		Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		return dialect.renderExpression(this);
-	}
+	<T> @NotNull SqlType<T> inferType(@NonNull T value) throws SqlTypeNotFoundException;
 }

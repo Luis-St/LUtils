@@ -16,15 +16,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.expression;
+package net.luis.utils.io.database.type.infer;
 
-import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.type.SqlTypeNotFoundException;
-import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.type.SqlType;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -33,24 +32,22 @@ import java.util.Objects;
  *
  */
 
-public record SqlValueExpression<T>(
-	@NonNull T value,
-	@NonNull SqlType<T> type
-) implements SqlExpression<T> {
+public class SqlLookupTypeInferrer implements SqlTypeInferrer {
 	
-	public SqlValueExpression(@NonNull T value) throws SqlTypeNotFoundException {
-		Objects.requireNonNull(value, "Sql value must not be null");
-		this(value, SqlType.inferType(value));
-	}
+	private final Map<Class<?>, SqlType<?>> lookup;
 	
-	public SqlValueExpression {
-		Objects.requireNonNull(value, "Sql value must not be null");
-		Objects.requireNonNull(type, "Sql type must not be null");
+	SqlLookupTypeInferrer(@NonNull Map<Class<?>, SqlType<?>> lookup) {
+		this.lookup = Map.copyOf(Objects.requireNonNull(lookup, "Sql type lookup map must not be null"));
 	}
 	
 	@Override
-	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
-		Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		return dialect.renderExpression(this);
+	@SuppressWarnings("unchecked")
+	public @NotNull <T> SqlType<T> inferType(@NonNull T value) throws SqlTypeNotFoundException {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		if (!this.lookup.containsKey(value.getClass())) {
+			throw new SqlTypeNotFoundException("No sql type found for java type " + value.getClass().getName() + " in lookup");
+		}
+		return (SqlType<T>) this.lookup.get(value.getClass());
 	}
 }

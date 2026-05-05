@@ -1,0 +1,83 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.database.type.infer;
+
+import net.luis.utils.io.database.exception.type.SqlTypeNotFoundException;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
+import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Clob;
+import java.sql.NClob;
+import java.time.*;
+
+/**
+ *
+ * @author Luis-St
+ *
+ */
+
+public class SqlStandardTypeInferrer implements SqlTypeInferrer {
+	
+	static final SqlStandardTypeInferrer INSTANCE = new SqlStandardTypeInferrer();
+	
+	protected SqlStandardTypeInferrer() {}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public @NotNull <T> SqlType<T> inferType(@NonNull T value) throws SqlTypeNotFoundException {
+		return (SqlType<T>) this.inferTypeInternal(value);
+	}
+	
+	private @NonNull SqlType<?> inferTypeInternal(@NonNull Object value) throws SqlTypeNotFoundException {
+		return switch (value) {
+			case Boolean _ -> SqlTypes.BOOLEAN;
+			case Byte _ -> SqlTypes.BYTE;
+			case Short _ -> SqlTypes.SHORT;
+			case Integer _ -> SqlTypes.INTEGER;
+			case Long _ -> SqlTypes.LONG;
+			case BigInteger _ -> SqlTypes.BIG_INTEGER.configure(SqlParameter.precision(38, 0));
+			case Float _ -> SqlTypes.FLOAT;
+			case Double _ -> SqlTypes.DOUBLE;
+			case BigDecimal _ -> SqlTypes.DECIMAL.configure(SqlParameter.precision(38, 18));
+			case String _ -> SqlTypes.STRING.configure(SqlParameter.length(255));
+			case NClob _ -> SqlTypes.NCLOB;
+			case Clob _ -> SqlTypes.CLOB;
+			case byte[] _ -> SqlTypes.BYTES.configure(SqlParameter.length(255));
+			case LocalDate _ -> SqlTypes.LOCAL_DATE;
+			case LocalTime _ -> SqlTypes.LOCAL_TIME.configure(SqlParameter.fractional(6));
+			case LocalDateTime _ -> SqlTypes.LOCAL_DATE_TIME.configure(SqlParameter.fractional(6));
+			case OffsetTime _ -> SqlTypes.OFFSET_TIME.configure(SqlParameter.fractional(6));
+			case OffsetDateTime _ -> SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+			case ZonedDateTime _ -> SqlTypes.ZONED_DATE_TIME.configure(SqlParameter.fractional(6));
+			case Instant _ -> SqlTypes.INSTANT.configure(SqlParameter.fractional(6));
+			case Year _ -> SqlTypes.YEAR;
+			case Month _ -> SqlTypes.MONTH;
+			case DayOfWeek _ -> SqlTypes.DAY_OF_WEEK;
+			case Duration _ -> SqlTypes.DURATION;
+			
+			case null -> throw new NullPointerException("Value must not be null");
+			default -> throw new SqlTypeNotFoundException("No SQL type found for Java type: " + value.getClass().getName());
+		};
+	}
+}

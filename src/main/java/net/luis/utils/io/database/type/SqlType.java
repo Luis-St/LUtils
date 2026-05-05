@@ -21,8 +21,8 @@ package net.luis.utils.io.database.type;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.type.SqlResultRetrievalException;
-import net.luis.utils.io.database.exception.type.SqlStatementBindException;
+import net.luis.utils.io.database.exception.type.*;
+import net.luis.utils.io.database.type.infer.SqlTypeInferrer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -36,6 +36,17 @@ import java.util.Objects;
  */
 
 public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, SqlArrayType, MappedSqlType {
+	
+	static <T> @NonNull SqlType<T> inferType(@NonNull T value) throws SqlTypeNotFoundException {
+		return inferType(value, SqlTypeInferrer.standard());
+	}
+	
+	static <T> @NonNull SqlType<T> inferType(@NonNull T value, @NonNull SqlTypeInferrer inferrer) throws SqlTypeNotFoundException {
+		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(inferrer, "Sql type inferrer must not be null");
+		
+		return inferrer.inferType(value);
+	}
 	
 	int jdbcType();
 	
