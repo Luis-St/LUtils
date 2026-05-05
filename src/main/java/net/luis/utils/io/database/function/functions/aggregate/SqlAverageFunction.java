@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.function.functions.aggregate;
 
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.expression.SqlTypedNestedExpression;
 import net.luis.utils.io.database.function.functions.SqlAggregateFunction;
 import org.jspecify.annotations.NonNull;
 
@@ -30,9 +31,11 @@ import java.util.Objects;
  *
  */
 
-public record SqlAverageFunction(@NonNull SqlExpression<? extends Number> value) implements SqlAggregateFunction<Number> {
+public record SqlAverageFunction<T extends Number>(
+	@NonNull SqlExpression<T> expression
+) implements SqlAggregateFunction<T>, SqlTypedNestedExpression<T> {
 	
 	public SqlAverageFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}
 }

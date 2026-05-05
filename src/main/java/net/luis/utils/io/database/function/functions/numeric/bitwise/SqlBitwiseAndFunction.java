@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.numeric.bitwise;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -32,11 +33,24 @@ import java.util.Objects;
 
 public record SqlBitwiseAndFunction<T extends Number>(
 	@NonNull SqlExpression<T> firstOperand,
-	@NonNull SqlExpression<T> secondOperand
+	@NonNull SqlExpression<T> secondOperand,
+	@NonNull SqlType<T> type
 ) implements SqlNumericFunction<T> {
+	
+	public SqlBitwiseAndFunction(@NonNull SqlExpression<T> firstOperand, @NonNull SqlExpression<T> secondOperand) {
+		Objects.requireNonNull(firstOperand, "Sql first operand expression must not be null");
+		Objects.requireNonNull(secondOperand, "Sql second operand expression must not be null");
+		
+		if (!firstOperand.type().equals(secondOperand.type())) {
+			throw new IllegalArgumentException("Sql first and second operand expressions must have the same type or the type must be specified");
+		}
+		
+		this(firstOperand, secondOperand, firstOperand.type());
+	}
 	
 	public SqlBitwiseAndFunction {
 		Objects.requireNonNull(firstOperand, "Sql first operand expression must not be null");
 		Objects.requireNonNull(secondOperand, "Sql second operand expression must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
 	}
 }

@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.generic;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
+import net.luis.utils.io.database.type.SqlType;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
@@ -32,17 +33,30 @@ import java.util.Objects;
  *
  */
 
-public record SqlGreatestFunction<T>(@NonNull @Unmodifiable List<SqlExpression<T>> values) implements SqlFunction<T> {
+public record SqlGreatestFunction<T>(@NonNull @Unmodifiable List<SqlExpression<T>> expressions) implements SqlFunction<T> {
 	
 	public SqlGreatestFunction {
-		Objects.requireNonNull(values, "Sql values expression list must not be null");
+		Objects.requireNonNull(expressions, "Sql expression list must not be null");
 		
-		if (values.isEmpty()) {
-			throw new IllegalArgumentException("Sql values expression list must not be empty");
+		if (expressions.isEmpty()) {
+			throw new IllegalArgumentException("Sql expression list must not be empty");
 		}
-		if (values.contains(null)) {
-			throw new IllegalArgumentException("Sql values expression list must not contain null sql expressions");
+		if (expressions.contains(null)) {
+			throw new IllegalArgumentException("Sql expression list must not contain null sql expressions");
 		}
-		values = List.copyOf(values);
+		
+		SqlType<T> type = expressions.getFirst().type();
+		for (int i = 1; i < expressions.size(); i++) {
+			if (!expressions.get(i).type().equals(type)) {
+				throw new IllegalArgumentException("All expressions must have the same type, mismatch at " + i + " with " + expressions.get(i).type() + " expected " + type);
+			}
+		}
+		
+		expressions = List.copyOf(expressions);
+	}
+	
+	@Override
+	public @NonNull SqlType<T> type() {
+		return this.expressions.getFirst().type();
 	}
 }

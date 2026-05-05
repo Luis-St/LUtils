@@ -26,4 +26,5 @@ import net.luis.utils.io.database.function.SqlFunction;
  *
  */
 
+@FunctionalInterface
 public interface SqlAggregateFunction<T> extends SqlFunction<T> {}

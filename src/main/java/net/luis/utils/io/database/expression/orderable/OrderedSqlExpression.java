@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.expression.orderable;
 
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.expression.SqlTypedNestedExpression;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -27,8 +28,9 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface OrderedSqlExpression<T> extends SqlExpression<T> {
+public interface OrderedSqlExpression<T> extends SqlTypedNestedExpression<T> {
 	
+	@Override
 	@NonNull SqlExpression<T> expression();
 	
 	@NonNull SqlOrdering ordering();

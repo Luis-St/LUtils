@@ -19,8 +19,11 @@
 package net.luis.utils.io.database.function.functions.temporal;
 
 import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
+import net.luis.utils.io.database.type.SqlType;
+import org.jspecify.annotations.NonNull;
 
-import java.time.LocalDate;
+import java.time.temporal.Temporal;
+import java.util.Objects;
 
 /**
  *
@@ -28,4 +31,9 @@ import java.time.LocalDate;
  *
  */
 
-public record SqlCurrentDateFunction() implements SqlTemporalFunction<LocalDate> {}
+public record SqlCurrentDateFunction<T extends Temporal>(@NonNull SqlType<T> type) implements SqlTemporalFunction<T> {
+	
+	public SqlCurrentDateFunction {
+		Objects.requireNonNull(type, "Sql type must not be null");
+	}
+}

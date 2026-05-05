@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.window;
 
 import net.luis.utils.io.database.function.functions.SqlWindowFunction;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -30,9 +31,13 @@ import java.util.Objects;
  *
  */
 
-public record SqlRowNumberFunction(@NonNull SqlWindowClause over) implements SqlWindowFunction<Long> {
+public record SqlRowNumberFunction<T extends Number>(
+	@NonNull SqlWindowClause over,
+	@NonNull SqlType<T> type
+) implements SqlWindowFunction<T> {
 	
 	public SqlRowNumberFunction {
 		Objects.requireNonNull(over, "Sql window clause must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
 	}
 }

@@ -20,6 +20,8 @@ package net.luis.utils.io.database.function.functions.numeric.trigonometric;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.SqlTypes;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -30,9 +32,14 @@ import java.util.Objects;
  *
  */
 
-public record SqlAsinFunction(@NonNull SqlExpression<? extends Number> value) implements SqlNumericFunction<Double> {
+public record SqlAsinFunction(@NonNull SqlExpression<? extends Number> expression) implements SqlNumericFunction<Double> {
 	
 	public SqlAsinFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+	}
+	
+	@Override
+	public @NonNull SqlType<Double> type() {
+		return SqlTypes.DOUBLE;
 	}
 }

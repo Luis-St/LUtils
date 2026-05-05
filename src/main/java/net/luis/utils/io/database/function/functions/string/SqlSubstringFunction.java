@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.function.functions.string;
 
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.expression.SqlTypedNestedExpression;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -32,13 +33,13 @@ import java.util.Objects;
  */
 
 public record SqlSubstringFunction<T extends CharSequence>(
-	@NonNull SqlExpression<T> value,
+	@NonNull SqlExpression<T> expression,
 	@NonNull SqlExpression<? extends Number> start,
 	@Nullable SqlExpression<? extends Number> length
-) implements SqlStringFunction<T> {
+) implements SqlStringFunction<T>, SqlTypedNestedExpression<T> {
 	
 	public SqlSubstringFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(start, "Sql start expression must not be null");
 	}
 }

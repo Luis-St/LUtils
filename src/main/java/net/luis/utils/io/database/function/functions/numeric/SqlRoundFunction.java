@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.function.functions.numeric;
 
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.expression.SqlTypedNestedExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -32,11 +33,11 @@ import java.util.Objects;
  */
 
 public record SqlRoundFunction<T extends Number>(
-	@NonNull SqlExpression<T> value,
+	@NonNull SqlExpression<T> expression,
 	@Nullable SqlExpression<? extends Number> precision
-) implements SqlNumericFunction<T> {
+) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
 	public SqlRoundFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}
 }

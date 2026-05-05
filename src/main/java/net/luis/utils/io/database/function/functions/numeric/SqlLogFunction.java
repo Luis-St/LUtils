@@ -20,6 +20,8 @@ package net.luis.utils.io.database.function.functions.numeric;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.SqlTypes;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -32,11 +34,16 @@ import java.util.Objects;
  */
 
 public record SqlLogFunction(
-	@NonNull SqlExpression<? extends Number> value,
+	@NonNull SqlExpression<? extends Number> expression,
 	@Nullable SqlExpression<? extends Number> base
 ) implements SqlNumericFunction<Double> {
 	
 	public SqlLogFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+	}
+	
+	@Override
+	public @NonNull SqlType<Double> type() {
+		return SqlTypes.DOUBLE;
 	}
 }

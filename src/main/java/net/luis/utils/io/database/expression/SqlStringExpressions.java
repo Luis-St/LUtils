@@ -22,6 +22,8 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.conditions.string.*;
 import net.luis.utils.io.database.function.functions.string.*;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.SqlTypes;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -100,7 +102,11 @@ public final class SqlStringExpressions {
 	}
 	
 	public static @NonNull SqlExpression<Integer> length(@NonNull SqlExpression<String> expression) {
-		return new SqlLengthFunction(expression);
+		return new SqlLengthFunction<>(expression, SqlTypes.INTEGER);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> length(@NonNull SqlExpression<String> expression, @NonNull SqlType<T> type) {
+		return new SqlLengthFunction<>(expression, type);
 	}
 	
 	public static @NonNull SqlExpression<String> substring(@NonNull SqlExpression<String> expression, int start, int length) {
@@ -158,7 +164,11 @@ public final class SqlStringExpressions {
 	}
 	
 	public static @NonNull SqlExpression<Integer> position(@NonNull SqlExpression<String> expression, @NonNull String substring) {
-		return new SqlPositionFunction(SqlExpression.of(substring), expression);
+		return new SqlPositionFunction<>(SqlExpression.of(substring), expression, SqlTypes.INTEGER);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> position(@NonNull SqlExpression<String> expression, @NonNull String substring, @NonNull SqlType<T> type) {
+		return new SqlPositionFunction<>(SqlExpression.of(substring), expression, type);
 	}
 	
 	public static @NonNull SqlExpression<String> left(@NonNull SqlExpression<String> expression, int n) {
@@ -181,7 +191,15 @@ public final class SqlStringExpressions {
 		return new SqlHexFunction(expression);
 	}
 	
-	public static @NonNull SqlExpression<String> unhex(@NonNull SqlExpression<String> expression) {
-		return (SqlExpression<String>) (SqlExpression<?>) new SqlUnhexFunction(expression);
+	public static @NonNull SqlExpression<String> hex(@NonNull SqlExpression<String> expression, @NonNull SqlType<String> type) {
+		return new SqlHexFunction(expression, type);
+	}
+	
+	public static @NonNull SqlExpression<byte[]> unhex(@NonNull SqlExpression<String> expression) {
+		return new SqlUnhexFunction<>(expression, SqlTypes.LARGE_BYTES);
+	}
+	
+	public static <T> @NonNull SqlExpression<T> unhex(@NonNull SqlExpression<String> expression, @NonNull SqlType<T> type) {
+		return new SqlUnhexFunction<>(expression, type);
 	}
 }

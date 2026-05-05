@@ -20,7 +20,12 @@ package net.luis.utils.io.database.function.functions.aggregate;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlAggregateFunction;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.SqlTypes;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
 
 /**
  *
@@ -28,4 +33,14 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public record SqlCountDistinctFunction(@Nullable SqlExpression<?> value) implements SqlAggregateFunction<Long> {}
+public record SqlCountDistinctFunction(@Nullable SqlExpression<?> expression) implements SqlAggregateFunction<Long> {
+	
+	public SqlCountDistinctFunction {
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+	}
+	
+	@Override
+	public @NonNull SqlType<Long> type() {
+		return SqlTypes.LONG;
+	}
+}

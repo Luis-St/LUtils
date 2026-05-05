@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.function.functions.numeric;
 
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.expression.SqlTypedNestedExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import org.jspecify.annotations.NonNull;
 
@@ -31,12 +32,12 @@ import java.util.Objects;
  */
 
 public record SqlModFunction<T extends Number>(
-	@NonNull SqlExpression<T> value,
+	@NonNull SqlExpression<T> expression,
 	@NonNull SqlExpression<? extends Number> divisor
-) implements SqlNumericFunction<T> {
+) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
 	public SqlModFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(divisor, "Sql divisor expression must not be null");
 	}
 }

@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.generic;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -38,5 +39,10 @@ public record SqlNullIfFunction<T>(
 	public SqlNullIfFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(fallback, "Sql fallback expression must not be null");
+	}
+	
+	@Override
+	public @NonNull SqlType<T> type() {
+		return this.expression.type();
 	}
 }

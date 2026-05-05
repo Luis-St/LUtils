@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.temporal;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -30,9 +31,13 @@ import java.util.Objects;
  *
  */
 
-public record SqlToEpochFunction(@NonNull SqlExpression<?> value) implements SqlTemporalFunction<Long> {
+public record SqlToEpochFunction<T extends Number>(
+	@NonNull SqlExpression<?> expression,
+	@NonNull SqlType<T> type
+) implements SqlTemporalFunction<T> {
 	
 	public SqlToEpochFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
 	}
 }

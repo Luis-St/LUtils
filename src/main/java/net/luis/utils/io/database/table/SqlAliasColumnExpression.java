@@ -23,6 +23,7 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -33,16 +34,21 @@ import java.util.Objects;
  *
  */
 
-record SqlAliasColumnExpression<C>(
+public record SqlAliasColumnExpression<C>(
 	@NonNull SqlColumn<?, C> column,
 	@NonNull SqlAlias alias
 ) implements SqlExpression<C> {
-
-	SqlAliasColumnExpression {
+	
+	public SqlAliasColumnExpression {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(alias, "Sql alias must not be null");
 	}
-
+	
+	@Override
+	public @NonNull SqlType<C> type() {
+		return this.column.type();
+	}
+	
 	@Override
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");

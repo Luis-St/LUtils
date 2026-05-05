@@ -20,6 +20,8 @@ package net.luis.utils.io.database.function.functions.string;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.SqlTypes;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -30,9 +32,17 @@ import java.util.Objects;
  *
  */
 
-public record SqlHexFunction(@NonNull SqlExpression<?> value) implements SqlStringFunction<String> {
+public record SqlHexFunction(
+	@NonNull SqlExpression<?> expression,
+	@NonNull SqlType<String> type
+) implements SqlStringFunction<String> {
+	
+	public SqlHexFunction(@NonNull SqlExpression<?> expression) {
+		this(expression, SqlTypes.TEXT);
+	}
 	
 	public SqlHexFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
 	}
 }

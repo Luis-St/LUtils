@@ -16,12 +16,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.function.functions;
+package net.luis.utils.io.database.expression;
 
-import net.luis.utils.io.database.function.window.SqlWindowClause;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -29,13 +27,12 @@ import java.util.Objects;
  *
  */
 
-public record SqlWindowedAggregate<T>(
-	@NonNull SqlAggregateFunction<T> aggregate,
-	@NonNull SqlWindowClause over
-) implements SqlWindowFunction<T> {
+public interface SqlTypedNestedExpression<T> extends SqlExpression<T> {
 	
-	public SqlWindowedAggregate {
-		Objects.requireNonNull(aggregate, "Aggregate function must not be null");
-		Objects.requireNonNull(over, "Window clause must not be null");
+	@NonNull SqlExpression<T> expression();
+	
+	@Override
+	default @NonNull SqlType<T> type() {
+		return this.expression().type();
 	}
 }

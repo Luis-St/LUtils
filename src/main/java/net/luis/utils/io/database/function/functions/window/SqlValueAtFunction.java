@@ -21,6 +21,7 @@ package net.luis.utils.io.database.function.functions.window;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlWindowFunction;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -41,5 +42,10 @@ public record SqlValueAtFunction<T>(
 		Objects.requireNonNull(column, "Sql column expression must not be null");
 		Objects.requireNonNull(position, "Sql position expression must not be null");
 		Objects.requireNonNull(over, "Sql window clause must not be null");
+	}
+	
+	@Override
+	public @NonNull SqlType<T> type() {
+		return this.column.type();
 	}
 }

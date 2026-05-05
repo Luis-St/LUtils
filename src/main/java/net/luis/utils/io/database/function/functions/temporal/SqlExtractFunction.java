@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.temporal;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
+import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
 
@@ -31,13 +32,15 @@ import java.util.Objects;
  *
  */
 
-public record SqlExtractFunction(
-	@NonNull SqlExpression<?> value,
-	@NonNull SqlTemporalPart part
-) implements SqlTemporalFunction<Integer> {
+public record SqlExtractFunction<T extends Number>(
+	@NonNull SqlExpression<?> expression,
+	@NonNull SqlTemporalPart part,
+	@NonNull SqlType<T> type
+) implements SqlTemporalFunction<T> {
 	
 	public SqlExtractFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(part, "Sql temporal part must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
 	}
 }

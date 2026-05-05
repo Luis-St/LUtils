@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.numeric.bitwise;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -30,9 +31,19 @@ import java.util.Objects;
  *
  */
 
-public record SqlBitwiseNotFunction<T extends Number>(@NonNull SqlExpression<T> value) implements SqlNumericFunction<T> {
+public record SqlBitwiseNotFunction<T extends Number>(
+	@NonNull SqlExpression<T> expression,
+	@NonNull SqlType<T> type
+) implements SqlNumericFunction<T> {
+	
+	public SqlBitwiseNotFunction(@NonNull SqlExpression<T> expression) {
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		
+		this(expression, expression.type());
+	}
 	
 	public SqlBitwiseNotFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
 	}
 }

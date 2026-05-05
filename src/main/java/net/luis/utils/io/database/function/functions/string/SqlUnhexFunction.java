@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.string;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -30,9 +31,13 @@ import java.util.Objects;
  *
  */
 
-public record SqlUnhexFunction(@NonNull SqlExpression<? extends CharSequence> value) implements SqlStringFunction<byte[]> {
+public record SqlUnhexFunction<T>(
+	@NonNull SqlExpression<? extends CharSequence> expression,
+	@NonNull SqlType<T> type
+) implements SqlStringFunction<T> {
 	
 	public SqlUnhexFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
 	}
 }

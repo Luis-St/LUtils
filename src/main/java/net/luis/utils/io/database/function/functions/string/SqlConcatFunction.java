@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.string;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlStringFunction;
+import net.luis.utils.io.database.type.SqlType;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
@@ -32,25 +33,38 @@ import java.util.*;
  */
 
 public record SqlConcatFunction<T extends CharSequence>(
-	@NonNull @Unmodifiable List<SqlExpression<T>> values,
+	@NonNull @Unmodifiable List<SqlExpression<T>> expressions,
 	@NonNull Optional<String> separator,
 	boolean distinct,
 	boolean ordered
 ) implements SqlStringFunction<T> {
 	
 	public SqlConcatFunction {
-		Objects.requireNonNull(values, "Sql values expression list must not be null");
+		Objects.requireNonNull(expressions, "Sql expression list must not be null");
 		Objects.requireNonNull(separator, "Separator must not be null");
 		
-		if (values.isEmpty()) {
-			throw new IllegalArgumentException("Sql values expression list must not be empty");
+		if (expressions.isEmpty()) {
+			throw new IllegalArgumentException("Sql expression list must not be empty");
 		}
-		if (values.contains(null)) {
-			throw new IllegalArgumentException("Sql values expression list must not contain null");
+		if (expressions.contains(null)) {
+			throw new IllegalArgumentException("Sql expression list must not contain null sql expressions");
 		}
 		if (separator.isPresent() && separator.get().isEmpty()) {
 			throw new IllegalArgumentException("Separator must not be empty");
 		}
-		values = List.copyOf(values);
+		
+		SqlType<T> type = expressions.getFirst().type();
+		for (int i = 1; i < expressions.size(); i++) {
+			if (!expressions.get(i).type().equals(type)) {
+				throw new IllegalArgumentException("All expressions must have the same type, mismatch at " + i + " with " + expressions.get(i).type() + " expected " + type);
+			}
+		}
+		
+		expressions = List.copyOf(expressions);
+	}
+	
+	@Override
+	public @NonNull SqlType<T> type() {
+		return this.expressions.getFirst().type();
 	}
 }

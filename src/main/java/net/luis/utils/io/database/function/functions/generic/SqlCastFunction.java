@@ -32,12 +32,12 @@ import java.util.Objects;
  */
 
 public record SqlCastFunction<T>(
-	@NonNull SqlExpression<?> value,
-	@NonNull SqlType<T> targetType
+	@NonNull SqlExpression<?> expression,
+	@NonNull SqlType<T> type
 ) implements SqlFunction<T> {
 	
 	public SqlCastFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
-		Objects.requireNonNull(targetType, "Target type must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
 	}
 }

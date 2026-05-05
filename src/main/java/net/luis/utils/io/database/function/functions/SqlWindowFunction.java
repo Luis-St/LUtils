@@ -26,4 +26,5 @@ import net.luis.utils.io.database.function.SqlFunction;
  *
  */
 
+@FunctionalInterface
 public interface SqlWindowFunction<T> extends SqlFunction<T> {}

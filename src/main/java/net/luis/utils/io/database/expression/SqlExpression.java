@@ -21,6 +21,7 @@ package net.luis.utils.io.database.expression;
 import net.luis.utils.io.database.expression.orderable.*;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRenderable;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -31,7 +32,6 @@ import java.util.Objects;
  *
  */
 
-@FunctionalInterface
 public interface SqlExpression<T> extends SqlOrderable<T>, SqlRenderable {
 	
 	static <T> @NonNull SqlExpression<T> of(@NonNull T value) {
@@ -43,6 +43,8 @@ public interface SqlExpression<T> extends SqlOrderable<T>, SqlRenderable {
 		Objects.requireNonNull(alias, "Sql alias must not be null");
 		return new SqlAliasedExpression<>(this, alias);
 	}
+	
+	@NonNull SqlType<T> type();
 	
 	@Override
 	default @NonNull OrderedSqlExpression<T> ascending() {

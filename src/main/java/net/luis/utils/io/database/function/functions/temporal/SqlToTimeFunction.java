@@ -23,6 +23,7 @@ import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
+import java.time.temporal.Temporal;
 import java.util.Objects;
 
 /**
@@ -31,7 +32,7 @@ import java.util.Objects;
  *
  */
 
-public record SqlToTimeFunction<T>(
+public record SqlToTimeFunction<T extends Temporal>(
 	@NonNull SqlExpression<?> expression,
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {

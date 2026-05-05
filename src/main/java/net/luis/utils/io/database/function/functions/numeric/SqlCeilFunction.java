@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.function.functions.numeric;
 
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.expression.SqlTypedNestedExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
 import org.jspecify.annotations.NonNull;
 
@@ -30,9 +31,9 @@ import java.util.Objects;
  *
  */
 
-public record SqlCeilFunction<T extends Number>(@NonNull SqlExpression<T> value) implements SqlNumericFunction<T> {
+public record SqlCeilFunction<T extends Number>(@NonNull SqlExpression<T> expression) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
 	public SqlCeilFunction {
-		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}
 }

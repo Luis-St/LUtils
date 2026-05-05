@@ -22,6 +22,8 @@ import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.expression.SqlExpression;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -30,5 +32,11 @@ import org.jspecify.annotations.NonNull;
 
 public record SqlCaseWhenBranch<T>(
 	@NonNull SqlCondition condition,
-	@NonNull SqlExpression<T> value
-) {}
+	@NonNull SqlExpression<T> expression
+) {
+	
+	public SqlCaseWhenBranch {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+	}
+}

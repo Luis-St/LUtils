@@ -22,7 +22,6 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.conditions.comparison.*;
 import net.luis.utils.io.database.function.functions.SqlAggregateFunction;
-import net.luis.utils.io.database.function.functions.SqlWindowedAggregate;
 import net.luis.utils.io.database.function.functions.aggregate.SqlCountDistinctFunction;
 import net.luis.utils.io.database.function.functions.aggregate.SqlCountFunction;
 import net.luis.utils.io.database.function.functions.generic.*;
@@ -30,6 +29,7 @@ import net.luis.utils.io.database.function.functions.window.*;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
 import net.luis.utils.io.database.query.crud.SqlSelectQuery;
 import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.util.SqlCaseWhenBranch;
 import org.jspecify.annotations.NonNull;
 
@@ -141,19 +141,35 @@ public final class SqlExpressions {
 	}
 	
 	public static @NonNull SqlExpression<Long> rowNumber(@NonNull SqlWindowClause over) {
-		return new SqlRowNumberFunction(over);
+		return new SqlRowNumberFunction<>(over, SqlTypes.LONG);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> rowNumber(@NonNull SqlWindowClause over, @NonNull SqlType<T> type) {
+		return new SqlRowNumberFunction<>(over, type);
 	}
 	
 	public static @NonNull SqlExpression<Long> rank(@NonNull SqlWindowClause over) {
-		return new SqlRankFunction(over);
+		return new SqlRankFunction<>(over, SqlTypes.LONG);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> rank(@NonNull SqlWindowClause over, @NonNull SqlType<T> type) {
+		return new SqlRankFunction<>(over, type);
 	}
 	
 	public static @NonNull SqlExpression<Long> denseRank(@NonNull SqlWindowClause over) {
-		return new SqlDenseRankFunction(over);
+		return new SqlDenseRankFunction<>(over, SqlTypes.LONG);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> denseRank(@NonNull SqlWindowClause over, @NonNull SqlType<T> type) {
+		return new SqlDenseRankFunction<>(over, type);
 	}
 	
 	public static @NonNull SqlExpression<Long> tileBucket(int buckets, @NonNull SqlWindowClause over) {
-		return new SqlTileBucketFunction(SqlExpression.of(buckets), over);
+		return new SqlTileBucketFunction<>(SqlExpression.of(buckets), over, SqlTypes.LONG);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> tileBucket(int buckets, @NonNull SqlWindowClause over, @NonNull SqlType<T> type) {
+		return new SqlTileBucketFunction<>(SqlExpression.of(buckets), over, type);
 	}
 	
 	public static <T> @NonNull SqlExpression<T> lag(@NonNull SqlExpression<T> expression, @NonNull SqlWindowClause over) {
@@ -181,11 +197,19 @@ public final class SqlExpressions {
 	}
 	
 	public static @NonNull SqlExpression<Double> percentRank(@NonNull SqlWindowClause over) {
-		return new SqlPercentRankFunction(over);
+		return new SqlPercentRankFunction<>(over, SqlTypes.DOUBLE);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> percentRank(@NonNull SqlWindowClause over, @NonNull SqlType<T> type) {
+		return new SqlPercentRankFunction<>(over, type);
 	}
 	
 	public static @NonNull SqlExpression<Double> cumulativeDistribution(@NonNull SqlWindowClause over) {
-		return new SqlCumulativeDistributionFunction(over);
+		return new SqlCumulativeDistributionFunction<>(over, SqlTypes.DOUBLE);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> cumulativeDistribution(@NonNull SqlWindowClause over, @NonNull SqlType<T> type) {
+		return new SqlCumulativeDistributionFunction<>(over, type);
 	}
 	
 	public static <T> @NonNull SqlExpression<T> firstValue(@NonNull SqlExpression<T> expression, @NonNull SqlWindowClause over) {

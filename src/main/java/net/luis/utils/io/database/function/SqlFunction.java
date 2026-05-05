@@ -32,6 +32,7 @@ import java.util.Objects;
  *
  */
 
+@FunctionalInterface
 public interface SqlFunction<T> extends SqlExpression<T> {
 	
 	@Override

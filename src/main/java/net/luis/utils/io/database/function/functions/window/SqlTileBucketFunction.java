@@ -21,6 +21,7 @@ package net.luis.utils.io.database.function.functions.window;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlWindowFunction;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -31,13 +32,15 @@ import java.util.Objects;
  *
  */
 
-public record SqlTileBucketFunction(
+public record SqlTileBucketFunction<T extends Number>(
 	@NonNull SqlExpression<? extends Number> buckets,
-	@NonNull SqlWindowClause over
-) implements SqlWindowFunction<Long> {
+	@NonNull SqlWindowClause over,
+	@NonNull SqlType<T> type
+) implements SqlWindowFunction<T> {
 	
 	public SqlTileBucketFunction {
 		Objects.requireNonNull(buckets, "Sql buckets expression must not be null");
 		Objects.requireNonNull(over, "Sql window clause must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
 	}
 }

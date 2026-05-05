@@ -35,7 +35,7 @@ import java.util.Objects;
 public record SqlAliasedExpression<T>(
 	@NonNull SqlExpression<T> expression,
 	@NonNull SqlAlias alias
-) implements SqlExpression<T> {
+) implements SqlTypedNestedExpression<T> {
 	
 	public SqlAliasedExpression {
 		Objects.requireNonNull(expression, "Sql expression must not be null");

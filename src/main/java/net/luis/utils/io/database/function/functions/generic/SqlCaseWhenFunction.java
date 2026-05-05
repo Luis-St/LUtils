@@ -20,6 +20,7 @@ package net.luis.utils.io.database.function.functions.generic;
 
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
+import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.util.SqlCaseWhenBranch;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
@@ -48,6 +49,19 @@ public record SqlCaseWhenFunction<T>(
 		if (branches.contains(null)) {
 			throw new IllegalArgumentException("Sql branches list must not contain null sql case when branches");
 		}
+		
+		SqlType<T> type = branches.getFirst().expression().type();
+		for (int i = 1; i < branches.size(); i++) {
+			if (!branches.get(i).expression().type().equals(type)) {
+				throw new IllegalArgumentException("All sql case when branches must have the same type, mismatch at " + i + " with " + branches.get(i).expression().type() + " expected " + type);
+			}
+		}
+		
 		branches = List.copyOf(branches);
+	}
+	
+	@Override
+	public @NonNull SqlType<T> type() {
+		return this.branches.getFirst().expression().type();
 	}
 }

@@ -25,6 +25,7 @@ import net.luis.utils.io.database.function.functions.aggregate.SqlSumFunction;
 import net.luis.utils.io.database.function.functions.numeric.*;
 import net.luis.utils.io.database.function.functions.numeric.bitwise.*;
 import net.luis.utils.io.database.function.functions.numeric.trigonometric.*;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -192,12 +193,28 @@ public abstract class SqlNumericExpressions {
 		return new SqlBitwiseAndFunction(expression, other);
 	}
 	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseAnd(@NonNull SqlExpression<T> expression, @NonNull Number other, @NonNull SqlType<T> type) {
+		return new SqlBitwiseAndFunction(expression, SqlExpression.of(other), type);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseAnd(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other, @NonNull SqlType<T> type) {
+		return new SqlBitwiseAndFunction(expression, other, type);
+	}
+	
 	public static <T extends Number> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull Number other) {
 		return new SqlBitwiseOrFunction(expression, SqlExpression.of(other));
 	}
 	
 	public static <T extends Number> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other) {
 		return new SqlBitwiseOrFunction(expression, other);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull Number other, @NonNull SqlType<T> type) {
+		return new SqlBitwiseOrFunction(expression, SqlExpression.of(other), type);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other, @NonNull SqlType<T> type) {
+		return new SqlBitwiseOrFunction(expression, other, type);
 	}
 	
 	public static <T extends Number> @NonNull SqlExpression<T> bitwiseXor(@NonNull SqlExpression<T> expression, @NonNull Number other) {
@@ -208,7 +225,19 @@ public abstract class SqlNumericExpressions {
 		return new SqlBitwiseXorFunction(expression, other);
 	}
 	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseXor(@NonNull SqlExpression<T> expression, @NonNull Number other, @NonNull SqlType<T> type) {
+		return new SqlBitwiseXorFunction(expression, SqlExpression.of(other), type);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseXor(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other, @NonNull SqlType<T> type) {
+		return new SqlBitwiseXorFunction(expression, other, type);
+	}
+	
 	public static <T extends Number> @NonNull SqlExpression<T> bitwiseNot(@NonNull SqlExpression<T> expression) {
 		return new SqlBitwiseNotFunction(expression);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseNot(@NonNull SqlExpression<T> expression, @NonNull SqlType<T> type) {
+		return new SqlBitwiseNotFunction(expression, type);
 	}
 }

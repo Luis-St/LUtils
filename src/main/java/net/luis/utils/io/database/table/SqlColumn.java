@@ -132,6 +132,11 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 		return this.index;
 	}
 	
+	@Override
+	public @NonNull SqlType<C> type() {
+		return this.type;
+	}
+	
 	public @NonNull SqlType<C> getType() {
 		return this.type;
 	}
@@ -171,7 +176,7 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 	public @NonNull SqlExpression<C> of(@NonNull SqlAlias alias) {
 		return new SqlAliasColumnExpression<>(this, alias);
 	}
-
+	
 	@Override
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");

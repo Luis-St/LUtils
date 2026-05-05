@@ -19,6 +19,9 @@
 package net.luis.utils.io.database.function.functions.numeric;
 
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.SqlTypes;
+import org.jspecify.annotations.NonNull;
 
 /**
  *
@@ -26,4 +29,10 @@ import net.luis.utils.io.database.function.functions.SqlNumericFunction;
  *
  */
 
-public record SqlPiFunction() implements SqlNumericFunction<Double> {}
+public record SqlPiFunction() implements SqlNumericFunction<Double> {
+	
+	@Override
+	public @NonNull SqlType<Double> type() {
+		return SqlTypes.DOUBLE;
+	}
+}
