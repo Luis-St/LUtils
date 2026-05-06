@@ -174,7 +174,7 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 	}
 	
 	public @NonNull SqlExpression<C> of(@NonNull SqlAlias alias) {
-		return new SqlAliasColumnExpression<>(this, alias);
+		return new SqlAliasedColumn<>(this, alias);
 	}
 	
 	@Override

@@ -26,6 +26,8 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
 import java.sql.*;
@@ -44,7 +46,8 @@ final class SqlQueryExecutor {
 	
 	private SqlQueryExecutor() {}
 	
-	static @NonNull PreparedStatement prepare(@NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout, boolean generateKeys) throws SqlException {
+	static @NonNull PreparedStatement prepare(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout, boolean generateKeys) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(connection, "Connection must not be null");
 		Objects.requireNonNull(rendered, "Sql rendered must not be null");
 		Objects.requireNonNull(timeout, "Query timeout must not be null");
@@ -52,9 +55,10 @@ final class SqlQueryExecutor {
 		try {
 			PreparedStatement statement = generateKeys ? connection.prepareStatement(rendered.sql(), Statement.RETURN_GENERATED_KEYS) : connection.prepareStatement(rendered.sql());
 			
-			List<Object> parameters = rendered.parameters();
+			List<Pair<SqlType<?>, Object>> parameters = rendered.parameters();
 			for (int i = 0; i < parameters.size(); i++) {
-				statement.setObject(i + 1, parameters.get(i));
+				Pair<SqlType<?>, Object> pair = parameters.get(i);
+				SqlType.setUnsafe(pair.getFirst(), dialect, statement, i + 1, pair.getSecond());
 			}
 			
 			statement.setQueryTimeout((int) timeout.toSeconds());
@@ -64,16 +68,16 @@ final class SqlQueryExecutor {
 		}
 	}
 	
-	static @NonNull ResultSet executeQuery(@NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
+	static @NonNull ResultSet executeQuery(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
 		try {
-			return prepare(connection, rendered, timeout, false).executeQuery();
+			return prepare(dialect, connection, rendered, timeout, false).executeQuery();
 		} catch (SQLException e) {
 			throw new SqlException("Failed to execute query: " + rendered.sql(), e);
 		}
 	}
 	
-	static int executeUpdate(@NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
-		try (PreparedStatement statement = prepare(connection, rendered, timeout, false)) {
+	static int executeUpdate(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
+		try (PreparedStatement statement = prepare(dialect, connection, rendered, timeout, false)) {
 			return statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new SqlException("Failed to execute update: " + rendered.sql(), e);
@@ -81,15 +85,16 @@ final class SqlQueryExecutor {
 	}
 	
 	static <T> @NonNull List<T> executeQueryAndMap(
-		@NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout, @NonNull ThrowableFunction<ResultSet, T, SqlException> rowMapper
+		@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout, @NonNull ThrowableFunction<ResultSet, T, SqlException> rowMapper
 	) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(connection, "Connection must not be null");
 		Objects.requireNonNull(rendered, "Sql rendered must not be null");
 		Objects.requireNonNull(timeout, "Query timeout must not be null");
 		Objects.requireNonNull(rowMapper, "Sql row mapper must not be null");
 		
 		List<T> results = Lists.newArrayList();
-		try (ResultSet resultSet = executeQuery(connection, rendered, timeout)) {
+		try (ResultSet resultSet = executeQuery(dialect, connection, rendered, timeout)) {
 			while (resultSet.next()) {
 				results.add(rowMapper.apply(resultSet));
 			}
@@ -111,6 +116,6 @@ final class SqlQueryExecutor {
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(query);
 		renderer.rendered(returning);
-		return executeQueryAndMap(connection, renderer.toSql(), timeout, rowMapper);
+		return executeQueryAndMap(dialect, connection, renderer.toSql(), timeout, rowMapper);
 	}
 }

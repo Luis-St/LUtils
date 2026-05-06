@@ -28,6 +28,7 @@ import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -123,11 +124,18 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	private static <T> void addParameter(@NonNull SqlRenderer renderer, @NonNull SqlType<T> type, @NonNull Object value) {
+		Objects.requireNonNull(renderer, "Sql renderer must not be null");
+		
+		renderer.parameter(type, (T) value);
+	}
+	
 	public int execute() throws SqlException {
 		if (this.batchSize > 0 && this.entities.size() > this.batchSize) {
 			return this.executeBatched();
 		}
-		return SqlQueryExecutor.executeUpdate(this.connection, this.toSql(this.dialect), this.queryTimeout);
+		return SqlQueryExecutor.executeUpdate(this.dialect, this.connection, this.toSql(this.dialect), this.queryTimeout);
 	}
 	
 	private int executeBatched() throws SqlException {
@@ -139,7 +147,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 				batch, this.batchSize, this.fromSelect, this.conflictColumn,
 				this.conflictColumns, this.isUpsert, this.isInsertOrIgnore, this.isInsertFromSelect
 			);
-			totalAffected += SqlQueryExecutor.executeUpdate(this.connection, batchQuery.toSql(this.dialect), this.queryTimeout);
+			totalAffected += SqlQueryExecutor.executeUpdate(this.dialect, this.connection, batchQuery.toSql(this.dialect), this.queryTimeout);
 		}
 		return totalAffected;
 	}
@@ -157,7 +165,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		
 		SqlRendered rendered = this.toSql(this.dialect);
 		List<E> results = Lists.newArrayList();
-		try (PreparedStatement statement = SqlQueryExecutor.prepare(this.connection, rendered, this.queryTimeout, true)) {
+		try (PreparedStatement statement = SqlQueryExecutor.prepare(this.dialect, this.connection, rendered, this.queryTimeout, true)) {
 			statement.executeUpdate();
 			try (ResultSet keys = statement.getGeneratedKeys()) {
 				while (keys.next()) {
@@ -210,11 +218,12 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 						renderer.comma();
 					}
 					
-					Object value = columns.get(i).getGetter().apply(entity);
+					SqlColumn<E, ?> column = columns.get(i);
+					Object value = column.getGetter().apply(entity);
 					if (value == null) {
 						renderer.null_();
 					} else {
-						renderer.parameter(value);
+						addParameter(renderer, column.getType(), value);
 					}
 				}
 				

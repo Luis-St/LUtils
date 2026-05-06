@@ -34,12 +34,12 @@ import java.util.Objects;
  *
  */
 
-public record SqlAliasColumnExpression<C>(
-	@NonNull SqlColumn<?, C> column,
+public record SqlAliasedColumn<E, C>(
+	@NonNull SqlColumn<E, C> column,
 	@NonNull SqlAlias alias
 ) implements SqlExpression<C> {
 	
-	public SqlAliasColumnExpression {
+	public SqlAliasedColumn {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(alias, "Sql alias must not be null");
 	}

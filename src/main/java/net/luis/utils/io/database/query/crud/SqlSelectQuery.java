@@ -556,7 +556,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	private @NonNull List<E> executeAndMap() throws SqlException {
-		return SqlQueryExecutor.executeQueryAndMap(this.connection, this.toSql(this.dialect), this.queryTimeout, this.rowMapper);
+		return SqlQueryExecutor.executeQueryAndMap(this.dialect, this.connection, this.toSql(this.dialect), this.queryTimeout, this.rowMapper);
 	}
 	
 	public @NonNull List<E> fetch() throws SqlException {
@@ -592,7 +592,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		renderer.rendered(this.toSql(this.dialect));
 		renderer.closingBracket().as().literal(this.dialect.quoteIdentifier("__count"));
 		
-		try (ResultSet resultSet = SqlQueryExecutor.executeQuery(this.connection, renderer.toSql(), this.queryTimeout)) {
+		try (ResultSet resultSet = SqlQueryExecutor.executeQuery(this.dialect, this.connection, renderer.toSql(), this.queryTimeout)) {
 			if (resultSet.next()) {
 				return resultSet.getLong(1);
 			}

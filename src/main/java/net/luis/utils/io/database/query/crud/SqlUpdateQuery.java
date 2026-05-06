@@ -119,7 +119,9 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @NonNull V value) {
-		return this.set(column, SqlExpression.of(value));
+		Objects.requireNonNull(column, "Sql column must not be null");
+		
+		return this.set(column, SqlExpression.of(value, column.getType()));
 	}
 	
 	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> expression) {
@@ -136,7 +138,9 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public <V extends Number> @NonNull SqlUpdateQuery<E> increment(@NonNull SqlColumn<E, V> column, @NonNull V incrementBy) {
-		return this.increment(column, SqlExpression.of(incrementBy));
+		Objects.requireNonNull(column, "Sql column must not be null");
+		
+		return this.increment(column, SqlExpression.of(incrementBy, column.getType()));
 	}
 	
 	public <V extends Number> @NonNull SqlUpdateQuery<E> increment(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> incrementByExpression) {
@@ -153,7 +157,9 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public <V extends Number> @NonNull SqlUpdateQuery<E> decrement(@NonNull SqlColumn<E, V> column, @NonNull V decrementBy) {
-		return this.decrement(column, SqlExpression.of(decrementBy));
+		Objects.requireNonNull(column, "Sql column must not be null");
+		
+		return this.decrement(column, SqlExpression.of(decrementBy, column.getType()));
 	}
 	
 	public <V extends Number> @NonNull SqlUpdateQuery<E> decrement(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> decrementByExpression) {
@@ -187,7 +193,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public int execute() throws SqlException {
-		return SqlQueryExecutor.executeUpdate(this.connection, this.toSql(this.dialect), this.queryTimeout);
+		return SqlQueryExecutor.executeUpdate(this.dialect, this.connection, this.toSql(this.dialect), this.queryTimeout);
 	}
 	
 	public @NonNull List<E> returning() throws SqlException {

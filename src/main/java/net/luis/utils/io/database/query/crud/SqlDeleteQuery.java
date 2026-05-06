@@ -126,9 +126,9 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public int execute() throws SqlException {
-		return SqlQueryExecutor.executeUpdate(this.connection, this.toSql(this.dialect), this.queryTimeout);
+		return SqlQueryExecutor.executeUpdate(this.dialect, this.connection, this.toSql(this.dialect), this.queryTimeout);
 	}
-	
+
 	public @NonNull List<E> returning() throws SqlException {
 		return SqlQueryExecutor.executeReturningQuery(
 			this.dialect, this.connection, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.getColumns())), this.queryTimeout, this.rowMapper
