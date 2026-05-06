@@ -102,7 +102,7 @@ public class SqlServerDialect extends AbstractSqlDialect {
 		Objects.requireNonNull(function, "Concat function must not be null");
 		
 		return renderer -> {
-			List<? extends SqlExpression<? extends CharSequence>> values = function.values();
+			List<? extends SqlExpression<? extends CharSequence>> values = function.expressions();
 			Optional<String> separator = function.separator();
 			boolean distinct = function.distinct();
 			boolean ordered = function.ordered();
@@ -119,7 +119,7 @@ public class SqlServerDialect extends AbstractSqlDialect {
 					renderer.rendered(first.toSql(this));
 				}
 				
-				renderer.comma().parameter(separator.orElse(""));
+				renderer.comma().parameter(DEFAULT_STRING_TYPE, separator.orElse(""));
 				
 				if (ordered && first != null) {
 					renderer.orderBy().rendered(first.toSql(this));
@@ -129,7 +129,7 @@ public class SqlServerDialect extends AbstractSqlDialect {
 				for (int i = 0; i < values.size(); i++) {
 					if (i > 0) {
 						renderer.literal("||");
-						separator.ifPresent(s -> renderer.parameter(s).literal("||"));
+						separator.ifPresent(s -> renderer.parameter(DEFAULT_STRING_TYPE, s).literal("||"));
 					}
 					
 					renderer.rendered(values.get(i).toSql(this));
@@ -144,8 +144,8 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	public @NonNull SqlRendered renderFunction(@NonNull SqlFunction<?> function) throws SqlException {
 		return switch (function) {
 			case SqlRandomFunction _ -> this.renderLiteral("RAND()").apply(SqlRenderer.empty());
-			case SqlLengthFunction func -> this.renderFunction("LEN", func.value()).apply(SqlRenderer.empty());
-			case SqlNumericTruncateFunction<?> func -> this.renderFunction("ROUND", func.value()).apply(SqlRenderer.empty());
+			case SqlLengthFunction<?> func -> this.renderFunction("LEN", func.expression()).apply(SqlRenderer.empty());
+			case SqlNumericTruncateFunction<?> func -> this.renderFunction("ROUND", func.expression()).apply(SqlRenderer.empty());
 			default -> super.renderFunction(function);
 		};
 	}

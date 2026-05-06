@@ -88,7 +88,7 @@ public class SqliteDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull SqlRendered renderColumnForTable(@NonNull SqlColumn<?, ?> column, boolean skipPrimaryKey) throws SqlException {
+	protected <E, C> @NonNull SqlRendered renderColumnForTable(@NonNull SqlColumn<E, C> column, boolean skipPrimaryKey) throws SqlException {
 		if (column.isPrimaryKey() && column.isAutoIncrement() && column.getType().jdbcType() == Types.INTEGER) {
 			
 			SqlRenderer renderer = SqlRenderer.empty();

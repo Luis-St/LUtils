@@ -25,6 +25,8 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
@@ -58,10 +60,11 @@ public class SqlTableProvider<E> {
 		Objects.requireNonNull(rendered, "Sql rendered must not be null");
 		
 		try (PreparedStatement statement = this.connection.prepareStatement(rendered.sql())) {
-			List<Object> parameters = rendered.parameters();
+			List<Pair<SqlType<?>, Object>> parameters = rendered.parameters();
 			
 			for (int i = 0; i < parameters.size(); i++) {
-				statement.setObject(i + 1, parameters.get(i));
+				Pair<SqlType<?>, Object> pair = parameters.get(i);
+				SqlType.setUnsafe(pair.getFirst(), this.dialect, statement, i + 1, pair.getSecond());
 			}
 			
 			statement.setQueryTimeout((int) this.queryTimeout.toSeconds());

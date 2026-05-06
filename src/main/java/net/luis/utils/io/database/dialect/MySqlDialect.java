@@ -96,7 +96,7 @@ public class MySqlDialect extends AbstractSqlDialect {
 		Objects.requireNonNull(function, "Concat function must not be null");
 		
 		return renderer -> {
-			List<? extends SqlExpression<? extends CharSequence>> values = function.values();
+			List<? extends SqlExpression<? extends CharSequence>> values = function.expressions();
 			Optional<String> separator = function.separator();
 			boolean distinct = function.distinct();
 			boolean ordered = function.ordered();
@@ -113,7 +113,7 @@ public class MySqlDialect extends AbstractSqlDialect {
 					renderer.rendered(first.toSql(this));
 				}
 				
-				renderer.comma().parameter(separator.orElse(""));
+				renderer.comma().parameter(DEFAULT_STRING_TYPE, separator.orElse(""));
 				
 				if (ordered && first != null) {
 					renderer.orderBy().rendered(first.toSql(this));
@@ -123,7 +123,7 @@ public class MySqlDialect extends AbstractSqlDialect {
 				for (int i = 0; i < values.size(); i++) {
 					if (i > 0) {
 						renderer.literal("||");
-						separator.ifPresent(s -> renderer.parameter(s).literal("||"));
+						separator.ifPresent(s -> renderer.parameter(DEFAULT_STRING_TYPE, s).literal("||"));
 					}
 					
 					renderer.rendered(values.get(i).toSql(this));

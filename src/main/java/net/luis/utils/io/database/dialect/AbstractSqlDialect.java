@@ -71,6 +71,8 @@ import java.util.*;
 
 public abstract class AbstractSqlDialect implements SqlDialect {
 	
+	protected static final SqlType<String> DEFAULT_STRING_TYPE = SqlTypes.STRING.configure(SqlParameter.length(255));
+	
 	@Override
 	public boolean isTypeSupported(@NonNull SqlType<?> type) {
 		Objects.requireNonNull(type, "Sql type must not be null");
@@ -180,9 +182,9 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		return renderer.toSql();
 	}
 	
-	protected @NonNull SqlRendered renderValueExpression(@NonNull SqlValueExpression<?> expression) throws SqlException {
+	protected <T> @NonNull SqlRendered renderValueExpression(@NonNull SqlValueExpression<T> expression) throws SqlException {
 		Objects.requireNonNull(expression, "Sql value expression must not be null");
-		return SqlRenderer.empty().parameter(expression.value()).toSql();
+		return SqlRenderer.empty().parameter(expression.type(), expression.value()).toSql();
 	}
 	
 	protected <T> void renderList(@NonNull SqlRenderer renderer, @NonNull List<T> values, @NonNull ThrowableBiConsumer<SqlRenderer, T, SqlException> itemRenderer) throws SqlException {
@@ -273,7 +275,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		return renderer -> {
 			renderer.literal("COUNT").openingBracket().distinct();
 			
-			SqlExpression<?> value = function.value();
+			SqlExpression<?> value = function.expression();
 			if (value != null) {
 				renderer.rendered(value.toSql(this));
 			} else {
@@ -290,7 +292,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		Objects.requireNonNull(function, "Concat function must not be null");
 		
 		return renderer -> {
-			List<? extends SqlExpression<? extends CharSequence>> values = function.values();
+			List<? extends SqlExpression<? extends CharSequence>> values = function.expressions();
 			Optional<String> separator = function.separator();
 			boolean distinct = function.distinct();
 			boolean ordered = function.ordered();
@@ -307,7 +309,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 					renderer.rendered(first.toSql(this));
 				}
 				
-				renderer.comma().parameter(separator.orElse(""));
+				renderer.comma().parameter(DEFAULT_STRING_TYPE, separator.orElse(""));
 				
 				if (ordered && first != null) {
 					renderer.orderBy().rendered(first.toSql(this));
@@ -317,7 +319,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 				for (int i = 0; i < values.size(); i++) {
 					if (i > 0) {
 						renderer.literal("||");
-						separator.ifPresent(s -> renderer.parameter(s).literal("||"));
+						separator.ifPresent(s -> renderer.parameter(DEFAULT_STRING_TYPE, s).literal("||"));
 					}
 					
 					renderer.rendered(values.get(i).toSql(this));
@@ -332,7 +334,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		Objects.requireNonNull(function, "Substring function must not be null");
 		
 		return renderer -> {
-			renderer.literal("SUBSTRING").openingBracket().rendered(function.value().toSql(this)).from().rendered(function.start().toSql(this));
+			renderer.literal("SUBSTRING").openingBracket().rendered(function.expression().toSql(this)).from().rendered(function.start().toSql(this));
 			
 			SqlExpression<? extends Number> length = function.length();
 			if (length != null) {
@@ -352,7 +354,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			
 			for (SqlCaseWhenBranch<?> branch : function.branches()) {
 				renderer.when().rendered(branch.condition().toSql(this));
-				renderer.then().rendered(branch.value().toSql(this));
+				renderer.then().rendered(branch.expression().toSql(this));
 			}
 			
 			SqlExpression<?> elseValue = function.elseValue();
@@ -367,7 +369,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderFunction(@NonNull SqlFunction<?> function) throws SqlException {
-		return (switch (function) {
+		if (function instanceof SqlCastFunction(var value, var targetType)) {
+			return this.renderCast(renderer -> renderer.rendered(value.toSql(this)).toSql(), targetType).apply(SqlRenderer.empty());
+		}
+		
+		return this.renderCast(switch (function) {
 			case SqlAggregateFunction<?> func -> this.renderAggregateFunction(func);
 			case SqlNumericFunction<?> func -> this.renderNumericFunction(func);
 			case SqlStringFunction<?> func -> this.renderStringFunction(func);
@@ -376,17 +382,17 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			
 			case null -> throw new NullPointerException("Sql function must not be null");
 			default -> this.renderGenericFunction(function);
-		}).apply(SqlRenderer.empty());
+		}, function.type()).apply(SqlRenderer.empty());
 	}
 	
 	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderAggregateFunction(@NonNull SqlAggregateFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
-			case SqlAverageFunction func -> this.renderFunction("AVG", func.value());
-			case SqlCountFunction(@Nullable SqlExpression<?> value) -> value != null ? this.renderFunction("COUNT", value) : this.renderLiteral("COUNT(*)");
+			case SqlAverageFunction<?> func -> this.renderFunction("AVG", func.expression());
+			case SqlCountFunction func -> func.expression() != null ? this.renderFunction("COUNT", func.expression()) : this.renderLiteral("COUNT(*)");
 			case SqlCountDistinctFunction func -> this.renderCountDistinctFunction(func);
-			case SqlMaxFunction<?> func -> this.renderFunction("MAX", func.value());
-			case SqlMinFunction<?> func -> this.renderFunction("MIN", func.value());
-			case SqlSumFunction<?> func -> this.renderFunction("SUM", func.value());
+			case SqlMaxFunction<?> func -> this.renderFunction("MAX", func.expression());
+			case SqlMinFunction<?> func -> this.renderFunction("MIN", func.expression());
+			case SqlSumFunction<?> func -> this.renderFunction("SUM", func.expression());
 			
 			case null -> throw new NullPointerException("Sql aggregate function must not be null");
 			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql aggregate function type: " + function.getClass().getName() + " in dialect " + this.name());
@@ -396,34 +402,34 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderNumericFunction(@NonNull SqlNumericFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
 			case SqlBitwiseAndFunction<?> func -> this.renderInfix(func.firstOperand(), "&", func.secondOperand());
-			case SqlBitwiseNotFunction<?> func -> renderer -> renderer.literal("~").openingBracket().rendered(func.value().toSql(this)).closingBracket().toSql();
+			case SqlBitwiseNotFunction<?> func -> renderer -> renderer.literal("~").openingBracket().rendered(func.expression().toSql(this)).closingBracket().toSql();
 			case SqlBitwiseOrFunction<?> func -> this.renderInfix(func.firstOperand(), "|", func.secondOperand());
 			case SqlBitwiseXorFunction<?> func -> this.renderInfix(func.firstOperand(), "^", func.secondOperand());
 			
-			case SqlAcosFunction func -> this.renderFunction("ACOS", func.value());
-			case SqlAsinFunction func -> this.renderFunction("ASIN", func.value());
+			case SqlAcosFunction func -> this.renderFunction("ACOS", func.expression());
+			case SqlAsinFunction func -> this.renderFunction("ASIN", func.expression());
 			case SqlAtan2Function(var y, var x) -> this.renderFunction("ATAN2", y, x);
-			case SqlAtanFunction func -> this.renderFunction("ATAN", func.value());
-			case SqlCosFunction func -> this.renderFunction("COS", func.value());
-			case SqlSinFunction func -> this.renderFunction("SIN", func.value());
-			case SqlTanFunction func -> this.renderFunction("TAN", func.value());
+			case SqlAtanFunction func -> this.renderFunction("ATAN", func.expression());
+			case SqlCosFunction func -> this.renderFunction("COS", func.expression());
+			case SqlSinFunction func -> this.renderFunction("SIN", func.expression());
+			case SqlTanFunction func -> this.renderFunction("TAN", func.expression());
 			
-			case SqlAbsFunction<?> func -> this.renderFunction("ABS", func.value());
-			case SqlCeilFunction<?> func -> this.renderFunction("CEIL", func.value());
-			case SqlDegreesFunction func -> this.renderFunction("DEGREES", func.value());
-			case SqlExpFunction func -> this.renderFunction("EXP", func.value());
-			case SqlFloorFunction<?> func -> this.renderFunction("FLOOR", func.value());
+			case SqlAbsFunction<?> func -> this.renderFunction("ABS", func.expression());
+			case SqlCeilFunction<?> func -> this.renderFunction("CEIL", func.expression());
+			case SqlDegreesFunction func -> this.renderFunction("DEGREES", func.expression());
+			case SqlExpFunction func -> this.renderFunction("EXP", func.expression());
+			case SqlFloorFunction<?> func -> this.renderFunction("FLOOR", func.expression());
 			case SqlLogFunction(var value, @Nullable SqlExpression<? extends Number> base) -> base != null ? this.renderFunction("LOG", base, value) : this.renderFunction("LN", value);
 			case SqlModFunction(var dividend, var divisor) -> this.renderFunction("MOD", dividend, divisor);
-			case SqlNegateFunction<?> func -> renderer -> renderer.literal("-").openingBracket().rendered(func.value().toSql(this)).closingBracket().toSql();
+			case SqlNegateFunction<?> func -> renderer -> renderer.literal("-").openingBracket().rendered(func.expression().toSql(this)).closingBracket().toSql();
 			case SqlPiFunction _ -> this.renderLiteral("PI()");
 			case SqlPowFunction(var value, var exponent) -> this.renderFunction("POWER", value, exponent);
-			case SqlRadiansFunction func -> this.renderFunction("RADIANS", func.value());
+			case SqlRadiansFunction func -> this.renderFunction("RADIANS", func.expression());
 			case SqlRandomFunction _ -> this.renderLiteral("RANDOM()");
 			case SqlRoundFunction(var value, @Nullable SqlExpression<? extends Number> precision) -> precision != null ? this.renderFunction("ROUND", value, precision) : this.renderFunction("ROUND", value);
-			case SqlSignFunction func -> this.renderFunction("SIGN", func.value());
-			case SqlSqrtFunction func -> this.renderFunction("SQRT", func.value());
-			case SqlNumericTruncateFunction<?> func -> this.renderFunction("TRUNCATE", func.value());
+			case SqlSignFunction func -> this.renderFunction("SIGN", func.expression());
+			case SqlSqrtFunction func -> this.renderFunction("SQRT", func.expression());
+			case SqlNumericTruncateFunction<?> func -> this.renderFunction("TRUNCATE", func.expression());
 			
 			case null -> throw new NullPointerException("Sql numeric function must not be null");
 			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql numeric function type: " + function.getClass().getName() + " in dialect " + this.name());
@@ -433,22 +439,22 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderStringFunction(@NonNull SqlStringFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
 			case SqlConcatFunction<?> func -> this.renderConcatFunction(func);
-			case SqlHexFunction func -> this.renderFunction("HEX", func.value());
+			case SqlHexFunction func -> this.renderFunction("HEX", func.expression());
 			case SqlLeftFunction(var value, var length) -> this.renderFunction("LEFT", value, length);
 			case SqlLeftPadFunction(var value, var length, var fill) -> this.renderFunction("LPAD", value, length, fill);
-			case SqlLeftTrimFunction<?> func -> this.renderFunction("LTRIM", func.value());
-			case SqlLengthFunction func -> this.renderFunction("LENGTH", func.value());
-			case SqlLowerFunction<?> func -> this.renderFunction("LOWER", func.value());
-			case SqlPositionFunction(var substring, var string) -> renderer -> renderer.literal("POSITION").openingBracket().rendered(substring.toSql(this)).in().rendered(string.toSql(this)).closingBracket().toSql();
+			case SqlLeftTrimFunction<?> func -> this.renderFunction("LTRIM", func.expression());
+			case SqlLengthFunction<?> func -> this.renderFunction("LENGTH", func.expression());
+			case SqlLowerFunction<?> func -> this.renderFunction("LOWER", func.expression());
+			case SqlPositionFunction(var substring, var string, _) -> renderer -> renderer.literal("POSITION").openingBracket().rendered(substring.toSql(this)).in().rendered(string.toSql(this)).closingBracket().toSql();
 			case SqlReplaceFunction(var string, var target, var replacement) -> this.renderFunction("REPLACE", string, target, replacement);
 			case SqlRightFunction(var value, var length) -> this.renderFunction("RIGHT", value, length);
 			case SqlRightPadFunction(var value, var length, var fill) -> this.renderFunction("RPAD", value, length, fill);
-			case SqlRightTrimFunction<?> func -> this.renderFunction("RTRIM", func.value());
+			case SqlRightTrimFunction<?> func -> this.renderFunction("RTRIM", func.expression());
 			case SqlSubstringFunction<?> func -> this.renderSubstringFunction(func);
 			case SqlTrimCharsFunction(var value, var chars) -> renderer -> renderer.literal("TRIM").openingBracket().rendered(chars.toSql(this)).from().rendered(value.toSql(this)).closingBracket().toSql();
-			case SqlTrimFunction<?> func -> this.renderFunction("TRIM", func.value());
-			case SqlUnhexFunction func -> this.renderFunction("UNHEX", func.value());
-			case SqlUpperFunction<?> func -> this.renderFunction("UPPER", func.value());
+			case SqlTrimFunction<?> func -> this.renderFunction("TRIM", func.expression());
+			case SqlUnhexFunction<?> func -> this.renderFunction("UNHEX", func.expression());
+			case SqlUpperFunction<?> func -> this.renderFunction("UPPER", func.expression());
 			
 			case null -> throw new NullPointerException("Sql string function must not be null");
 			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql string function type: " + function.getClass().getName() + " in dialect " + this.name());
@@ -457,21 +463,20 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderTemporalFunction(@NonNull SqlTemporalFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
-			case SqlAddFunction(var firstSummand, var secondSummand, var type) -> this.renderCast(this.renderInfix(firstSummand, "+", secondSummand), type);
-			case SqlCurrentDateFunction() -> this.renderLiteral("CURRENT_DATE");
-			case SqlCurrentTimeFunction() -> this.renderLiteral("CURRENT_TIME");
-			case SqlCurrentTimestampFunction() -> this.renderLiteral("CURRENT_TIMESTAMP");
-			case SqlExtractFunction(var value, var part) -> renderer -> renderer.literal("EXTRACT").openingBracket().keyword(part.name()).from().rendered(value.toSql(this)).closingBracket().toSql();
-			case SqlFromEpochFunction(var epoch, var type) -> this.renderCast(this.renderFunction("FROM_UNIXTIME", epoch), type);
-			case SqlMakeDateFunction(var year, var month, var day, var type) -> this.renderCast(this.renderFunction("MAKE_DATE", year, month, day), type);
-			case SqlMakeTimeFunction(var hour, var minute, var second, var type) -> this.renderCast(this.renderFunction("MAKE_TIME", hour, minute, second), type);
-			case SqlNowFunction() -> this.renderLiteral("CURRENT_TIMESTAMP");
-			case SqlSubtractFunction(var minuend, var subtrahend, var type) -> this.renderCast(this.renderInfix(minuend, "-", subtrahend), type);
-			case SqlToDateFunction(var value, var type) -> renderer -> renderer.cast().openingBracket().rendered(value.toSql(this)).as().literal(this.getTypeName(type)).closingBracket().toSql();
-			case SqlToTimeFunction(var value, var type) -> renderer -> renderer.cast().openingBracket().rendered(value.toSql(this)).as().literal(this.getTypeName(type)).closingBracket().toSql();
-			case SqlToEpochFunction func -> renderer -> renderer.literal("EXTRACT").openingBracket().keyword("EPOCH").from().rendered(func.value().toSql(this)).closingBracket().toSql();
-			case SqlTemporalTruncateFunction(var value, var part, var type) ->
-				this.renderCast(renderer -> renderer.literal("DATE_TRUNC").openingBracket().keyword(part.name()).comma().rendered(value.toSql(this)).closingBracket().toSql(), type);
+			case SqlAddFunction(var firstSummand, var secondSummand, _) -> this.renderInfix(firstSummand, "+", secondSummand);
+			case SqlCurrentDateFunction<?> _ -> this.renderLiteral("CURRENT_DATE");
+			case SqlCurrentTimeFunction<?> _ -> this.renderLiteral("CURRENT_TIME");
+			case SqlCurrentTimestampFunction<?> _ -> this.renderLiteral("CURRENT_TIMESTAMP");
+			case SqlExtractFunction(var value, var part, _) -> renderer -> renderer.literal("EXTRACT").openingBracket().keyword(part.name()).from().rendered(value.toSql(this)).closingBracket().toSql();
+			case SqlFromEpochFunction(var epoch, _) -> this.renderFunction("FROM_UNIXTIME", epoch);
+			case SqlMakeDateFunction(var year, var month, var day, _) -> this.renderFunction("MAKE_DATE", year, month, day);
+			case SqlMakeTimeFunction(var hour, var minute, var second, _) -> this.renderFunction("MAKE_TIME", hour, minute, second);
+			case SqlNowFunction<?> _ -> this.renderLiteral("CURRENT_TIMESTAMP");
+			case SqlSubtractFunction(var minuend, var subtrahend, _) -> this.renderInfix(minuend, "-", subtrahend);
+			case SqlToDateFunction(var value, _) -> renderer -> renderer.rendered(value.toSql(this)).toSql();
+			case SqlToTimeFunction(var value, _) -> renderer -> renderer.rendered(value.toSql(this)).toSql();
+			case SqlToEpochFunction<?> func -> renderer -> renderer.literal("EXTRACT").openingBracket().keyword("EPOCH").from().rendered(func.expression().toSql(this)).closingBracket().toSql();
+			case SqlTemporalTruncateFunction(var value, var part, _) -> renderer -> renderer.literal("DATE_TRUNC").openingBracket().keyword(part.name()).comma().rendered(value.toSql(this)).closingBracket().toSql();
 			
 			case null -> throw new NullPointerException("Sql temporal function must not be null");
 			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql temporal function type: " + function.getClass().getName() + " in dialect " + this.name());
@@ -480,16 +485,16 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderWindowFunction(@NonNull SqlWindowFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
-			case SqlCumulativeDistributionFunction func -> this.renderWindowCall("CUME_DIST", func.over());
-			case SqlDenseRankFunction func -> this.renderWindowCall("DENSE_RANK", func.over());
+			case SqlCumulativeDistributionFunction<?> func -> this.renderWindowCall("CUME_DIST", func.over());
+			case SqlDenseRankFunction<?> func -> this.renderWindowCall("DENSE_RANK", func.over());
 			case SqlFirstValueFunction(var column, var over) -> this.renderWindowCall("FIRST_VALUE", over, column);
 			case SqlLagFunction(var column, var nullableOffset, var nullableDefaultValue, var over) -> this.renderWindowCall("LAG", over, this.collectOptionalArgs(column, nullableOffset, nullableDefaultValue));
 			case SqlLastValueFunction(SqlExpression<?> column, SqlWindowClause over) -> this.renderWindowCall("LAST_VALUE", over, column);
 			case SqlLeadFunction(var column, var nullableOffset, var nullableDefaultValue, var over) -> this.renderWindowCall("LEAD", over, this.collectOptionalArgs(column, nullableOffset, nullableDefaultValue));
-			case SqlPercentRankFunction func -> this.renderWindowCall("PERCENT_RANK", func.over());
-			case SqlRankFunction func -> this.renderWindowCall("RANK", func.over());
-			case SqlRowNumberFunction func -> this.renderWindowCall("ROW_NUMBER", func.over());
-			case SqlTileBucketFunction(var buckets, var over) -> this.renderWindowCall("NTILE", over, buckets);
+			case SqlPercentRankFunction<?> func -> this.renderWindowCall("PERCENT_RANK", func.over());
+			case SqlRankFunction<?> func -> this.renderWindowCall("RANK", func.over());
+			case SqlRowNumberFunction<?> func -> this.renderWindowCall("ROW_NUMBER", func.over());
+			case SqlTileBucketFunction(var buckets, var over, _) -> this.renderWindowCall("NTILE", over, buckets);
 			case SqlValueAtFunction(var column, var position, var over) -> this.renderWindowCall("NTH_VALUE", over, column, position);
 			case SqlWindowedAggregate(var aggregate, var over) -> renderer -> renderer.rendered(this.renderFunction(aggregate)).over().openingBracket().rendered(over.toSql(this)).closingBracket().toSql();
 			
@@ -501,12 +506,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderGenericFunction(@NonNull SqlFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
 			case SqlCaseWhenFunction<?> func -> this.renderCaseWhenFunction(func);
-			case SqlCastFunction(var value, var targetType) -> renderer -> renderer.cast().openingBracket().rendered(value.toSql(this)).as().literal(this.getTypeName(targetType)).closingBracket().toSql();
-			case SqlCoalesceFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("COALESCE"), func.values());
-			case SqlGreatestFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("GREATEST"), func.values());
-			case SqlLeastFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("LEAST"), func.values());
+			case SqlCoalesceFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("COALESCE"), func.expressions());
+			case SqlGreatestFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("GREATEST"), func.expressions());
+			case SqlLeastFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("LEAST"), func.expressions());
 			case SqlNullIfFunction(var expression, var fallback) -> this.renderFunction("NULLIF", expression, fallback);
-			case SqlUnsafeFunction(var expression, var arguments, var type) -> this.renderCast(renderer -> renderer.literal(expression).rendered(this.renderFunctionWithList(renderer, arguments)).toSql(), type);
+			case SqlUnsafeFunction(var expression, var arguments, _) -> renderer -> renderer.literal(expression).rendered(this.renderFunctionWithList(renderer, arguments)).toSql();
 			
 			case null -> throw new NullPointerException("Sql function must not be null");
 			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql function type: " + function.getClass().getName() + " in dialect " + this.name());
@@ -667,9 +671,9 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		
 		return (switch (bound) {
 			case UnboundedPrecedingFrameBound _ -> renderer.unbounded().preceding();
-			case PrecedingFrameBound(int offset) -> renderer.parameter(offset).preceding();
+			case PrecedingFrameBound(int offset) -> renderer.parameter(SqlTypes.INTEGER, offset).preceding();
 			case CurrentRowFrameBound _ -> renderer.currentRow();
-			case FollowingFrameBound(int offset) -> renderer.parameter(offset).following();
+			case FollowingFrameBound(int offset) -> renderer.parameter(SqlTypes.INTEGER, offset).following();
 			case UnboundedFollowingFrameBound _ -> renderer.unbounded().following();
 			
 			case null -> throw new NullPointerException("Sql frame bound must not be null");
@@ -801,7 +805,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		}
 	}
 	
-	protected @NonNull SqlRendered renderColumnForTable(@NonNull SqlColumn<?, ?> column, boolean skipPrimaryKey) throws SqlException {
+	protected <E, C> @NonNull SqlRendered renderColumnForTable(@NonNull SqlColumn<E, C> column, boolean skipPrimaryKey) throws SqlException {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
@@ -817,7 +821,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			renderer.not().null_();
 		}
 		if (column.getDefaultValue().isPresent()) {
-			renderer.default_().parameter(column.getDefaultValue().get());
+			renderer.default_().parameter(column.getType(), column.getDefaultValue().get());
 		}
 		if (column.isAutoIncrement()) {
 			this.renderAutoIncrement(renderer, column);
