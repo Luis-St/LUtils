@@ -31,7 +31,7 @@ import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link DiscriminatedCodec}.<br>
+ * Test class for {@link NestedDiscriminatedCodec}.<br>
  *
  * @author Luis-St
  */
@@ -41,17 +41,17 @@ class DiscriminatedCodecTest {
 	void constructor() {
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("a", STRING));
 		
-		assertThrows(NullPointerException.class, () -> new DiscriminatedCodec<>(null, STRING, provider));
-		assertThrows(NullPointerException.class, () -> new DiscriminatedCodec<>("field", null, provider));
-		assertThrows(NullPointerException.class, () -> new DiscriminatedCodec<>("field", STRING, null));
-		assertDoesNotThrow(() -> new DiscriminatedCodec<>("field", STRING, provider));
+		assertThrows(NullPointerException.class, () -> new NestedDiscriminatedCodec<>(null, STRING, provider));
+		assertThrows(NullPointerException.class, () -> new NestedDiscriminatedCodec<>("field", null, provider));
+		assertThrows(NullPointerException.class, () -> new NestedDiscriminatedCodec<>("field", STRING, null));
+		assertDoesNotThrow(() -> new NestedDiscriminatedCodec<>("field", STRING, provider));
 	}
 	
 	@Test
 	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("a", STRING));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		assertThrows(NullPointerException.class, () -> codec.encode(null, typeProvider.empty(), "test"));
 		assertThrows(NullPointerException.class, () -> codec.encode(typeProvider, null, "test"));
@@ -61,7 +61,7 @@ class DiscriminatedCodecTest {
 	void encodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("a", STRING));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		EncoderException exception = assertThrows(EncoderException.class, () -> codec.encode(typeProvider, typeProvider.empty(), null));
 		assertTrue(exception.getMessage().contains("Unable to encode null value as discriminated"));
@@ -72,7 +72,7 @@ class DiscriminatedCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("string", STRING));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parent = new JsonObject();
 		parent.add("type", new JsonPrimitive("string"));
@@ -85,7 +85,7 @@ class DiscriminatedCodecTest {
 	void encodeWithMissingDiscriminator() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("string", STRING));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parent = new JsonObject();
 		
@@ -101,7 +101,7 @@ class DiscriminatedCodecTest {
 			"int", INTEGER,
 			"double", DOUBLE
 		));
-		Codec<Number> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<Number> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parentInt = new JsonObject();
 		parentInt.add("type", new JsonPrimitive("int"));
@@ -118,7 +118,7 @@ class DiscriminatedCodecTest {
 	void encodeWithInvalidDiscriminator() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("valid", STRING));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parent = new JsonObject();
 		parent.add("type", new JsonPrimitive("invalid"));
@@ -131,7 +131,7 @@ class DiscriminatedCodecTest {
 	void decodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("a", STRING));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		assertThrows(NullPointerException.class, () -> codec.decode(null, typeProvider.empty(), new JsonPrimitive("test")));
 		assertThrows(NullPointerException.class, () -> codec.decode(typeProvider, null, new JsonPrimitive("test")));
@@ -141,7 +141,7 @@ class DiscriminatedCodecTest {
 	void decodeWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("a", STRING));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		DecoderException exception = assertThrows(DecoderException.class, () -> codec.decode(typeProvider, typeProvider.empty(), null));
 		assertTrue(exception.getMessage().contains("Unable to decode null value as discriminated"));
@@ -151,7 +151,7 @@ class DiscriminatedCodecTest {
 	void decodeWithValidDiscriminator() throws DecoderException {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("string", STRING));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parent = new JsonObject();
 		parent.add("type", new JsonPrimitive("string"));
@@ -164,7 +164,7 @@ class DiscriminatedCodecTest {
 	void decodeWithMissingDiscriminator() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("string", STRING));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parent = new JsonObject();
 		
@@ -180,7 +180,7 @@ class DiscriminatedCodecTest {
 			"int", INTEGER,
 			"double", DOUBLE
 		));
-		Codec<Number> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<Number> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parentInt = new JsonObject();
 		parentInt.add("type", new JsonPrimitive("int"));
@@ -197,7 +197,7 @@ class DiscriminatedCodecTest {
 	void decodeWithInvalidDiscriminator() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("valid", STRING));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parent = new JsonObject();
 		parent.add("type", new JsonPrimitive("invalid"));
@@ -213,7 +213,7 @@ class DiscriminatedCodecTest {
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of(
 			"string", STRING
 		));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parent = new JsonObject();
 		parent.add("type", new JsonPrimitive("string"));
@@ -228,7 +228,7 @@ class DiscriminatedCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("string", STRING));
-		Codec<String> discriminatedCodec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> discriminatedCodec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parent = new JsonObject();
 		parent.add("type", new JsonPrimitive("string"));
@@ -241,7 +241,7 @@ class DiscriminatedCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("string", STRING));
-		Codec<String> discriminatedCodec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> discriminatedCodec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parent = new JsonObject();
 		parent.add("type", new JsonPrimitive("string"));
@@ -258,7 +258,7 @@ class DiscriminatedCodecTest {
 			"long", LONG
 		);
 		DiscriminatedCodecProvider<Number, String> provider = DiscriminatedCodecProvider.create(Number.class, codecMap);
-		Codec<Number> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<Number> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parent = new JsonObject();
 		parent.add("type", new JsonPrimitive("int"));
@@ -276,7 +276,7 @@ class DiscriminatedCodecTest {
 			case "long" -> LONG;
 			default -> throw new IllegalArgumentException("Unknown type: " + type);
 		});
-		Codec<Number> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<Number> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonObject parent = new JsonObject();
 		parent.add("type", new JsonPrimitive("long"));
@@ -293,7 +293,7 @@ class DiscriminatedCodecTest {
 		parent.add("type", new JsonPrimitive("string"));
 		
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("string", STRING));
-		Codec<String> codec = new DiscriminatedCodec<>("type", STRING, provider);
+		Codec<String> codec = new NestedDiscriminatedCodec<>("type", STRING, provider);
 		
 		JsonElement encoded = codec.encode(typeProvider, parent, "hello");
 		assertEquals(new JsonPrimitive("hello"), encoded);
@@ -306,8 +306,8 @@ class DiscriminatedCodecTest {
 	void equalsAndHashCode() {
 		DiscriminatedCodecProvider<String, String> provider1 = DiscriminatedCodecProvider.create(String.class, Map.of("a", STRING));
 		
-		DiscriminatedCodec<String, String> codec1 = new DiscriminatedCodec<>("field", STRING, provider1);
-		DiscriminatedCodec<String, String> codec2 = new DiscriminatedCodec<>("field", STRING, provider1);
+		NestedDiscriminatedCodec<String, String> codec1 = new NestedDiscriminatedCodec<>("field", STRING, provider1);
+		NestedDiscriminatedCodec<String, String> codec2 = new NestedDiscriminatedCodec<>("field", STRING, provider1);
 		
 		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
@@ -315,10 +315,10 @@ class DiscriminatedCodecTest {
 	@Test
 	void toStringRepresentation() {
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, Map.of("a", STRING));
-		DiscriminatedCodec<String, String> codec = new DiscriminatedCodec<>("field", STRING, provider);
+		NestedDiscriminatedCodec<String, String> codec = new NestedDiscriminatedCodec<>("field", STRING, provider);
 		
 		String result = codec.toString();
-		assertTrue(result.startsWith("DiscriminatedCodec["));
+		assertTrue(result.startsWith("NestedDiscriminatedCodec["));
 		assertTrue(result.endsWith("]"));
 		assertTrue(result.contains("field"));
 	}

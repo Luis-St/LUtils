@@ -26,8 +26,7 @@ import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,7 +49,7 @@ class CodecGroupTest {
 	@Test
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new CodecGroup<>(null, components -> new TestObject("", 0)));
-		assertThrows(NullPointerException.class, () -> new CodecGroup<>(Arrays.asList(null), components -> new TestObject("", 0)));
+		assertThrows(NullPointerException.class, () -> new CodecGroup<>(Collections.singletonList(null), components -> new TestObject("", 0)));
 		assertThrows(NullPointerException.class, () -> new CodecGroup<>(List.of(), null));
 		assertDoesNotThrow(() -> new CodecGroup<>(List.of(), components -> new TestObject("", 0)));
 	}
