@@ -268,7 +268,19 @@ public class CodecsTest {
 		assertThrows(NullPointerException.class, () -> Codecs.discriminatedBy(null, STRING, provider));
 		assertThrows(NullPointerException.class, () -> Codecs.discriminatedBy("field", null, provider));
 		assertThrows(NullPointerException.class, () -> Codecs.discriminatedBy("field", STRING, null));
-		assertInstanceOf(DiscriminatedCodec.class, Codecs.discriminatedBy("field", STRING, provider));
+		assertInstanceOf(NestedDiscriminatedCodec.class, Codecs.discriminatedBy("field", STRING, provider));
+	}
+	
+	@Test
+	void flatDiscriminatedBy() {
+		Map<String, Codec<? extends String>> codecs = Map.of("a", STRING, "b", STRING);
+		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, codecs);
+		
+		assertThrows(NullPointerException.class, () -> Codecs.flatDiscriminatedBy(null, STRING, String::toString, provider));
+		assertThrows(NullPointerException.class, () -> Codecs.flatDiscriminatedBy("field", null, String::toString, provider));
+		assertThrows(NullPointerException.class, () -> Codecs.flatDiscriminatedBy("field", STRING, null, provider));
+		assertThrows(NullPointerException.class, () -> Codecs.flatDiscriminatedBy("field", STRING, String::toString, null));
+		assertInstanceOf(FlatDiscriminatedCodec.class, Codecs.flatDiscriminatedBy("field", STRING, String::toString, provider));
 	}
 	
 	@Test
