@@ -29,6 +29,7 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.orderable.OrderedSqlExpression;
 import net.luis.utils.io.database.expression.orderable.SqlOrderable;
 import net.luis.utils.io.database.query.*;
+import net.luis.utils.io.database.query.row.SqlRowMapper;
 import net.luis.utils.io.database.query.util.*;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
@@ -55,6 +56,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	private final Connection connection;
 	private final Duration queryTimeout;
 	private final ThrowableFunction<ResultSet, E, SqlException> rowMapper;
+	private final List<SqlExpression<?>> selectedExpressions;
 	private final List<SqlJoinClause> joins;
 	private final List<SqlColumn<?, ?>> groupByColumns;
 	private final List<SqlOrderable<?>> orderByClauses;
@@ -71,7 +73,11 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	private final boolean noWait;
 	
 	public SqlSelectQuery(@NonNull SqlTable<?> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper) {
-		this(table, dialect, connection, queryTimeout, rowMapper, List.of(), List.of(), List.of(), List.of(), List.of(), -1, -1, false, null, null, null, null, false, false);
+		this(table, dialect, connection, queryTimeout, rowMapper, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), -1, -1, false, null, null, null, null, false, false);
+	}
+	
+	public SqlSelectQuery(@NonNull SqlTable<?> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<SqlExpression<?>> selectedExpressions) {
+		this(table, dialect, connection, queryTimeout, rowMapper, selectedExpressions, List.of(), List.of(), List.of(), List.of(), List.of(), -1, -1, false, null, null, null, null, false, false);
 	}
 	
 	private SqlSelectQuery(
@@ -80,6 +86,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		@NonNull Connection connection,
 		@NonNull Duration queryTimeout,
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
+		@NonNull List<SqlExpression<?>> selectedExpressions,
 		@NonNull List<SqlJoinClause> joins,
 		@NonNull List<SqlColumn<?, ?>> groupByColumns,
 		@NonNull List<SqlOrderable<?>> orderByClauses,
@@ -99,6 +106,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 		this.rowMapper = Objects.requireNonNull(rowMapper, "Row mapper must not be null");
+		this.selectedExpressions = Objects.requireNonNull(selectedExpressions, "Selected expressions must not be null");
 		this.joins = Objects.requireNonNull(joins, "Sql join clauses must not be null");
 		this.groupByColumns = Objects.requireNonNull(groupByColumns, "Sql group by columns must not be null");
 		this.orderByClauses = Objects.requireNonNull(orderByClauses, "Sql order by clauses must not be null");
@@ -147,6 +155,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 			this.connection,
 			this.queryTimeout,
 			this.rowMapper,
+			this.selectedExpressions,
 			joins,
 			groupByColumns,
 			orderByClauses,
@@ -525,10 +534,35 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public <R> @NonNull SqlSelectQuery<R> projectInto(@NonNull Class<R> type) {
 		Objects.requireNonNull(type, "Sql projection type must not be null");
-		return (SqlSelectQuery<R>) this; // ToDo: Implement proper projection mapping
+		if (this.selectedExpressions.isEmpty()) {
+			throw new IllegalStateException("Cannot project into " + type.getSimpleName() + ": No expressions selected");
+		}
+		
+		ThrowableFunction<ResultSet, R, SqlException> projectionMapper = SqlRowMapper.forProjection(type, this.selectedExpressions);
+		return new SqlSelectQuery<>(
+			this.table,
+			this.dialect,
+			this.connection,
+			this.queryTimeout,
+			projectionMapper,
+			this.selectedExpressions,
+			this.joins,
+			this.groupByColumns,
+			this.orderByClauses,
+			List.of(),
+			this.commonTableExpressions,
+			this.limit,
+			this.offset,
+			this.isDistinct,
+			this.whereCondition,
+			this.whereExistsSubquery,
+			this.havingCondition,
+			this.lockMode,
+			this.skipLocked,
+			this.noWait
+		);
 	}
 	
 	public @NonNull SqlCommonTableExpression asCommonExpression(@NonNull SqlAlias alias, boolean recursive) {
@@ -542,7 +576,8 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 			this.joins,
 			this.groupByColumns,
 			this.orderByClauses,
-			this.setOperations, SqlQuery.copyAndAdd(this.commonTableExpressions, commonTableExpression),
+			this.setOperations,
+			SqlQuery.copyAndAdd(this.commonTableExpressions, commonTableExpression),
 			this.limit,
 			this.offset,
 			this.isDistinct,
@@ -650,6 +685,17 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		renderer.select();
 		if (this.isDistinct) {
 			renderer.distinct();
+		}
+		
+		if (this.selectedExpressions.isEmpty()) {
+			renderer.literal("*");
+		} else {
+			for (int i = 0; i < this.selectedExpressions.size(); i++) {
+				if (i > 0) {
+					renderer.comma();
+				}
+				renderer.rendered(dialect.renderExpression(this.selectedExpressions.get(i)));
+			}
 		}
 		
 		renderer.from().literal(dialect.quoteIdentifier(this.table.getName()));
