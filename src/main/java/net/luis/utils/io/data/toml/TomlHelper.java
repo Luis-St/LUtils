@@ -51,7 +51,7 @@ final class TomlHelper {
 	}
 	
 	/**
-	 * Checks if the given key is a valid bare key in TOML.<br>
+	 * Checks if the given key is a valid bare key in toml.<br>
 	 *
 	 * @param key The key to check
 	 * @return True if the key is a valid bare key, false otherwise

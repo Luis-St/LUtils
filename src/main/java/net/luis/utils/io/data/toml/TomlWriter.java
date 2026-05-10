@@ -26,8 +26,8 @@ import java.time.*;
 import java.util.*;
 
 /**
- * Represents a writer for TOML files.<br>
- * This writer writes TOML tables to a defined output.<br>
+ * Represents a writer for toml files.<br>
+ * This writer writes toml tables to a defined output.<br>
  * <p>
  * Supports writing:
  * <ul>
@@ -35,7 +35,7 @@ import java.util.*;
  *     <li>Tables with section headers</li>
  *     <li>Inline tables</li>
  *     <li>Arrays and array of tables</li>
- *     <li>All TOML value types including date/time</li>
+ *     <li>All toml value types including date/time</li>
  * </ul>
  *
  * @author Luis-St
@@ -43,17 +43,17 @@ import java.util.*;
 public class TomlWriter implements AutoCloseable {
 	
 	/**
-	 * The configuration for the TOML writer.<br>
+	 * The configuration for the toml writer.<br>
 	 */
 	private final TomlConfig config;
 	
 	/**
-	 * The internal io writer for writing the TOML content.<br>
+	 * The internal io writer for writing the toml content.<br>
 	 */
 	private final BufferedWriter writer;
 	
 	/**
-	 * Constructs a new TOML writer for the given output with the default TOML configuration.<br>
+	 * Constructs a new toml writer for the given output with the default toml configuration.<br>
 	 *
 	 * @param output The output provider to create the writer for
 	 * @throws NullPointerException If the output is null
@@ -63,32 +63,32 @@ public class TomlWriter implements AutoCloseable {
 	}
 	
 	/**
-	 * Constructs a new TOML writer for the given output with the given TOML configuration.<br>
+	 * Constructs a new toml writer for the given output with the given toml configuration.<br>
 	 *
 	 * @param output The output to create the writer for
-	 * @param config The configuration for the TOML writer
+	 * @param config The configuration for the toml writer
 	 * @throws NullPointerException If the output or the configuration is null
 	 */
 	public TomlWriter(@NonNull OutputProvider output, @NonNull TomlConfig config) {
-		this.config = Objects.requireNonNull(config, "TOML config must not be null");
+		this.config = Objects.requireNonNull(config, "Toml config must not be null");
 		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(output, "Output must not be null").getStream(), config.charset()));
 	}
 	
 	/**
-	 * Writes the given TOML table to the underlying output.<br>
-	 * This writes the table as a complete TOML document with proper section headers.<br>
+	 * Writes the given toml table to the underlying output.<br>
+	 * This writes the table as a complete toml document with proper section headers.<br>
 	 *
-	 * @param table The TOML table to write
+	 * @param table The toml table to write
 	 * @throws NullPointerException If the table is null
 	 * @throws UncheckedIOException If an I/O error occurs
 	 */
 	public void writeToml(@NonNull TomlTable table) {
-		Objects.requireNonNull(table, "TOML table must not be null");
+		Objects.requireNonNull(table, "Toml table must not be null");
 		try {
 			this.writeTable(table, "");
 			this.writer.flush();
 		} catch (IOException e) {
-			throw new UncheckedIOException("An I/O error occurred while writing the TOML document", e);
+			throw new UncheckedIOException("An I/O error occurred while writing the toml document", e);
 		}
 	}
 	
@@ -102,7 +102,7 @@ public class TomlWriter implements AutoCloseable {
 	 */
 	@SuppressWarnings("DuplicatedCode")
 	private void writeTable(@NonNull TomlTable table, @NonNull String path) throws IOException {
-		Objects.requireNonNull(table, "TOML table must not be null");
+		Objects.requireNonNull(table, "Toml table must not be null");
 		Objects.requireNonNull(path, "Table path must not be null");
 		
 		List<Map.Entry<String, TomlElement>> simpleEntries = new ArrayList<>();
@@ -200,7 +200,7 @@ public class TomlWriter implements AutoCloseable {
 			this.writeKeyValue(key, value);
 			this.writer.flush();
 		} catch (IOException e) {
-			throw new UncheckedIOException("An I/O error occurred while writing the TOML property", e);
+			throw new UncheckedIOException("An I/O error occurred while writing the toml property", e);
 		}
 	}
 	

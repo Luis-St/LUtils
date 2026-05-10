@@ -22,7 +22,6 @@ import com.google.common.collect.Maps;
 import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.xml.*;
 import net.luis.utils.io.data.xml.exception.XmlTypeException;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -118,63 +117,63 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createNull(@NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull XmlElement createNull(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return new XmlElement(NULL);
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createBoolean(boolean value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull XmlElement createBoolean(boolean value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return new XmlValue(BOOLEAN, value);
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createByte(byte value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull XmlElement createByte(byte value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return new XmlValue(BYTE, value);
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createShort(short value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull XmlElement createShort(short value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return new XmlValue(SHORT, value);
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createInteger(int value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull XmlElement createInteger(int value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return new XmlValue(INTEGER, value);
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createLong(long value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull XmlElement createLong(long value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return new XmlValue(LONG, value);
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createFloat(float value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull XmlElement createFloat(float value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return new XmlValue(FLOAT, value);
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createDouble(double value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull XmlElement createDouble(double value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return new XmlValue(DOUBLE, value);
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createString(@Nullable String value, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull XmlElement createString(@Nullable String value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (value == null) {
@@ -184,7 +183,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createList(@Nullable List<? extends XmlElement> values, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull XmlElement createList(@Nullable List<? extends XmlElement> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (values == null) {
@@ -196,14 +195,14 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createMap(@NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull XmlElement createMap(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return new XmlContainer(MAP);
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull XmlElement createMap(@Nullable Map<String, ? extends XmlElement> values, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull XmlElement createMap(@Nullable Map<String, ? extends XmlElement> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (values == null) {
@@ -213,7 +212,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> boolean isEmpty(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> boolean isEmpty(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -223,7 +222,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> boolean isNull(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> boolean isNull(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -233,7 +232,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -251,7 +250,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Byte getByte(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Byte getByte(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -269,7 +268,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Short getShort(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Short getShort(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -287,7 +286,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Integer getInteger(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Integer getInteger(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -305,7 +304,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Long getLong(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Long getLong(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -323,7 +322,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Float getFloat(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Float getFloat(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -341,7 +340,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Double getDouble(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Double getDouble(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -359,7 +358,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull String getString(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull String getString(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -373,7 +372,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull List<XmlElement> getList(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull List<XmlElement> getList(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -405,7 +404,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Map<String, XmlElement> getMap(@Nullable XmlElement type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Map<String, XmlElement> getMap(@Nullable XmlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -440,7 +439,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <X extends Exception> boolean has(@Nullable XmlElement type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> boolean has(@Nullable XmlElement type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -463,7 +462,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <X extends Exception> @Nullable XmlElement get(@Nullable XmlElement type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @Nullable XmlElement get(@Nullable XmlElement type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -491,7 +490,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <X extends Exception> void set(@Nullable XmlElement type, @Nullable String key, @Nullable XmlElement value, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> void set(@Nullable XmlElement type, @Nullable String key, @Nullable XmlElement value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -517,7 +516,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <X extends Exception> @UnknownNullability XmlElement merge(@Nullable XmlElement current, @Nullable XmlElement value, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @UnknownNullability XmlElement merge(@Nullable XmlElement current, @Nullable XmlElement value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (current == null) {
@@ -672,7 +671,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * @throws NullPointerException If the current or value elements are null
 	 * @throws X If the merge failed
 	 */
-	private <X extends Exception> @NonNull XmlElement mergeUndefined(@NonNull XmlElements current, @NonNull XmlElements value, @NotNull Function<String, X> exceptionConstructor) throws X {
+	private <X extends Exception> @NonNull XmlElement mergeUndefined(@NonNull XmlElements current, @NonNull XmlElements value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(current, "Current elements must not be null");
 		Objects.requireNonNull(value, "Value elements must not be null");
 		

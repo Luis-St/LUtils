@@ -43,6 +43,7 @@ public class XmlTypeException extends RuntimeException {
 	
 	/**
 	 * Constructs a new xml type exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */

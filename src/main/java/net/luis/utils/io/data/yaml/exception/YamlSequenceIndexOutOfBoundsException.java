@@ -41,18 +41,11 @@ public class YamlSequenceIndexOutOfBoundsException extends IndexOutOfBoundsExcep
 	
 	/**
 	 * Constructs a new yaml sequence index out of bounds exception with the specified index and size.<br>
+	 *
 	 * @param index The index that was out of bounds
 	 * @param size The size of the yaml sequence
 	 */
 	public YamlSequenceIndexOutOfBoundsException(int index, int size) {
 		super("Yaml sequence index out of bounds: " + index + ", size: " + size);
-	}
-	
-	/**
-	 * Constructs a new yaml sequence index out of bounds exception with the specified message.<br>
-	 * @param message The message of the exception
-	 */
-	public YamlSequenceIndexOutOfBoundsException(String message) {
-		super(message);
 	}
 }

@@ -22,10 +22,7 @@ import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.OutputProvider;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,16 +32,16 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class YamlIntegrationTest {
-
+	
 	private static final YamlConfig DEFAULT_CONFIG = YamlConfig.DEFAULT;
 	private static final YamlConfig PRESERVE_ANCHORS = YamlConfig.PRESERVE_ANCHORS;
-
+	
 	@Test
 	void kubernetesDeploymentRoundTrip() throws IOException {
 		YamlMapping deployment = new YamlMapping();
 		deployment.add("apiVersion", "apps/v1");
 		deployment.add("kind", "Deployment");
-
+		
 		YamlMapping metadata = new YamlMapping();
 		metadata.add("name", "my-application");
 		metadata.add("namespace", "production");
@@ -54,31 +51,31 @@ class YamlIntegrationTest {
 		labels.add("environment", "production");
 		metadata.add("labels", labels);
 		deployment.add("metadata", metadata);
-
+		
 		YamlMapping spec = new YamlMapping();
 		spec.add("replicas", 3);
-
+		
 		YamlMapping selector = new YamlMapping();
 		YamlMapping matchLabels = new YamlMapping();
 		matchLabels.add("app", "my-application");
 		selector.add("matchLabels", matchLabels);
 		spec.add("selector", selector);
-
+		
 		YamlMapping template = new YamlMapping();
 		YamlMapping templateMetadata = new YamlMapping();
 		YamlMapping templateLabels = new YamlMapping();
 		templateLabels.add("app", "my-application");
 		templateMetadata.add("labels", templateLabels);
 		template.add("metadata", templateMetadata);
-
+		
 		YamlMapping templateSpec = new YamlMapping();
 		YamlSequence containers = new YamlSequence();
-
+		
 		YamlMapping container1 = new YamlMapping();
 		container1.add("name", "main-container");
 		container1.add("image", "my-registry.io/my-application:v1.0.0");
 		container1.add("imagePullPolicy", "Always");
-
+		
 		YamlSequence ports = new YamlSequence();
 		YamlMapping port1 = new YamlMapping();
 		port1.add("containerPort", 8080);
@@ -89,7 +86,7 @@ class YamlIntegrationTest {
 		port2.add("name", "https");
 		ports.add(port2);
 		container1.add("ports", ports);
-
+		
 		YamlSequence env = new YamlSequence();
 		YamlMapping env1 = new YamlMapping();
 		env1.add("name", "JAVA_OPTS");
@@ -109,7 +106,7 @@ class YamlIntegrationTest {
 		env3.add("valueFrom", valueFrom);
 		env.add(env3);
 		container1.add("env", env);
-
+		
 		YamlMapping resources = new YamlMapping();
 		YamlMapping limits = new YamlMapping();
 		limits.add("cpu", "500m");
@@ -120,7 +117,7 @@ class YamlIntegrationTest {
 		requests.add("memory", "256Mi");
 		resources.add("requests", requests);
 		container1.add("resources", resources);
-
+		
 		YamlSequence volumeMounts = new YamlSequence();
 		YamlMapping mount1 = new YamlMapping();
 		mount1.add("name", "config-volume");
@@ -131,10 +128,10 @@ class YamlIntegrationTest {
 		mount2.add("mountPath", "/app/data");
 		volumeMounts.add(mount2);
 		container1.add("volumeMounts", volumeMounts);
-
+		
 		containers.add(container1);
 		templateSpec.add("containers", containers);
-
+		
 		YamlSequence volumes = new YamlSequence();
 		YamlMapping vol1 = new YamlMapping();
 		vol1.add("name", "config-volume");
@@ -149,37 +146,37 @@ class YamlIntegrationTest {
 		vol2.add("persistentVolumeClaim", pvc);
 		volumes.add(vol2);
 		templateSpec.add("volumes", volumes);
-
+		
 		template.add("spec", templateSpec);
 		spec.add("template", template);
 		deployment.add("spec", spec);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (YamlWriter writer = new YamlWriter(new OutputProvider(output), DEFAULT_CONFIG)) {
 			writer.writeYaml(deployment);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		YamlElement result;
 		try (YamlReader reader = new YamlReader(new InputProvider(input), DEFAULT_CONFIG)) {
 			result = reader.readYaml();
 		}
-
+		
 		assertEquals(deployment, result);
-
+		
 		YamlMapping resultMapping = result.getAsYamlMapping();
 		assertEquals("apps/v1", resultMapping.get("apiVersion").getAsYamlScalar().getAsString());
 		assertEquals("Deployment", resultMapping.get("kind").getAsYamlScalar().getAsString());
 		assertEquals(3, resultMapping.get("spec").getAsYamlMapping().get("replicas").getAsYamlScalar().getAsInteger());
 	}
-
+	
 	@Test
 	void dockerComposeRoundTrip() throws IOException {
 		YamlMapping compose = new YamlMapping();
 		compose.add("version", "3.8");
-
+		
 		YamlMapping services = new YamlMapping();
-
+		
 		YamlMapping web = new YamlMapping();
 		web.add("image", "nginx:latest");
 		web.add("container_name", "web-server");
@@ -200,7 +197,7 @@ class YamlIntegrationTest {
 		web.add("networks", webNetworks);
 		web.add("restart", "unless-stopped");
 		services.add("web", web);
-
+		
 		YamlMapping app = new YamlMapping();
 		app.add("build", ".");
 		app.add("container_name", "application");
@@ -227,7 +224,7 @@ class YamlIntegrationTest {
 		app.add("networks", appNetworks);
 		app.add("restart", "unless-stopped");
 		services.add("app", app);
-
+		
 		YamlMapping db = new YamlMapping();
 		db.add("image", "postgres:15");
 		db.add("container_name", "database");
@@ -244,7 +241,7 @@ class YamlIntegrationTest {
 		db.add("networks", dbNetworks);
 		db.add("restart", "unless-stopped");
 		services.add("db", db);
-
+		
 		YamlMapping cache = new YamlMapping();
 		cache.add("image", "redis:7-alpine");
 		cache.add("container_name", "redis-cache");
@@ -256,9 +253,9 @@ class YamlIntegrationTest {
 		cache.add("networks", cacheNetworks);
 		cache.add("restart", "unless-stopped");
 		services.add("cache", cache);
-
+		
 		compose.add("services", services);
-
+		
 		YamlMapping networks = new YamlMapping();
 		YamlMapping frontend = new YamlMapping();
 		frontend.add("driver", "bridge");
@@ -267,54 +264,54 @@ class YamlIntegrationTest {
 		backend.add("driver", "bridge");
 		networks.add("backend", backend);
 		compose.add("networks", networks);
-
+		
 		YamlMapping volumes = new YamlMapping();
 		YamlMapping postgresData = new YamlMapping();
 		postgresData.add("driver", "local");
 		volumes.add("postgres_data", postgresData);
 		compose.add("volumes", volumes);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (YamlWriter writer = new YamlWriter(new OutputProvider(output), DEFAULT_CONFIG)) {
 			writer.writeYaml(compose);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		YamlElement result;
 		try (YamlReader reader = new YamlReader(new InputProvider(input), DEFAULT_CONFIG)) {
 			result = reader.readYaml();
 		}
-
+		
 		assertTrue(result.isYamlMapping());
 		YamlMapping resultMapping = result.getAsYamlMapping();
-
+		
 		assertEquals("3.8", resultMapping.get("version").getAsYamlScalar().getAsString());
 		assertEquals(4, resultMapping.get("services").getAsYamlMapping().size());
-
+		
 		YamlMapping webService = resultMapping.get("services").getAsYamlMapping().get("web").getAsYamlMapping();
 		assertEquals("nginx:latest", webService.get("image").getAsYamlScalar().getAsString());
 		assertEquals("unless-stopped", webService.get("restart").getAsYamlScalar().getAsString());
 		assertEquals(2, webService.get("ports").getAsYamlSequence().size());
-
+		
 		assertEquals(2, resultMapping.get("networks").getAsYamlMapping().size());
 	}
-
+	
 	@Test
 	void ciPipelineConfigRoundTrip() throws IOException {
 		YamlMapping pipeline = new YamlMapping();
-
+		
 		YamlSequence stages = new YamlSequence();
 		stages.add("build");
 		stages.add("test");
 		stages.add("deploy");
 		pipeline.add("stages", stages);
-
+		
 		YamlMapping variables = new YamlMapping();
 		variables.add("MAVEN_OPTS", "-Dmaven.repo.local=.m2/repository");
 		variables.add("DOCKER_REGISTRY", "registry.example.com");
 		variables.add("APP_NAME", "my-application");
 		pipeline.add("variables", variables);
-
+		
 		YamlMapping cache = new YamlMapping();
 		YamlSequence cachePaths = new YamlSequence();
 		cachePaths.add(".m2/repository");
@@ -322,7 +319,7 @@ class YamlIntegrationTest {
 		cache.add("paths", cachePaths);
 		cache.add("key", "${CI_COMMIT_REF_SLUG}");
 		pipeline.add("cache", cache);
-
+		
 		YamlMapping buildJob = new YamlMapping();
 		buildJob.add("stage", "build");
 		buildJob.add("image", "maven:3.9-eclipse-temurin-17");
@@ -338,7 +335,7 @@ class YamlIntegrationTest {
 		buildArtifacts.add("expire_in", "1 week");
 		buildJob.add("artifacts", buildArtifacts);
 		pipeline.add("build", buildJob);
-
+		
 		YamlMapping testJob = new YamlMapping();
 		testJob.add("stage", "test");
 		testJob.add("image", "maven:3.9-eclipse-temurin-17");
@@ -357,7 +354,7 @@ class YamlIntegrationTest {
 		testReports.add("coverage_report", coveragePaths);
 		testJob.add("reports", testReports);
 		pipeline.add("test", testJob);
-
+		
 		YamlMapping deployStaging = new YamlMapping();
 		deployStaging.add("stage", "deploy");
 		deployStaging.add("image", "bitnami/kubectl:latest");
@@ -376,7 +373,7 @@ class YamlIntegrationTest {
 		stagingRules.add(rule1);
 		deployStaging.add("rules", stagingRules);
 		pipeline.add("deploy-staging", deployStaging);
-
+		
 		YamlMapping deployProd = new YamlMapping();
 		deployProd.add("stage", "deploy");
 		deployProd.add("image", "bitnami/kubectl:latest");
@@ -396,35 +393,35 @@ class YamlIntegrationTest {
 		prodRules.add(prodRule);
 		deployProd.add("rules", prodRules);
 		pipeline.add("deploy-production", deployProd);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (YamlWriter writer = new YamlWriter(new OutputProvider(output), DEFAULT_CONFIG)) {
 			writer.writeYaml(pipeline);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		YamlElement result;
 		try (YamlReader reader = new YamlReader(new InputProvider(input), DEFAULT_CONFIG)) {
 			result = reader.readYaml();
 		}
-
+		
 		assertEquals(pipeline, result);
-
+		
 		YamlMapping resultMapping = result.getAsYamlMapping();
 		assertEquals(3, resultMapping.get("stages").getAsYamlSequence().size());
 		assertTrue(resultMapping.containsKey("build"));
 		assertTrue(resultMapping.containsKey("test"));
 	}
-
+	
 	@Test
 	void ansiblePlaybookRoundTrip() throws IOException {
 		YamlSequence playbook = new YamlSequence();
-
+		
 		YamlMapping play1 = new YamlMapping();
 		play1.add("name", "Configure web servers");
 		play1.add("hosts", "webservers");
 		play1.add("become", true);
-
+		
 		YamlMapping vars = new YamlMapping();
 		vars.add("http_port", 80);
 		vars.add("max_clients", 200);
@@ -435,9 +432,9 @@ class YamlIntegrationTest {
 		packages.add("certbot");
 		vars.add("required_packages", packages);
 		play1.add("vars", vars);
-
+		
 		YamlSequence tasks = new YamlSequence();
-
+		
 		YamlMapping task1 = new YamlMapping();
 		task1.add("name", "Install required packages");
 		YamlMapping apt = new YamlMapping();
@@ -447,7 +444,7 @@ class YamlIntegrationTest {
 		task1.add("apt", apt);
 		task1.add("loop", "{{ required_packages }}");
 		tasks.add(task1);
-
+		
 		YamlMapping task2 = new YamlMapping();
 		task2.add("name", "Copy nginx configuration");
 		YamlMapping template = new YamlMapping();
@@ -457,7 +454,7 @@ class YamlIntegrationTest {
 		task2.add("template", template);
 		task2.add("notify", "Restart nginx");
 		tasks.add(task2);
-
+		
 		YamlMapping task3 = new YamlMapping();
 		task3.add("name", "Ensure nginx is running");
 		YamlMapping service = new YamlMapping();
@@ -466,7 +463,7 @@ class YamlIntegrationTest {
 		service.add("enabled", true);
 		task3.add("service", service);
 		tasks.add(task3);
-
+		
 		YamlMapping task4 = new YamlMapping();
 		task4.add("name", "Create document root");
 		YamlMapping file = new YamlMapping();
@@ -477,7 +474,7 @@ class YamlIntegrationTest {
 		file.add("mode", "0755");
 		task4.add("file", file);
 		tasks.add(task4);
-
+		
 		YamlMapping task5 = new YamlMapping();
 		task5.add("name", "Configure firewall");
 		YamlMapping ufw = new YamlMapping();
@@ -490,9 +487,9 @@ class YamlIntegrationTest {
 		ports.add("443");
 		task5.add("loop", ports);
 		tasks.add(task5);
-
+		
 		play1.add("tasks", tasks);
-
+		
 		YamlSequence handlers = new YamlSequence();
 		YamlMapping handler1 = new YamlMapping();
 		handler1.add("name", "Restart nginx");
@@ -502,20 +499,20 @@ class YamlIntegrationTest {
 		handler1.add("service", handlerService);
 		handlers.add(handler1);
 		play1.add("handlers", handlers);
-
+		
 		playbook.add(play1);
-
+		
 		YamlMapping play2 = new YamlMapping();
 		play2.add("name", "Configure database servers");
 		play2.add("hosts", "dbservers");
 		play2.add("become", true);
-
+		
 		YamlMapping dbVars = new YamlMapping();
 		dbVars.add("db_name", "myapp");
 		dbVars.add("db_user", "myapp_user");
 		dbVars.add("db_password", "secret123");
 		play2.add("vars", dbVars);
-
+		
 		YamlSequence dbTasks = new YamlSequence();
 		YamlMapping dbTask1 = new YamlMapping();
 		dbTask1.add("name", "Install PostgreSQL");
@@ -525,37 +522,37 @@ class YamlIntegrationTest {
 		dbTask1.add("apt", dbApt);
 		dbTasks.add(dbTask1);
 		play2.add("tasks", dbTasks);
-
+		
 		playbook.add(play2);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (YamlWriter writer = new YamlWriter(new OutputProvider(output), DEFAULT_CONFIG)) {
 			writer.writeYaml(playbook);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		YamlElement result;
 		try (YamlReader reader = new YamlReader(new InputProvider(input), DEFAULT_CONFIG)) {
 			result = reader.readYaml();
 		}
-
+		
 		assertTrue(result.isYamlSequence());
 		YamlSequence resultSequence = result.getAsYamlSequence();
 		assertEquals(2, resultSequence.size());
 		assertEquals("Configure web servers", resultSequence.get(0).getAsYamlMapping().get("name").getAsYamlScalar().getAsString());
 	}
-
+	
 	@Test
 	void applicationYamlConfigRoundTrip() throws IOException {
 		YamlMapping config = new YamlMapping();
-
+		
 		YamlMapping spring = new YamlMapping();
-
+		
 		YamlMapping application = new YamlMapping();
 		application.add("name", "my-microservice");
 		application.add("version", "1.0.0");
 		spring.add("application", application);
-
+		
 		YamlMapping profiles = new YamlMapping();
 		profiles.add("active", "default");
 		YamlSequence profileGroups = new YamlSequence();
@@ -565,7 +562,7 @@ class YamlIntegrationTest {
 		profileGroups.add("prod");
 		profiles.add("group", profileGroups);
 		spring.add("profiles", profiles);
-
+		
 		YamlMapping datasource = new YamlMapping();
 		datasource.add("url", "jdbc:postgresql://localhost:5432/myapp");
 		datasource.add("username", "myapp");
@@ -579,7 +576,7 @@ class YamlIntegrationTest {
 		hikari.add("max-lifetime", 1800000);
 		datasource.add("hikari", hikari);
 		spring.add("datasource", datasource);
-
+		
 		YamlMapping jpa = new YamlMapping();
 		jpa.add("open-in-view", false);
 		jpa.add("show-sql", false);
@@ -597,7 +594,7 @@ class YamlIntegrationTest {
 		properties.add("hibernate", hibernateProps);
 		jpa.add("properties", properties);
 		spring.add("jpa", jpa);
-
+		
 		YamlMapping cache = new YamlMapping();
 		cache.add("type", "redis");
 		YamlMapping redis = new YamlMapping();
@@ -611,9 +608,9 @@ class YamlIntegrationTest {
 		redis.add("timeout", timeout);
 		cache.add("redis", redis);
 		spring.add("cache", cache);
-
+		
 		config.add("spring", spring);
-
+		
 		YamlMapping server = new YamlMapping();
 		server.add("port", 8080);
 		YamlMapping servlet = new YamlMapping();
@@ -630,7 +627,7 @@ class YamlIntegrationTest {
 		compression.add("mime-types", mimeTypes);
 		server.add("compression", compression);
 		config.add("server", server);
-
+		
 		YamlMapping logging = new YamlMapping();
 		YamlMapping level = new YamlMapping();
 		level.add("root", "INFO");
@@ -648,7 +645,7 @@ class YamlIntegrationTest {
 		fileConfig.add("max-history", 30);
 		logging.add("file", fileConfig);
 		config.add("logging", logging);
-
+		
 		YamlMapping management = new YamlMapping();
 		YamlMapping endpoints = new YamlMapping();
 		YamlMapping web = new YamlMapping();
@@ -670,53 +667,53 @@ class YamlIntegrationTest {
 		metrics.add("export", export);
 		management.add("metrics", metrics);
 		config.add("management", management);
-
+		
 		YamlMapping features = new YamlMapping();
 		features.add("feature-x-enabled", true);
 		features.add("feature-y-enabled", false);
 		features.add("rate-limiting-enabled", true);
 		features.add("caching-enabled", true);
 		config.add("features", features);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (YamlWriter writer = new YamlWriter(new OutputProvider(output), DEFAULT_CONFIG)) {
 			writer.writeYaml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		YamlElement result;
 		try (YamlReader reader = new YamlReader(new InputProvider(input), DEFAULT_CONFIG)) {
 			result = reader.readYaml();
 		}
-
+		
 		assertTrue(result.isYamlMapping());
 		YamlMapping resultMapping = result.getAsYamlMapping();
-
+		
 		assertEquals("my-microservice", resultMapping.get("spring").getAsYamlMapping().get("application").getAsYamlMapping().get("name").getAsYamlScalar().getAsString());
 		assertEquals(8080, resultMapping.get("server").getAsYamlMapping().get("port").getAsYamlScalar().getAsInteger());
-
+		
 		assertTrue(resultMapping.containsKey("spring"));
 		assertTrue(resultMapping.containsKey("server"));
 		assertTrue(resultMapping.containsKey("logging"));
 		assertTrue(resultMapping.containsKey("management"));
 		assertTrue(resultMapping.containsKey("features"));
 	}
-
+	
 	@Test
 	void anchorAndAliasComplexRoundTrip() throws IOException {
 		YamlMapping config = new YamlMapping();
-
+		
 		YamlMapping defaults = new YamlMapping();
 		defaults.add("timeout", 30000);
 		defaults.add("retries", 3);
 		defaults.add("max-connections", 100);
 		config.add("defaults", defaults);
-
+		
 		YamlMapping database = new YamlMapping();
 		database.add("host", "localhost");
 		database.add("port", 5432);
 		config.add("database-template", database);
-
+		
 		YamlMapping production = new YamlMapping();
 		production.add("name", "production");
 		YamlMapping prodConnection = new YamlMapping();
@@ -724,7 +721,7 @@ class YamlIntegrationTest {
 		prodConnection.add("port", 5432);
 		production.add("connection", prodConnection);
 		config.add("production", production);
-
+		
 		YamlMapping staging = new YamlMapping();
 		staging.add("name", "staging");
 		YamlMapping stagingConnection = new YamlMapping();
@@ -732,30 +729,30 @@ class YamlIntegrationTest {
 		stagingConnection.add("port", 5432);
 		staging.add("connection", stagingConnection);
 		config.add("staging", staging);
-
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try (YamlWriter writer = new YamlWriter(new OutputProvider(output), DEFAULT_CONFIG)) {
 			writer.writeYaml(config);
 		}
-
+		
 		ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 		YamlElement result;
 		try (YamlReader reader = new YamlReader(new InputProvider(input), DEFAULT_CONFIG)) {
 			result = reader.readYaml();
 		}
-
+		
 		assertTrue(result.isYamlMapping());
 		YamlMapping resultMapping = result.getAsYamlMapping();
-
+		
 		assertEquals(30000, resultMapping.get("defaults").getAsYamlMapping().get("timeout").getAsYamlScalar().getAsInteger());
 		assertEquals(3, resultMapping.get("defaults").getAsYamlMapping().get("retries").getAsYamlScalar().getAsInteger());
-
+		
 		assertEquals("localhost", resultMapping.get("database-template").getAsYamlMapping().get("host").getAsYamlScalar().getAsString());
 		assertEquals(5432, resultMapping.get("database-template").getAsYamlMapping().get("port").getAsYamlScalar().getAsInteger());
-
+		
 		assertEquals("production", resultMapping.get("production").getAsYamlMapping().get("name").getAsYamlScalar().getAsString());
 		assertEquals("prod-db.example.com", resultMapping.get("production").getAsYamlMapping().get("connection").getAsYamlMapping().get("host").getAsYamlScalar().getAsString());
-
+		
 		assertEquals("staging", resultMapping.get("staging").getAsYamlMapping().get("name").getAsYamlScalar().getAsString());
 		assertEquals("staging-db.example.com", resultMapping.get("staging").getAsYamlMapping().get("connection").getAsYamlMapping().get("host").getAsYamlScalar().getAsString());
 	}

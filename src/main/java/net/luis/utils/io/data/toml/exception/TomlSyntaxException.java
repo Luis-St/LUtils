@@ -21,7 +21,7 @@ package net.luis.utils.io.data.toml.exception;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Thrown to indicate that the syntax of a TOML string is invalid.<br>
+ * Thrown to indicate that the syntax of a toml string is invalid.<br>
  * The exception message will contain the details of the syntax error.<br>
  *
  * @author Luis-St
@@ -29,12 +29,12 @@ import org.jspecify.annotations.Nullable;
 public class TomlSyntaxException extends RuntimeException {
 	
 	/**
-	 * Constructs a new TOML syntax exception with no details.<br>
+	 * Constructs a new toml syntax exception with no details.<br>
 	 */
 	public TomlSyntaxException() {}
 	
 	/**
-	 * Constructs a new TOML syntax exception with the specified message.<br>
+	 * Constructs a new toml syntax exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
 	public TomlSyntaxException(@Nullable String message) {
@@ -42,7 +42,8 @@ public class TomlSyntaxException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new TOML syntax exception with the specified message and cause.<br>
+	 * Constructs a new toml syntax exception with the specified message and cause.<br>
+	 * 
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
@@ -51,7 +52,7 @@ public class TomlSyntaxException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new TOML syntax exception with the specified cause.<br>
+	 * Constructs a new toml syntax exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
 	public TomlSyntaxException(@Nullable Throwable cause) {

@@ -119,11 +119,19 @@ class IniBuilderTest {
 		IniDocument document = IniBuilder.document()
 			.addGlobalIf(true, "included", "yes")
 			.addGlobalIf(false, "excluded", "no")
+			.addGlobalIf(true, "boolIncluded", true)
+			.addGlobalIf(false, "boolExcluded", false)
+			.addGlobalIf(true, "numIncluded", 42)
+			.addGlobalIf(false, "numExcluded", 0)
 			.build();
 		
-		assertEquals(1, document.globalSize());
+		assertEquals(3, document.globalSize());
 		assertTrue(document.containsGlobalKey("included"));
 		assertFalse(document.containsGlobalKey("excluded"));
+		assertTrue(document.containsGlobalKey("boolIncluded"));
+		assertFalse(document.containsGlobalKey("boolExcluded"));
+		assertTrue(document.containsGlobalKey("numIncluded"));
+		assertFalse(document.containsGlobalKey("numExcluded"));
 	}
 	
 	@Test
@@ -291,6 +299,8 @@ class IniBuilderTest {
 		assertThrows(IllegalStateException.class, () -> builder.addGlobal("key", 42));
 		assertThrows(IllegalStateException.class, () -> builder.addGlobal("key", (IniElement) null));
 		assertThrows(IllegalStateException.class, () -> builder.addGlobalIf(true, "key", "value"));
+		assertThrows(IllegalStateException.class, () -> builder.addGlobalIf(true, "key", true));
+		assertThrows(IllegalStateException.class, () -> builder.addGlobalIf(true, "key", 42));
 		assertThrows(IllegalStateException.class, () -> builder.addSection(new IniSection("other")));
 	}
 	
@@ -314,15 +324,12 @@ class IniBuilderTest {
 	}
 	
 	@Test
-	void buildAutoClosesSections() {
-		IniDocument document = IniBuilder.document()
+	void buildThrowsWithUnclosedSections() {
+		IniBuilder builder = IniBuilder.document()
 			.startSection("section")
-			.add("key", "value")
-			// No endSection() call
-			.build();
-		
-		assertEquals(1, document.sectionCount());
-		assertEquals("value", document.requireSection("section").getAsString("key"));
+			.add("key", "value");
+		// No endSection() call
+		assertThrows(IllegalStateException.class, builder::build);
 	}
 	
 	@Test
@@ -378,6 +385,8 @@ class IniBuilderTest {
 		assertSame(builder, builder.addGlobal("key3", 42));
 		assertSame(builder, builder.addGlobal("key4", (IniElement) null));
 		assertSame(builder, builder.addGlobalIf(true, "key5", "value"));
+		assertSame(builder, builder.addGlobalIf(true, "key6", true));
+		assertSame(builder, builder.addGlobalIf(true, "key7", 42));
 		
 		assertSame(builder, builder.startSection("section"));
 		assertSame(builder, builder.add("sectionKey1", "value"));

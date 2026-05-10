@@ -19,7 +19,6 @@
 package net.luis.utils.io.codec.provider;
 
 import com.google.common.collect.Maps;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -64,63 +63,63 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	
 	@Override
 	@SuppressWarnings({ "ReturnOfNull", "DataFlowIssue" })
-	public <X extends Exception> @NonNull Object createNull(@NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull Object createNull(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return null;
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object createBoolean(boolean value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull Object createBoolean(boolean value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return value;
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object createByte(byte value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull Object createByte(byte value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return value;
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object createShort(short value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull Object createShort(short value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return value;
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object createInteger(int value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull Object createInteger(int value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return value;
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object createLong(long value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull Object createLong(long value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return value;
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object createFloat(float value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull Object createFloat(float value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return value;
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object createDouble(double value, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull Object createDouble(double value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return value;
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object createString(@Nullable String value, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Object createString(@Nullable String value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (value == null) {
@@ -130,7 +129,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object createList(@Nullable List<?> values, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Object createList(@Nullable List<?> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (values == null) {
@@ -140,14 +139,14 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object createMap(@NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> @NonNull Object createMap(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return Maps.newLinkedHashMap();
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object createMap(@Nullable Map<String, ?> values, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Object createMap(@Nullable Map<String, ?> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (values == null) {
@@ -157,7 +156,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> boolean isEmpty(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> boolean isEmpty(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -167,14 +166,14 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> boolean isNull(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) {
+	public <X extends Exception> boolean isNull(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		return type == null;
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -188,7 +187,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Byte getByte(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Byte getByte(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -202,7 +201,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Short getShort(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Short getShort(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -216,7 +215,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Integer getInteger(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Integer getInteger(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -230,7 +229,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Long getLong(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Long getLong(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -244,7 +243,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Float getFloat(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Float getFloat(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -258,7 +257,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Double getDouble(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Double getDouble(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -272,7 +271,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull String getString(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull String getString(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -287,7 +286,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <X extends Exception> @NonNull List<Object> getList(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull List<Object> getList(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -302,7 +301,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <X extends Exception> @NonNull Map<String, Object> getMap(@Nullable Object type, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Map<String, Object> getMap(@Nullable Object type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -316,7 +315,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> boolean has(@Nullable Object type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> boolean has(@Nullable Object type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -333,7 +332,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public <X extends Exception> @NonNull Object get(@Nullable Object type, @Nullable String key, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @NonNull Object get(@Nullable Object type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -351,7 +350,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <X extends Exception> void set(@Nullable Object type, @Nullable String key, @Nullable Object value, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> void set(@Nullable Object type, @Nullable String key, @Nullable Object value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (type == null) {
@@ -370,7 +369,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <X extends Exception> @UnknownNullability Object merge(@Nullable Object current, @Nullable Object value, @NotNull Function<String, X> exceptionConstructor) throws X {
+	public <X extends Exception> @UnknownNullability Object merge(@Nullable Object current, @Nullable Object value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
 		if (current == null) {

@@ -512,11 +512,43 @@ public final class Codecs {
 	 * @param <T> The type of the discriminator value
 	 * @return A new discriminated codec
 	 * @throws NullPointerException If discriminated field, discriminated codec, or provider is null
-	 * @see DiscriminatedCodec
+	 * @see NestedDiscriminatedCodec
 	 * @see DiscriminatedCodecProvider
 	 */
-	public static <C, T> @NonNull DiscriminatedCodec<C, T> discriminatedBy(@NonNull String discriminatedField, @NonNull Codec<T> discriminatedCodec, @NonNull DiscriminatedCodecProvider<C, T> provider) {
-		return new DiscriminatedCodec<>(discriminatedField, discriminatedCodec, provider);
+	public static <C, T> @NonNull NestedDiscriminatedCodec<C, T> discriminatedBy(@NonNull String discriminatedField, @NonNull Codec<T> discriminatedCodec, @NonNull DiscriminatedCodecProvider<C, T> provider) {
+		return new NestedDiscriminatedCodec<>(discriminatedField, discriminatedCodec, provider);
+	}
+	
+	/**
+	 * Creates a new flat discriminated codec that selects the appropriate codec based on a discriminator field at the same object level.<br>
+	 * Unlike {@link #discriminatedBy(String, Codec, DiscriminatedCodecProvider)}, this codec reads the discriminator
+	 * from the same map as the value fields, allowing the discriminated fields to be siblings of the discriminator.<br>
+	 * <p>
+	 *     This is particularly useful for polymorphic types where the discriminator and variant-specific fields
+	 *     are all at the same level in the serialized format.
+	 * </p>
+	 * <p>
+	 *     During encoding, the codec uses the discriminator getter to extract the discriminator value
+	 *     from the Java object, then delegates to the selected codec which writes all fields into the map.
+	 * </p>
+	 * <p>
+	 *     During decoding, the codec reads the discriminator field from the value map,
+	 *     then delegates to the selected codec which reads all fields from the same map.
+	 * </p>
+	 *
+	 * @param discriminatedField The name of the discriminator field in the value object
+	 * @param discriminatedCodec The codec to use for decoding the discriminator value
+	 * @param discriminatorGetter The function to extract the discriminator value from the Java object during encoding
+	 * @param provider The provider that maps discriminator values to their corresponding codecs
+	 * @param <C> The base type of values handled by this codec
+	 * @param <T> The type of the discriminator value
+	 * @return A new flat discriminated codec
+	 * @throws NullPointerException If any parameter is null
+	 * @see FlatDiscriminatedCodec
+	 * @see DiscriminatedCodecProvider
+	 */
+	public static <C, T> @NonNull FlatDiscriminatedCodec<C, T> flatDiscriminatedBy(@NonNull String discriminatedField, @NonNull Codec<T> discriminatedCodec, @NonNull Function<C, T> discriminatorGetter, @NonNull DiscriminatedCodecProvider<C, T> provider) {
+		return new FlatDiscriminatedCodec<>(discriminatedField, discriminatedCodec, provider, discriminatorGetter);
 	}
 	
 	/**

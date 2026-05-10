@@ -126,7 +126,7 @@ class JsonArrayTest {
 		int count = 0;
 		for (JsonElement element : array) {
 			count++;
-			assertTrue(element instanceof JsonPrimitive);
+			assertInstanceOf(JsonPrimitive.class, element);
 		}
 		assertEquals(3, count);
 		

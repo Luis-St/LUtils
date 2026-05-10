@@ -65,19 +65,6 @@ class YamlSequenceIndexOutOfBoundsExceptionTest {
 	}
 	
 	@Test
-	void constructorWithMessage() {
-		String message = "Custom error message";
-		YamlSequenceIndexOutOfBoundsException exception = new YamlSequenceIndexOutOfBoundsException(message);
-		assertEquals(message, exception.getMessage());
-	}
-	
-	@Test
-	void constructorWithNullMessage() {
-		YamlSequenceIndexOutOfBoundsException exception = new YamlSequenceIndexOutOfBoundsException(null);
-		assertNull(exception.getMessage());
-	}
-	
-	@Test
 	void isIndexOutOfBoundsException() {
 		YamlSequenceIndexOutOfBoundsException exception = new YamlSequenceIndexOutOfBoundsException();
 		assertInstanceOf(IndexOutOfBoundsException.class, exception);

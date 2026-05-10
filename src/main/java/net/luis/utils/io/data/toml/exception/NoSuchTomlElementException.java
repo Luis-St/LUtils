@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.NoSuchElementException;
 
 /**
- * Thrown to indicate that a TOML element does not exist.<br>
+ * Thrown to indicate that a toml element does not exist.<br>
  * The exception message will contain the details of the missing element.<br>
  *
  * @author Luis-St
@@ -31,12 +31,12 @@ import java.util.NoSuchElementException;
 public class NoSuchTomlElementException extends NoSuchElementException {
 	
 	/**
-	 * Constructs a new no such TOML element exception with no details.<br>
+	 * Constructs a new no such toml element exception with no details.<br>
 	 */
 	public NoSuchTomlElementException() {}
 	
 	/**
-	 * Constructs a new no such TOML element exception with the specified message.<br>
+	 * Constructs a new no such toml element exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
 	public NoSuchTomlElementException(@Nullable String message) {
@@ -44,7 +44,8 @@ public class NoSuchTomlElementException extends NoSuchElementException {
 	}
 	
 	/**
-	 * Constructs a new no such TOML element exception with the specified message and cause.<br>
+	 * Constructs a new no such toml element exception with the specified message and cause.<br>
+	 * 
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
@@ -53,7 +54,7 @@ public class NoSuchTomlElementException extends NoSuchElementException {
 	}
 	
 	/**
-	 * Constructs a new no such TOML element exception with the specified cause.<br>
+	 * Constructs a new no such toml element exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
 	public NoSuchTomlElementException(@Nullable Throwable cause) {
