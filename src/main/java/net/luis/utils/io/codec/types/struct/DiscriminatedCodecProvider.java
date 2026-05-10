@@ -28,7 +28,7 @@ import java.util.function.Function;
 
 /**
  * A provider interface for discriminated codecs that maps discriminator values to their corresponding codecs.<br>
- * This provider is used by {@link DiscriminatedCodec} to select the appropriate codec based on a discriminator value.<br>
+ * This provider is used by {@link NestedDiscriminatedCodec} and {@link FlatDiscriminatedCodec} to select the appropriate codec based on a discriminator value.<br>
  * <p>
  *     The provider supports two creation patterns:
  * </p>
