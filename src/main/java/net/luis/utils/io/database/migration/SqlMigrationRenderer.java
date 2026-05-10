@@ -23,8 +23,9 @@ import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.migration.operation.*;
-import net.luis.utils.io.database.rendering.SimpleSqlRendered;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -80,33 +81,33 @@ class SqlMigrationRenderer {
 		sql.append(" (");
 		
 		List<String> columnDefs = Lists.newArrayList();
-		List<Object> parameters = Lists.newArrayList();
-		
+		List<Pair<SqlType<?>, Object>> parameters = Lists.newArrayList();
+
 		for (SqlColumnDefinition colDef : op.columns()) {
 			columnDefs.add(this.renderColumnDefinition(colDef, parameters));
 		}
-		
+
 		if (!op.primaryKeyColumns().isEmpty()) {
 			String pkCols = op.primaryKeyColumns().stream()
 				.map(col -> this.dialect.quoteIdentifier(col.getName()))
 				.collect(Collectors.joining(", "));
 			columnDefs.add("PRIMARY KEY (" + pkCols + ")");
 		}
-		
+
 		sql.append(String.join(", ", columnDefs));
 		sql.append(")");
-		return new SimpleSqlRendered(List.of(sql.toString()), parameters);
+		return new SqlRendered(List.of(sql.toString()), parameters);
 	}
 	
-	private @NonNull String renderColumnDefinition(@NonNull SqlColumnDefinition colDef, @NonNull List<Object> parameters) throws SqlException {
+	private @NonNull String renderColumnDefinition(@NonNull SqlColumnDefinition colDef, @NonNull List<Pair<SqlType<?>, Object>> parameters) throws SqlException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.dialect.quoteIdentifier(colDef.column().getName()));
 		sb.append(" ").append(this.dialect.getTypeName(colDef.type()));
-		this.appendColumnOptions(sb, colDef.options(), parameters);
+		this.appendColumnOptions(sb, colDef.type(), colDef.options(), parameters);
 		return sb.toString();
 	}
 	
-	private void appendColumnOptions(@NonNull StringBuilder sb, @NonNull SqlColumnOptions options, @NonNull List<Object> parameters) throws SqlException {
+	private void appendColumnOptions(@NonNull StringBuilder sb, @NonNull SqlType<?> type, @NonNull SqlColumnOptions options, @NonNull List<Pair<SqlType<?>, Object>> parameters) throws SqlException {
 		if (options.notNull()) {
 			sb.append(" NOT NULL");
 		}
@@ -118,7 +119,7 @@ class SqlMigrationRenderer {
 		}
 		if (options.defaultValue().isPresent()) {
 			sb.append(" DEFAULT ?");
-			parameters.add(options.defaultValue().get());
+			parameters.add(Pair.of(type, options.defaultValue().get()));
 		}
 		if (options.referencesTable() != null) {
 			sb.append(" REFERENCES ").append(this.dialect.quoteIdentifier(options.referencesTable().getName()));
@@ -142,14 +143,14 @@ class SqlMigrationRenderer {
 	}
 	
 	private @NonNull SqlRendered renderAddColumn(@NonNull AddColumnOperation op) throws SqlException {
-		List<Object> parameters = Lists.newArrayList();
+		List<Pair<SqlType<?>, Object>> parameters = Lists.newArrayList();
 		StringBuilder sb = new StringBuilder("ALTER TABLE ");
 		sb.append(this.dialect.quoteIdentifier(op.column().getOwningTable().getName()));
 		sb.append(" ADD COLUMN ");
 		sb.append(this.dialect.quoteIdentifier(op.column().getName()));
 		sb.append(" ").append(this.dialect.getTypeName(op.type()));
-		this.appendColumnOptions(sb, op.options(), parameters);
-		return new SimpleSqlRendered(List.of(sb.toString()), parameters);
+		this.appendColumnOptions(sb, op.type(), op.options(), parameters);
+		return new SqlRendered(List.of(sb.toString()), parameters);
 	}
 	
 	private @NonNull SqlRendered renderDropColumn(@NonNull DropColumnOperation op) {
@@ -169,8 +170,8 @@ class SqlMigrationRenderer {
 		String tableName = this.dialect.quoteIdentifier(op.column().getOwningTable().getName());
 		String columnName = this.dialect.quoteIdentifier(op.column().getName());
 		List<String> statements = Lists.newArrayList();
-		List<Object> parameters = Lists.newArrayList();
-		
+		List<Pair<SqlType<?>, Object>> parameters = Lists.newArrayList();
+
 		for (SqlColumnAlteration alteration : op.alterations()) {
 			switch (alteration) {
 				case SetTypeAlteration setType -> {
@@ -182,14 +183,14 @@ class SqlMigrationRenderer {
 				}
 				case SetDefaultAlteration setDefault -> {
 					statements.add("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " SET DEFAULT ?");
-					parameters.add(setDefault.value());
+					parameters.add(Pair.of(op.column().getType(), setDefault.value()));
 				}
 				case DropDefaultAlteration ignored -> {
 					statements.add("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " DROP DEFAULT");
 				}
 			}
 		}
-		return new SimpleSqlRendered(statements, parameters);
+		return new SqlRendered(statements, parameters);
 	}
 	
 	private @NonNull SqlRendered renderCreateIndex(@NonNull CreateIndexOperation op) throws SqlException {
@@ -247,7 +248,7 @@ class SqlMigrationRenderer {
 		String sql = "ALTER TABLE " + this.dialect.quoteIdentifier(op.table().getName()) +
 			" ADD CONSTRAINT " + this.dialect.quoteIdentifier(op.name()) +
 			" CHECK (" + conditionRendered.sql() + ")";
-		return new SimpleSqlRendered(List.of(sql), conditionRendered.parameters());
+		return new SqlRendered(List.of(sql), conditionRendered.parameters());
 	}
 	
 	private @NonNull SqlRendered renderAddCompositePrimaryKey(@NonNull AddCompositePrimaryKeyOperation op) {

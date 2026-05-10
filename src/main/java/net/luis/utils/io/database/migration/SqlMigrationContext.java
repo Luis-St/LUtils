@@ -37,7 +37,7 @@ interface SqlMigrationContext {
 	
 	@NonNull SqlDialect dialect();
 	
-	<E> @NonNull SqlQueryProvider<E> queryProvider(@NonNull SqlTable<E> table);
+	<E> @NonNull SqlQueryProvider<E> from(@NonNull SqlTable<E> table) throws SqlException;
 	
 	void execute(@NonNull List<SqlRendered> statements) throws SqlException;
 }

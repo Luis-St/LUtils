@@ -41,5 +41,9 @@ public record AddUniqueConstraintOperation(
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(name, "Sql constraint name must not be null");
 		Objects.requireNonNull(columns, "Sql columns must not be null");
+		
+		if (columns.isEmpty()) {
+			throw new IllegalArgumentException("Unique constraint must have at least one column");
+		}
 	}
 }

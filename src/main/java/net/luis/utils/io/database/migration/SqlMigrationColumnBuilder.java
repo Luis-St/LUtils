@@ -66,16 +66,12 @@ public class SqlMigrationColumnBuilder<C> {
 	}
 	
 	public @NonNull SqlMigrationColumnBuilder<C> references(@NonNull SqlTable<?> table) {
-		Objects.requireNonNull(table, "Sql referenced table must not be null");
-		
-		this.referencesTable = table;
+		this.referencesTable = Objects.requireNonNull(table, "Sql referenced table must not be null");
 		return this;
 	}
 	
 	public @NonNull SqlMigrationColumnBuilder<C> check(@NonNull SqlCondition condition) {
-		Objects.requireNonNull(condition, "Sql check condition must not be null");
-		
-		this.check = condition;
+		this.check = Objects.requireNonNull(condition, "Sql check condition must not be null");
 		return this;
 	}
 	

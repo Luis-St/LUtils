@@ -21,6 +21,7 @@ package net.luis.utils.io.database.migration;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.migration.operation.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
@@ -49,8 +50,7 @@ public class SqlMigrationBuilder {
 	}
 	
 	public void createTable(@NonNull SqlTable<?> table, @NonNull Consumer<SqlMigrationTableBuilder> definition) {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		Objects.requireNonNull(definition, "Sql table definition must not be null");
+		Objects.requireNonNull(definition, "Sql table definition consumer must not be null");
 		
 		SqlMigrationTableBuilder builder = new SqlMigrationTableBuilder();
 		definition.accept(builder);
@@ -58,28 +58,19 @@ public class SqlMigrationBuilder {
 	}
 	
 	public void dropTable(@NonNull SqlTable<?> table) {
-		Objects.requireNonNull(table, "Sql table must not be null");
 		this.operations.add(new DropTableOperation(table));
 	}
 	
 	public void renameTable(@NonNull SqlTable<?> from, @NonNull SqlTable<?> to) {
-		Objects.requireNonNull(from, "Sql source table must not be null");
-		Objects.requireNonNull(to, "Sql target table must not be null");
-		
 		this.operations.add(new RenameTableOperation(from, to));
 	}
 	
 	public void addColumn(@NonNull SqlColumn<?, ?> column, @NonNull SqlType<?> type) {
-		Objects.requireNonNull(column, "Sql column must not be null");
-		Objects.requireNonNull(type, "Sql type must not be null");
-		
 		this.operations.add(new AddColumnOperation(column, type, SqlColumnOptions.EMPTY));
 	}
 	
 	public <C> void addColumn(@NonNull SqlColumn<?, C> column, @NonNull SqlType<C> type, @NonNull Consumer<SqlMigrationColumnBuilder<C>> options) {
-		Objects.requireNonNull(column, "Sql column must not be null");
-		Objects.requireNonNull(type, "Sql type must not be null");
-		Objects.requireNonNull(options, "Sql column options must not be null");
+		Objects.requireNonNull(options, "Sql column options consumer must not be null");
 		
 		SqlMigrationColumnBuilder<C> builder = new SqlMigrationColumnBuilder<>();
 		options.accept(builder);
@@ -87,20 +78,15 @@ public class SqlMigrationBuilder {
 	}
 	
 	public void dropColumn(@NonNull SqlColumn<?, ?> column) {
-		Objects.requireNonNull(column, "Sql column must not be null");
 		this.operations.add(new DropColumnOperation(column));
 	}
 	
 	public void renameColumn(@NonNull SqlColumn<?, ?> from, @NonNull SqlColumn<?, ?> to) {
-		Objects.requireNonNull(from, "Sql source column must not be null");
-		Objects.requireNonNull(to, "Sql target column must not be null");
-		
 		this.operations.add(new RenameColumnOperation(from, to));
 	}
 	
 	public <C> void alterColumn(@NonNull SqlColumn<?, C> column, @NonNull Consumer<SqlMigrationColumnAlter<C>> changes) {
-		Objects.requireNonNull(column, "Sql column must not be null");
-		Objects.requireNonNull(changes, "Sql column alterations must not be null");
+		Objects.requireNonNull(changes, "Sql column alterations consumer must not be null");
 		
 		SqlMigrationColumnAlter<C> alter = new SqlMigrationColumnAlter<>();
 		changes.accept(alter);
@@ -108,9 +94,7 @@ public class SqlMigrationBuilder {
 	}
 	
 	public void createIndex(@NonNull SqlTable<?> table, @NonNull String name, @NonNull Consumer<SqlMigrationIndexBuilder> definition) {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		Objects.requireNonNull(name, "Sql index name must not be null");
-		Objects.requireNonNull(definition, "Sql index definition must not be null");
+		Objects.requireNonNull(definition, "Sql index definition consumer must not be null");
 		
 		SqlMigrationIndexBuilder builder = new SqlMigrationIndexBuilder(name);
 		definition.accept(builder);
@@ -119,24 +103,15 @@ public class SqlMigrationBuilder {
 	}
 	
 	public void dropIndex(@NonNull String name) {
-		Objects.requireNonNull(name, "Sql index name must not be null");
 		this.operations.add(new DropIndexOperation(name));
 	}
 	
 	public void renameIndex(@NonNull String from, @NonNull String to) {
-		Objects.requireNonNull(from, "Sql source index name must not be null");
-		Objects.requireNonNull(to, "Sql target index name must not be null");
-		
 		this.operations.add(new RenameIndexOperation(from, to));
 	}
 	
 	public void addUniqueConstraint(@NonNull SqlTable<?> table, @NonNull String name, SqlColumn<?, ?> @NonNull ... columns) {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		Objects.requireNonNull(name, "Sql constraint name must not be null");
 		Objects.requireNonNull(columns, "Sql columns must not be null");
-		if (columns.length == 0) {
-			throw new IllegalArgumentException("Unique constraint must have at least one column");
-		}
 		
 		this.operations.add(new AddUniqueConstraintOperation(table, name, List.of(columns)));
 	}
@@ -150,44 +125,29 @@ public class SqlMigrationBuilder {
 		@NonNull SqlReferentialAction onDelete,
 		@NonNull SqlReferentialAction onUpdate
 	) {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		Objects.requireNonNull(name, "Sql constraint name must not be null");
-		Objects.requireNonNull(columns, "Sql columns must not be null");
-		Objects.requireNonNull(referencedTable, "Sql referenced table must not be null");
 		Objects.requireNonNull(referencedColumns, "Sql referenced columns must not be null");
-		Objects.requireNonNull(onDelete, "Sql on delete action must not be null");
-		Objects.requireNonNull(onUpdate, "Sql on update action must not be null");
 		
 		this.operations.add(new AddForeignKeyOperation(table, name, List.of(columns), referencedTable, List.of(referencedColumns), onDelete, onUpdate));
 	}
 	
 	public void addCheckConstraint(@NonNull SqlTable<?> table, @NonNull String name, @NonNull SqlCondition condition) {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		Objects.requireNonNull(name, "Sql constraint name must not be null");
-		Objects.requireNonNull(condition, "Sql condition must not be null");
 		this.operations.add(new AddCheckConstraintOperation(table, name, condition));
 	}
 	
 	public void addCompositePrimaryKey(@NonNull SqlTable<?> table, @NonNull String name, SqlColumn<?, ?> @NonNull ... columns) {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		Objects.requireNonNull(name, "Sql constraint name must not be null");
 		Objects.requireNonNull(columns, "Sql columns must not be null");
-		if (columns.length == 0) {
-			throw new IllegalArgumentException("Composite primary key must have at least one column");
-		}
 		this.operations.add(new AddCompositePrimaryKeyOperation(table, name, List.of(columns)));
 	}
 	
 	public void dropConstraint(@NonNull SqlTable<?> table, @NonNull String name) {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		Objects.requireNonNull(name, "Sql constraint name must not be null");
 		this.operations.add(new DropConstraintOperation(table, name));
 	}
 	
-	public <E> @NonNull SqlQueryProvider<E> data(@NonNull SqlTable<E> table) {
+	public <E> @NonNull SqlQueryProvider<E> data(@NonNull SqlTable<E> table) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
+		
 		this.operations.add(new ExecuteDataOperation(table));
-		return this.context.queryProvider(table);
+		return this.context.from(table);
 	}
 	
 	@NonNull List<SqlMigrationOperation> getOperations() {

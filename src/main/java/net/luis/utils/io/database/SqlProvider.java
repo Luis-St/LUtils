@@ -41,7 +41,7 @@ public interface SqlProvider {
 	
 	void dropSchema(@NotNull String name, boolean cascade) throws SqlException;
 	
-	<T> @NonNull SqlTableProvider<T> table(@NonNull SqlTable<T> table);
+	<T> @NonNull SqlTableProvider<T> table(@NonNull SqlTable<T> table) throws SqlException;
 	
-	<T> @NonNull SqlQueryProvider<T> from(@NonNull SqlTable<T> table);
+	<T> @NonNull SqlQueryProvider<T> from(@NonNull SqlTable<T> table) throws SqlException;
 }

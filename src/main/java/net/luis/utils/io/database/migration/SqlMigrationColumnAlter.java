@@ -24,7 +24,6 @@ import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -39,8 +38,6 @@ public class SqlMigrationColumnAlter<C> {
 	SqlMigrationColumnAlter() {}
 	
 	public @NonNull SqlMigrationColumnAlter<C> setType(@NonNull SqlType<C> type) {
-		Objects.requireNonNull(type, "Sql type must not be null");
-		
 		this.alterations.add(new SetTypeAlteration(type));
 		return this;
 	}
@@ -51,8 +48,6 @@ public class SqlMigrationColumnAlter<C> {
 	}
 	
 	public @NonNull SqlMigrationColumnAlter<C> setDefault(@NonNull C value) {
-		Objects.requireNonNull(value, "Sql default value must not be null");
-		
 		this.alterations.add(new SetDefaultAlteration(value));
 		return this;
 	}

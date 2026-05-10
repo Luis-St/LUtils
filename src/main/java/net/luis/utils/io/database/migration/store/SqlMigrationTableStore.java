@@ -18,10 +18,12 @@
 
 package net.luis.utils.io.database.migration.store;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.migration.SqlMigrationInfo;
 import net.luis.utils.io.database.migration.SqlMigrationStatus;
 import net.luis.utils.util.Version;
+import org.intellij.lang.annotations.Language;
 import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
@@ -39,6 +41,33 @@ import java.util.Objects;
 public class SqlMigrationTableStore implements SqlMigrationStore {
 	
 	private static final String TABLE_NAME = "_sql_migrations";
+	@Language("SQL")
+	private static final String SQL_INITIALIZE = """
+		CREATE TABLE IF NOT EXISTS {SqlTable} (
+			version VARCHAR(64) NOT NULL PRIMARY KEY,
+			description VARCHAR(256) NOT NULL,
+			status VARCHAR(32) NOT NULL,
+			applied_at TIMESTAMP NULL,
+			checksum BIGINT NOT NULL
+		);
+		""";
+	@Language("SQL")
+	private static final String SQL_LOAD = """
+		SELECT version, description, status, applied_at, checksum
+		FROM {SqlTable}
+		ORDER BY version;
+		""";
+	@Language("SQL")
+	private static final String SQL_SAVE = """
+		INSERT INTO {SqlTable} (version, description, status, applied_at, checksum)
+		VALUES (?, ?, ?, ?, ?);
+		""";
+	@Language("SQL")
+	private static final String SQL_UPDATE = """
+		UPDATE {SqlTable}
+		SET status = ?, applied_at = ?
+		WHERE version = ?;
+		""";
 	
 	private final DataSource dataSource;
 	
@@ -48,16 +77,11 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 	
 	@Override
 	public void initialize() throws SqlException {
-		String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
-			"version VARCHAR(64) NOT NULL PRIMARY KEY, " +
-			"description VARCHAR(256) NOT NULL, " +
-			"status VARCHAR(32) NOT NULL, " +
-			"applied_at TIMESTAMP NULL, " +
-			"checksum BIGINT NOT NULL" +
-			")";
-		try (Connection connection = this.dataSource.getConnection();
-		     Statement statement = connection.createStatement()) {
-			statement.execute(sql);
+		try (
+			Connection connection = this.dataSource.getConnection();
+			Statement statement = connection.createStatement()
+		) {
+			statement.execute(SQL_INITIALIZE.replace("{SqlTable}", TABLE_NAME));
 		} catch (SQLException e) {
 			throw new SqlException("Failed to initialize migration table", e);
 		}
@@ -65,11 +89,13 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 	
 	@Override
 	public @NonNull List<SqlMigrationInfo> loadAll() throws SqlException {
-		String sql = "SELECT version, description, status, applied_at, checksum FROM " + TABLE_NAME + " ORDER BY version";
-		try (Connection connection = this.dataSource.getConnection();
-		     Statement statement = connection.createStatement();
-		     ResultSet resultSet = statement.executeQuery(sql)) {
-			List<SqlMigrationInfo> results = new java.util.ArrayList<>();
+		try (
+			Connection connection = this.dataSource.getConnection();
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(SQL_LOAD.replace("{SqlTable}", TABLE_NAME))
+		) {
+			List<SqlMigrationInfo> results = Lists.newArrayList();
+			
 			while (resultSet.next()) {
 				Version version = Version.parse(resultSet.getString("version"));
 				String description = resultSet.getString("description");
@@ -77,6 +103,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 				Timestamp timestamp = resultSet.getTimestamp("applied_at");
 				Instant appliedAt = timestamp != null ? timestamp.toInstant() : null;
 				long checksum = resultSet.getLong("checksum");
+				
 				results.add(new SqlMigrationInfo(version, description, status, appliedAt, checksum));
 			}
 			return List.copyOf(results);
@@ -88,9 +115,11 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 	@Override
 	public void save(@NonNull SqlMigrationInfo info) throws SqlException {
 		Objects.requireNonNull(info, "Sql migration info must not be null");
-		String sql = "INSERT INTO " + TABLE_NAME + " (version, description, status, applied_at, checksum) VALUES (?, ?, ?, ?, ?)";
-		try (Connection connection = this.dataSource.getConnection();
-		     PreparedStatement statement = connection.prepareStatement(sql)) {
+		
+		try (
+			Connection connection = this.dataSource.getConnection();
+			PreparedStatement statement = connection.prepareStatement(SQL_SAVE.replace("{SqlTable}", TABLE_NAME))
+		) {
 			statement.setString(1, info.version().toString());
 			statement.setString(2, info.description());
 			statement.setString(3, info.status().name());
@@ -106,10 +135,10 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 	public void update(@NonNull Version version, @NonNull SqlMigrationStatus status) throws SqlException {
 		Objects.requireNonNull(version, "Sql migration version must not be null");
 		Objects.requireNonNull(status, "Sql migration status must not be null");
-		String sql = "UPDATE " + TABLE_NAME + " SET status = ?, applied_at = ? WHERE version = ?";
+		
 		Instant now = status == SqlMigrationStatus.APPLIED ? Instant.now() : null;
-		try (Connection connection = this.dataSource.getConnection();
-		     PreparedStatement statement = connection.prepareStatement(sql)) {
+		
+		try (Connection connection = this.dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(SQL_UPDATE.replace("{SqlTable}", TABLE_NAME))) {
 			statement.setString(1, status.name());
 			statement.setTimestamp(2, now != null ? Timestamp.from(now) : null);
 			statement.setString(3, version.toString());

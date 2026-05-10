@@ -61,16 +61,12 @@ public class SqlMigrationIndexBuilder {
 	}
 	
 	public @NonNull SqlMigrationIndexBuilder method(@NonNull SqlIndexMethod method) {
-		Objects.requireNonNull(method, "Sql index method must not be null");
-		
-		this.method = method;
+		this.method = Objects.requireNonNull(method, "Sql index method must not be null");
 		return this;
 	}
 	
 	public @NonNull SqlMigrationIndexBuilder where(@NonNull SqlCondition condition) {
-		Objects.requireNonNull(condition, "Sql where condition must not be null");
-		
-		this.whereCondition = condition;
+		this.whereCondition = Objects.requireNonNull(condition, "Sql where condition must not be null");
 		return this;
 	}
 	

@@ -24,12 +24,16 @@ import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.*;
+import net.luis.utils.io.database.migration.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.query.row.SqlRow2;
+import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
+import net.luis.utils.util.Version;
+import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
 import java.time.Duration;
@@ -227,29 +231,7 @@ public class DatabaseTest {
 		}
 	}
 	
-/*	void postgresSpecific() throws SqlException {
-		PostgresTable<Person> pgTable = PostgresTable.of("person", Person.class);
-		
-		try (SqlDatabase db = SqlDatabase.builder().build()) {
-			// Postgres-specific query provider
-			PostgresQueryProvider<Person> pgPersons = PostgresQueryProvider.from(db, pgTable);
-			
-			// Postgres-specific: TRUNCATE CASCADE
-			pgPersons.truncateCascade();
-			
-			// Postgres-specific: ON CONFLICT DO NOTHING
-			pgPersons.insert(new Person(1, "Alice", "alice@example.com", 0, Instant.now()))
-				.onConflictDoNothing()
-				.execute();
-			
-			// Postgres-specific: DISTINCT ON
-			pgPersons.select()
-				.distinctOn(NAME)
-				.fetch();
-		}
-	}*/
-	
-/*	void compositePrimaryKeyExample() throws SqlException {
+	void compositePrimaryKeyExample() throws SqlException {
 		SqlMigration migration = new SqlMigration() {
 			@Override
 			public @NonNull Version version() {
@@ -264,16 +246,16 @@ public class DatabaseTest {
 			@Override
 			public void up(@NonNull SqlMigrationBuilder builder) throws SqlException {
 				builder.createTable(ROLE_TABLE, table -> {
-					table.column(ROLE_ID, SqlColumnType.INTEGER, col -> col.notNull().autoIncrement());
-					table.column(ROLE_NAME, SqlColumnType.VARCHAR, col -> col.notNull());
+					table.column(ROLE_ID, SqlTypes.INTEGER, col -> col.notNull().autoIncrement());
+					table.column(ROLE_NAME, SqlTypes.STRING.configure(SqlParameter.length(255)), SqlMigrationColumnBuilder::notNull);
 					table.primaryKey(ROLE_ID);
 				});
 				
 				// Junction table: composite PK over two FK columns (neither is SqlPrimaryKeyColumn)
 				builder.createTable(PERSON_ROLE_TABLE, table -> {
-					table.column(PR_PERSON_ID, SqlColumnType.INTEGER, col -> col.notNull());
-					table.column(PR_ROLE_ID, SqlColumnType.INTEGER, col -> col.notNull());
-					table.compositePrimaryKey(PR_PERSON_ID, PR_ROLE_ID);
+					table.column(PR_PERSON_ID, SqlTypes.INTEGER, SqlMigrationColumnBuilder::notNull);
+					table.column(PR_ROLE_ID, SqlTypes.INTEGER, SqlMigrationColumnBuilder::notNull);
+					table.primaryKey(PR_PERSON_ID, PR_ROLE_ID);
 				});
 			}
 			
@@ -306,9 +288,9 @@ public class DatabaseTest {
 				builder.dropConstraint(PERSON_ROLE_TABLE, "pk_person_role");
 			}
 		};
-	}*/
+	}
 	
-/*	void migrationExample() throws SqlException {
+	void migrationExample() throws SqlException {
 		SqlMigration migration = new SqlMigration() {
 			@Override
 			public @NonNull Version version() {
@@ -323,14 +305,19 @@ public class DatabaseTest {
 			@Override
 			public void up(@NonNull SqlMigrationBuilder builder) throws SqlException {
 				builder.createTable(PERSON_TABLE, table -> {
-					table.column(ID, SqlColumnType.BIGINT, col -> col.notNull().autoIncrement());
-					table.column(NAME, SqlColumnType.VARCHAR, col -> col.notNull());
-					table.column(EMAIL, SqlColumnType.VARCHAR, col -> col.notNull().unique());
-					table.column(VERSION, SqlColumnType.BIGINT, col -> col.notNull().defaultValue(0L));
-					table.column(CREATED_AT, SqlColumnType.TIMESTAMP, col -> col.notNull());
+					table.column(ID, SqlTypes.INTEGER, col -> col.notNull().autoIncrement());
+					table.column(NAME, SqlTypes.STRING.configure(SqlParameter.length(255)), SqlMigrationColumnBuilder::notNull);
+					table.column(EMAIL, SqlTypes.STRING.configure(SqlParameter.length(255)), col -> col.notNull().unique());
+					table.column(VERSION, SqlTypes.LONG, col -> col.notNull().defaultValue(0L));
+					table.column(CREATED_AT, SqlTypes.INSTANT.configure(SqlParameter.fractional(0)), SqlMigrationColumnBuilder::notNull);
 					table.primaryKey(ID);
 				});
+				
 				builder.createIndex(PERSON_TABLE, "idx_person_email", idx -> idx.columns(EMAIL).unique());
+				
+				builder.data(PERSON_TABLE).insert(
+					new Person(1, "Admin", "admin@example.com", 1, Instant.now())
+				);
 			}
 			
 			@Override
@@ -340,7 +327,7 @@ public class DatabaseTest {
 			}
 		};
 		
-		try (SqlDatabase db = SqlDatabase.builder().build()) {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
 			SqlMigrationRunner runner = SqlMigrationRunner.of(db);
 			runner.register(migration);
 			
@@ -353,5 +340,5 @@ public class DatabaseTest {
 			// Check migration status
 			List<SqlMigrationInfo> status = runner.status();
 		}
-	}*/
+	}
 }

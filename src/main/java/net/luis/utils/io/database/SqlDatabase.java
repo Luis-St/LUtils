@@ -34,6 +34,7 @@ import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Objects;
 
@@ -119,8 +120,14 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	}
 	
 	@Override
-	public @NonNull <T> SqlQueryProvider<T> from(@NonNull SqlTable<T> table) {
-		return null;
+	public @NonNull <T> SqlQueryProvider<T> from(@NonNull SqlTable<T> table) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		
+		try {
+			return new SqlQueryProvider<>(table, this.dialect, this.dataSource.getConnection(), this.queryTimeout);
+		} catch (SQLException e) {
+			throw new SqlConnectionException("Failed to obtain connection for table " + table.getName(), e);
+		}
 	}
 	
 	public @NonNull SqlTransaction beginTransaction() throws SqlTransactionException {
