@@ -29,7 +29,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
- * A codec for encoding and decoding polymorphic values using a discriminator field.<br>
+ * A codec for encoding and decoding polymorphic values using a discriminator field in the parent object.<br>
  * This codec selects the appropriate codec based on a discriminator field value in the parent object.<br>
  * <p>
  *     The discriminator field is read from the parent object to determine which codec
@@ -52,8 +52,7 @@ import java.util.Objects;
  * // Define polymorphic payment method details
  * interface PaymentMethodDetails {}
  * record PayPal(String mail) implements PaymentMethodDetails {}
- * record CreditCard(String cardNumber, String cardHolder, LocalDate expiryDate, String cvv)
- *     implements PaymentMethodDetails {}
+ * record CreditCard(String cardNumber, String cardHolder, LocalDate expiryDate, String cvv) implements PaymentMethodDetails {}
  *
  * // Define container with discriminator field
  * record PaymentMethod(String type, PaymentMethodDetails details) {}
@@ -85,13 +84,14 @@ import java.util.Objects;
  * ).create(PaymentMethod::new);
  * }</pre>
  *
+ * @see FlatDiscriminatedCodec
+ *
  * @author Luis-St
  *
  * @param <C> The base type of values handled by this codec
  * @param <T> The type of the discriminator value
  */
-
-public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
+public class NestedDiscriminatedCodec<C, T> extends AbstractCodec<C> {
 	
 	/**
 	 * The name of the discriminator field in the parent object.<br>
@@ -107,14 +107,14 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
 	private final DiscriminatedCodecProvider<C, T> provider;
 	
 	/**
-	 * Constructs a new discriminated codec using the given discriminator field, codec, and provider.<br>
+	 * Constructs a new nested discriminated codec using the given discriminator field, codec, and provider.<br>
 	 *
 	 * @param discriminatedField The name of the discriminator field in the parent object
 	 * @param discriminatedCodec The codec to use for encoding/decoding the discriminator value
 	 * @param provider The provider that maps discriminator values to their corresponding codecs
 	 * @throws NullPointerException If discriminated field, discriminated codec, or provider is null
 	 */
-	public DiscriminatedCodec(@NonNull String discriminatedField, @NonNull Codec<T> discriminatedCodec, @NonNull DiscriminatedCodecProvider<C, T> provider) {
+	public NestedDiscriminatedCodec(@NonNull String discriminatedField, @NonNull Codec<T> discriminatedCodec, @NonNull DiscriminatedCodecProvider<C, T> provider) {
 		this.discriminatedField = Objects.requireNonNull(discriminatedField, "Discriminated field must not be null");
 		this.discriminatedCodec = Objects.requireNonNull(discriminatedCodec, "Discriminated codec must not be null");
 		this.provider = Objects.requireNonNull(provider, "Provider must not be null");
@@ -135,7 +135,6 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
 		
 		R discriminatorField;
 		try {
-			// TypeProvider#get returns null if the field is not found, do a pre-check
 			if (!provider.has(current, this.discriminatedField, EncoderException::new)) {
 				throw new EncoderException("Discriminator field '" + this.discriminatedField + "' not found", this);
 			}
@@ -169,7 +168,6 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
 		
 		R discriminatorField;
 		try {
-			// TypeProvider#get returns null if the field is not found, do a pre-check
 			if (!provider.has(current, this.discriminatedField, DecoderException::new)) {
 				throw new DecoderException("Discriminator field '" + this.discriminatedField + "' not found", this);
 			}
@@ -196,7 +194,7 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
-		if (!(o instanceof DiscriminatedCodec<?, ?> that)) return false;
+		if (!(o instanceof NestedDiscriminatedCodec<?, ?> that)) return false;
 		
 		if (!this.discriminatedField.equals(that.discriminatedField)) return false;
 		if (!this.discriminatedCodec.equals(that.discriminatedCodec)) return false;
@@ -210,7 +208,7 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C> {
 	
 	@Override
 	public String toString() {
-		return "DiscriminatedCodec[" + this.discriminatedField + "," + this.discriminatedCodec + "," + this.provider + "]";
+		return "NestedDiscriminatedCodec[" + this.discriminatedField + "," + this.discriminatedCodec + "," + this.provider + "]";
 	}
 	//endregion
 }

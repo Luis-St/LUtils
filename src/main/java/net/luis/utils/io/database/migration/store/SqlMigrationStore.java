@@ -16,11 +16,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.migration;
+package net.luis.utils.io.database.migration.store;
 
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.migration.SqlMigrationInfo;
+import net.luis.utils.io.database.migration.SqlMigrationStatus;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
+
+import java.util.List;
 
 /**
  *
@@ -28,13 +32,13 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlMigration {
+public interface SqlMigrationStore {
 	
-	@NonNull Version version();
+	void initialize() throws SqlException;
 	
-	@NonNull String description();
+	@NonNull List<SqlMigrationInfo> loadAll() throws SqlException;
 	
-	void up(@NonNull SqlMigrationBuilder builder) throws SqlException;
+	void save(@NonNull SqlMigrationInfo info) throws SqlException;
 	
-	void down(@NonNull SqlMigrationBuilder builder) throws SqlException;
+	void update(@NonNull Version version, @NonNull SqlMigrationStatus status) throws SqlException;
 }

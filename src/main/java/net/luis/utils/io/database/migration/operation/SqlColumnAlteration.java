@@ -16,11 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.migration;
-
-import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.util.Version;
-import org.jspecify.annotations.NonNull;
+package net.luis.utils.io.database.migration.operation;
 
 /**
  *
@@ -28,13 +24,4 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlMigration {
-	
-	@NonNull Version version();
-	
-	@NonNull String description();
-	
-	void up(@NonNull SqlMigrationBuilder builder) throws SqlException;
-	
-	void down(@NonNull SqlMigrationBuilder builder) throws SqlException;
-}
+public sealed interface SqlColumnAlteration permits SetTypeAlteration, SetNullableAlteration, SetDefaultAlteration, DropDefaultAlteration {}

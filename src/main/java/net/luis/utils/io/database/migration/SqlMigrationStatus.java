@@ -18,23 +18,15 @@
 
 package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.util.Version;
-import org.jspecify.annotations.NonNull;
-
 /**
  *
  * @author Luis-St
  *
  */
 
-public interface SqlMigration {
+public enum SqlMigrationStatus {
 	
-	@NonNull Version version();
-	
-	@NonNull String description();
-	
-	void up(@NonNull SqlMigrationBuilder builder) throws SqlException;
-	
-	void down(@NonNull SqlMigrationBuilder builder) throws SqlException;
+	PENDING,
+	APPLIED,
+	ROLLED_BACK
 }

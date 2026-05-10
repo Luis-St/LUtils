@@ -18,9 +18,14 @@
 
 package net.luis.utils.io.database.migration;
 
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.util.Version;
+import net.luis.utils.io.database.query.SqlQueryProvider;
+import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
+
+import java.util.List;
 
 /**
  *
@@ -28,13 +33,11 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlMigration {
+interface SqlMigrationContext {
 	
-	@NonNull Version version();
+	@NonNull SqlDialect dialect();
 	
-	@NonNull String description();
+	<E> @NonNull SqlQueryProvider<E> queryProvider(@NonNull SqlTable<E> table);
 	
-	void up(@NonNull SqlMigrationBuilder builder) throws SqlException;
-	
-	void down(@NonNull SqlMigrationBuilder builder) throws SqlException;
+	void execute(@NonNull List<SqlRendered> statements) throws SqlException;
 }

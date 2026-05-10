@@ -16,7 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.migration;
+package net.luis.utils.io.database.migration.operation;
+
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.type.SqlType;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -24,5 +30,15 @@ package net.luis.utils.io.database.migration;
  *
  */
 
-public interface SqlTableMigration extends SqlMigration {
+public record SqlColumnDefinition(
+	@NonNull SqlColumn<?, ?> column,
+	@NonNull SqlType<?> type,
+	@NonNull SqlColumnOptions options
+) {
+	
+	public SqlColumnDefinition {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
+		Objects.requireNonNull(options, "Sql column options must not be null");
+	}
 }
