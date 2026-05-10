@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.migration;
+package net.luis.utils.io.database.migration.operation;
 
 /**
  *
@@ -24,5 +24,4 @@ package net.luis.utils.io.database.migration;
  *
  */
 
-public interface SqlColumnMigration extends SqlMigration {
-}
+public record SetNullableAlteration(boolean nullable) implements SqlColumnAlteration {}

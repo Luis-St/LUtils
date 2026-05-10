@@ -16,11 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.migration;
+package net.luis.utils.io.database.migration.operation;
 
-import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.util.Version;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -28,13 +30,15 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlMigration {
+public record AddColumnOperation(
+	@NonNull SqlColumn<?, ?> column,
+	@NonNull SqlType<?> type,
+	@NonNull SqlColumnOptions options
+) implements SqlMigrationOperation {
 	
-	@NonNull Version version();
-	
-	@NonNull String description();
-	
-	void up(@NonNull SqlMigrationBuilder builder) throws SqlException;
-	
-	void down(@NonNull SqlMigrationBuilder builder) throws SqlException;
+	public AddColumnOperation {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
+		Objects.requireNonNull(options, "Sql options must not be null");
+	}
 }

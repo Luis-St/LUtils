@@ -18,9 +18,12 @@
 
 package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.time.Instant;
+import java.util.Objects;
 
 /**
  *
@@ -28,13 +31,17 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlMigration {
+public record SqlMigrationInfo(
+	@NonNull Version version,
+	@NonNull String description,
+	@NonNull SqlMigrationStatus status,
+	@Nullable Instant appliedAt,
+	long checksum
+) {
 	
-	@NonNull Version version();
-	
-	@NonNull String description();
-	
-	void up(@NonNull SqlMigrationBuilder builder) throws SqlException;
-	
-	void down(@NonNull SqlMigrationBuilder builder) throws SqlException;
+	public SqlMigrationInfo {
+		Objects.requireNonNull(version, "Sql migration version must not be null");
+		Objects.requireNonNull(description, "Sql migration description must not be null");
+		Objects.requireNonNull(status, "Sql migration status must not be null");
+	}
 }

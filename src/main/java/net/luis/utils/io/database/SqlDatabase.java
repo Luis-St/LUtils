@@ -77,6 +77,10 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		return new SqlDatabaseBuilder(dataSource, dialect);
 	}
 	
+	public @NonNull DataSource getDataSource() {
+		return this.dataSource;
+	}
+	
 	public @NotNull SqlDialect getDialect() {
 		return this.dialect;
 	}
