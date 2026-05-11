@@ -422,6 +422,10 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlLogFunction(var value, @Nullable SqlExpression<? extends Number> base) -> base != null ? this.renderFunction("LOG", base, value) : this.renderFunction("LN", value);
 			case SqlModFunction(var dividend, var divisor) -> this.renderFunction("MOD", dividend, divisor);
 			case SqlNegateFunction<?> func -> renderer -> renderer.literal("-").openingBracket().rendered(func.expression().toSql(this)).closingBracket().toSql();
+			case SqlNumericAddFunction(var expression, var addend) -> this.renderInfix(expression, "+", addend);
+			case SqlNumericDivideFunction(var expression, var divisor) -> this.renderInfix(expression, "/", divisor);
+			case SqlNumericMultiplyFunction(var expression, var multiplier) -> this.renderInfix(expression, "*", multiplier);
+			case SqlNumericSubtractFunction(var expression, var subtrahend) -> this.renderInfix(expression, "-", subtrahend);
 			case SqlPiFunction _ -> this.renderLiteral("PI()");
 			case SqlPowFunction(var value, var exponent) -> this.renderFunction("POWER", value, exponent);
 			case SqlRadiansFunction func -> this.renderFunction("RADIANS", func.expression());
@@ -463,7 +467,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderTemporalFunction(@NonNull SqlTemporalFunction<?> function) throws SqlDialectUnsupportedRenderingException {
 		return switch (function) {
-			case SqlAddFunction(var firstSummand, var secondSummand, _) -> this.renderInfix(firstSummand, "+", secondSummand);
+			case SqlTemporalAddFunction(var firstSummand, var secondSummand, _) -> this.renderInfix(firstSummand, "+", secondSummand);
 			case SqlCurrentDateFunction<?> _ -> this.renderLiteral("CURRENT_DATE");
 			case SqlCurrentTimeFunction<?> _ -> this.renderLiteral("CURRENT_TIME");
 			case SqlCurrentTimestampFunction<?> _ -> this.renderLiteral("CURRENT_TIMESTAMP");
@@ -472,7 +476,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case SqlMakeDateFunction(var year, var month, var day, _) -> this.renderFunction("MAKE_DATE", year, month, day);
 			case SqlMakeTimeFunction(var hour, var minute, var second, _) -> this.renderFunction("MAKE_TIME", hour, minute, second);
 			case SqlNowFunction<?> _ -> this.renderLiteral("CURRENT_TIMESTAMP");
-			case SqlSubtractFunction(var minuend, var subtrahend, _) -> this.renderInfix(minuend, "-", subtrahend);
+			case SqlTemporalSubtractFunction(var minuend, var subtrahend, _) -> this.renderInfix(minuend, "-", subtrahend);
 			case SqlToDateFunction(var value, _) -> renderer -> renderer.rendered(value.toSql(this)).toSql();
 			case SqlToTimeFunction(var value, _) -> renderer -> renderer.rendered(value.toSql(this)).toSql();
 			case SqlToEpochFunction<?> func -> renderer -> renderer.literal("EXTRACT").openingBracket().keyword("EPOCH").from().rendered(func.expression().toSql(this)).closingBracket().toSql();

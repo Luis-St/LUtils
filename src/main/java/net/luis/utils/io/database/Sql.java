@@ -208,6 +208,22 @@ public class Sql {
 		return new SqlPiFunction();
 	}
 	
+	public static <T extends Number> @NonNull SqlExpression<T> add(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> addend) {
+		return new SqlNumericAddFunction<>(expression, addend);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> subtract(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> subtrahend) {
+		return new SqlNumericSubtractFunction<>(expression, subtrahend);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> multiply(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> multiplier) {
+		return new SqlNumericMultiplyFunction<>(expression, multiplier);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> divide(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> divisor) {
+		return new SqlNumericDivideFunction<>(expression, divisor);
+	}
+	
 	public static <T extends Number> @NonNull SqlExpression<T> negate(@NonNull SqlExpression<T> expression) {
 		return new SqlNegateFunction<>(expression);
 	}

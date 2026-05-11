@@ -143,9 +143,9 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	@Override
 	public @NonNull SqlRendered renderFunction(@NonNull SqlFunction<?> function) throws SqlException {
 		return switch (function) {
-			case SqlRandomFunction _ -> this.renderLiteral("RAND()").apply(SqlRenderer.empty());
-			case SqlLengthFunction<?> func -> this.renderFunction("LEN", func.expression()).apply(SqlRenderer.empty());
-			case SqlNumericTruncateFunction<?> func -> this.renderFunction("ROUND", func.expression()).apply(SqlRenderer.empty());
+			case SqlRandomFunction _ -> this.renderCast(this.renderLiteral("RAND()"), function.type()).apply(SqlRenderer.empty());
+			case SqlLengthFunction<?> func -> this.renderCast(this.renderFunction("LEN", func.expression()), function.type()).apply(SqlRenderer.empty());
+			case SqlNumericTruncateFunction<?> func -> this.renderCast(this.renderFunction("ROUND", func.expression()), function.type()).apply(SqlRenderer.empty());
 			default -> super.renderFunction(function);
 		};
 	}
