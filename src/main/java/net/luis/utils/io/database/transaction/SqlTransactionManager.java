@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.transaction;
 
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.transaction.SqlTransactionException;
 import net.luis.utils.io.database.exception.transaction.SqlTransactionPropagationException;
 import org.jspecify.annotations.NonNull;
@@ -38,9 +39,13 @@ public class SqlTransactionManager {
 	
 	private static final ThreadLocal<SqlTransaction> CURRENT_TRANSACTION = new ThreadLocal<>();
 	private final DataSource dataSource;
+	private final SqlDialect dialect;
+	private final Duration queryTimeout;
 	
-	public SqlTransactionManager(@NonNull DataSource dataSource) {
+	public SqlTransactionManager(@NonNull DataSource dataSource, @NonNull SqlDialect dialect, @NonNull Duration queryTimeout) {
 		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");
+		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 	}
 	
 	public @NonNull SqlTransaction begin(boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlTransactionException {
@@ -79,7 +84,7 @@ public class SqlTransactionManager {
 		
 		try {
 			Savepoint savepoint = current.getConnection().setSavepoint();
-			SqlTransaction tx = new SqlTransaction(current.getConnection(), readOnly, timeout, isolationLevel, false, false, false, null);
+			SqlTransaction tx = new SqlTransaction(current.getConnection(), this.dialect, readOnly, timeout, this.queryTimeout, isolationLevel, false, false, false, null);
 			tx.setNestedSavepoint(savepoint);
 			return tx;
 		} catch (SQLException e) {
@@ -121,11 +126,11 @@ public class SqlTransactionManager {
 			this.closeConnectionQuietly(connection);
 			throw new SqlTransactionException("Failed to disable auto-commit", e);
 		}
-		return new SqlTransaction(connection, readOnly, timeout, isolationLevel, true, true, false, suspended);
+		return new SqlTransaction(connection, this.dialect, readOnly, timeout, this.queryTimeout, isolationLevel, true, true, false, suspended);
 	}
 	
 	private @NonNull SqlTransaction createJoiningTransaction(@NonNull SqlTransaction current) {
-		return new SqlTransaction(current.getConnection(), current.isReadOnly(), current.getTimeout(), current.getIsolationLevel(), false, false, false, null);
+		return new SqlTransaction(current.getConnection(), this.dialect, current.isReadOnly(), current.getTimeout(), this.queryTimeout, current.getIsolationLevel(), false, false, false, null);
 	}
 	
 	private @NonNull SqlTransaction createNonTransactional(boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @Nullable SqlTransaction suspended) throws SqlTransactionException {
@@ -137,7 +142,7 @@ public class SqlTransactionManager {
 			this.closeConnectionQuietly(connection);
 			throw new SqlTransactionException("Failed to enable auto-commit", e);
 		}
-		return new SqlTransaction(connection, readOnly, timeout, isolationLevel, true, false, true, suspended);
+		return new SqlTransaction(connection, this.dialect, readOnly, timeout, this.queryTimeout, isolationLevel, true, false, true, suspended);
 	}
 	
 	@SuppressWarnings("MagicConstant")

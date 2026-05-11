@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.transaction;
 
 import net.luis.utils.io.database.SqlProvider;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.transaction.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
@@ -38,11 +39,14 @@ import java.util.*;
  *
  */
 
+@SuppressWarnings("SqlSourceToSinkFlow")
 public class SqlTransaction implements SqlProvider, AutoCloseable {
 	
 	private final Connection connection;
+	private final SqlDialect dialect;
 	private final boolean readOnly;
 	private final Duration timeout;
+	private final Duration queryTimeout;
 	private final SqlIsolationLevel isolationLevel;
 	private final boolean ownsConnection;
 	private final boolean ownsCommit;
@@ -55,8 +59,10 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	
 	public SqlTransaction(
 		@NonNull Connection connection,
+		@NonNull SqlDialect dialect,
 		boolean readOnly,
 		@NonNull Duration timeout,
+		@NonNull Duration queryTimeout,
 		@NonNull SqlIsolationLevel isolationLevel,
 		boolean ownsConnection,
 		boolean ownsCommit,
@@ -64,8 +70,10 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		@Nullable SqlTransaction suspended
 	) {
 		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
+		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		this.readOnly = readOnly;
 		this.timeout = Objects.requireNonNull(timeout, "Timeout must not be null");
+		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 		this.isolationLevel = Objects.requireNonNull(isolationLevel, "Isolation level must not be null");
 		this.ownsConnection = ownsConnection;
 		this.ownsCommit = ownsCommit;
@@ -85,12 +93,20 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		return this.connection;
 	}
 	
+	public @NonNull SqlDialect getDialect() {
+		return this.dialect;
+	}
+	
 	public boolean isReadOnly() {
 		return this.readOnly;
 	}
 	
 	public @NonNull Duration getTimeout() {
 		return this.timeout;
+	}
+	
+	public @NonNull Duration getQueryTimeout() {
+		return this.queryTimeout;
 	}
 	
 	public @NonNull SqlIsolationLevel getIsolationLevel() {
@@ -213,32 +229,68 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	
 	@Override
 	public void createSchema(@NotNull String name) throws SqlException {
-	
+		Objects.requireNonNull(name, "Sql schema name must not be null");
+		
+		try (Statement statement = this.connection.createStatement()) {
+			statement.execute("CREATE SCHEMA " + this.dialect.quoteIdentifier(name));
+		} catch (SQLException e) {
+			throw new SqlException("Failed to create schema " + name, e);
+		}
 	}
 	
 	@Override
 	public void createSchemaIfNotExists(@NotNull String name) throws SqlException {
-	
+		Objects.requireNonNull(name, "Sql schema name must not be null");
+		
+		try (Statement statement = this.connection.createStatement()) {
+			statement.execute("CREATE SCHEMA IF NOT EXISTS " + this.dialect.quoteIdentifier(name));
+		} catch (SQLException e) {
+			throw new SqlException("Failed to create schema " + name, e);
+		}
 	}
 	
 	@Override
 	public boolean existsSchema(@NotNull String name) throws SqlException {
-		return false;
+		Objects.requireNonNull(name, "Sql schema name must not be null");
+		
+		try (ResultSet resultSet = this.connection.getMetaData().getSchemas()) {
+			while (resultSet.next()) {
+				if (name.equals(resultSet.getString("TABLE_SCHEM"))) {
+					return true;
+				}
+			}
+			return false;
+		} catch (SQLException e) {
+			throw new SqlException("Failed to check if schema " + name + " exists", e);
+		}
 	}
 	
 	@Override
 	public void dropSchema(@NotNull String name, boolean cascade) throws SqlException {
-	
+		Objects.requireNonNull(name, "Sql schema name must not be null");
+		
+		try (Statement statement = this.connection.createStatement()) {
+			String sql = "DROP SCHEMA " + this.dialect.quoteIdentifier(name);
+			if (cascade) {
+				sql += " CASCADE";
+			}
+			
+			statement.execute(sql);
+		} catch (SQLException e) {
+			throw new SqlException("Failed to drop schema " + name, e);
+		}
 	}
 	
 	@Override
 	public @NonNull <T> SqlTableProvider<T> table(@NonNull SqlTable<T> table) {
-		return null;
+		Objects.requireNonNull(table, "Sql table must not be null");
+		return new SqlTableProvider<>(table, this.dialect, this.connection, this.queryTimeout);
 	}
 	
 	@Override
 	public @NonNull <T> SqlQueryProvider<T> from(@NonNull SqlTable<T> table) {
-		return null;
+		Objects.requireNonNull(table, "Sql table must not be null");
+		return new SqlQueryProvider<>(table, this.dialect, this.connection, this.queryTimeout);
 	}
 	
 	@Override

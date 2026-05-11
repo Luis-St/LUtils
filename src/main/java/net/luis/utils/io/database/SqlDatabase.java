@@ -34,7 +34,7 @@ import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.Duration;
 import java.util.Objects;
 
@@ -44,6 +44,7 @@ import java.util.Objects;
  *
  */
 
+@SuppressWarnings("SqlSourceToSinkFlow")
 public class SqlDatabase implements SqlProvider, AutoCloseable {
 	
 	private final DataSource dataSource;
@@ -71,7 +72,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		this.defaultTransactionIsolationLevel = Objects.requireNonNull(defaultTransactionIsolationLevel, "Default transaction isolation level must not be null");
 		this.defaultTransactionPropagation = Objects.requireNonNull(defaultTransactionPropagation, "Default transaction propagation behavior must not be null");
 		this.autoCloseDataSource = autoCloseDataSource;
-		this.transactionManager = new SqlTransactionManager(dataSource);
+		this.transactionManager = new SqlTransactionManager(dataSource, dialect, queryTimeout);
 	}
 	
 	public static @NonNull SqlDatabaseBuilder builder(@NonNull DataSource dataSource, @NotNull SqlDialect dialect) {
@@ -87,36 +88,83 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	}
 	
 	public boolean health() {
-		return false;
+		try (Connection connection = this.dataSource.getConnection()) {
+			return connection.isValid(5);
+		} catch (SQLException e) {
+			return false;
+		}
 	}
 	
 	public boolean ping() {
-		return false;
+		try (Connection connection = this.dataSource.getConnection()) {
+			return connection.isValid(1);
+		} catch (SQLException e) {
+			return false;
+		}
 	}
 	
 	@Override
 	public void createSchema(@NotNull String name) throws SqlException {
-	
+		Objects.requireNonNull(name, "Sql schema name must not be null");
+		
+		try (Connection connection = this.dataSource.getConnection(); Statement statement = connection.createStatement()) {
+			statement.execute("CREATE SCHEMA " + this.dialect.quoteIdentifier(name));
+		} catch (SQLException e) {
+			throw new SqlException("Failed to create schema " + name, e);
+		}
 	}
 	
 	@Override
 	public void createSchemaIfNotExists(@NotNull String name) throws SqlException {
-	
+		Objects.requireNonNull(name, "Sql schema name must not be null");
+		
+		try (Connection connection = this.dataSource.getConnection(); Statement statement = connection.createStatement()) {
+			statement.execute("CREATE SCHEMA IF NOT EXISTS " + this.dialect.quoteIdentifier(name));
+		} catch (SQLException e) {
+			throw new SqlException("Failed to create schema " + name, e);
+		}
 	}
 	
 	@Override
 	public boolean existsSchema(@NotNull String name) throws SqlException {
-		return false;
+		Objects.requireNonNull(name, "Sql schema name must not be null");
+		
+		try (Connection connection = this.dataSource.getConnection(); ResultSet resultSet = connection.getMetaData().getSchemas()) {
+			while (resultSet.next()) {
+				if (name.equals(resultSet.getString("TABLE_SCHEM"))) {
+					return true;
+				}
+			}
+			return false;
+		} catch (SQLException e) {
+			throw new SqlException("Failed to check if schema " + name + " exists", e);
+		}
 	}
 	
 	@Override
 	public void dropSchema(@NotNull String name, boolean cascade) throws SqlException {
-	
+		Objects.requireNonNull(name, "Sql schema name must not be null");
+		
+		try (Connection connection = this.dataSource.getConnection(); Statement statement = connection.createStatement()) {
+			String sql = "DROP SCHEMA " + this.dialect.quoteIdentifier(name);
+			if (cascade) {
+				sql += " CASCADE";
+			}
+			statement.execute(sql);
+		} catch (SQLException e) {
+			throw new SqlException("Failed to drop schema " + name, e);
+		}
 	}
 	
 	@Override
-	public @NonNull <T> SqlTableProvider<T> table(@NonNull SqlTable<T> table) {
-		return null;
+	public @NonNull <T> SqlTableProvider<T> table(@NonNull SqlTable<T> table) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		
+		try {
+			return new SqlTableProvider<>(table, this.dialect, this.dataSource.getConnection(), this.queryTimeout);
+		} catch (SQLException e) {
+			throw new SqlConnectionException("Failed to obtain connection for table " + table.getName(), e);
+		}
 	}
 	
 	@Override
