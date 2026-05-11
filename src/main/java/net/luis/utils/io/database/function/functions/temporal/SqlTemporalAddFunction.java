@@ -31,13 +31,13 @@ import java.util.Objects;
  *
  */
 
-public record SqlAddFunction<T>(
+public record SqlTemporalAddFunction<T>(
 	@NonNull SqlExpression<?> firstSummand,
 	@NonNull SqlExpression<?> secondSummand,
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
-	public SqlAddFunction {
+	public SqlTemporalAddFunction {
 		Objects.requireNonNull(firstSummand, "Sql first summand expression must not be null");
 		Objects.requireNonNull(secondSummand, "Sql second summand expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

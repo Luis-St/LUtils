@@ -31,13 +31,13 @@ import java.util.Objects;
  *
  */
 
-public record SqlSubtractFunction<T>(
+public record SqlTemporalSubtractFunction<T>(
 	@NonNull SqlExpression<?> minuend,
 	@NonNull SqlExpression<?> subtrahend,
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
-	public SqlSubtractFunction {
+	public SqlTemporalSubtractFunction {
 		Objects.requireNonNull(minuend, "Sql minuend expression must not be null");
 		Objects.requireNonNull(subtrahend, "Sql subtrahend expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

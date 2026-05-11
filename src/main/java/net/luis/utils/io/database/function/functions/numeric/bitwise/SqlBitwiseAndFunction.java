@@ -33,7 +33,7 @@ import java.util.Objects;
 
 public record SqlBitwiseAndFunction<T extends Number>(
 	@NonNull SqlExpression<T> firstOperand,
-	@NonNull SqlExpression<T> secondOperand,
+	@NonNull SqlExpression<? extends Number> secondOperand,
 	@NonNull SqlType<T> type
 ) implements SqlNumericFunction<T> {
 	

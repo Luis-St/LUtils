@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.database.expression;
 
-import net.luis.utils.io.database.exception.type.SqlTypeNotFoundException;
 import net.luis.utils.io.database.expression.orderable.*;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRenderable;
@@ -34,14 +33,6 @@ import java.util.Objects;
  */
 
 public interface SqlExpression<T> extends SqlOrderable<T>, SqlRenderable {
-	
-	static <T> @NonNull SqlExpression<T> of(@NonNull T value) throws SqlTypeNotFoundException {
-		return new SqlValueExpression<>(value);
-	}
-	
-	static <T> @NonNull SqlExpression<T> of(@NonNull T value, @NonNull SqlType<T> type) {
-		return new SqlValueExpression<>(value, type);
-	}
 	
 	default @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
 		Objects.requireNonNull(alias, "Sql alias must not be null");
