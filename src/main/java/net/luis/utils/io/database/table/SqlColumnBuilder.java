@@ -38,13 +38,13 @@ public class SqlColumnBuilder<E, C> {
 	private final int index;
 	private final SqlType<C> type;
 	private final Function<E, C> getter;
+	private final List<SqlCondition> constraints = Lists.newArrayList();
 	private boolean nullable = true;
 	private Optional<C> defaultValue = Optional.empty();
 	private boolean autoIncrement;
 	private boolean unique;
 	private boolean primaryKey;
 	private Optional<SqlForeignKey<E, ?>> foreignKey = Optional.empty();
-	private final List<SqlCondition> constraints = Lists.newArrayList();
 	
 	public SqlColumnBuilder(@NonNull String name, int index, @NonNull SqlType<C> type, @NonNull Function<E, C> getter) {
 		this.name = Objects.requireNonNull(name, "Column name must not be null");
@@ -76,6 +76,7 @@ public class SqlColumnBuilder<E, C> {
 	
 	public @NonNull SqlColumnBuilder<E, C> primaryKey() {
 		this.primaryKey = true;
+		this.nullable = false;
 		return this;
 	}
 	

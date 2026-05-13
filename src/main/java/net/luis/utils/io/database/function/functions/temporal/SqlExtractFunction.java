@@ -43,4 +43,9 @@ public record SqlExtractFunction<T extends Number>(
 		Objects.requireNonNull(part, "Sql temporal part must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");
 	}
+	
+	@Override
+	public boolean requiresCast() {
+		return true;
+	}
 }

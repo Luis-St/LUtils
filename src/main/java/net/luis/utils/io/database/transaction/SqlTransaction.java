@@ -25,7 +25,6 @@ import net.luis.utils.io.database.exception.transaction.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.table.SqlTableProvider;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -39,19 +38,22 @@ import java.util.*;
  *
  */
 
+// Not thread-safe — instances must be confined to a single thread
 @SuppressWarnings("SqlSourceToSinkFlow")
 public class SqlTransaction implements SqlProvider, AutoCloseable {
 	
 	private final Connection connection;
 	private final SqlDialect dialect;
 	private final boolean readOnly;
-	private final Duration timeout;
 	private final Duration queryTimeout;
 	private final SqlIsolationLevel isolationLevel;
 	private final boolean ownsConnection;
 	private final boolean ownsCommit;
 	private final boolean nonTransactional;
 	private final @Nullable SqlTransaction suspended;
+	private final boolean originalAutoCommit;
+	private final boolean originalReadOnly;
+	private final int originalIsolationLevel;
 	private final Map<String, Savepoint> savepoints = new LinkedHashMap<>();
 	private @Nullable Savepoint nestedSavepoint;
 	private @Nullable Runnable onClose;
@@ -61,7 +63,6 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		@NonNull Connection connection,
 		@NonNull SqlDialect dialect,
 		boolean readOnly,
-		@NonNull Duration timeout,
 		@NonNull Duration queryTimeout,
 		@NonNull SqlIsolationLevel isolationLevel,
 		boolean ownsConnection,
@@ -72,13 +73,26 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		this.readOnly = readOnly;
-		this.timeout = Objects.requireNonNull(timeout, "Timeout must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 		this.isolationLevel = Objects.requireNonNull(isolationLevel, "Isolation level must not be null");
 		this.ownsConnection = ownsConnection;
 		this.ownsCommit = ownsCommit;
 		this.nonTransactional = nonTransactional;
 		this.suspended = suspended;
+		
+		if (ownsConnection) {
+			try {
+				this.originalAutoCommit = connection.getAutoCommit();
+				this.originalReadOnly = connection.isReadOnly();
+				this.originalIsolationLevel = connection.getTransactionIsolation();
+			} catch (SQLException e) {
+				throw new RuntimeException("Failed to read original connection state", e);
+			}
+		} else {
+			this.originalAutoCommit = true;
+			this.originalReadOnly = false;
+			this.originalIsolationLevel = Connection.TRANSACTION_READ_COMMITTED;
+		}
 	}
 	
 	void setNestedSavepoint(@NonNull Savepoint nestedSavepoint) {
@@ -99,10 +113,6 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	
 	public boolean isReadOnly() {
 		return this.readOnly;
-	}
-	
-	public @NonNull Duration getTimeout() {
-		return this.timeout;
 	}
 	
 	public @NonNull Duration getQueryTimeout() {
@@ -140,6 +150,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		if (this.nestedSavepoint != null) {
 			try {
 				this.connection.releaseSavepoint(this.nestedSavepoint);
+				this.state = SqlTransactionState.COMMITTED;
 			} catch (SQLException e) {
 				throw new SqlTransactionSavepointException("Failed to release nested savepoint", e);
 			}
@@ -147,6 +158,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		}
 		
 		if (!this.ownsCommit) {
+			this.state = SqlTransactionState.COMMITTED;
 			return;
 		}
 		
@@ -228,29 +240,29 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	}
 	
 	@Override
-	public void createSchema(@NotNull String name) throws SqlException {
+	public void createSchema(@NonNull String name) throws SqlException {
 		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		try (Statement statement = this.connection.createStatement()) {
-			statement.execute("CREATE SCHEMA " + this.dialect.quoteIdentifier(name));
+			statement.execute(this.dialect.renderCreateSchema(name, false).sql());
 		} catch (SQLException e) {
 			throw new SqlException("Failed to create schema " + name, e);
 		}
 	}
 	
 	@Override
-	public void createSchemaIfNotExists(@NotNull String name) throws SqlException {
+	public void createSchemaIfNotExists(@NonNull String name) throws SqlException {
 		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		try (Statement statement = this.connection.createStatement()) {
-			statement.execute("CREATE SCHEMA IF NOT EXISTS " + this.dialect.quoteIdentifier(name));
+			statement.execute(this.dialect.renderCreateSchema(name, true).sql());
 		} catch (SQLException e) {
 			throw new SqlException("Failed to create schema " + name, e);
 		}
 	}
 	
 	@Override
-	public boolean existsSchema(@NotNull String name) throws SqlException {
+	public boolean existsSchema(@NonNull String name) throws SqlException {
 		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		try (ResultSet resultSet = this.connection.getMetaData().getSchemas()) {
@@ -266,16 +278,11 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	}
 	
 	@Override
-	public void dropSchema(@NotNull String name, boolean cascade) throws SqlException {
+	public void dropSchema(@NonNull String name, boolean cascade) throws SqlException {
 		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		try (Statement statement = this.connection.createStatement()) {
-			String sql = "DROP SCHEMA " + this.dialect.quoteIdentifier(name);
-			if (cascade) {
-				sql += " CASCADE";
-			}
-			
-			statement.execute(sql);
+			statement.execute(this.dialect.renderDropSchema(name, false, cascade).sql());
 		} catch (SQLException e) {
 			throw new SqlException("Failed to drop schema " + name, e);
 		}
@@ -284,36 +291,45 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	@Override
 	public @NonNull <T> SqlTableProvider<T> table(@NonNull SqlTable<T> table) {
 		Objects.requireNonNull(table, "Sql table must not be null");
-		return new SqlTableProvider<>(table, this.dialect, this.connection, this.queryTimeout);
+		return new SqlTableProvider<>(table, this.dialect, this.connection, this.queryTimeout, false);
 	}
 	
 	@Override
 	public @NonNull <T> SqlQueryProvider<T> from(@NonNull SqlTable<T> table) {
 		Objects.requireNonNull(table, "Sql table must not be null");
-		return new SqlQueryProvider<>(table, this.dialect, this.connection, this.queryTimeout);
+		return new SqlQueryProvider<>(table, this.dialect, this.connection, this.queryTimeout, false);
 	}
 	
 	@Override
 	public void close() throws SqlTransactionException {
 		try {
-			if (this.isActive() && this.ownsCommit && !this.nonTransactional) {
-				this.rollback();
-			}
-			
-			if (this.nestedSavepoint != null) {
-				try {
-					this.connection.releaseSavepoint(this.nestedSavepoint);
-				} catch (SQLException _) {}
-			}
-			
-			if (this.ownsConnection) {
-				this.connection.close();
+			try {
+				if (this.isActive() && this.ownsCommit && !this.nonTransactional) {
+					this.rollback();
+				}
+			} finally {
+				if (this.nestedSavepoint != null) {
+					try {
+						this.connection.releaseSavepoint(this.nestedSavepoint);
+					} catch (SQLException _) {}
+				}
+				
+				if (this.ownsConnection) {
+					this.connection.setAutoCommit(this.originalAutoCommit);
+					this.connection.setReadOnly(this.originalReadOnly);
+					this.connection.setTransactionIsolation(this.originalIsolationLevel);
+					this.connection.close();
+				}
 			}
 		} catch (SQLException e) {
 			throw new SqlTransactionException("Failed to close transaction", e);
 		} finally {
 			if (this.onClose != null) {
-				this.onClose.run();
+				try {
+					this.onClose.run();
+				} catch (RuntimeException e) {
+					throw new SqlTransactionException("onClose callback failed", e);
+				}
 			}
 		}
 	}

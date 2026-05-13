@@ -24,6 +24,7 @@ import net.luis.utils.io.database.migration.SqlMigrationStatus;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 
+import java.sql.Connection;
 import java.util.List;
 
 /**
@@ -40,5 +41,13 @@ public interface SqlMigrationStore {
 	
 	void save(@NonNull SqlMigrationInfo info) throws SqlException;
 	
+	default void save(@NonNull Connection connection, @NonNull SqlMigrationInfo info) throws SqlException {
+		this.save(info);
+	}
+	
 	void update(@NonNull Version version, @NonNull SqlMigrationStatus status) throws SqlException;
+	
+	default void update(@NonNull Connection connection, @NonNull Version version, @NonNull SqlMigrationStatus status) throws SqlException {
+		this.update(version, status);
+	}
 }

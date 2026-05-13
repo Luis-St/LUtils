@@ -33,8 +33,8 @@ public final class SqlLengthParameter implements SqlParameter {
 	private final int length;
 	
 	SqlLengthParameter(int length) {
-		if (length < 0) {
-			throw new IllegalArgumentException("Length must be non-negative");
+		if (length <= 0) {
+			throw new IllegalArgumentException("Length must be positive");
 		}
 		this.length = length;
 	}

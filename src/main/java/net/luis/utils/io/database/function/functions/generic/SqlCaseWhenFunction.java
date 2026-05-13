@@ -57,6 +57,10 @@ public record SqlCaseWhenFunction<T>(
 			}
 		}
 		
+		if (elseValue != null && !elseValue.type().equals(branches.getFirst().expression().type())) {
+			throw new IllegalArgumentException("Sql else value type " + elseValue.type() + " does not match branch type " + branches.getFirst().expression().type());
+		}
+		
 		branches = List.copyOf(branches);
 	}
 	

@@ -22,7 +22,6 @@ import net.luis.utils.io.database.exception.type.SqlTypeNotFoundException;
 import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.math.BigDecimal;
@@ -30,6 +29,7 @@ import java.math.BigInteger;
 import java.sql.Clob;
 import java.sql.NClob;
 import java.time.*;
+import java.util.UUID;
 
 /**
  *
@@ -43,9 +43,14 @@ public class SqlStandardTypeInferrer implements SqlTypeInferrer {
 	
 	protected SqlStandardTypeInferrer() {}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static @NonNull SqlType<?> inferEnumType(@NonNull Enum value) {
+		return SqlTypes.enumName(value.getDeclaringClass());
+	}
+	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull <T> SqlType<T> inferType(@NonNull T value) throws SqlTypeNotFoundException {
+	public @NonNull <T> SqlType<T> inferType(@NonNull T value) throws SqlTypeNotFoundException {
 		return (SqlType<T>) this.inferTypeInternal(value);
 	}
 	
@@ -57,13 +62,15 @@ public class SqlStandardTypeInferrer implements SqlTypeInferrer {
 			case Integer _ -> SqlTypes.INTEGER;
 			case Long _ -> SqlTypes.LONG;
 			case BigInteger _ -> SqlTypes.BIG_INTEGER.configure(SqlParameter.precision(38, 0));
-			case Float _ -> SqlTypes.FLOAT;
+			case Float _ -> SqlTypes.REAL;
 			case Double _ -> SqlTypes.DOUBLE;
 			case BigDecimal _ -> SqlTypes.DECIMAL.configure(SqlParameter.precision(38, 18));
+			case Character _ -> SqlTypes.CHARACTER;
 			case String _ -> SqlTypes.STRING.configure(SqlParameter.length(255));
 			case NClob _ -> SqlTypes.NCLOB;
 			case Clob _ -> SqlTypes.CLOB;
 			case byte[] _ -> SqlTypes.BYTES.configure(SqlParameter.length(255));
+			case UUID _ -> SqlTypes.UUID;
 			case LocalDate _ -> SqlTypes.LOCAL_DATE;
 			case LocalTime _ -> SqlTypes.LOCAL_TIME.configure(SqlParameter.fractional(6));
 			case LocalDateTime _ -> SqlTypes.LOCAL_DATE_TIME.configure(SqlParameter.fractional(6));
@@ -75,6 +82,7 @@ public class SqlStandardTypeInferrer implements SqlTypeInferrer {
 			case Month _ -> SqlTypes.MONTH;
 			case DayOfWeek _ -> SqlTypes.DAY_OF_WEEK;
 			case Duration _ -> SqlTypes.DURATION;
+			case Enum<?> e -> inferEnumType(e);
 			
 			case null -> throw new NullPointerException("Value must not be null");
 			default -> throw new SqlTypeNotFoundException("No SQL type found for Java type: " + value.getClass().getName());

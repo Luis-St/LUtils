@@ -41,12 +41,12 @@ public class SqlTableBuilder<E> {
 	private final Class<E> type;
 	private final String name;
 	private final String schema;
-	private Optional<SqlCompositePrimaryKey<E>> compositePrimaryKey = Optional.empty();
 	private final List<SqlForeignKey<E, ?>> foreignKeys = Lists.newArrayList();
 	private final List<List<SqlColumn<E, ?>>> uniqueConstraints = Lists.newArrayList();
 	private final List<SqlCondition> checkConstraints = Lists.newArrayList();
-	private final Map</*Name*/ String, SqlColumn<E, ?>> columns = Maps.newHashMap();
+	private final Map</*Name*/ String, SqlColumn<E, ?>> columns = Maps.newLinkedHashMap();
 	private final AtomicInteger columnCounter = new AtomicInteger(1);
+	private Optional<SqlCompositePrimaryKey<E>> compositePrimaryKey = Optional.empty();
 	
 	SqlTableBuilder(@NonNull Class<E> type, @NonNull String name, @NonNull String schema) {
 		this.type = Objects.requireNonNull(type, "Type must not be null");
@@ -88,10 +88,6 @@ public class SqlTableBuilder<E> {
 	
 	public @NonNull SqlCompositePrimaryKey<E> compositePrimaryKey(@NonNull List<SqlColumn<E, ?>> columns) {
 		return this.compositePrimaryKey(new SqlCompositePrimaryKey<>(columns));
-	}
-	
-	public @NonNull SqlCompositePrimaryKey<E> compositePrimaryKey(@NonNull List<SqlColumn<E, ?>> columns, @NonNull SqlReferentialAction onUpdate, @NonNull SqlReferentialAction onDelete) {
-		return this.compositePrimaryKey(new SqlCompositePrimaryKey<>(columns, onUpdate, onDelete));
 	}
 	
 	public @NonNull SqlCompositePrimaryKey<E> generateCompositePrimaryKey() {

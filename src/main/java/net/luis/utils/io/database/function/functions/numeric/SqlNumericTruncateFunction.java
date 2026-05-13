@@ -36,4 +36,9 @@ public record SqlNumericTruncateFunction<T extends Number>(@NonNull SqlExpressio
 	public SqlNumericTruncateFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}
+	
+	@Override
+	public boolean requiresCast() {
+		return true;
+	}
 }

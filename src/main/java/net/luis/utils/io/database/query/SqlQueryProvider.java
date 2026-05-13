@@ -29,8 +29,7 @@ import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
 import java.lang.reflect.Constructor;
-import java.sql.Connection;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.time.Duration;
 import java.util.*;
 
@@ -41,19 +40,25 @@ import java.util.*;
  */
 
 @SuppressWarnings("unchecked")
-public class SqlQueryProvider<E> {
+public class SqlQueryProvider<E> implements AutoCloseable {
 	
 	private final SqlTable<E> table;
 	private final SqlDialect dialect;
 	private final Connection connection;
 	private final Duration queryTimeout;
+	private final boolean ownsConnection;
 	private final ThrowableFunction<ResultSet, E, SqlException> entityRowMapper;
 	
 	public SqlQueryProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout) {
+		this(table, dialect, connection, queryTimeout, true);
+	}
+	
+	public SqlQueryProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, boolean ownsConnection) {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
+		this.ownsConnection = ownsConnection;
 		this.entityRowMapper = createRowMapper(table);
 	}
 	
@@ -79,17 +84,57 @@ public class SqlQueryProvider<E> {
 		};
 	}
 	
+	private static boolean isAssignableWithUnboxing(@NonNull Class<?> target, @NonNull Class<?> source) {
+		if (target.isAssignableFrom(source)) {
+			return true;
+		}
+		if (target.isPrimitive()) {
+			return target == boolean.class && source == Boolean.class
+				|| target == byte.class && source == Byte.class
+				|| target == char.class && source == Character.class
+				|| target == short.class && source == Short.class
+				|| target == int.class && source == Integer.class
+				|| target == long.class && source == Long.class
+				|| target == float.class && source == Float.class
+				|| target == double.class && source == Double.class;
+		}
+		if (source.isPrimitive()) {
+			return source == boolean.class && target == Boolean.class
+				|| source == byte.class && target == Byte.class
+				|| source == char.class && target == Character.class
+				|| source == short.class && target == Short.class
+				|| source == int.class && target == Integer.class
+				|| source == long.class && target == Long.class
+				|| source == float.class && target == Float.class
+				|| source == double.class && target == Double.class;
+		}
+		return false;
+	}
+	
 	@SuppressWarnings("unchecked")
 	private static <E> @NonNull Constructor<E> findMatchingConstructor(@NonNull Class<E> type, @NonNull List<SqlColumn<E, ?>> sortedColumns) {
 		Constructor<?>[] constructors = type.getDeclaredConstructors();
 		
 		for (Constructor<?> constructor : constructors) {
 			if (constructor.getParameterCount() == sortedColumns.size()) {
-				constructor.setAccessible(true);
-				return (Constructor<E>) constructor;
+				boolean matches = true;
+				Class<?>[] paramTypes = constructor.getParameterTypes();
+				
+				for (int i = 0; i < paramTypes.length; i++) {
+					Class<?> columnType = sortedColumns.get(i).getType().javaType();
+					if (!isAssignableWithUnboxing(paramTypes[i], columnType)) {
+						matches = false;
+						break;
+					}
+				}
+				
+				if (matches) {
+					constructor.setAccessible(true);
+					return (Constructor<E>) constructor;
+				}
 			}
 		}
-		throw new IllegalStateException("No constructor with " + sortedColumns.size() + " parameters found on " + type.getSimpleName() + " to match " + sortedColumns.size() + " table columns");
+		throw new IllegalStateException("No matching constructor found on " + type.getSimpleName() + " for " + sortedColumns.size() + " table columns");
 	}
 	//endregion
 	
@@ -298,24 +343,18 @@ public class SqlQueryProvider<E> {
 		return new SqlInsertQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.copyOf(entities));
 	}
 	
-	public @NonNull SqlInsertQuery<E> insert(@NonNull Collection<E> entities, int batchSize) {
-		Objects.requireNonNull(entities, "Entity collection must not be null");
-		
-		return new SqlInsertQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.copyOf(entities));
-	}
-	
 	@SafeVarargs
 	public final @NonNull SqlInsertQuery<E> insertOrIgnore(@NonNull E entity, SqlColumn<E, ?> @NonNull ... conflictColumns) {
 		Objects.requireNonNull(entity, "Entity must not be null");
 		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
 		
-		return new SqlInsertQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.of(entity));
+		return SqlInsertQuery.insertOrIgnore(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.of(entity), List.of(conflictColumns));
 	}
 	
 	public @NonNull SqlInsertQuery<E> insertFromSelect(@NonNull SqlSelectQuery<?> query) {
 		Objects.requireNonNull(query, "Sql select query must not be null");
 		
-		return new SqlInsertQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.of());
+		return SqlInsertQuery.insertFromSelect(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, query);
 	}
 	
 	public @NonNull SqlUpdateQuery<E> update() {
@@ -324,5 +363,17 @@ public class SqlQueryProvider<E> {
 	
 	public @NonNull SqlDeleteQuery<E> delete() {
 		return new SqlDeleteQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper);
+	}
+	
+	@Override
+	public void close() throws SqlException {
+		if (!this.ownsConnection) {
+			return;
+		}
+		try {
+			this.connection.close();
+		} catch (SQLException e) {
+			throw new SqlException("Failed to close connection for table " + this.table.getName(), e);
+		}
 	}
 }

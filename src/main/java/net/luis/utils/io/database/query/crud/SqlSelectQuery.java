@@ -128,9 +128,6 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		if (offset < -1) {
 			throw new IllegalArgumentException("Offset must be non-negative or -1 for no offset");
 		}
-		if (skipLocked && (lockMode == null || lockMode == SqlLockMode.FOR_SHARE)) {
-			throw new IllegalArgumentException("Skip locked is only allowed with FOR UPDATE lock mode");
-		}
 	}
 	
 	private @NonNull SqlSelectQuery<E> copy(
@@ -173,7 +170,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		);
 	}
 	
-	private @NonNull SqlSelectQuery<E> withLookMode(@NonNull SqlLockMode lockMode) {
+	private @NonNull SqlSelectQuery<E> withLockMode(@NonNull SqlLockMode lockMode) {
 		return this.copy(
 			this.joins,
 			this.groupByColumns,
@@ -193,10 +190,16 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public @NonNull SqlSelectQuery<E> forUpdate() {
-		return this.withLookMode(SqlLockMode.FOR_UPDATE);
+		return this.withLockMode(SqlLockMode.FOR_UPDATE);
 	}
 	
-	public @NonNull SqlSelectQuery<E> skipLocked() {
+	public @NonNull SqlSelectQuery<E> skipLocked() throws SqlException {
+		if (this.lockMode == null) {
+			throw new SqlException("skipLocked() requires a lock mode to be set first (e.g. forUpdate() or forShare())");
+		}
+		if (!this.dialect.isFeatureSupported(SqlFeature.SKIP_LOCKED)) {
+			throw new SqlDialectFeatureException(SqlFeature.SKIP_LOCKED, this.dialect);
+		}
 		return this.copy(
 			this.joins,
 			this.groupByColumns,
@@ -216,10 +219,13 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public @NonNull SqlSelectQuery<E> forShare() {
-		return this.withLookMode(SqlLockMode.FOR_SHARE);
+		return this.withLockMode(SqlLockMode.FOR_SHARE);
 	}
 	
 	public @NonNull SqlSelectQuery<E> noWait() throws SqlException {
+		if (this.lockMode == null) {
+			throw new SqlException("noWait() requires a lock mode to be set first (e.g. forUpdate() or forShare())");
+		}
 		if (!this.dialect.isFeatureSupported(SqlFeature.NO_WAIT)) {
 			throw new SqlDialectFeatureException(SqlFeature.NO_WAIT, this.dialect);
 		}
@@ -287,13 +293,20 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public @NonNull SqlSelectQuery<E> lateralJoin(@NonNull SqlSelectQuery<?> subquery, @NonNull SqlAlias alias) throws SqlException {
+		return this.lateralJoin(SqlJoinType.CROSS, subquery, alias);
+	}
+	
+	public @NonNull SqlSelectQuery<E> lateralJoin(@NonNull SqlJoinType type, @NonNull SqlSelectQuery<?> subquery, @NonNull SqlAlias alias) throws SqlException {
 		if (!this.dialect.isFeatureSupported(SqlFeature.LATERAL_JOIN)) {
 			throw new SqlDialectFeatureException(SqlFeature.LATERAL_JOIN, this.dialect);
 		}
-		return this.withJoin(new SqlJoinClause(subquery, alias));
+		return this.withJoin(new SqlJoinClause(type, subquery, alias));
 	}
 	
 	public @NonNull SqlSelectQuery<E> where(@NonNull SqlCondition condition) {
+		Objects.requireNonNull(condition, "Sql where condition must not be null");
+		
+		SqlCondition combined = this.whereCondition != null ? SqlCondition.allOf(this.whereCondition, condition) : condition;
 		return this.copy(
 			this.joins,
 			this.groupByColumns,
@@ -303,7 +316,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 			this.limit,
 			this.offset,
 			this.isDistinct,
-			Objects.requireNonNull(condition, "Sql where condition must not be null"),
+			combined,
 			this.whereExistsSubquery,
 			this.havingCondition,
 			this.lockMode,
@@ -332,7 +345,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	@SafeVarargs
-	public final @NonNull SqlSelectQuery<E> groupBy(SqlColumn<E, ?> @NonNull ... columns) {
+	public final @NonNull SqlSelectQuery<E> groupBy(SqlColumn<?, ?> @NonNull ... columns) {
 		Objects.requireNonNull(columns, "Group by sql columns must not be null");
 		
 		return this.copy(
@@ -393,7 +406,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		);
 	}
 	
-	public @NonNull SqlSelectQuery<E> limit(int limit) {
+	public @NonNull SqlSelectQuery<E> limit(long limit) {
 		if (limit < 0) {
 			throw new IllegalArgumentException("Limit must be non-negative");
 		}
@@ -599,24 +612,24 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public @NonNull Optional<E> fetchFirst() throws SqlException {
-		List<E> results = this.executeAndMap();
+		List<E> results = this.limit(1).executeAndMap();
 		return results.isEmpty() ? Optional.empty() : Optional.of(results.getFirst());
 	}
 	
 	public @NonNull E fetchOne() throws SqlException {
-		List<E> results = this.executeAndMap();
+		List<E> results = this.limit(2).executeAndMap();
 		
 		if (results.size() != 1) {
-			throw new SqlException("Expected exactly one result but got " + results.size());
+			throw new SqlException("Expected exactly one result but got " + (results.size() >= 2 ? "more than 1" : "0"));
 		}
 		return results.getFirst();
 	}
 	
 	public @Nullable E fetchOneOrNull() throws SqlException {
-		List<E> results = this.executeAndMap();
+		List<E> results = this.limit(2).executeAndMap();
 		
 		if (results.size() > 1) {
-			throw new SqlException("Expected at most one result but got " + results.size());
+			throw new SqlException("Expected at most one result but got more than 1");
 		}
 		return results.isEmpty() ? null : results.getFirst();
 	}
@@ -627,20 +640,16 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		renderer.rendered(this.toSql(this.dialect));
 		renderer.closingBracket().as().literal(this.dialect.quoteIdentifier("__count"));
 		
-		try (ResultSet resultSet = SqlQueryExecutor.executeQuery(this.dialect, this.connection, renderer.toSql(), this.queryTimeout)) {
-			if (resultSet.next()) {
-				return resultSet.getLong(1);
-			}
-			return 0;
-		} catch (SqlException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new SqlException("Failed to execute count query", e);
-		}
+		return SqlQueryExecutor.executeScalarQuery(this.dialect, this.connection, renderer.toSql(), this.queryTimeout, resultSet -> resultSet.next() ? resultSet.getLong(1) : 0L);
 	}
 	
 	public boolean exists() throws SqlException {
-		return this.count() > 0;
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.select().literal("1").from().openingBracket();
+		renderer.rendered(this.limit(1).toSql(this.dialect));
+		renderer.closingBracket().as().literal(this.dialect.quoteIdentifier("__exists"));
+		
+		return SqlQueryExecutor.executeScalarQuery(this.dialect, this.connection, renderer.toSql(), this.queryTimeout, ResultSet::next);
 	}
 	
 	public @NonNull SqlPage<E> fetchPage(int page, int pageSize) throws SqlException {
@@ -649,6 +658,9 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		}
 		if (pageSize <= 0) {
 			throw new IllegalArgumentException("Page size must be positive");
+		}
+		if (this.orderByClauses.isEmpty()) {
+			throw new SqlException("Pagination requires an ORDER BY clause for deterministic results");
 		}
 		
 		List<E> results = this.offset((long) page * pageSize).limit(pageSize + 1).executeAndMap();
@@ -761,12 +773,15 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		
 		if (this.limit >= 0 || this.offset >= 0) {
 			renderer.rendered(dialect.renderLimitOffset(
-				this.limit >= 0 ? this.limit : 0,
+				this.limit,
 				this.offset >= 0 ? this.offset : 0
 			));
 		}
 		
 		if (this.lockMode != null) {
+			if (this.skipLocked && this.lockMode == SqlLockMode.FOR_SHARE) {
+				throw new SqlException("Skip locked is only allowed with FOR UPDATE lock mode");
+			}
 			renderer.rendered(dialect.renderLockClause(this.lockMode, this.skipLocked, this.noWait));
 		}
 		return renderer.toSql();

@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.dialect.rendering.base.SqlFunctionRenderer;
+import net.luis.utils.io.database.dialect.rendering.h2.H2TemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.*;
+import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -57,6 +59,13 @@ public class H2Dialect extends AbstractSqlDialect {
 	@Override
 	public @NonNull String name() {
 		return "H2";
+	}
+	
+	@Override
+	protected @NonNull SqlFunctionRenderer createFunctionRenderer() {
+		return SqlFunctionRenderer.builder(this)
+			.temporal(new H2TemporalFunctionRenderer(this))
+			.build();
 	}
 	
 	@Override

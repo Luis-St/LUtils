@@ -33,8 +33,8 @@ public final class SqlFractionalParameter implements SqlParameter {
 	private final int digits;
 	
 	SqlFractionalParameter(int digits) {
-		if (digits < 0) {
-			throw new IllegalArgumentException("Digits must be non-negative");
+		if (digits < 0 || digits > 9) {
+			throw new IllegalArgumentException("Fractional digits must be between 0 and 9");
 		}
 		this.digits = digits;
 	}

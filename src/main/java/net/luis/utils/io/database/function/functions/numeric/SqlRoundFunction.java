@@ -40,4 +40,9 @@ public record SqlRoundFunction<T extends Number>(
 	public SqlRoundFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}
+	
+	@Override
+	public boolean requiresCast() {
+		return true;
+	}
 }

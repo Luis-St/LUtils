@@ -20,6 +20,8 @@ package net.luis.utils.io.database.condition;
 
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -27,6 +29,10 @@ import org.jspecify.annotations.NonNull;
  */
 
 public record SqlNegatedCondition(@NonNull SqlCondition condition) implements SqlCondition {
+	
+	public SqlNegatedCondition {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+	}
 	
 	@Override
 	public @NonNull SqlCondition not() {

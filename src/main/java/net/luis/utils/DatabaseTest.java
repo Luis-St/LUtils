@@ -316,7 +316,7 @@ public class DatabaseTest {
 			
 			@Override
 			public void down(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.dropIndex("idx_person_email");
+				builder.dropIndex(PERSON_TABLE, "idx_person_email");
 				builder.dropTable(PERSON_TABLE);
 			}
 		};

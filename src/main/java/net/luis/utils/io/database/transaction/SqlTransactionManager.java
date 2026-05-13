@@ -21,6 +21,8 @@ package net.luis.utils.io.database.transaction;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.transaction.SqlTransactionException;
 import net.luis.utils.io.database.exception.transaction.SqlTransactionPropagationException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -37,6 +39,7 @@ import java.util.Objects;
 
 public class SqlTransactionManager {
 	
+	private static final Logger LOGGER = LogManager.getLogger(SqlTransactionManager.class);
 	private static final ThreadLocal<SqlTransaction> CURRENT_TRANSACTION = new ThreadLocal<>();
 	private final DataSource dataSource;
 	private final SqlDialect dialect;
@@ -48,17 +51,17 @@ public class SqlTransactionManager {
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 	}
 	
-	public @NonNull SqlTransaction begin(boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlTransactionException {
+	public @NonNull SqlTransaction begin(boolean readOnly, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlTransactionException {
 		SqlTransaction current = CURRENT_TRANSACTION.get();
 		
 		SqlTransaction tx = switch (propagation) {
-			case REQUIRED -> this.resolveRequired(current, readOnly, timeout, isolationLevel);
-			case REQUIRES_NEW -> this.resolveRequiresNew(current, readOnly, timeout, isolationLevel);
-			case NESTED -> this.resolveNested(current, readOnly, timeout, isolationLevel);
-			case SUPPORTS -> this.resolveSupports(current, readOnly, timeout, isolationLevel);
-			case NOT_SUPPORTED -> this.resolveNotSupported(current, readOnly, timeout, isolationLevel);
+			case REQUIRED -> this.resolveRequired(current, readOnly, isolationLevel);
+			case REQUIRES_NEW -> this.resolveRequiresNew(current, readOnly, isolationLevel);
+			case NESTED -> this.resolveNested(current, readOnly, isolationLevel);
+			case SUPPORTS -> this.resolveSupports(current, readOnly, isolationLevel);
+			case NOT_SUPPORTED -> this.resolveNotSupported(current, readOnly, isolationLevel);
 			case MANDATORY -> this.resolveMandatory(current);
-			case NEVER -> this.resolveNever(current, readOnly, timeout, isolationLevel);
+			case NEVER -> this.resolveNever(current, readOnly, isolationLevel);
 		};
 		
 		tx.setOnClose(() -> this.restore(tx));
@@ -66,25 +69,28 @@ public class SqlTransactionManager {
 		return tx;
 	}
 	
-	private @NonNull SqlTransaction resolveRequired(@Nullable SqlTransaction current, boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
+	private @NonNull SqlTransaction resolveRequired(@Nullable SqlTransaction current, boolean readOnly, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
 		if (current != null && current.isActive()) {
+			if (current.getIsolationLevel() != isolationLevel) {
+				LOGGER.warn("Joining existing transaction with isolation level {} but caller requested {}; the existing level will be used", current.getIsolationLevel(), isolationLevel);
+			}
 			return this.createJoiningTransaction(current);
 		}
-		return this.createNewTransaction(readOnly, timeout, isolationLevel, null);
+		return this.createNewTransaction(readOnly, isolationLevel, null);
 	}
 	
-	private @NonNull SqlTransaction resolveRequiresNew(@Nullable SqlTransaction current, boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
-		return this.createNewTransaction(readOnly, timeout, isolationLevel, (current != null && current.isActive()) ? current : null);
+	private @NonNull SqlTransaction resolveRequiresNew(@Nullable SqlTransaction current, boolean readOnly, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
+		return this.createNewTransaction(readOnly, isolationLevel, (current != null && current.isActive()) ? current : null);
 	}
 	
-	private @NonNull SqlTransaction resolveNested(@Nullable SqlTransaction current, boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
+	private @NonNull SqlTransaction resolveNested(@Nullable SqlTransaction current, boolean readOnly, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
 		if (current == null || !current.isActive()) {
 			throw new SqlTransactionPropagationException("NESTED propagation requires an active transaction");
 		}
 		
 		try {
 			Savepoint savepoint = current.getConnection().setSavepoint();
-			SqlTransaction tx = new SqlTransaction(current.getConnection(), this.dialect, readOnly, timeout, this.queryTimeout, isolationLevel, false, false, false, null);
+			SqlTransaction tx = new SqlTransaction(current.getConnection(), this.dialect, readOnly, this.queryTimeout, isolationLevel, false, false, false, current);
 			tx.setNestedSavepoint(savepoint);
 			return tx;
 		} catch (SQLException e) {
@@ -92,15 +98,15 @@ public class SqlTransactionManager {
 		}
 	}
 	
-	private @NonNull SqlTransaction resolveSupports(@Nullable SqlTransaction current, boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
+	private @NonNull SqlTransaction resolveSupports(@Nullable SqlTransaction current, boolean readOnly, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
 		if (current != null && current.isActive()) {
 			return this.createJoiningTransaction(current);
 		}
-		return this.createNonTransactional(readOnly, timeout, isolationLevel, null);
+		return this.createNonTransactional(readOnly, isolationLevel, null);
 	}
 	
-	private @NonNull SqlTransaction resolveNotSupported(@Nullable SqlTransaction current, boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
-		return this.createNonTransactional(readOnly, timeout, isolationLevel, (current != null && current.isActive()) ? current : null);
+	private @NonNull SqlTransaction resolveNotSupported(@Nullable SqlTransaction current, boolean readOnly, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
+		return this.createNonTransactional(readOnly, isolationLevel, (current != null && current.isActive()) ? current : null);
 	}
 	
 	private @NonNull SqlTransaction resolveMandatory(@Nullable SqlTransaction current) throws SqlTransactionException {
@@ -110,14 +116,14 @@ public class SqlTransactionManager {
 		return this.createJoiningTransaction(current);
 	}
 	
-	private @NonNull SqlTransaction resolveNever(@Nullable SqlTransaction current, boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
+	private @NonNull SqlTransaction resolveNever(@Nullable SqlTransaction current, boolean readOnly, @NonNull SqlIsolationLevel isolationLevel) throws SqlTransactionException {
 		if (current != null && current.isActive()) {
 			throw new SqlTransactionPropagationException("NEVER propagation forbids an active transaction");
 		}
-		return this.createNonTransactional(readOnly, timeout, isolationLevel, null);
+		return this.createNonTransactional(readOnly, isolationLevel, null);
 	}
 	
-	private @NonNull SqlTransaction createNewTransaction(boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @Nullable SqlTransaction suspended) throws SqlTransactionException {
+	private @NonNull SqlTransaction createNewTransaction(boolean readOnly, @NonNull SqlIsolationLevel isolationLevel, @Nullable SqlTransaction suspended) throws SqlTransactionException {
 		Connection connection = this.acquireConnection(readOnly, isolationLevel);
 		
 		try {
@@ -126,14 +132,14 @@ public class SqlTransactionManager {
 			this.closeConnectionQuietly(connection);
 			throw new SqlTransactionException("Failed to disable auto-commit", e);
 		}
-		return new SqlTransaction(connection, this.dialect, readOnly, timeout, this.queryTimeout, isolationLevel, true, true, false, suspended);
+		return new SqlTransaction(connection, this.dialect, readOnly, this.queryTimeout, isolationLevel, true, true, false, suspended);
 	}
 	
 	private @NonNull SqlTransaction createJoiningTransaction(@NonNull SqlTransaction current) {
-		return new SqlTransaction(current.getConnection(), this.dialect, current.isReadOnly(), current.getTimeout(), this.queryTimeout, current.getIsolationLevel(), false, false, false, null);
+		return new SqlTransaction(current.getConnection(), this.dialect, current.isReadOnly(), this.queryTimeout, current.getIsolationLevel(), false, false, false, null);
 	}
 	
-	private @NonNull SqlTransaction createNonTransactional(boolean readOnly, @NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @Nullable SqlTransaction suspended) throws SqlTransactionException {
+	private @NonNull SqlTransaction createNonTransactional(boolean readOnly, @NonNull SqlIsolationLevel isolationLevel, @Nullable SqlTransaction suspended) throws SqlTransactionException {
 		Connection connection = this.acquireConnection(readOnly, isolationLevel);
 		
 		try {
@@ -142,7 +148,7 @@ public class SqlTransactionManager {
 			this.closeConnectionQuietly(connection);
 			throw new SqlTransactionException("Failed to enable auto-commit", e);
 		}
-		return new SqlTransaction(connection, this.dialect, readOnly, timeout, this.queryTimeout, isolationLevel, true, false, true, suspended);
+		return new SqlTransaction(connection, this.dialect, readOnly, this.queryTimeout, isolationLevel, true, false, true, suspended);
 	}
 	
 	@SuppressWarnings("MagicConstant")

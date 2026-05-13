@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.dialect.rendering.base.SqlRenderingHelper;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
@@ -66,7 +67,7 @@ public class MariaDbDialect extends MySqlDialect {
 		if (columns.isEmpty()) {
 			renderer.literal("*");
 		} else {
-			this.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 		}
 		return renderer.toSql();
 	}

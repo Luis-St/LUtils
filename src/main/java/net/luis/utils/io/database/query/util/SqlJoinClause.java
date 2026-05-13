@@ -53,7 +53,11 @@ public class SqlJoinClause implements SqlRenderable {
 	}
 	
 	public SqlJoinClause(@NonNull SqlSelectQuery<?> lateralSubquery, @NonNull SqlAlias lateralAlias) {
-		this.type = SqlJoinType.CROSS;
+		this(SqlJoinType.CROSS, lateralSubquery, lateralAlias);
+	}
+	
+	public SqlJoinClause(@NonNull SqlJoinType type, @NonNull SqlSelectQuery<?> lateralSubquery, @NonNull SqlAlias lateralAlias) {
+		this.type = Objects.requireNonNull(type, "Sql join type must not be null");
 		this.table = null;
 		this.on = null;
 		this.lateralSubquery = Objects.requireNonNull(lateralSubquery, "Sql lateral subquery must not be null");
@@ -98,7 +102,7 @@ public class SqlJoinClause implements SqlRenderable {
 		}
 		
 		if (this.lateralSubquery != null && this.lateralAlias != null) {
-			renderer.openingBracket().rendered(this.lateralSubquery.toSql(dialect)).closingBracket().literal("AS").literal(dialect.quoteIdentifier(this.lateralAlias.get()));
+			renderer.lateral().openingBracket().rendered(this.lateralSubquery.toSql(dialect)).closingBracket().literal("AS").literal(dialect.quoteIdentifier(this.lateralAlias.get()));
 		} else if (this.table != null) {
 			renderer.literal(dialect.quoteIdentifier(this.table.getName()));
 			if (this.on != null) {

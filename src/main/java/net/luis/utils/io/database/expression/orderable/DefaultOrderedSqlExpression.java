@@ -55,6 +55,32 @@ public record DefaultOrderedSqlExpression<T>(
 	}
 	
 	@Override
+	public @NonNull OrderedSqlExpression<T> ascending() {
+		return new AscendingOrderedSqlExpression<>(this.expression, this.nullOrdering);
+	}
+	
+	@Override
+	public @NonNull OrderedSqlExpression<T> descending() {
+		return new DescendingOrderedSqlExpression<>(this.expression, this.nullOrdering);
+	}
+	
+	@Override
+	public @NonNull OrderedSqlExpression<T> nullsFirst() {
+		if (this.nullOrdering == SqlNullOrdering.NULLS_FIRST) {
+			return this;
+		}
+		return new DefaultOrderedSqlExpression<>(this.expression, SqlNullOrdering.NULLS_FIRST);
+	}
+	
+	@Override
+	public @NonNull OrderedSqlExpression<T> nullsLast() {
+		if (this.nullOrdering == SqlNullOrdering.NULLS_LAST) {
+			return this;
+		}
+		return new DefaultOrderedSqlExpression<>(this.expression, SqlNullOrdering.NULLS_LAST);
+	}
+	
+	@Override
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		return dialect.renderExpression(this);

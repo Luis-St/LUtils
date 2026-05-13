@@ -40,4 +40,9 @@ public record SqlNumericDivideFunction<T extends Number>(
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(divisor, "Sql divisor expression must not be null");
 	}
+	
+	@Override
+	public boolean requiresCast() {
+		return true;
+	}
 }

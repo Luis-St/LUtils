@@ -28,7 +28,6 @@ import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.table.SqlTableProvider;
 import net.luis.utils.io.database.transaction.*;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 
@@ -50,7 +49,6 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	private final DataSource dataSource;
 	private final SqlDialect dialect;
 	private final Duration queryTimeout;
-	private final Duration defaultTransactionTimeout;
 	private final SqlIsolationLevel defaultTransactionIsolationLevel;
 	private final SqlPropagation defaultTransactionPropagation;
 	private final boolean autoCloseDataSource;
@@ -58,9 +56,8 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	
 	SqlDatabase(
 		@NonNull DataSource dataSource,
-		@NotNull SqlDialect dialect,
+		@NonNull SqlDialect dialect,
 		@NonNull Duration queryTimeout,
-		@NonNull Duration defaultTransactionTimeout,
 		@NonNull SqlIsolationLevel defaultTransactionIsolationLevel,
 		@NonNull SqlPropagation defaultTransactionPropagation,
 		boolean autoCloseDataSource
@@ -68,14 +65,13 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
-		this.defaultTransactionTimeout = Objects.requireNonNull(defaultTransactionTimeout, "Default transaction timeout must not be null");
 		this.defaultTransactionIsolationLevel = Objects.requireNonNull(defaultTransactionIsolationLevel, "Default transaction isolation level must not be null");
 		this.defaultTransactionPropagation = Objects.requireNonNull(defaultTransactionPropagation, "Default transaction propagation behavior must not be null");
 		this.autoCloseDataSource = autoCloseDataSource;
 		this.transactionManager = new SqlTransactionManager(dataSource, dialect, queryTimeout);
 	}
 	
-	public static @NonNull SqlDatabaseBuilder builder(@NonNull DataSource dataSource, @NotNull SqlDialect dialect) {
+	public static @NonNull SqlDatabaseBuilder builder(@NonNull DataSource dataSource, @NonNull SqlDialect dialect) {
 		return new SqlDatabaseBuilder(dataSource, dialect);
 	}
 	
@@ -83,7 +79,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		return this.dataSource;
 	}
 	
-	public @NotNull SqlDialect getDialect() {
+	public @NonNull SqlDialect getDialect() {
 		return this.dialect;
 	}
 	
@@ -104,29 +100,29 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	}
 	
 	@Override
-	public void createSchema(@NotNull String name) throws SqlException {
+	public void createSchema(@NonNull String name) throws SqlException {
 		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		try (Connection connection = this.dataSource.getConnection(); Statement statement = connection.createStatement()) {
-			statement.execute("CREATE SCHEMA " + this.dialect.quoteIdentifier(name));
+			statement.execute(this.dialect.renderCreateSchema(name, false).sql());
 		} catch (SQLException e) {
 			throw new SqlException("Failed to create schema " + name, e);
 		}
 	}
 	
 	@Override
-	public void createSchemaIfNotExists(@NotNull String name) throws SqlException {
+	public void createSchemaIfNotExists(@NonNull String name) throws SqlException {
 		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		try (Connection connection = this.dataSource.getConnection(); Statement statement = connection.createStatement()) {
-			statement.execute("CREATE SCHEMA IF NOT EXISTS " + this.dialect.quoteIdentifier(name));
+			statement.execute(this.dialect.renderCreateSchema(name, true).sql());
 		} catch (SQLException e) {
 			throw new SqlException("Failed to create schema " + name, e);
 		}
 	}
 	
 	@Override
-	public boolean existsSchema(@NotNull String name) throws SqlException {
+	public boolean existsSchema(@NonNull String name) throws SqlException {
 		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		try (Connection connection = this.dataSource.getConnection(); ResultSet resultSet = connection.getMetaData().getSchemas()) {
@@ -142,15 +138,11 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	}
 	
 	@Override
-	public void dropSchema(@NotNull String name, boolean cascade) throws SqlException {
+	public void dropSchema(@NonNull String name, boolean cascade) throws SqlException {
 		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		try (Connection connection = this.dataSource.getConnection(); Statement statement = connection.createStatement()) {
-			String sql = "DROP SCHEMA " + this.dialect.quoteIdentifier(name);
-			if (cascade) {
-				sql += " CASCADE";
-			}
-			statement.execute(sql);
+			statement.execute(this.dialect.renderDropSchema(name, false, cascade).sql());
 		} catch (SQLException e) {
 			throw new SqlException("Failed to drop schema " + name, e);
 		}
@@ -160,10 +152,17 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	public @NonNull <T> SqlTableProvider<T> table(@NonNull SqlTable<T> table) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		
+		Connection connection = null;
 		try {
-			return new SqlTableProvider<>(table, this.dialect, this.dataSource.getConnection(), this.queryTimeout);
+			connection = this.dataSource.getConnection();
+			return new SqlTableProvider<>(table, this.dialect, connection, this.queryTimeout);
 		} catch (SQLException e) {
 			throw new SqlConnectionException("Failed to obtain connection for table " + table.getName(), e);
+		} catch (RuntimeException e) {
+			if (connection != null) {
+				try {connection.close();} catch (SQLException suppressed) {e.addSuppressed(suppressed);}
+			}
+			throw e;
 		}
 	}
 	
@@ -171,27 +170,34 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	public @NonNull <T> SqlQueryProvider<T> from(@NonNull SqlTable<T> table) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		
+		Connection connection = null;
 		try {
-			return new SqlQueryProvider<>(table, this.dialect, this.dataSource.getConnection(), this.queryTimeout);
+			connection = this.dataSource.getConnection();
+			return new SqlQueryProvider<>(table, this.dialect, connection, this.queryTimeout);
 		} catch (SQLException e) {
 			throw new SqlConnectionException("Failed to obtain connection for table " + table.getName(), e);
+		} catch (RuntimeException e) {
+			if (connection != null) {
+				try {connection.close();} catch (SQLException suppressed) {e.addSuppressed(suppressed);}
+			}
+			throw e;
 		}
 	}
 	
 	public @NonNull SqlTransaction beginTransaction() throws SqlTransactionException {
-		return this.transactionManager.begin(false, this.defaultTransactionTimeout, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation);
+		return this.transactionManager.begin(false, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation);
 	}
 	
-	public @NonNull SqlTransaction beginTransaction(@NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlTransactionException {
-		return this.transactionManager.begin(false, timeout, isolationLevel, propagation);
+	public @NonNull SqlTransaction beginTransaction(@NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlTransactionException {
+		return this.transactionManager.begin(false, isolationLevel, propagation);
 	}
 	
 	public @NonNull SqlTransaction beginReadOnlyTransaction() throws SqlTransactionException {
-		return this.transactionManager.begin(true, this.defaultTransactionTimeout, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation);
+		return this.transactionManager.begin(true, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation);
 	}
 	
-	public @NonNull SqlTransaction beginReadOnlyTransaction(@NonNull Duration timeout, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlTransactionException {
-		return this.transactionManager.begin(true, timeout, isolationLevel, propagation);
+	public @NonNull SqlTransaction beginReadOnlyTransaction(@NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlTransactionException {
+		return this.transactionManager.begin(true, isolationLevel, propagation);
 	}
 	
 	public <T> @UnknownNullability T inTransaction(@NonNull ThrowableFunction<SqlTransaction, T, SqlException> action) throws SqlException {

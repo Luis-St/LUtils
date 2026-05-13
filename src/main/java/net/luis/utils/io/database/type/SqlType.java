@@ -48,7 +48,6 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		return inferrer.inferType(value);
 	}
 	
-	
 	@SuppressWarnings("unchecked")
 	static <T> void setUnsafe(@NonNull SqlType<T> type, @NonNull SqlDialect dialect, @NonNull PreparedStatement statement, int index, Object value) throws SqlException {
 		Objects.requireNonNull(type, "Sql type must not be null");

@@ -34,6 +34,7 @@ import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -98,4 +99,28 @@ public interface SqlDialect {
 	@NonNull SqlRendered renderBooleanLiteral(boolean value) throws SqlException;
 	
 	@NonNull SqlRendered renderOrdering(@NonNull SqlOrdering ordering, @NonNull SqlNullOrdering nullOrdering) throws SqlException;
+	
+	@NonNull SqlRendered renderCreateSchema(@NonNull String name, boolean ifNotExists) throws SqlException;
+	
+	@NonNull SqlRendered renderDropSchema(@NonNull String name, boolean ifExists, boolean cascade) throws SqlException;
+	
+	@NonNull SqlRendered renderAutoIncrementKeyword() throws SqlException;
+	
+	@NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) throws SqlException;
+	
+	@NonNull SqlRendered renderInsertOrIgnoreModifier() throws SqlException;
+	
+	@NonNull SqlRendered renderInsertOrIgnoreSuffix(@NonNull List<SqlColumn<?, ?>> conflictColumns) throws SqlException;
+	
+	@NonNull SqlRendered renderAlterColumnType(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> newType) throws SqlException;
+	
+	@NonNull SqlRendered renderAlterColumnNullability(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> columnType, boolean nullable) throws SqlException;
+	
+	@NonNull SqlRendered renderAlterColumnSetDefault(@NonNull String tableName, @NonNull String columnName, @NonNull String renderedDefault) throws SqlException;
+	
+	@NonNull SqlRendered renderAlterColumnDropDefault(@NonNull String tableName, @NonNull String columnName) throws SqlException;
+	
+	@NonNull SqlRendered renderDropIndex(@NonNull String tableName, @NonNull String indexName) throws SqlException;
+	
+	@NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException;
 }

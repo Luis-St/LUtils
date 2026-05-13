@@ -95,16 +95,12 @@ public final class MappedSqlType<S, T> implements SqlType<T> {
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof MappedSqlType<?, ?> that)) return false;
-		
-		if (!this.sourceType.equals(that.sourceType)) return false;
-		if (!this.javaType.equals(that.javaType)) return false;
-		if (!this.fromTargetToSource.equals(that.fromTargetToSource)) return false;
-		return this.fromSourceToTarget.equals(that.fromSourceToTarget);
+		return this.sourceType.equals(that.sourceType) && this.javaType.equals(that.javaType);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.sourceType, this.javaType, this.fromTargetToSource, this.fromSourceToTarget);
+		return Objects.hash(this.sourceType, this.javaType);
 	}
 	
 	@Override

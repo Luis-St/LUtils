@@ -27,7 +27,6 @@ import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.util.Pair;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -42,18 +41,24 @@ import java.util.*;
  *
  */
 
-public class SqlTableProvider<E> {
+public class SqlTableProvider<E> implements AutoCloseable {
 	
 	private final SqlTable<E> table;
 	private final SqlDialect dialect;
 	private final Connection connection;
 	private final Duration queryTimeout;
+	private final boolean ownsConnection;
 	
 	public SqlTableProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout) {
+		this(table, dialect, connection, queryTimeout, true);
+	}
+	
+	public SqlTableProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, boolean ownsConnection) {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
+		this.ownsConnection = ownsConnection;
 	}
 	
 	private void executeStatement(@NonNull SqlRendered rendered) throws SqlException {
@@ -67,7 +72,11 @@ public class SqlTableProvider<E> {
 				SqlType.setUnsafe(pair.getFirst(), this.dialect, statement, i + 1, pair.getSecond());
 			}
 			
-			statement.setQueryTimeout((int) this.queryTimeout.toSeconds());
+			long seconds = this.queryTimeout.toSeconds();
+			if (seconds == 0 && !this.queryTimeout.isZero()) {
+				seconds = 1;
+			}
+			statement.setQueryTimeout((int) Math.min(seconds, Integer.MAX_VALUE));
 			statement.execute();
 		} catch (SQLException e) {
 			throw new SqlException("Failed to execute statement: " + rendered.sql(), e);
@@ -83,11 +92,8 @@ public class SqlTableProvider<E> {
 	}
 	
 	public boolean exists() throws SqlException {
-		try {
-			ResultSet resultSet = this.connection.getMetaData().getTables(null, this.table.getSchema(), this.table.getName(), new String[] { "TABLE" });
-			boolean exists = resultSet.next();
-			resultSet.close();
-			return exists;
+		try (ResultSet resultSet = this.connection.getMetaData().getTables(null, this.table.getSchema(), this.table.getName(), new String[] { "TABLE" })) {
+			return resultSet.next();
 		} catch (SQLException e) {
 			throw new SqlException("Failed to check if table " + this.table.getName() + " exists", e);
 		}
@@ -105,15 +111,15 @@ public class SqlTableProvider<E> {
 		this.executeStatement(this.dialect.renderDropTable(this.table, true));
 	}
 	
-	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<E, ?>> columns, @NonNull SqlIndexMethod method) throws SqlException {
+	public void createIndex(@NonNull String name, @NonNull List<SqlColumn<E, ?>> columns, @NonNull SqlIndexMethod method) throws SqlException {
 		this.createIndex(name, columns, false, null, method);
 	}
 	
-	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<E, ?>> columns, boolean unique, @NonNull SqlIndexMethod method) throws SqlException {
+	public void createIndex(@NonNull String name, @NonNull List<SqlColumn<E, ?>> columns, boolean unique, @NonNull SqlIndexMethod method) throws SqlException {
 		this.createIndex(name, columns, unique, null, method);
 	}
 	
-	public void createIndex(@NotNull String name, @NonNull List<SqlColumn<E, ?>> columns, boolean unique, @Nullable SqlCondition whereCondition, @NonNull SqlIndexMethod method) throws SqlException {
+	public void createIndex(@NonNull String name, @NonNull List<SqlColumn<E, ?>> columns, boolean unique, @Nullable SqlCondition whereCondition, @NonNull SqlIndexMethod method) throws SqlException {
 		Objects.requireNonNull(name, "Index name must not be null");
 		Objects.requireNonNull(columns, "Index columns must not be null");
 		Objects.requireNonNull(method, "Index method must not be null");
@@ -135,10 +141,8 @@ public class SqlTableProvider<E> {
 		this.executeStatement(this.dialect.renderCreateIndex(index));
 	}
 	
-	public @NotNull @Unmodifiable List<SqlIndex> getIndexes() throws SqlException {
-		try {
-			
-			ResultSet resultSet = this.connection.getMetaData().getIndexInfo(null, this.table.getSchema(), this.table.getName(), false, false);
+	public @NonNull @Unmodifiable List<SqlIndex> getIndexes() throws SqlException {
+		try (ResultSet resultSet = this.connection.getMetaData().getIndexInfo(null, this.table.getSchema(), this.table.getName(), false, false)) {
 			Map<String, List<SqlColumn<?, ?>>> indexColumns = new LinkedHashMap<>();
 			Map<String, Boolean> indexUnique = new LinkedHashMap<>();
 			
@@ -164,8 +168,6 @@ public class SqlTableProvider<E> {
 				}
 			}
 			
-			resultSet.close();
-			
 			List<SqlIndex> indexes = Lists.newArrayList();
 			for (Map.Entry<String, List<SqlColumn<?, ?>>> entry : indexColumns.entrySet()) {
 				indexes.add(new SqlIndex(entry.getKey(), List.copyOf(entry.getValue()), indexUnique.getOrDefault(entry.getKey(), false), SqlIndexMethod.BTREE));
@@ -176,8 +178,20 @@ public class SqlTableProvider<E> {
 		}
 	}
 	
-	public void dropIndex(@NotNull String name) throws SqlException {
+	public void dropIndex(@NonNull String name) throws SqlException {
 		Objects.requireNonNull(name, "Index name must not be null");
 		this.executeStatement(this.dialect.renderDropIndex(this.table, name));
+	}
+	
+	@Override
+	public void close() throws SqlException {
+		if (!this.ownsConnection) {
+			return;
+		}
+		try {
+			this.connection.close();
+		} catch (SQLException e) {
+			throw new SqlException("Failed to close connection for table " + this.table.getName(), e);
+		}
 	}
 }

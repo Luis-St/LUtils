@@ -79,11 +79,12 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 			}
 			
 			try {
-				Object[] raw = (Object[]) arr.getArray();
+				Object arrayData = arr.getArray();
+				int length = Array.getLength(arrayData);
 				
-				E[] result = (E[]) Array.newInstance(this.elementType.javaType(), raw.length);
-				for (int i = 0; i < raw.length; i++) {
-					result[i] = this.elementType.javaType().cast(raw[i]);
+				E[] result = (E[]) Array.newInstance(this.elementType.javaType(), length);
+				for (int i = 0; i < length; i++) {
+					result[i] = this.elementType.javaType().cast(Array.get(arrayData, i));
 				}
 				return result;
 			} finally {
@@ -113,11 +114,7 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 			}
 			
 			java.sql.Array array = preparedStatement.getConnection().createArrayOf(dialect.getTypeName(this.elementType), value);
-			try {
-				preparedStatement.setArray(columnIndex, array);
-			} finally {
-				array.free();
-			}
+			preparedStatement.setArray(columnIndex, array);
 		} catch (SQLException e) {
 			throw new SqlStatementBindException("Failed to bind array value to prepared statement at column index " + columnIndex, e);
 		}

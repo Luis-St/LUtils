@@ -53,9 +53,10 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	private final ThrowableFunction<ResultSet, E, SqlException> rowMapper;
 	private final List<SqlJoinClause> joins;
 	private final @Nullable SqlCondition whereCondition;
+	private final boolean allowAll;
 	
 	public SqlDeleteQuery(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper) {
-		this(table, dialect, connection, queryTimeout, rowMapper, List.of(), null);
+		this(table, dialect, connection, queryTimeout, rowMapper, List.of(), null, false);
 	}
 	
 	private SqlDeleteQuery(
@@ -65,7 +66,8 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 		@NonNull Duration queryTimeout,
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
 		@NonNull List<SqlJoinClause> joins,
-		@Nullable SqlCondition whereCondition
+		@Nullable SqlCondition whereCondition,
+		boolean allowAll
 	) {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
@@ -74,6 +76,7 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 		this.rowMapper = Objects.requireNonNull(rowMapper, "Row mapper must not be null");
 		this.joins = Objects.requireNonNull(joins, "Sql join clauses must not be null");
 		this.whereCondition = whereCondition;
+		this.allowAll = allowAll;
 	}
 	
 	private @NonNull SqlDeleteQuery<E> withJoin(@NonNull SqlJoinClause join) {
@@ -84,7 +87,8 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 			this.queryTimeout,
 			this.rowMapper,
 			SqlQuery.copyAndAdd(this.joins, join),
-			this.whereCondition
+			this.whereCondition,
+			this.allowAll
 		);
 	}
 	
@@ -114,6 +118,9 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public @NonNull SqlDeleteQuery<E> where(@NonNull SqlCondition condition) {
+		Objects.requireNonNull(condition, "Sql where condition must not be null");
+		
+		SqlCondition combined = this.whereCondition != null ? SqlCondition.allOf(this.whereCondition, condition) : condition;
 		return new SqlDeleteQuery<>(
 			this.table,
 			this.dialect,
@@ -121,14 +128,31 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 			this.queryTimeout,
 			this.rowMapper,
 			this.joins,
-			Objects.requireNonNull(condition, "Sql where condition must not be null")
+			combined,
+			this.allowAll
+		);
+	}
+	
+	public @NonNull SqlDeleteQuery<E> allowAll() {
+		return new SqlDeleteQuery<>(
+			this.table,
+			this.dialect,
+			this.connection,
+			this.queryTimeout,
+			this.rowMapper,
+			this.joins,
+			this.whereCondition,
+			true
 		);
 	}
 	
 	public int execute() throws SqlException {
+		if (this.whereCondition == null && !this.allowAll) {
+			throw new SqlException("DELETE without WHERE clause would affect all rows; call allowAll() to confirm this is intentional");
+		}
 		return SqlQueryExecutor.executeUpdate(this.dialect, this.connection, this.toSql(this.dialect), this.queryTimeout);
 	}
-
+	
 	public @NonNull List<E> returning() throws SqlException {
 		return SqlQueryExecutor.executeReturningQuery(
 			this.dialect, this.connection, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.getColumns())), this.queryTimeout, this.rowMapper

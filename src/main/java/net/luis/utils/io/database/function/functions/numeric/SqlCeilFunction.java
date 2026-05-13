@@ -36,4 +36,9 @@ public record SqlCeilFunction<T extends Number>(@NonNull SqlExpression<T> expres
 	public SqlCeilFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}
+	
+	@Override
+	public boolean requiresCast() {
+		return true;
+	}
 }

@@ -20,7 +20,6 @@ package net.luis.utils.io.database.index;
 
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.table.SqlColumn;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -40,7 +39,7 @@ public record SqlIndex(
 	@NonNull SqlIndexMethod method
 ) {
 	
-	public SqlIndex(@NonNull String name, @NonNull List<SqlColumn<?, ?>> columns, boolean unique, @NotNull SqlIndexMethod method) {
+	public SqlIndex(@NonNull String name, @NonNull List<SqlColumn<?, ?>> columns, boolean unique, @NonNull SqlIndexMethod method) {
 		this(name, columns, unique, null, method);
 	}
 }

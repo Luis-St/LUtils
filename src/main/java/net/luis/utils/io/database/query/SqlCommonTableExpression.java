@@ -34,7 +34,7 @@ public record SqlCommonTableExpression(
 	@NonNull SqlSelectQuery<?> query,
 	boolean recursive
 ) {
-
+	
 	public SqlCommonTableExpression {
 		Objects.requireNonNull(alias, "Sql common table expression alias must not be null");
 		Objects.requireNonNull(query, "Sql common table expression query must not be null");

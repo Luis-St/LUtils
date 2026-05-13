@@ -23,7 +23,6 @@ import net.luis.utils.io.database.function.functions.SqlAggregateFunction;
 import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.type.SqlTypes;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -33,7 +32,7 @@ import java.util.Objects;
  *
  */
 
-public record SqlCountDistinctFunction(@Nullable SqlExpression<?> expression) implements SqlAggregateFunction<Long> {
+public record SqlCountDistinctFunction(@NonNull SqlExpression<?> expression) implements SqlAggregateFunction<Long> {
 	
 	public SqlCountDistinctFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");

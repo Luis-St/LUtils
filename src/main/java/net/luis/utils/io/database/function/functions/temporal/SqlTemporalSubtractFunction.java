@@ -21,6 +21,7 @@ package net.luis.utils.io.database.function.functions.temporal;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
 import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -33,12 +34,14 @@ import java.util.Objects;
 
 public record SqlTemporalSubtractFunction<T>(
 	@NonNull SqlExpression<?> minuend,
+	@NonNull SqlTemporalPart part,
 	@NonNull SqlExpression<?> subtrahend,
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
 	public SqlTemporalSubtractFunction {
 		Objects.requireNonNull(minuend, "Sql minuend expression must not be null");
+		Objects.requireNonNull(part, "Sql temporal part must not be null");
 		Objects.requireNonNull(subtrahend, "Sql subtrahend expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");
 	}

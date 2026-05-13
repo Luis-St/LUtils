@@ -18,15 +18,20 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.dialect.rendering.base.SqlFunctionRenderer;
+import net.luis.utils.io.database.dialect.rendering.base.SqlRenderingHelper;
+import net.luis.utils.io.database.dialect.rendering.sqlite.SqliteTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.*;
+import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.sql.Types;
 import java.util.*;
@@ -43,13 +48,19 @@ public class SqliteDialect extends AbstractSqlDialect {
 		SqlFeature.RETURNING,
 		SqlFeature.CTE,
 		SqlFeature.RECURSIVE_CTE,
-		SqlFeature.NULLS_ORDERING,
-		SqlFeature.FOR_UPDATE
+		SqlFeature.NULLS_ORDERING
 	);
 	
 	@Override
 	public @NonNull String name() {
 		return "SQLite";
+	}
+	
+	@Override
+	protected @NonNull SqlFunctionRenderer createFunctionRenderer() {
+		return SqlFunctionRenderer.builder(this)
+			.temporal(new SqliteTemporalFunctionRenderer(this))
+			.build();
 	}
 	
 	@Override
@@ -68,7 +79,7 @@ public class SqliteDialect extends AbstractSqlDialect {
 		return switch (jdbcType) {
 			case Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR, Types.TIME, Types.TIMESTAMP, Types.TIME_WITH_TIMEZONE, Types.TIMESTAMP_WITH_TIMEZONE -> "TEXT";
 			case Types.BINARY, Types.VARBINARY -> "BLOB";
-			case Types.NUMERIC, Types.DECIMAL -> "REAL";
+			case Types.NUMERIC, Types.DECIMAL -> "NUMERIC";
 			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
 		};
 	}
@@ -121,7 +132,7 @@ public class SqliteDialect extends AbstractSqlDialect {
 		if (columns.isEmpty()) {
 			renderer.literal("*");
 		} else {
-			this.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 		}
 		return renderer.toSql();
 	}
@@ -129,5 +140,30 @@ public class SqliteDialect extends AbstractSqlDialect {
 	@Override
 	public @NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("Row-level locking is not supported by dialect " + this.name());
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnType(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> newType) throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN is not supported by dialect " + this.name() + ", table recreation is required");
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnNullability(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> columnType, boolean nullable) throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN is not supported by dialect " + this.name() + ", table recreation is required");
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnSetDefault(@NonNull String tableName, @NonNull String columnName, @NonNull String renderedDefault) throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN is not supported by dialect " + this.name() + ", table recreation is required");
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnDropDefault(@NonNull String tableName, @NonNull String columnName) throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN is not supported by dialect " + this.name() + ", table recreation is required");
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("RENAME INDEX is not supported by dialect " + this.name());
 	}
 }

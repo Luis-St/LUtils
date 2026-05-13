@@ -19,18 +19,19 @@
 package net.luis.utils.io.database.migration.store;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.migration.SqlMigrationInfo;
 import net.luis.utils.io.database.migration.SqlMigrationStatus;
+import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
 import net.luis.utils.util.Version;
-import org.intellij.lang.annotations.Language;
 import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  *
@@ -38,41 +39,71 @@ import java.util.Objects;
  *
  */
 
+@SuppressWarnings("SqlSourceToSinkFlow")
 public class SqlMigrationTableStore implements SqlMigrationStore {
 	
 	private static final String TABLE_NAME = "_sql_migrations";
-	@Language("SQL")
-	private static final String SQL_INITIALIZE = """
-		CREATE TABLE IF NOT EXISTS {SqlTable} (
-			version VARCHAR(64) NOT NULL PRIMARY KEY,
-			description VARCHAR(256) NOT NULL,
-			status VARCHAR(32) NOT NULL,
-			applied_at TIMESTAMP NULL,
-			checksum BIGINT NOT NULL
-		);
-		""";
-	@Language("SQL")
-	private static final String SQL_LOAD = """
-		SELECT version, description, status, applied_at, checksum
-		FROM {SqlTable}
-		ORDER BY version;
-		""";
-	@Language("SQL")
-	private static final String SQL_SAVE = """
-		INSERT INTO {SqlTable} (version, description, status, applied_at, checksum)
-		VALUES (?, ?, ?, ?, ?);
-		""";
-	@Language("SQL")
-	private static final String SQL_UPDATE = """
-		UPDATE {SqlTable}
-		SET status = ?, applied_at = ?
-		WHERE version = ?;
-		""";
 	
 	private final DataSource dataSource;
+	private final SqlDialect dialect;
 	
-	public SqlMigrationTableStore(@NonNull DataSource dataSource) {
+	public SqlMigrationTableStore(@NonNull DataSource dataSource, @NonNull SqlDialect dialect) {
 		this.dataSource = Objects.requireNonNull(dataSource, "Sql data source must not be null");
+		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
+	}
+	
+	private @NonNull String buildInitializeSql() throws SqlException {
+		String table = this.dialect.quoteIdentifier(TABLE_NAME);
+		String version = this.dialect.quoteIdentifier("version");
+		String description = this.dialect.quoteIdentifier("description");
+		String status = this.dialect.quoteIdentifier("status");
+		String appliedAt = this.dialect.quoteIdentifier("applied_at");
+		String checksum = this.dialect.quoteIdentifier("checksum");
+		
+		String varchar64 = this.dialect.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(64)));
+		String varchar256 = this.dialect.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(256)));
+		String varchar32 = this.dialect.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(32)));
+		String timestampType = this.dialect.getTypeName(SqlTypes.LOCAL_DATE_TIME.configure(SqlParameter.fractional(6)));
+		String bigintType = this.dialect.getTypeName(SqlTypes.LONG);
+		
+		return "CREATE TABLE IF NOT EXISTS " + table + " (" +
+			version + " " + varchar64 + " NOT NULL PRIMARY KEY, " +
+			description + " " + varchar256 + " NOT NULL, " +
+			status + " " + varchar32 + " NOT NULL, " +
+			appliedAt + " " + timestampType + " NULL, " +
+			checksum + " " + bigintType + " NOT NULL" +
+			")";
+	}
+	
+	private @NonNull String buildLoadSql() {
+		String table = this.dialect.quoteIdentifier(TABLE_NAME);
+		String version = this.dialect.quoteIdentifier("version");
+		String description = this.dialect.quoteIdentifier("description");
+		String status = this.dialect.quoteIdentifier("status");
+		String appliedAt = this.dialect.quoteIdentifier("applied_at");
+		String checksum = this.dialect.quoteIdentifier("checksum");
+		
+		return "SELECT " + version + ", " + description + ", " + status + ", " + appliedAt + ", " + checksum + " FROM " + table;
+	}
+	
+	private @NonNull String buildSaveSql() {
+		String table = this.dialect.quoteIdentifier(TABLE_NAME);
+		String version = this.dialect.quoteIdentifier("version");
+		String description = this.dialect.quoteIdentifier("description");
+		String status = this.dialect.quoteIdentifier("status");
+		String appliedAt = this.dialect.quoteIdentifier("applied_at");
+		String checksum = this.dialect.quoteIdentifier("checksum");
+		
+		return "INSERT INTO " + table + " (" + version + ", " + description + ", " + status + ", " + appliedAt + ", " + checksum + ") VALUES (?, ?, ?, ?, ?)";
+	}
+	
+	private @NonNull String buildUpdateSql() {
+		String table = this.dialect.quoteIdentifier(TABLE_NAME);
+		String version = this.dialect.quoteIdentifier("version");
+		String status = this.dialect.quoteIdentifier("status");
+		String appliedAt = this.dialect.quoteIdentifier("applied_at");
+		
+		return "UPDATE " + table + " SET " + status + " = ?, " + appliedAt + " = ? WHERE " + version + " = ?";
 	}
 	
 	@Override
@@ -81,7 +112,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 			Connection connection = this.dataSource.getConnection();
 			Statement statement = connection.createStatement()
 		) {
-			statement.execute(SQL_INITIALIZE.replace("{SqlTable}", TABLE_NAME));
+			statement.execute(this.buildInitializeSql());
 		} catch (SQLException e) {
 			throw new SqlException("Failed to initialize migration table", e);
 		}
@@ -92,7 +123,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		try (
 			Connection connection = this.dataSource.getConnection();
 			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery(SQL_LOAD.replace("{SqlTable}", TABLE_NAME))
+			ResultSet resultSet = statement.executeQuery(this.buildLoadSql())
 		) {
 			List<SqlMigrationInfo> results = Lists.newArrayList();
 			
@@ -106,6 +137,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 				
 				results.add(new SqlMigrationInfo(version, description, status, appliedAt, checksum));
 			}
+			results.sort(Comparator.comparing(SqlMigrationInfo::version));
 			return List.copyOf(results);
 		} catch (SQLException e) {
 			throw new SqlException("Failed to load migration history", e);
@@ -118,8 +150,25 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		
 		try (
 			Connection connection = this.dataSource.getConnection();
-			PreparedStatement statement = connection.prepareStatement(SQL_SAVE.replace("{SqlTable}", TABLE_NAME))
+			PreparedStatement statement = connection.prepareStatement(this.buildSaveSql())
 		) {
+			statement.setString(1, info.version().toString());
+			statement.setString(2, info.description());
+			statement.setString(3, info.status().name());
+			statement.setTimestamp(4, info.appliedAt() != null ? Timestamp.from(info.appliedAt()) : null);
+			statement.setLong(5, info.checksum());
+			statement.executeUpdate();
+		} catch (SQLException e) {
+			throw new SqlException("Failed to save migration info for version " + info.version(), e);
+		}
+	}
+	
+	@Override
+	public void save(@NonNull Connection connection, @NonNull SqlMigrationInfo info) throws SqlException {
+		Objects.requireNonNull(connection, "Connection must not be null");
+		Objects.requireNonNull(info, "Sql migration info must not be null");
+		
+		try (PreparedStatement statement = connection.prepareStatement(this.buildSaveSql())) {
 			statement.setString(1, info.version().toString());
 			statement.setString(2, info.description());
 			statement.setString(3, info.status().name());
@@ -138,7 +187,25 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		
 		Instant now = status == SqlMigrationStatus.APPLIED ? Instant.now() : null;
 		
-		try (Connection connection = this.dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(SQL_UPDATE.replace("{SqlTable}", TABLE_NAME))) {
+		try (Connection connection = this.dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(this.buildUpdateSql())) {
+			statement.setString(1, status.name());
+			statement.setTimestamp(2, now != null ? Timestamp.from(now) : null);
+			statement.setString(3, version.toString());
+			statement.executeUpdate();
+		} catch (SQLException e) {
+			throw new SqlException("Failed to update migration status for version " + version, e);
+		}
+	}
+	
+	@Override
+	public void update(@NonNull Connection connection, @NonNull Version version, @NonNull SqlMigrationStatus status) throws SqlException {
+		Objects.requireNonNull(connection, "Connection must not be null");
+		Objects.requireNonNull(version, "Sql migration version must not be null");
+		Objects.requireNonNull(status, "Sql migration status must not be null");
+		
+		Instant now = status == SqlMigrationStatus.APPLIED ? Instant.now() : null;
+		
+		try (PreparedStatement statement = connection.prepareStatement(this.buildUpdateSql())) {
 			statement.setString(1, status.name());
 			statement.setTimestamp(2, now != null ? Timestamp.from(now) : null);
 			statement.setString(3, version.toString());

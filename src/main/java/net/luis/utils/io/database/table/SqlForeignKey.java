@@ -83,7 +83,7 @@ public class SqlForeignKey<E, T> {
 			throw new IllegalArgumentException("Referenced columns must not be empty");
 		}
 		
-		if (referencingColumns != null) {
+		if (referencingColumns != null && referencingTable != null) {
 			this.validateReferencingColumns();
 		}
 		
@@ -101,8 +101,8 @@ public class SqlForeignKey<E, T> {
 		}
 		
 		for (SqlColumn<?, ?> column : this.referencingColumns) {
-			if (!column.getOwningTable().equals(this.referencedTable)) {
-				throw new IllegalArgumentException("Referencing column '" + column.getName() + "' does not belong to the referenced table '" + this.referencedTable.getName() + "'");
+			if (!this.referencingTable.equals(column.getOwningTable())) {
+				throw new IllegalArgumentException("Referencing column '" + column.getName() + "' does not belong to the referencing table '" + this.referencingTable.getName() + "'");
 			}
 		}
 	}
@@ -121,10 +121,16 @@ public class SqlForeignKey<E, T> {
 	}
 	
 	public @NonNull SqlTable<E> getReferencingTable() {
+		if (this.referencingTable == null) {
+			throw new IllegalStateException("Foreign key has not been bound to a referencing table yet, call bindTo() first");
+		}
 		return this.referencingTable;
 	}
 	
 	public @NonNull @Unmodifiable List<SqlColumn<E, ?>> getReferencingColumns() {
+		if (this.referencingColumns == null) {
+			throw new IllegalStateException("Foreign key has not been bound to a referencing table yet, call bindTo() first");
+		}
 		return Collections.unmodifiableList(this.referencingColumns);
 	}
 	

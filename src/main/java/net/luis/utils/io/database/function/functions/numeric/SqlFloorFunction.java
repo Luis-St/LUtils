@@ -36,4 +36,9 @@ public record SqlFloorFunction<T extends Number>(@NonNull SqlExpression<T> expre
 	public SqlFloorFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}
+	
+	@Override
+	public boolean requiresCast() {
+		return true;
+	}
 }

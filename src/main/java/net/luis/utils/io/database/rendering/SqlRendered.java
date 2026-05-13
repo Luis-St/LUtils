@@ -37,7 +37,6 @@ public record SqlRendered(
 	@NonNull @Unmodifiable List<Pair<SqlType<?>, Object>> parameters
 ) {
 	
-	
 	public SqlRendered {
 		statements = List.copyOf(Objects.requireNonNull(statements, "Sql statements must not be null"));
 		parameters = List.copyOf(Objects.requireNonNull(parameters, "Sql parameters must not be null"));

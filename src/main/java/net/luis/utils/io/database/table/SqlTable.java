@@ -43,7 +43,7 @@ public class SqlTable<E> {
 	private final List<SqlForeignKey<E, ?>> foreignKeys = Lists.newArrayList();
 	private final List<List<SqlColumn<E, ?>>> uniqueConstraints = Lists.newArrayList();
 	private final List<SqlCondition> checkConstraints = Lists.newArrayList();
-	private final Map</*Name*/ String, SqlColumn<E, ?>> columns = Maps.newHashMap();
+	private final Map</*Name*/ String, SqlColumn<E, ?>> columns = Maps.newLinkedHashMap();
 	
 	SqlTable(
 		@NonNull Class<E> type,
@@ -62,7 +62,9 @@ public class SqlTable<E> {
 		this.foreignKeys.addAll(Objects.requireNonNull(foreignKeys, "Foreign keys must not be null"));
 		this.uniqueConstraints.addAll(Objects.requireNonNull(uniqueConstraints, "Unique constraints must not be null"));
 		this.checkConstraints.addAll(Objects.requireNonNull(checkConstraints, "Check constraints must not be null"));
-		this.columns.putAll(Objects.requireNonNull(columns, "Columns must not be null"));
+		Objects.requireNonNull(columns, "Columns must not be null");
+		
+		columns.entrySet().stream().sorted(Comparator.comparingInt(e -> e.getValue().getIndex())).forEach(e -> this.columns.put(e.getKey(), e.getValue()));
 		
 		if (name.isBlank()) {
 			throw new IllegalArgumentException("Table name must not be blank");
@@ -186,7 +188,7 @@ public class SqlTable<E> {
 	}
 	
 	public @NonNull @Unmodifiable List<List<SqlColumn<E, ?>>> getUniqueConstraints() {
-		return Collections.unmodifiableList(this.uniqueConstraints);
+		return this.uniqueConstraints.stream().map(List::copyOf).toList();
 	}
 	
 	public @NonNull @Unmodifiable List<SqlCondition> getCheckConstraints() {
@@ -196,4 +198,23 @@ public class SqlTable<E> {
 	public @NonNull @Unmodifiable List<SqlColumn<E, ?>> getColumns() {
 		return List.copyOf(this.columns.values());
 	}
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object object) {
+		if (this == object) return true;
+		if (!(object instanceof SqlTable<?> sqlTable)) return false;
+		return Objects.equals(this.name, sqlTable.name) && Objects.equals(this.schema, sqlTable.schema);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.name, this.schema);
+	}
+	
+	@Override
+	public String toString() {
+		return "public".equals(this.schema) ? this.name : this.schema + "." + this.name;
+	}
+	//endregion
 }

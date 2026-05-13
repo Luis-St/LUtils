@@ -21,6 +21,7 @@ package net.luis.utils.io.database.function.functions.temporal;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlTemporalFunction;
 import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -33,12 +34,14 @@ import java.util.Objects;
 
 public record SqlTemporalAddFunction<T>(
 	@NonNull SqlExpression<?> firstSummand,
+	@NonNull SqlTemporalPart part,
 	@NonNull SqlExpression<?> secondSummand,
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
 	public SqlTemporalAddFunction {
 		Objects.requireNonNull(firstSummand, "Sql first summand expression must not be null");
+		Objects.requireNonNull(part, "Sql temporal part must not be null");
 		Objects.requireNonNull(secondSummand, "Sql second summand expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");
 	}

@@ -51,10 +51,11 @@ public record SqlSetClause<E, V>(
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		String quotedColumn = dialect.quoteIdentifier(this.column.getName());
+		String qualifiedColumn = dialect.quoteIdentifier(this.column.getOwningTable().getName()) + "." + quotedColumn;
 		switch (this.type) {
 			case EXPRESSION -> renderer.literal(quotedColumn).literal("=");
-			case INCREMENT -> renderer.literal(quotedColumn).literal("=").literal(quotedColumn).literal("+");
-			case DECREMENT -> renderer.literal(quotedColumn).literal("=").literal(quotedColumn).literal("-");
+			case INCREMENT -> renderer.literal(quotedColumn).literal("=").literal(qualifiedColumn).literal("+");
+			case DECREMENT -> renderer.literal(quotedColumn).literal("=").literal(qualifiedColumn).literal("-");
 		}
 		
 		renderer.rendered(dialect.renderExpression(this.expression));

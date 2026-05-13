@@ -41,9 +41,6 @@ public record SqlPage<T>(
 	public SqlPage {
 		Objects.requireNonNull(content, "Sql page content must not be null");
 		
-		if (content.isEmpty()) {
-			throw new IllegalArgumentException("Sql page content must not be empty");
-		}
 		if (page < 0) {
 			throw new IllegalArgumentException("Sql page index must be non-negative");
 		}

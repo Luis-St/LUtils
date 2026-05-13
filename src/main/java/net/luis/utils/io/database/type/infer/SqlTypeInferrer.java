@@ -20,7 +20,6 @@ package net.luis.utils.io.database.type.infer;
 
 import net.luis.utils.io.database.exception.type.SqlTypeNotFoundException;
 import net.luis.utils.io.database.type.SqlType;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
@@ -41,5 +40,5 @@ public interface SqlTypeInferrer {
 		return new SqlLookupTypeInferrer(lookup);
 	}
 	
-	<T> @NotNull SqlType<T> inferType(@NonNull T value) throws SqlTypeNotFoundException;
+	<T> @NonNull SqlType<T> inferType(@NonNull T value) throws SqlTypeNotFoundException;
 }

@@ -67,6 +67,7 @@ public class SqlMigrationTableBuilder {
 			throw new IllegalArgumentException("Primary key must have at least one column");
 		}
 		
+		this.primaryKeyColumns.clear();
 		this.primaryKeyColumns.addAll(List.of(columns));
 		return this;
 	}

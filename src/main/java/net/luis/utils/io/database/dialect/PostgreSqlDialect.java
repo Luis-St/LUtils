@@ -18,8 +18,11 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.dialect.rendering.base.SqlFunctionRenderer;
+import net.luis.utils.io.database.dialect.rendering.base.SqlRenderingHelper;
+import net.luis.utils.io.database.dialect.rendering.postgres.PostgreSqlTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.*;
+import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
@@ -27,6 +30,7 @@ import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlArrayType;
 import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.parameter.SqlLengthParameter;
 import org.jspecify.annotations.NonNull;
 
 import java.sql.Types;
@@ -70,6 +74,13 @@ public class PostgreSqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	protected @NonNull SqlFunctionRenderer createFunctionRenderer() {
+		return SqlFunctionRenderer.builder(this)
+			.temporal(new PostgreSqlTemporalFunctionRenderer(this))
+			.build();
+	}
+	
+	@Override
 	public boolean isTypeSupported(@NonNull SqlType<?> type) {
 		Objects.requireNonNull(type, "Sql type must not be null");
 		return true;
@@ -89,7 +100,17 @@ public class PostgreSqlDialect extends AbstractSqlDialect {
 	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
 		return switch (jdbcType) {
 			case Types.LONGVARBINARY, Types.BLOB -> "BYTEA";
+			case Types.LONGNVARCHAR, Types.NCLOB, Types.CLOB -> "TEXT";
 			default -> super.getScalarTypeName(jdbcType);
+		};
+	}
+	
+	@Override
+	protected @NonNull String getLengthParameterizedTypeName(int jdbcType, @NonNull SqlLengthParameter length) throws SqlDialectUnsupportedRenderingException {
+		return switch (jdbcType) {
+			case Types.NCHAR -> "CHAR(" + length.length() + ")";
+			case Types.NVARCHAR -> "VARCHAR(" + length.length() + ")";
+			default -> super.getLengthParameterizedTypeName(jdbcType, length);
 		};
 	}
 	
@@ -132,7 +153,7 @@ public class PostgreSqlDialect extends AbstractSqlDialect {
 		if (columns.isEmpty()) {
 			renderer.literal("*");
 		} else {
-			this.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 		}
 		return renderer.toSql();
 	}

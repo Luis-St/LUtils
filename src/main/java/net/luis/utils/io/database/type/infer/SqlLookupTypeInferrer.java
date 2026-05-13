@@ -20,11 +20,9 @@ package net.luis.utils.io.database.type.infer;
 
 import net.luis.utils.io.database.exception.type.SqlTypeNotFoundException;
 import net.luis.utils.io.database.type.SqlType;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  *
@@ -37,17 +35,23 @@ public class SqlLookupTypeInferrer implements SqlTypeInferrer {
 	private final Map<Class<?>, SqlType<?>> lookup;
 	
 	SqlLookupTypeInferrer(@NonNull Map<Class<?>, SqlType<?>> lookup) {
-		this.lookup = Map.copyOf(Objects.requireNonNull(lookup, "Sql type lookup map must not be null"));
+		this.lookup = Collections.unmodifiableMap(new LinkedHashMap<>(Objects.requireNonNull(lookup, "Sql type lookup map must not be null")));
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull <T> SqlType<T> inferType(@NonNull T value) throws SqlTypeNotFoundException {
+	public @NonNull <T> SqlType<T> inferType(@NonNull T value) throws SqlTypeNotFoundException {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		if (!this.lookup.containsKey(value.getClass())) {
+		SqlType<?> type = this.lookup.get(value.getClass());
+		if (type == null) {
+			for (Map.Entry<Class<?>, SqlType<?>> entry : this.lookup.entrySet()) {
+				if (entry.getKey().isAssignableFrom(value.getClass())) {
+					return (SqlType<T>) entry.getValue();
+				}
+			}
 			throw new SqlTypeNotFoundException("No sql type found for java type " + value.getClass().getName() + " in lookup");
 		}
-		return (SqlType<T>) this.lookup.get(value.getClass());
+		return (SqlType<T>) type;
 	}
 }

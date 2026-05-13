@@ -18,31 +18,16 @@
 
 package net.luis.utils.io.database.dialect;
 
-import com.google.common.collect.Lists;
-import net.luis.utils.function.throwable.ThrowableBiConsumer;
-import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.SqlReferentialAction;
-import net.luis.utils.io.database.condition.*;
-import net.luis.utils.io.database.condition.conditions.*;
-import net.luis.utils.io.database.condition.conditions.comparison.*;
-import net.luis.utils.io.database.condition.conditions.numeric.*;
-import net.luis.utils.io.database.condition.conditions.string.*;
-import net.luis.utils.io.database.condition.conditions.temporal.*;
+import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.rendering.base.*;
+import net.luis.utils.io.database.dialect.rendering.base.function.SqlTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
-import net.luis.utils.io.database.expression.*;
+import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.orderable.*;
 import net.luis.utils.io.database.function.SqlFunction;
-import net.luis.utils.io.database.function.functions.*;
-import net.luis.utils.io.database.function.functions.aggregate.*;
-import net.luis.utils.io.database.function.functions.generic.*;
-import net.luis.utils.io.database.function.functions.numeric.*;
-import net.luis.utils.io.database.function.functions.numeric.bitwise.*;
-import net.luis.utils.io.database.function.functions.numeric.trigonometric.*;
-import net.luis.utils.io.database.function.functions.string.*;
-import net.luis.utils.io.database.function.functions.temporal.*;
-import net.luis.utils.io.database.function.functions.window.*;
 import net.luis.utils.io.database.function.window.*;
 import net.luis.utils.io.database.function.window.frame.*;
 import net.luis.utils.io.database.function.window.frame.bound.*;
@@ -55,13 +40,12 @@ import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.*;
-import net.luis.utils.io.database.util.SqlCaseWhenBranch;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.sql.Types;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -71,7 +55,27 @@ import java.util.*;
 
 public abstract class AbstractSqlDialect implements SqlDialect {
 	
-	protected static final SqlType<String> DEFAULT_STRING_TYPE = SqlTypes.STRING.configure(SqlParameter.length(255));
+	private final SqlFunctionRenderer functionRenderer;
+	private final SqlConditionRenderer conditionRenderer;
+	private final SqlExpressionRenderer expressionRenderer;
+	
+	protected AbstractSqlDialect() {
+		this.functionRenderer = this.createFunctionRenderer();
+		this.conditionRenderer = this.createConditionRenderer(this.functionRenderer.temporalRenderer());
+		this.expressionRenderer = this.createExpressionRenderer();
+	}
+	
+	protected @NonNull SqlFunctionRenderer createFunctionRenderer() {
+		return SqlFunctionRenderer.builder(this).build();
+	}
+	
+	protected @NonNull SqlConditionRenderer createConditionRenderer(@NonNull SqlTemporalFunctionRenderer temporalFunctionRenderer) {
+		return SqlConditionRenderer.builder(this, temporalFunctionRenderer).build();
+	}
+	
+	protected @NonNull SqlExpressionRenderer createExpressionRenderer() {
+		return new SqlExpressionRenderer(this);
+	}
 	
 	@Override
 	public boolean isTypeSupported(@NonNull SqlType<?> type) {
@@ -161,457 +165,17 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderExpression(@NonNull SqlExpression<?> expression) throws SqlException {
-		return switch (expression) {
-			case OrderedSqlExpression<?> expr -> this.renderExpression(expr.expression());
-			case SqlAliasedExpression<?> aliased -> this.renderAliasedExpression(aliased);
-			case SqlColumn<?, ?> column -> column.toSql(this);
-			case SqlFunction<?> func -> this.renderFunction(func);
-			case SqlValueExpression<?> value -> this.renderValueExpression(value);
-			
-			case null -> throw new NullPointerException("Sql expression must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql expression type: " + expression.getClass().getName() + " in dialect " + this.name());
-		};
-	}
-	
-	protected @NonNull SqlRendered renderAliasedExpression(@NonNull SqlAliasedExpression<?> expression) throws SqlException {
-		Objects.requireNonNull(expression, "Sql aliased expression must not be null");
-		
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.rendered(this.renderExpression(expression.expression()));
-		renderer.as().literal(this.quoteIdentifier(expression.alias().get()));
-		return renderer.toSql();
-	}
-	
-	protected <T> @NonNull SqlRendered renderValueExpression(@NonNull SqlValueExpression<T> expression) throws SqlException {
-		Objects.requireNonNull(expression, "Sql value expression must not be null");
-		return SqlRenderer.empty().parameter(expression.type(), expression.value()).toSql();
-	}
-	
-	protected <T> void renderList(@NonNull SqlRenderer renderer, @NonNull List<T> values, @NonNull ThrowableBiConsumer<SqlRenderer, T, SqlException> itemRenderer) throws SqlException {
-		Objects.requireNonNull(values, "Values list must not be null");
-		Objects.requireNonNull(itemRenderer, "Item renderer function must not be null");
-		
-		for (int i = 0; i < values.size(); i++) {
-			if (i > 0) {
-				renderer.comma();
-			}
-			
-			itemRenderer.accept(renderer, values.get(i));
-		}
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderInfix(@NonNull SqlExpression<?> first, @NonNull String operator, @NonNull SqlExpression<?> second) {
-		Objects.requireNonNull(first, "First operand must not be null");
-		Objects.requireNonNull(operator, "Operator must not be null");
-		Objects.requireNonNull(second, "Second operand must not be null");
-		
-		return renderer -> renderer.rendered(first.toSql(this)).literal(operator).rendered(second.toSql(this)).toSql();
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderFunction(@NonNull String functionName, SqlExpression<?> @NonNull ... arguments) {
-		Objects.requireNonNull(functionName, "Function name must not be null");
-		Objects.requireNonNull(arguments, "Arguments must not be null");
-		
-		return renderer -> {
-			renderer.literal(functionName).openingBracket();
-			for (int i = 0; i < arguments.length; i++) {
-				if (i > 0) {
-					renderer.comma();
-				}
-				renderer.rendered(arguments[i].toSql(this));
-			}
-			renderer.closingBracket();
-			return renderer.toSql();
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderLiteral(@NonNull String literal) {
-		Objects.requireNonNull(literal, "Literal must not be null");
-		return renderer -> renderer.literal(literal).toSql();
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderCast(@NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> inner, @NonNull SqlType<?> type) {
-		Objects.requireNonNull(inner, "Inner renderer must not be null");
-		Objects.requireNonNull(type, "Target type must not be null");
-		return renderer -> renderer.cast().openingBracket().rendered(inner.apply(SqlRenderer.empty())).as().literal(this.getTypeName(type)).closingBracket().toSql();
-	}
-	
-	protected @NonNull SqlRendered renderFunctionWithList(@NonNull SqlRenderer renderer, @NonNull List<? extends SqlExpression<?>> values) throws SqlException {
-		Objects.requireNonNull(renderer, "Renderer must not be null");
-		Objects.requireNonNull(values, "Values list must not be null");
-		
-		renderer.openingBracket();
-		this.renderList(renderer, values, (r, item) -> r.rendered(item.toSql(this)));
-		renderer.closingBracket();
-		return renderer.toSql();
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderWindowCall(@NonNull String functionName, @NonNull SqlWindowClause over, SqlExpression<?> @NonNull ... arguments) {
-		Objects.requireNonNull(functionName, "Function name must not be null");
-		Objects.requireNonNull(over, "Window clause must not be null");
-		Objects.requireNonNull(arguments, "Arguments must not be null");
-		
-		return renderer -> {
-			renderer.literal(functionName).openingBracket();
-			for (int i = 0; i < arguments.length; i++) {
-				if (i > 0) {
-					renderer.comma();
-				}
-				renderer.rendered(arguments[i].toSql(this));
-			}
-			renderer.closingBracket().over().openingBracket().rendered(over.toSql(this)).closingBracket();
-			return renderer.toSql();
-		};
-	}
-	
-	protected SqlExpression<?> @NonNull [] collectOptionalArgs(@Nullable SqlExpression<?> @NotNull ... arguments) {
-		Objects.requireNonNull(arguments, "Arguments array must not be null");
-		return Lists.newArrayList(arguments).stream().filter(Objects::nonNull).toArray(SqlExpression[]::new);
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderCountDistinctFunction(@NotNull SqlCountDistinctFunction function) {
-		Objects.requireNonNull(function, "Count distinct function must not be null");
-		
-		return renderer -> {
-			renderer.literal("COUNT").openingBracket().distinct();
-			
-			SqlExpression<?> value = function.expression();
-			if (value != null) {
-				renderer.rendered(value.toSql(this));
-			} else {
-				renderer.literal("*");
-			}
-			
-			renderer.closingBracket();
-			return renderer.toSql();
-		};
-	}
-	
-	@SuppressWarnings("DuplicatedCode")
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderConcatFunction(@NonNull SqlConcatFunction<?> function) {
-		Objects.requireNonNull(function, "Concat function must not be null");
-		
-		return renderer -> {
-			List<? extends SqlExpression<? extends CharSequence>> values = function.expressions();
-			Optional<String> separator = function.separator();
-			boolean distinct = function.distinct();
-			boolean ordered = function.ordered();
-			
-			if (distinct || ordered) {
-				renderer.literal("STRING_AGG").openingBracket();
-				
-				if (distinct) {
-					renderer.distinct();
-				}
-				
-				SqlExpression<? extends CharSequence> first = values.isEmpty() ? null : values.getFirst();
-				if (first != null) {
-					renderer.rendered(first.toSql(this));
-				}
-				
-				renderer.comma().parameter(DEFAULT_STRING_TYPE, separator.orElse(""));
-				
-				if (ordered && first != null) {
-					renderer.orderBy().rendered(first.toSql(this));
-				}
-				renderer.closingBracket();
-			} else {
-				for (int i = 0; i < values.size(); i++) {
-					if (i > 0) {
-						renderer.literal("||");
-						separator.ifPresent(s -> renderer.parameter(DEFAULT_STRING_TYPE, s).literal("||"));
-					}
-					
-					renderer.rendered(values.get(i).toSql(this));
-				}
-			}
-			
-			return renderer.toSql();
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderSubstringFunction(@NonNull SqlSubstringFunction<?> function) {
-		Objects.requireNonNull(function, "Substring function must not be null");
-		
-		return renderer -> {
-			renderer.literal("SUBSTRING").openingBracket().rendered(function.expression().toSql(this)).from().rendered(function.start().toSql(this));
-			
-			SqlExpression<? extends Number> length = function.length();
-			if (length != null) {
-				renderer.for_().rendered(length.toSql(this));
-			}
-			
-			renderer.closingBracket();
-			return renderer.toSql();
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderCaseWhenFunction(@NonNull SqlCaseWhenFunction<?> function) {
-		Objects.requireNonNull(function, "Case when function must not be null");
-		
-		return renderer -> {
-			renderer.case_();
-			
-			for (SqlCaseWhenBranch<?> branch : function.branches()) {
-				renderer.when().rendered(branch.condition().toSql(this));
-				renderer.then().rendered(branch.expression().toSql(this));
-			}
-			
-			SqlExpression<?> elseValue = function.elseValue();
-			if (elseValue != null) {
-				renderer.else_().rendered(elseValue.toSql(this));
-			}
-			
-			renderer.end();
-			return renderer.toSql();
-		};
+		return this.expressionRenderer.render(expression);
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderFunction(@NonNull SqlFunction<?> function) throws SqlException {
-		if (function instanceof SqlCastFunction(var value, var targetType)) {
-			return this.renderCast(renderer -> renderer.rendered(value.toSql(this)).toSql(), targetType).apply(SqlRenderer.empty());
-		}
-		
-		return this.renderCast(switch (function) {
-			case SqlAggregateFunction<?> func -> this.renderAggregateFunction(func);
-			case SqlNumericFunction<?> func -> this.renderNumericFunction(func);
-			case SqlStringFunction<?> func -> this.renderStringFunction(func);
-			case SqlTemporalFunction<?> func -> this.renderTemporalFunction(func);
-			case SqlWindowFunction<?> func -> this.renderWindowFunction(func);
-			
-			case null -> throw new NullPointerException("Sql function must not be null");
-			default -> this.renderGenericFunction(function);
-		}, function.type()).apply(SqlRenderer.empty());
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderAggregateFunction(@NonNull SqlAggregateFunction<?> function) throws SqlDialectUnsupportedRenderingException {
-		return switch (function) {
-			case SqlAverageFunction<?> func -> this.renderFunction("AVG", func.expression());
-			case SqlCountFunction func -> func.expression() != null ? this.renderFunction("COUNT", func.expression()) : this.renderLiteral("COUNT(*)");
-			case SqlCountDistinctFunction func -> this.renderCountDistinctFunction(func);
-			case SqlMaxFunction<?> func -> this.renderFunction("MAX", func.expression());
-			case SqlMinFunction<?> func -> this.renderFunction("MIN", func.expression());
-			case SqlSumFunction<?> func -> this.renderFunction("SUM", func.expression());
-			
-			case null -> throw new NullPointerException("Sql aggregate function must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql aggregate function type: " + function.getClass().getName() + " in dialect " + this.name());
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderNumericFunction(@NonNull SqlNumericFunction<?> function) throws SqlDialectUnsupportedRenderingException {
-		return switch (function) {
-			case SqlBitwiseAndFunction<?> func -> this.renderInfix(func.firstOperand(), "&", func.secondOperand());
-			case SqlBitwiseNotFunction<?> func -> renderer -> renderer.literal("~").openingBracket().rendered(func.expression().toSql(this)).closingBracket().toSql();
-			case SqlBitwiseOrFunction<?> func -> this.renderInfix(func.firstOperand(), "|", func.secondOperand());
-			case SqlBitwiseXorFunction<?> func -> this.renderInfix(func.firstOperand(), "^", func.secondOperand());
-			
-			case SqlAcosFunction func -> this.renderFunction("ACOS", func.expression());
-			case SqlAsinFunction func -> this.renderFunction("ASIN", func.expression());
-			case SqlAtan2Function(var y, var x) -> this.renderFunction("ATAN2", y, x);
-			case SqlAtanFunction func -> this.renderFunction("ATAN", func.expression());
-			case SqlCosFunction func -> this.renderFunction("COS", func.expression());
-			case SqlSinFunction func -> this.renderFunction("SIN", func.expression());
-			case SqlTanFunction func -> this.renderFunction("TAN", func.expression());
-			
-			case SqlAbsFunction<?> func -> this.renderFunction("ABS", func.expression());
-			case SqlCeilFunction<?> func -> this.renderFunction("CEIL", func.expression());
-			case SqlDegreesFunction func -> this.renderFunction("DEGREES", func.expression());
-			case SqlExpFunction func -> this.renderFunction("EXP", func.expression());
-			case SqlFloorFunction<?> func -> this.renderFunction("FLOOR", func.expression());
-			case SqlLogFunction(var value, @Nullable SqlExpression<? extends Number> base) -> base != null ? this.renderFunction("LOG", base, value) : this.renderFunction("LN", value);
-			case SqlModFunction(var dividend, var divisor) -> this.renderFunction("MOD", dividend, divisor);
-			case SqlNegateFunction<?> func -> renderer -> renderer.literal("-").openingBracket().rendered(func.expression().toSql(this)).closingBracket().toSql();
-			case SqlNumericAddFunction(var expression, var addend) -> this.renderInfix(expression, "+", addend);
-			case SqlNumericDivideFunction(var expression, var divisor) -> this.renderInfix(expression, "/", divisor);
-			case SqlNumericMultiplyFunction(var expression, var multiplier) -> this.renderInfix(expression, "*", multiplier);
-			case SqlNumericSubtractFunction(var expression, var subtrahend) -> this.renderInfix(expression, "-", subtrahend);
-			case SqlPiFunction _ -> this.renderLiteral("PI()");
-			case SqlPowFunction(var value, var exponent) -> this.renderFunction("POWER", value, exponent);
-			case SqlRadiansFunction func -> this.renderFunction("RADIANS", func.expression());
-			case SqlRandomFunction _ -> this.renderLiteral("RANDOM()");
-			case SqlRoundFunction(var value, @Nullable SqlExpression<? extends Number> precision) -> precision != null ? this.renderFunction("ROUND", value, precision) : this.renderFunction("ROUND", value);
-			case SqlSignFunction func -> this.renderFunction("SIGN", func.expression());
-			case SqlSqrtFunction func -> this.renderFunction("SQRT", func.expression());
-			case SqlNumericTruncateFunction<?> func -> this.renderFunction("TRUNCATE", func.expression());
-			
-			case null -> throw new NullPointerException("Sql numeric function must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql numeric function type: " + function.getClass().getName() + " in dialect " + this.name());
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderStringFunction(@NonNull SqlStringFunction<?> function) throws SqlDialectUnsupportedRenderingException {
-		return switch (function) {
-			case SqlConcatFunction<?> func -> this.renderConcatFunction(func);
-			case SqlHexFunction func -> this.renderFunction("HEX", func.expression());
-			case SqlLeftFunction(var value, var length) -> this.renderFunction("LEFT", value, length);
-			case SqlLeftPadFunction(var value, var length, var fill) -> this.renderFunction("LPAD", value, length, fill);
-			case SqlLeftTrimFunction<?> func -> this.renderFunction("LTRIM", func.expression());
-			case SqlLengthFunction<?> func -> this.renderFunction("LENGTH", func.expression());
-			case SqlLowerFunction<?> func -> this.renderFunction("LOWER", func.expression());
-			case SqlPositionFunction(var substring, var string, _) -> renderer -> renderer.literal("POSITION").openingBracket().rendered(substring.toSql(this)).in().rendered(string.toSql(this)).closingBracket().toSql();
-			case SqlReplaceFunction(var string, var target, var replacement) -> this.renderFunction("REPLACE", string, target, replacement);
-			case SqlRightFunction(var value, var length) -> this.renderFunction("RIGHT", value, length);
-			case SqlRightPadFunction(var value, var length, var fill) -> this.renderFunction("RPAD", value, length, fill);
-			case SqlRightTrimFunction<?> func -> this.renderFunction("RTRIM", func.expression());
-			case SqlSubstringFunction<?> func -> this.renderSubstringFunction(func);
-			case SqlTrimCharsFunction(var value, var chars) -> renderer -> renderer.literal("TRIM").openingBracket().rendered(chars.toSql(this)).from().rendered(value.toSql(this)).closingBracket().toSql();
-			case SqlTrimFunction<?> func -> this.renderFunction("TRIM", func.expression());
-			case SqlUnhexFunction<?> func -> this.renderFunction("UNHEX", func.expression());
-			case SqlUpperFunction<?> func -> this.renderFunction("UPPER", func.expression());
-			
-			case null -> throw new NullPointerException("Sql string function must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql string function type: " + function.getClass().getName() + " in dialect " + this.name());
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderTemporalFunction(@NonNull SqlTemporalFunction<?> function) throws SqlDialectUnsupportedRenderingException {
-		return switch (function) {
-			case SqlTemporalAddFunction(var firstSummand, var secondSummand, _) -> this.renderInfix(firstSummand, "+", secondSummand);
-			case SqlCurrentDateFunction<?> _ -> this.renderLiteral("CURRENT_DATE");
-			case SqlCurrentTimeFunction<?> _ -> this.renderLiteral("CURRENT_TIME");
-			case SqlCurrentTimestampFunction<?> _ -> this.renderLiteral("CURRENT_TIMESTAMP");
-			case SqlExtractFunction(var value, var part, _) -> renderer -> renderer.literal("EXTRACT").openingBracket().keyword(part.name()).from().rendered(value.toSql(this)).closingBracket().toSql();
-			case SqlFromEpochFunction(var epoch, _) -> this.renderFunction("FROM_UNIXTIME", epoch);
-			case SqlMakeDateFunction(var year, var month, var day, _) -> this.renderFunction("MAKE_DATE", year, month, day);
-			case SqlMakeTimeFunction(var hour, var minute, var second, _) -> this.renderFunction("MAKE_TIME", hour, minute, second);
-			case SqlNowFunction<?> _ -> this.renderLiteral("CURRENT_TIMESTAMP");
-			case SqlTemporalSubtractFunction(var minuend, var subtrahend, _) -> this.renderInfix(minuend, "-", subtrahend);
-			case SqlToDateFunction(var value, _) -> renderer -> renderer.rendered(value.toSql(this)).toSql();
-			case SqlToTimeFunction(var value, _) -> renderer -> renderer.rendered(value.toSql(this)).toSql();
-			case SqlToEpochFunction<?> func -> renderer -> renderer.literal("EXTRACT").openingBracket().keyword("EPOCH").from().rendered(func.expression().toSql(this)).closingBracket().toSql();
-			case SqlTemporalTruncateFunction(var value, var part, _) -> renderer -> renderer.literal("DATE_TRUNC").openingBracket().keyword(part.name()).comma().rendered(value.toSql(this)).closingBracket().toSql();
-			
-			case null -> throw new NullPointerException("Sql temporal function must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql temporal function type: " + function.getClass().getName() + " in dialect " + this.name());
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderWindowFunction(@NonNull SqlWindowFunction<?> function) throws SqlDialectUnsupportedRenderingException {
-		return switch (function) {
-			case SqlCumulativeDistributionFunction<?> func -> this.renderWindowCall("CUME_DIST", func.over());
-			case SqlDenseRankFunction<?> func -> this.renderWindowCall("DENSE_RANK", func.over());
-			case SqlFirstValueFunction(var column, var over) -> this.renderWindowCall("FIRST_VALUE", over, column);
-			case SqlLagFunction(var column, var nullableOffset, var nullableDefaultValue, var over) -> this.renderWindowCall("LAG", over, this.collectOptionalArgs(column, nullableOffset, nullableDefaultValue));
-			case SqlLastValueFunction(SqlExpression<?> column, SqlWindowClause over) -> this.renderWindowCall("LAST_VALUE", over, column);
-			case SqlLeadFunction(var column, var nullableOffset, var nullableDefaultValue, var over) -> this.renderWindowCall("LEAD", over, this.collectOptionalArgs(column, nullableOffset, nullableDefaultValue));
-			case SqlPercentRankFunction<?> func -> this.renderWindowCall("PERCENT_RANK", func.over());
-			case SqlRankFunction<?> func -> this.renderWindowCall("RANK", func.over());
-			case SqlRowNumberFunction<?> func -> this.renderWindowCall("ROW_NUMBER", func.over());
-			case SqlTileBucketFunction(var buckets, var over, _) -> this.renderWindowCall("NTILE", over, buckets);
-			case SqlValueAtFunction(var column, var position, var over) -> this.renderWindowCall("NTH_VALUE", over, column, position);
-			case SqlWindowedAggregate(var aggregate, var over) -> renderer -> renderer.rendered(this.renderFunction(aggregate)).over().openingBracket().rendered(over.toSql(this)).closingBracket().toSql();
-			
-			case null -> throw new NullPointerException("Sql window function must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql window function type: " + function.getClass().getName() + " in dialect " + this.name());
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderGenericFunction(@NonNull SqlFunction<?> function) throws SqlDialectUnsupportedRenderingException {
-		return switch (function) {
-			case SqlCaseWhenFunction<?> func -> this.renderCaseWhenFunction(func);
-			case SqlCoalesceFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("COALESCE"), func.expressions());
-			case SqlGreatestFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("GREATEST"), func.expressions());
-			case SqlLeastFunction<?> func -> renderer -> this.renderFunctionWithList(renderer.literal("LEAST"), func.expressions());
-			case SqlNullIfFunction(var expression, var fallback) -> this.renderFunction("NULLIF", expression, fallback);
-			case SqlUnsafeFunction(var expression, var arguments, _) -> renderer -> renderer.literal(expression).rendered(this.renderFunctionWithList(renderer, arguments)).toSql();
-			
-			case null -> throw new NullPointerException("Sql function must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql function type: " + function.getClass().getName() + " in dialect " + this.name());
-		};
+		return this.functionRenderer.render(function);
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderCondition(@NonNull SqlCondition condition) throws SqlException {
-		SqlRenderer renderer = SqlRenderer.empty();
-		
-		return switch (condition) {
-			case SqlNegatedCondition cond -> renderer.not().openingBracket().rendered(this.renderCondition(cond.condition())).closingBracket().toSql();
-			case SqlAlwaysCondition _ -> renderer.rendered(this.renderBooleanLiteral(true)).toSql();
-			case SqlNeverCondition _ -> renderer.rendered(this.renderBooleanLiteral(false)).toSql();
-			case SqlAllOfCondition cond -> {
-				List<SqlCondition> conditions = cond.conditions();
-				for (int i = 0; i < conditions.size(); i++) {
-					if (i > 0) {
-						renderer.and();
-					}
-					renderer.rendered(this.renderCondition(conditions.get(i)));
-				}
-				yield renderer.toSql();
-			}
-			case SqlAnyOfCondition cond -> {
-				List<SqlCondition> conditions = cond.conditions();
-				for (int i = 0; i < conditions.size(); i++) {
-					if (i > 0) {
-						renderer.or();
-					}
-					renderer.rendered(this.renderCondition(conditions.get(i)));
-				}
-				yield renderer.toSql();
-			}
-			case SqlComparisonCondition cond -> this.renderComparisonCondition(cond).apply(SqlRenderer.empty());
-			case SqlNumericCondition cond -> this.renderNumericCondition(cond).apply(SqlRenderer.empty());
-			case SqlStringCondition cond -> this.renderStringCondition(cond).apply(SqlRenderer.empty());
-			case SqlTemporalCondition cond -> this.renderTemporalCondition(cond).apply(SqlRenderer.empty());
-			
-			case null -> throw new NullPointerException("Sql condition must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql condition type: " + condition.getClass().getName() + " in dialect " + this.name());
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderComparisonCondition(@NonNull SqlComparisonCondition condition) throws SqlDialectUnsupportedRenderingException {
-		return switch (condition) {
-			case SqlBetweenCondition(var value, var lower, var upper) -> renderer -> renderer.rendered(value.toSql(this)).between().rendered(lower.toSql(this)).and().rendered(upper.toSql(this)).toSql();
-			case SqlEqualToCondition(var first, var second) -> this.renderInfix(first, "=", second);
-			case SqlGreaterThanCondition(var value, var threshold, var equalTo) -> this.renderInfix(value, equalTo ? ">=" : ">", threshold);
-			case SqlInListCondition(var value, var options) -> renderer -> this.renderFunctionWithList(renderer.rendered(value.toSql(this)).in(), options);
-			case SqlInQueryCondition(var value, var query) -> renderer -> renderer.rendered(value.toSql(this)).in().openingBracket().rendered(query.toSql(this)).closingBracket().toSql();
-			case SqlIsDistinctFromCondition(var first, var second) -> renderer -> renderer.rendered(first.toSql(this)).is().keyword("DISTINCT").from().rendered(second.toSql(this)).toSql();
-			case SqlIsNullCondition func -> renderer -> renderer.rendered(func.value().toSql(this)).is().null_().toSql();
-			case SqlLessThanCondition(var value, var threshold, var equalTo) -> this.renderInfix(value, equalTo ? "<=" : "<", threshold);
-			
-			case null -> throw new NullPointerException("Sql comparison condition must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql comparison condition type: " + condition.getClass().getName() + " in dialect " + this.name());
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderNumericCondition(@NonNull SqlNumericCondition condition) throws SqlDialectUnsupportedRenderingException {
-		return switch (condition) {
-			case SqlIsNegativeCondition func -> renderer -> renderer.rendered(func.value().toSql(this)).literal("<").literal("0").toSql();
-			case SqlIsPositiveCondition func -> renderer -> renderer.rendered(func.value().toSql(this)).literal(">").literal("0").toSql();
-			case SqlIsZeroCondition func -> renderer -> renderer.rendered(func.value().toSql(this)).literal("=").literal("0").toSql();
-			case SqlModEqualsCondition(var value, var divisor, var remainder) ->
-				renderer -> renderer.literal("MOD").openingBracket().rendered(value.toSql(this)).comma().rendered(divisor.toSql(this)).closingBracket().literal("=").rendered(remainder.toSql(this)).toSql();
-			
-			case null -> throw new NullPointerException("Sql numeric condition must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql numeric condition type: " + condition.getClass().getName() + " in dialect " + this.name());
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderStringCondition(@NonNull SqlStringCondition condition) throws SqlDialectUnsupportedRenderingException {
-		return switch (condition) {
-			case SqlContainsCondition(var value, var substring) -> renderer -> renderer.rendered(value.toSql(this)).like().literal("'%'").literal("||").rendered(substring.toSql(this)).literal("||").literal("'%'").toSql();
-			case SqlEndsWithCondition(var value, var suffix) -> renderer -> renderer.rendered(value.toSql(this)).like().literal("'%'").literal("||").rendered(suffix.toSql(this)).toSql();
-			case SqlEqualsIgnoreCaseCondition(var first, var second) ->
-				renderer -> renderer.literal("UPPER").openingBracket().rendered(first.toSql(this)).closingBracket().literal("=").literal("UPPER").openingBracket().rendered(second.toSql(this)).closingBracket().toSql();
-			case SqlLikeCondition(var value, var pattern) -> renderer -> renderer.rendered(value.toSql(this)).like().rendered(pattern.toSql(this)).toSql();
-			case SqlStartsWithCondition(var value, var prefix) -> renderer -> renderer.rendered(value.toSql(this)).like().rendered(prefix.toSql(this)).literal("||").literal("'%'").toSql();
-			
-			case null -> throw new NullPointerException("Sql string condition must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql string condition type: " + condition.getClass().getName() + " in dialect " + this.name());
-		};
-	}
-	
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderTemporalCondition(@NonNull SqlTemporalCondition condition) throws SqlDialectUnsupportedRenderingException {
-		return switch (condition) {
-			case SqlAfterCondition(var value, var earlierBound) -> this.renderInfix(value, ">", earlierBound);
-			case SqlBeforeCondition(var value, var laterBound) -> this.renderInfix(value, "<", laterBound);
-			case SqlWithinNextCondition(var value, var duration) -> renderer -> renderer.rendered(value.toSql(this)).literal("<=").keyword("CURRENT_TIMESTAMP").literal("+").rendered(duration.toSql(this)).toSql();
-			case SqlWithinLastCondition(var value, var duration) -> renderer -> renderer.rendered(value.toSql(this)).literal(">=").keyword("CURRENT_TIMESTAMP").literal("-").rendered(duration.toSql(this)).toSql();
-			
-			case null -> throw new NullPointerException("Sql temporal condition must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql temporal condition type: " + condition.getClass().getName() + " in dialect " + this.name());
-		};
+		return this.conditionRenderer.render(condition);
 	}
 	
 	@Override
@@ -622,13 +186,13 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		List<SqlColumn<?, ?>> partitions = clause.partitions();
 		if (!partitions.isEmpty()) {
 			renderer.partition().by();
-			this.renderList(renderer, partitions, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, partitions, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 		}
 		
 		List<SqlOrderable<?>> orderings = clause.orderings();
-		if (!partitions.isEmpty()) {
+		if (!orderings.isEmpty()) {
 			renderer.orderBy();
-			this.renderList(renderer, orderings, this::renderOrderingItem);
+			SqlRenderingHelper.renderList(renderer, orderings, this::renderOrderingItem);
 		}
 		
 		SqlWindowFrame frame = clause.frame();
@@ -878,7 +442,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			SqlCompositePrimaryKey<?> pk = table.getCompositePrimaryKey().get();
 			
 			renderer.primary().key().openingBracket();
-			this.renderList(renderer, pk.columns(), (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, pk.columns(), (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 			renderer.closingBracket();
 			
 			first = false;
@@ -890,7 +454,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			}
 			
 			renderer.foreign().key().openingBracket();
-			this.renderList(renderer, fk.getReferencingColumns(), (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, fk.getReferencingColumns(), (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 			renderer.closingBracket().references();
 			this.renderForeignKey(renderer, fk);
 			
@@ -903,7 +467,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			}
 			
 			renderer.unique().openingBracket();
-			this.renderList(renderer, uniqueColumns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, uniqueColumns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 			renderer.closingBracket();
 			
 			first = false;
@@ -940,7 +504,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		}
 		
 		renderer.openingBracket();
-		this.renderList(renderer, index.columns(), (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+		SqlRenderingHelper.renderList(renderer, index.columns(), (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 		renderer.closingBracket();
 		
 		if (index.whereCondition() != null) {
@@ -961,15 +525,15 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderLimitOffset(long limit, long offset) throws SqlException {
-		if (limit < 0) {
-			throw new IllegalArgumentException("Limit must be non-negative");
+		if (limit < -1) {
+			throw new IllegalArgumentException("Limit must be non-negative or -1 for no limit");
 		}
 		if (offset < 0) {
 			throw new IllegalArgumentException("Offset must be non-negative");
 		}
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		if (limit > 0) {
+		if (limit >= 0) {
 			renderer.limit().literal(String.valueOf(limit));
 		}
 		if (offset > 0) {
@@ -1044,5 +608,144 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		}
 		
 		return renderer.toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderCreateSchema(@NonNull String name, boolean ifNotExists) throws SqlException {
+		Objects.requireNonNull(name, "Schema name must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.create().schema();
+		if (ifNotExists) {
+			renderer.if_().not().exists();
+		}
+		return renderer.literal(this.quoteIdentifier(name)).toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderDropSchema(@NonNull String name, boolean ifExists, boolean cascade) throws SqlException {
+		Objects.requireNonNull(name, "Schema name must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.drop().schema();
+		
+		if (ifExists) {
+			renderer.if_().exists();
+		}
+		
+		renderer.literal(this.quoteIdentifier(name));
+		
+		if (cascade) {
+			renderer.cascade();
+		}
+		return renderer.toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAutoIncrementKeyword() throws SqlException {
+		return SqlRenderer.empty().literal("GENERATED").literal("ALWAYS").as().literal("IDENTITY").toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) throws SqlException {
+		Objects.requireNonNull(conflictColumn, "Conflict column must not be null");
+		Objects.requireNonNull(updateColumns, "Update columns must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.on().literal("CONFLICT");
+		renderer.openingBracket().literal(this.quoteIdentifier(conflictColumn.getName())).closingBracket();
+		renderer.literal("DO").update().set();
+		
+		for (int i = 0; i < updateColumns.size(); i++) {
+			if (i > 0) {
+				renderer.comma();
+			}
+			String quotedName = this.quoteIdentifier(updateColumns.get(i).getName());
+			renderer.literal(quotedName).literal("=").literal("EXCLUDED." + quotedName);
+		}
+		return renderer.toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderInsertOrIgnoreModifier() throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("INSERT OR IGNORE modifier is not supported by dialect " + this.name());
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderInsertOrIgnoreSuffix(@NonNull List<SqlColumn<?, ?>> conflictColumns) throws SqlException {
+		Objects.requireNonNull(conflictColumns, "Conflict columns must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.on().literal("CONFLICT");
+		renderer.openingBracket();
+		for (int i = 0; i < conflictColumns.size(); i++) {
+			if (i > 0) {
+				renderer.comma();
+			}
+			renderer.literal(this.quoteIdentifier(conflictColumns.get(i).getName()));
+		}
+		renderer.closingBracket();
+		renderer.literal("DO").literal("NOTHING");
+		return renderer.toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnType(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> newType) throws SqlException {
+		Objects.requireNonNull(tableName, "Table name must not be null");
+		Objects.requireNonNull(columnName, "Column name must not be null");
+		Objects.requireNonNull(newType, "New type must not be null");
+		
+		return SqlRenderer.empty().alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName)).type().literal(this.getTypeName(newType)).toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnNullability(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> columnType, boolean nullable) throws SqlException {
+		Objects.requireNonNull(tableName, "Table name must not be null");
+		Objects.requireNonNull(columnName, "Column name must not be null");
+		Objects.requireNonNull(columnType, "Column type must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName));
+		
+		if (nullable) {
+			return renderer.drop().not().null_().toSql();
+		} else {
+			return renderer.set().not().null_().toSql();
+		}
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnSetDefault(@NonNull String tableName, @NonNull String columnName, @NonNull String renderedDefault) throws SqlException {
+		Objects.requireNonNull(tableName, "Table name must not be null");
+		Objects.requireNonNull(columnName, "Column name must not be null");
+		Objects.requireNonNull(renderedDefault, "Rendered default value must not be null");
+		
+		return SqlRenderer.empty().alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName)).set().default_().literal(renderedDefault).toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnDropDefault(@NonNull String tableName, @NonNull String columnName) throws SqlException {
+		Objects.requireNonNull(tableName, "Table name must not be null");
+		Objects.requireNonNull(columnName, "Column name must not be null");
+		
+		return SqlRenderer.empty().alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName)).drop().default_().toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderDropIndex(@NonNull String tableName, @NonNull String indexName) throws SqlException {
+		Objects.requireNonNull(tableName, "Table name must not be null");
+		Objects.requireNonNull(indexName, "Index name must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.drop().index().literal(this.quoteIdentifier(indexName));
+		return renderer.toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException {
+		Objects.requireNonNull(from, "Source index name must not be null");
+		Objects.requireNonNull(to, "Target index name must not be null");
+		
+		return SqlRenderer.empty().alter().index().literal(this.quoteIdentifier(from)).literal("RENAME").to().literal(this.quoteIdentifier(to)).toSql();
 	}
 }

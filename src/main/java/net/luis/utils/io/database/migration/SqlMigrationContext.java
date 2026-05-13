@@ -20,9 +20,11 @@ package net.luis.utils.io.database.migration;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.migration.store.SqlMigrationStore;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -40,4 +42,8 @@ interface SqlMigrationContext {
 	<E> @NonNull SqlQueryProvider<E> from(@NonNull SqlTable<E> table) throws SqlException;
 	
 	void execute(@NonNull List<SqlRendered> statements) throws SqlException;
+	
+	void executeWithStore(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull SqlMigrationInfo info) throws SqlException;
+	
+	void executeWithStoreUpdate(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull Version version, @NonNull SqlMigrationStatus status) throws SqlException;
 }

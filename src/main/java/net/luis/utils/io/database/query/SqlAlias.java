@@ -34,7 +34,12 @@ public class SqlAlias implements Supplier<String> {
 	private final String alias;
 	
 	SqlAlias(@NonNull String alias) {
-		this.alias = Objects.requireNonNull(alias, "Alias must not be null");
+		Objects.requireNonNull(alias, "Alias must not be null");
+		if (alias.isBlank()) {
+			throw new IllegalArgumentException("Alias must not be empty or blank");
+		}
+		
+		this.alias = alias;
 	}
 	
 	public static @NonNull SqlAlias of(@NonNull String alias) {

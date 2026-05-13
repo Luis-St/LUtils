@@ -56,9 +56,10 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	private final List<SqlSetClause<E, ?>> setClauses;
 	private final List<SqlJoinClause> joins;
 	private final @Nullable SqlCondition whereCondition;
+	private final boolean allowAll;
 	
 	public SqlUpdateQuery(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper) {
-		this(table, dialect, connection, queryTimeout, rowMapper, List.of(), List.of(), null);
+		this(table, dialect, connection, queryTimeout, rowMapper, List.of(), List.of(), null, false);
 	}
 	
 	private SqlUpdateQuery(
@@ -69,7 +70,8 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
 		@NonNull List<SqlSetClause<E, ?>> setClauses,
 		@NonNull List<SqlJoinClause> joins,
-		@Nullable SqlCondition whereCondition
+		@Nullable SqlCondition whereCondition,
+		boolean allowAll
 	) {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
@@ -79,6 +81,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 		this.setClauses = Objects.requireNonNull(setClauses, "Sql set clauses must not be null");
 		this.joins = Objects.requireNonNull(joins, "Sql join clauses must not be null");
 		this.whereCondition = whereCondition;
+		this.allowAll = allowAll;
 	}
 	
 	private @NonNull SqlUpdateQuery<E> withJoin(@NonNull SqlJoinClause join) {
@@ -90,7 +93,8 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 			this.rowMapper,
 			this.setClauses,
 			SqlQuery.copyAndAdd(this.joins, join),
-			this.whereCondition
+			this.whereCondition,
+			this.allowAll
 		);
 	}
 	
@@ -134,7 +138,8 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 			this.rowMapper,
 			SqlQuery.copyAndAdd(this.setClauses, new SqlSetClause<>(column, expression, SqlSetType.EXPRESSION)),
 			this.joins,
-			this.whereCondition
+			this.whereCondition,
+			this.allowAll
 		);
 	}
 	
@@ -153,7 +158,8 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 			this.rowMapper,
 			SqlQuery.copyAndAdd(this.setClauses, new SqlSetClause<>(column, incrementByExpression, SqlSetType.INCREMENT)),
 			this.joins,
-			this.whereCondition
+			this.whereCondition,
+			this.allowAll
 		);
 	}
 	
@@ -172,11 +178,14 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 			this.rowMapper,
 			SqlQuery.copyAndAdd(this.setClauses, new SqlSetClause<>(column, decrementByExpression, SqlSetType.DECREMENT)),
 			this.joins,
-			this.whereCondition
+			this.whereCondition,
+			this.allowAll
 		);
 	}
 	
 	public @NonNull SqlUpdateQuery<E> where(@NonNull SqlCondition condition) {
+		Objects.requireNonNull(condition, "Sql where condition must not be null");
+		SqlCondition combined = this.whereCondition != null ? SqlCondition.allOf(this.whereCondition, condition) : condition;
 		return new SqlUpdateQuery<>(
 			this.table,
 			this.dialect,
@@ -185,15 +194,29 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 			this.rowMapper,
 			this.setClauses,
 			this.joins,
-			Objects.requireNonNull(condition, "Sql where condition must not be null")
+			combined,
+			this.allowAll
 		);
 	}
 	
-	public @NonNull SqlUpdateQuery<E> batchSize(int batchSize) {
-		return this;
+	public @NonNull SqlUpdateQuery<E> allowAll() {
+		return new SqlUpdateQuery<>(
+			this.table,
+			this.dialect,
+			this.connection,
+			this.queryTimeout,
+			this.rowMapper,
+			this.setClauses,
+			this.joins,
+			this.whereCondition,
+			true
+		);
 	}
 	
 	public int execute() throws SqlException {
+		if (this.whereCondition == null && !this.allowAll) {
+			throw new SqlException("UPDATE without WHERE clause would affect all rows; call allowAll() to confirm this is intentional");
+		}
 		return SqlQueryExecutor.executeUpdate(this.dialect, this.connection, this.toSql(this.dialect), this.queryTimeout);
 	}
 	

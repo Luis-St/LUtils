@@ -25,8 +25,6 @@ import net.luis.utils.io.database.type.SqlTypes;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
-
 /**
  *
  * @author Luis-St
@@ -34,10 +32,6 @@ import java.util.Objects;
  */
 
 public record SqlCountFunction(@Nullable SqlExpression<?> expression) implements SqlAggregateFunction<Long> {
-	
-	public SqlCountFunction {
-		Objects.requireNonNull(expression, "Sql expression must not be null");
-	}
 	
 	@Override
 	public @NonNull SqlType<Long> type() {

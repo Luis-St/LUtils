@@ -27,6 +27,7 @@ import net.luis.utils.io.database.table.SqlAliasedColumn;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.*;
 import java.sql.ResultSet;
@@ -242,13 +243,14 @@ public final class SqlRowMapper {
 		}
 		
 		@Override
-		public @NonNull Object invoke(@NonNull Object proxy, @NonNull Method method, Object @NonNull [] args) {
+		public @NonNull Object invoke(@NonNull Object proxy, @NonNull Method method, Object @Nullable [] args) {
 			Objects.requireNonNull(proxy, "Proxy instance must not be null");
 			Objects.requireNonNull(method, "Method must not be null");
-			Objects.requireNonNull(args, "Arguments array must not be null");
 			
 			String name = method.getName();
 			if ("equals".equals(name) && method.getParameterCount() == 1) {
+				Objects.requireNonNull(args, "Arguments array must not be null");
+				
 				return proxy == args[0];
 			}
 			if ("hashCode".equals(name) && method.getParameterCount() == 0) {
@@ -262,7 +264,7 @@ public final class SqlRowMapper {
 			if (index != null && index < this.values.length) {
 				return this.values[index];
 			}
-			throw new UnsupportedOperationException("Unknown method: " + name + "(" + Stream.of(args).map(arg -> arg != null ? arg.getClass().getSimpleName() : "null").collect(Collectors.joining(", ")) + ")");
+			throw new UnsupportedOperationException("Unknown method: " + name + "(" + (args != null ? Stream.of(args).map(arg -> arg != null ? arg.getClass().getSimpleName() : "null").collect(Collectors.joining(", ")) : "") + ")");
 		}
 	}
 }

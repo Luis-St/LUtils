@@ -34,12 +34,16 @@ public final class SqlPrecisionParameter implements SqlParameter {
 	private final int scale;
 	
 	SqlPrecisionParameter(int precision, int scale) {
-		if (precision < 0) {
-			throw new IllegalArgumentException("Precision must be non-negative");
+		if (precision <= 0) {
+			throw new IllegalArgumentException("Precision must be positive");
 		}
 		if (scale < 0) {
 			throw new IllegalArgumentException("Scale must be non-negative");
 		}
+		if (scale > precision) {
+			throw new IllegalArgumentException("Scale must not exceed precision");
+		}
+		
 		this.precision = precision;
 		this.scale = scale;
 	}

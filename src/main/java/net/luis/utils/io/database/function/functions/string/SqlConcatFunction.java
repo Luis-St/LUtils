@@ -55,8 +55,8 @@ public record SqlConcatFunction<T extends CharSequence>(
 		
 		SqlType<T> type = expressions.getFirst().type();
 		for (int i = 1; i < expressions.size(); i++) {
-			if (!expressions.get(i).type().equals(type)) {
-				throw new IllegalArgumentException("All expressions must have the same type, mismatch at " + i + " with " + expressions.get(i).type() + " expected " + type);
+			if (!expressions.get(i).type().javaType().isAssignableFrom(type.javaType()) && !type.javaType().isAssignableFrom(expressions.get(i).type().javaType())) {
+				throw new IllegalArgumentException("All expressions must have compatible types, mismatch at " + i + " with " + expressions.get(i).type() + " expected " + type);
 			}
 		}
 		

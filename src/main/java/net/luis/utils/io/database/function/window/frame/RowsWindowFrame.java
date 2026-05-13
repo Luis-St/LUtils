@@ -37,6 +37,6 @@ public record RowsWindowFrame(
 	
 	public RowsWindowFrame {
 		Objects.requireNonNull(start, "Sql start frame bound must not be null");
-		Objects.requireNonNull(end, "EnSql endd frame bound must not be null");
+		Objects.requireNonNull(end, "Sql end frame bound must not be null");
 	}
 }

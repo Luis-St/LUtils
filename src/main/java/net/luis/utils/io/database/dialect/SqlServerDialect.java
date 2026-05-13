@@ -18,24 +18,22 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.database.dialect.rendering.base.*;
+import net.luis.utils.io.database.dialect.rendering.base.function.SqlTemporalFunctionRenderer;
+import net.luis.utils.io.database.dialect.rendering.sqlserver.*;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
-import net.luis.utils.io.database.expression.SqlExpression;
-import net.luis.utils.io.database.function.SqlFunction;
-import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateFunction;
-import net.luis.utils.io.database.function.functions.numeric.SqlRandomFunction;
-import net.luis.utils.io.database.function.functions.string.SqlConcatFunction;
-import net.luis.utils.io.database.function.functions.string.SqlLengthFunction;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.type.parameter.SqlFractionalParameter;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.sql.Types;
 import java.util.*;
@@ -71,6 +69,22 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	protected @NonNull SqlFunctionRenderer createFunctionRenderer() {
+		return SqlFunctionRenderer.builder(this)
+			.string(new SqlServerStringFunctionRenderer(this))
+			.numeric(new SqlServerNumericFunctionRenderer(this))
+			.temporal(new SqlServerTemporalFunctionRenderer(this))
+			.build();
+	}
+	
+	@Override
+	protected @NonNull SqlConditionRenderer createConditionRenderer(@NonNull SqlTemporalFunctionRenderer temporalFunctionRenderer) {
+		return SqlConditionRenderer.builder(this, temporalFunctionRenderer)
+			.string(new SqlServerStringConditionRenderer(this))
+			.build();
+	}
+	
+	@Override
 	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
 		return switch (jdbcType) {
 			case Types.BOOLEAN -> "BIT";
@@ -94,60 +108,6 @@ public class SqlServerDialect extends AbstractSqlDialect {
 			};
 		}
 		return super.getParameterizedTypeName(jdbcType, parameter);
-	}
-	
-	@Override
-	@SuppressWarnings("DuplicatedCode")
-	protected @NonNull ThrowableFunction<SqlRenderer, SqlRendered, SqlException> renderConcatFunction(@NonNull SqlConcatFunction<?> function) {
-		Objects.requireNonNull(function, "Concat function must not be null");
-		
-		return renderer -> {
-			List<? extends SqlExpression<? extends CharSequence>> values = function.expressions();
-			Optional<String> separator = function.separator();
-			boolean distinct = function.distinct();
-			boolean ordered = function.ordered();
-			
-			if (distinct || ordered) {
-				renderer.literal(separator.isEmpty() ? "CONCAT" : "CONCAT_WS").openingBracket();
-				
-				if (distinct) {
-					renderer.distinct();
-				}
-				
-				SqlExpression<? extends CharSequence> first = values.isEmpty() ? null : values.getFirst();
-				if (first != null) {
-					renderer.rendered(first.toSql(this));
-				}
-				
-				renderer.comma().parameter(DEFAULT_STRING_TYPE, separator.orElse(""));
-				
-				if (ordered && first != null) {
-					renderer.orderBy().rendered(first.toSql(this));
-				}
-				renderer.closingBracket();
-			} else {
-				for (int i = 0; i < values.size(); i++) {
-					if (i > 0) {
-						renderer.literal("||");
-						separator.ifPresent(s -> renderer.parameter(DEFAULT_STRING_TYPE, s).literal("||"));
-					}
-					
-					renderer.rendered(values.get(i).toSql(this));
-				}
-			}
-			
-			return renderer.toSql();
-		};
-	}
-	
-	@Override
-	public @NonNull SqlRendered renderFunction(@NonNull SqlFunction<?> function) throws SqlException {
-		return switch (function) {
-			case SqlRandomFunction _ -> this.renderCast(this.renderLiteral("RAND()"), function.type()).apply(SqlRenderer.empty());
-			case SqlLengthFunction<?> func -> this.renderCast(this.renderFunction("LEN", func.expression()), function.type()).apply(SqlRenderer.empty());
-			case SqlNumericTruncateFunction<?> func -> this.renderCast(this.renderFunction("ROUND", func.expression()), function.type()).apply(SqlRenderer.empty());
-			default -> super.renderFunction(function);
-		};
 	}
 	
 	@Override
@@ -195,7 +155,7 @@ public class SqlServerDialect extends AbstractSqlDialect {
 		renderer.index().literal(this.quoteIdentifier(index.name()));
 		renderer.on().literal(this.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
 		renderer.openingBracket();
-		this.renderList(renderer, index.columns(), (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+		SqlRenderingHelper.renderList(renderer, index.columns(), (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
 		renderer.closingBracket();
 		
 		if (index.whereCondition() != null) {
@@ -217,8 +177,8 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderLimitOffset(long limit, long offset) {
-		if (limit < 0) {
-			throw new IllegalArgumentException("Limit must be non-negative");
+		if (limit < -1) {
+			throw new IllegalArgumentException("Limit must be non-negative or -1 for no limit");
 		}
 		if (offset < 0) {
 			throw new IllegalArgumentException("Offset must be non-negative");
@@ -226,7 +186,7 @@ public class SqlServerDialect extends AbstractSqlDialect {
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.offset().literal(String.valueOf(offset)).rows();
-		if (limit > 0) {
+		if (limit >= 0) {
 			renderer.fetch().next().literal(String.valueOf(limit)).rows().only();
 		}
 		return renderer.toSql();
@@ -235,5 +195,60 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	@Override
 	public @NonNull SqlRendered renderBooleanLiteral(boolean value) throws SqlException {
 		return SqlRendered.of(value ? "1" : "0");
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("Upsert via INSERT is not supported by dialect " + this.name());
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderInsertOrIgnoreModifier() throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("INSERT OR IGNORE is not supported by dialect " + this.name());
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderInsertOrIgnoreSuffix(@NonNull List<SqlColumn<?, ?>> conflictColumns) throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("INSERT OR IGNORE is not supported by dialect " + this.name());
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnType(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> newType) throws SqlException {
+		Objects.requireNonNull(tableName, "Table name must not be null");
+		Objects.requireNonNull(columnName, "Column name must not be null");
+		Objects.requireNonNull(newType, "New type must not be null");
+		
+		return SqlRenderer.empty().alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName)).literal(this.getTypeName(newType)).toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnNullability(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> columnType, boolean nullable) throws SqlException {
+		Objects.requireNonNull(tableName, "Table name must not be null");
+		Objects.requireNonNull(columnName, "Column name must not be null");
+		Objects.requireNonNull(columnType, "Column type must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName)).literal(this.getTypeName(columnType));
+		
+		if (nullable) {
+			return renderer.null_().toSql();
+		} else {
+			return renderer.not().null_().toSql();
+		}
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderDropIndex(@NonNull String tableName, @NonNull String indexName) throws SqlException {
+		Objects.requireNonNull(tableName, "Table name must not be null");
+		Objects.requireNonNull(indexName, "Index name must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.drop().index().literal(this.quoteIdentifier(indexName)).on().literal(this.quoteIdentifier(tableName));
+		return renderer.toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("RENAME INDEX is not supported by dialect " + this.name());
 	}
 }

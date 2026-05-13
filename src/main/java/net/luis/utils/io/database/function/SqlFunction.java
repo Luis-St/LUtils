@@ -35,6 +35,10 @@ import java.util.Objects;
 @FunctionalInterface
 public interface SqlFunction<T> extends SqlExpression<T> {
 	
+	default boolean requiresCast() {
+		return false;
+	}
+	
 	@Override
 	default @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");

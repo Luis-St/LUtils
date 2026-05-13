@@ -22,7 +22,6 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.table.SqlTableProvider;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -33,13 +32,13 @@ import org.jspecify.annotations.NonNull;
 
 public interface SqlProvider {
 	
-	void createSchema(@NotNull String name) throws SqlException;
+	void createSchema(@NonNull String name) throws SqlException;
 	
-	void createSchemaIfNotExists(@NotNull String name) throws SqlException;
+	void createSchemaIfNotExists(@NonNull String name) throws SqlException;
 	
-	boolean existsSchema(@NotNull String name) throws SqlException;
+	boolean existsSchema(@NonNull String name) throws SqlException;
 	
-	void dropSchema(@NotNull String name, boolean cascade) throws SqlException;
+	void dropSchema(@NonNull String name, boolean cascade) throws SqlException;
 	
 	<T> @NonNull SqlTableProvider<T> table(@NonNull SqlTable<T> table) throws SqlException;
 	

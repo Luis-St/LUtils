@@ -42,7 +42,7 @@ public record SqlMakeTimeFunction<T extends Temporal>(
 	public SqlMakeTimeFunction {
 		Objects.requireNonNull(hour, "Sql hour expression must not be null");
 		Objects.requireNonNull(minute, "Sql minute expression must not be null");
-		Objects.requireNonNull(second, "SQl second expression must not be null");
+		Objects.requireNonNull(second, "Sql second expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");
 	}
 }

@@ -61,6 +61,9 @@ public interface SqlCondition extends SqlRenderable {
 	}
 	
 	static @NonNull SqlCondition allOf(@NonNull List<SqlCondition> conditions) {
+		if (conditions.size() == 1) {
+			return conditions.getFirst();
+		}
 		return new SqlAllOfCondition(conditions);
 	}
 	
@@ -81,6 +84,9 @@ public interface SqlCondition extends SqlRenderable {
 	}
 	
 	static @NonNull SqlCondition anyOf(@NonNull List<SqlCondition> conditions) {
+		if (conditions.size() == 1) {
+			return conditions.getFirst();
+		}
 		return new SqlAnyOfCondition(conditions);
 	}
 	

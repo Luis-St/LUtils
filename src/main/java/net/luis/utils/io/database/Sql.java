@@ -115,8 +115,8 @@ public class Sql {
 		return new SqlCoalesceFunction<>(list);
 	}
 	
-	public static <T> @NonNull SqlExpression<T> nullIf(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> fallback) {
-		return new SqlNullIfFunction<>(expression, fallback);
+	public static <T> @NonNull SqlExpression<T> nullIf(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> compareValue) {
+		return new SqlNullIfFunction<>(expression, compareValue);
 	}
 	
 	public static <T> @NonNull SqlExpression<T> caseWhen(@NonNull SqlCondition condition, @NonNull SqlExpression<T> thenValue, @NonNull SqlExpression<T> elseValue) {
@@ -124,6 +124,7 @@ public class Sql {
 		return new SqlCaseWhenFunction<>(branches, elseValue);
 	}
 	
+	@Deprecated
 	public static <T> @NonNull SqlExpression<T> ofUnsafe(@NonNull String functionName, @NonNull SqlType<T> resultType, SqlExpression<?> @NonNull ... args) {
 		Objects.requireNonNull(args, "Sql arguments must not be null");
 		
@@ -487,11 +488,11 @@ public class Sql {
 		return new SqlRightPadFunction<>(expression, length, fill);
 	}
 	
-	public static @NonNull SqlExpression<String> hex(@NonNull SqlExpression<String> expression) {
+	public static @NonNull SqlExpression<String> hex(@NonNull SqlExpression<? extends CharSequence> expression) {
 		return new SqlHexFunction(expression);
 	}
 	
-	public static @NonNull SqlExpression<String> hex(@NonNull SqlExpression<String> expression, @NonNull SqlType<String> type) {
+	public static @NonNull SqlExpression<String> hex(@NonNull SqlExpression<? extends CharSequence> expression, @NonNull SqlType<String> type) {
 		return new SqlHexFunction(expression, type);
 	}
 	
@@ -576,11 +577,11 @@ public class Sql {
 	}
 	
 	public static <T extends Temporal> @NonNull SqlExpression<T> add(@NonNull SqlExpression<T> expression, @NonNull SqlTemporalPart part, @NonNull SqlExpression<Integer> amount, @NonNull SqlType<T> type) {
-		return new SqlTemporalAddFunction<>(expression, amount, type);
+		return new SqlTemporalAddFunction<>(expression, part, amount, type);
 	}
 	
 	public static <T extends Temporal> @NonNull SqlExpression<T> subtract(@NonNull SqlExpression<T> expression, @NonNull SqlTemporalPart part, @NonNull SqlExpression<?> amount, @NonNull SqlType<T> type) {
-		return new SqlTemporalSubtractFunction<>(expression, amount, type);
+		return new SqlTemporalSubtractFunction<>(expression, part, amount, type);
 	}
 	
 	public static <T extends Number> @NonNull SqlExpression<T> toEpoch(@NonNull SqlExpression<?> expression, @NonNull SqlType<T> type) {

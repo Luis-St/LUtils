@@ -25,7 +25,8 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -52,7 +53,7 @@ public class SqlRenderer {
 		return List.copyOf(this.statements);
 	}
 	
-	public @NonNull @Unmodifiable List<Object> getParameters() {
+	public @NonNull @Unmodifiable List<Pair<SqlType<?>, Object>> getParameters() {
 		return List.copyOf(this.parameters);
 	}
 	
@@ -78,8 +79,10 @@ public class SqlRenderer {
 			throw new IllegalArgumentException("Sql keyword must not be blank");
 		}
 		for (int i = 0; i < keyword.length(); i++) {
-			if (!Character.isUpperCase(keyword.charAt(i))) {
-				throw new IllegalArgumentException("Sql keyword must be uppercase, character '" + keyword.charAt(i) + "' at index " + i + " is not uppercase: " + keyword);
+			char c = keyword.charAt(i);
+			
+			if (!Character.isUpperCase(c) && c != '_') {
+				throw new IllegalArgumentException("Sql keyword must be uppercase, character '" + c + "' at index " + i + " is not uppercase: " + keyword);
 			}
 		}
 		
@@ -440,6 +443,21 @@ public class SqlRenderer {
 		return this;
 	}
 	
+	public @NonNull SqlRenderer modify() {
+		this.statements.add("MODIFY");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer database() {
+		this.statements.add("DATABASE");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer schema() {
+		this.statements.add("SCHEMA");
+		return this;
+	}
+	
 	public @NonNull SqlRenderer table() {
 		this.statements.add("TABLE");
 		return this;
@@ -447,6 +465,11 @@ public class SqlRenderer {
 	
 	public @NonNull SqlRenderer column() {
 		this.statements.add("COLUMN");
+		return this;
+	}
+	
+	public @NonNull SqlRenderer type() {
+		this.statements.add("TYPE");
 		return this;
 	}
 	

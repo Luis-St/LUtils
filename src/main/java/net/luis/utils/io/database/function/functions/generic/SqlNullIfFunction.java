@@ -33,12 +33,12 @@ import java.util.Objects;
 
 public record SqlNullIfFunction<T>(
 	@NonNull SqlExpression<T> expression,
-	@NonNull SqlExpression<T> fallback
+	@NonNull SqlExpression<T> compareValue
 ) implements SqlFunction<T> {
 	
 	public SqlNullIfFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
-		Objects.requireNonNull(fallback, "Sql fallback expression must not be null");
+		Objects.requireNonNull(compareValue, "Sql compareValue expression must not be null");
 	}
 	
 	@Override

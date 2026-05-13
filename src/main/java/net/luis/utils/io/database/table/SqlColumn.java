@@ -182,7 +182,10 @@ public class SqlColumn<E, C> implements SqlExpression<C> {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		
 		if (this.table != null) {
-			return SqlRendered.of(dialect.quoteIdentifier(this.table.getName()) + "." + dialect.quoteIdentifier(this.name));
+			String prefix = "public".equals(this.table.getSchema())
+				? dialect.quoteIdentifier(this.table.getName())
+				: dialect.quoteIdentifier(this.table.getSchema()) + "." + dialect.quoteIdentifier(this.table.getName());
+			return SqlRendered.of(prefix + "." + dialect.quoteIdentifier(this.name));
 		}
 		return SqlRendered.of(dialect.quoteIdentifier(this.name));
 	}

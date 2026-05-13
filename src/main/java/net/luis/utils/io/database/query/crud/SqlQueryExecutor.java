@@ -61,18 +61,24 @@ final class SqlQueryExecutor {
 				SqlType.setUnsafe(pair.getFirst(), dialect, statement, i + 1, pair.getSecond());
 			}
 			
-			statement.setQueryTimeout((int) timeout.toSeconds());
+			long seconds = timeout.toSeconds();
+			if (seconds == 0 && !timeout.isZero()) {
+				seconds = 1;
+			}
+			statement.setQueryTimeout((int) Math.min(seconds, Integer.MAX_VALUE));
 			return statement;
 		} catch (SQLException e) {
 			throw new SqlException("Failed to prepare statement with generated keys: " + rendered.sql(), e);
 		}
 	}
 	
-	static @NonNull ResultSet executeQuery(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
-		try {
-			return prepare(dialect, connection, rendered, timeout, false).executeQuery();
-		} catch (SQLException e) {
-			throw new SqlException("Failed to execute query: " + rendered.sql(), e);
+	static <T> T executeScalarQuery(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout, @NonNull ThrowableFunction<ResultSet, T, Exception> mapper) throws SqlException {
+		try (PreparedStatement statement = prepare(dialect, connection, rendered, timeout, false); ResultSet resultSet = statement.executeQuery()) {
+			return mapper.apply(resultSet);
+		} catch (SqlException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SqlException("Failed to execute scalar query: " + rendered.sql(), e);
 		}
 	}
 	
@@ -94,7 +100,7 @@ final class SqlQueryExecutor {
 		Objects.requireNonNull(rowMapper, "Sql row mapper must not be null");
 		
 		List<T> results = Lists.newArrayList();
-		try (ResultSet resultSet = executeQuery(dialect, connection, rendered, timeout)) {
+		try (PreparedStatement statement = prepare(dialect, connection, rendered, timeout, false); ResultSet resultSet = statement.executeQuery()) {
 			while (resultSet.next()) {
 				results.add(rowMapper.apply(resultSet));
 			}

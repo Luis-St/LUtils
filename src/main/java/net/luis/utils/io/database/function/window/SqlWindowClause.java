@@ -53,6 +53,8 @@ public record SqlWindowClause(
 	}
 	
 	public @NonNull SqlWindowClause orderBy(SqlOrderable<?> @NonNull ... orderables) {
+		Objects.requireNonNull(orderables, "Sql order by clauses must not be null");
+		
 		return new SqlWindowClause(this.partitions, List.of(orderables), this.frame);
 	}
 	

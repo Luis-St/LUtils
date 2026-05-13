@@ -20,7 +20,6 @@ package net.luis.utils.io.database.exception.dialect;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -33,7 +32,7 @@ import java.util.Objects;
 
 public class SqlDialectFeatureException extends SqlDialectException {
 	
-	public SqlDialectFeatureException(@NotNull SqlFeature feature, @NonNull SqlDialect dialect) {
+	public SqlDialectFeatureException(@NonNull SqlFeature feature, @NonNull SqlDialect dialect) {
 		Objects.requireNonNull(feature, "Sql feature must not be null");
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		

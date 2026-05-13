@@ -60,7 +60,7 @@ public record DescendingOrderedSqlExpression<T>(
 	
 	@Override
 	public @NonNull OrderedSqlExpression<T> ascending() {
-		return new AscendingOrderedSqlExpression<>(this.expression);
+		return new AscendingOrderedSqlExpression<>(this.expression, this.nullOrdering);
 	}
 	
 	@Override

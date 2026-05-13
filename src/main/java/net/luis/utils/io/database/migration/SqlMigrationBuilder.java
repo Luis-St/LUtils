@@ -44,9 +44,15 @@ public class SqlMigrationBuilder {
 	
 	private final List<SqlMigrationOperation> operations = Lists.newArrayList();
 	private final SqlMigrationContext context;
+	private final boolean dryRun;
 	
 	SqlMigrationBuilder(@NonNull SqlMigrationContext context) {
+		this(context, false);
+	}
+	
+	SqlMigrationBuilder(@NonNull SqlMigrationContext context, boolean dryRun) {
 		this.context = Objects.requireNonNull(context, "Sql migration context must not be null");
+		this.dryRun = dryRun;
 	}
 	
 	public void createTable(@NonNull SqlTable<?> table, @NonNull Consumer<SqlMigrationTableBuilder> definition) {
@@ -102,12 +108,12 @@ public class SqlMigrationBuilder {
 		this.operations.add(new CreateIndexOperation(index, table));
 	}
 	
-	public void dropIndex(@NonNull String name) {
-		this.operations.add(new DropIndexOperation(name));
+	public void dropIndex(@NonNull SqlTable<?> table, @NonNull String name) {
+		this.operations.add(new DropIndexOperation(table.getName(), name));
 	}
 	
-	public void renameIndex(@NonNull String from, @NonNull String to) {
-		this.operations.add(new RenameIndexOperation(from, to));
+	public void renameIndex(@NonNull SqlTable<?> table, @NonNull String from, @NonNull String to) {
+		this.operations.add(new RenameIndexOperation(table.getName(), from, to));
 	}
 	
 	public void addUniqueConstraint(@NonNull SqlTable<?> table, @NonNull String name, SqlColumn<?, ?> @NonNull ... columns) {

@@ -22,7 +22,6 @@ import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlConnectionException;
 import net.luis.utils.io.database.transaction.SqlIsolationLevel;
 import net.luis.utils.io.database.transaction.SqlPropagation;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
@@ -40,32 +39,26 @@ public class SqlDatabaseBuilder {
 	private final DataSource dataSource;
 	private final SqlDialect dialect;
 	private Duration queryTimeout = Duration.ofSeconds(30);
-	private Duration defaultTransactionTimeout = Duration.ofSeconds(60);
 	private SqlIsolationLevel defaultTransactionIsolationLevel = SqlIsolationLevel.READ_COMMITTED;
 	private SqlPropagation defaultTransactionPropagation = SqlPropagation.REQUIRED;
 	private boolean autoCloseDataSource;
 	
-	public SqlDatabaseBuilder(@NonNull DataSource dataSource, @NotNull SqlDialect dialect) {
+	public SqlDatabaseBuilder(@NonNull DataSource dataSource, @NonNull SqlDialect dialect) {
 		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "SQL dialect must not be null");
 	}
 	
-	public @NonNull SqlDatabaseBuilder queryTimeout(@NotNull Duration queryTimeout) {
+	public @NonNull SqlDatabaseBuilder queryTimeout(@NonNull Duration queryTimeout) {
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 		return this;
 	}
 	
-	public @NonNull SqlDatabaseBuilder defaultTransactionTimeout(@NotNull Duration defaultTransactionTimeout) {
-		this.defaultTransactionTimeout = Objects.requireNonNull(defaultTransactionTimeout, "Default transaction timeout must not be null");
-		return this;
-	}
-	
-	public @NonNull SqlDatabaseBuilder defaultTransactionIsolationLevel(@NotNull SqlIsolationLevel defaultTransactionIsolationLevel) {
+	public @NonNull SqlDatabaseBuilder defaultTransactionIsolationLevel(@NonNull SqlIsolationLevel defaultTransactionIsolationLevel) {
 		this.defaultTransactionIsolationLevel = Objects.requireNonNull(defaultTransactionIsolationLevel, "Default transaction isolation level must not be null");
 		return this;
 	}
 	
-	public @NonNull SqlDatabaseBuilder defaultTransactionPropagation(@NotNull SqlPropagation defaultTransactionPropagation) {
+	public @NonNull SqlDatabaseBuilder defaultTransactionPropagation(@NonNull SqlPropagation defaultTransactionPropagation) {
 		this.defaultTransactionPropagation = Objects.requireNonNull(defaultTransactionPropagation, "Default transaction propagation behavior must not be null");
 		return this;
 	}
@@ -76,6 +69,6 @@ public class SqlDatabaseBuilder {
 	}
 	
 	public @NonNull SqlDatabase build() throws SqlConnectionException {
-		return new SqlDatabase(this.dataSource, this.dialect, this.queryTimeout, this.defaultTransactionTimeout, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation, this.autoCloseDataSource);
+		return new SqlDatabase(this.dataSource, this.dialect, this.queryTimeout, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation, this.autoCloseDataSource);
 	}
 }

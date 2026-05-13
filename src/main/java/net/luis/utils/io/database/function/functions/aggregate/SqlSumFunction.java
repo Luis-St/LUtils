@@ -36,4 +36,9 @@ public record SqlSumFunction<T extends Number>(@NonNull SqlExpression<T> express
 	public SqlSumFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}
+	
+	@Override
+	public boolean requiresCast() {
+		return true;
+	}
 }
