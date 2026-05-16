@@ -78,6 +78,11 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	protected @NonNull SqlMigrationOperationRenderer createMigrationRenderer() {
+		return new SqlServerMigrationOperationRenderer(this);
+	}
+	
+	@Override
 	protected @NonNull SqlConditionRenderer createConditionRenderer(@NonNull SqlTemporalFunctionRenderer temporalFunctionRenderer) {
 		return SqlConditionRenderer.builder(this, temporalFunctionRenderer)
 			.string(new SqlServerStringConditionRenderer(this))

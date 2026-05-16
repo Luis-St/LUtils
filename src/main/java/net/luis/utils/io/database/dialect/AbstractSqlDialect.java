@@ -58,11 +58,13 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	private final SqlFunctionRenderer functionRenderer;
 	private final SqlConditionRenderer conditionRenderer;
 	private final SqlExpressionRenderer expressionRenderer;
+	private final SqlMigrationOperationRenderer migrationRenderer;
 	
 	protected AbstractSqlDialect() {
 		this.functionRenderer = this.createFunctionRenderer();
 		this.conditionRenderer = this.createConditionRenderer(this.functionRenderer.temporalRenderer());
 		this.expressionRenderer = this.createExpressionRenderer();
+		this.migrationRenderer = this.createMigrationRenderer();
 	}
 	
 	protected @NonNull SqlFunctionRenderer createFunctionRenderer() {
@@ -75,6 +77,15 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	protected @NonNull SqlExpressionRenderer createExpressionRenderer() {
 		return new SqlExpressionRenderer(this);
+	}
+	
+	protected @NonNull SqlMigrationOperationRenderer createMigrationRenderer() {
+		return new SqlMigrationOperationRenderer(this);
+	}
+	
+	@Override
+	public @NonNull SqlMigrationOperationRenderer migrationRenderer() {
+		return this.migrationRenderer;
 	}
 	
 	@Override
@@ -419,7 +430,8 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		renderer.keyword("GENERATED").keyword("ALWAYS").as().keyword("IDENTITY");
 	}
 	
-	protected void renderReferentialAction(@NonNull SqlRenderer renderer, @NonNull SqlReferentialAction action) throws SqlException {
+	@Override
+	public void renderReferentialAction(@NonNull SqlRenderer renderer, @NonNull SqlReferentialAction action) throws SqlException {
 		Objects.requireNonNull(renderer, "Sql renderer must not be null");
 		Objects.requireNonNull(action, "Sql referential action must not be null");
 		

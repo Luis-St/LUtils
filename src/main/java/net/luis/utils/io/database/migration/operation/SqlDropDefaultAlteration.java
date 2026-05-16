@@ -24,4 +24,4 @@ package net.luis.utils.io.database.migration.operation;
  *
  */
 
-public record SetNullableAlteration(boolean nullable) implements SqlColumnAlteration {}
+public record SqlDropDefaultAlteration() implements SqlColumnAlteration {}

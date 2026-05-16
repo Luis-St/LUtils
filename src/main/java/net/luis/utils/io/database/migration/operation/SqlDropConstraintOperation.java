@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.database.migration.operation;
 
+import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -29,12 +29,13 @@ import java.util.Objects;
  *
  */
 
-public record DropIndexOperation(
-	@Nullable String tableName,
+public record SqlDropConstraintOperation(
+	@NonNull SqlTable<?> table,
 	@NonNull String name
 ) implements SqlMigrationOperation {
 	
-	public DropIndexOperation {
-		Objects.requireNonNull(name, "Sql index name must not be null");
+	public SqlDropConstraintOperation {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(name, "Sql constraint name must not be null");
 	}
 }

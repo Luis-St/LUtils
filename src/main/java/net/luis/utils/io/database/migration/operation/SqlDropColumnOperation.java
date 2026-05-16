@@ -29,9 +29,9 @@ import java.util.Objects;
  *
  */
 
-public record DropColumnOperation(@NonNull SqlColumn<?, ?> column) implements SqlMigrationOperation {
+public record SqlDropColumnOperation(@NonNull SqlColumn<?, ?> column) implements SqlMigrationOperation {
 	
-	public DropColumnOperation {
+	public SqlDropColumnOperation {
 		Objects.requireNonNull(column, "Sql column must not be null");
 	}
 }

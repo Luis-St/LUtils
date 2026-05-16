@@ -39,7 +39,7 @@ import java.util.*;
  *
  */
 
-@SuppressWarnings("SqlSourceToSinkFlow")
+@SuppressWarnings({ "SqlSourceToSinkFlow", "DuplicatedCode" })
 public class SqlMigrationTableStore implements SqlMigrationStore {
 	
 	private static final String TABLE_NAME = "_sql_migrations";
@@ -148,16 +148,8 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 	public void save(@NonNull SqlMigrationInfo info) throws SqlException {
 		Objects.requireNonNull(info, "Sql migration info must not be null");
 		
-		try (
-			Connection connection = this.dataSource.getConnection();
-			PreparedStatement statement = connection.prepareStatement(this.buildSaveSql())
-		) {
-			statement.setString(1, info.version().toString());
-			statement.setString(2, info.description());
-			statement.setString(3, info.status().name());
-			statement.setTimestamp(4, info.appliedAt() != null ? Timestamp.from(info.appliedAt()) : null);
-			statement.setLong(5, info.checksum());
-			statement.executeUpdate();
+		try (Connection connection = this.dataSource.getConnection()) {
+			this.save(connection, info);
 		} catch (SQLException e) {
 			throw new SqlException("Failed to save migration info for version " + info.version(), e);
 		}
@@ -185,13 +177,8 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		Objects.requireNonNull(version, "Sql migration version must not be null");
 		Objects.requireNonNull(status, "Sql migration status must not be null");
 		
-		Instant now = status == SqlMigrationStatus.APPLIED ? Instant.now() : null;
-		
-		try (Connection connection = this.dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(this.buildUpdateSql())) {
-			statement.setString(1, status.name());
-			statement.setTimestamp(2, now != null ? Timestamp.from(now) : null);
-			statement.setString(3, version.toString());
-			statement.executeUpdate();
+		try (Connection connection = this.dataSource.getConnection()) {
+			this.update(connection, version, status);
 		} catch (SQLException e) {
 			throw new SqlException("Failed to update migration status for version " + version, e);
 		}

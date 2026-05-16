@@ -45,7 +45,7 @@ public class SqlDatabaseBuilder {
 	
 	public SqlDatabaseBuilder(@NonNull DataSource dataSource, @NonNull SqlDialect dialect) {
 		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");
-		this.dialect = Objects.requireNonNull(dialect, "SQL dialect must not be null");
+		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 	}
 	
 	public @NonNull SqlDatabaseBuilder queryTimeout(@NonNull Duration queryTimeout) {

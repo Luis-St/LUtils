@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.migration.operation;
 
-import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -29,13 +29,9 @@ import java.util.Objects;
  *
  */
 
-public record RenameColumnOperation(
-	@NonNull SqlColumn<?, ?> from,
-	@NonNull SqlColumn<?, ?> to
-) implements SqlMigrationOperation {
+public record SqlSetTypeAlteration(@NonNull SqlType<?> type) implements SqlColumnAlteration {
 	
-	public RenameColumnOperation {
-		Objects.requireNonNull(from, "Sql source column must not be null");
-		Objects.requireNonNull(to, "Sql target column must not be null");
+	public SqlSetTypeAlteration {
+		Objects.requireNonNull(type, "Sql type must not be null");
 	}
 }

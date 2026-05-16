@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.database.migration.operation;
 
-import net.luis.utils.io.database.index.SqlIndex;
-import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -30,13 +29,13 @@ import java.util.Objects;
  *
  */
 
-public record CreateIndexOperation(
-	@NonNull SqlIndex index,
-	@NonNull SqlTable<?> table
+public record SqlRenameColumnOperation(
+	@NonNull SqlColumn<?, ?> from,
+	@NonNull SqlColumn<?, ?> to
 ) implements SqlMigrationOperation {
 	
-	public CreateIndexOperation {
-		Objects.requireNonNull(index, "Sql index must not be null");
-		Objects.requireNonNull(table, "Sql table must not be null");
+	public SqlRenameColumnOperation {
+		Objects.requireNonNull(from, "Sql source column must not be null");
+		Objects.requireNonNull(to, "Sql target column must not be null");
 	}
 }

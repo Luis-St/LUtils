@@ -18,25 +18,10 @@
 
 package net.luis.utils.io.database.migration.operation;
 
-import net.luis.utils.io.database.table.SqlColumn;
-import org.jspecify.annotations.NonNull;
-
-import java.util.List;
-import java.util.Objects;
-
 /**
  *
  * @author Luis-St
  *
  */
 
-public record AlterColumnOperation(
-	@NonNull SqlColumn<?, ?> column,
-	@NonNull List<SqlColumnAlteration> alterations
-) implements SqlMigrationOperation {
-	
-	public AlterColumnOperation {
-		Objects.requireNonNull(column, "Sql column must not be null");
-		Objects.requireNonNull(alterations, "Sql column alterations must not be null");
-	}
-}
+public record SqlSetNullableAlteration(boolean nullable) implements SqlColumnAlteration {}

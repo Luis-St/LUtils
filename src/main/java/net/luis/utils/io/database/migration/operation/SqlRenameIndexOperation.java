@@ -18,9 +18,8 @@
 
 package net.luis.utils.io.database.migration.operation;
 
-import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -30,15 +29,14 @@ import java.util.Objects;
  *
  */
 
-public record AddCheckConstraintOperation(
-	@NonNull SqlTable<?> table,
-	@NonNull String name,
-	@NonNull SqlCondition condition
+public record SqlRenameIndexOperation(
+	@Nullable String tableName,
+	@NonNull String from,
+	@NonNull String to
 ) implements SqlMigrationOperation {
 	
-	public AddCheckConstraintOperation {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		Objects.requireNonNull(name, "Sql constraint name must not be null");
-		Objects.requireNonNull(condition, "Sql condition must not be null");
+	public SqlRenameIndexOperation {
+		Objects.requireNonNull(from, "Sql source index name must not be null");
+		Objects.requireNonNull(to, "Sql target index name must not be null");
 	}
 }

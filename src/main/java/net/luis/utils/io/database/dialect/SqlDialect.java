@@ -18,7 +18,9 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.rendering.base.SqlMigrationOperationRenderer;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.orderable.SqlNullOrdering;
@@ -30,6 +32,7 @@ import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.query.SqlSetOperation;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlType;
@@ -47,6 +50,8 @@ import java.util.List;
 public interface SqlDialect {
 	
 	@NonNull String name();
+	
+	@NonNull SqlMigrationOperationRenderer migrationRenderer();
 	
 	boolean isTypeSupported(@NonNull SqlType<?> type);
 	
@@ -81,6 +86,8 @@ public interface SqlDialect {
 	@NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table) throws SqlException;
 	
 	@NonNull SqlRendered renderColumnDefinition(@NonNull SqlColumn<?, ?> column) throws SqlException;
+	
+	void renderReferentialAction(@NonNull SqlRenderer renderer, @NonNull SqlReferentialAction action) throws SqlException;
 	
 	@NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index) throws SqlException;
 	

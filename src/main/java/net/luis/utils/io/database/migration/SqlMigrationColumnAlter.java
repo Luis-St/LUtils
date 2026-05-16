@@ -38,22 +38,22 @@ public class SqlMigrationColumnAlter<C> {
 	SqlMigrationColumnAlter() {}
 	
 	public @NonNull SqlMigrationColumnAlter<C> setType(@NonNull SqlType<C> type) {
-		this.alterations.add(new SetTypeAlteration(type));
+		this.alterations.add(new SqlSetTypeAlteration(type));
 		return this;
 	}
 	
 	public @NonNull SqlMigrationColumnAlter<C> setNullable(boolean nullable) {
-		this.alterations.add(new SetNullableAlteration(nullable));
+		this.alterations.add(new SqlSetNullableAlteration(nullable));
 		return this;
 	}
 	
 	public @NonNull SqlMigrationColumnAlter<C> setDefault(@NonNull C value) {
-		this.alterations.add(new SetDefaultAlteration(value));
+		this.alterations.add(new SqlSetDefaultAlteration(value));
 		return this;
 	}
 	
 	public @NonNull SqlMigrationColumnAlter<C> dropDefault() {
-		this.alterations.add(new DropDefaultAlteration());
+		this.alterations.add(new SqlDropDefaultAlteration());
 		return this;
 	}
 	

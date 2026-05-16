@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.dialect.rendering.base.SqlConditionRenderer;
-import net.luis.utils.io.database.dialect.rendering.base.SqlFunctionRenderer;
+import net.luis.utils.io.database.dialect.rendering.base.*;
 import net.luis.utils.io.database.dialect.rendering.base.function.SqlTemporalFunctionRenderer;
 import net.luis.utils.io.database.dialect.rendering.mysql.*;
 import net.luis.utils.io.database.exception.SqlException;
@@ -74,6 +73,11 @@ public class MySqlDialect extends AbstractSqlDialect {
 			.numeric(new MySqlNumericFunctionRenderer(this))
 			.temporal(new MySqlTemporalFunctionRenderer(this))
 			.build();
+	}
+	
+	@Override
+	protected @NonNull SqlMigrationOperationRenderer createMigrationRenderer() {
+		return new MySqlMigrationOperationRenderer(this);
 	}
 	
 	@Override

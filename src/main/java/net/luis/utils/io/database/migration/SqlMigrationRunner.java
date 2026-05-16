@@ -242,13 +242,13 @@ public final class SqlMigrationRunner {
 			Instant.now(),
 			registered.checksum()
 		);
-		this.context.executeWithStore(this.renderMigrationUp(registered.migration()), this.store, info);
+		this.context.executeAndSave(this.renderMigrationUp(registered.migration()), this.store, info);
 	}
 	
 	private void rollbackMigration(@NonNull RegisteredSqlMigration registered) throws SqlException {
 		Objects.requireNonNull(registered, "Registered sql migration must not be null");
 		
-		this.context.executeWithStoreUpdate(this.renderMigrationDown(registered.migration()), this.store, registered.migration().version(), SqlMigrationStatus.ROLLED_BACK);
+		this.context.executeAndUpdate(this.renderMigrationDown(registered.migration()), this.store, registered.migration().version(), SqlMigrationStatus.ROLLED_BACK);
 	}
 	
 	private @NonNull List<SqlRendered> renderMigrationUp(@NonNull SqlMigration migration) throws SqlException {
@@ -285,6 +285,8 @@ public final class SqlMigrationRunner {
 	}
 	
 	private @NonNull RegisteredSqlMigration findRegistered(@NonNull Version version) throws SqlException {
+		Objects.requireNonNull(version, "Sql migration version must not be null");
+		
 		for (RegisteredSqlMigration registered : this.registeredMigrations) {
 			if (registered.migration().version().equals(version)) {
 				return registered;
@@ -308,47 +310,34 @@ public final class SqlMigrationRunner {
 		
 		@Override
 		public <E> @NonNull SqlQueryProvider<E> from(@NonNull SqlTable<E> table) throws SqlException {
+			Objects.requireNonNull(table, "Sql table must not be null");
+			
 			return this.database.from(table);
 		}
 		
-		private void executeStatements(@NonNull Connection connection, @NonNull List<SqlRendered> statements) throws SQLException {
-			for (SqlRendered rendered : statements) {
-				for (String sql : rendered.statements()) {
-					if (sql.isEmpty()) {
-						continue;
-					}
-					
-					try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-						List<Pair<SqlType<?>, Object>> params = rendered.parameters();
-						for (int i = 0; i < params.size(); i++) {
-							stmt.setObject(i + 1, params.get(i).getSecond());
-						}
-						stmt.execute();
-					}
-				}
-			}
-		}
-		
-		@Override
-		public void execute(@NonNull List<SqlRendered> statements) throws SqlException {
+		private void executeStatements(@NonNull Connection connection, @NonNull List<SqlRendered> statements) throws SQLException, SqlException {
+			Objects.requireNonNull(connection, "Sql connection must not be null");
 			Objects.requireNonNull(statements, "Sql rendered statements must not be null");
 			
-			try (Connection connection = this.database.getDataSource().getConnection()) {
-				connection.setAutoCommit(false);
-				try {
-					this.executeStatements(connection, statements);
-					connection.commit();
-				} catch (SQLException e) {
-					connection.rollback();
-					throw e;
+			for (SqlRendered rendered : statements) {
+				String sql = rendered.sql();
+				if (sql.isEmpty()) {
+					continue;
 				}
-			} catch (SQLException e) {
-				throw new SqlException("Failed to execute migration statements", e);
+				
+				try (PreparedStatement statement = connection.prepareStatement(sql)) {
+					List<Pair<SqlType<?>, Object>> params = rendered.parameters();
+					for (int i = 0; i < params.size(); i++) {
+						Pair<SqlType<?>, Object> pair = params.get(i);
+						SqlType.setUnsafe(pair.getFirst(), this.database.getDialect(), statement, i + 1, pair.getSecond());
+					}
+					statement.execute();
+				}
 			}
 		}
 		
 		@Override
-		public void executeWithStore(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull SqlMigrationInfo info) throws SqlException {
+		public void executeAndSave(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull SqlMigrationInfo info) throws SqlException {
 			Objects.requireNonNull(statements, "Sql rendered statements must not be null");
 			Objects.requireNonNull(store, "Sql migration store must not be null");
 			Objects.requireNonNull(info, "Sql migration info must not be null");
@@ -369,7 +358,7 @@ public final class SqlMigrationRunner {
 		}
 		
 		@Override
-		public void executeWithStoreUpdate(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull Version version, @NonNull SqlMigrationStatus status) throws SqlException {
+		public void executeAndUpdate(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull Version version, @NonNull SqlMigrationStatus status) throws SqlException {
 			Objects.requireNonNull(statements, "Sql rendered statements must not be null");
 			Objects.requireNonNull(store, "Sql migration store must not be null");
 			Objects.requireNonNull(version, "Sql migration version must not be null");

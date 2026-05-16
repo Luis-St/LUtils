@@ -16,18 +16,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.migration;
+package net.luis.utils.io.database.dialect.rendering.mysql;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.dialect.rendering.base.SqlMigrationOperationRenderer;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.migration.store.SqlMigrationStore;
-import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.rendering.SqlRendered;
-import net.luis.utils.io.database.table.SqlTable;
-import net.luis.utils.util.Version;
+import net.luis.utils.io.database.rendering.SqlRenderer;
 import org.jspecify.annotations.NonNull;
 
-import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -35,13 +33,17 @@ import java.util.List;
  *
  */
 
-interface SqlMigrationContext {
+public class MySqlMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 	
-	@NonNull SqlDialect dialect();
+	public MySqlMigrationOperationRenderer(@NonNull SqlDialect dialect) {
+		super(dialect);
+	}
 	
-	<E> @NonNull SqlQueryProvider<E> from(@NonNull SqlTable<E> table) throws SqlException;
-	
-	void executeAndSave(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull SqlMigrationInfo info) throws SqlException;
-	
-	void executeAndUpdate(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull Version version, @NonNull SqlMigrationStatus status) throws SqlException;
+	@Override
+	public @NonNull SqlRendered renderRenameTable(@NonNull String fromTable, @NonNull String toTable) throws SqlException {
+		Objects.requireNonNull(fromTable, "Source table name must not be null");
+		Objects.requireNonNull(toTable, "Target table name must not be null");
+		
+		return SqlRenderer.empty().rename().table().literal(this.dialect.quoteIdentifier(fromTable)).to().literal(this.dialect.quoteIdentifier(toTable)).toSql();
+	}
 }

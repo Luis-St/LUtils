@@ -18,9 +18,11 @@
 
 package net.luis.utils.io.database.migration.operation;
 
+import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,9 +31,19 @@ import java.util.Objects;
  *
  */
 
-public record DropTableOperation(@NonNull SqlTable<?> table) implements SqlMigrationOperation {
+public record SqlAddCompositePrimaryKeyOperation(
+	@NonNull SqlTable<?> table,
+	@NonNull String name,
+	@NonNull List<SqlColumn<?, ?>> columns
+) implements SqlMigrationOperation {
 	
-	public DropTableOperation {
+	public SqlAddCompositePrimaryKeyOperation {
 		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(name, "Sql constraint name must not be null");
+		Objects.requireNonNull(columns, "Sql columns must not be null");
+		
+		if (columns.isEmpty()) {
+			throw new IllegalArgumentException("Composite primary key must have at least one column");
+		}
 	}
 }

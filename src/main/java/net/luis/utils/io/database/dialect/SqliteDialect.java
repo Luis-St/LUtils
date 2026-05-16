@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.dialect.rendering.base.SqlFunctionRenderer;
-import net.luis.utils.io.database.dialect.rendering.base.SqlRenderingHelper;
+import net.luis.utils.io.database.dialect.rendering.base.*;
+import net.luis.utils.io.database.dialect.rendering.sqlite.SqliteMigrationOperationRenderer;
 import net.luis.utils.io.database.dialect.rendering.sqlite.SqliteTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
@@ -61,6 +61,11 @@ public class SqliteDialect extends AbstractSqlDialect {
 		return SqlFunctionRenderer.builder(this)
 			.temporal(new SqliteTemporalFunctionRenderer(this))
 			.build();
+	}
+	
+	@Override
+	protected @NonNull SqlMigrationOperationRenderer createMigrationRenderer() {
+		return new SqliteMigrationOperationRenderer(this);
 	}
 	
 	@Override

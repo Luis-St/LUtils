@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.migration.operation;
 
-import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -29,9 +29,9 @@ import java.util.Objects;
  *
  */
 
-public record SetTypeAlteration(@NonNull SqlType<?> type) implements SqlColumnAlteration {
+public record SqlDropTableOperation(@NonNull SqlTable<?> table) implements SqlMigrationOperation {
 	
-	public SetTypeAlteration {
-		Objects.requireNonNull(type, "Sql type must not be null");
+	public SqlDropTableOperation {
+		Objects.requireNonNull(table, "Sql table must not be null");
 	}
 }

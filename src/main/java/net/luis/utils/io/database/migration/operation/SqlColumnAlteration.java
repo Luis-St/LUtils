@@ -24,4 +24,4 @@ package net.luis.utils.io.database.migration.operation;
  *
  */
 
-public sealed interface SqlColumnAlteration permits SetTypeAlteration, SetNullableAlteration, SetDefaultAlteration, DropDefaultAlteration {}
+public sealed interface SqlColumnAlteration permits SqlSetTypeAlteration, SqlSetNullableAlteration, SqlSetDefaultAlteration, SqlDropDefaultAlteration {}

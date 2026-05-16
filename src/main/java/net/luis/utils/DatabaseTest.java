@@ -145,7 +145,7 @@ public class DatabaseTest {
 			boolean exists = persons.select().where(Sql.equalTo(NAME, Sql.of("Alice"))).exists();
 			
 			// Pagination
-			persons.select().fetchPage(0, 20);
+			persons.select().orderBy(ID.ascending()).fetchPage(0, 20);
 			
 			// Type-specific column operations
 			persons.select().where(Sql.contains(NAME, Sql.of("li"))).fetch();
@@ -309,9 +309,9 @@ public class DatabaseTest {
 				
 				builder.createIndex(PERSON_TABLE, "idx_person_email", idx -> idx.columns(EMAIL).unique());
 				
-				builder.data(PERSON_TABLE).insert(
-					new Person(1, "Admin", "admin@example.com", 1, Instant.now())
-				);
+				builder.data(PERSON_TABLE, provider -> {
+					provider.insert(new Person(1, "Admin", "admin@example.com", 1, Instant.now())).execute();
+				});
 			}
 			
 			@Override

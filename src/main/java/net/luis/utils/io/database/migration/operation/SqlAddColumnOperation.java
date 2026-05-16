@@ -18,7 +18,8 @@
 
 package net.luis.utils.io.database.migration.operation;
 
-import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -29,13 +30,15 @@ import java.util.Objects;
  *
  */
 
-public record DropConstraintOperation(
-	@NonNull SqlTable<?> table,
-	@NonNull String name
+public record SqlAddColumnOperation(
+	@NonNull SqlColumn<?, ?> column,
+	@NonNull SqlType<?> type,
+	@NonNull SqlColumnOptions options
 ) implements SqlMigrationOperation {
 	
-	public DropConstraintOperation {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		Objects.requireNonNull(name, "Sql constraint name must not be null");
+	public SqlAddColumnOperation {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
+		Objects.requireNonNull(options, "Sql options must not be null");
 	}
 }

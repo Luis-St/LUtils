@@ -18,12 +18,10 @@
 
 package net.luis.utils.io.database.migration.operation;
 
-import net.luis.utils.io.database.SqlReferentialAction;
-import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -32,23 +30,15 @@ import java.util.Objects;
  *
  */
 
-public record AddForeignKeyOperation(
+public record SqlAddCheckConstraintOperation(
 	@NonNull SqlTable<?> table,
 	@NonNull String name,
-	@NonNull List<SqlColumn<?, ?>> columns,
-	@NonNull SqlTable<?> referencedTable,
-	@NonNull List<SqlColumn<?, ?>> referencedColumns,
-	@NonNull SqlReferentialAction onDelete,
-	@NonNull SqlReferentialAction onUpdate
+	@NonNull SqlCondition condition
 ) implements SqlMigrationOperation {
 	
-	public AddForeignKeyOperation {
+	public SqlAddCheckConstraintOperation {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(name, "Sql constraint name must not be null");
-		Objects.requireNonNull(columns, "Sql columns must not be null");
-		Objects.requireNonNull(referencedTable, "Sql referenced table must not be null");
-		Objects.requireNonNull(referencedColumns, "Sql referenced columns must not be null");
-		Objects.requireNonNull(onDelete, "Sql on delete action must not be null");
-		Objects.requireNonNull(onUpdate, "Sql on update action must not be null");
+		Objects.requireNonNull(condition, "Sql condition must not be null");
 	}
 }

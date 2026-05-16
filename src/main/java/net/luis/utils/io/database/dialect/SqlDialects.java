@@ -16,13 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.migration.operation;
-
-import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.type.SqlType;
-import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
+package net.luis.utils.io.database.dialect;
 
 /**
  *
@@ -30,15 +24,15 @@ import java.util.Objects;
  *
  */
 
-public record AddColumnOperation(
-	@NonNull SqlColumn<?, ?> column,
-	@NonNull SqlType<?> type,
-	@NonNull SqlColumnOptions options
-) implements SqlMigrationOperation {
+public final class SqlDialects {
 	
-	public AddColumnOperation {
-		Objects.requireNonNull(column, "Sql column must not be null");
-		Objects.requireNonNull(type, "Sql type must not be null");
-		Objects.requireNonNull(options, "Sql options must not be null");
-	}
+	public static final SqlDialect H2 = new H2Dialect();
+	public static final SqlDialect MARIA_DB = new MariaDbDialect();
+	public static final SqlDialect MYSQL = new MySqlDialect();
+	public static final SqlDialect POSTGRESQL = new PostgreSqlDialect();
+	public static final SqlDialect SQLITE = new SqliteDialect();
+	public static final SqlDialect SQL_SERVER = new SqlServerDialect();
+	
+	private SqlDialects() {}
+	
 }

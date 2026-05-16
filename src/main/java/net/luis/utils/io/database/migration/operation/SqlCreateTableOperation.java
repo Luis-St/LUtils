@@ -18,8 +18,11 @@
 
 package net.luis.utils.io.database.migration.operation;
 
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -28,9 +31,15 @@ import java.util.Objects;
  *
  */
 
-public record SetDefaultAlteration(@NonNull Object value) implements SqlColumnAlteration {
+public record SqlCreateTableOperation(
+	@NonNull SqlTable<?> table,
+	@NonNull List<SqlColumnDefinition> columns,
+	@NonNull List<SqlColumn<?, ?>> primaryKeyColumns
+) implements SqlMigrationOperation {
 	
-	public SetDefaultAlteration {
-		Objects.requireNonNull(value, "Sql default value must not be null");
+	public SqlCreateTableOperation {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(columns, "Sql column definitions must not be null");
+		Objects.requireNonNull(primaryKeyColumns, "Sql primary key columns must not be null");
 	}
 }

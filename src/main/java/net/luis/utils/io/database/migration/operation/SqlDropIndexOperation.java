@@ -18,10 +18,23 @@
 
 package net.luis.utils.io.database.migration.operation;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record DropDefaultAlteration() implements SqlColumnAlteration {}
+public record SqlDropIndexOperation(
+	@Nullable String tableName,
+	@NonNull String name
+) implements SqlMigrationOperation {
+	
+	public SqlDropIndexOperation {
+		Objects.requireNonNull(name, "Sql index name must not be null");
+	}
+}
