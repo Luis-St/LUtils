@@ -23,17 +23,18 @@ import com.zaxxer.hikari.HikariDataSource;
 import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.dialect.SqlDialects;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.migration.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.query.row.SqlRow2;
-import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.transaction.SqlTransaction;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
-import net.luis.utils.util.Version;
+import net.luis.utils.logging.*;
+import org.apache.logging.log4j.*;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import javax.sql.DataSource;
 import java.time.Duration;
@@ -48,12 +49,13 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class DatabaseTest {
 	
-	public record Person(int id, String name, String email, long version, Instant createdAt) {}
+	public record Person(int id, @NonNull String name, @NonNull String email, long version, @Nullable Instant createdAt) {}
 	
-	public record Role(int id, String name) {}
+	public record Role(int id, @NonNull String name) {}
 	
 	public record PersonRole(int personId, int roleId) {}
 	
+	private static final Logger LOGGER;
 	private static final DataSource DATA_SOURCE;
 	
 	public static final SqlTable<Person> PERSON_TABLE;
@@ -73,8 +75,16 @@ public class DatabaseTest {
 	public static final SqlCompositePrimaryKey<PersonRole> PERSON_ROLE_PK;
 	
 	static {
+		System.setProperty("reflection.exceptions.throw", "true");
+		LoggingUtils.initialize(LoggerConfiguration.DEFAULT.disableLogging(LoggingType.FILE).addDefaultLogger(LoggingType.CONSOLE, Level.DEBUG));
+		LOGGER = LogManager.getLogger(Main.class);
+		
+		// jdbc:postgresql://localhost:3000/test
+		// jdbc:mysql://localhost:3001/test
+		// jdbc:mariadb://localhost:3002/test
+		
 		HikariConfig config = new HikariConfig();
-		config.setJdbcUrl("jdbc:postgresql://localhost:5432/test");
+		config.setJdbcUrl("jdbc:postgresql://localhost:3000/test");
 		config.setUsername("test");
 		config.setPassword("test");
 		DATA_SOURCE = new HikariDataSource(config);
@@ -99,8 +109,21 @@ public class DatabaseTest {
 		PERSON_ROLE_TABLE = personRoleTableBuilder.build();
 	}
 	
-	void databaseLifecycle() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
+	static void main() {
+		try {
+			LOGGER.info("Starting database test");
+			
+			databaseLifecycle();
+			
+			LOGGER.info("Finished database test");
+		} catch (Exception e) {
+			LOGGER.error("Database test failed", e);
+			throw new RuntimeException(e);
+		}
+	}
+	
+	static void databaseLifecycle() throws SqlException {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, SqlDialects.POSTGRESQL).build()) {
 			// DDL via db.table(table)
 			db.table(PERSON_TABLE).createIfNotExists();
 			
@@ -113,8 +136,8 @@ public class DatabaseTest {
 		}
 	}
 	
-	void selectQueries() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
+	static void selectQueries() throws SqlException {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, SqlDialects.POSTGRESQL).build()) {
 			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
 			
 			// Full entity select
@@ -128,7 +151,7 @@ public class DatabaseTest {
 				.where(Sql.startsWith(NAME, Sql.of("A")))
 				.fetch();
 			
-			// Conditions — static combinators or instance chaining
+			// Conditions - static combinators or instance chaining
 			persons.select()
 				.where(SqlCondition.allOf(Sql.greaterThan(ID, Sql.of(5)), Sql.isNull(NAME).not()))
 				.orderBy(NAME.ascending())
@@ -154,8 +177,8 @@ public class DatabaseTest {
 		}
 	}
 	
-	void transactions() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
+	static void transactions() throws SqlException {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, SqlDialects.POSTGRESQL).build()) {
 			try (SqlTransaction tx = db.beginTransaction()) {
 				SqlQueryProvider<Person> persons = tx.from(PERSON_TABLE);
 				persons.insert(new Person(10, "Dave", "dave@example.com", 0, Instant.now())).execute();
@@ -168,8 +191,8 @@ public class DatabaseTest {
 		}
 	}
 	
-	void updateAndDelete() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
+	static void updateAndDelete() throws SqlException {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, SqlDialects.POSTGRESQL).build()) {
 			SqlQueryProvider<Person> persons = db.from(PERSON_TABLE);
 			
 			// Update with SET
@@ -203,8 +226,8 @@ public class DatabaseTest {
 		}
 	}
 	
-	void lockingQueries() throws SqlException {
-		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
+	static void lockingQueries() throws SqlException {
+		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, SqlDialects.POSTGRESQL).build()) {
 			try (SqlTransaction tx = db.beginTransaction()) {
 				// FOR UPDATE locking
 				tx.from(PERSON_TABLE).select()
@@ -225,114 +248,4 @@ public class DatabaseTest {
 		}
 	}
 	
-	void compositePrimaryKeyExample() throws SqlException {
-		SqlMigration migration = new SqlMigration() {
-			@Override
-			public @NonNull Version version() {
-				return Version.of(0, 2);
-			}
-			
-			@Override
-			public @NonNull String description() {
-				return "Create role and person_role tables";
-			}
-			
-			@Override
-			public void up(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.createTable(ROLE_TABLE, table -> {
-					table.column(ROLE_ID, SqlTypes.INTEGER, col -> col.notNull().autoIncrement());
-					table.column(ROLE_NAME, SqlTypes.STRING.configure(SqlParameter.length(255)), SqlMigrationColumnBuilder::notNull);
-					table.primaryKey(ROLE_ID);
-				});
-				
-				// Junction table: composite PK over two FK columns (neither is SqlPrimaryKeyColumn)
-				builder.createTable(PERSON_ROLE_TABLE, table -> {
-					table.column(PR_PERSON_ID, SqlTypes.INTEGER, SqlMigrationColumnBuilder::notNull);
-					table.column(PR_ROLE_ID, SqlTypes.INTEGER, SqlMigrationColumnBuilder::notNull);
-					table.primaryKey(PR_PERSON_ID, PR_ROLE_ID);
-				});
-			}
-			
-			@Override
-			public void down(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.dropTable(PERSON_ROLE_TABLE);
-				builder.dropTable(ROLE_TABLE);
-			}
-		};
-		
-		// Alternatively, add a composite PK constraint to an existing table via ALTER TABLE
-		SqlMigration alterMigration = new SqlMigration() {
-			@Override
-			public @NonNull Version version() {
-				return Version.of(0, 3);
-			}
-			
-			@Override
-			public @NonNull String description() {
-				return "Add composite primary key constraint to person_role";
-			}
-			
-			@Override
-			public void up(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.addCompositePrimaryKey(PERSON_ROLE_TABLE, "pk_person_role", PR_PERSON_ID, PR_ROLE_ID);
-			}
-			
-			@Override
-			public void down(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.dropConstraint(PERSON_ROLE_TABLE, "pk_person_role");
-			}
-		};
-	}
-	
-	void migrationExample() throws SqlException {
-		SqlMigration migration = new SqlMigration() {
-			@Override
-			public @NonNull Version version() {
-				return Version.of(0, 1);
-			}
-			
-			@Override
-			public @NonNull String description() {
-				return "Create person table";
-			}
-			
-			@Override
-			public void up(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.createTable(PERSON_TABLE, table -> {
-					table.column(ID, SqlTypes.INTEGER, col -> col.notNull().autoIncrement());
-					table.column(NAME, SqlTypes.STRING.configure(SqlParameter.length(255)), SqlMigrationColumnBuilder::notNull);
-					table.column(EMAIL, SqlTypes.STRING.configure(SqlParameter.length(255)), col -> col.notNull().unique());
-					table.column(VERSION, SqlTypes.LONG, col -> col.notNull().defaultValue(0L));
-					table.column(CREATED_AT, SqlTypes.INSTANT.configure(SqlParameter.fractional(0)), SqlMigrationColumnBuilder::notNull);
-					table.primaryKey(ID);
-				});
-				
-				builder.createIndex(PERSON_TABLE, "idx_person_email", idx -> idx.columns(EMAIL).unique());
-				
-				builder.data(PERSON_TABLE, provider -> {
-					provider.insert(new Person(1, "Admin", "admin@example.com", 1, Instant.now())).execute();
-				});
-			}
-			
-			@Override
-			public void down(@NonNull SqlMigrationBuilder builder) throws SqlException {
-				builder.dropIndex(PERSON_TABLE, "idx_person_email");
-				builder.dropTable(PERSON_TABLE);
-			}
-		};
-		
-		try (SqlDatabase db = SqlDatabase.builder(DATA_SOURCE, null).build()) {
-			SqlMigrationRunner runner = SqlMigrationRunner.of(db);
-			runner.register(migration);
-			
-			// Dry run to preview SQL
-			List<SqlRendered> preview = runner.dryRun();
-			
-			// Apply all pending migrations
-			runner.migrate();
-			
-			// Check migration status
-			List<SqlMigrationInfo> status = runner.status();
-		}
-	}
 }

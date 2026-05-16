@@ -6,6 +6,9 @@ val log4jAPI: String by project
 val log4jCore: String by project
 val apacheLang: String by project
 val hikaricp: String by project
+val postgresql: String by project
+val mysql: String by project
+val mariadb: String by project
 val jspecify: String by project
 val jetBrainsAnnotations: String by project
 val junitJupiter: String by project
@@ -39,6 +42,9 @@ dependencies {
 	implementation("org.apache.commons:commons-lang3:${apacheLang}") // Utility
 	// Database
 	implementation("com.zaxxer:HikariCP:${hikaricp}") // Connection Pool
+	runtimeOnly("org.postgresql:postgresql:${postgresql}") // PostgreSQL Driver
+	runtimeOnly("com.mysql:mysql-connector-j:${mysql}") // MySQL Driver
+	runtimeOnly("org.mariadb.jdbc:mariadb-java-client:${mariadb}") // MariaDB Driver
 	// Other
 	implementation("org.jspecify:jspecify:${jspecify}") // Nullability
 	implementation("org.jetbrains:annotations:${jetBrainsAnnotations}") // Annotations
@@ -85,6 +91,23 @@ tasks.register<JavaExec>("run") {
 	jvmArgs = listOf(
 		"--module-path", sourceSets["main"].runtimeClasspath.asPath,
 		"--module", "net.luis.utils/net.luis.utils.Main"
+	)
+}
+
+tasks.register<JavaExec>("runDatabase") {
+	dependsOn(tasks.named("classes"))
+	
+	group = "runs"
+	mainClass.set("net.luis.utils.DatabaseTest")
+	
+	enableAssertions = true
+	standardInput = System.`in`
+	args = listOf()
+	
+	classpath = files()
+	jvmArgs = listOf(
+		"--module-path", sourceSets["main"].runtimeClasspath.asPath,
+		"--module", "net.luis.utils/net.luis.utils.DatabaseTest"
 	)
 }
 
