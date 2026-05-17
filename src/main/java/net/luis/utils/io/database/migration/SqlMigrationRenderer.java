@@ -20,7 +20,7 @@ package net.luis.utils.io.database.migration;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.dialect.rendering.base.SqlMigrationOperationRenderer;
+import net.luis.utils.io.database.dialect.base.SqlMigrationOperationRenderer;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.migration.operation.*;
 import net.luis.utils.io.database.rendering.SqlRendered;

@@ -18,6 +18,13 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.dialect.h2.H2Dialect;
+import net.luis.utils.io.database.dialect.mariadb.MariaDbDialect;
+import net.luis.utils.io.database.dialect.mysql.MySqlDialect;
+import net.luis.utils.io.database.dialect.postgres.PostgreSqlDialect;
+import net.luis.utils.io.database.dialect.sqlite.SqliteDialect;
+import net.luis.utils.io.database.dialect.sqlserver.SqlServerDialect;
+
 /**
  *
  * @author Luis-St

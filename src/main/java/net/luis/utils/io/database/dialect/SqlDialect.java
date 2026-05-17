@@ -20,7 +20,7 @@ package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.condition.SqlCondition;
-import net.luis.utils.io.database.dialect.rendering.base.SqlMigrationOperationRenderer;
+import net.luis.utils.io.database.dialect.base.SqlMigrationOperationRenderer;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.orderable.SqlNullOrdering;
