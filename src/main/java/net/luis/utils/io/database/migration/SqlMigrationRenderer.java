@@ -97,7 +97,7 @@ class SqlMigrationRenderer {
 			switch (alteration) {
 				case SqlSetTypeAlteration setType -> results.add(this.dialect.renderAlterColumnType(tableName, columnName, setType.type()));
 				case SqlSetNullableAlteration setNullable -> results.add(this.dialect.renderAlterColumnNullability(tableName, columnName, op.column().getType(), setNullable.nullable()));
-				case SqlSetDefaultAlteration setDefault -> results.add(this.dialect.renderAlterColumnSetDefault(tableName, columnName, this.migrationRenderer.renderValueLiteral(op.column().getType(), setDefault.value())));
+				case SqlSetDefaultAlteration setDefault -> results.add(this.dialect.renderAlterColumnSetDefault(tableName, columnName, this.dialect.renderValueLiteral(setDefault.value())));
 				case SqlDropDefaultAlteration _ -> results.add(this.dialect.renderAlterColumnDropDefault(tableName, columnName));
 			}
 		}

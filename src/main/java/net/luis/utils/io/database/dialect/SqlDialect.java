@@ -75,6 +75,8 @@ public interface SqlDialect {
 	
 	@NonNull String getIndexMethodName(@NonNull SqlIndexMethod method) throws SqlException;
 	
+	@NonNull String renderValueLiteral(@NonNull Object value) throws SqlException;
+	
 	@NonNull String quoteIdentifier(@NonNull String identifier);
 	
 	@NonNull SqlRendered renderQualifiedName(@NonNull String schema, @NonNull String name) throws SqlException;

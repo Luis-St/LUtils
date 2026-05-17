@@ -283,6 +283,18 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	}
 	
 	@Override
+	public @NonNull String renderValueLiteral(@NonNull Object value) throws SqlException {
+		Objects.requireNonNull(value, "Value must not be null");
+		if (value instanceof Number) {
+			return value.toString();
+		} else if (value instanceof Boolean b) {
+			return this.renderBooleanLiteral(b).sql();
+		} else {
+			return "'" + value.toString().replace("'", "''") + "'";
+		}
+	}
+	
+	@Override
 	public @NonNull String quoteIdentifier(@NonNull String identifier) {
 		Objects.requireNonNull(identifier, "Identifier must not be null");
 		return "\"" + identifier.replace("\"", "\"\"") + "\"";
@@ -400,7 +412,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			renderer.not().null_();
 		}
 		if (column.getDefaultValue().isPresent()) {
-			renderer.default_().parameter(column.getType(), column.getDefaultValue().get());
+			renderer.default_().literal(this.renderValueLiteral(column.getDefaultValue().get()));
 		}
 		if (column.isAutoIncrement()) {
 			this.renderAutoIncrement(renderer, column);

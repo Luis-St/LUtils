@@ -60,11 +60,11 @@ public class SqlMigrationOperationRenderer {
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).add().column().literal(this.dialect.quoteIdentifier(columnName)).literal(this.dialect.getTypeName(type));
-		this.appendColumnOptions(renderer, type, options);
+		this.appendColumnOptions(renderer, options);
 		return renderer.toSql();
 	}
 	
-	protected void appendColumnOptions(@NonNull SqlRenderer renderer, @NonNull SqlType<?> type, @NonNull SqlColumnOptions options) throws SqlException {
+	protected void appendColumnOptions(@NonNull SqlRenderer renderer, @NonNull SqlColumnOptions options) throws SqlException {
 		if (options.notNull()) {
 			renderer.not().null_();
 		}
@@ -75,7 +75,7 @@ public class SqlMigrationOperationRenderer {
 			renderer.rendered(this.dialect.renderAutoIncrementKeyword());
 		}
 		if (options.defaultValue().isPresent()) {
-			renderer.default_().literal(this.renderValueLiteral(type, options.defaultValue().get()));
+			renderer.default_().literal(this.dialect.renderValueLiteral(options.defaultValue().get()));
 		}
 		if (options.referencesTable() != null) {
 			renderer.references().literal(this.dialect.quoteIdentifier(options.referencesTable().getName()));
@@ -83,16 +83,6 @@ public class SqlMigrationOperationRenderer {
 		if (options.check() != null) {
 			SqlRendered checkRendered = this.dialect.renderCondition(options.check());
 			renderer.check().openingBracket().rendered(checkRendered).closingBracket();
-		}
-	}
-	
-	public @NonNull String renderValueLiteral(@NonNull SqlType<?> type, @NonNull Object value) throws SqlException {
-		if (value instanceof Number) {
-			return value.toString();
-		} else if (value instanceof Boolean b) {
-			return this.dialect.renderBooleanLiteral(b).sql();
-		} else {
-			return "'" + value.toString().replace("'", "''") + "'";
 		}
 	}
 	
