@@ -274,7 +274,7 @@ public final class SqlMigrationRunner {
 		
 		SqlMigrationSchema schema;
 		if (applied.isEmpty()) {
-			schema = SqlMigrationSchema.empty(this.context.dataSource(), this.context.dialect());
+			schema = SqlMigrationSchema.empty();
 		} else {
 			Version latestVersion = applied.getLast().version();
 			SqlSchemaSnapshot snapshot = this.schemaStore.load(latestVersion);
@@ -282,7 +282,7 @@ public final class SqlMigrationRunner {
 			if (snapshot == null) {
 				throw new SqlSchemaIntrospectionException("Schema snapshot not found for applied version " + latestVersion);
 			}
-			schema = SqlMigrationSchema.fromSnapshot(this.context.dataSource(), this.context.dialect(), snapshot.columns(), snapshot.checkConstraints());
+			schema = SqlMigrationSchema.fromSnapshot(snapshot.columns(), snapshot.checkConstraints());
 		}
 		
 		SqlMigrationBuilder builder = new SqlMigrationBuilder(this.context, dryRun);

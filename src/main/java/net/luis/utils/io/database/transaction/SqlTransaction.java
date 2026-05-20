@@ -244,7 +244,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		try (Statement statement = this.connection.createStatement()) {
-			statement.execute(this.dialect.renderCreateSchema(name, false).sql());
+			statement.execute(this.dialect.schemaRenderer().renderCreateSchema(name, false).sql());
 		} catch (SQLException e) {
 			throw new SqlException("Failed to create schema " + name, e);
 		}
@@ -255,7 +255,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		try (Statement statement = this.connection.createStatement()) {
-			statement.execute(this.dialect.renderCreateSchema(name, true).sql());
+			statement.execute(this.dialect.schemaRenderer().renderCreateSchema(name, true).sql());
 		} catch (SQLException e) {
 			throw new SqlException("Failed to create schema " + name, e);
 		}
@@ -282,7 +282,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		try (Statement statement = this.connection.createStatement()) {
-			statement.execute(this.dialect.renderDropSchema(name, false, cascade).sql());
+			statement.execute(this.dialect.schemaRenderer().renderDropSchema(name, false, cascade).sql());
 		} catch (SQLException e) {
 			throw new SqlException("Failed to drop schema " + name, e);
 		}

@@ -84,11 +84,11 @@ public class SqlTableProvider<E> implements AutoCloseable {
 	}
 	
 	public void create() throws SqlException {
-		this.executeStatement(this.dialect.renderCreateTable(this.table, false));
+		this.executeStatement(this.dialect.tableRenderer().renderCreateTable(this.table, false));
 	}
 	
 	public void createIfNotExists() throws SqlException {
-		this.executeStatement(this.dialect.renderCreateTable(this.table, true));
+		this.executeStatement(this.dialect.tableRenderer().renderCreateTable(this.table, true));
 	}
 	
 	public boolean exists() throws SqlException {
@@ -100,15 +100,15 @@ public class SqlTableProvider<E> implements AutoCloseable {
 	}
 	
 	public void truncate() throws SqlException {
-		this.executeStatement(this.dialect.renderTruncateTable(this.table));
+		this.executeStatement(this.dialect.tableRenderer().renderTruncateTable(this.table));
 	}
 	
 	public void drop() throws SqlException {
-		this.executeStatement(this.dialect.renderDropTable(this.table, false));
+		this.executeStatement(this.dialect.tableRenderer().renderDropTable(this.table, false));
 	}
 	
 	public void dropIfExists() throws SqlException {
-		this.executeStatement(this.dialect.renderDropTable(this.table, true));
+		this.executeStatement(this.dialect.tableRenderer().renderDropTable(this.table, true));
 	}
 	
 	public void createIndex(@NonNull String name, @NonNull List<SqlColumn<E, ?>> columns, @NonNull SqlIndexMethod method) throws SqlException {
@@ -138,7 +138,7 @@ public class SqlTableProvider<E> implements AutoCloseable {
 		}
 		
 		SqlIndex index = new SqlIndex(name, List.copyOf(columns), unique, whereCondition, method);
-		this.executeStatement(this.dialect.renderCreateIndex(index));
+		this.executeStatement(this.dialect.indexRenderer().renderCreateIndex(index));
 	}
 	
 	public @NonNull @Unmodifiable List<SqlIndex> getIndexes() throws SqlException {
@@ -180,7 +180,7 @@ public class SqlTableProvider<E> implements AutoCloseable {
 	
 	public void dropIndex(@NonNull String name) throws SqlException {
 		Objects.requireNonNull(name, "Index name must not be null");
-		this.executeStatement(this.dialect.renderDropIndex(this.table, name));
+		this.executeStatement(this.dialect.indexRenderer().renderDropIndex(this.table, name));
 	}
 	
 	@Override

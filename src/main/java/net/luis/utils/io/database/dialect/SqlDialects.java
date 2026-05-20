@@ -18,13 +18,6 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.dialect.h2.H2Dialect;
-import net.luis.utils.io.database.dialect.mariadb.MariaDbDialect;
-import net.luis.utils.io.database.dialect.mysql.MySqlDialect;
-import net.luis.utils.io.database.dialect.postgres.PostgreSqlDialect;
-import net.luis.utils.io.database.dialect.sqlite.SqliteDialect;
-import net.luis.utils.io.database.dialect.sqlserver.SqlServerDialect;
-
 /**
  *
  * @author Luis-St
@@ -36,7 +29,7 @@ public final class SqlDialects {
 	public static final SqlDialect H2 = new H2Dialect();
 	public static final SqlDialect MARIA_DB = new MariaDbDialect();
 	public static final SqlDialect MYSQL = new MySqlDialect();
-	public static final SqlDialect POSTGRESQL = new PostgreSqlDialect();
+	public static final SqlDialect POSTGRESQL = new PostgresSqlDialect();
 	public static final SqlDialect SQLITE = new SqliteDialect();
 	public static final SqlDialect SQL_SERVER = new SqlServerDialect();
 	

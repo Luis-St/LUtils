@@ -20,7 +20,7 @@ package net.luis.utils.io.database.migration;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.dialect.base.SqlMigrationOperationRenderer;
+import net.luis.utils.io.database.dialect.renderer.SqlMigrationOperationRenderer;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.migration.operation.*;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -67,18 +67,19 @@ class SqlMigrationRenderer {
 		Objects.requireNonNull(operation, "Sql migration operation must not be null");
 		
 		return switch (operation) {
-			case SqlCreateTableOperation op -> this.dialect.renderCreateTable(op.table(), false);
-			case SqlDropTableOperation op -> this.dialect.renderDropTable(op.table(), false);
+			case SqlCreateTableOperation op -> this.dialect.tableRenderer().renderCreateTable(op.table(), false);
+			case SqlDropTableOperation op -> this.dialect.tableRenderer().renderDropTable(op.table(), false);
 			case SqlRenameTableOperation op -> this.migrationRenderer.renderRenameTable(op.from().getName(), op.to().getName());
 			case SqlAddColumnOperation op -> this.migrationRenderer.renderAddColumn(op.column().getOwningTable().getName(), op.column().getName(), op.type(), op.options());
 			case SqlDropColumnOperation op -> this.migrationRenderer.renderDropColumn(op.column().getOwningTable().getName(), op.column().getName());
 			case SqlRenameColumnOperation op -> this.migrationRenderer.renderRenameColumn(op.from().getOwningTable().getName(), op.from().getName(), op.to().getName());
 			case SqlAlterColumnOperation _ -> throw new IllegalStateException("SqlAlterColumnOperation should be handled separately");
-			case SqlCreateIndexOperation op -> this.dialect.renderCreateIndex(op.index());
-			case SqlDropIndexOperation op -> this.dialect.renderDropIndex(op.tableName() != null ? op.tableName() : "", op.name());
-			case SqlRenameIndexOperation op -> this.dialect.renderRenameIndex(op.tableName(), op.from(), op.to());
+			case SqlCreateIndexOperation op -> this.dialect.indexRenderer().renderCreateIndex(op.index());
+			case SqlDropIndexOperation op -> this.dialect.indexRenderer().renderDropIndex(op.tableName() != null ? op.tableName() : "", op.name());
+			case SqlRenameIndexOperation op -> this.dialect.indexRenderer().renderRenameIndex(op.tableName(), op.from(), op.to());
 			case SqlAddUniqueConstraintOperation op -> this.migrationRenderer.renderAddUniqueConstraint(op.table().getName(), op.name(), extractColumnNames(op.columns()));
-			case SqlAddForeignKeyOperation op -> this.migrationRenderer.renderAddForeignKey(op.table().getName(), op.name(), extractColumnNames(op.columns()), op.referencedTable().getName(), extractColumnNames(op.referencedColumns()), op.onDelete(), op.onUpdate());
+			case SqlAddForeignKeyOperation op ->
+				this.migrationRenderer.renderAddForeignKey(op.table().getName(), op.name(), extractColumnNames(op.columns()), op.referencedTable().getName(), extractColumnNames(op.referencedColumns()), op.onDelete(), op.onUpdate());
 			case SqlAddCheckConstraintOperation op -> this.migrationRenderer.renderAddCheckConstraint(op.table().getName(), op.name(), op.condition());
 			case SqlAddCompositePrimaryKeyOperation op -> this.migrationRenderer.renderAddCompositePrimaryKey(op.table().getName(), op.name(), extractColumnNames(op.columns()));
 			case SqlDropConstraintOperation op -> this.migrationRenderer.renderDropConstraint(op.table().getName(), op.name());
@@ -89,16 +90,15 @@ class SqlMigrationRenderer {
 	private @NonNull List<SqlRendered> renderAlterColumn(@NonNull SqlAlterColumnOperation op) throws SqlException {
 		Objects.requireNonNull(op, "Alter column operation must not be null");
 		
-		String tableName = op.column().getOwningTable().getName();
-		String columnName = op.column().getName();
+		SqlColumn<?, ?> column = op.column();
 		List<SqlRendered> results = Lists.newArrayList();
 		
 		for (SqlColumnAlteration alteration : op.alterations()) {
 			switch (alteration) {
-				case SqlSetTypeAlteration setType -> results.add(this.dialect.renderAlterColumnType(tableName, columnName, setType.type()));
-				case SqlSetNullableAlteration setNullable -> results.add(this.dialect.renderAlterColumnNullability(tableName, columnName, op.column().getType(), setNullable.nullable()));
-				case SqlSetDefaultAlteration setDefault -> results.add(this.dialect.renderAlterColumnSetDefault(tableName, columnName, this.dialect.renderValueLiteral(setDefault.value())));
-				case SqlDropDefaultAlteration _ -> results.add(this.dialect.renderAlterColumnDropDefault(tableName, columnName));
+				case SqlSetTypeAlteration setType -> results.add(this.dialect.columnRenderer().renderAlterColumnType(column, setType.type()));
+				case SqlSetNullableAlteration setNullable -> results.add(this.dialect.columnRenderer().renderAlterColumnNullability(column, setNullable.nullable()));
+				case SqlSetDefaultAlteration setDefault -> results.add(this.dialect.columnRenderer().renderAlterColumnSetDefault(column, this.dialect.renderValueLiteral(setDefault.value())));
+				case SqlDropDefaultAlteration _ -> results.add(this.dialect.columnRenderer().renderAlterColumnDropDefault(column));
 			}
 		}
 		return results;
