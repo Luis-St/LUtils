@@ -61,20 +61,28 @@ public class SqlComparisonConditionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderBetween(@NonNull SqlBetweenCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(condition.value().toSql(this.dialect)).between().rendered(condition.lower().toSql(this.dialect)).and().rendered(condition.upper().toSql(this.dialect));
 		return renderer.toSql();
 	}
 	
 	protected @NonNull SqlRendered renderEqualTo(@NonNull SqlEqualToCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		return SqlRenderingHelper.renderInfix(this.dialect, condition.first(), "=", condition.second());
 	}
 	
 	protected @NonNull SqlRendered renderGreaterThan(@NonNull SqlGreaterThanCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		return SqlRenderingHelper.renderInfix(this.dialect, condition.value(), condition.equalTo() ? ">=" : ">", condition.threshold());
 	}
 	
 	protected @NonNull SqlRendered renderInList(@NonNull SqlInListCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(condition.value().toSql(this.dialect)).in().openingBracket();
 		SqlRenderingHelper.renderList(renderer, condition.options(), (r, item) -> r.rendered(item.toSql(this.dialect)));
@@ -83,24 +91,32 @@ public class SqlComparisonConditionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderInQuery(@NonNull SqlInQueryCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(condition.value().toSql(this.dialect)).in().openingBracket().rendered(condition.query().toSql(this.dialect)).closingBracket();
 		return renderer.toSql();
 	}
 	
 	protected @NonNull SqlRendered renderIsDistinctFrom(@NonNull SqlIsDistinctFromCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(condition.first().toSql(this.dialect)).is().keyword("DISTINCT").from().rendered(condition.second().toSql(this.dialect));
 		return renderer.toSql();
 	}
 	
 	protected @NonNull SqlRendered renderIsNull(@NonNull SqlIsNullCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(condition.value().toSql(this.dialect)).is().null_();
 		return renderer.toSql();
 	}
 	
 	protected @NonNull SqlRendered renderLessThan(@NonNull SqlLessThanCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		return SqlRenderingHelper.renderInfix(this.dialect, condition.value(), condition.equalTo() ? "<=" : "<", condition.threshold());
 	}
 }

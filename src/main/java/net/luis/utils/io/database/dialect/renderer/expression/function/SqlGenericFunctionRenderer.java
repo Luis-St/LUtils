@@ -61,37 +61,52 @@ public class SqlGenericFunctionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderCaseWhen(@NonNull SqlCaseWhenFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.case_();
+		
 		for (SqlCaseWhenBranch<?> branch : function.branches()) {
 			renderer.when().rendered(branch.condition().toSql(this.dialect));
 			renderer.then().rendered(branch.expression().toSql(this.dialect));
 		}
+		
 		SqlExpression<?> elseValue = function.elseValue();
 		if (elseValue != null) {
 			renderer.else_().rendered(elseValue.toSql(this.dialect));
 		}
+		
 		renderer.end();
 		return renderer.toSql();
 	}
 	
 	protected @NonNull SqlRendered renderCoalesce(@NonNull SqlCoalesceFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCallWithList(this.dialect, "COALESCE", function.expressions());
 	}
 	
 	protected @NonNull SqlRendered renderGreatest(@NonNull SqlGreatestFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCallWithList(this.dialect, "GREATEST", function.expressions());
 	}
 	
 	protected @NonNull SqlRendered renderLeast(@NonNull SqlLeastFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCallWithList(this.dialect, "LEAST", function.expressions());
 	}
 	
 	protected @NonNull SqlRendered renderNullIf(@NonNull SqlNullIfFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "NULLIF", function.expression(), function.compareValue());
 	}
 	
 	protected @NonNull SqlRendered renderUnsafe(@NonNull SqlUnsafeFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal(function.expression());
 		SqlRendered args = SqlRenderingHelper.renderFunctionCallWithList(this.dialect, "", function.arguments());

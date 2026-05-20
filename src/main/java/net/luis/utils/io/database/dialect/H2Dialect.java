@@ -138,6 +138,8 @@ class H2TemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderFromEpoch(@NonNull SqlFromEpochFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("DATEADD").openingBracket();
 		renderer.literal("'SECOND'").comma().rendered(function.expression().toSql(this.dialect));
@@ -148,6 +150,8 @@ class H2TemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderTemporalAdd(@NonNull SqlTemporalAddFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("DATEADD").openingBracket();
 		renderer.literal("'" + function.part().name() + "'").comma();
@@ -159,6 +163,8 @@ class H2TemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderTemporalSubtract(@NonNull SqlTemporalSubtractFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("DATEADD").openingBracket();
 		renderer.literal("'" + function.part().name() + "'").comma();
@@ -170,6 +176,9 @@ class H2TemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	public @NonNull SqlRendered renderInterval(@NonNull SqlExpression<?> duration, @NonNull String part) throws SqlException {
+		Objects.requireNonNull(duration, "Sql duration expression must not be null");
+		Objects.requireNonNull(part, "Temporal part must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(duration.toSql(this.dialect));
 		return renderer.toSql();

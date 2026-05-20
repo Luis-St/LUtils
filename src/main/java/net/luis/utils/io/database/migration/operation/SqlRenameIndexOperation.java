@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.migration.operation;
 
+import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -30,7 +31,7 @@ import java.util.Objects;
  */
 
 public record SqlRenameIndexOperation(
-	@Nullable String tableName,
+	@Nullable SqlTable<?> table,
 	@NonNull String from,
 	@NonNull String to
 ) implements SqlMigrationOperation {

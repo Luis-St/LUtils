@@ -109,16 +109,12 @@ public class SqlMigrationBuilder {
 		this.operations.add(new SqlCreateIndexOperation(index, table));
 	}
 	
-	public void dropIndex(@NonNull SqlTable<?> table, @NonNull String name) {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		
-		this.operations.add(new SqlDropIndexOperation(table.getName(), name));
+	public void dropIndex(@NonNull SqlTable<?> table, @NonNull String index) {
+		this.operations.add(new SqlDropIndexOperation(table, index));
 	}
 	
 	public void renameIndex(@NonNull SqlTable<?> table, @NonNull String from, @NonNull String to) {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		
-		this.operations.add(new SqlRenameIndexOperation(table.getName(), from, to));
+		this.operations.add(new SqlRenameIndexOperation(table, from, to));
 	}
 	
 	public void addUniqueConstraint(@NonNull SqlTable<?> table, @NonNull String name, SqlColumn<?, ?> @NonNull ... columns) {
@@ -136,6 +132,7 @@ public class SqlMigrationBuilder {
 		@NonNull SqlReferentialAction onDelete,
 		@NonNull SqlReferentialAction onUpdate
 	) {
+		Objects.requireNonNull(columns, "Sql columns must not be null");
 		Objects.requireNonNull(referencedColumns, "Sql referenced columns must not be null");
 		
 		this.operations.add(new SqlAddForeignKeyOperation(table, name, List.of(columns), referencedTable, List.of(referencedColumns), onDelete, onUpdate));
@@ -162,6 +159,7 @@ public class SqlMigrationBuilder {
 		if (this.dryRun) {
 			return;
 		}
+		
 		try (SqlQueryProvider<E> provider = this.context.from(table)) {
 			action.accept(provider);
 		}

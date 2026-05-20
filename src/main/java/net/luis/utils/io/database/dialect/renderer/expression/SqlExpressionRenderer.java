@@ -59,6 +59,8 @@ public class SqlExpressionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderOrdered(@NonNull OrderedSqlExpression<?> expression) throws SqlException {
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(this.render(expression.expression()));
 		renderer.rendered(this.dialect.renderOrdering(expression.ordering(), expression.nullOrdering()));
@@ -66,6 +68,8 @@ public class SqlExpressionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderAliased(@NonNull SqlAliasedExpression<?> expression) throws SqlException {
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(this.render(expression.expression()));
 		renderer.as().literal(this.dialect.quoteIdentifier(expression.alias().get()));
@@ -73,6 +77,8 @@ public class SqlExpressionRenderer {
 	}
 	
 	protected <T> @NonNull SqlRendered renderValue(@NonNull SqlValueExpression<T> expression) throws SqlException {
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		
 		return SqlRenderer.empty().parameter(expression.type(), expression.value()).toSql();
 	}
 }

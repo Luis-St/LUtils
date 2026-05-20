@@ -57,22 +57,32 @@ public class SqlStringConditionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderConcatExpression(@NonNull SqlRenderer renderer, @NonNull SqlRendered left, @NonNull SqlRendered right) throws SqlException {
+		Objects.requireNonNull(renderer, "Sql renderer must not be null");
+		Objects.requireNonNull(left, "Left sql rendered must not be null");
+		Objects.requireNonNull(right, "Right sql rendered must not be null");
+		
 		return renderer.rendered(left).literal("||").rendered(right).toSql();
 	}
 	
 	protected @NonNull SqlRendered renderContains(@NonNull SqlContainsCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(condition.value().toSql(this.dialect)).like();
 		return this.renderConcatExpression(renderer, this.renderConcatExpression(SqlRenderer.empty(), SqlRendered.of("'%'"), condition.substring().toSql(this.dialect)), SqlRendered.of("'%'"));
 	}
 	
 	protected @NonNull SqlRendered renderEndsWith(@NonNull SqlEndsWithCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(condition.value().toSql(this.dialect)).like();
 		return this.renderConcatExpression(renderer, SqlRendered.of("'%'"), condition.suffix().toSql(this.dialect));
 	}
 	
 	protected @NonNull SqlRendered renderEqualsIgnoreCase(@NonNull SqlEqualsIgnoreCaseCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("UPPER").openingBracket().rendered(condition.first().toSql(this.dialect)).closingBracket();
 		renderer.literal("=");
@@ -81,12 +91,16 @@ public class SqlStringConditionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderLike(@NonNull SqlLikeCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(condition.value().toSql(this.dialect)).like().rendered(condition.pattern().toSql(this.dialect));
 		return renderer.toSql();
 	}
 	
 	protected @NonNull SqlRendered renderStartsWith(@NonNull SqlStartsWithCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(condition.value().toSql(this.dialect)).like();
 		return this.renderConcatExpression(renderer, condition.prefix().toSql(this.dialect), SqlRendered.of("'%'"));

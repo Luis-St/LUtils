@@ -69,6 +69,10 @@ public class SqlWindowFunctionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderWindowCall(@NonNull String functionName, @NonNull SqlWindowClause over, SqlExpression<?> @NonNull ... arguments) throws SqlException {
+		Objects.requireNonNull(functionName, "Sql function name must not be null");
+		Objects.requireNonNull(over, "Sql window clause must not be null");
+		Objects.requireNonNull(arguments, "Function arguments must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal(functionName).openingBracket();
 		SqlExpression<?>[] filteredArgs = Lists.newArrayList(arguments).stream().filter(Objects::nonNull).toArray(SqlExpression[]::new);
@@ -83,50 +87,74 @@ public class SqlWindowFunctionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderCumulativeDistribution(@NonNull SqlCumulativeDistributionFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return this.renderWindowCall("CUME_DIST", function.over());
 	}
 	
 	protected @NonNull SqlRendered renderDenseRank(@NonNull SqlDenseRankFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return this.renderWindowCall("DENSE_RANK", function.over());
 	}
 	
 	protected @NonNull SqlRendered renderFirstValue(@NonNull SqlFirstValueFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return this.renderWindowCall("FIRST_VALUE", function.over(), function.column());
 	}
 	
 	protected @NonNull SqlRendered renderLag(@NonNull SqlLagFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return this.renderWindowCall("LAG", function.over(), function.column(), function.offset(), function.defaultValue());
 	}
 	
 	protected @NonNull SqlRendered renderLastValue(@NonNull SqlLastValueFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return this.renderWindowCall("LAST_VALUE", function.over(), function.column());
 	}
 	
 	protected @NonNull SqlRendered renderLead(@NonNull SqlLeadFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return this.renderWindowCall("LEAD", function.over(), function.column(), function.offset(), function.defaultValue());
 	}
 	
 	protected @NonNull SqlRendered renderPercentRank(@NonNull SqlPercentRankFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return this.renderWindowCall("PERCENT_RANK", function.over());
 	}
 	
 	protected @NonNull SqlRendered renderRank(@NonNull SqlRankFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return this.renderWindowCall("RANK", function.over());
 	}
 	
 	protected @NonNull SqlRendered renderRowNumber(@NonNull SqlRowNumberFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return this.renderWindowCall("ROW_NUMBER", function.over());
 	}
 	
 	protected @NonNull SqlRendered renderTileBucket(@NonNull SqlTileBucketFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return this.renderWindowCall("NTILE", function.over(), function.buckets());
 	}
 	
 	protected @NonNull SqlRendered renderValueAt(@NonNull SqlValueAtFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return this.renderWindowCall("NTH_VALUE", function.over(), function.column(), function.position());
 	}
 	
 	protected @NonNull SqlRendered renderWindowedAggregate(@NonNull SqlWindowedAggregate<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(this.aggregateRenderer.render(function.aggregate()));
 		renderer.over().openingBracket().rendered(function.over().toSql(this.dialect)).closingBracket();

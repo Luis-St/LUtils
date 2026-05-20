@@ -68,11 +68,4 @@ public class SqlSchemaRenderer {
 		}
 		return renderer.toSql();
 	}
-	
-	public @NonNull SqlRendered renderQualifiedName(@NonNull String schema, @NonNull String name) throws SqlException {
-		Objects.requireNonNull(schema, "Schema must not be null");
-		Objects.requireNonNull(name, "Name must not be null");
-		
-		return SqlRendered.of(this.dialect.quoteIdentifier(schema) + "." + this.dialect.quoteIdentifier(name));
-	}
 }

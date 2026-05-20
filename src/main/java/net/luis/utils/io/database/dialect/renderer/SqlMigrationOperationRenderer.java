@@ -25,6 +25,8 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.migration.operation.SqlColumnOptions;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
@@ -45,21 +47,21 @@ public class SqlMigrationOperationRenderer {
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 	}
 	
-	public @NonNull SqlRendered renderRenameTable(@NonNull String fromTable, @NonNull String toTable) throws SqlException {
-		Objects.requireNonNull(fromTable, "Sql source table name must not be null");
-		Objects.requireNonNull(toTable, "Sql target table name must not be null");
+	public @NonNull SqlRendered renderRenameTable(@NonNull SqlTable<?> fromTable, @NonNull SqlTable<?> toTable) throws SqlException {
+		Objects.requireNonNull(fromTable, "Sql source table must not be null");
+		Objects.requireNonNull(toTable, "Sql target table must not be null");
 		
-		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(fromTable)).rename().to().literal(this.dialect.quoteIdentifier(toTable)).toSql();
+		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(fromTable.getName())).rename().to().literal(this.dialect.quoteIdentifier(toTable.getName())).toSql();
 	}
 	
-	public @NonNull SqlRendered renderAddColumn(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> type, @NonNull SqlColumnOptions options) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
-		Objects.requireNonNull(columnName, "Sql column name must not be null");
+	public @NonNull SqlRendered renderAddColumn(@NonNull SqlTable<?> table, @NonNull SqlColumn<?, ?> column, @NonNull SqlType<?> type, @NonNull SqlColumnOptions options) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");
 		Objects.requireNonNull(options, "Sql column options must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).add().column().literal(this.dialect.quoteIdentifier(columnName)).literal(this.dialect.getTypeName(type));
+		renderer.alter().table().literal(this.dialect.quoteIdentifier(table.getName())).add().column().literal(this.dialect.quoteIdentifier(column.getName())).literal(this.dialect.getTypeName(type));
 		this.appendColumnOptions(renderer, options);
 		return renderer.toSql();
 	}
@@ -86,43 +88,45 @@ public class SqlMigrationOperationRenderer {
 		}
 	}
 	
-	public @NonNull SqlRendered renderDropColumn(@NonNull String tableName, @NonNull String columnName) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
-		Objects.requireNonNull(columnName, "Sql column name must not be null");
+	public @NonNull SqlRendered renderDropColumn(@NonNull SqlTable<?> table, @NonNull SqlColumn<?, ?> column) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(column, "Sql column must not be null");
 		
-		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(tableName)).drop().column().literal(this.dialect.quoteIdentifier(columnName)).toSql();
+		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(table.getName())).drop().column().literal(this.dialect.quoteIdentifier(column.getName())).toSql();
 	}
 	
-	public @NonNull SqlRendered renderRenameColumn(@NonNull String tableName, @NonNull String fromColumn, @NonNull String toColumn) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
-		Objects.requireNonNull(fromColumn, "Sql source column name must not be null");
-		Objects.requireNonNull(toColumn, "Sql target column name must not be null");
+	public @NonNull SqlRendered renderRenameColumn(@NonNull SqlTable<?> table, @NonNull SqlColumn<?, ?> fromColumn, @NonNull SqlColumn<?, ?> toColumn) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(fromColumn, "Sql source column must not be null");
+		Objects.requireNonNull(toColumn, "Sql target column must not be null");
 		
-		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(tableName)).rename().column().literal(this.dialect.quoteIdentifier(fromColumn)).to().literal(this.dialect.quoteIdentifier(toColumn)).toSql();
+		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(table.getName())).rename()
+			.column().literal(this.dialect.quoteIdentifier(fromColumn.getName())).to()
+			.literal(this.dialect.quoteIdentifier(toColumn.getName())).toSql();
 	}
 	
-	public @NonNull SqlRendered renderAddUniqueConstraint(@NonNull String tableName, @NonNull String constraintName, @NonNull List<String> columnNames) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
+	public @NonNull SqlRendered renderAddUniqueConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");
-		Objects.requireNonNull(columnNames, "Sql column names must not be null");
+		Objects.requireNonNull(columns, "Sql columns must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).add().constraint().literal(this.dialect.quoteIdentifier(constraintName)).unique().openingBracket();
-		SqlRenderingHelper.renderList(renderer, columnNames, (r, col) -> r.literal(this.dialect.quoteIdentifier(col)));
+		renderer.alter().table().literal(this.dialect.quoteIdentifier(table.getName())).add().constraint().literal(this.dialect.quoteIdentifier(constraintName)).unique().openingBracket();
+		SqlRenderingHelper.renderList(renderer, columns, (r, col) -> r.literal(this.dialect.quoteIdentifier(col.getName())));
 		renderer.closingBracket();
 		return renderer.toSql();
 	}
 	
 	public @NonNull SqlRendered renderAddForeignKey(
-		@NonNull String tableName,
+		@NonNull SqlTable<?> table,
 		@NonNull String constraintName,
-		@NonNull List<String> columns,
-		@NonNull String referencedTable,
-		@NonNull List<String> referencedColumns,
+		@NonNull List<SqlColumn<?, ?>> columns,
+		@NonNull SqlTable<?> referencedTable,
+		@NonNull List<SqlColumn<?, ?>> referencedColumns,
 		@NonNull SqlReferentialAction onDelete,
 		@NonNull SqlReferentialAction onUpdate
 	) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");
 		Objects.requireNonNull(columns, "Sql columns must not be null");
 		Objects.requireNonNull(referencedTable, "Sql referenced table name must not be null");
@@ -131,10 +135,10 @@ public class SqlMigrationOperationRenderer {
 		Objects.requireNonNull(onUpdate, "On sql update action must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).add().constraint().literal(this.dialect.quoteIdentifier(constraintName)).foreign().key().openingBracket();
-		SqlRenderingHelper.renderList(renderer, columns, (r, col) -> r.literal(this.dialect.quoteIdentifier(col)));
-		renderer.closingBracket().references().literal(this.dialect.quoteIdentifier(referencedTable)).openingBracket();
-		SqlRenderingHelper.renderList(renderer, referencedColumns, (r, col) -> r.literal(this.dialect.quoteIdentifier(col)));
+		renderer.alter().table().literal(this.dialect.quoteIdentifier(table.getName())).add().constraint().literal(this.dialect.quoteIdentifier(constraintName)).foreign().key().openingBracket();
+		SqlRenderingHelper.renderList(renderer, columns, (r, col) -> r.literal(this.dialect.quoteIdentifier(col.getName())));
+		renderer.closingBracket().references().literal(this.dialect.quoteIdentifier(referencedTable.getName())).openingBracket();
+		SqlRenderingHelper.renderList(renderer, referencedColumns, (r, col) -> r.literal(this.dialect.quoteIdentifier(col.getName())));
 		renderer.closingBracket();
 		renderer.on().delete();
 		this.dialect.renderReferentialAction(renderer, onDelete);
@@ -143,34 +147,34 @@ public class SqlMigrationOperationRenderer {
 		return renderer.toSql();
 	}
 	
-	public @NonNull SqlRendered renderAddCheckConstraint(@NonNull String tableName, @NonNull String constraintName, @NonNull SqlCondition condition) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
+	public @NonNull SqlRendered renderAddCheckConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull SqlCondition condition) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");
 		Objects.requireNonNull(condition, "Sql condition must not be null");
 		
 		SqlRendered conditionRendered = this.dialect.renderCondition(condition);
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).add().constraint().literal(this.dialect.quoteIdentifier(constraintName)).check().openingBracket().rendered(conditionRendered).closingBracket();
+		renderer.alter().table().literal(this.dialect.quoteIdentifier(table.getName())).add().constraint().literal(this.dialect.quoteIdentifier(constraintName)).check().openingBracket().rendered(conditionRendered).closingBracket();
 		return renderer.toSql();
 	}
 	
-	public @NonNull SqlRendered renderAddCompositePrimaryKey(@NonNull String tableName, @NonNull String constraintName, @NonNull List<String> columnNames) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
+	public @NonNull SqlRendered renderAddCompositePrimaryKey(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");
-		Objects.requireNonNull(columnNames, "Sql column names must not be null");
+		Objects.requireNonNull(columns, "Sql columns must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).add().constraint().literal(this.dialect.quoteIdentifier(constraintName)).primary().key().openingBracket();
+		renderer.alter().table().literal(this.dialect.quoteIdentifier(table.getName())).add().constraint().literal(this.dialect.quoteIdentifier(constraintName)).primary().key().openingBracket();
 		
-		SqlRenderingHelper.renderList(renderer, columnNames, (r, col) -> r.literal(this.dialect.quoteIdentifier(col)));
+		SqlRenderingHelper.renderList(renderer, columns, (r, col) -> r.literal(this.dialect.quoteIdentifier(col.getName())));
 		renderer.closingBracket();
 		return renderer.toSql();
 	}
 	
-	public @NonNull SqlRendered renderDropConstraint(@NonNull String tableName, @NonNull String constraintName) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
+	public @NonNull SqlRendered renderDropConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");
 		
-		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(tableName)).drop().constraint().literal(this.dialect.quoteIdentifier(constraintName)).toSql();
+		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(table.getName())).drop().constraint().literal(this.dialect.quoteIdentifier(constraintName)).toSql();
 	}
 }

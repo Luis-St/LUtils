@@ -77,6 +77,8 @@ public class SqlStringFunctionRenderer {
 	
 	@SuppressWarnings("DuplicatedCode")
 	protected @NonNull SqlRendered renderConcat(@NonNull SqlConcatFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		List<? extends SqlExpression<? extends CharSequence>> values = function.expressions();
 		Optional<String> separator = function.separator();
 		boolean distinct = function.distinct();
@@ -110,30 +112,44 @@ public class SqlStringFunctionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderHex(@NonNull SqlHexFunction function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "HEX", function.expression());
 	}
 	
 	protected @NonNull SqlRendered renderLeft(@NonNull SqlLeftFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "LEFT", function.expression(), function.length());
 	}
 	
 	protected @NonNull SqlRendered renderLeftPad(@NonNull SqlLeftPadFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "LPAD", function.expression(), function.length(), function.fill());
 	}
 	
 	protected @NonNull SqlRendered renderLeftTrim(@NonNull SqlLeftTrimFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "LTRIM", function.expression());
 	}
 	
 	protected @NonNull SqlRendered renderLength(@NonNull SqlLengthFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "LENGTH", function.expression());
 	}
 	
 	protected @NonNull SqlRendered renderLower(@NonNull SqlLowerFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "LOWER", function.expression());
 	}
 	
 	protected @NonNull SqlRendered renderPosition(@NonNull SqlPositionFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("POSITION").openingBracket();
 		renderer.rendered(function.substring().toSql(this.dialect)).in().rendered(function.expression().toSql(this.dialect));
@@ -142,22 +158,32 @@ public class SqlStringFunctionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderReplace(@NonNull SqlReplaceFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "REPLACE", function.expression(), function.search(), function.replacement());
 	}
 	
 	protected @NonNull SqlRendered renderRight(@NonNull SqlRightFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "RIGHT", function.expression(), function.length());
 	}
 	
 	protected @NonNull SqlRendered renderRightPad(@NonNull SqlRightPadFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "RPAD", function.expression(), function.length(), function.fill());
 	}
 	
 	protected @NonNull SqlRendered renderRightTrim(@NonNull SqlRightTrimFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "RTRIM", function.expression());
 	}
 	
 	protected @NonNull SqlRendered renderSubstring(@NonNull SqlSubstringFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("SUBSTRING").openingBracket().rendered(function.expression().toSql(this.dialect)).from().rendered(function.start().toSql(this.dialect));
 		SqlExpression<? extends Number> length = function.length();
@@ -169,20 +195,28 @@ public class SqlStringFunctionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderTrimChars(@NonNull SqlTrimCharsFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("TRIM").openingBracket().rendered(function.characters().toSql(this.dialect)).from().rendered(function.expression().toSql(this.dialect)).closingBracket();
 		return renderer.toSql();
 	}
 	
 	protected @NonNull SqlRendered renderTrim(@NonNull SqlTrimFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "TRIM", function.expression());
 	}
 	
 	protected @NonNull SqlRendered renderUnhex(@NonNull SqlUnhexFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "UNHEX", function.expression());
 	}
 	
 	protected @NonNull SqlRendered renderUpper(@NonNull SqlUpperFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "UPPER", function.expression());
 	}
 }

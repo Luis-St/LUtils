@@ -47,14 +47,14 @@ public class SqlTemporalFunctionRenderer {
 	public @NonNull SqlRendered render(@NonNull SqlTemporalFunction<?> function) throws SqlException {
 		return switch (function) {
 			case SqlTemporalAddFunction<?> func -> this.renderTemporalAdd(func);
-			case SqlCurrentDateFunction<?> func -> this.renderCurrentDate(func);
-			case SqlCurrentTimeFunction<?> func -> this.renderCurrentTime(func);
-			case SqlCurrentTimestampFunction<?> func -> this.renderCurrentTimestamp(func);
+			case SqlCurrentDateFunction<?> _ -> this.renderCurrentDate();
+			case SqlCurrentTimeFunction<?> _ -> this.renderCurrentTime();
+			case SqlCurrentTimestampFunction<?> _ -> this.renderCurrentTimestamp();
 			case SqlExtractFunction<?> func -> this.renderExtract(func);
 			case SqlFromEpochFunction<?> func -> this.renderFromEpoch(func);
 			case SqlMakeDateFunction<?> func -> this.renderMakeDate(func);
 			case SqlMakeTimeFunction<?> func -> this.renderMakeTime(func);
-			case SqlNowFunction<?> func -> this.renderNow(func);
+			case SqlNowFunction<?> _ -> this.renderNow();
 			case SqlTemporalSubtractFunction<?> func -> this.renderTemporalSubtract(func);
 			case SqlToDateFunction<?> func -> this.renderToDate(func);
 			case SqlToTimeFunction<?> func -> this.renderToTime(func);
@@ -67,6 +67,8 @@ public class SqlTemporalFunctionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderTemporalAdd(@NonNull SqlTemporalAddFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(function.firstSummand().toSql(this.dialect));
 		renderer.literal("+");
@@ -74,19 +76,21 @@ public class SqlTemporalFunctionRenderer {
 		return renderer.toSql();
 	}
 	
-	protected @NonNull SqlRendered renderCurrentDate(@NonNull SqlCurrentDateFunction<?> function) throws SqlException {
+	protected @NonNull SqlRendered renderCurrentDate() throws SqlException {
 		return SqlRendered.of("CURRENT_DATE");
 	}
 	
-	protected @NonNull SqlRendered renderCurrentTime(@NonNull SqlCurrentTimeFunction<?> function) throws SqlException {
+	protected @NonNull SqlRendered renderCurrentTime() throws SqlException {
 		return SqlRendered.of("CURRENT_TIME");
 	}
 	
-	protected @NonNull SqlRendered renderCurrentTimestamp(@NonNull SqlCurrentTimestampFunction<?> function) throws SqlException {
+	protected @NonNull SqlRendered renderCurrentTimestamp() throws SqlException {
 		return SqlRendered.of("CURRENT_TIMESTAMP");
 	}
 	
 	protected @NonNull SqlRendered renderExtract(@NonNull SqlExtractFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("EXTRACT").openingBracket().keyword(function.part().name()).from().rendered(function.expression().toSql(this.dialect)).closingBracket();
 		return renderer.toSql();
@@ -104,11 +108,13 @@ public class SqlTemporalFunctionRenderer {
 		throw new SqlDialectUnsupportedRenderingException("MAKE_TIME is not supported by dialect " + this.dialect.name() + ", requires dialect-specific override");
 	}
 	
-	protected @NonNull SqlRendered renderNow(@NonNull SqlNowFunction<?> function) throws SqlException {
+	protected @NonNull SqlRendered renderNow() throws SqlException {
 		return SqlRendered.of("CURRENT_TIMESTAMP");
 	}
 	
 	protected @NonNull SqlRendered renderTemporalSubtract(@NonNull SqlTemporalSubtractFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(function.minuend().toSql(this.dialect));
 		renderer.literal("-");
@@ -117,30 +123,39 @@ public class SqlTemporalFunctionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderToDate(@NonNull SqlToDateFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRendered inner = function.expression().toSql(this.dialect);
 		return SqlRenderer.empty().cast().openingBracket().rendered(inner).as().literal("DATE").closingBracket().toSql();
 	}
 	
 	protected @NonNull SqlRendered renderToTime(@NonNull SqlToTimeFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRendered inner = function.expression().toSql(this.dialect);
 		return SqlRenderer.empty().cast().openingBracket().rendered(inner).as().literal("TIME").closingBracket().toSql();
 	}
 	
 	protected @NonNull SqlRendered renderToEpoch(@NonNull SqlToEpochFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("EXTRACT").openingBracket().keyword("EPOCH").from().rendered(function.expression().toSql(this.dialect)).closingBracket();
 		return renderer.toSql();
 	}
 	
 	protected @NonNull SqlRendered renderTemporalTruncate(@NonNull SqlTemporalTruncateFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("DATE_TRUNC").openingBracket().literal("'" + function.part().name() + "'").comma().rendered(function.expression().toSql(this.dialect)).closingBracket();
 		return renderer.toSql();
 	}
 	
 	public @NonNull SqlRendered renderInterval(@NonNull SqlExpression<?> duration, @NonNull String part) throws SqlException {
-		Objects.requireNonNull(duration, "Duration expression must not be null");
+		Objects.requireNonNull(duration, "Sql duration expression must not be null");
 		Objects.requireNonNull(part, "Temporal part must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(duration.toSql(this.dialect)).literal("* INTERVAL '1'").literal(part);
 		return renderer.toSql();

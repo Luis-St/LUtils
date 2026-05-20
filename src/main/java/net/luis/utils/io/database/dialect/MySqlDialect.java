@@ -190,7 +190,7 @@ class MySqlIndexRenderer extends SqlIndexRenderer {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public @NonNull SqlRendered renderDropIndex(@NonNull SqlTable<?> owningTable, @NonNull String indexName) throws SqlException {
+	public @NonNull SqlRendered renderDropIndex(@Nullable SqlTable<?> owningTable, @NonNull String indexName) throws SqlException {
 		Objects.requireNonNull(owningTable, "Sql index owning table must not be null");
 		Objects.requireNonNull(indexName, "Sql index name must not be null");
 		
@@ -200,22 +200,12 @@ class MySqlIndexRenderer extends SqlIndexRenderer {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderDropIndex(@NonNull String tableName, @NonNull String indexName) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
-		Objects.requireNonNull(indexName, "Sql index name must not be null");
-		
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.drop().index().literal(this.dialect.quoteIdentifier(indexName)).on().literal(this.dialect.quoteIdentifier(tableName));
-		return renderer.toSql();
-	}
-	
-	@Override
-	public @NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
+	public @NonNull SqlRendered renderRenameIndex(@Nullable SqlTable<?> table, @NonNull String from, @NonNull String to) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(from, "Sql source index name must not be null");
 		Objects.requireNonNull(to, "Sql target index name must not be null");
 		
-		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(tableName)).literal("RENAME").index().literal(this.dialect.quoteIdentifier(from)).to().literal(this.dialect.quoteIdentifier(to)).toSql();
+		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(table.getName())).literal("RENAME").index().literal(this.dialect.quoteIdentifier(from)).to().literal(this.dialect.quoteIdentifier(to)).toSql();
 	}
 }
 
@@ -292,11 +282,11 @@ class MySqlMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderRenameTable(@NonNull String fromTable, @NonNull String toTable) throws SqlException {
-		Objects.requireNonNull(fromTable, "Sql source table name must not be null");
-		Objects.requireNonNull(toTable, "Sql target table name must not be null");
+	public @NonNull SqlRendered renderRenameTable(@NonNull SqlTable<?> fromTable, @NonNull SqlTable<?> toTable) throws SqlException {
+		Objects.requireNonNull(fromTable, "Sql source table must not be null");
+		Objects.requireNonNull(toTable, "Sql target table must not be null");
 		
-		return SqlRenderer.empty().rename().table().literal(this.dialect.quoteIdentifier(fromTable)).to().literal(this.dialect.quoteIdentifier(toTable)).toSql();
+		return SqlRenderer.empty().rename().table().literal(this.dialect.quoteIdentifier(fromTable.getName())).to().literal(this.dialect.quoteIdentifier(toTable.getName())).toSql();
 	}
 }
 
@@ -320,6 +310,10 @@ class MySqlStringConditionRenderer extends SqlStringConditionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderConcatExpression(@NonNull SqlRenderer renderer, @NonNull SqlRendered left, @NonNull SqlRendered right) throws SqlException {
+		Objects.requireNonNull(renderer, "Sql renderer must not be null");
+		Objects.requireNonNull(left, "Left sql rendered must not be null");
+		Objects.requireNonNull(right, "Right sql rendered must not be null");
+		
 		return renderer.literal("CONCAT").openingBracket().rendered(left).comma().rendered(right).closingBracket().toSql();
 	}
 }
@@ -333,6 +327,8 @@ class MySqlStringFunctionRenderer extends SqlStringFunctionRenderer {
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	protected @NonNull SqlRendered renderConcat(@NonNull SqlConcatFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		List<? extends SqlExpression<? extends CharSequence>> values = function.expressions();
 		Optional<String> separator = function.separator();
 		boolean distinct = function.distinct();
@@ -384,11 +380,15 @@ class MySqlTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderFromEpoch(@NonNull SqlFromEpochFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "FROM_UNIXTIME", function.expression());
 	}
 	
 	@Override
 	protected @NonNull SqlRendered renderMakeDate(@NonNull SqlMakeDateFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("STR_TO_DATE").openingBracket();
 		renderer.literal("CONCAT").openingBracket();
@@ -401,16 +401,22 @@ class MySqlTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderMakeTime(@NonNull SqlMakeTimeFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "MAKETIME", function.hour(), function.minute(), function.second());
 	}
 	
 	@Override
 	protected @NonNull SqlRendered renderToEpoch(@NonNull SqlToEpochFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "UNIX_TIMESTAMP", function.expression());
 	}
 	
 	@Override
 	protected @NonNull SqlRendered renderTemporalAdd(@NonNull SqlTemporalAddFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("DATE_ADD").openingBracket();
 		renderer.rendered(function.firstSummand().toSql(this.dialect)).comma();
@@ -421,6 +427,8 @@ class MySqlTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderTemporalSubtract(@NonNull SqlTemporalSubtractFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("DATE_SUB").openingBracket();
 		renderer.rendered(function.minuend().toSql(this.dialect)).comma();
@@ -431,6 +439,9 @@ class MySqlTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	public @NonNull SqlRendered renderInterval(@NonNull SqlExpression<?> duration, @NonNull String part) throws SqlException {
+		Objects.requireNonNull(duration, "Sql duration expression must not be null");
+		Objects.requireNonNull(part, "Temporal part must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("INTERVAL").rendered(duration.toSql(this.dialect)).literal(part);
 		return renderer.toSql();

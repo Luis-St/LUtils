@@ -169,7 +169,7 @@ class SqliteIndexRenderer extends SqlIndexRenderer {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException {
+	public @NonNull SqlRendered renderRenameIndex(@Nullable SqlTable<?> table, @NonNull String from, @NonNull String to) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("RENAME INDEX is not supported by dialect SQLite");
 	}
 }
@@ -208,17 +208,17 @@ class SqliteMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderAddUniqueConstraint(@NonNull String tableName, @NonNull String constraintName, @NonNull List<String> columnNames) throws SqlException {
+	public @NonNull SqlRendered renderAddUniqueConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("ADD CONSTRAINT is not supported by dialect SQLite, table recreation is required");
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderAddForeignKey(
-		@NonNull String tableName,
+		@NonNull SqlTable<?> table,
 		@NonNull String constraintName,
-		@NonNull List<String> columns,
-		@NonNull String referencedTable,
-		@NonNull List<String> referencedColumns,
+		@NonNull List<SqlColumn<?, ?>> columns,
+		@NonNull SqlTable<?> referencedTable,
+		@NonNull List<SqlColumn<?, ?>> referencedColumns,
 		@NonNull SqlReferentialAction onDelete,
 		@NonNull SqlReferentialAction onUpdate
 	) throws SqlException {
@@ -226,17 +226,17 @@ class SqliteMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderAddCheckConstraint(@NonNull String tableName, @NonNull String constraintName, @NonNull SqlCondition condition) throws SqlException {
+	public @NonNull SqlRendered renderAddCheckConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull SqlCondition condition) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("ADD CONSTRAINT is not supported by dialect SQLite, table recreation is required");
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderAddCompositePrimaryKey(@NonNull String tableName, @NonNull String constraintName, @NonNull List<String> columnNames) throws SqlException {
+	public @NonNull SqlRendered renderAddCompositePrimaryKey(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("ADD CONSTRAINT is not supported by dialect SQLite, table recreation is required");
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderDropConstraint(@NonNull String tableName, @NonNull String constraintName) throws SqlException {
+	public @NonNull SqlRendered renderDropConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("DROP CONSTRAINT is not supported by dialect SQLite, table recreation is required");
 	}
 }
@@ -248,6 +248,8 @@ class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	}
 	
 	private static @NonNull String toSqliteModifier(@NonNull String part) {
+		Objects.requireNonNull(part, "Temporal part must not be null");
+		
 		return switch (part.toUpperCase()) {
 			case "YEAR" -> "years";
 			case "MONTH" -> "months";
@@ -261,6 +263,8 @@ class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderFromEpoch(@NonNull SqlFromEpochFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("datetime").openingBracket();
 		renderer.rendered(function.expression().toSql(this.dialect)).comma().literal("'unixepoch'");
@@ -270,6 +274,8 @@ class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderToEpoch(@NonNull SqlToEpochFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("strftime").openingBracket();
 		renderer.literal("'%s'").comma().rendered(function.expression().toSql(this.dialect));
@@ -278,27 +284,29 @@ class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	}
 	
 	@Override
-	protected @NonNull SqlRendered renderNow(@NonNull SqlNowFunction<?> function) throws SqlException {
+	protected @NonNull SqlRendered renderNow() throws SqlException {
 		return SqlRendered.of("datetime('now')");
 	}
 	
 	@Override
-	protected @NonNull SqlRendered renderCurrentDate(@NonNull SqlCurrentDateFunction<?> function) throws SqlException {
+	protected @NonNull SqlRendered renderCurrentDate() throws SqlException {
 		return SqlRendered.of("date('now')");
 	}
 	
 	@Override
-	protected @NonNull SqlRendered renderCurrentTime(@NonNull SqlCurrentTimeFunction<?> function) throws SqlException {
+	protected @NonNull SqlRendered renderCurrentTime() throws SqlException {
 		return SqlRendered.of("time('now')");
 	}
 	
 	@Override
-	protected @NonNull SqlRendered renderCurrentTimestamp(@NonNull SqlCurrentTimestampFunction<?> function) throws SqlException {
+	protected @NonNull SqlRendered renderCurrentTimestamp() throws SqlException {
 		return SqlRendered.of("datetime('now')");
 	}
 	
 	@Override
 	protected @NonNull SqlRendered renderTemporalAdd(@NonNull SqlTemporalAddFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("datetime").openingBracket();
 		renderer.rendered(function.firstSummand().toSql(this.dialect)).comma();
@@ -309,6 +317,8 @@ class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderTemporalSubtract(@NonNull SqlTemporalSubtractFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("datetime").openingBracket();
 		renderer.rendered(function.minuend().toSql(this.dialect)).comma();
@@ -319,6 +329,8 @@ class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderToDate(@NonNull SqlToDateFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("date").openingBracket().rendered(function.expression().toSql(this.dialect)).closingBracket();
 		return renderer.toSql();
@@ -326,6 +338,8 @@ class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderToTime(@NonNull SqlToTimeFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("time").openingBracket().rendered(function.expression().toSql(this.dialect)).closingBracket();
 		return renderer.toSql();
@@ -333,6 +347,9 @@ class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	public @NonNull SqlRendered renderInterval(@NonNull SqlExpression<?> duration, @NonNull String part) throws SqlException {
+		Objects.requireNonNull(duration, "Sql duration expression must not be null");
+		Objects.requireNonNull(part, "Temporal part must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(duration.toSql(this.dialect)).literal("|| ' " + toSqliteModifier(part) + "'");
 		return renderer.toSql();

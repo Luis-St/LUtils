@@ -56,18 +56,26 @@ public class SqlNumericConditionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderIsNegative(@NonNull SqlIsNegativeCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		return SqlRenderer.empty().rendered(condition.value().toSql(this.dialect)).literal("<").literal("0").toSql();
 	}
 	
 	protected @NonNull SqlRendered renderIsPositive(@NonNull SqlIsPositiveCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		return SqlRenderer.empty().rendered(condition.value().toSql(this.dialect)).literal(">").literal("0").toSql();
 	}
 	
 	protected @NonNull SqlRendered renderIsZero(@NonNull SqlIsZeroCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		return SqlRenderer.empty().rendered(condition.value().toSql(this.dialect)).literal("=").literal("0").toSql();
 	}
 	
 	protected @NonNull SqlRendered renderModEquals(@NonNull SqlModEqualsCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("MOD").openingBracket().rendered(condition.value().toSql(this.dialect)).comma().rendered(condition.divisor().toSql(this.dialect)).closingBracket();
 		renderer.literal("=").rendered(condition.remainder().toSql(this.dialect));

@@ -230,7 +230,7 @@ class SqlServerIndexRenderer extends SqlIndexRenderer {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public @NonNull SqlRendered renderDropIndex(@NonNull SqlTable<?> owningTable, @NonNull String indexName) throws SqlException {
+	public @NonNull SqlRendered renderDropIndex(@Nullable SqlTable<?> owningTable, @NonNull String indexName) throws SqlException {
 		Objects.requireNonNull(owningTable, "Sql index owning table must not be null");
 		Objects.requireNonNull(indexName, "Sql index name must not be null");
 		
@@ -240,17 +240,7 @@ class SqlServerIndexRenderer extends SqlIndexRenderer {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderDropIndex(@NonNull String tableName, @NonNull String indexName) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
-		Objects.requireNonNull(indexName, "Sql index name must not be null");
-		
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.drop().index().literal(this.dialect.quoteIdentifier(indexName)).on().literal(this.dialect.quoteIdentifier(tableName));
-		return renderer.toSql();
-	}
-	
-	@Override
-	public @NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException {
+	public @NonNull SqlRendered renderRenameIndex(@Nullable SqlTable<?> table, @NonNull String from, @NonNull String to) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("RENAME INDEX is not supported by dialect SQL Server");
 	}
 }
@@ -295,20 +285,20 @@ class SqlServerMigrationOperationRenderer extends SqlMigrationOperationRenderer 
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderRenameTable(@NonNull String fromTable, @NonNull String toTable) throws SqlException {
-		Objects.requireNonNull(fromTable, "Source table name must not be null");
-		Objects.requireNonNull(toTable, "Target table name must not be null");
+	public @NonNull SqlRendered renderRenameTable(@NonNull SqlTable<?> fromTable, @NonNull SqlTable<?> toTable) throws SqlException {
+		Objects.requireNonNull(fromTable, "Sql source table must not be null");
+		Objects.requireNonNull(toTable, "Sql target table must not be null");
 		
-		return SqlRenderer.empty().literal("EXEC").literal("sp_rename").literal("'" + fromTable + "'").comma().literal("'" + toTable + "'").toSql();
+		return SqlRenderer.empty().literal("EXEC").literal("sp_rename").literal("'" + fromTable.getName() + "'").comma().literal("'" + toTable.getName() + "'").toSql();
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderRenameColumn(@NonNull String tableName, @NonNull String fromColumn, @NonNull String toColumn) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(fromColumn, "Source column name must not be null");
-		Objects.requireNonNull(toColumn, "Target column name must not be null");
+	public @NonNull SqlRendered renderRenameColumn(@NonNull SqlTable<?> table, @NonNull SqlColumn<?, ?> fromColumn, @NonNull SqlColumn<?, ?> toColumn) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(fromColumn, "Sql source column name must not be null");
+		Objects.requireNonNull(toColumn, "Sql target column name must not be null");
 		
-		return SqlRenderer.empty().literal("EXEC").literal("sp_rename").literal("'" + tableName + "." + fromColumn + "'").comma().literal("'" + toColumn + "'").comma().literal("'COLUMN'").toSql();
+		return SqlRenderer.empty().literal("EXEC").literal("sp_rename").literal("'" + table.getName() + "." + fromColumn.getName() + "'").comma().literal("'" + toColumn.getName() + "'").comma().literal("'COLUMN'").toSql();
 	}
 }
 
@@ -325,6 +315,8 @@ class SqlServerNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderTruncate(@NonNull SqlNumericTruncateFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("ROUND").openingBracket();
 		renderer.rendered(function.expression().toSql(this.dialect)).comma();
@@ -343,6 +335,10 @@ class SqlServerStringConditionRenderer extends SqlStringConditionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderConcatExpression(@NonNull SqlRenderer renderer, @NonNull SqlRendered left, @NonNull SqlRendered right) throws SqlException {
+		Objects.requireNonNull(renderer, "Sql renderer must not be null");
+		Objects.requireNonNull(left, "Left sql rendered must not be null");
+		Objects.requireNonNull(right, "Right sql rendered must not be null");
+		
 		return renderer.rendered(left).literal("+").rendered(right).toSql();
 	}
 }
@@ -356,6 +352,8 @@ class SqlServerStringFunctionRenderer extends SqlStringFunctionRenderer {
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	protected @NonNull SqlRendered renderConcat(@NonNull SqlConcatFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		List<? extends SqlExpression<? extends CharSequence>> values = function.expressions();
 		Optional<String> separator = function.separator();
 		boolean distinct = function.distinct();
@@ -399,6 +397,8 @@ class SqlServerTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderFromEpoch(@NonNull SqlFromEpochFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("DATEADD").openingBracket();
 		renderer.literal("SECOND").comma().rendered(function.expression().toSql(this.dialect));
@@ -409,6 +409,8 @@ class SqlServerTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderToEpoch(@NonNull SqlToEpochFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("DATEDIFF").openingBracket();
 		renderer.literal("SECOND").comma().literal("'1970-01-01'").comma();
@@ -419,6 +421,8 @@ class SqlServerTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderTemporalAdd(@NonNull SqlTemporalAddFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("DATEADD").openingBracket();
 		renderer.literal(function.part().name()).comma();
@@ -430,6 +434,8 @@ class SqlServerTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderTemporalSubtract(@NonNull SqlTemporalSubtractFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("DATEADD").openingBracket();
 		renderer.literal(function.part().name()).comma();
@@ -440,29 +446,34 @@ class SqlServerTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	}
 	
 	@Override
-	protected @NonNull SqlRendered renderNow(@NonNull SqlNowFunction<?> function) throws SqlException {
+	protected @NonNull SqlRendered renderNow() throws SqlException {
 		return SqlRendered.of("GETDATE()");
 	}
 	
 	@Override
-	protected @NonNull SqlRendered renderCurrentTimestamp(@NonNull SqlCurrentTimestampFunction<?> function) throws SqlException {
+	protected @NonNull SqlRendered renderCurrentTimestamp() throws SqlException {
 		return SqlRendered.of("GETDATE()");
-	}
-	
-	@Override
-	public @NonNull SqlRendered renderInterval(@NonNull SqlExpression<?> duration, @NonNull String part) throws SqlException {
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.rendered(duration.toSql(this.dialect));
-		return renderer.toSql();
 	}
 	
 	@Override
 	protected @NonNull SqlRendered renderTemporalTruncate(@NonNull SqlTemporalTruncateFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("DATETRUNC").openingBracket();
 		renderer.literal(function.part().name()).comma();
 		renderer.rendered(function.expression().toSql(this.dialect));
 		renderer.closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderInterval(@NonNull SqlExpression<?> duration, @NonNull String part) throws SqlException {
+		Objects.requireNonNull(duration, "Sql duration expression must not be null");
+		Objects.requireNonNull(part, "Temporal part must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.rendered(duration.toSql(this.dialect));
 		return renderer.toSql();
 	}
 }

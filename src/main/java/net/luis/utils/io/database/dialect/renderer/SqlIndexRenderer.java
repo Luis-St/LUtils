@@ -59,7 +59,7 @@ public class SqlIndexRenderer {
 		try {
 			renderer.using().literal(this.dialect.getIndexMethodName(index.method()));
 		} catch (SqlDialectUnsupportedRenderingException e) {
-			throw new SqlDialectUnsupportedRenderingException("Index method is not supported by dialect " + this.dialect.name(), e);
+			throw new SqlDialectUnsupportedRenderingException("Sql index method is not supported by dialect " + this.dialect.name(), e);
 		}
 		
 		renderer.openingBracket();
@@ -72,25 +72,15 @@ public class SqlIndexRenderer {
 		return renderer.toSql();
 	}
 	
-	public @NonNull SqlRendered renderDropIndex(@NonNull SqlTable<?> owningTable, @NonNull String indexName) throws SqlException {
-		Objects.requireNonNull(owningTable, "Sql index owning table must not be null");
-		Objects.requireNonNull(indexName, "Sql index name must not be null");
+	public @NonNull SqlRendered renderDropIndex(@Nullable SqlTable<?> owningTable, @NonNull String index) throws SqlException {
+		Objects.requireNonNull(index, "Sql index name must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.drop().index().literal(this.dialect.quoteIdentifier(indexName));
+		renderer.drop().index().literal(this.dialect.quoteIdentifier(index));
 		return renderer.toSql();
 	}
 	
-	public @NonNull SqlRendered renderDropIndex(@NonNull String tableName, @NonNull String indexName) throws SqlException {
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
-		Objects.requireNonNull(indexName, "Sql index name must not be null");
-		
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.drop().index().literal(this.dialect.quoteIdentifier(indexName));
-		return renderer.toSql();
-	}
-	
-	public @NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException {
+	public @NonNull SqlRendered renderRenameIndex(@Nullable SqlTable<?> table, @NonNull String from, @NonNull String to) throws SqlException {
 		Objects.requireNonNull(from, "Sql source index name must not be null");
 		Objects.requireNonNull(to, "Sql target index name must not be null");
 		

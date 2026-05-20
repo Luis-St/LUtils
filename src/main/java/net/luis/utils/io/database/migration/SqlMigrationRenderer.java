@@ -25,7 +25,6 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.migration.operation.*;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
-import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -47,10 +46,6 @@ class SqlMigrationRenderer {
 		this.migrationRenderer = dialect.migrationRenderer();
 	}
 	
-	private static @NonNull @Unmodifiable List<String> extractColumnNames(@NonNull List<SqlColumn<?, ?>> columns) {
-		return columns.stream().map(SqlColumn::getName).toList();
-	}
-	
 	@NonNull List<SqlRendered> render(@NonNull List<SqlMigrationOperation> operations) throws SqlException {
 		List<SqlRendered> results = Lists.newArrayList();
 		for (SqlMigrationOperation operation : operations) {
@@ -69,20 +64,19 @@ class SqlMigrationRenderer {
 		return switch (operation) {
 			case SqlCreateTableOperation op -> this.dialect.tableRenderer().renderCreateTable(op.table(), false);
 			case SqlDropTableOperation op -> this.dialect.tableRenderer().renderDropTable(op.table(), false);
-			case SqlRenameTableOperation op -> this.migrationRenderer.renderRenameTable(op.from().getName(), op.to().getName());
-			case SqlAddColumnOperation op -> this.migrationRenderer.renderAddColumn(op.column().getOwningTable().getName(), op.column().getName(), op.type(), op.options());
-			case SqlDropColumnOperation op -> this.migrationRenderer.renderDropColumn(op.column().getOwningTable().getName(), op.column().getName());
-			case SqlRenameColumnOperation op -> this.migrationRenderer.renderRenameColumn(op.from().getOwningTable().getName(), op.from().getName(), op.to().getName());
+			case SqlRenameTableOperation op -> this.migrationRenderer.renderRenameTable(op.from(), op.to());
+			case SqlAddColumnOperation op -> this.migrationRenderer.renderAddColumn(op.column().getOwningTable(), op.column(), op.type(), op.options());
+			case SqlDropColumnOperation op -> this.migrationRenderer.renderDropColumn(op.column().getOwningTable(), op.column());
+			case SqlRenameColumnOperation op -> this.migrationRenderer.renderRenameColumn(op.from().getOwningTable(), op.from(), op.to());
 			case SqlAlterColumnOperation _ -> throw new IllegalStateException("SqlAlterColumnOperation should be handled separately");
 			case SqlCreateIndexOperation op -> this.dialect.indexRenderer().renderCreateIndex(op.index());
-			case SqlDropIndexOperation op -> this.dialect.indexRenderer().renderDropIndex(op.tableName() != null ? op.tableName() : "", op.name());
-			case SqlRenameIndexOperation op -> this.dialect.indexRenderer().renderRenameIndex(op.tableName(), op.from(), op.to());
-			case SqlAddUniqueConstraintOperation op -> this.migrationRenderer.renderAddUniqueConstraint(op.table().getName(), op.name(), extractColumnNames(op.columns()));
-			case SqlAddForeignKeyOperation op ->
-				this.migrationRenderer.renderAddForeignKey(op.table().getName(), op.name(), extractColumnNames(op.columns()), op.referencedTable().getName(), extractColumnNames(op.referencedColumns()), op.onDelete(), op.onUpdate());
-			case SqlAddCheckConstraintOperation op -> this.migrationRenderer.renderAddCheckConstraint(op.table().getName(), op.name(), op.condition());
-			case SqlAddCompositePrimaryKeyOperation op -> this.migrationRenderer.renderAddCompositePrimaryKey(op.table().getName(), op.name(), extractColumnNames(op.columns()));
-			case SqlDropConstraintOperation op -> this.migrationRenderer.renderDropConstraint(op.table().getName(), op.name());
+			case SqlDropIndexOperation op -> this.dialect.indexRenderer().renderDropIndex(op.table() != null ? op.table() : null, op.index());
+			case SqlRenameIndexOperation op -> this.dialect.indexRenderer().renderRenameIndex(op.table(), op.from(), op.to());
+			case SqlAddUniqueConstraintOperation op -> this.migrationRenderer.renderAddUniqueConstraint(op.table(), op.name(), op.columns());
+			case SqlAddForeignKeyOperation op -> this.migrationRenderer.renderAddForeignKey(op.table(), op.name(), op.columns(), op.referencedTable(), op.referencedColumns(), op.onDelete(), op.onUpdate());
+			case SqlAddCheckConstraintOperation op -> this.migrationRenderer.renderAddCheckConstraint(op.table(), op.name(), op.condition());
+			case SqlAddCompositePrimaryKeyOperation op -> this.migrationRenderer.renderAddCompositePrimaryKey(op.table(), op.name(), op.columns());
+			case SqlDropConstraintOperation op -> this.migrationRenderer.renderDropConstraint(op.table(), op.name());
 			case SqlExecuteDataOperation _ -> SqlRendered.of("");
 		};
 	}

@@ -60,14 +60,20 @@ public class SqlTemporalConditionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderAfter(@NonNull SqlAfterCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		return SqlRenderingHelper.renderInfix(this.dialect, condition.value(), ">", condition.earlierBound());
 	}
 	
 	protected @NonNull SqlRendered renderBefore(@NonNull SqlBeforeCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		return SqlRenderingHelper.renderInfix(this.dialect, condition.value(), "<", condition.laterBound());
 	}
 	
 	protected @NonNull SqlRendered renderWithinLast(@NonNull SqlWithinLastCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(condition.value().toSql(this.dialect));
 		renderer.literal(">=").openingBracket().keyword("CURRENT_TIMESTAMP").literal("-");
@@ -77,6 +83,8 @@ public class SqlTemporalConditionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderWithinNext(@NonNull SqlWithinNextCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(condition.value().toSql(this.dialect));
 		renderer.literal("<=").openingBracket().keyword("CURRENT_TIMESTAMP").literal("+");

@@ -188,16 +188,22 @@ class PostgresSqlTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	@Override
 	protected @NonNull SqlRendered renderFromEpoch(@NonNull SqlFromEpochFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "TO_TIMESTAMP", function.expression());
 	}
 	
 	@Override
 	protected @NonNull SqlRendered renderMakeDate(@NonNull SqlMakeDateFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "MAKE_DATE", function.year(), function.month(), function.day());
 	}
 	
 	@Override
 	protected @NonNull SqlRendered renderMakeTime(@NonNull SqlMakeTimeFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "MAKE_TIME", function.hour(), function.minute(), function.second());
 	}
 }

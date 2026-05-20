@@ -59,10 +59,14 @@ public class SqlAggregateFunctionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderAverage(@NonNull SqlAverageFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "AVG", function.expression());
 	}
 	
 	protected @NonNull SqlRendered renderCount(@NonNull SqlCountFunction function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		if (function.expression() != null) {
 			return SqlRenderingHelper.renderFunctionCall(this.dialect, "COUNT", function.expression());
 		}
@@ -70,6 +74,8 @@ public class SqlAggregateFunctionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderCountDistinct(@NonNull SqlCountDistinctFunction function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("COUNT").openingBracket().distinct();
 		renderer.rendered(function.expression().toSql(this.dialect));
@@ -78,14 +84,20 @@ public class SqlAggregateFunctionRenderer {
 	}
 	
 	protected @NonNull SqlRendered renderMax(@NonNull SqlMaxFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "MAX", function.expression());
 	}
 	
 	protected @NonNull SqlRendered renderMin(@NonNull SqlMinFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "MIN", function.expression());
 	}
 	
 	protected @NonNull SqlRendered renderSum(@NonNull SqlSumFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "SUM", function.expression());
 	}
 }
