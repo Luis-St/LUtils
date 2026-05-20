@@ -16,11 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.migration;
+package net.luis.utils.io.database.exception;
 
-import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.util.Version;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  *
@@ -28,13 +26,17 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlMigration {
+public class SqlSchemaIntrospectionException extends SqlException {
 	
-	@NonNull Version version();
+	public SqlSchemaIntrospectionException(@Nullable String message) {
+		super(message);
+	}
 	
-	@NonNull String description();
+	public SqlSchemaIntrospectionException(@Nullable String message, @Nullable Throwable cause) {
+		super(message, cause);
+	}
 	
-	void up(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) throws SqlException;
-	
-	void down(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) throws SqlException;
+	public SqlSchemaIntrospectionException(@Nullable Throwable cause) {
+		super(cause);
+	}
 }

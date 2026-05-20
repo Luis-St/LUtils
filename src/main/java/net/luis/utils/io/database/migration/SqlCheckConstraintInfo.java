@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -28,13 +28,13 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlMigration {
+public record SqlCheckConstraintInfo(
+	@NonNull String constraintName,
+	@NonNull String checkClause
+) {
 	
-	@NonNull Version version();
-	
-	@NonNull String description();
-	
-	void up(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) throws SqlException;
-	
-	void down(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) throws SqlException;
+	public SqlCheckConstraintInfo {
+		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");
+		Objects.requireNonNull(checkClause, "Sql check clause must not be null");
+	}
 }

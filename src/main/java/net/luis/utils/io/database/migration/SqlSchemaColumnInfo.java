@@ -18,9 +18,11 @@
 
 package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.util.Version;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
 
 /**
  *
@@ -28,13 +30,20 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface SqlMigration {
+public record SqlSchemaColumnInfo(
+	@NonNull String tableName,
+	@NonNull String columnName,
+	int jdbcType,
+	@Nullable SqlParameter parameter,
+	boolean nullable,
+	boolean autoIncrement,
+	boolean primaryKey,
+	boolean unique,
+	int ordinalPosition
+) {
 	
-	@NonNull Version version();
-	
-	@NonNull String description();
-	
-	void up(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) throws SqlException;
-	
-	void down(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) throws SqlException;
+	public SqlSchemaColumnInfo {
+		Objects.requireNonNull(tableName, "Table name must not be null");
+		Objects.requireNonNull(columnName, "Column name must not be null");
+	}
 }

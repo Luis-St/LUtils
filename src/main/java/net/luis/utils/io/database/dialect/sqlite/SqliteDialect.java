@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.database.dialect.sqlite;
 
-import net.luis.utils.io.database.dialect.base.*;
 import net.luis.utils.io.database.dialect.SqlFeature;
+import net.luis.utils.io.database.dialect.base.*;
 import net.luis.utils.io.database.dialect.base.function.SqlFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
@@ -170,5 +170,10 @@ public class SqliteDialect extends AbstractSqlDialect {
 	@Override
 	public @NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("RENAME INDEX is not supported by dialect " + this.name());
+	}
+	
+	@Override
+	protected @NonNull String getCheckConstraintsQueryString() {
+		return "";
 	}
 }

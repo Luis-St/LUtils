@@ -27,6 +27,7 @@ import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 
+import javax.sql.DataSource;
 import java.util.List;
 
 /**
@@ -36,6 +37,8 @@ import java.util.List;
  */
 
 interface SqlMigrationContext {
+	
+	@NonNull DataSource dataSource();
 	
 	@NonNull SqlDialect dialect();
 	

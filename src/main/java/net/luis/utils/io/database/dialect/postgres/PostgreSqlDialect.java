@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.database.dialect.postgres;
 
-import net.luis.utils.io.database.dialect.base.AbstractSqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
-import net.luis.utils.io.database.dialect.base.function.SqlFunctionRenderer;
+import net.luis.utils.io.database.dialect.base.AbstractSqlDialect;
 import net.luis.utils.io.database.dialect.base.SqlRenderingHelper;
+import net.luis.utils.io.database.dialect.base.function.SqlFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.index.SqlIndexMethod;
@@ -162,5 +162,13 @@ public class PostgreSqlDialect extends AbstractSqlDialect {
 	@Override
 	public @NonNull SqlRendered renderLateralJoin() {
 		return SqlRendered.of("LATERAL");
+	}
+	
+	@Override
+	protected @NonNull String getCheckConstraintsQueryString() {
+		return "SELECT con.conname, pg_get_constraintdef(con.oid) FROM pg_constraint con " +
+			"JOIN pg_class rel ON rel.oid = con.conrelid " +
+			"JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace " +
+			"WHERE con.contype = 'c' AND nsp.nspname = ? AND rel.relname = ?";
 	}
 }

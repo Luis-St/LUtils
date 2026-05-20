@@ -35,8 +35,7 @@ public record SqlMigrationInfo(
 	@NonNull Version version,
 	@NonNull String description,
 	@NonNull SqlMigrationStatus status,
-	@Nullable Instant appliedAt,
-	long checksum
+	@Nullable Instant appliedAt
 ) {
 	
 	public SqlMigrationInfo {

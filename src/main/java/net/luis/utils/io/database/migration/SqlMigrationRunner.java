@@ -22,8 +22,8 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.migration.store.SqlMigrationStore;
-import net.luis.utils.io.database.migration.store.SqlMigrationTableStore;
+import net.luis.utils.io.database.exception.SqlSchemaIntrospectionException;
+import net.luis.utils.io.database.migration.store.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlTable;
@@ -32,6 +32,7 @@ import net.luis.utils.util.Pair;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -48,12 +49,14 @@ public final class SqlMigrationRunner {
 	
 	private final SqlMigrationContext context;
 	private final SqlMigrationStore store;
+	private final SqlMigrationSchemaStore schemaStore;
 	private final SqlMigrationRenderer renderer;
 	private final List<RegisteredSqlMigration> registeredMigrations = new java.util.concurrent.CopyOnWriteArrayList<>();
 	
-	private SqlMigrationRunner(@NonNull SqlMigrationContext context, @NonNull SqlMigrationStore store) {
+	private SqlMigrationRunner(@NonNull SqlMigrationContext context, @NonNull SqlMigrationStore store, @NonNull SqlMigrationSchemaStore schemaStore) {
 		this.context = Objects.requireNonNull(context, "Sql migration context must not be null");
 		this.store = Objects.requireNonNull(store, "Sql migration store must not be null");
+		this.schemaStore = Objects.requireNonNull(schemaStore, "Sql migration schema store must not be null");
 		this.renderer = new SqlMigrationRenderer(context.dialect());
 	}
 	
@@ -67,7 +70,9 @@ public final class SqlMigrationRunner {
 		
 		SqlMigrationContext context = new SqlDatabaseMigrationContext(database);
 		store.initialize();
-		return new SqlMigrationRunner(context, store);
+		SqlMigrationSchemaStore schemaStore = new SqlMigrationSchemaStore(database.getDataSource(), database.getDialect());
+		schemaStore.initialize();
+		return new SqlMigrationRunner(context, store, schemaStore);
 	}
 	
 	public void register(@NonNull SqlMigration migration) throws SqlException {
@@ -79,8 +84,7 @@ public final class SqlMigrationRunner {
 			}
 		}
 		
-		long checksum = this.computeChecksum(migration);
-		this.registeredMigrations.add(new RegisteredSqlMigration(migration, checksum));
+		this.registeredMigrations.add(new RegisteredSqlMigration(migration));
 		this.registeredMigrations.sort(Comparator.comparing(m -> m.migration().version()));
 	}
 	
@@ -171,10 +175,7 @@ public final class SqlMigrationRunner {
 			.toList();
 		
 		for (SqlMigrationInfo info : applied) {
-			RegisteredSqlMigration registered = this.findRegistered(info.version());
-			if (registered.checksum() != info.checksum()) {
-				throw new SqlException("Checksum mismatch for migration " + info.version() + ": stored=" + info.checksum() + ", computed=" + registered.checksum());
-			}
+			this.findRegistered(info.version());
 		}
 	}
 	
@@ -194,8 +195,7 @@ public final class SqlMigrationRunner {
 					registered.migration().version(),
 					registered.migration().description(),
 					SqlMigrationStatus.PENDING,
-					null,
-					registered.checksum()
+					null
 				));
 			}
 		}
@@ -235,20 +235,25 @@ public final class SqlMigrationRunner {
 	private void applyMigration(@NonNull RegisteredSqlMigration registered) throws SqlException {
 		Objects.requireNonNull(registered, "Registered sql migration must not be null");
 		
+		List<SqlRendered> rendered = this.renderMigrationUp(registered.migration());
 		SqlMigrationInfo info = new SqlMigrationInfo(
 			registered.migration().version(),
 			registered.migration().description(),
 			SqlMigrationStatus.APPLIED,
-			Instant.now(),
-			registered.checksum()
+			Instant.now()
 		);
-		this.context.executeAndSave(this.renderMigrationUp(registered.migration()), this.store, info);
+		this.context.executeAndSave(rendered, this.store, info);
+		
+		SqlMigrationSchema schema = SqlMigrationSchema.load(this.context.dataSource(), this.context.dialect());
+		this.schemaStore.save(registered.migration().version(), schema.extractColumnInfos(), schema.extractCheckConstraints());
 	}
 	
 	private void rollbackMigration(@NonNull RegisteredSqlMigration registered) throws SqlException {
 		Objects.requireNonNull(registered, "Registered sql migration must not be null");
 		
-		this.context.executeAndUpdate(this.renderMigrationDown(registered.migration()), this.store, registered.migration().version(), SqlMigrationStatus.ROLLED_BACK);
+		List<SqlRendered> rendered = this.renderMigrationDown(registered.migration());
+		this.context.executeAndUpdate(rendered, this.store, registered.migration().version(), SqlMigrationStatus.ROLLED_BACK);
+		this.schemaStore.delete(registered.migration().version());
 	}
 	
 	private @NonNull List<SqlRendered> renderMigrationUp(@NonNull SqlMigration migration) throws SqlException {
@@ -262,26 +267,31 @@ public final class SqlMigrationRunner {
 	private @NonNull List<SqlRendered> renderMigration(@NonNull SqlMigration migration, boolean up, boolean dryRun) throws SqlException {
 		Objects.requireNonNull(migration, "Sql migration must not be null");
 		
+		List<SqlMigrationInfo> applied = this.store.loadAll().stream()
+			.filter(info -> info.status() == SqlMigrationStatus.APPLIED)
+			.sorted(Comparator.comparing(SqlMigrationInfo::version))
+			.toList();
+		
+		SqlMigrationSchema schema;
+		if (applied.isEmpty()) {
+			schema = SqlMigrationSchema.empty(this.context.dataSource(), this.context.dialect());
+		} else {
+			Version latestVersion = applied.getLast().version();
+			SqlSchemaSnapshot snapshot = this.schemaStore.load(latestVersion);
+			
+			if (snapshot == null) {
+				throw new SqlSchemaIntrospectionException("Schema snapshot not found for applied version " + latestVersion);
+			}
+			schema = SqlMigrationSchema.fromSnapshot(this.context.dataSource(), this.context.dialect(), snapshot.columns(), snapshot.checkConstraints());
+		}
+		
 		SqlMigrationBuilder builder = new SqlMigrationBuilder(this.context, dryRun);
 		if (up) {
-			migration.up(builder);
+			migration.up(builder, schema);
 		} else {
-			migration.down(builder);
+			migration.down(builder, schema);
 		}
 		return this.renderer.render(builder.getOperations());
-	}
-	
-	private long computeChecksum(@NonNull SqlMigration migration) throws SqlException {
-		Objects.requireNonNull(migration, "Sql migration must not be null");
-		
-		long hash = 0;
-		for (SqlRendered statement : this.renderMigration(migration, true, true)) {
-			hash = 31 * hash + statement.sql().hashCode();
-			for (Object param : statement.parameters()) {
-				hash = 31 * hash + Objects.hashCode(param);
-			}
-		}
-		return hash;
 	}
 	
 	private @NonNull RegisteredSqlMigration findRegistered(@NonNull Version version) throws SqlException {
@@ -295,12 +305,17 @@ public final class SqlMigrationRunner {
 		throw new SqlException("No registered migration found for version " + version);
 	}
 	
-	private record RegisteredSqlMigration(@NonNull SqlMigration migration, long checksum) {}
+	private record RegisteredSqlMigration(@NonNull SqlMigration migration) {}
 	
 	private record SqlDatabaseMigrationContext(@NonNull SqlDatabase database) implements SqlMigrationContext {
 		
 		private SqlDatabaseMigrationContext {
 			Objects.requireNonNull(database, "Sql database must not be null");
+		}
+		
+		@Override
+		public @NonNull DataSource dataSource() {
+			return this.database.getDataSource();
 		}
 		
 		@Override
@@ -316,7 +331,7 @@ public final class SqlMigrationRunner {
 		}
 		
 		private void executeStatements(@NonNull Connection connection, @NonNull List<SqlRendered> statements) throws SQLException, SqlException {
-			Objects.requireNonNull(connection, "Sql connection must not be null");
+			Objects.requireNonNull(connection, "Connection must not be null");
 			Objects.requireNonNull(statements, "Sql rendered statements must not be null");
 			
 			for (SqlRendered rendered : statements) {

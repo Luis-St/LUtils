@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.database.dialect.mysql;
 
-import net.luis.utils.io.database.dialect.base.AbstractSqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
+import net.luis.utils.io.database.dialect.base.AbstractSqlDialect;
 import net.luis.utils.io.database.dialect.base.SqlMigrationOperationRenderer;
 import net.luis.utils.io.database.dialect.base.condition.SqlConditionRenderer;
 import net.luis.utils.io.database.dialect.base.function.SqlFunctionRenderer;
@@ -185,8 +185,8 @@ public class MySqlDialect extends AbstractSqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) throws SqlException {
-		Objects.requireNonNull(conflictColumn, "Conflict column must not be null");
-		Objects.requireNonNull(updateColumns, "Update columns must not be null");
+		Objects.requireNonNull(conflictColumn, "Sql conflict column must not be null");
+		Objects.requireNonNull(updateColumns, "Sql update columns must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.on().literal("DUPLICATE").key().update();
@@ -213,18 +213,18 @@ public class MySqlDialect extends AbstractSqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnType(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> newType) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(columnName, "Column name must not be null");
-		Objects.requireNonNull(newType, "New type must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(columnName, "Sql column name must not be null");
+		Objects.requireNonNull(newType, "New sql type must not be null");
 		
 		return SqlRenderer.empty().alter().table().literal(this.quoteIdentifier(tableName)).modify().column().literal(this.quoteIdentifier(columnName)).literal(this.getTypeName(newType)).toSql();
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnNullability(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> columnType, boolean nullable) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(columnName, "Column name must not be null");
-		Objects.requireNonNull(columnType, "Column type must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(columnName, "Sql column name must not be null");
+		Objects.requireNonNull(columnType, "Sql column type must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.alter().table().literal(this.quoteIdentifier(tableName)).modify().column().literal(this.quoteIdentifier(columnName)).literal(this.getTypeName(columnType));
@@ -238,8 +238,8 @@ public class MySqlDialect extends AbstractSqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderDropIndex(@NonNull String tableName, @NonNull String indexName) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(indexName, "Index name must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(indexName, "Sql index name must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.drop().index().literal(this.quoteIdentifier(indexName)).on().literal(this.quoteIdentifier(tableName));
@@ -248,10 +248,15 @@ public class MySqlDialect extends AbstractSqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(from, "Source index name must not be null");
-		Objects.requireNonNull(to, "Target index name must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(from, "Sql source index name must not be null");
+		Objects.requireNonNull(to, "Sql target index name must not be null");
 		
 		return SqlRenderer.empty().alter().table().literal(this.quoteIdentifier(tableName)).literal("RENAME").index().literal(this.quoteIdentifier(from)).to().literal(this.quoteIdentifier(to)).toSql();
+	}
+	
+	@Override
+	protected @NonNull String getCheckConstraintsQueryString() {
+		return "SELECT CONSTRAINT_NAME, CHECK_CLAUSE FROM information_schema.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = ? AND TABLE_NAME = ?";
 	}
 }

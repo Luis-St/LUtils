@@ -29,6 +29,7 @@ import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.window.*;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.migration.SqlCheckConstraintInfo;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.query.SqlSetOperation;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -39,6 +40,7 @@ import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.sql.Connection;
 import java.util.List;
 
 /**
@@ -132,4 +134,22 @@ public interface SqlDialect {
 	@NonNull SqlRendered renderDropIndex(@NonNull String tableName, @NonNull String indexName) throws SqlException;
 	
 	@NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException;
+	
+	@NonNull List<SqlCheckConstraintInfo> getCheckConstraints(@NonNull Connection connection, @NonNull String schema, @NonNull String tableName) throws SqlException;
+	
+	@NonNull String getCreateSchemaColumnsTableSql() throws SqlException;
+	
+	@NonNull String getCreateSchemaCheckConstraintsTableSql() throws SqlException;
+	
+	@NonNull String getInsertSchemaColumnSql();
+	
+	@NonNull String getInsertSchemaCheckConstraintSql();
+	
+	@NonNull String getSelectSchemaColumnsSql();
+	
+	@NonNull String getSelectSchemaCheckConstraintsSql();
+	
+	@NonNull String getDeleteSchemaColumnsSql();
+	
+	@NonNull String getDeleteSchemaCheckConstraintsSql();
 }

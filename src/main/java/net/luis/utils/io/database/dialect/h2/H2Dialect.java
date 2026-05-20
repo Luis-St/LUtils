@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.database.dialect.h2;
 
-import net.luis.utils.io.database.dialect.base.AbstractSqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
+import net.luis.utils.io.database.dialect.base.AbstractSqlDialect;
 import net.luis.utils.io.database.dialect.base.function.SqlFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
@@ -121,5 +121,10 @@ public class H2Dialect extends AbstractSqlDialect {
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.for_().update();
 		return renderer.toSql();
+	}
+	
+	@Override
+	protected @NonNull String getCheckConstraintsQueryString() {
+		return "SELECT CONSTRAINT_NAME, CHECK_EXPRESSION FROM INFORMATION_SCHEMA.CHECK_CONSTRAINTS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?";
 	}
 }

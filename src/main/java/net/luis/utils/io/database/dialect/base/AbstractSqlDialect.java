@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect.base;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
@@ -26,6 +27,7 @@ import net.luis.utils.io.database.dialect.base.condition.SqlConditionRenderer;
 import net.luis.utils.io.database.dialect.base.function.SqlFunctionRenderer;
 import net.luis.utils.io.database.dialect.base.function.SqlTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectException;
 import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
@@ -36,6 +38,7 @@ import net.luis.utils.io.database.function.window.frame.*;
 import net.luis.utils.io.database.function.window.frame.bound.*;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.migration.SqlCheckConstraintInfo;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.query.SqlSetOperation;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -43,10 +46,11 @@ import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.*;
+import org.intellij.lang.annotations.Language;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.sql.Types;
+import java.sql.*;
 import java.util.List;
 import java.util.Objects;
 
@@ -56,6 +60,7 @@ import java.util.Objects;
  *
  */
 
+@SuppressWarnings("SqlSourceToSinkFlow")
 public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	private final SqlFunctionRenderer functionRenderer;
@@ -639,7 +644,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderCreateSchema(@NonNull String name, boolean ifNotExists) throws SqlException {
-		Objects.requireNonNull(name, "Schema name must not be null");
+		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.create().schema();
@@ -651,7 +656,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderDropSchema(@NonNull String name, boolean ifExists, boolean cascade) throws SqlException {
-		Objects.requireNonNull(name, "Schema name must not be null");
+		Objects.requireNonNull(name, "Sql schema name must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.drop().schema();
@@ -675,8 +680,8 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) throws SqlException {
-		Objects.requireNonNull(conflictColumn, "Conflict column must not be null");
-		Objects.requireNonNull(updateColumns, "Update columns must not be null");
+		Objects.requireNonNull(conflictColumn, "Sql conflict column must not be null");
+		Objects.requireNonNull(updateColumns, "Sql update columns must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.on().literal("CONFLICT");
@@ -700,7 +705,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderInsertOrIgnoreSuffix(@NonNull List<SqlColumn<?, ?>> conflictColumns) throws SqlException {
-		Objects.requireNonNull(conflictColumns, "Conflict columns must not be null");
+		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.on().literal("CONFLICT");
@@ -718,18 +723,18 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnType(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> newType) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(columnName, "Column name must not be null");
-		Objects.requireNonNull(newType, "New type must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(columnName, "Sql column name must not be null");
+		Objects.requireNonNull(newType, "New sql type must not be null");
 		
 		return SqlRenderer.empty().alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName)).type().literal(this.getTypeName(newType)).toSql();
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnNullability(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> columnType, boolean nullable) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(columnName, "Column name must not be null");
-		Objects.requireNonNull(columnType, "Column type must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(columnName, "Sql column name must not be null");
+		Objects.requireNonNull(columnType, "Sql column type must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName));
@@ -743,25 +748,25 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnSetDefault(@NonNull String tableName, @NonNull String columnName, @NonNull String renderedDefault) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(columnName, "Column name must not be null");
-		Objects.requireNonNull(renderedDefault, "Rendered default value must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(columnName, "Sql column name must not be null");
+		Objects.requireNonNull(renderedDefault, "Sql rendered default value must not be null");
 		
 		return SqlRenderer.empty().alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName)).set().default_().literal(renderedDefault).toSql();
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnDropDefault(@NonNull String tableName, @NonNull String columnName) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(columnName, "Column name must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(columnName, "Sql column name must not be null");
 		
 		return SqlRenderer.empty().alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName)).drop().default_().toSql();
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderDropIndex(@NonNull String tableName, @NonNull String indexName) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(indexName, "Index name must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(indexName, "Sql index name must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.drop().index().literal(this.quoteIdentifier(indexName));
@@ -770,9 +775,171 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException {
-		Objects.requireNonNull(from, "Source index name must not be null");
-		Objects.requireNonNull(to, "Target index name must not be null");
+		Objects.requireNonNull(from, "Sql source index name must not be null");
+		Objects.requireNonNull(to, "Sql target index name must not be null");
 		
 		return SqlRenderer.empty().alter().index().literal(this.quoteIdentifier(from)).literal("RENAME").to().literal(this.quoteIdentifier(to)).toSql();
+	}
+	
+	@Override
+	public @NonNull List<SqlCheckConstraintInfo> getCheckConstraints(@NonNull Connection connection, @NonNull String schema, @NonNull String tableName) throws SqlException {
+		Objects.requireNonNull(connection, "Connection must not be null");
+		Objects.requireNonNull(schema, "Sql schema must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		
+		String sqlQuery = Objects.requireNonNull(this.getCheckConstraintsQueryString(), "Sql check constraints query string must not be null");
+		
+		List<SqlCheckConstraintInfo> results = Lists.newArrayList();
+		try (PreparedStatement statement = connection.prepareStatement(sqlQuery)) {
+			statement.setString(1, schema);
+			statement.setString(2, tableName);
+			try (ResultSet resultSet = statement.executeQuery()) {
+				while (resultSet.next()) {
+					results.add(new SqlCheckConstraintInfo(resultSet.getString(1), resultSet.getString(2)));
+				}
+			}
+		} catch (SQLException e) {
+			throw new SqlSchemaIntrospectionException("Failed to query check constraints for table " + tableName, e);
+		}
+		return List.copyOf(results);
+	}
+	
+	@Language("SQL")
+	protected abstract @NonNull String getCheckConstraintsQueryString();
+	
+	private static final String SCHEMA_COLUMNS_TABLE = "_sql_schema_columns";
+	private static final String SCHEMA_CHECK_CONSTRAINTS_TABLE = "_sql_schema_check_constraints";
+	
+	@Override
+	public @NonNull String getCreateSchemaColumnsTableSql() throws SqlException {
+		String table = this.quoteIdentifier(SCHEMA_COLUMNS_TABLE);
+		String version = this.quoteIdentifier("version");
+		String tableName = this.quoteIdentifier("table_name");
+		String columnName = this.quoteIdentifier("column_name");
+		String jdbcType = this.quoteIdentifier("jdbc_type");
+		String length = this.quoteIdentifier("length");
+		String precision = this.quoteIdentifier("precision");
+		String scale = this.quoteIdentifier("scale");
+		String fractional = this.quoteIdentifier("fractional");
+		String isNullable = this.quoteIdentifier("is_nullable");
+		String isAutoIncrement = this.quoteIdentifier("is_auto_increment");
+		String isPrimaryKey = this.quoteIdentifier("is_primary_key");
+		String isUnique = this.quoteIdentifier("is_unique");
+		String ordinalPosition = this.quoteIdentifier("ordinal_position");
+		
+		String varchar64 = this.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(64)));
+		String varchar256 = this.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(256)));
+		String intType = this.getTypeName(SqlTypes.INTEGER);
+		String boolType = this.getTypeName(SqlTypes.BOOLEAN);
+		
+		return "CREATE TABLE IF NOT EXISTS " + table + " (" +
+			version + " " + varchar64 + " NOT NULL, " +
+			tableName + " " + varchar256 + " NOT NULL, " +
+			columnName + " " + varchar256 + " NOT NULL, " +
+			jdbcType + " " + intType + " NOT NULL, " +
+			length + " " + intType + " NULL, " +
+			precision + " " + intType + " NULL, " +
+			scale + " " + intType + " NULL, " +
+			fractional + " " + intType + " NULL, " +
+			isNullable + " " + boolType + " NOT NULL, " +
+			isAutoIncrement + " " + boolType + " NOT NULL, " +
+			isPrimaryKey + " " + boolType + " NOT NULL, " +
+			isUnique + " " + boolType + " NOT NULL, " +
+			ordinalPosition + " " + intType + " NOT NULL, " +
+			"PRIMARY KEY (" + version + ", " + tableName + ", " + columnName + ")" +
+			")";
+	}
+	
+	@Override
+	public @NonNull String getCreateSchemaCheckConstraintsTableSql() throws SqlException {
+		String table = this.quoteIdentifier(SCHEMA_CHECK_CONSTRAINTS_TABLE);
+		String version = this.quoteIdentifier("version");
+		String tableName = this.quoteIdentifier("table_name");
+		String constraintName = this.quoteIdentifier("constraint_name");
+		String checkClause = this.quoteIdentifier("check_clause");
+		
+		String varchar64 = this.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(64)));
+		String varchar256 = this.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(256)));
+		String textType = this.getTypeName(SqlTypes.TEXT);
+		
+		return "CREATE TABLE IF NOT EXISTS " + table + " (" +
+			version + " " + varchar64 + " NOT NULL, " +
+			tableName + " " + varchar256 + " NOT NULL, " +
+			constraintName + " " + varchar256 + " NOT NULL, " +
+			checkClause + " " + textType + " NOT NULL, " +
+			"PRIMARY KEY (" + version + ", " + tableName + ", " + constraintName + ")" +
+			")";
+	}
+	
+	@Override
+	public @NonNull String getInsertSchemaColumnSql() {
+		String table = this.quoteIdentifier(SCHEMA_COLUMNS_TABLE);
+		String version = this.quoteIdentifier("version");
+		String tableName = this.quoteIdentifier("table_name");
+		String columnName = this.quoteIdentifier("column_name");
+		String jdbcType = this.quoteIdentifier("jdbc_type");
+		String length = this.quoteIdentifier("length");
+		String precision = this.quoteIdentifier("precision");
+		String scale = this.quoteIdentifier("scale");
+		String fractional = this.quoteIdentifier("fractional");
+		String isNullable = this.quoteIdentifier("is_nullable");
+		String isAutoIncrement = this.quoteIdentifier("is_auto_increment");
+		String isPrimaryKey = this.quoteIdentifier("is_primary_key");
+		String isUnique = this.quoteIdentifier("is_unique");
+		String ordinalPosition = this.quoteIdentifier("ordinal_position");
+		
+		return "INSERT INTO " + table + " (" +
+			version + ", " + tableName + ", " + columnName + ", " +
+			jdbcType + ", " + length + ", " + precision + ", " + scale + ", " + fractional + ", " +
+			isNullable + ", " + isAutoIncrement + ", " + isPrimaryKey + ", " + isUnique + ", " +
+			ordinalPosition +
+			") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	}
+	
+	@Override
+	public @NonNull String getInsertSchemaCheckConstraintSql() {
+		String table = this.quoteIdentifier(SCHEMA_CHECK_CONSTRAINTS_TABLE);
+		String version = this.quoteIdentifier("version");
+		String tableName = this.quoteIdentifier("table_name");
+		String constraintName = this.quoteIdentifier("constraint_name");
+		String checkClause = this.quoteIdentifier("check_clause");
+		
+		return "INSERT INTO " + table + " (" +
+			version + ", " + tableName + ", " + constraintName + ", " + checkClause +
+			") VALUES (?, ?, ?, ?)";
+	}
+	
+	@Override
+	public @NonNull String getSelectSchemaColumnsSql() {
+		String table = this.quoteIdentifier(SCHEMA_COLUMNS_TABLE);
+		String version = this.quoteIdentifier("version");
+		
+		return "SELECT * FROM " + table + " WHERE " + version + " = ? ORDER BY " +
+			this.quoteIdentifier("table_name") + ", " +
+			this.quoteIdentifier("ordinal_position");
+	}
+	
+	@Override
+	public @NonNull String getSelectSchemaCheckConstraintsSql() {
+		String table = this.quoteIdentifier(SCHEMA_CHECK_CONSTRAINTS_TABLE);
+		String version = this.quoteIdentifier("version");
+		
+		return "SELECT * FROM " + table + " WHERE " + version + " = ?";
+	}
+	
+	@Override
+	public @NonNull String getDeleteSchemaColumnsSql() {
+		String table = this.quoteIdentifier(SCHEMA_COLUMNS_TABLE);
+		String version = this.quoteIdentifier("version");
+		
+		return "DELETE FROM " + table + " WHERE " + version + " = ?";
+	}
+	
+	@Override
+	public @NonNull String getDeleteSchemaCheckConstraintsSql() {
+		String table = this.quoteIdentifier(SCHEMA_CHECK_CONSTRAINTS_TABLE);
+		String version = this.quoteIdentifier("version");
+		
+		return "DELETE FROM " + table + " WHERE " + version + " = ?";
 	}
 }

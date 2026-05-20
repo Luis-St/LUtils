@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.database.dialect.sqlserver;
 
-import net.luis.utils.io.database.dialect.base.*;
 import net.luis.utils.io.database.dialect.SqlFeature;
+import net.luis.utils.io.database.dialect.base.*;
 import net.luis.utils.io.database.dialect.base.condition.SqlConditionRenderer;
 import net.luis.utils.io.database.dialect.base.function.SqlFunctionRenderer;
 import net.luis.utils.io.database.dialect.base.function.SqlTemporalFunctionRenderer;
@@ -221,18 +221,18 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnType(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> newType) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(columnName, "Column name must not be null");
-		Objects.requireNonNull(newType, "New type must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(columnName, "Sql column name must not be null");
+		Objects.requireNonNull(newType, "New sql type must not be null");
 		
 		return SqlRenderer.empty().alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName)).literal(this.getTypeName(newType)).toSql();
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnNullability(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> columnType, boolean nullable) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(columnName, "Column name must not be null");
-		Objects.requireNonNull(columnType, "Column type must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(columnName, "Sql column name must not be null");
+		Objects.requireNonNull(columnType, "Sql column type must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.alter().table().literal(this.quoteIdentifier(tableName)).alter().column().literal(this.quoteIdentifier(columnName)).literal(this.getTypeName(columnType));
@@ -246,8 +246,8 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderDropIndex(@NonNull String tableName, @NonNull String indexName) throws SqlException {
-		Objects.requireNonNull(tableName, "Table name must not be null");
-		Objects.requireNonNull(indexName, "Index name must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(indexName, "Sql index name must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.drop().index().literal(this.quoteIdentifier(indexName)).on().literal(this.quoteIdentifier(tableName));
@@ -257,5 +257,12 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	@Override
 	public @NonNull SqlRendered renderRenameIndex(@Nullable String tableName, @NonNull String from, @NonNull String to) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("RENAME INDEX is not supported by dialect " + this.name());
+	}
+	
+	@Override
+	protected @NonNull String getCheckConstraintsQueryString() {
+		return "SELECT cc.CONSTRAINT_NAME, cc.CHECK_CLAUSE FROM INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc " +
+			"JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc ON tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME AND tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA " +
+			"WHERE tc.TABLE_SCHEMA = ? AND tc.TABLE_NAME = ?";
 	}
 }
