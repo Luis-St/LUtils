@@ -77,7 +77,7 @@ public class DatabaseTest {
 	static {
 		System.setProperty("reflection.exceptions.throw", "true");
 		LoggingUtils.initialize(LoggerConfiguration.DEFAULT.disableLogging(LoggingType.FILE).addDefaultLogger(LoggingType.CONSOLE, Level.DEBUG));
-		LOGGER = LogManager.getLogger(Main.class);
+		LOGGER = LogManager.getLogger(DatabaseTest.class);
 		
 		// jdbc:postgresql://localhost:3000/test
 		// jdbc:mysql://localhost:3001/test
