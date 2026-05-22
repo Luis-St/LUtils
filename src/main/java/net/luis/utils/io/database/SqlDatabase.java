@@ -157,7 +157,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 			connection = this.dataSource.getConnection();
 			return new SqlTableProvider<>(table, this.dialect, connection, this.queryTimeout);
 		} catch (SQLException e) {
-			throw new SqlConnectionException("Failed to obtain connection for table " + table.getName(), e);
+			throw new SqlConnectionException("Failed to obtain connection for table " + table.name(), e);
 		} catch (RuntimeException e) {
 			if (connection != null) {
 				try {connection.close();} catch (SQLException suppressed) {e.addSuppressed(suppressed);}
@@ -175,7 +175,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 			connection = this.dataSource.getConnection();
 			return new SqlQueryProvider<>(table, this.dialect, connection, this.queryTimeout);
 		} catch (SQLException e) {
-			throw new SqlConnectionException("Failed to obtain connection for table " + table.getName(), e);
+			throw new SqlConnectionException("Failed to obtain connection for table " + table.name(), e);
 		} catch (RuntimeException e) {
 			if (connection != null) {
 				try {connection.close();} catch (SQLException suppressed) {e.addSuppressed(suppressed);}

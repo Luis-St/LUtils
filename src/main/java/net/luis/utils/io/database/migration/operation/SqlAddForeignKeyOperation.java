@@ -48,7 +48,7 @@ public record SqlAddForeignKeyOperation(
 		Objects.requireNonNull(columns, "Sql columns must not be null");
 		Objects.requireNonNull(referencedTable, "Sql referenced table must not be null");
 		Objects.requireNonNull(referencedColumns, "Sql referenced columns must not be null");
-		Objects.requireNonNull(onDelete, "Sql on delete action must not be null");
-		Objects.requireNonNull(onUpdate, "Sql on update action must not be null");
+		Objects.requireNonNull(onDelete, "On sql delete action must not be null");
+		Objects.requireNonNull(onUpdate, "On sql update action must not be null");
 	}
 }

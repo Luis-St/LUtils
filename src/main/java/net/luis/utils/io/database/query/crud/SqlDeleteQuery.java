@@ -155,7 +155,7 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	
 	public @NonNull List<E> returning() throws SqlException {
 		return SqlQueryExecutor.executeReturningQuery(
-			this.dialect, this.connection, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.getColumns())), this.queryTimeout, this.rowMapper
+			this.dialect, this.connection, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.columns())), this.queryTimeout, this.rowMapper
 		);
 	}
 	
@@ -164,7 +164,7 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.delete().from().literal(dialect.quoteIdentifier(this.table.getName()));
+		renderer.delete().from().literal(dialect.quoteIdentifier(this.table.name()));
 		for (SqlJoinClause join : this.joins) {
 			renderer.rendered(join.toSql(dialect));
 		}

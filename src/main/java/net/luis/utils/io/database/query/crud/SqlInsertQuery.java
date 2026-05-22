@@ -149,7 +149,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	
 	public @NonNull List<E> returning() throws SqlException {
 		return SqlQueryExecutor.executeReturningQuery(
-			this.dialect, this.connection, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.getColumns())), this.queryTimeout, this.rowMapper
+			this.dialect, this.connection, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.columns())), this.queryTimeout, this.rowMapper
 		);
 	}
 	
@@ -159,7 +159,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		SqlRenderer renderer = SqlRenderer.empty();
 		
-		List<SqlColumn<E, ?>> columns = this.table.getColumns();
+		List<SqlColumn<E, ?>> columns = this.table.columns();
 		renderer.insert();
 		
 		if (this.isInsertOrIgnore) {
@@ -169,7 +169,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 			}
 		}
 		
-		renderer.into().literal(dialect.quoteIdentifier(this.table.getName()));
+		renderer.into().literal(dialect.quoteIdentifier(this.table.name()));
 		
 		renderer.openingBracket();
 		for (int i = 0; i < columns.size(); i++) {
@@ -177,7 +177,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 				renderer.comma();
 			}
 			
-			renderer.literal(dialect.quoteIdentifier(columns.get(i).getName()));
+			renderer.literal(dialect.quoteIdentifier(columns.get(i).name()));
 		}
 		renderer.closingBracket();
 		
@@ -202,11 +202,11 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 					}
 					
 					SqlColumn<E, ?> column = columns.get(i);
-					Object value = column.getGetter().apply(entity);
+					Object value = column.getter().apply(entity);
 					if (value == null) {
 						renderer.null_();
 					} else {
-						addParameter(renderer, column.getType(), value);
+						addParameter(renderer, column.type(), value);
 					}
 				}
 				

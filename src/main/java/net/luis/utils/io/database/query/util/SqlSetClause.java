@@ -50,8 +50,8 @@ public record SqlSetClause<E, V>(
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		String quotedColumn = dialect.quoteIdentifier(this.column.getName());
-		String qualifiedColumn = dialect.quoteIdentifier(this.column.getOwningTable().getName()) + "." + quotedColumn;
+		String quotedColumn = dialect.quoteIdentifier(this.column.name());
+		String qualifiedColumn = dialect.quoteIdentifier(this.column.owningTable().name()) + "." + quotedColumn;
 		switch (this.type) {
 			case EXPRESSION -> renderer.literal(quotedColumn).literal("=");
 			case INCREMENT -> renderer.literal(quotedColumn).literal("=").literal(qualifiedColumn).literal("+");

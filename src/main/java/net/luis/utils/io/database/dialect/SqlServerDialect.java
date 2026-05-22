@@ -217,9 +217,9 @@ class SqlServerIndexRenderer extends SqlIndexRenderer {
 		}
 		
 		renderer.index().literal(this.dialect.quoteIdentifier(index.name()));
-		renderer.on().literal(this.dialect.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
+		renderer.on().literal(this.dialect.quoteIdentifier(index.columns().getFirst().owningTable().name()));
 		renderer.openingBracket();
-		SqlRenderingHelper.renderList(renderer, index.columns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.getName())));
+		SqlRenderingHelper.renderList(renderer, index.columns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.name())));
 		renderer.closingBracket();
 		
 		if (index.whereCondition() != null) {
@@ -235,7 +235,7 @@ class SqlServerIndexRenderer extends SqlIndexRenderer {
 		Objects.requireNonNull(indexName, "Sql index name must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.drop().index().literal(this.dialect.quoteIdentifier(indexName)).on().literal(this.dialect.quoteIdentifier(owningTable.getName()));
+		renderer.drop().index().literal(this.dialect.quoteIdentifier(indexName)).on().literal(this.dialect.quoteIdentifier(owningTable.name()));
 		return renderer.toSql();
 	}
 	
@@ -256,8 +256,8 @@ class SqlServerColumnRenderer extends SqlColumnRenderer {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(newType, "New sql type must not be null");
 		
-		String tableName = column.getOwningTable().getName();
-		String columnName = column.getName();
+		String tableName = column.owningTable().name();
+		String columnName = column.name();
 		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(tableName)).alter().column().literal(this.dialect.quoteIdentifier(columnName)).literal(this.dialect.getTypeName(newType)).toSql();
 	}
 	
@@ -265,10 +265,10 @@ class SqlServerColumnRenderer extends SqlColumnRenderer {
 	public @NonNull SqlRendered renderAlterColumnNullability(@NonNull SqlColumn<?, ?> column, boolean nullable) throws SqlException {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
-		String tableName = column.getOwningTable().getName();
-		String columnName = column.getName();
+		String tableName = column.owningTable().name();
+		String columnName = column.name();
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).alter().column().literal(this.dialect.quoteIdentifier(columnName)).literal(this.dialect.getTypeName(column.getType()));
+		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).alter().column().literal(this.dialect.quoteIdentifier(columnName)).literal(this.dialect.getTypeName(column.type()));
 		
 		if (nullable) {
 			return renderer.null_().toSql();
@@ -289,7 +289,7 @@ class SqlServerMigrationOperationRenderer extends SqlMigrationOperationRenderer 
 		Objects.requireNonNull(fromTable, "Sql source table must not be null");
 		Objects.requireNonNull(toTable, "Sql target table must not be null");
 		
-		return SqlRenderer.empty().literal("EXEC").literal("sp_rename").literal("'" + fromTable.getName() + "'").comma().literal("'" + toTable.getName() + "'").toSql();
+		return SqlRenderer.empty().literal("EXEC").literal("sp_rename").literal("'" + fromTable.name() + "'").comma().literal("'" + toTable.name() + "'").toSql();
 	}
 	
 	@Override
@@ -298,7 +298,7 @@ class SqlServerMigrationOperationRenderer extends SqlMigrationOperationRenderer 
 		Objects.requireNonNull(fromColumn, "Sql source column name must not be null");
 		Objects.requireNonNull(toColumn, "Sql target column name must not be null");
 		
-		return SqlRenderer.empty().literal("EXEC").literal("sp_rename").literal("'" + table.getName() + "." + fromColumn.getName() + "'").comma().literal("'" + toColumn.getName() + "'").comma().literal("'COLUMN'").toSql();
+		return SqlRenderer.empty().literal("EXEC").literal("sp_rename").literal("'" + table.name() + "." + fromColumn.name() + "'").comma().literal("'" + toColumn.name() + "'").comma().literal("'COLUMN'").toSql();
 	}
 }
 

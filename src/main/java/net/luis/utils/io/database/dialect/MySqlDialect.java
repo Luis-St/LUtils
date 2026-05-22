@@ -140,7 +140,7 @@ public class MySqlDialect extends AbstractSqlDialect {
 			if (i > 0) {
 				renderer.comma();
 			}
-			String quotedName = this.quoteIdentifier(updateColumns.get(i).getName());
+			String quotedName = this.quoteIdentifier(updateColumns.get(i).name());
 			renderer.literal(quotedName).literal("=").literal("VALUES(" + quotedName + ")");
 		}
 		return renderer.toSql();
@@ -195,7 +195,7 @@ class MySqlIndexRenderer extends SqlIndexRenderer {
 		Objects.requireNonNull(indexName, "Sql index name must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.drop().index().literal(this.dialect.quoteIdentifier(indexName)).on().literal(this.dialect.quoteIdentifier(owningTable.getName()));
+		renderer.drop().index().literal(this.dialect.quoteIdentifier(indexName)).on().literal(this.dialect.quoteIdentifier(owningTable.name()));
 		return renderer.toSql();
 	}
 	
@@ -205,7 +205,7 @@ class MySqlIndexRenderer extends SqlIndexRenderer {
 		Objects.requireNonNull(from, "Sql source index name must not be null");
 		Objects.requireNonNull(to, "Sql target index name must not be null");
 		
-		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(table.getName())).literal("RENAME").index().literal(this.dialect.quoteIdentifier(from)).to().literal(this.dialect.quoteIdentifier(to)).toSql();
+		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(table.name())).literal("RENAME").index().literal(this.dialect.quoteIdentifier(from)).to().literal(this.dialect.quoteIdentifier(to)).toSql();
 	}
 }
 
@@ -220,8 +220,8 @@ class MySqlColumnRenderer extends SqlColumnRenderer {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(newType, "New sql type must not be null");
 		
-		String tableName = column.getOwningTable().getName();
-		String columnName = column.getName();
+		String tableName = column.owningTable().name();
+		String columnName = column.name();
 		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(tableName)).modify().column().literal(this.dialect.quoteIdentifier(columnName)).literal(this.dialect.getTypeName(newType)).toSql();
 	}
 	
@@ -229,10 +229,10 @@ class MySqlColumnRenderer extends SqlColumnRenderer {
 	public @NonNull SqlRendered renderAlterColumnNullability(@NonNull SqlColumn<?, ?> column, boolean nullable) throws SqlException {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
-		String tableName = column.getOwningTable().getName();
-		String columnName = column.getName();
+		String tableName = column.owningTable().name();
+		String columnName = column.name();
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).modify().column().literal(this.dialect.quoteIdentifier(columnName)).literal(this.dialect.getTypeName(column.getType()));
+		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).modify().column().literal(this.dialect.quoteIdentifier(columnName)).literal(this.dialect.getTypeName(column.type()));
 		
 		if (nullable) {
 			return renderer.null_().toSql();
@@ -286,7 +286,7 @@ class MySqlMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 		Objects.requireNonNull(fromTable, "Sql source table must not be null");
 		Objects.requireNonNull(toTable, "Sql target table must not be null");
 		
-		return SqlRenderer.empty().rename().table().literal(this.dialect.quoteIdentifier(fromTable.getName())).to().literal(this.dialect.quoteIdentifier(toTable.getName())).toSql();
+		return SqlRenderer.empty().rename().table().literal(this.dialect.quoteIdentifier(fromTable.name())).to().literal(this.dialect.quoteIdentifier(toTable.name())).toSql();
 	}
 }
 

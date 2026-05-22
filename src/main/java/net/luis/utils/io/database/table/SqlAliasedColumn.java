@@ -52,6 +52,6 @@ public record SqlAliasedColumn<E, C>(
 	@Override
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		return SqlRendered.of(dialect.quoteIdentifier(this.alias.get()) + "." + dialect.quoteIdentifier(this.column.getName()));
+		return SqlRendered.of(dialect.quoteIdentifier(this.alias.get()) + "." + dialect.quoteIdentifier(this.column.name()));
 	}
 }

@@ -65,9 +65,9 @@ class SqlMigrationRenderer {
 			case SqlCreateTableOperation op -> this.dialect.tableRenderer().renderCreateTable(op.table(), false);
 			case SqlDropTableOperation op -> this.dialect.tableRenderer().renderDropTable(op.table(), false);
 			case SqlRenameTableOperation op -> this.migrationRenderer.renderRenameTable(op.from(), op.to());
-			case SqlAddColumnOperation op -> this.migrationRenderer.renderAddColumn(op.column().getOwningTable(), op.column(), op.type(), op.options());
-			case SqlDropColumnOperation op -> this.migrationRenderer.renderDropColumn(op.column().getOwningTable(), op.column());
-			case SqlRenameColumnOperation op -> this.migrationRenderer.renderRenameColumn(op.from().getOwningTable(), op.from(), op.to());
+			case SqlAddColumnOperation op -> this.migrationRenderer.renderAddColumn(op.column().owningTable(), op.column(), op.type(), op.options());
+			case SqlDropColumnOperation op -> this.migrationRenderer.renderDropColumn(op.column().owningTable(), op.column());
+			case SqlRenameColumnOperation op -> this.migrationRenderer.renderRenameColumn(op.from().owningTable(), op.from(), op.to());
 			case SqlAlterColumnOperation _ -> throw new IllegalStateException("SqlAlterColumnOperation should be handled separately");
 			case SqlCreateIndexOperation op -> this.dialect.indexRenderer().renderCreateIndex(op.index());
 			case SqlDropIndexOperation op -> this.dialect.indexRenderer().renderDropIndex(op.table() != null ? op.table() : null, op.index());

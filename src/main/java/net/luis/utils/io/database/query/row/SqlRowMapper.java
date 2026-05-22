@@ -66,9 +66,9 @@ public final class SqlRowMapper {
 	
 	private static @NonNull String resolveExpressionName(@NonNull SqlExpression<?> expression) {
 		return switch (expression) {
-			case SqlColumn<?, ?> column -> column.getName();
+			case SqlColumn<?, ?> column -> column.name();
 			case SqlAliasedExpression<?> aliased -> aliased.alias().get();
-			case SqlAliasedColumn<?, ?> aliasColumn -> aliasColumn.column().getName();
+			case SqlAliasedColumn<?, ?> aliasColumn -> aliasColumn.column().name();
 			
 			case null -> throw new NullPointerException("Sql expression must not be null");
 			default -> expression.getClass().getSimpleName();

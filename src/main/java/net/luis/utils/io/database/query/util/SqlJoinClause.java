@@ -104,7 +104,7 @@ public class SqlJoinClause implements SqlRenderable {
 		if (this.lateralSubquery != null && this.lateralAlias != null) {
 			renderer.lateral().openingBracket().rendered(this.lateralSubquery.toSql(dialect)).closingBracket().literal("AS").literal(dialect.quoteIdentifier(this.lateralAlias.get()));
 		} else if (this.table != null) {
-			renderer.literal(dialect.quoteIdentifier(this.table.getName()));
+			renderer.literal(dialect.quoteIdentifier(this.table.name()));
 			if (this.on != null) {
 				renderer.on().rendered(dialect.renderCondition(this.on));
 			}

@@ -34,6 +34,7 @@ import java.util.function.Function;
 
 public class SqlColumnBuilder<E, C> {
 	
+	private final SqlTable<E> table;
 	private final String name;
 	private final int index;
 	private final SqlType<C> type;
@@ -44,12 +45,13 @@ public class SqlColumnBuilder<E, C> {
 	private boolean autoIncrement;
 	private boolean unique;
 	private boolean primaryKey;
-	private Optional<SqlForeignKey<E, ?>> foreignKey = Optional.empty();
+	private Optional<SqlForeignKey<?>> foreignKey = Optional.empty();
 	
-	public SqlColumnBuilder(@NonNull String name, int index, @NonNull SqlType<C> type, @NonNull Function<E, C> getter) {
-		this.name = Objects.requireNonNull(name, "Column name must not be null");
+	public SqlColumnBuilder(@NonNull SqlTable<E> table, @NonNull String name, int index, @NonNull SqlType<C> type, @NonNull Function<E, C> getter) {
+		this.table = Objects.requireNonNull(table, "Owning sql table must not be null");
+		this.name = Objects.requireNonNull(name, "Sql column name must not be null");
 		this.index = index;
-		this.type = Objects.requireNonNull(type, "Column type must not be null");
+		this.type = Objects.requireNonNull(type, "Sql column type must not be null");
 		this.getter = Objects.requireNonNull(getter, "Getter function must not be null");
 	}
 	
@@ -59,7 +61,7 @@ public class SqlColumnBuilder<E, C> {
 	}
 	
 	public @NonNull SqlColumnBuilder<E, C> defaultValue(@NonNull C defaultValue) {
-		Objects.requireNonNull(defaultValue, "Default value must not be null");
+		Objects.requireNonNull(defaultValue, "Sql default value must not be null");
 		this.defaultValue = Optional.of(defaultValue);
 		return this;
 	}
@@ -81,22 +83,22 @@ public class SqlColumnBuilder<E, C> {
 	}
 	
 	public @NonNull SqlColumnBuilder<E, C> addConstraint(@NonNull SqlCondition constraint) {
-		Objects.requireNonNull(constraint, "Constraint must not be null");
+		Objects.requireNonNull(constraint, "Sql constraint must not be null");
 		this.constraints.add(constraint);
 		return this;
 	}
 	
 	public <T> @NonNull SqlColumnBuilder<E, C> foreignKey(@NonNull SqlTable<T> referencedTable) {
-		this.foreignKey = Optional.of(new SqlForeignKey<>(referencedTable));
+		this.foreignKey = Optional.of(SqlForeignKey.of(referencedTable));
 		return this;
 	}
 	
 	public <T> @NonNull SqlColumnBuilder<E, C> foreignKey(@NonNull SqlTable<T> referencedTable, @NonNull SqlColumn<T, ?> referencedColumn) {
-		this.foreignKey = Optional.of(new SqlForeignKey<>(referencedTable, referencedColumn));
+		this.foreignKey = Optional.of(SqlForeignKey.of(referencedTable, referencedColumn));
 		return this;
 	}
 	
 	public @NonNull SqlColumn<E, C> build() {
-		return new SqlColumn<>(this.name, this.index, this.type, this.getter, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.foreignKey, this.constraints);
+		return new SqlColumn<>(this.table, this.name, this.index, this.type, this.getter, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.foreignKey, this.constraints);
 	}
 }

@@ -54,7 +54,7 @@ public class SqlIndexRenderer {
 		}
 		
 		renderer.index().literal(this.dialect.quoteIdentifier(index.name()));
-		renderer.on().literal(this.dialect.quoteIdentifier(index.columns().getFirst().getOwningTable().getName()));
+		renderer.on().literal(this.dialect.quoteIdentifier(index.columns().getFirst().owningTable().name()));
 		
 		try {
 			renderer.using().literal(this.dialect.getIndexMethodName(index.method()));
@@ -63,7 +63,7 @@ public class SqlIndexRenderer {
 		}
 		
 		renderer.openingBracket();
-		SqlRenderingHelper.renderList(renderer, index.columns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.getName())));
+		SqlRenderingHelper.renderList(renderer, index.columns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.name())));
 		renderer.closingBracket();
 		
 		if (index.whereCondition() != null) {

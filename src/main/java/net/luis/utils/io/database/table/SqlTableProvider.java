@@ -92,10 +92,10 @@ public class SqlTableProvider<E> implements AutoCloseable {
 	}
 	
 	public boolean exists() throws SqlException {
-		try (ResultSet resultSet = this.connection.getMetaData().getTables(null, this.table.getSchema(), this.table.getName(), new String[] { "TABLE" })) {
+		try (ResultSet resultSet = this.connection.getMetaData().getTables(null, this.table.schema(), this.table.name(), new String[] { "TABLE" })) {
 			return resultSet.next();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to check if table " + this.table.getName() + " exists", e);
+			throw new SqlException("Failed to check if table " + this.table.name() + " exists", e);
 		}
 	}
 	
@@ -128,8 +128,8 @@ public class SqlTableProvider<E> implements AutoCloseable {
 		}
 		
 		for (SqlColumn<E, ?> column : columns) {
-			if (column.getOwningTable() != this.table) {
-				throw new IllegalArgumentException("Column " + column.getName() + " does not belong to table " + this.table.getName());
+			if (column.owningTable() != this.table) {
+				throw new IllegalArgumentException("Column " + column.name() + " does not belong to table " + this.table.name());
 			}
 		}
 		
@@ -142,7 +142,7 @@ public class SqlTableProvider<E> implements AutoCloseable {
 	}
 	
 	public @NonNull @Unmodifiable List<SqlIndex> getIndexes() throws SqlException {
-		try (ResultSet resultSet = this.connection.getMetaData().getIndexInfo(null, this.table.getSchema(), this.table.getName(), false, false)) {
+		try (ResultSet resultSet = this.connection.getMetaData().getIndexInfo(null, this.table.schema(), this.table.name(), false, false)) {
 			Map<String, List<SqlColumn<?, ?>>> indexColumns = new LinkedHashMap<>();
 			Map<String, Boolean> indexUnique = new LinkedHashMap<>();
 			
@@ -159,8 +159,8 @@ public class SqlTableProvider<E> implements AutoCloseable {
 				indexUnique.putIfAbsent(indexName, !nonUnique);
 				
 				if (columnName != null) {
-					for (SqlColumn<E, ?> column : this.table.getColumns()) {
-						if (column.getName().equals(columnName)) {
+					for (SqlColumn<E, ?> column : this.table.columns()) {
+						if (column.name().equals(columnName)) {
 							indexColumns.get(indexName).add(column);
 							break;
 						}
@@ -174,7 +174,7 @@ public class SqlTableProvider<E> implements AutoCloseable {
 			}
 			return Collections.unmodifiableList(indexes);
 		} catch (SQLException e) {
-			throw new SqlException("Failed to get indexes for table " + this.table.getName(), e);
+			throw new SqlException("Failed to get indexes for table " + this.table.name(), e);
 		}
 	}
 	
@@ -191,7 +191,7 @@ public class SqlTableProvider<E> implements AutoCloseable {
 		try {
 			this.connection.close();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to close connection for table " + this.table.getName(), e);
+			throw new SqlException("Failed to close connection for table " + this.table.name(), e);
 		}
 	}
 }

@@ -16,9 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.table;
 
-import org.jspecify.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -26,17 +30,17 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
-public class SqlAlreadyBindException extends SqlException {
+public record SqlUniqueConstraint<E>(
+	@NonNull @Unmodifiable List<SqlColumn<E, ?>> columns
+) {
 	
-	public SqlAlreadyBindException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlAlreadyBindException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
-	}
-	
-	public SqlAlreadyBindException(@Nullable Throwable cause) {
-		super(cause);
+	public SqlUniqueConstraint {
+		Objects.requireNonNull(columns, "Sql columns must not be null");
+		
+		if (columns.isEmpty()) {
+			throw new IllegalArgumentException("Sql unique constraint must contain at least one column");
+		}
+		
+		columns = List.copyOf(columns);
 	}
 }

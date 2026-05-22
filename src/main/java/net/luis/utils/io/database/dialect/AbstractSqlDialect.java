@@ -203,7 +203,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		List<SqlColumn<?, ?>> partitions = clause.partitions();
 		if (!partitions.isEmpty()) {
 			renderer.partition().by();
-			SqlRenderingHelper.renderList(renderer, partitions, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, partitions, (r, column) -> r.literal(this.quoteIdentifier(column.name())));
 		}
 		
 		List<SqlOrderable<?>> orderings = clause.orderings();
@@ -414,14 +414,14 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.on().literal("CONFLICT");
-		renderer.openingBracket().literal(this.quoteIdentifier(conflictColumn.getName())).closingBracket();
+		renderer.openingBracket().literal(this.quoteIdentifier(conflictColumn.name())).closingBracket();
 		renderer.literal("DO").update().set();
 		
 		for (int i = 0; i < updateColumns.size(); i++) {
 			if (i > 0) {
 				renderer.comma();
 			}
-			String quotedName = this.quoteIdentifier(updateColumns.get(i).getName());
+			String quotedName = this.quoteIdentifier(updateColumns.get(i).name());
 			renderer.literal(quotedName).literal("=").literal("EXCLUDED." + quotedName);
 		}
 		return renderer.toSql();
@@ -443,7 +443,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			if (i > 0) {
 				renderer.comma();
 			}
-			renderer.literal(this.quoteIdentifier(conflictColumns.get(i).getName()));
+			renderer.literal(this.quoteIdentifier(conflictColumns.get(i).name()));
 		}
 		renderer.closingBracket();
 		renderer.literal("DO").literal("NOTHING");

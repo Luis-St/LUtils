@@ -107,7 +107,7 @@ public class SqliteDialect extends AbstractSqlDialect {
 		if (columns.isEmpty()) {
 			renderer.literal("*");
 		} else {
-			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.name())));
 		}
 		return renderer.toSql();
 	}
@@ -139,12 +139,12 @@ class SqliteTableRenderer extends SqlTableRenderer {
 	
 	@Override
 	protected <E, C> @NonNull SqlRendered renderColumnForTable(@NonNull SqlColumn<E, C> column, boolean skipPrimaryKey) throws SqlException {
-		if (column.isPrimaryKey() && column.isAutoIncrement() && column.getType().jdbcType() == Types.INTEGER) {
+		if (column.primaryKey() && column.autoIncrement() && column.type().jdbcType() == Types.INTEGER) {
 			
 			SqlRenderer renderer = SqlRenderer.empty();
-			renderer.literal(this.dialect.quoteIdentifier(column.getName()));
+			renderer.literal(this.dialect.quoteIdentifier(column.name()));
 			renderer.literal("INTEGER").primary().key().keyword("AUTOINCREMENT");
-			if (!column.isNullable()) {
+			if (!column.nullable()) {
 				renderer.not().null_();
 			}
 			return renderer.toSql();
@@ -157,7 +157,7 @@ class SqliteTableRenderer extends SqlTableRenderer {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.delete().from().literal(this.dialect.quoteIdentifier(table.getName()));
+		renderer.delete().from().literal(this.dialect.quoteIdentifier(table.name()));
 		return renderer.toSql();
 	}
 }

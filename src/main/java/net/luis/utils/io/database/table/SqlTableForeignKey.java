@@ -30,21 +30,19 @@ import java.util.Objects;
  *
  */
 
-public record SqlCompositePrimaryKey<E>(
-	@NonNull @Unmodifiable List<SqlColumn<E, ?>> columns
+public record SqlTableForeignKey<E, T>(
+	@NonNull @Unmodifiable List<SqlColumn<E, ?>> getReferencingColumns,
+	@NonNull SqlForeignKey<T> getForeignKey
 ) {
 	
-	public SqlCompositePrimaryKey {
-		Objects.requireNonNull(columns, "Sql referenced columns must not be null");
+	public SqlTableForeignKey {
+		Objects.requireNonNull(getReferencingColumns, "Sql referencing columns must not be null");
+		Objects.requireNonNull(getForeignKey, "Sql foreign key must not be null");
 		
-		if (columns.size() > 1) {
-			throw new IllegalArgumentException("Sql referenced columns must contain at least 2 columns");
+		if (getReferencingColumns.isEmpty()) {
+			throw new IllegalArgumentException("Sql referencing columns must not be empty");
 		}
 		
-		columns = List.copyOf(columns);
-	}
-	
-	public @NonNull @Unmodifiable List<SqlColumn<E, ?>> referenceTarget() {
-		return this.columns;
+		getReferencingColumns = List.copyOf(getReferencingColumns);
 	}
 }

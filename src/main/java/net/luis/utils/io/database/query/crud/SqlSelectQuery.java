@@ -710,7 +710,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 			}
 		}
 		
-		renderer.from().literal(dialect.quoteIdentifier(this.table.getName()));
+		renderer.from().literal(dialect.quoteIdentifier(this.table.name()));
 		
 		for (SqlJoinClause join : this.joins) {
 			renderer.rendered(join.toSql(dialect));

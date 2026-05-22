@@ -126,7 +126,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @NonNull V value) {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
-		return this.set(column, Sql.of(value, column.getType()));
+		return this.set(column, Sql.of(value, column.type()));
 	}
 	
 	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> expression) {
@@ -146,7 +146,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	public <V extends Number> @NonNull SqlUpdateQuery<E> increment(@NonNull SqlColumn<E, V> column, @NonNull V incrementBy) {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
-		return this.increment(column, Sql.of(incrementBy, column.getType()));
+		return this.increment(column, Sql.of(incrementBy, column.type()));
 	}
 	
 	public <V extends Number> @NonNull SqlUpdateQuery<E> increment(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> incrementByExpression) {
@@ -166,7 +166,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	public <V extends Number> @NonNull SqlUpdateQuery<E> decrement(@NonNull SqlColumn<E, V> column, @NonNull V decrementBy) {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
-		return this.decrement(column, Sql.of(decrementBy, column.getType()));
+		return this.decrement(column, Sql.of(decrementBy, column.type()));
 	}
 	
 	public <V extends Number> @NonNull SqlUpdateQuery<E> decrement(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> decrementByExpression) {
@@ -222,7 +222,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	
 	public @NonNull List<E> returning() throws SqlException {
 		return SqlQueryExecutor.executeReturningQuery(
-			this.dialect, this.connection, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.getColumns())), this.queryTimeout, this.rowMapper
+			this.dialect, this.connection, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.columns())), this.queryTimeout, this.rowMapper
 		);
 	}
 	
@@ -234,7 +234,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 		}
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.update().literal(dialect.quoteIdentifier(this.table.getName()));
+		renderer.update().literal(dialect.quoteIdentifier(this.table.name()));
 		for (SqlJoinClause join : this.joins) {
 			renderer.rendered(join.toSql(dialect));
 		}

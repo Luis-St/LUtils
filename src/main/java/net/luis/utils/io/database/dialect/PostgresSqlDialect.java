@@ -137,7 +137,7 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 		if (columns.isEmpty()) {
 			renderer.literal("*");
 		} else {
-			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.name())));
 		}
 		return renderer.toSql();
 	}
@@ -175,7 +175,7 @@ class PostgresSqlTableRenderer extends SqlTableRenderer {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.truncate().table().literal(this.dialect.quoteIdentifier(table.getName())).cascade();
+		renderer.truncate().table().literal(this.dialect.quoteIdentifier(table.name())).cascade();
 		return renderer.toSql();
 	}
 }

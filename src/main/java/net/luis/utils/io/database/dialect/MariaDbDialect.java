@@ -67,7 +67,7 @@ public class MariaDbDialect extends MySqlDialect {
 		if (columns.isEmpty()) {
 			renderer.literal("*");
 		} else {
-			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.name())));
 		}
 		return renderer.toSql();
 	}

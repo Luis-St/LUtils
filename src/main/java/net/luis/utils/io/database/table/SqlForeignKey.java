@@ -18,14 +18,12 @@
 
 package net.luis.utils.io.database.table;
 
-import com.google.common.collect.Lists;
 import net.luis.utils.io.database.SqlReferentialAction;
-import net.luis.utils.io.database.exception.SqlAlreadyBindException;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -33,120 +31,43 @@ import java.util.*;
  *
  */
 
-public class SqlForeignKey<E, T> {
+public record SqlForeignKey<T>(
+	@NonNull SqlTable<T> referencedTable,
+	@NonNull @Unmodifiable List<SqlColumn<T, ?>> referencedColumns,
+	@NonNull SqlReferentialAction onUpdate,
+	@NonNull SqlReferentialAction onDelete
+) {
 	
-	private final SqlTable<T> referencedTable;
-	private final List<SqlColumn<T, ?>> referencedColumns = Lists.newArrayList();
-	private final SqlReferentialAction onUpdate;
-	private final SqlReferentialAction onDelete;
-	private SqlTable<E> referencingTable;
-	private List<SqlColumn<E, ?>> referencingColumns;
-	
-	public SqlForeignKey(@NonNull SqlTable<T> referencedTable) {
-		Objects.requireNonNull(referencedTable, "Referenced table must not be null");
-		this(null, null, referencedTable, referencedTable.getPrimaryKeyColumns(), SqlReferentialAction.NO_ACTION, SqlReferentialAction.NO_ACTION);
-	}
-	
-	public SqlForeignKey(@NonNull SqlTable<T> referencedTable, @NonNull SqlColumn<T, ?> referencedColumn) {
-		this(null, null, referencedTable, List.of(referencedColumn), SqlReferentialAction.NO_ACTION, SqlReferentialAction.NO_ACTION);
-	}
-	
-	public SqlForeignKey(@NonNull List<SqlColumn<E, ?>> referencingColumns, @NonNull SqlTable<T> referencedTable, @NonNull List<SqlColumn<T, ?>> referencedColumns) {
-		this(null, referencingColumns, referencedTable, referencedColumns, SqlReferentialAction.NO_ACTION, SqlReferentialAction.NO_ACTION);
-	}
-	
-	public SqlForeignKey(
-		@Nullable List<SqlColumn<E, ?>> referencingColumns, @NonNull SqlTable<T> referencedTable, @NonNull List<SqlColumn<T, ?>> referencedColumns, @NonNull SqlReferentialAction onUpdate, @NonNull SqlReferentialAction onDelete
-	) {
-		this(null, referencingColumns, referencedTable, referencedColumns, onUpdate, onDelete);
-	}
-	
-	SqlForeignKey(
-		@Nullable SqlTable<E> referencingTable,
-		@Nullable List<SqlColumn<E, ?>> referencingColumns,
-		@NonNull SqlTable<T> referencedTable,
-		@NonNull List<SqlColumn<T, ?>> referencedColumns,
-		@NonNull SqlReferentialAction onUpdate,
-		@NonNull SqlReferentialAction onDelete
-	) {
-		this.referencingTable = referencingTable;
-		this.referencingColumns = referencingColumns;
-		this.referencedTable = Objects.requireNonNull(referencedTable, "Referenced table must not be null");
-		this.referencedColumns.addAll(Objects.requireNonNull(referencedColumns, "Referenced columns must not be null"));
-		this.onUpdate = Objects.requireNonNull(onUpdate, "On update action must not be null");
-		this.onDelete = Objects.requireNonNull(onDelete, "On delete action must not be null");
+	public SqlForeignKey {
+		Objects.requireNonNull(referencedTable, "Sql referenced table must not be null");
+		Objects.requireNonNull(referencedColumns, "Sql referenced columns must not be null");
+		Objects.requireNonNull(onUpdate, "On sql update action must not be null");
+		Objects.requireNonNull(onDelete, "On sql delete action must not be null");
 		
-		if (referencingColumns != null && referencingColumns.isEmpty()) {
-			throw new IllegalArgumentException("Referencing columns must not be empty");
-		}
 		if (referencedColumns.isEmpty()) {
-			throw new IllegalArgumentException("Referenced columns must not be empty");
+			throw new IllegalArgumentException("Sql referenced columns must not be empty");
 		}
 		
-		if (referencingColumns != null && referencingTable != null) {
-			this.validateReferencingColumns();
-		}
+		referencedColumns = List.copyOf(referencedColumns);
 		
 		for (SqlColumn<?, ?> column : referencedColumns) {
-			if (!column.getOwningTable().equals(referencedTable)) {
-				throw new IllegalArgumentException("Referenced column " + column.getName() + " does not belong to the referenced table '" + referencedTable.getName() + "'");
+			if (!column.owningTable().equals(referencedTable)) {
+				throw new IllegalArgumentException("Sql referenced column " + column.name() + " does not belong to the referenced table '" + referencedTable.name() + "'");
 			}
 		}
 	}
 	
-	//region Validation
-	private void validateReferencingColumns() {
-		if (this.referencingColumns == null || this.referencingColumns.isEmpty()) {
-			throw new IllegalStateException("Referencing columns must be defined for foreign key referencing table '" + this.referencedTable.getName() + "'");
-		}
+	public static <T> @NonNull SqlForeignKey<T> of(@NonNull SqlTable<T> referencedTable) {
+		Objects.requireNonNull(referencedTable, "Sql referenced table must not be null");
 		
-		for (SqlColumn<?, ?> column : this.referencingColumns) {
-			if (!this.referencingTable.equals(column.getOwningTable())) {
-				throw new IllegalArgumentException("Referencing column '" + column.getName() + "' does not belong to the referencing table '" + this.referencingTable.getName() + "'");
-			}
-		}
-	}
-	//endregion
-	
-	public void bindTo(@NonNull SqlTable<E> referencingTable, @NonNull SqlColumn<E, ?> referencingColumns) throws SqlAlreadyBindException {
-		Objects.requireNonNull(referencingTable, "Referencing table must not be null");
-		Objects.requireNonNull(referencingColumns, "Referencing columns must not be null");
-		if (this.referencingTable != null) {
-			throw new SqlAlreadyBindException("Foreign key referencing table " + this.referencedTable.getName() + " is already associated with referencing table '" + this.referencingTable.getName() + "'");
-		}
-		
-		this.referencingTable = referencingTable;
-		this.referencingColumns = Lists.newArrayList(referencingColumns);
-		this.validateReferencingColumns();
+		return new SqlForeignKey<>(referencedTable, referencedTable.primaryKeyColumns(), SqlReferentialAction.NO_ACTION, SqlReferentialAction.NO_ACTION);
 	}
 	
-	public @NonNull SqlTable<E> getReferencingTable() {
-		if (this.referencingTable == null) {
-			throw new IllegalStateException("Foreign key has not been bound to a referencing table yet, call bindTo() first");
-		}
-		return this.referencingTable;
+	public static <T> @NonNull SqlForeignKey<T> of(@NonNull SqlTable<T> referencedTable, @NonNull SqlColumn<T, ?> referencedColumn) {
+		return new SqlForeignKey<>(referencedTable, List.of(referencedColumn), SqlReferentialAction.NO_ACTION, SqlReferentialAction.NO_ACTION);
 	}
 	
-	public @NonNull @Unmodifiable List<SqlColumn<E, ?>> getReferencingColumns() {
-		if (this.referencingColumns == null) {
-			throw new IllegalStateException("Foreign key has not been bound to a referencing table yet, call bindTo() first");
-		}
-		return Collections.unmodifiableList(this.referencingColumns);
-	}
-	
-	public @NonNull SqlTable<T> getReferencedTable() {
-		return this.referencedTable;
-	}
-	
-	public @NonNull @Unmodifiable List<SqlColumn<T, ?>> getReferencedColumns() {
-		return Collections.unmodifiableList(this.referencedColumns);
-	}
-	
-	public @NonNull SqlReferentialAction getOnUpdate() {
-		return this.onUpdate;
-	}
-	
-	public @NonNull SqlReferentialAction getOnDelete() {
-		return this.onDelete;
+	public static <T> @NonNull SqlForeignKey<T> of(@NonNull SqlTable<T> referencedTable, @NonNull List<SqlColumn<T, ?>> referencedColumns, @NonNull SqlReferentialAction onUpdate, @NonNull SqlReferentialAction onDelete) {
+		return new SqlForeignKey<>(referencedTable, referencedColumns, onUpdate, onDelete);
 	}
 }

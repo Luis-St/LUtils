@@ -54,11 +54,11 @@ public class SqlTableRenderer {
 			renderer.if_().not().exists();
 		}
 		
-		renderer.literal(this.dialect.quoteIdentifier(table.getName()));
+		renderer.literal(this.dialect.quoteIdentifier(table.name()));
 		renderer.openingBracket();
 		
-		boolean hasCompositeKey = table.getCompositePrimaryKey().isPresent();
-		List<? extends SqlColumn<?, ?>> columns = table.getColumns();
+		boolean hasCompositeKey = table.compositePrimaryKey().isPresent();
+		List<? extends SqlColumn<?, ?>> columns = table.columns();
 		for (int i = 0; i < columns.size(); i++) {
 			if (i > 0) {
 				renderer.comma();
@@ -85,7 +85,7 @@ public class SqlTableRenderer {
 			renderer.if_().exists();
 		}
 		
-		renderer.literal(this.dialect.quoteIdentifier(table.getName()));
+		renderer.literal(this.dialect.quoteIdentifier(table.name()));
 		return renderer.toSql();
 	}
 	
@@ -93,7 +93,7 @@ public class SqlTableRenderer {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.truncate().table().literal(this.dialect.quoteIdentifier(table.getName()));
+		renderer.truncate().table().literal(this.dialect.quoteIdentifier(table.name()));
 		return renderer.toSql();
 	}
 	
@@ -105,36 +105,36 @@ public class SqlTableRenderer {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.literal(this.dialect.quoteIdentifier(column.getName()));
+		renderer.literal(this.dialect.quoteIdentifier(column.name()));
 		
 		try {
-			renderer.literal(this.dialect.getTypeName(column.getType()));
+			renderer.literal(this.dialect.getTypeName(column.type()));
 		} catch (SqlDialectUnsupportedRenderingException e) {
 			throw new SqlDialectUnsupportedRenderingException("Column type is not supported by dialect " + this.dialect.name(), e);
 		}
 		
-		if (!column.isNullable()) {
+		if (!column.nullable()) {
 			renderer.not().null_();
 		}
-		if (column.getDefaultValue().isPresent()) {
-			renderer.default_().literal(this.dialect.renderValueLiteral(column.getDefaultValue().get()));
+		if (column.defaultValue().isPresent()) {
+			renderer.default_().literal(this.dialect.renderValueLiteral(column.defaultValue().get()));
 		}
-		if (column.isAutoIncrement()) {
+		if (column.autoIncrement()) {
 			this.renderAutoIncrement(renderer, column);
 		}
-		if (column.isPrimaryKey() && !skipPrimaryKey) {
+		if (column.primaryKey() && !skipPrimaryKey) {
 			renderer.primary().key();
 		}
-		if (column.isUnique()) {
+		if (column.unique()) {
 			renderer.unique();
 		}
 		
-		if (column.getForeignKey().isPresent()) {
+		if (column.foreignKey().isPresent()) {
 			renderer.references();
-			this.renderForeignKey(renderer, column.getForeignKey().get());
+			this.renderForeignKey(renderer, column.foreignKey().get());
 		}
 		
-		for (SqlCondition check : column.getChecks()) {
+		for (SqlCondition check : column.checks()) {
 			renderer.check().openingBracket().rendered(check.toSql(this.dialect)).closingBracket();
 		}
 		return renderer.toSql();
@@ -147,30 +147,30 @@ public class SqlTableRenderer {
 		renderer.keyword("GENERATED").keyword("ALWAYS").as().keyword("IDENTITY");
 	}
 	
-	protected void renderForeignKey(@NonNull SqlRenderer renderer, @NonNull SqlForeignKey<?, ?> fk) throws SqlException {
+	protected void renderForeignKey(@NonNull SqlRenderer renderer, @NonNull SqlForeignKey<?> fk) throws SqlException {
 		Objects.requireNonNull(renderer, "Sql renderer must not be null");
 		Objects.requireNonNull(fk, "Sql foreign key must not be null");
 		
-		renderer.literal(this.dialect.quoteIdentifier(fk.getReferencedTable().getName()));
+		renderer.literal(this.dialect.quoteIdentifier(fk.referencedTable().name()));
 		renderer.openingBracket();
 		
-		List<? extends SqlColumn<?, ?>> referencedColumns = fk.getReferencedColumns();
+		List<? extends SqlColumn<?, ?>> referencedColumns = fk.referencedColumns();
 		for (int i = 0; i < referencedColumns.size(); i++) {
 			if (i > 0) {
 				renderer.comma();
 			}
-			renderer.literal(this.dialect.quoteIdentifier(referencedColumns.get(i).getName()));
+			renderer.literal(this.dialect.quoteIdentifier(referencedColumns.get(i).name()));
 		}
 		renderer.closingBracket();
 		
-		if (fk.getOnUpdate() != SqlReferentialAction.NO_ACTION) {
+		if (fk.onUpdate() != SqlReferentialAction.NO_ACTION) {
 			renderer.on().update();
-			this.dialect.renderReferentialAction(renderer, fk.getOnUpdate());
+			this.dialect.renderReferentialAction(renderer, fk.onUpdate());
 		}
 		
-		if (fk.getOnDelete() != SqlReferentialAction.NO_ACTION) {
+		if (fk.onDelete() != SqlReferentialAction.NO_ACTION) {
 			renderer.on().delete();
-			this.dialect.renderReferentialAction(renderer, fk.getOnDelete());
+			this.dialect.renderReferentialAction(renderer, fk.onDelete());
 		}
 	}
 	
@@ -180,42 +180,42 @@ public class SqlTableRenderer {
 		SqlRenderer renderer = SqlRenderer.empty();
 		boolean first = true;
 		
-		if (table.getCompositePrimaryKey().isPresent()) {
-			SqlCompositePrimaryKey<?> pk = table.getCompositePrimaryKey().get();
+		if (table.compositePrimaryKey().isPresent()) {
+			SqlCompositePrimaryKey<?> pk = table.compositePrimaryKey().get();
 			
 			renderer.primary().key().openingBracket();
-			SqlRenderingHelper.renderList(renderer, pk.columns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, pk.columns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.name())));
 			renderer.closingBracket();
 			
 			first = false;
 		}
 		
-		for (SqlForeignKey<?, ?> fk : table.getForeignKeys()) {
+		for (SqlTableForeignKey<?, ?> tableFk : table.foreignKeys()) {
 			if (!first) {
 				renderer.comma();
 			}
 			
 			renderer.foreign().key().openingBracket();
-			SqlRenderingHelper.renderList(renderer, fk.getReferencingColumns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, tableFk.getReferencingColumns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.name())));
 			renderer.closingBracket().references();
-			this.renderForeignKey(renderer, fk);
+			this.renderForeignKey(renderer, tableFk.getForeignKey());
 			
 			first = false;
 		}
 		
-		for (List<? extends SqlColumn<?, ?>> uniqueColumns : table.getUniqueConstraints()) {
+		for (SqlUniqueConstraint<?> uniqueConstraint : table.uniqueConstraints()) {
 			if (!first) {
 				renderer.comma();
 			}
-			
+
 			renderer.unique().openingBracket();
-			SqlRenderingHelper.renderList(renderer, uniqueColumns, (r, column) -> r.literal(this.dialect.quoteIdentifier(column.getName())));
+			SqlRenderingHelper.renderList(renderer, uniqueConstraint.columns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.name())));
 			renderer.closingBracket();
 			
 			first = false;
 		}
 		
-		for (SqlCondition check : table.getCheckConstraints()) {
+		for (SqlCondition check : table.checkConstraints()) {
 			if (!first) {
 				renderer.comma();
 			}

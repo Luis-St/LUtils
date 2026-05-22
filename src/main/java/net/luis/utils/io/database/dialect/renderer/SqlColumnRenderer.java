@@ -46,16 +46,16 @@ public class SqlColumnRenderer {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(newType, "New sql type must not be null");
 		
-		String tableName = column.getOwningTable().getName();
-		String columnName = column.getName();
+		String tableName = column.owningTable().name();
+		String columnName = column.name();
 		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(tableName)).alter().column().literal(this.dialect.quoteIdentifier(columnName)).type().literal(this.dialect.getTypeName(newType)).toSql();
 	}
 	
 	public @NonNull SqlRendered renderAlterColumnNullability(@NonNull SqlColumn<?, ?> column, boolean nullable) throws SqlException {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
-		String tableName = column.getOwningTable().getName();
-		String columnName = column.getName();
+		String tableName = column.owningTable().name();
+		String columnName = column.name();
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).alter().column().literal(this.dialect.quoteIdentifier(columnName));
 		
@@ -70,16 +70,16 @@ public class SqlColumnRenderer {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(renderedDefault, "Sql rendered default value must not be null");
 		
-		String tableName = column.getOwningTable().getName();
-		String columnName = column.getName();
+		String tableName = column.owningTable().name();
+		String columnName = column.name();
 		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(tableName)).alter().column().literal(this.dialect.quoteIdentifier(columnName)).set().default_().literal(renderedDefault).toSql();
 	}
 	
 	public @NonNull SqlRendered renderAlterColumnDropDefault(@NonNull SqlColumn<?, ?> column) throws SqlException {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
-		String tableName = column.getOwningTable().getName();
-		String columnName = column.getName();
+		String tableName = column.owningTable().name();
+		String columnName = column.name();
 		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(tableName)).alter().column().literal(this.dialect.quoteIdentifier(columnName)).drop().default_().toSql();
 	}
 }

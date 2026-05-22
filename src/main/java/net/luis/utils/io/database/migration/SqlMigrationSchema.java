@@ -91,7 +91,7 @@ public final class SqlMigrationSchema {
 				Set<String> primaryKeyColumns = loadPrimaryKeyColumns(meta, schema, tableName);
 				Set<String> uniqueColumns = loadUniqueColumns(meta, schema, tableName);
 				
-				SqlTableBuilder<Void> builder = SqlTable.of(Void.class, tableName, schema);
+				SqlTable<Void> table = SqlTable.of(Void.class, tableName, schema);
 				Map<String, SqlColumn<Void, ?>> tableColumns = Maps.newLinkedHashMap();
 				
 				try (ResultSet colRs = meta.getColumns(null, schema, tableName, "%")) {
@@ -109,16 +109,15 @@ public final class SqlMigrationSchema {
 						boolean isAutoIncrement = "YES".equals(isAutoInc);
 						
 						SqlType<?> sqlType = SqlJdbcTypeMapper.mapJdbcType(dataType, colSize, decDigits);
-						SqlColumn<Void, ?> column = buildPhantomColumn(builder, colName, sqlType, isNullable, isAutoIncrement, isPrimaryKey, isUnique);
+						SqlColumn<Void, ?> column = buildPhantomColumn(table, colName, sqlType, isNullable, isAutoIncrement, isPrimaryKey, isUnique);
 						tableColumns.put(colName, column);
 					}
 				}
 				
 				if (primaryKeyColumns.size() > 1) {
-					builder.generateCompositePrimaryKey();
+					table.generateCompositePrimaryKey();
 				}
 				
-				SqlTable<Void> table = builder.build();
 				tables.put(tableName, table);
 				columns.put(tableName, Collections.unmodifiableMap(tableColumns));
 				
@@ -166,13 +165,13 @@ public final class SqlMigrationSchema {
 			String tableName = entry.getKey();
 			List<SqlSchemaColumnInfo> tableColumnInfos = entry.getValue();
 			
-			SqlTableBuilder<Void> builder = SqlTable.of(Void.class, tableName, schema);
+			SqlTable<Void> table = SqlTable.of(Void.class, tableName, schema);
 			Map<String, SqlColumn<Void, ?>> tableColumns = Maps.newLinkedHashMap();
 			
 			int primaryKeyCount = 0;
 			for (SqlSchemaColumnInfo info : tableColumnInfos) {
 				SqlType<?> sqlType = SqlJdbcTypeMapper.reconstructType(info.jdbcType(), info.parameter());
-				SqlColumn<Void, ?> column = buildPhantomColumn(builder, info.columnName(), sqlType, info.nullable(), info.autoIncrement(), info.primaryKey(), info.unique());
+				SqlColumn<Void, ?> column = buildPhantomColumn(table, info.columnName(), sqlType, info.nullable(), info.autoIncrement(), info.primaryKey(), info.unique());
 				tableColumns.put(info.columnName(), column);
 				if (info.primaryKey()) {
 					primaryKeyCount++;
@@ -180,10 +179,9 @@ public final class SqlMigrationSchema {
 			}
 			
 			if (primaryKeyCount > 1) {
-				builder.generateCompositePrimaryKey();
+				table.generateCompositePrimaryKey();
 			}
 			
-			SqlTable<Void> table = builder.build();
 			tables.put(tableName, table);
 			columns.put(tableName, Collections.unmodifiableMap(tableColumns));
 		}
@@ -245,7 +243,7 @@ public final class SqlMigrationSchema {
 	
 	@SuppressWarnings({ "unchecked", "ReturnOfNull" })
 	private static <C> @NonNull SqlColumn<Void, C> buildPhantomColumn(
-		@NonNull SqlTableBuilder<Void> builder,
+		@NonNull SqlTable<Void> table,
 		@NonNull String name,
 		@NonNull SqlType<?> type,
 		boolean nullable,
@@ -253,13 +251,13 @@ public final class SqlMigrationSchema {
 		boolean primaryKey,
 		boolean unique
 	) {
-		Objects.requireNonNull(builder, "Sql table builder must not be null");
+		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(name, "Column name must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");
 		
 		SqlType<C> typedType = (SqlType<C>) type;
 		if (primaryKey || autoIncrement || unique) {
-			return builder.column(name, typedType, _ -> null, col -> {
+			return table.column(name, typedType, _ -> null, col -> {
 				if (!nullable) col.notNull();
 				if (autoIncrement) col.autoIncrement();
 				if (primaryKey) col.primaryKey();
@@ -269,9 +267,9 @@ public final class SqlMigrationSchema {
 		}
 		
 		if (!nullable) {
-			return builder.column(name, typedType, _ -> null, SqlColumnBuilder::notNull);
+			return table.column(name, typedType, _ -> null, SqlColumnBuilder::notNull);
 		}
-		return builder.column(name, typedType, _ -> null);
+		return table.column(name, typedType, _ -> null);
 	}
 	
 	public @NonNull List<SqlSchemaColumnInfo> extractColumnInfos() {
@@ -282,17 +280,17 @@ public final class SqlMigrationSchema {
 			
 			for (Map.Entry<String, SqlColumn<Void, ?>> colEntry : tableEntry.getValue().entrySet()) {
 				SqlColumn<Void, ?> column = colEntry.getValue();
-				SqlParameter parameter = column.getType().baseType() instanceof ParameterizedSqlType<?, ?> parameterized ? parameterized.parameter() : null;
+				SqlParameter parameter = column.type().baseType() instanceof ParameterizedSqlType<?, ?> parameterized ? parameterized.parameter() : null;
 				
 				infos.add(new SqlSchemaColumnInfo(
 					tableName,
-					column.getName(),
-					column.getType().jdbcType(),
+					column.name(),
+					column.type().jdbcType(),
 					parameter,
-					column.isNullable(),
-					column.isAutoIncrement(),
-					column.isPrimaryKey(),
-					column.isUnique(),
+					column.nullable(),
+					column.autoIncrement(),
+					column.primaryKey(),
+					column.unique(),
 					ordinal++
 				));
 			}
@@ -344,9 +342,9 @@ public final class SqlMigrationSchema {
 		Objects.requireNonNull(type, "Type must not be null");
 		
 		SqlColumn<Void, ?> column = this.column(tableName, columnName);
-		if (!type.isAssignableFrom(column.getType().javaType())) {
+		if (!type.isAssignableFrom(column.type().javaType())) {
 			throw new SqlSchemaIntrospectionException(
-				"Sql column '" + columnName + "' in table " + tableName + " has Java type " + column.getType().javaType().getName() + " but requested type was " + type.getName()
+				"Sql column '" + columnName + "' in table " + tableName + " has Java type " + column.type().javaType().getName() + " but requested type was " + type.getName()
 			);
 		}
 		return (SqlColumn<Void, C>) column;

@@ -67,19 +67,19 @@ public class SqlQueryProvider<E> implements AutoCloseable {
 	private static <E> @NonNull ThrowableFunction<ResultSet, E, SqlException> createRowMapper(@NonNull SqlTable<E> table) {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		
-		List<SqlColumn<E, ?>> sorted = table.getColumns().stream().sorted(Comparator.comparingInt(SqlColumn::getIndex)).toList();
-		Constructor<E> constructor = findMatchingConstructor(table.getType(), sorted);
+		List<SqlColumn<E, ?>> sorted = table.columns().stream().sorted(Comparator.comparingInt(SqlColumn::index)).toList();
+		Constructor<E> constructor = findMatchingConstructor(table.type(), sorted);
 		
 		return resultSet -> {
 			Object[] args = new Object[sorted.size()];
 			for (int i = 0; i < sorted.size(); i++) {
-				args[i] = sorted.get(i).getType().get(resultSet, i + 1);
+				args[i] = sorted.get(i).type().get(resultSet, i + 1);
 			}
 			
 			try {
 				return constructor.newInstance(args);
 			} catch (Exception e) {
-				throw new SqlException("Failed to construct entity " + table.getType().getSimpleName() + " from result set", e);
+				throw new SqlException("Failed to construct entity " + table.type().getSimpleName() + " from result set", e);
 			}
 		};
 	}
@@ -121,7 +121,7 @@ public class SqlQueryProvider<E> implements AutoCloseable {
 				Class<?>[] paramTypes = constructor.getParameterTypes();
 				
 				for (int i = 0; i < paramTypes.length; i++) {
-					Class<?> columnType = sortedColumns.get(i).getType().javaType();
+					Class<?> columnType = sortedColumns.get(i).type().javaType();
 					if (!isAssignableWithUnboxing(paramTypes[i], columnType)) {
 						matches = false;
 						break;
@@ -373,7 +373,7 @@ public class SqlQueryProvider<E> implements AutoCloseable {
 		try {
 			this.connection.close();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to close connection for table " + this.table.getName(), e);
+			throw new SqlException("Failed to close connection for table " + this.table.name(), e);
 		}
 	}
 }
