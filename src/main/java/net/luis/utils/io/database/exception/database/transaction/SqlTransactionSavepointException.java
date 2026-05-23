@@ -16,27 +16,29 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.transaction;
+package net.luis.utils.io.database.exception.database.transaction;
 
+import net.luis.utils.io.database.exception.SqlDatabaseException;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.sql.SQLException;
+
 /**
+ * Thrown when creating or releasing a savepoint fails at the driver level.<br>
  *
  * @author Luis-St
- *
  */
-
-public class SqlTransactionSavepointException extends SqlTransactionException {
+public class SqlTransactionSavepointException extends SqlDatabaseException {
 	
-	public SqlTransactionSavepointException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlTransactionSavepointException(@Nullable String message, @Nullable Throwable cause) {
+	/**
+	 * Constructs a new {@code SqlTransactionSavepointException} from the given message and cause.<br>
+	 *
+	 * @param message The detail message, may be null
+	 * @param cause The sql exception cause
+	 * @throws NullPointerException If the cause is null
+	 */
+	public SqlTransactionSavepointException(@Nullable String message, @NonNull SQLException cause) {
 		super(message, cause);
-	}
-	
-	public SqlTransactionSavepointException(@Nullable Throwable cause) {
-		super(cause);
 	}
 }

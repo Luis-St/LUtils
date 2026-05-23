@@ -16,28 +16,29 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.type;
+package net.luis.utils.io.database.exception.database;
 
-import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.SqlDatabaseException;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.sql.SQLException;
+
 /**
+ * Thrown when establishing or releasing a database connection fails ({@code SQLState} class {@code 08}).<br>
  *
  * @author Luis-St
- *
  */
-
-public class SqlTypeException extends SqlException {
+public class SqlConnectionException extends SqlDatabaseException {
 	
-	public SqlTypeException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlTypeException(@Nullable String message, @Nullable Throwable cause) {
+	/**
+	 * Constructs a new {@code SqlConnectionException} from the given message and cause.<br>
+	 *
+	 * @param message The detail message, may be null
+	 * @param cause The sql exception cause
+	 * @throws NullPointerException If the cause is null
+	 */
+	public SqlConnectionException(@Nullable String message, @NonNull SQLException cause) {
 		super(message, cause);
-	}
-	
-	public SqlTypeException(@Nullable Throwable cause) {
-		super(cause);
 	}
 }

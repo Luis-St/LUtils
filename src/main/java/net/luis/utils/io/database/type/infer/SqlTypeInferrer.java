@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.type.infer;
 
-import net.luis.utils.io.database.exception.type.SqlTypeNotFoundException;
+import net.luis.utils.io.database.exception.client.SqlTypeNotFoundException;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 

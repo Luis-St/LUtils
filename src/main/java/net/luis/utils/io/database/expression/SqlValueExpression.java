@@ -20,7 +20,7 @@ package net.luis.utils.io.database.expression;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.type.SqlTypeNotFoundException;
+import net.luis.utils.io.database.exception.client.SqlTypeNotFoundException;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;

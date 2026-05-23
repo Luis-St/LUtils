@@ -22,7 +22,8 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.SqlSchemaIntrospectionException;
+import net.luis.utils.io.database.exception.client.SqlMigrationConflictException;
+import net.luis.utils.io.database.exception.database.SqlMigrationExecutionException;
 import net.luis.utils.io.database.migration.store.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -80,7 +81,7 @@ public final class SqlMigrationRunner {
 		
 		for (RegisteredSqlMigration existing : this.registeredMigrations) {
 			if (existing.migration().version().equals(migration.version())) {
-				throw new SqlException("Duplicate migration version: " + migration.version());
+				throw new SqlMigrationConflictException("Duplicate migration version: " + migration.version());
 			}
 		}
 		
@@ -280,7 +281,7 @@ public final class SqlMigrationRunner {
 			SqlSchemaSnapshot snapshot = this.schemaStore.load(latestVersion);
 			
 			if (snapshot == null) {
-				throw new SqlSchemaIntrospectionException("Schema snapshot not found for applied version " + latestVersion);
+				throw new SqlMigrationConflictException("Schema snapshot not found for applied version " + latestVersion);
 			}
 			schema = SqlMigrationSchema.fromSnapshot(snapshot.columns(), snapshot.checkConstraints());
 		}
@@ -302,7 +303,7 @@ public final class SqlMigrationRunner {
 				return registered;
 			}
 		}
-		throw new SqlException("No registered migration found for version " + version);
+		throw new SqlMigrationConflictException("No registered migration found for version " + version);
 	}
 	
 	private record RegisteredSqlMigration(@NonNull SqlMigration migration) {}
@@ -368,7 +369,7 @@ public final class SqlMigrationRunner {
 					throw e;
 				}
 			} catch (SQLException e) {
-				throw new SqlException("Failed to execute migration with store update", e);
+				throw new SqlMigrationExecutionException("Failed to execute migration with store update", e);
 			}
 		}
 		
@@ -390,7 +391,7 @@ public final class SqlMigrationRunner {
 					throw e;
 				}
 			} catch (SQLException e) {
-				throw new SqlException("Failed to execute migration with store update", e);
+				throw new SqlMigrationExecutionException("Failed to execute migration with store update", e);
 			}
 		}
 	}

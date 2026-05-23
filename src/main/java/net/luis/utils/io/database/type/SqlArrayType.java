@@ -20,9 +20,9 @@ package net.luis.utils.io.database.type;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
-import net.luis.utils.io.database.exception.type.SqlResultRetrievalException;
-import net.luis.utils.io.database.exception.type.SqlStatementBindException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.database.SqlResultMappingException;
+import net.luis.utils.io.database.exception.database.statement.SqlStatementBindException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -66,7 +66,7 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public E @Nullable [] get(@NonNull ResultSet resultSet, int columnIndex) throws SqlResultRetrievalException {
+	public E @Nullable [] get(@NonNull ResultSet resultSet, int columnIndex) throws SqlException {
 		Objects.requireNonNull(resultSet, "Result set must not be null");
 		if (columnIndex < 1) {
 			throw new IllegalArgumentException("Column index must be greater than or equal to 1");
@@ -91,7 +91,7 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 				arr.free();
 			}
 		} catch (SQLException e) {
-			throw new SqlResultRetrievalException("Failed to retrieve array value from result set at column index " + columnIndex, e);
+			throw new SqlResultMappingException("Failed to retrieve array value from result set at column index " + columnIndex, e, this.javaType(), null);
 		}
 	}
 	
@@ -100,7 +100,7 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 		Objects.requireNonNull(dialect, "Dialect must not be null");
 		Objects.requireNonNull(preparedStatement, "Prepared statement must not be null");
 		if (columnIndex < 1) {
-			throw new IllegalArgumentException("Column index must be greater than or equal to 1");
+			throw new IllegalArgumentException("Sql column index must be greater than or equal to 1");
 		}
 		
 		try {
@@ -116,7 +116,7 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 			java.sql.Array array = preparedStatement.getConnection().createArrayOf(dialect.getTypeName(this.elementType), value);
 			preparedStatement.setArray(columnIndex, array);
 		} catch (SQLException e) {
-			throw new SqlStatementBindException("Failed to bind array value to prepared statement at column index " + columnIndex, e);
+			throw new SqlStatementBindException("Failed to bind array value to prepared statement at column index " + columnIndex, e, columnIndex);
 		}
 	}
 	

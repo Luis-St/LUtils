@@ -21,7 +21,7 @@ package net.luis.utils.io.database.dialect.renderer.expression.function;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlWindowFunction;
 import net.luis.utils.io.database.function.functions.window.*;

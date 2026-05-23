@@ -16,26 +16,39 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.dialect;
+package net.luis.utils.io.database.exception.client.dialect;
 
 import org.jspecify.annotations.Nullable;
 
 /**
+ * Thrown when a dialect cannot render a requested sql construct.<br>
  *
  * @author Luis-St
- *
  */
-
 public class SqlDialectUnsupportedRenderingException extends SqlDialectException {
 	
+	/**
+	 * Constructs a new unsupported rendering exception with the given detail message.<br>
+	 * @param message The detail message, may be null
+	 */
 	public SqlDialectUnsupportedRenderingException(@Nullable String message) {
 		super(message);
 	}
 	
+	/**
+	 * Constructs a new unsupported rendering exception with the given detail message and cause.<br>
+	 *
+	 * @param message The detail message, may be null
+	 * @param cause The cause, may be null
+	 */
 	public SqlDialectUnsupportedRenderingException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
+	/**
+	 * Constructs a new unsupported rendering exception with the given cause.<br>
+	 * @param cause The cause, may be null
+	 */
 	public SqlDialectUnsupportedRenderingException(@Nullable Throwable cause) {
 		super(cause);
 	}

@@ -21,21 +21,40 @@ package net.luis.utils.io.database.exception;
 import org.jspecify.annotations.Nullable;
 
 /**
+ * Checked root type for all failures raised by the database system.<br>
+ * Every more specific failure extends this type, split into two origin-based paths:
+ * <p>
+ *     {@link SqlDatabaseException} for failures that reached the jdbc driver<br>
+ *     and {@link SqlClientException} for library or caller logic errors that never did.<br>
+ *     This base type itself carries only a message and cause; the typed diagnostics live on its subtypes.
+ * </p>
  *
  * @author Luis-St
- *
  */
-
 public class SqlException extends Exception {
 	
+	/**
+	 * Constructs a new sql exception with the given detail message.<br>
+	 * @param message The detail message, may be null
+	 */
 	public SqlException(@Nullable String message) {
 		super(message);
 	}
 	
+	/**
+	 * Constructs a new sql exception with the given detail message and cause.<br>
+	 *
+	 * @param message The detail message, may be null
+	 * @param cause The cause, may be null
+	 */
 	public SqlException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
+	/**
+	 * Constructs a new sql exception with the given cause.<br>
+	 * @param cause The cause, may be null
+	 */
 	public SqlException(@Nullable Throwable cause) {
 		super(cause);
 	}

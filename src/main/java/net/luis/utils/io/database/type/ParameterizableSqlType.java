@@ -19,8 +19,8 @@
 package net.luis.utils.io.database.type;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
-import net.luis.utils.io.database.exception.type.SqlResultRetrievalException;
-import net.luis.utils.io.database.exception.type.SqlStatementBindException;
+import net.luis.utils.io.database.exception.SqlClientException;
+import net.luis.utils.io.database.exception.database.statement.SqlStatementBindException;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -42,7 +42,7 @@ public sealed interface ParameterizableSqlType<T, P extends SqlParameter> permit
 	default <O> @NonNull ParameterizableSqlType<O, P> map(
 		@NonNull Class<O> targetType,
 		@NonNull ThrowableFunction<@Nullable O, @Nullable T, SqlStatementBindException> fromTargetToSource,
-		@NonNull ThrowableFunction<@NonNull T, @Nullable O, SqlResultRetrievalException> fromSourceToTarget
+		@NonNull ThrowableFunction<@NonNull T, @Nullable O, SqlClientException> fromSourceToTarget
 	) {
 		Objects.requireNonNull(targetType, "Target type must not be null");
 		Objects.requireNonNull(fromTargetToSource, "Getter function must not be null");

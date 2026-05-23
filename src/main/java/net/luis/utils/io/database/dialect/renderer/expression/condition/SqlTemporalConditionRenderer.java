@@ -24,7 +24,7 @@ import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.renderer.SqlRenderingHelper;
 import net.luis.utils.io.database.dialect.renderer.expression.function.SqlTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import org.jspecify.annotations.NonNull;

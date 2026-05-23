@@ -21,7 +21,10 @@ package net.luis.utils.io.database.type;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.type.*;
+import net.luis.utils.io.database.exception.SqlClientException;
+import net.luis.utils.io.database.exception.client.SqlTypeNotFoundException;
+import net.luis.utils.io.database.exception.database.SqlResultMappingException;
+import net.luis.utils.io.database.exception.database.statement.SqlStatementBindException;
 import net.luis.utils.io.database.type.infer.SqlTypeInferrer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -69,13 +72,13 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 	default @Nullable T get(@NonNull ResultSet resultSet, int columnIndex) throws SqlException {
 		Objects.requireNonNull(resultSet, "Result set must not be null");
 		if (columnIndex < 1) {
-			throw new IllegalArgumentException("Column index must be greater than or equal to 1");
+			throw new IllegalArgumentException("Sql column index must be greater than or equal to 1");
 		}
 		
 		try {
 			return resultSet.getObject(columnIndex, this.javaType());
 		} catch (SQLException e) {
-			throw new SqlResultRetrievalException("Failed to retrieve value from result set at column index " + columnIndex, e);
+			throw new SqlResultMappingException("Failed to retrieve value from result set at column index " + columnIndex, e, this.javaType(), null);
 		}
 	}
 	
@@ -83,20 +86,20 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		Objects.requireNonNull(dialect, "Dialect must not be null");
 		Objects.requireNonNull(preparedStatement, "Prepared statement must not be null");
 		if (columnIndex < 1) {
-			throw new IllegalArgumentException("Column index must be greater than or equal to 1");
+			throw new IllegalArgumentException("Sql column index must be greater than or equal to 1");
 		}
 		
 		try {
 			preparedStatement.setObject(columnIndex, value, this.jdbcType());
 		} catch (SQLException e) {
-			throw new SqlStatementBindException("Failed to bind value to prepared statement at column index " + columnIndex, e);
+			throw new SqlStatementBindException("Failed to bind value to prepared statement at column index " + columnIndex, e, columnIndex);
 		}
 	}
 	
 	default <O> @NonNull SqlType<O> map(
 		@NonNull Class<O> targetType,
 		@NonNull ThrowableFunction<@Nullable O, @Nullable T, SqlStatementBindException> fromTargetToSource,
-		@NonNull ThrowableFunction<@NonNull T, @Nullable O, SqlResultRetrievalException> fromSourceToTarget
+		@NonNull ThrowableFunction<@NonNull T, @Nullable O, SqlClientException> fromSourceToTarget
 	) {
 		Objects.requireNonNull(targetType, "Target type must not be null");
 		Objects.requireNonNull(fromTargetToSource, "Getter function must not be null");

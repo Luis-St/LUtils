@@ -22,6 +22,11 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.SqlExceptions;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectException;
+import net.luis.utils.io.database.exception.database.SqlConnectionException;
+import net.luis.utils.io.database.exception.database.SqlQueryExecutionException;
+import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -79,7 +84,7 @@ public class SqlTableProvider<E> implements AutoCloseable {
 			statement.setQueryTimeout((int) Math.min(seconds, Integer.MAX_VALUE));
 			statement.execute();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to execute statement: " + rendered.sql(), e);
+			throw new SqlQueryExecutionException("Failed to execute statement: " + rendered.sql(), e, rendered.sql());
 		}
 	}
 	
@@ -95,7 +100,7 @@ public class SqlTableProvider<E> implements AutoCloseable {
 		try (ResultSet resultSet = this.connection.getMetaData().getTables(null, this.table.schema(), this.table.name(), new String[] { "TABLE" })) {
 			return resultSet.next();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to check if table " + this.table.name() + " exists", e);
+			throw SqlExceptions.translate("Failed to check if table '" + this.table.name() + "' exists", e);
 		}
 	}
 	
@@ -129,12 +134,12 @@ public class SqlTableProvider<E> implements AutoCloseable {
 		
 		for (SqlColumn<E, ?> column : columns) {
 			if (column.owningTable() != this.table) {
-				throw new IllegalArgumentException("Column " + column.name() + " does not belong to table " + this.table.name());
+				throw new IllegalArgumentException("Sql column '" + column.name() + "' does not belong to table '" + this.table.name() + "'");
 			}
 		}
 		
 		if (!this.dialect.isIndexMethodSupported(method)) {
-			throw new SqlException("Index method " + method + " is not supported by dialect " + this.dialect.name());
+			throw new SqlDialectException("Sql index method '" + method + "' is not supported by dialect '" + this.dialect.name() + "'");
 		}
 		
 		SqlIndex index = new SqlIndex(name, List.copyOf(columns), unique, whereCondition, method);
@@ -174,7 +179,7 @@ public class SqlTableProvider<E> implements AutoCloseable {
 			}
 			return Collections.unmodifiableList(indexes);
 		} catch (SQLException e) {
-			throw new SqlException("Failed to get indexes for table " + this.table.name(), e);
+			throw new SqlSchemaIntrospectionException("Failed to get indexes for sql table '" + this.table.name() + "'", e);
 		}
 	}
 	
@@ -191,7 +196,7 @@ public class SqlTableProvider<E> implements AutoCloseable {
 		try {
 			this.connection.close();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to close connection for table " + this.table.name(), e);
+			throw new SqlConnectionException("Failed to close connection for sql table '" + this.table.name() + "'", e);
 		}
 	}
 }

@@ -22,6 +22,7 @@ import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
 import net.luis.utils.io.database.query.SqlJoinableQuery;
 import net.luis.utils.io.database.query.SqlQuery;
 import net.luis.utils.io.database.query.util.SqlJoinClause;
@@ -148,7 +149,7 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	
 	public int execute() throws SqlException {
 		if (this.whereCondition == null && !this.allowAll) {
-			throw new SqlException("DELETE without WHERE clause would affect all rows; call allowAll() to confirm this is intentional");
+			throw new SqlStatementBuilderException("DELETE without WHERE clause would affect all rows, call allowAll() to confirm this is intentional");
 		}
 		return SqlQueryExecutor.executeUpdate(this.dialect, this.connection, this.toSql(this.dialect), this.queryTimeout);
 	}

@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.exception.SqlSchemaIntrospectionException;
+import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;

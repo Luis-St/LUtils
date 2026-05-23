@@ -21,6 +21,7 @@ package net.luis.utils.io.database.migration.store;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.database.SqlMigrationExecutionException;
 import net.luis.utils.io.database.migration.SqlMigrationInfo;
 import net.luis.utils.io.database.migration.SqlMigrationStatus;
 import net.luis.utils.io.database.type.SqlTypes;
@@ -109,7 +110,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		) {
 			statement.execute(this.buildInitializeSql());
 		} catch (SQLException e) {
-			throw new SqlException("Failed to initialize migration table", e);
+			throw new SqlMigrationExecutionException("Failed to initialize migration table", e);
 		}
 	}
 	
@@ -134,7 +135,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 			results.sort(Comparator.comparing(SqlMigrationInfo::version));
 			return List.copyOf(results);
 		} catch (SQLException e) {
-			throw new SqlException("Failed to load migration history", e);
+			throw new SqlMigrationExecutionException("Failed to load migration history", e);
 		}
 	}
 	
@@ -145,7 +146,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		try (Connection connection = this.dataSource.getConnection()) {
 			this.save(connection, info);
 		} catch (SQLException e) {
-			throw new SqlException("Failed to save migration info for version " + info.version(), e);
+			throw new SqlMigrationExecutionException("Failed to save migration info for version " + info.version(), e);
 		}
 	}
 	
@@ -161,7 +162,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 			statement.setTimestamp(4, info.appliedAt() != null ? Timestamp.from(info.appliedAt()) : null);
 			statement.executeUpdate();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to save migration info for version " + info.version(), e);
+			throw new SqlMigrationExecutionException("Failed to save migration info for version " + info.version(), e);
 		}
 	}
 	
@@ -173,7 +174,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		try (Connection connection = this.dataSource.getConnection()) {
 			this.update(connection, version, status);
 		} catch (SQLException e) {
-			throw new SqlException("Failed to update migration status for version " + version, e);
+			throw new SqlMigrationExecutionException("Failed to update migration status for version " + version, e);
 		}
 	}
 	
@@ -191,7 +192,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 			statement.setString(3, version.toString());
 			statement.executeUpdate();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to update migration status for version " + version, e);
+			throw new SqlMigrationExecutionException("Failed to update migration status for version " + version, e);
 		}
 	}
 }

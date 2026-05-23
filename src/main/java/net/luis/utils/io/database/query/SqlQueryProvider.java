@@ -21,6 +21,8 @@ package net.luis.utils.io.database.query;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.database.SqlConnectionException;
+import net.luis.utils.io.database.exception.database.SqlResultMappingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.crud.*;
 import net.luis.utils.io.database.query.row.*;
@@ -79,40 +81,49 @@ public class SqlQueryProvider<E> implements AutoCloseable {
 			try {
 				return constructor.newInstance(args);
 			} catch (Exception e) {
-				throw new SqlException("Failed to construct entity " + table.type().getSimpleName() + " from result set", e);
+				throw new SqlResultMappingException("Failed to construct entity " + table.type().getSimpleName() + " from result set", e, table.type());
 			}
 		};
 	}
 	
 	private static boolean isAssignableWithUnboxing(@NonNull Class<?> target, @NonNull Class<?> source) {
+		Objects.requireNonNull(target, "Target class must not be null");
+		Objects.requireNonNull(source, "Source class must not be null");
+		
 		if (target.isAssignableFrom(source)) {
 			return true;
 		}
-		if (target.isPrimitive()) {
-			return target == boolean.class && source == Boolean.class
-				|| target == byte.class && source == Byte.class
-				|| target == char.class && source == Character.class
-				|| target == short.class && source == Short.class
-				|| target == int.class && source == Integer.class
-				|| target == long.class && source == Long.class
-				|| target == float.class && source == Float.class
-				|| target == double.class && source == Double.class;
+		if (target.isPrimitive() && source.isPrimitive()) {
+			return target == source;
 		}
-		if (source.isPrimitive()) {
-			return source == boolean.class && target == Boolean.class
-				|| source == byte.class && target == Byte.class
-				|| source == char.class && target == Character.class
-				|| source == short.class && target == Short.class
-				|| source == int.class && target == Integer.class
-				|| source == long.class && target == Long.class
-				|| source == float.class && target == Float.class
-				|| source == double.class && target == Double.class;
+		if (target.isPrimitive() && isPrimitiveAssignableTo(target, source)) {
+			return true;
 		}
-		return false;
+		return source.isPrimitive() && isPrimitiveAssignableTo(source, target);
+	}
+	
+	private static boolean isPrimitiveAssignableTo(@NonNull Class<?> primitive, @NonNull Class<?> other) {
+		Objects.requireNonNull(primitive, "Primitive class must not be null");
+		Objects.requireNonNull(other, "Other class must not be null");
+		if (!primitive.isPrimitive()) {
+			throw new IllegalArgumentException("First class must be primitive");
+		}
+		
+		return primitive == boolean.class && other == Boolean.class
+			|| primitive == byte.class && other == Byte.class
+			|| primitive == char.class && other == Character.class
+			|| primitive == short.class && other == Short.class
+			|| primitive == int.class && other == Integer.class
+			|| primitive == long.class && other == Long.class
+			|| primitive == float.class && other == Float.class
+			|| primitive == double.class && other == Double.class;
 	}
 	
 	@SuppressWarnings("unchecked")
 	private static <E> @NonNull Constructor<E> findMatchingConstructor(@NonNull Class<E> type, @NonNull List<SqlColumn<E, ?>> sortedColumns) {
+		Objects.requireNonNull(type, "Entity type must not be null");
+		Objects.requireNonNull(sortedColumns, "Sorted columns must not be null");
+		
 		Constructor<?>[] constructors = type.getDeclaredConstructors();
 		
 		for (Constructor<?> constructor : constructors) {
@@ -324,34 +335,34 @@ public class SqlQueryProvider<E> implements AutoCloseable {
 		return this.select(expressions);
 	}
 	
-	public @NonNull SqlInsertQuery<E> insert(@NonNull E entity) {
+	public @NonNull SqlInsertQuery<E> insert(@NonNull E entity) throws SqlException {
 		Objects.requireNonNull(entity, "Entity must not be null");
 		
 		return new SqlInsertQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.of(entity));
 	}
 	
 	@SuppressWarnings("unchecked")
-	public @NonNull SqlInsertQuery<E> insert(E @NonNull ... entities) {
+	public @NonNull SqlInsertQuery<E> insert(E @NonNull ... entities) throws SqlException {
 		Objects.requireNonNull(entities, "Entity array must not be null");
 		
 		return new SqlInsertQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.of(entities));
 	}
 	
-	public @NonNull SqlInsertQuery<E> insert(@NonNull Collection<E> entities) {
+	public @NonNull SqlInsertQuery<E> insert(@NonNull Collection<E> entities) throws SqlException {
 		Objects.requireNonNull(entities, "Entity collection must not be null");
 		
 		return new SqlInsertQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.copyOf(entities));
 	}
 	
 	@SafeVarargs
-	public final @NonNull SqlInsertQuery<E> insertOrIgnore(@NonNull E entity, SqlColumn<E, ?> @NonNull ... conflictColumns) {
+	public final @NonNull SqlInsertQuery<E> insertOrIgnore(@NonNull E entity, SqlColumn<E, ?> @NonNull ... conflictColumns) throws SqlException {
 		Objects.requireNonNull(entity, "Entity must not be null");
 		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
 		
 		return SqlInsertQuery.insertOrIgnore(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.of(entity), List.of(conflictColumns));
 	}
 	
-	public @NonNull SqlInsertQuery<E> insertFromSelect(@NonNull SqlSelectQuery<?> query) {
+	public @NonNull SqlInsertQuery<E> insertFromSelect(@NonNull SqlSelectQuery<?> query) throws SqlException {
 		Objects.requireNonNull(query, "Sql select query must not be null");
 		
 		return SqlInsertQuery.insertFromSelect(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, query);
@@ -370,10 +381,11 @@ public class SqlQueryProvider<E> implements AutoCloseable {
 		if (!this.ownsConnection) {
 			return;
 		}
+		
 		try {
 			this.connection.close();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to close connection for table " + this.table.name(), e);
+			throw new SqlConnectionException("Failed to close connection for sql table '" + this.table.name() + "'", e);
 		}
 	}
 }

@@ -19,7 +19,7 @@
 package net.luis.utils.io.database.type;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
-import net.luis.utils.io.database.exception.type.SqlResultRetrievalException;
+import net.luis.utils.io.database.exception.SqlClientException;
 import net.luis.utils.io.database.type.parameter.*;
 
 import org.jspecify.annotations.NonNull;
@@ -107,7 +107,7 @@ public final class SqlTypes {
 		return INTEGER.map(clazz, nullable(Enum::ordinal), ordinal -> {
 			E[] constants = clazz.getEnumConstants();
 			if (ordinal < 0 || ordinal >= constants.length) {
-				throw new SqlResultRetrievalException("Invalid ordinal value for enum " + clazz.getName() + ": " + ordinal);
+				throw new SqlClientException("Invalid ordinal value for enum " + clazz.getName() + ": " + ordinal);
 			}
 			return constants[ordinal];
 		});

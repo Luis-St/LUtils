@@ -16,27 +16,40 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.dialect;
+package net.luis.utils.io.database.exception.client.dialect;
 
-import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.SqlClientException;
 import org.jspecify.annotations.Nullable;
 
 /**
+ * Thrown for dialect related failures that originate from library logic rather than the database driver.<br>
  *
  * @author Luis-St
- *
  */
-
-public class SqlDialectException extends SqlException {
+public class SqlDialectException extends SqlClientException {
 	
+	/**
+	 * Constructs a new dialect exception with the given detail message.<br>
+	 * @param message The detail message, may be null
+	 */
 	public SqlDialectException(@Nullable String message) {
 		super(message);
 	}
 	
+	/**
+	 * Constructs a new dialect exception with the given detail message and cause.<br>
+	 *
+	 * @param message The detail message, may be null
+	 * @param cause The cause, may be null
+	 */
 	public SqlDialectException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
+	/**
+	 * Constructs a new dialect exception with the given cause.<br>
+	 * @param cause The cause, may be null
+	 */
 	public SqlDialectException(@Nullable Throwable cause) {
 		super(cause);
 	}

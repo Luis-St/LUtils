@@ -21,6 +21,7 @@ package net.luis.utils.io.database.query.row;
 import com.google.common.collect.Lists;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.database.SqlResultMappingException;
 import net.luis.utils.io.database.expression.SqlAliasedExpression;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.table.SqlAliasedColumn;
@@ -148,7 +149,7 @@ public final class SqlRowMapper {
 			try {
 				return constructor.newInstance(args);
 			} catch (Exception e) {
-				throw new SqlException("Failed to construct record " + recordType.getSimpleName() + " from result set", e);
+				throw new SqlResultMappingException("Failed to construct record " + recordType.getSimpleName() + " from result set", e, recordType);
 			}
 		};
 	}

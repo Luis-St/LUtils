@@ -22,7 +22,8 @@ import com.google.common.collect.Maps;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.SqlSchemaIntrospectionException;
+import net.luis.utils.io.database.exception.client.SqlSchemaObjectNotFoundException;
+import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.type.ParameterizedSqlType;
 import net.luis.utils.io.database.type.SqlType;
@@ -302,12 +303,12 @@ public final class SqlMigrationSchema {
 		return this.checkConstraints;
 	}
 	
-	public @NonNull SqlTable<Void> table(@NonNull String name) throws SqlSchemaIntrospectionException {
+	public @NonNull SqlTable<Void> table(@NonNull String name) throws SqlSchemaObjectNotFoundException {
 		Objects.requireNonNull(name, "Sql table name must not be null");
 		
 		SqlTable<Void> table = this.tables.get(name);
 		if (table == null) {
-			throw new SqlSchemaIntrospectionException("Sql table '" + name + "' not found in schema " + this.schema);
+			throw new SqlSchemaObjectNotFoundException("Sql table '" + name + "' not found in schema " + this.schema);
 		}
 		return table;
 	}
@@ -321,29 +322,29 @@ public final class SqlMigrationSchema {
 		return Collections.unmodifiableSet(this.tables.keySet());
 	}
 	
-	public @NonNull SqlColumn<Void, ?> column(@NonNull String tableName, @NonNull String columnName) throws SqlSchemaIntrospectionException {
+	public @NonNull SqlColumn<Void, ?> column(@NonNull String tableName, @NonNull String columnName) throws SqlSchemaObjectNotFoundException {
 		Objects.requireNonNull(tableName, "Sql table name must not be null");
 		Objects.requireNonNull(columnName, "Sql column name must not be null");
 		
 		Map<String, SqlColumn<Void, ?>> tableColumns = this.columns.get(tableName);
 		if (tableColumns == null) {
-			throw new SqlSchemaIntrospectionException("Table '" + tableName + "' not found in schema " + this.schema);
+			throw new SqlSchemaObjectNotFoundException("Table '" + tableName + "' not found in schema " + this.schema);
 		}
 		
 		SqlColumn<Void, ?> column = tableColumns.get(columnName);
 		if (column == null) {
-			throw new SqlSchemaIntrospectionException("Column '" + columnName + "' not found in table " + tableName);
+			throw new SqlSchemaObjectNotFoundException("Column '" + columnName + "' not found in table " + tableName);
 		}
 		return column;
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <C> @NonNull SqlColumn<Void, C> column(@NonNull String tableName, @NonNull String columnName, @NonNull Class<C> type) throws SqlSchemaIntrospectionException {
+	public <C> @NonNull SqlColumn<Void, C> column(@NonNull String tableName, @NonNull String columnName, @NonNull Class<C> type) throws SqlSchemaObjectNotFoundException {
 		Objects.requireNonNull(type, "Type must not be null");
 		
 		SqlColumn<Void, ?> column = this.column(tableName, columnName);
 		if (!type.isAssignableFrom(column.type().javaType())) {
-			throw new SqlSchemaIntrospectionException(
+			throw new SqlSchemaObjectNotFoundException(
 				"Sql column '" + columnName + "' in table " + tableName + " has Java type " + column.type().javaType().getName() + " but requested type was " + type.getName()
 			);
 		}
@@ -358,12 +359,12 @@ public final class SqlMigrationSchema {
 		return tableColumns != null && tableColumns.containsKey(columnName);
 	}
 	
-	public @NonNull @Unmodifiable List<SqlCheckConstraintInfo> checkConstraints(@NonNull String tableName) throws SqlSchemaIntrospectionException {
+	public @NonNull @Unmodifiable List<SqlCheckConstraintInfo> checkConstraints(@NonNull String tableName) throws SqlSchemaObjectNotFoundException {
 		Objects.requireNonNull(tableName, "Sql table name must not be null");
 		
 		List<SqlCheckConstraintInfo> constraints = this.checkConstraints.get(tableName);
 		if (constraints == null) {
-			throw new SqlSchemaIntrospectionException("Sql table '" + tableName + "' not found in schema " + this.schema);
+			throw new SqlSchemaObjectNotFoundException("Sql table '" + tableName + "' not found in schema " + this.schema);
 		}
 		return constraints;
 	}

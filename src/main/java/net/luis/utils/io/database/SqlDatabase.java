@@ -21,9 +21,8 @@ package net.luis.utils.io.database;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.function.throwable.ThrowableSupplier;
 import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.exception.SqlConnectionException;
+import net.luis.utils.io.database.exception.database.SqlConnectionException;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.transaction.SqlTransactionException;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.table.SqlTableProvider;
@@ -106,7 +105,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		try (Connection connection = this.dataSource.getConnection(); Statement statement = connection.createStatement()) {
 			statement.execute(this.dialect.schemaRenderer().renderCreateSchema(name, false).sql());
 		} catch (SQLException e) {
-			throw new SqlException("Failed to create schema " + name, e);
+			throw new SqlException("Failed to create sql schema '" + name + "'", e);
 		}
 	}
 	
@@ -117,7 +116,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		try (Connection connection = this.dataSource.getConnection(); Statement statement = connection.createStatement()) {
 			statement.execute(this.dialect.schemaRenderer().renderCreateSchema(name, true).sql());
 		} catch (SQLException e) {
-			throw new SqlException("Failed to create schema " + name, e);
+			throw new SqlException("Failed to create sql schema '" + name + "'", e);
 		}
 	}
 	
@@ -133,7 +132,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 			}
 			return false;
 		} catch (SQLException e) {
-			throw new SqlException("Failed to check if schema " + name + " exists", e);
+			throw new SqlException("Failed to check if sql schema '" + name + "' exists", e);
 		}
 	}
 	
@@ -144,7 +143,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		try (Connection connection = this.dataSource.getConnection(); Statement statement = connection.createStatement()) {
 			statement.execute(this.dialect.schemaRenderer().renderDropSchema(name, false, cascade).sql());
 		} catch (SQLException e) {
-			throw new SqlException("Failed to drop schema " + name, e);
+			throw new SqlException("Failed to drop sql schema '" + name + "'", e);
 		}
 	}
 	
@@ -157,7 +156,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 			connection = this.dataSource.getConnection();
 			return new SqlTableProvider<>(table, this.dialect, connection, this.queryTimeout);
 		} catch (SQLException e) {
-			throw new SqlConnectionException("Failed to obtain connection for table " + table.name(), e);
+			throw new SqlConnectionException("Failed to obtain connection for sql table " + table.name() + "'", e);
 		} catch (RuntimeException e) {
 			if (connection != null) {
 				try {connection.close();} catch (SQLException suppressed) {e.addSuppressed(suppressed);}
@@ -175,28 +174,32 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 			connection = this.dataSource.getConnection();
 			return new SqlQueryProvider<>(table, this.dialect, connection, this.queryTimeout);
 		} catch (SQLException e) {
-			throw new SqlConnectionException("Failed to obtain connection for table " + table.name(), e);
+			throw new SqlConnectionException("Failed to obtain connection for sql table " + table.name() + "'", e);
 		} catch (RuntimeException e) {
 			if (connection != null) {
-				try {connection.close();} catch (SQLException suppressed) {e.addSuppressed(suppressed);}
+				try {
+					connection.close();
+				} catch (SQLException suppressed) {
+					e.addSuppressed(suppressed);
+				}
 			}
 			throw e;
 		}
 	}
 	
-	public @NonNull SqlTransaction beginTransaction() throws SqlTransactionException {
+	public @NonNull SqlTransaction beginTransaction() throws SqlException {
 		return this.transactionManager.begin(false, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation);
 	}
 	
-	public @NonNull SqlTransaction beginTransaction(@NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlTransactionException {
+	public @NonNull SqlTransaction beginTransaction(@NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlException {
 		return this.transactionManager.begin(false, isolationLevel, propagation);
 	}
 	
-	public @NonNull SqlTransaction beginReadOnlyTransaction() throws SqlTransactionException {
+	public @NonNull SqlTransaction beginReadOnlyTransaction() throws SqlException {
 		return this.transactionManager.begin(true, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation);
 	}
 	
-	public @NonNull SqlTransaction beginReadOnlyTransaction(@NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlTransactionException {
+	public @NonNull SqlTransaction beginReadOnlyTransaction(@NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlException {
 		return this.transactionManager.begin(true, isolationLevel, propagation);
 	}
 	
@@ -207,7 +210,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	}
 	
 	public <T> @UnknownNullability T inTransaction(@NonNull SqlTransaction transaction, @NonNull ThrowableSupplier<T, SqlException> action) throws SqlException {
-		Objects.requireNonNull(action, "Transaction action must not be null");
+		Objects.requireNonNull(action, "Sql transaction action must not be null");
 		return this.inTransaction(transaction, _ -> action.get());
 	}
 	
@@ -219,7 +222,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		} catch (Exception e) {
 			try {
 				transaction.rollback();
-			} catch (SqlTransactionException rollbackEx) {
+			} catch (SqlException rollbackEx) {
 				e.addSuppressed(rollbackEx);
 			}
 			
@@ -230,24 +233,24 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 			if (e instanceof RuntimeException rte) {
 				throw rte;
 			}
-			throw new SqlException("Transaction failed", e);
+			throw new SqlException("Sql transaction failed", e);
 		}
 	}
 	
 	@Override
-	public void close() throws SqlConnectionException {
+	public void close() throws SqlException {
 		if (this.autoCloseDataSource) {
 			if (this.dataSource instanceof Closeable closeable) {
 				try {
 					closeable.close();
 				} catch (Exception e) {
-					throw new SqlConnectionException("Failed to close data source", e);
+					throw new SqlException("Failed to close data source", e);
 				}
 			} else if (this.dataSource instanceof AutoCloseable autoCloseable) {
 				try {
 					autoCloseable.close();
 				} catch (Exception e) {
-					throw new SqlConnectionException("Failed to close data source", e);
+					throw new SqlException("Failed to close data source", e);
 				}
 			}
 		}

@@ -16,27 +16,29 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.transaction;
+package net.luis.utils.io.database.exception.database;
 
+import net.luis.utils.io.database.exception.SqlDatabaseException;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.sql.SQLException;
+
 /**
+ * Thrown when the database rejects a connection or statement due to an invalid authorization specification ({@code SQLState} class {@code 28}).<br>
  *
  * @author Luis-St
- *
  */
-
-public class SqlTransactionRollbackException extends SqlTransactionException {
+public class SqlAuthorizationException extends SqlDatabaseException {
 	
-	public SqlTransactionRollbackException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlTransactionRollbackException(@Nullable String message, @Nullable Throwable cause) {
+	/**
+	 * Constructs a new {@code SqlAuthorizationException} from the given message and cause.<br>
+	 *
+	 * @param message The detail message, may be null
+	 * @param cause The sql exception cause
+	 * @throws NullPointerException If the cause is null
+	 */
+	public SqlAuthorizationException(@Nullable String message, @NonNull SQLException cause) {
 		super(message, cause);
-	}
-	
-	public SqlTransactionRollbackException(@Nullable Throwable cause) {
-		super(cause);
 	}
 }

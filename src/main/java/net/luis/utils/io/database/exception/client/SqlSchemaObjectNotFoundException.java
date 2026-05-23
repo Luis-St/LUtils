@@ -16,27 +16,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.transaction;
+package net.luis.utils.io.database.exception.client;
 
+import net.luis.utils.io.database.exception.SqlClientException;
 import org.jspecify.annotations.Nullable;
 
 /**
+ * Thrown when a referenced table or column cannot be found in the introspected schema.<br>
  *
  * @author Luis-St
- *
  */
-
-public class SqlTransactionPropagationException extends SqlTransactionException {
+public class SqlSchemaObjectNotFoundException extends SqlClientException {
 	
-	public SqlTransactionPropagationException(@Nullable String message) {
+	/**
+	 * Constructs a new {@code SqlSchemaObjectNotFoundException} with the given detail message.<br>
+	 * @param message The detail message, may be null
+	 */
+	public SqlSchemaObjectNotFoundException(@Nullable String message) {
 		super(message);
 	}
 	
-	public SqlTransactionPropagationException(@Nullable String message, @Nullable Throwable cause) {
+	/**
+	 * Constructs a new {@code SqlSchemaObjectNotFoundException} with the given detail message and cause.<br>
+	 *
+	 * @param message The detail message, may be null
+	 * @param cause The cause, may be null
+	 */
+	public SqlSchemaObjectNotFoundException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
-	}
-	
-	public SqlTransactionPropagationException(@Nullable Throwable cause) {
-		super(cause);
 	}
 }

@@ -19,7 +19,7 @@
 package net.luis.utils.io.database;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.exception.SqlConnectionException;
+import net.luis.utils.io.database.exception.database.SqlConnectionException;
 import net.luis.utils.io.database.transaction.SqlIsolationLevel;
 import net.luis.utils.io.database.transaction.SqlPropagation;
 import org.jspecify.annotations.NonNull;

@@ -23,7 +23,8 @@ import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectFeatureException;
+import net.luis.utils.io.database.exception.database.SqlQueryExecutionException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.type.SqlType;
@@ -68,7 +69,7 @@ final class SqlQueryExecutor {
 			statement.setQueryTimeout((int) Math.min(seconds, Integer.MAX_VALUE));
 			return statement;
 		} catch (SQLException e) {
-			throw new SqlException("Failed to prepare statement with generated keys: " + rendered.sql(), e);
+			throw new SqlQueryExecutionException("Failed to prepare statement with generated keys: " + rendered.sql(), e, rendered.sql());
 		}
 	}
 	
@@ -77,6 +78,8 @@ final class SqlQueryExecutor {
 			return mapper.apply(resultSet);
 		} catch (SqlException e) {
 			throw e;
+		} catch (SQLException e) {
+			throw new SqlQueryExecutionException("Failed to execute scalar query: " + rendered.sql(), e, rendered.sql());
 		} catch (Exception e) {
 			throw new SqlException("Failed to execute scalar query: " + rendered.sql(), e);
 		}
@@ -86,12 +89,16 @@ final class SqlQueryExecutor {
 		try (PreparedStatement statement = prepare(dialect, connection, rendered, timeout, false)) {
 			return statement.executeUpdate();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to execute update: " + rendered.sql(), e);
+			throw new SqlQueryExecutionException("Failed to execute update: " + rendered.sql(), e, rendered.sql());
 		}
 	}
 	
 	static <T> @NonNull List<T> executeQueryAndMap(
-		@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout, @NonNull ThrowableFunction<ResultSet, T, SqlException> rowMapper
+		@NonNull SqlDialect dialect,
+		@NonNull Connection connection,
+		@NonNull SqlRendered rendered,
+		@NonNull Duration timeout,
+		@NonNull ThrowableFunction<ResultSet, T, SqlException> rowMapper
 	) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(connection, "Connection must not be null");
@@ -107,13 +114,20 @@ final class SqlQueryExecutor {
 			return results;
 		} catch (SqlException e) {
 			throw e;
+		} catch (SQLException e) {
+			throw new SqlQueryExecutionException("Failed to map result set", e, rendered.sql());
 		} catch (Exception e) {
 			throw new SqlException("Failed to map result set", e);
 		}
 	}
 	
 	static <T> @NonNull List<T> executeReturningQuery(
-		@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered query, @NonNull SqlRendered returning, @NonNull Duration timeout, @NonNull ThrowableFunction<ResultSet, T, SqlException> rowMapper
+		@NonNull SqlDialect dialect,
+		@NonNull Connection connection,
+		@NonNull SqlRendered query,
+		@NonNull SqlRendered returning,
+		@NonNull Duration timeout,
+		@NonNull ThrowableFunction<ResultSet, T, SqlException> rowMapper
 	) throws SqlException {
 		if (!dialect.isFeatureSupported(SqlFeature.RETURNING)) {
 			throw new SqlDialectFeatureException(SqlFeature.RETURNING, dialect);

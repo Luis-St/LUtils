@@ -19,8 +19,8 @@
 package net.luis.utils.io.database.type;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
-import net.luis.utils.io.database.exception.type.SqlResultRetrievalException;
-import net.luis.utils.io.database.exception.type.SqlStatementBindException;
+import net.luis.utils.io.database.exception.SqlClientException;
+import net.luis.utils.io.database.exception.database.statement.SqlStatementBindException;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -38,13 +38,13 @@ public final class MappedParameterizableSqlType<S, T, P extends SqlParameter> im
 	private final ParameterizableSqlType<S, P> sourceType;
 	private final Class<T> javaType;
 	private final ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource;
-	private final ThrowableFunction<@NonNull S, @Nullable T, SqlResultRetrievalException> fromSourceToTarget;
+	private final ThrowableFunction<@NonNull S, @Nullable T, SqlClientException> fromSourceToTarget;
 	
 	MappedParameterizableSqlType(
 		@NonNull ParameterizableSqlType<S, P> sourceType,
 		@NonNull Class<T> javaType,
 		@NonNull ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource,
-		@NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlResultRetrievalException> fromSourceToTarget
+		@NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlClientException> fromSourceToTarget
 	) {
 		this.sourceType = Objects.requireNonNull(sourceType, "Source type must not be null");
 		this.javaType = Objects.requireNonNull(javaType, "Java type must not be null");
@@ -64,7 +64,7 @@ public final class MappedParameterizableSqlType<S, T, P extends SqlParameter> im
 		return this.fromTargetToSource;
 	}
 	
-	public @NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlResultRetrievalException> fromSourceToTarget() {
+	public @NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlClientException> fromSourceToTarget() {
 		return this.fromSourceToTarget;
 	}
 	

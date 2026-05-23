@@ -23,6 +23,7 @@ import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.SqlJoinableQuery;
 import net.luis.utils.io.database.query.SqlQuery;
@@ -215,7 +216,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	
 	public int execute() throws SqlException {
 		if (this.whereCondition == null && !this.allowAll) {
-			throw new SqlException("UPDATE without WHERE clause would affect all rows; call allowAll() to confirm this is intentional");
+			throw new SqlStatementBuilderException("UPDATE without WHERE clause would affect all rows; call allowAll() to confirm this is intentional");
 		}
 		return SqlQueryExecutor.executeUpdate(this.dialect, this.connection, this.toSql(this.dialect), this.queryTimeout);
 	}
@@ -230,7 +231,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		if (this.setClauses.isEmpty()) {
-			throw new SqlException("Sql update query must have at least one SET clause");
+			throw new SqlStatementBuilderException("Sql update query must have at least one SET clause");
 		}
 		
 		SqlRenderer renderer = SqlRenderer.empty();

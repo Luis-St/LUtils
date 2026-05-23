@@ -16,28 +16,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.transaction;
+package net.luis.utils.io.database.exception.client;
 
-import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.SqlClientException;
 import org.jspecify.annotations.Nullable;
 
 /**
+ * Thrown when no sql type can be resolved for a given java type.<br>
  *
  * @author Luis-St
- *
  */
-
-public class SqlTransactionException extends SqlException {
+public class SqlTypeNotFoundException extends SqlClientException {
 	
-	public SqlTransactionException(@Nullable String message) {
+	/**
+	 * Constructs a new {@code SqlTypeNotFoundException} with the given detail message.<br>
+	 * @param message The detail message, may be null
+	 */
+	public SqlTypeNotFoundException(@Nullable String message) {
 		super(message);
 	}
 	
-	public SqlTransactionException(@Nullable String message, @Nullable Throwable cause) {
+	/**
+	 * Constructs a new {@code SqlTypeNotFoundException} with the given detail message and cause.<br>
+	 *
+	 * @param message The detail message, may be null
+	 * @param cause The cause, may be null
+	 */
+	public SqlTypeNotFoundException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
-	}
-	
-	public SqlTransactionException(@Nullable Throwable cause) {
-		super(cause);
 	}
 }

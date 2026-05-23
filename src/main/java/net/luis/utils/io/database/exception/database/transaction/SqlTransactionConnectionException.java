@@ -16,27 +16,29 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.type;
+package net.luis.utils.io.database.exception.database.transaction;
 
+import net.luis.utils.io.database.exception.SqlDatabaseException;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.sql.SQLException;
+
 /**
+ * Thrown when acquiring a connection or toggling its auto-commit state for a transaction fails at the driver level.<br>
  *
  * @author Luis-St
- *
  */
-
-public class SqlStatementBindException extends SqlTypeException {
+public class SqlTransactionConnectionException extends SqlDatabaseException {
 	
-	public SqlStatementBindException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlStatementBindException(@Nullable String message, @Nullable Throwable cause) {
+	/**
+	 * Constructs a new {@code SqlTransactionConnectionException} from the given message and cause.<br>
+	 *
+	 * @param message The detail message, may be null
+	 * @param cause The sql exception cause
+	 * @throws NullPointerException If the cause is null
+	 */
+	public SqlTransactionConnectionException(@Nullable String message, @NonNull SQLException cause) {
 		super(message, cause);
-	}
-	
-	public SqlStatementBindException(@Nullable Throwable cause) {
-		super(cause);
 	}
 }

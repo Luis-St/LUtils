@@ -16,27 +16,29 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception;
+package net.luis.utils.io.database.exception.database.concurrency;
 
+import net.luis.utils.io.database.exception.SqlDatabaseException;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.sql.SQLException;
+
 /**
+ * Thrown when a database operation times out before completing; the failure is transient.<br>
  *
  * @author Luis-St
- *
  */
-
-public class SqlConnectionException extends SqlException {
+public class SqlTimeoutException extends SqlDatabaseException {
 	
-	public SqlConnectionException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlConnectionException(@Nullable String message, @Nullable Throwable cause) {
-		super(message, cause);
-	}
-	
-	public SqlConnectionException(@Nullable Throwable cause) {
-		super(cause);
+	/**
+	 * Constructs a new {@code SqlTimeoutException} from the given message and cause.<br>
+	 *
+	 * @param message The detail message, may be null
+	 * @param cause The sql exception cause
+	 * @throws NullPointerException If the cause is null
+	 */
+	public SqlTimeoutException(@Nullable String message, @NonNull SQLException cause) {
+		super(message, cause, true);
 	}
 }

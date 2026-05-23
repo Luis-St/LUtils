@@ -21,7 +21,12 @@ package net.luis.utils.io.database.transaction;
 import net.luis.utils.io.database.SqlProvider;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.transaction.*;
+import net.luis.utils.io.database.exception.SqlClientException;
+import net.luis.utils.io.database.exception.client.transaction.SqlTransactionStateException;
+import net.luis.utils.io.database.exception.database.transaction.SqlTransactionConnectionException;
+import net.luis.utils.io.database.exception.database.transaction.SqlTransactionCommitException;
+import net.luis.utils.io.database.exception.database.transaction.SqlTransactionRollbackException;
+import net.luis.utils.io.database.exception.database.transaction.SqlTransactionSavepointException;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.table.SqlTableProvider;
@@ -38,7 +43,7 @@ import java.util.*;
  *
  */
 
-// Not thread-safe — instances must be confined to a single thread
+// Not thread-safe - instances must be confined to a single thread
 @SuppressWarnings("SqlSourceToSinkFlow")
 public class SqlTransaction implements SqlProvider, AutoCloseable {
 	
@@ -139,9 +144,9 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		return this.state == SqlTransactionState.ROLLED_BACK;
 	}
 	
-	public void commit() throws SqlTransactionException {
+	public void commit() throws SqlException {
 		if (!this.isActive()) {
-			throw new SqlTransactionException("Transaction is not active");
+			throw new SqlTransactionStateException("Sql transaction is not active");
 		}
 		if (this.nonTransactional) {
 			return;
@@ -170,9 +175,9 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		}
 	}
 	
-	public void rollback() throws SqlTransactionException {
+	public void rollback() throws SqlException {
 		if (!this.isActive()) {
-			throw new SqlTransactionException("Transaction is not active");
+			throw new SqlTransactionStateException("Sql transaction is not active");
 		}
 		if (this.nonTransactional) {
 			return;
@@ -189,7 +194,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		}
 		
 		if (!this.ownsCommit) {
-			throw new SqlTransactionException("Joining transaction must not rollback the outer transaction");
+			throw new SqlTransactionStateException("Joining transaction must not rollback the outer transaction");
 		}
 		
 		try {
@@ -200,15 +205,15 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		}
 	}
 	
-	public void rollbackTo(@NonNull SqlSavepoint savepoint) throws SqlTransactionException {
-		Objects.requireNonNull(savepoint, "Savepoint must not be null");
+	public void rollbackTo(@NonNull SqlSavepoint savepoint) throws SqlException {
+		Objects.requireNonNull(savepoint, "Sql savepoint must not be null");
 		if (!this.isActive()) {
-			throw new SqlTransactionException("Transaction is not active");
+			throw new SqlTransactionStateException("Sql transaction is not active");
 		}
 		
 		Savepoint jdbcSavepoint = this.savepoints.get(savepoint.name());
 		if (jdbcSavepoint == null) {
-			throw new SqlTransactionSavepointException("Savepoint '" + savepoint.name() + "' not found");
+			throw new SqlTransactionStateException("Sql savepoint '" + savepoint.name() + "' not found");
 		}
 		
 		try {
@@ -218,16 +223,16 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		}
 	}
 	
-	public @NonNull SqlSavepoint savepoint(@NonNull String name) throws SqlTransactionException {
-		Objects.requireNonNull(name, "Savepoint name must not be null");
+	public @NonNull SqlSavepoint savepoint(@NonNull String name) throws SqlException {
+		Objects.requireNonNull(name, "Sql savepoint name must not be null");
 		if (!this.isActive()) {
-			throw new SqlTransactionException("Transaction is not active");
+			throw new SqlTransactionStateException("Sql transaction is not active");
 		}
 		if (this.savepoints.containsKey(name)) {
-			throw new SqlTransactionSavepointException("Savepoint with name '" + name + "' already exists");
+			throw new SqlTransactionStateException("Sql savepoint with name '" + name + "' already exists");
 		}
 		if (this.nonTransactional) {
-			throw new SqlTransactionSavepointException("Cannot create savepoint in non-transactional execution");
+			throw new SqlTransactionStateException("Cannot create savepoint in non-transactional execution");
 		}
 		
 		try {
@@ -246,7 +251,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		try (Statement statement = this.connection.createStatement()) {
 			statement.execute(this.dialect.schemaRenderer().renderCreateSchema(name, false).sql());
 		} catch (SQLException e) {
-			throw new SqlException("Failed to create schema " + name, e);
+			throw new SqlException("Failed to create sql schema '" + name + "'", e);
 		}
 	}
 	
@@ -257,7 +262,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		try (Statement statement = this.connection.createStatement()) {
 			statement.execute(this.dialect.schemaRenderer().renderCreateSchema(name, true).sql());
 		} catch (SQLException e) {
-			throw new SqlException("Failed to create schema " + name, e);
+			throw new SqlException("Failed to create sql schema '" + name + "'", e);
 		}
 	}
 	
@@ -273,7 +278,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 			}
 			return false;
 		} catch (SQLException e) {
-			throw new SqlException("Failed to check if schema " + name + " exists", e);
+			throw new SqlException("Failed to check if sql schema '" + name + "' exists", e);
 		}
 	}
 	
@@ -284,7 +289,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		try (Statement statement = this.connection.createStatement()) {
 			statement.execute(this.dialect.schemaRenderer().renderDropSchema(name, false, cascade).sql());
 		} catch (SQLException e) {
-			throw new SqlException("Failed to drop schema " + name, e);
+			throw new SqlException("Failed to drop sql schema '" + name + "'", e);
 		}
 	}
 	
@@ -301,7 +306,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	}
 	
 	@Override
-	public void close() throws SqlTransactionException {
+	public void close() throws SqlException {
 		try {
 			try {
 				if (this.isActive() && this.ownsCommit && !this.nonTransactional) {
@@ -322,13 +327,13 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 				}
 			}
 		} catch (SQLException e) {
-			throw new SqlTransactionException("Failed to close transaction", e);
+			throw new SqlTransactionConnectionException("Failed to close transaction", e);
 		} finally {
 			if (this.onClose != null) {
 				try {
 					this.onClose.run();
 				} catch (RuntimeException e) {
-					throw new SqlTransactionException("onClose callback failed", e);
+					throw new SqlClientException("onClose callback failed", e);
 				}
 			}
 		}

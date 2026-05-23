@@ -24,7 +24,9 @@ import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectFeatureException;
+import net.luis.utils.io.database.exception.client.SqlResultCountException;
+import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.orderable.OrderedSqlExpression;
 import net.luis.utils.io.database.expression.orderable.SqlOrderable;
@@ -195,11 +197,12 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	
 	public @NonNull SqlSelectQuery<E> skipLocked() throws SqlException {
 		if (this.lockMode == null) {
-			throw new SqlException("skipLocked() requires a lock mode to be set first (e.g. forUpdate() or forShare())");
+			throw new SqlStatementBuilderException("skipLocked() requires a lock mode to be set first (e.g. forUpdate() or forShare())");
 		}
 		if (!this.dialect.isFeatureSupported(SqlFeature.SKIP_LOCKED)) {
 			throw new SqlDialectFeatureException(SqlFeature.SKIP_LOCKED, this.dialect);
 		}
+		
 		return this.copy(
 			this.joins,
 			this.groupByColumns,
@@ -224,7 +227,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	
 	public @NonNull SqlSelectQuery<E> noWait() throws SqlException {
 		if (this.lockMode == null) {
-			throw new SqlException("noWait() requires a lock mode to be set first (e.g. forUpdate() or forShare())");
+			throw new SqlStatementBuilderException("noWait() requires a lock mode to be set first (e.g. forUpdate() or forShare())");
 		}
 		if (!this.dialect.isFeatureSupported(SqlFeature.NO_WAIT)) {
 			throw new SqlDialectFeatureException(SqlFeature.NO_WAIT, this.dialect);
@@ -344,7 +347,6 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		);
 	}
 	
-	@SafeVarargs
 	public final @NonNull SqlSelectQuery<E> groupBy(SqlColumn<?, ?> @NonNull ... columns) {
 		Objects.requireNonNull(columns, "Group by sql columns must not be null");
 		
@@ -547,10 +549,10 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		);
 	}
 	
-	public <R> @NonNull SqlSelectQuery<R> projectInto(@NonNull Class<R> type) {
+	public <R> @NonNull SqlSelectQuery<R> projectInto(@NonNull Class<R> type) throws SqlException {
 		Objects.requireNonNull(type, "Sql projection type must not be null");
 		if (this.selectedExpressions.isEmpty()) {
-			throw new IllegalStateException("Cannot project into " + type.getSimpleName() + ": No expressions selected");
+			throw new SqlStatementBuilderException("Cannot project into " + type.getSimpleName() + ": No expressions selected");
 		}
 		
 		ThrowableFunction<ResultSet, R, SqlException> projectionMapper = SqlRowMapper.forProjection(type, this.selectedExpressions);
@@ -620,7 +622,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		List<E> results = this.limit(2).executeAndMap();
 		
 		if (results.size() != 1) {
-			throw new SqlException("Expected exactly one result but got " + (results.size() >= 2 ? "more than 1" : "0"));
+			throw new SqlResultCountException("Expected exactly one result but got " + (results.size() >= 2 ? "more than 1" : "0"), 1, results.size());
 		}
 		return results.getFirst();
 	}
@@ -629,7 +631,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		List<E> results = this.limit(2).executeAndMap();
 		
 		if (results.size() > 1) {
-			throw new SqlException("Expected at most one result but got more than 1");
+			throw new SqlResultCountException("Expected at most one result but got more than 1", 1, results.size());
 		}
 		return results.isEmpty() ? null : results.getFirst();
 	}
@@ -660,7 +662,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 			throw new IllegalArgumentException("Page size must be positive");
 		}
 		if (this.orderByClauses.isEmpty()) {
-			throw new SqlException("Pagination requires an ORDER BY clause for deterministic results");
+			throw new SqlStatementBuilderException("Pagination requires an ORDER BY clause for deterministic results");
 		}
 		
 		List<E> results = this.offset((long) page * pageSize).limit(pageSize + 1).executeAndMap();
@@ -780,7 +782,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		
 		if (this.lockMode != null) {
 			if (this.skipLocked && this.lockMode == SqlLockMode.FOR_SHARE) {
-				throw new SqlException("Skip locked is only allowed with FOR UPDATE lock mode");
+				throw new SqlStatementBuilderException("Skip locked is only allowed with FOR UPDATE lock mode");
 			}
 			renderer.rendered(dialect.renderLockClause(this.lockMode, this.skipLocked, this.noWait));
 		}

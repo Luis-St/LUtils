@@ -16,28 +16,29 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.exception.type;
+package net.luis.utils.io.database.exception.database.statement;
 
-import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.SqlDatabaseException;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.sql.SQLException;
+
 /**
+ * Thrown when the database rejects a statement due to a syntax error or access rule violation ({@code SQLState} class {@code 42}).<br>
  *
  * @author Luis-St
- *
  */
-
-public class SqlResultRetrievalException extends SqlException {
+public class SqlSyntaxException extends SqlDatabaseException {
 	
-	public SqlResultRetrievalException(@Nullable String message) {
-		super(message);
-	}
-	
-	public SqlResultRetrievalException(@Nullable String message, @Nullable Throwable cause) {
+	/**
+	 * Constructs a new {@code SqlSyntaxException} from the given message and cause.<br>
+	 *
+	 * @param message The detail message, may be null
+	 * @param cause The sql exception cause
+	 * @throws NullPointerException If the cause is null
+	 */
+	public SqlSyntaxException(@Nullable String message, @NonNull SQLException cause) {
 		super(message, cause);
-	}
-	
-	public SqlResultRetrievalException(@Nullable Throwable cause) {
-		super(cause);
 	}
 }

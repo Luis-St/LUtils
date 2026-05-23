@@ -23,7 +23,7 @@ import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.renderer.*;
 import net.luis.utils.io.database.dialect.renderer.expression.function.SqlTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.temporal.*;
 import net.luis.utils.io.database.query.SqlLockMode;

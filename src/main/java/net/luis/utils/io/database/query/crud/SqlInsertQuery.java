@@ -21,6 +21,7 @@ package net.luis.utils.io.database.query.crud;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
 import net.luis.utils.io.database.query.SqlQuery;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
@@ -59,7 +60,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	
 	public SqlInsertQuery(
 		@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<E> entities
-	) {
+	) throws SqlStatementBuilderException {
 		Objects.requireNonNull(entities, "Entities must not be null");
 		this(table, dialect, connection, queryTimeout, rowMapper, List.copyOf(entities), null, null, null, false, false, false);
 	}
@@ -77,7 +78,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		boolean isUpsert,
 		boolean isInsertOrIgnore,
 		boolean isInsertFromSelect
-	) {
+	) throws SqlStatementBuilderException {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
@@ -96,35 +97,35 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		}
 		
 		if (isUpsert && isInsertOrIgnore) {
-			throw new IllegalArgumentException("Upsert and insert or ignore are mutually exclusive");
+			throw new SqlStatementBuilderException("Upsert and insert or ignore are mutually exclusive");
 		}
-		
+
 		if (isUpsert && conflictColumn == null) {
-			throw new IllegalArgumentException("Conflict column must be specified for upsert queries");
+			throw new SqlStatementBuilderException("Conflict column must be specified for upsert queries");
 		}
-		
+
 		if (isInsertOrIgnore) {
 			if (conflictColumns == null || conflictColumns.isEmpty()) {
-				throw new IllegalArgumentException("Conflict columns must be specified for insert or ignore queries");
+				throw new SqlStatementBuilderException("Conflict columns must be specified for insert or ignore queries");
 			}
 		}
-		
+
 		if (isInsertFromSelect && fromSelect == null) {
-			throw new IllegalArgumentException("From select query must be specified for insert from select queries");
+			throw new SqlStatementBuilderException("From select query must be specified for insert from select queries");
 		}
 	}
 	
 	public static <E> @NonNull SqlInsertQuery<E> insertOrIgnore(
 		@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout,
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<E> entities, @NonNull List<SqlColumn<E, ?>> conflictColumns
-	) {
+	) throws SqlStatementBuilderException {
 		return new SqlInsertQuery<>(table, dialect, connection, queryTimeout, rowMapper, List.copyOf(entities), null, null, List.copyOf(conflictColumns), false, true, false);
 	}
 	
 	public static <E> @NonNull SqlInsertQuery<E> upsert(
 		@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout,
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<E> entities, @NonNull SqlColumn<E, ?> conflictColumn
-	) {
+	) throws SqlStatementBuilderException {
 		Objects.requireNonNull(conflictColumn, "Conflict column must not be null");
 		return new SqlInsertQuery<>(table, dialect, connection, queryTimeout, rowMapper, List.copyOf(entities), null, conflictColumn, null, true, false, false);
 	}
@@ -132,7 +133,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	public static <E> @NonNull SqlInsertQuery<E> insertFromSelect(
 		@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout,
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull SqlSelectQuery<?> fromSelect
-	) {
+	) throws SqlStatementBuilderException {
 		return new SqlInsertQuery<>(table, dialect, connection, queryTimeout, rowMapper, List.of(), fromSelect, null, null, false, false, true);
 	}
 	
@@ -182,11 +183,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		renderer.closingBracket();
 		
 		if (this.isInsertFromSelect) {
-			if (this.fromSelect == null) {
-				throw new SqlException("From select query must be specified for insert from select queries");
-			}
-			
-			renderer.rendered(this.fromSelect.toSql(dialect));
+			renderer.rendered(Objects.requireNonNull(this.fromSelect, "From select query must not be null").toSql(dialect));
 		} else {
 			renderer.values();
 			for (int e = 0; e < this.entities.size(); e++) {
@@ -215,19 +212,11 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		}
 		
 		if (this.isUpsert) {
-			if (this.conflictColumn == null) {
-				throw new SqlException("Conflict column must be specified for upsert queries");
-			}
-			
-			renderer.rendered(dialect.renderUpsertClause(this.conflictColumn, (List<SqlColumn<?, ?>>) (List<?>) columns));
+			renderer.rendered(dialect.renderUpsertClause(Objects.requireNonNull(this.conflictColumn, "Conflict column must not be null"), (List<SqlColumn<?, ?>>) (List<?>) columns));
 		}
-		
+
 		if (this.isInsertOrIgnore) {
-			if (this.conflictColumns == null || this.conflictColumns.isEmpty()) {
-				throw new SqlException("Conflict columns must be specified for insert or ignore queries");
-			}
-			
-			SqlRendered suffix = dialect.renderInsertOrIgnoreSuffix((List<SqlColumn<?, ?>>) (List<?>) this.conflictColumns);
+			SqlRendered suffix = dialect.renderInsertOrIgnoreSuffix((List<SqlColumn<?, ?>>) (List<?>) Objects.requireNonNull(this.conflictColumns, "Conflict columns must not be null"));
 			if (!suffix.sql().isEmpty()) {
 				renderer.rendered(suffix);
 			}

@@ -21,7 +21,7 @@ package net.luis.utils.io.database.dialect.renderer.expression.function;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.renderer.SqlRenderingHelper;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.function.functions.SqlAggregateFunction;
 import net.luis.utils.io.database.function.functions.aggregate.*;
 import net.luis.utils.io.database.rendering.SqlRendered;

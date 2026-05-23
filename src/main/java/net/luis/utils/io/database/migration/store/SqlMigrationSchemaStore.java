@@ -21,6 +21,7 @@ package net.luis.utils.io.database.migration.store;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.database.SqlMigrationExecutionException;
 import net.luis.utils.io.database.migration.*;
 import net.luis.utils.io.database.type.parameter.*;
 import net.luis.utils.util.Version;
@@ -98,7 +99,7 @@ public class SqlMigrationSchemaStore {
 			statement.execute(this.dialect.getCreateSchemaColumnsTableSql());
 			statement.execute(this.dialect.getCreateSchemaCheckConstraintsTableSql());
 		} catch (SQLException e) {
-			throw new SqlException("Failed to initialize schema store tables", e);
+			throw new SqlMigrationExecutionException("Failed to initialize schema store tables", e);
 		}
 	}
 	
@@ -117,7 +118,7 @@ public class SqlMigrationSchemaStore {
 				throw e;
 			}
 		} catch (SQLException e) {
-			throw new SqlException("Failed to save schema snapshot for version " + version, e);
+			throw new SqlMigrationExecutionException("Failed to save schema snapshot for version " + version, e);
 		}
 	}
 	
@@ -147,7 +148,7 @@ public class SqlMigrationSchemaStore {
 			}
 			statement.executeBatch();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to save column infos for version " + version, e);
+			throw new SqlMigrationExecutionException("Failed to save column infos for version " + version, e);
 		}
 		
 		try (PreparedStatement statement = connection.prepareStatement(this.dialect.getInsertSchemaCheckConstraintSql())) {
@@ -165,7 +166,7 @@ public class SqlMigrationSchemaStore {
 			
 			statement.executeBatch();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to save check constraints for version " + version, e);
+			throw new SqlMigrationExecutionException("Failed to save check constraints for version " + version, e);
 		}
 	}
 	
@@ -194,7 +195,7 @@ public class SqlMigrationSchemaStore {
 				}
 			}
 		} catch (SQLException e) {
-			throw new SqlException("Failed to load column infos for version " + version, e);
+			throw new SqlMigrationExecutionException("Failed to load column infos for version " + version, e);
 		}
 		
 		if (columnInfos.isEmpty()) {
@@ -215,7 +216,7 @@ public class SqlMigrationSchemaStore {
 				}
 			}
 		} catch (SQLException e) {
-			throw new SqlException("Failed to load check constraints for version " + version, e);
+			throw new SqlMigrationExecutionException("Failed to load check constraints for version " + version, e);
 		}
 		return new SqlSchemaSnapshot(List.copyOf(columnInfos), Collections.unmodifiableMap(checkConstraints));
 	}
@@ -233,7 +234,7 @@ public class SqlMigrationSchemaStore {
 				throw e;
 			}
 		} catch (SQLException e) {
-			throw new SqlException("Failed to delete schema snapshot for version " + version, e);
+			throw new SqlMigrationExecutionException("Failed to delete schema snapshot for version " + version, e);
 		}
 	}
 	
@@ -246,14 +247,14 @@ public class SqlMigrationSchemaStore {
 			statement.setString(1, versionStr);
 			statement.executeUpdate();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to delete column infos for version " + version, e);
+			throw new SqlMigrationExecutionException("Failed to delete column infos for version " + version, e);
 		}
 		
 		try (PreparedStatement statement = connection.prepareStatement(this.dialect.getDeleteSchemaCheckConstraintsSql())) {
 			statement.setString(1, versionStr);
 			statement.executeUpdate();
 		} catch (SQLException e) {
-			throw new SqlException("Failed to delete check constraints for version " + version, e);
+			throw new SqlMigrationExecutionException("Failed to delete check constraints for version " + version, e);
 		}
 	}
 }
