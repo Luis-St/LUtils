@@ -160,9 +160,7 @@ public class SqlMigrationBuilder {
 			return;
 		}
 		
-		try (SqlQueryProvider<E> provider = this.context.from(table)) {
-			action.accept(provider);
-		}
+		action.accept(this.context.from(table));
 	}
 	
 	@NonNull List<SqlMigrationOperation> getOperations() {

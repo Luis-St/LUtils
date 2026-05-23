@@ -19,12 +19,13 @@
 package net.luis.utils.io.database.table;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.database.SqlConnectionHandle;
+import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.SqlExceptions;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectException;
-import net.luis.utils.io.database.exception.database.SqlConnectionException;
 import net.luis.utils.io.database.exception.database.SqlQueryExecutionException;
 import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.index.SqlIndex;
@@ -46,30 +47,24 @@ import java.util.*;
  *
  */
 
-public class SqlTableProvider<E> implements AutoCloseable {
+public class SqlTableProvider<E> {
 	
 	private final SqlTable<E> table;
 	private final SqlDialect dialect;
-	private final Connection connection;
+	private final SqlConnectionSource connectionSource;
 	private final Duration queryTimeout;
-	private final boolean ownsConnection;
 	
-	public SqlTableProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout) {
-		this(table, dialect, connection, queryTimeout, true);
-	}
-	
-	public SqlTableProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, boolean ownsConnection) {
+	public SqlTableProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout) {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
+		this.connectionSource = Objects.requireNonNull(connectionSource, "Sql connection source must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
-		this.ownsConnection = ownsConnection;
 	}
 	
 	private void executeStatement(@NonNull SqlRendered rendered) throws SqlException {
 		Objects.requireNonNull(rendered, "Sql rendered must not be null");
 		
-		try (PreparedStatement statement = this.connection.prepareStatement(rendered.sql())) {
+		try (SqlConnectionHandle handle = this.connectionSource.open(); PreparedStatement statement = handle.connection().prepareStatement(rendered.sql())) {
 			List<Pair<SqlType<?>, Object>> parameters = rendered.parameters();
 			
 			for (int i = 0; i < parameters.size(); i++) {
@@ -97,7 +92,7 @@ public class SqlTableProvider<E> implements AutoCloseable {
 	}
 	
 	public boolean exists() throws SqlException {
-		try (ResultSet resultSet = this.connection.getMetaData().getTables(null, this.table.schema(), this.table.name(), new String[] { "TABLE" })) {
+		try (SqlConnectionHandle handle = this.connectionSource.open(); ResultSet resultSet = handle.connection().getMetaData().getTables(null, this.table.schema(), this.table.name(), new String[] { "TABLE" })) {
 			return resultSet.next();
 		} catch (SQLException e) {
 			throw SqlExceptions.translate("Failed to check if table '" + this.table.name() + "' exists", e);
@@ -147,7 +142,7 @@ public class SqlTableProvider<E> implements AutoCloseable {
 	}
 	
 	public @NonNull @Unmodifiable List<SqlIndex> getIndexes() throws SqlException {
-		try (ResultSet resultSet = this.connection.getMetaData().getIndexInfo(null, this.table.schema(), this.table.name(), false, false)) {
+		try (SqlConnectionHandle handle = this.connectionSource.open(); ResultSet resultSet = handle.connection().getMetaData().getIndexInfo(null, this.table.schema(), this.table.name(), false, false)) {
 			Map<String, List<SqlColumn<?, ?>>> indexColumns = new LinkedHashMap<>();
 			Map<String, Boolean> indexUnique = new LinkedHashMap<>();
 			
@@ -186,17 +181,5 @@ public class SqlTableProvider<E> implements AutoCloseable {
 	public void dropIndex(@NonNull String name) throws SqlException {
 		Objects.requireNonNull(name, "Index name must not be null");
 		this.executeStatement(this.dialect.indexRenderer().renderDropIndex(this.table, name));
-	}
-	
-	@Override
-	public void close() throws SqlException {
-		if (!this.ownsConnection) {
-			return;
-		}
-		try {
-			this.connection.close();
-		} catch (SQLException e) {
-			throw new SqlConnectionException("Failed to close connection for sql table '" + this.table.name() + "'", e);
-		}
 	}
 }

@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.query.crud;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
@@ -33,7 +34,6 @@ import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.time.Duration;
 import java.util.List;
@@ -49,21 +49,21 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	
 	private final SqlTable<E> table;
 	private final SqlDialect dialect;
-	private final Connection connection;
+	private final SqlConnectionSource connectionSource;
 	private final Duration queryTimeout;
 	private final ThrowableFunction<ResultSet, E, SqlException> rowMapper;
 	private final List<SqlJoinClause> joins;
 	private final @Nullable SqlCondition whereCondition;
 	private final boolean allowAll;
 	
-	public SqlDeleteQuery(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper) {
-		this(table, dialect, connection, queryTimeout, rowMapper, List.of(), null, false);
+	public SqlDeleteQuery(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper) {
+		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), null, false);
 	}
 	
 	private SqlDeleteQuery(
 		@NonNull SqlTable<E> table,
 		@NonNull SqlDialect dialect,
-		@NonNull Connection connection,
+		@NonNull SqlConnectionSource connectionSource,
 		@NonNull Duration queryTimeout,
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
 		@NonNull List<SqlJoinClause> joins,
@@ -72,7 +72,7 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	) {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
+		this.connectionSource = Objects.requireNonNull(connectionSource, "Sql connection source must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 		this.rowMapper = Objects.requireNonNull(rowMapper, "Row mapper must not be null");
 		this.joins = Objects.requireNonNull(joins, "Sql join clauses must not be null");
@@ -84,7 +84,7 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 		return new SqlDeleteQuery<>(
 			this.table,
 			this.dialect,
-			this.connection,
+			this.connectionSource,
 			this.queryTimeout,
 			this.rowMapper,
 			SqlQuery.copyAndAdd(this.joins, join),
@@ -125,7 +125,7 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 		return new SqlDeleteQuery<>(
 			this.table,
 			this.dialect,
-			this.connection,
+			this.connectionSource,
 			this.queryTimeout,
 			this.rowMapper,
 			this.joins,
@@ -138,7 +138,7 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 		return new SqlDeleteQuery<>(
 			this.table,
 			this.dialect,
-			this.connection,
+			this.connectionSource,
 			this.queryTimeout,
 			this.rowMapper,
 			this.joins,
@@ -151,12 +151,12 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 		if (this.whereCondition == null && !this.allowAll) {
 			throw new SqlStatementBuilderException("DELETE without WHERE clause would affect all rows, call allowAll() to confirm this is intentional");
 		}
-		return SqlQueryExecutor.executeUpdate(this.dialect, this.connection, this.toSql(this.dialect), this.queryTimeout);
+		return SqlQueryExecutor.executeUpdate(this.dialect, this.connectionSource, this.toSql(this.dialect), this.queryTimeout);
 	}
 	
 	public @NonNull List<E> returning() throws SqlException {
 		return SqlQueryExecutor.executeReturningQuery(
-			this.dialect, this.connection, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.columns())), this.queryTimeout, this.rowMapper
+			this.dialect, this.connectionSource, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.columns())), this.queryTimeout, this.rowMapper
 		);
 	}
 	

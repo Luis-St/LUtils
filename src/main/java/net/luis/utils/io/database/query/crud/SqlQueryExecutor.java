@@ -20,11 +20,13 @@ package net.luis.utils.io.database.query.crud;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.database.SqlConnectionHandle;
+import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.database.SqlQueryExecutionException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
+import net.luis.utils.io.database.exception.database.SqlQueryExecutionException;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.type.SqlType;
@@ -47,14 +49,14 @@ final class SqlQueryExecutor {
 	
 	private SqlQueryExecutor() {}
 	
-	static @NonNull PreparedStatement prepare(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout, boolean generateKeys) throws SqlException {
+	static @NonNull PreparedStatement prepare(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(connection, "Connection must not be null");
 		Objects.requireNonNull(rendered, "Sql rendered must not be null");
 		Objects.requireNonNull(timeout, "Query timeout must not be null");
 		
 		try {
-			PreparedStatement statement = generateKeys ? connection.prepareStatement(rendered.sql(), Statement.RETURN_GENERATED_KEYS) : connection.prepareStatement(rendered.sql());
+			PreparedStatement statement = connection.prepareStatement(rendered.sql());
 			
 			List<Pair<SqlType<?>, Object>> parameters = rendered.parameters();
 			for (int i = 0; i < parameters.size(); i++) {
@@ -73,8 +75,20 @@ final class SqlQueryExecutor {
 		}
 	}
 	
-	static <T> T executeScalarQuery(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout, @NonNull ThrowableFunction<ResultSet, T, Exception> mapper) throws SqlException {
-		try (PreparedStatement statement = prepare(dialect, connection, rendered, timeout, false); ResultSet resultSet = statement.executeQuery()) {
+	static <T> T executeScalarQuery(
+		@NonNull SqlDialect dialect,
+		@NonNull SqlConnectionSource source,
+		@NonNull SqlRendered rendered,
+		@NonNull Duration timeout,
+		@NonNull ThrowableFunction<ResultSet, T, Exception> mapper
+	) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(source, "Sql connection source must not be null");
+		Objects.requireNonNull(rendered, "Sql rendered must not be null");
+		Objects.requireNonNull(timeout, "Query timeout must not be null");
+		Objects.requireNonNull(mapper, "Result set mapper must not be null");
+		
+		try (SqlConnectionHandle handle = source.open(); PreparedStatement statement = prepare(dialect, handle.connection(), rendered, timeout); ResultSet resultSet = statement.executeQuery()) {
 			return mapper.apply(resultSet);
 		} catch (SqlException e) {
 			throw e;
@@ -85,8 +99,13 @@ final class SqlQueryExecutor {
 		}
 	}
 	
-	static int executeUpdate(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
-		try (PreparedStatement statement = prepare(dialect, connection, rendered, timeout, false)) {
+	static int executeUpdate(@NonNull SqlDialect dialect, @NonNull SqlConnectionSource source, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(source, "Sql connection source must not be null");
+		Objects.requireNonNull(rendered, "Sql rendered must not be null");
+		Objects.requireNonNull(timeout, "Query timeout must not be null");
+		
+		try (SqlConnectionHandle handle = source.open(); PreparedStatement statement = prepare(dialect, handle.connection(), rendered, timeout)) {
 			return statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new SqlQueryExecutionException("Failed to execute update: " + rendered.sql(), e, rendered.sql());
@@ -95,19 +114,19 @@ final class SqlQueryExecutor {
 	
 	static <T> @NonNull List<T> executeQueryAndMap(
 		@NonNull SqlDialect dialect,
-		@NonNull Connection connection,
+		@NonNull SqlConnectionSource source,
 		@NonNull SqlRendered rendered,
 		@NonNull Duration timeout,
 		@NonNull ThrowableFunction<ResultSet, T, SqlException> rowMapper
 	) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		Objects.requireNonNull(connection, "Connection must not be null");
+		Objects.requireNonNull(source, "Sql connection source must not be null");
 		Objects.requireNonNull(rendered, "Sql rendered must not be null");
 		Objects.requireNonNull(timeout, "Query timeout must not be null");
 		Objects.requireNonNull(rowMapper, "Sql row mapper must not be null");
 		
 		List<T> results = Lists.newArrayList();
-		try (PreparedStatement statement = prepare(dialect, connection, rendered, timeout, false); ResultSet resultSet = statement.executeQuery()) {
+		try (SqlConnectionHandle handle = source.open(); PreparedStatement statement = prepare(dialect, handle.connection(), rendered, timeout); ResultSet resultSet = statement.executeQuery()) {
 			while (resultSet.next()) {
 				results.add(rowMapper.apply(resultSet));
 			}
@@ -123,12 +142,19 @@ final class SqlQueryExecutor {
 	
 	static <T> @NonNull List<T> executeReturningQuery(
 		@NonNull SqlDialect dialect,
-		@NonNull Connection connection,
+		@NonNull SqlConnectionSource source,
 		@NonNull SqlRendered query,
 		@NonNull SqlRendered returning,
 		@NonNull Duration timeout,
 		@NonNull ThrowableFunction<ResultSet, T, SqlException> rowMapper
 	) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(source, "Sql connection source must not be null");
+		Objects.requireNonNull(query, "Sql query rendered must not be null");
+		Objects.requireNonNull(returning, "Sql returning rendered must not be null");
+		Objects.requireNonNull(timeout, "Query timeout must not be null");
+		Objects.requireNonNull(rowMapper, "Sql row mapper must not be null");
+		
 		if (!dialect.isFeatureSupported(SqlFeature.RETURNING)) {
 			throw new SqlDialectFeatureException(SqlFeature.RETURNING, dialect);
 		}
@@ -136,6 +162,6 @@ final class SqlQueryExecutor {
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(query);
 		renderer.rendered(returning);
-		return executeQueryAndMap(dialect, connection, renderer.toSql(), timeout, rowMapper);
+		return executeQueryAndMap(dialect, source, renderer.toSql(), timeout, rowMapper);
 	}
 }

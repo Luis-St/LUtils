@@ -21,8 +21,8 @@ package net.luis.utils.io.database;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.function.throwable.ThrowableSupplier;
 import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.exception.database.SqlConnectionException;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.database.SqlConnectionException;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.table.SqlTableProvider;
@@ -150,41 +150,13 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	@Override
 	public @NonNull <T> SqlTableProvider<T> table(@NonNull SqlTable<T> table) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
-		
-		Connection connection = null;
-		try {
-			connection = this.dataSource.getConnection();
-			return new SqlTableProvider<>(table, this.dialect, connection, this.queryTimeout);
-		} catch (SQLException e) {
-			throw new SqlConnectionException("Failed to obtain connection for sql table " + table.name() + "'", e);
-		} catch (RuntimeException e) {
-			if (connection != null) {
-				try {connection.close();} catch (SQLException suppressed) {e.addSuppressed(suppressed);}
-			}
-			throw e;
-		}
+		return new SqlTableProvider<>(table, this.dialect, SqlConnectionSource.pooled(this.dataSource), this.queryTimeout);
 	}
 	
 	@Override
 	public @NonNull <T> SqlQueryProvider<T> from(@NonNull SqlTable<T> table) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
-		
-		Connection connection = null;
-		try {
-			connection = this.dataSource.getConnection();
-			return new SqlQueryProvider<>(table, this.dialect, connection, this.queryTimeout);
-		} catch (SQLException e) {
-			throw new SqlConnectionException("Failed to obtain connection for sql table " + table.name() + "'", e);
-		} catch (RuntimeException e) {
-			if (connection != null) {
-				try {
-					connection.close();
-				} catch (SQLException suppressed) {
-					e.addSuppressed(suppressed);
-				}
-			}
-			throw e;
-		}
+		return new SqlQueryProvider<>(table, this.dialect, SqlConnectionSource.pooled(this.dataSource), this.queryTimeout);
 	}
 	
 	public @NonNull SqlTransaction beginTransaction() throws SqlException {

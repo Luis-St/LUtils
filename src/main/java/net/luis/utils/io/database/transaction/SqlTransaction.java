@@ -18,15 +18,13 @@
 
 package net.luis.utils.io.database.transaction;
 
+import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.SqlProvider;
 import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.SqlClientException;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.transaction.SqlTransactionStateException;
-import net.luis.utils.io.database.exception.database.transaction.SqlTransactionConnectionException;
-import net.luis.utils.io.database.exception.database.transaction.SqlTransactionCommitException;
-import net.luis.utils.io.database.exception.database.transaction.SqlTransactionRollbackException;
-import net.luis.utils.io.database.exception.database.transaction.SqlTransactionSavepointException;
+import net.luis.utils.io.database.exception.database.transaction.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.table.SqlTableProvider;
@@ -296,13 +294,13 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	@Override
 	public @NonNull <T> SqlTableProvider<T> table(@NonNull SqlTable<T> table) {
 		Objects.requireNonNull(table, "Sql table must not be null");
-		return new SqlTableProvider<>(table, this.dialect, this.connection, this.queryTimeout, false);
+		return new SqlTableProvider<>(table, this.dialect, SqlConnectionSource.fixed(this.connection), this.queryTimeout);
 	}
 	
 	@Override
 	public @NonNull <T> SqlQueryProvider<T> from(@NonNull SqlTable<T> table) {
 		Objects.requireNonNull(table, "Sql table must not be null");
-		return new SqlQueryProvider<>(table, this.dialect, this.connection, this.queryTimeout, false);
+		return new SqlQueryProvider<>(table, this.dialect, SqlConnectionSource.fixed(this.connection), this.queryTimeout);
 	}
 	
 	@Override
@@ -320,10 +318,13 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 				}
 				
 				if (this.ownsConnection) {
-					this.connection.setAutoCommit(this.originalAutoCommit);
-					this.connection.setReadOnly(this.originalReadOnly);
-					this.connection.setTransactionIsolation(this.originalIsolationLevel);
-					this.connection.close();
+					try {
+						this.connection.setAutoCommit(this.originalAutoCommit);
+						this.connection.setReadOnly(this.originalReadOnly);
+						this.connection.setTransactionIsolation(this.originalIsolationLevel);
+					} finally {
+						this.connection.close();
+					}
 				}
 			}
 		} catch (SQLException e) {

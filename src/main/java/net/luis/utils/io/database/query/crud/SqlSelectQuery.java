@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.query.crud;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.SqlPage;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
@@ -40,7 +41,6 @@ import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.time.Duration;
 import java.util.*;
@@ -55,7 +55,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	
 	private final SqlTable<?> table;
 	private final SqlDialect dialect;
-	private final Connection connection;
+	private final SqlConnectionSource connectionSource;
 	private final Duration queryTimeout;
 	private final ThrowableFunction<ResultSet, E, SqlException> rowMapper;
 	private final List<SqlExpression<?>> selectedExpressions;
@@ -74,18 +74,18 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	private final boolean skipLocked;
 	private final boolean noWait;
 	
-	public SqlSelectQuery(@NonNull SqlTable<?> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper) {
-		this(table, dialect, connection, queryTimeout, rowMapper, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), -1, -1, false, null, null, null, null, false, false);
+	public SqlSelectQuery(@NonNull SqlTable<?> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper) {
+		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), -1, -1, false, null, null, null, null, false, false);
 	}
 	
-	public SqlSelectQuery(@NonNull SqlTable<?> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<SqlExpression<?>> selectedExpressions) {
-		this(table, dialect, connection, queryTimeout, rowMapper, selectedExpressions, List.of(), List.of(), List.of(), List.of(), List.of(), -1, -1, false, null, null, null, null, false, false);
+	public SqlSelectQuery(@NonNull SqlTable<?> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<SqlExpression<?>> selectedExpressions) {
+		this(table, dialect, connectionSource, queryTimeout, rowMapper, selectedExpressions, List.of(), List.of(), List.of(), List.of(), List.of(), -1, -1, false, null, null, null, null, false, false);
 	}
 	
 	private SqlSelectQuery(
 		@NonNull SqlTable<?> table,
 		@NonNull SqlDialect dialect,
-		@NonNull Connection connection,
+		@NonNull SqlConnectionSource connectionSource,
 		@NonNull Duration queryTimeout,
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
 		@NonNull List<SqlExpression<?>> selectedExpressions,
@@ -105,7 +105,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	) {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
+		this.connectionSource = Objects.requireNonNull(connectionSource, "Sql connection source must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 		this.rowMapper = Objects.requireNonNull(rowMapper, "Row mapper must not be null");
 		this.selectedExpressions = Objects.requireNonNull(selectedExpressions, "Selected expressions must not be null");
@@ -151,7 +151,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		return new SqlSelectQuery<>(
 			this.table,
 			this.dialect,
-			this.connection,
+			this.connectionSource,
 			this.queryTimeout,
 			this.rowMapper,
 			this.selectedExpressions,
@@ -559,7 +559,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		return new SqlSelectQuery<>(
 			this.table,
 			this.dialect,
-			this.connection,
+			this.connectionSource,
 			this.queryTimeout,
 			projectionMapper,
 			this.selectedExpressions,
@@ -606,7 +606,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	private @NonNull List<E> executeAndMap() throws SqlException {
-		return SqlQueryExecutor.executeQueryAndMap(this.dialect, this.connection, this.toSql(this.dialect), this.queryTimeout, this.rowMapper);
+		return SqlQueryExecutor.executeQueryAndMap(this.dialect, this.connectionSource, this.toSql(this.dialect), this.queryTimeout, this.rowMapper);
 	}
 	
 	public @NonNull List<E> fetch() throws SqlException {
@@ -642,7 +642,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		renderer.rendered(this.toSql(this.dialect));
 		renderer.closingBracket().as().literal(this.dialect.quoteIdentifier("__count"));
 		
-		return SqlQueryExecutor.executeScalarQuery(this.dialect, this.connection, renderer.toSql(), this.queryTimeout, resultSet -> resultSet.next() ? resultSet.getLong(1) : 0L);
+		return SqlQueryExecutor.executeScalarQuery(this.dialect, this.connectionSource, renderer.toSql(), this.queryTimeout, resultSet -> resultSet.next() ? resultSet.getLong(1) : 0L);
 	}
 	
 	public boolean exists() throws SqlException {
@@ -651,7 +651,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		renderer.rendered(this.limit(1).toSql(this.dialect));
 		renderer.closingBracket().as().literal(this.dialect.quoteIdentifier("__exists"));
 		
-		return SqlQueryExecutor.executeScalarQuery(this.dialect, this.connection, renderer.toSql(), this.queryTimeout, ResultSet::next);
+		return SqlQueryExecutor.executeScalarQuery(this.dialect, this.connectionSource, renderer.toSql(), this.queryTimeout, ResultSet::next);
 	}
 	
 	public @NonNull SqlPage<E> fetchPage(int page, int pageSize) throws SqlException {

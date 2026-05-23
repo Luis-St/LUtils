@@ -19,9 +19,9 @@
 package net.luis.utils.io.database.query;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.database.SqlConnectionException;
 import net.luis.utils.io.database.exception.database.SqlResultMappingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.crud.*;
@@ -31,7 +31,7 @@ import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
 import java.lang.reflect.Constructor;
-import java.sql.*;
+import java.sql.ResultSet;
 import java.time.Duration;
 import java.util.*;
 
@@ -42,25 +42,19 @@ import java.util.*;
  */
 
 @SuppressWarnings("unchecked")
-public class SqlQueryProvider<E> implements AutoCloseable {
+public class SqlQueryProvider<E> {
 	
 	private final SqlTable<E> table;
 	private final SqlDialect dialect;
-	private final Connection connection;
+	private final SqlConnectionSource connectionSource;
 	private final Duration queryTimeout;
-	private final boolean ownsConnection;
 	private final ThrowableFunction<ResultSet, E, SqlException> entityRowMapper;
 	
-	public SqlQueryProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout) {
-		this(table, dialect, connection, queryTimeout, true);
-	}
-	
-	public SqlQueryProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, boolean ownsConnection) {
+	public SqlQueryProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout) {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
+		this.connectionSource = Objects.requireNonNull(connectionSource, "Sql connection source must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
-		this.ownsConnection = ownsConnection;
 		this.entityRowMapper = createRowMapper(table);
 	}
 	
@@ -161,11 +155,11 @@ public class SqlQueryProvider<E> implements AutoCloseable {
 		this.ensureNotNull(expressions);
 		
 		List<SqlExpression<?>> expressionList = List.of(expressions);
-		return new SqlSelectQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, SqlRowMapper.forExpressions(rowType, expressionList), expressionList);
+		return new SqlSelectQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, SqlRowMapper.forExpressions(rowType, expressionList), expressionList);
 	}
 	
 	public @NonNull SqlSelectQuery<E> select() {
-		return new SqlSelectQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper);
+		return new SqlSelectQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper);
 	}
 	
 	public <E1> @NonNull SqlSelectQuery<E1> select(@NonNull SqlExpression<E1> e1) {
@@ -174,7 +168,7 @@ public class SqlQueryProvider<E> implements AutoCloseable {
 		ThrowableFunction<ResultSet, E1, SqlException> mapper = rs -> {
 			return e1.type().get(rs, 1);
 		};
-		return new SqlSelectQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, mapper, List.of(e1));
+		return new SqlSelectQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, mapper, List.of(e1));
 	}
 	
 	public <E1, E2> @NonNull SqlSelectQuery<SqlRow2<E1, E2>> select(@NonNull SqlExpression<E1> e1, @NonNull SqlExpression<E2> e2) {
@@ -328,7 +322,7 @@ public class SqlQueryProvider<E> implements AutoCloseable {
 			}
 			return values;
 		};
-		return new SqlSelectQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, mapper, List.of(expressions));
+		return new SqlSelectQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, mapper, List.of(expressions));
 	}
 	
 	public @NonNull SqlSelectQuery<?> subquery(SqlExpression<?> @NonNull ... expressions) {
@@ -338,20 +332,20 @@ public class SqlQueryProvider<E> implements AutoCloseable {
 	public @NonNull SqlInsertQuery<E> insert(@NonNull E entity) throws SqlException {
 		Objects.requireNonNull(entity, "Entity must not be null");
 		
-		return new SqlInsertQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.of(entity));
+		return new SqlInsertQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper, List.of(entity));
 	}
 	
 	@SuppressWarnings("unchecked")
 	public @NonNull SqlInsertQuery<E> insert(E @NonNull ... entities) throws SqlException {
 		Objects.requireNonNull(entities, "Entity array must not be null");
 		
-		return new SqlInsertQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.of(entities));
+		return new SqlInsertQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper, List.of(entities));
 	}
 	
 	public @NonNull SqlInsertQuery<E> insert(@NonNull Collection<E> entities) throws SqlException {
 		Objects.requireNonNull(entities, "Entity collection must not be null");
 		
-		return new SqlInsertQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.copyOf(entities));
+		return new SqlInsertQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper, List.copyOf(entities));
 	}
 	
 	@SafeVarargs
@@ -359,33 +353,20 @@ public class SqlQueryProvider<E> implements AutoCloseable {
 		Objects.requireNonNull(entity, "Entity must not be null");
 		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
 		
-		return SqlInsertQuery.insertOrIgnore(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, List.of(entity), List.of(conflictColumns));
+		return SqlInsertQuery.insertOrIgnore(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper, List.of(entity), List.of(conflictColumns));
 	}
 	
 	public @NonNull SqlInsertQuery<E> insertFromSelect(@NonNull SqlSelectQuery<?> query) throws SqlException {
 		Objects.requireNonNull(query, "Sql select query must not be null");
 		
-		return SqlInsertQuery.insertFromSelect(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper, query);
+		return SqlInsertQuery.insertFromSelect(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper, query);
 	}
 	
 	public @NonNull SqlUpdateQuery<E> update() {
-		return new SqlUpdateQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper);
+		return new SqlUpdateQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper);
 	}
 	
 	public @NonNull SqlDeleteQuery<E> delete() {
-		return new SqlDeleteQuery<>(this.table, this.dialect, this.connection, this.queryTimeout, this.entityRowMapper);
-	}
-	
-	@Override
-	public void close() throws SqlException {
-		if (!this.ownsConnection) {
-			return;
-		}
-		
-		try {
-			this.connection.close();
-		} catch (SQLException e) {
-			throw new SqlConnectionException("Failed to close connection for sql table '" + this.table.name() + "'", e);
-		}
+		return new SqlDeleteQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper);
 	}
 }

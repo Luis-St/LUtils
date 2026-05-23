@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.query.crud;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
@@ -31,7 +32,6 @@ import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.time.Duration;
 import java.util.List;
@@ -47,7 +47,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	
 	private final SqlTable<E> table;
 	private final SqlDialect dialect;
-	private final Connection connection;
+	private final SqlConnectionSource connectionSource;
 	private final Duration queryTimeout;
 	private final ThrowableFunction<ResultSet, E, SqlException> rowMapper;
 	private final List<E> entities;
@@ -59,16 +59,16 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	private final boolean isInsertFromSelect;
 	
 	public SqlInsertQuery(
-		@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<E> entities
+		@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<E> entities
 	) throws SqlStatementBuilderException {
 		Objects.requireNonNull(entities, "Entities must not be null");
-		this(table, dialect, connection, queryTimeout, rowMapper, List.copyOf(entities), null, null, null, false, false, false);
+		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, null, null, false, false, false);
 	}
 	
 	private SqlInsertQuery(
 		@NonNull SqlTable<E> table,
 		@NonNull SqlDialect dialect,
-		@NonNull Connection connection,
+		@NonNull SqlConnectionSource connectionSource,
 		@NonNull Duration queryTimeout,
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
 		@NonNull List<E> entities,
@@ -81,7 +81,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	) throws SqlStatementBuilderException {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
+		this.connectionSource = Objects.requireNonNull(connectionSource, "Sql connection source must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 		this.rowMapper = Objects.requireNonNull(rowMapper, "Row mapper must not be null");
 		this.entities = entities;
@@ -99,42 +99,59 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		if (isUpsert && isInsertOrIgnore) {
 			throw new SqlStatementBuilderException("Upsert and insert or ignore are mutually exclusive");
 		}
-
+		
 		if (isUpsert && conflictColumn == null) {
 			throw new SqlStatementBuilderException("Conflict column must be specified for upsert queries");
 		}
-
+		
 		if (isInsertOrIgnore) {
 			if (conflictColumns == null || conflictColumns.isEmpty()) {
 				throw new SqlStatementBuilderException("Conflict columns must be specified for insert or ignore queries");
 			}
 		}
-
+		
 		if (isInsertFromSelect && fromSelect == null) {
 			throw new SqlStatementBuilderException("From select query must be specified for insert from select queries");
 		}
 	}
 	
 	public static <E> @NonNull SqlInsertQuery<E> insertOrIgnore(
-		@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout,
-		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<E> entities, @NonNull List<SqlColumn<E, ?>> conflictColumns
+		@NonNull SqlTable<E> table,
+		@NonNull SqlDialect dialect,
+		@NonNull SqlConnectionSource connectionSource,
+		@NonNull Duration queryTimeout,
+		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
+		@NonNull List<E> entities,
+		@NonNull List<SqlColumn<E, ?>> conflictColumns
 	) throws SqlStatementBuilderException {
-		return new SqlInsertQuery<>(table, dialect, connection, queryTimeout, rowMapper, List.copyOf(entities), null, null, List.copyOf(conflictColumns), false, true, false);
+		Objects.requireNonNull(entities, "List of entities must not be null");
+		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
+		
+		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, null, List.copyOf(conflictColumns), false, true, false);
 	}
 	
 	public static <E> @NonNull SqlInsertQuery<E> upsert(
-		@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout,
-		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<E> entities, @NonNull SqlColumn<E, ?> conflictColumn
+		@NonNull SqlTable<E> table,
+		@NonNull SqlDialect dialect,
+		@NonNull SqlConnectionSource connectionSource,
+		@NonNull Duration queryTimeout,
+		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
+		@NonNull List<E> entities,
+		@NonNull SqlColumn<E, ?> conflictColumn
 	) throws SqlStatementBuilderException {
-		Objects.requireNonNull(conflictColumn, "Conflict column must not be null");
-		return new SqlInsertQuery<>(table, dialect, connection, queryTimeout, rowMapper, List.copyOf(entities), null, conflictColumn, null, true, false, false);
+		Objects.requireNonNull(entities, "List of entities must not be null");
+		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, conflictColumn, null, true, false, false);
 	}
 	
 	public static <E> @NonNull SqlInsertQuery<E> insertFromSelect(
-		@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull Duration queryTimeout,
-		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull SqlSelectQuery<?> fromSelect
+		@NonNull SqlTable<E> table,
+		@NonNull SqlDialect dialect,
+		@NonNull SqlConnectionSource connectionSource,
+		@NonNull Duration queryTimeout,
+		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
+		@NonNull SqlSelectQuery<?> fromSelect
 	) throws SqlStatementBuilderException {
-		return new SqlInsertQuery<>(table, dialect, connection, queryTimeout, rowMapper, List.of(), fromSelect, null, null, false, false, true);
+		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), fromSelect, null, null, false, false, true);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -145,12 +162,12 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	}
 	
 	public int execute() throws SqlException {
-		return SqlQueryExecutor.executeUpdate(this.dialect, this.connection, this.toSql(this.dialect), this.queryTimeout);
+		return SqlQueryExecutor.executeUpdate(this.dialect, this.connectionSource, this.toSql(this.dialect), this.queryTimeout);
 	}
 	
 	public @NonNull List<E> returning() throws SqlException {
 		return SqlQueryExecutor.executeReturningQuery(
-			this.dialect, this.connection, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.columns())), this.queryTimeout, this.rowMapper
+			this.dialect, this.connectionSource, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.columns())), this.queryTimeout, this.rowMapper
 		);
 	}
 	
@@ -214,7 +231,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		if (this.isUpsert) {
 			renderer.rendered(dialect.renderUpsertClause(Objects.requireNonNull(this.conflictColumn, "Conflict column must not be null"), (List<SqlColumn<?, ?>>) (List<?>) columns));
 		}
-
+		
 		if (this.isInsertOrIgnore) {
 			SqlRendered suffix = dialect.renderInsertOrIgnoreSuffix((List<SqlColumn<?, ?>>) (List<?>) Objects.requireNonNull(this.conflictColumns, "Conflict columns must not be null"));
 			if (!suffix.sql().isEmpty()) {
