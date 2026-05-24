@@ -16,7 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query.util;
+package net.luis.utils.io.database.audit;
+
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  *
@@ -24,10 +30,16 @@ package net.luis.utils.io.database.query.util;
  *
  */
 
-public enum SqlSetType {
+@FunctionalInterface
+public interface SqlAuditUserProvider extends Supplier<Optional<String>> {
 	
-	EXPRESSION,
-	INCREMENT,
-	DECREMENT,
-	NULL
+	static @NonNull SqlAuditUserProvider empty() {
+		return Optional::empty;
+	}
+	
+	static @NonNull SqlAuditUserProvider of(@NonNull String user) {
+		Objects.requireNonNull(user, "Sql audit user must not be null");
+		
+		return () -> Optional.of(user);
+	}
 }

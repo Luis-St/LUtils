@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.SqlConnectionHandle;
 import net.luis.utils.io.database.SqlConnectionSource;
+import net.luis.utils.io.database.audit.SqlAuditUserProvider;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.exception.SqlException;
@@ -32,11 +33,11 @@ import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.sql.*;
 import java.time.Duration;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  *
@@ -48,6 +49,15 @@ import java.util.Objects;
 final class SqlQueryExecutor {
 	
 	private SqlQueryExecutor() {}
+	
+	static @Nullable String resolveUser(@Nullable SqlAuditUserProvider userProvider) {
+		if (userProvider == null) {
+			return null;
+		}
+		
+		Optional<String> user = userProvider.get();
+		return user.isEmpty() ? null : user.orElse(null);
+	}
 	
 	static @NonNull PreparedStatement prepare(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");

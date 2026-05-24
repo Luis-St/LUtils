@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.table;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.luis.utils.io.database.SqlConnectionHandle;
 import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.condition.SqlCondition;
@@ -143,8 +144,8 @@ public class SqlTableProvider<E> {
 	
 	public @NonNull @Unmodifiable List<SqlIndex> getIndexes() throws SqlException {
 		try (SqlConnectionHandle handle = this.connectionSource.open(); ResultSet resultSet = handle.connection().getMetaData().getIndexInfo(null, this.table.schema(), this.table.name(), false, false)) {
-			Map<String, List<SqlColumn<?, ?>>> indexColumns = new LinkedHashMap<>();
-			Map<String, Boolean> indexUnique = new LinkedHashMap<>();
+			Map<String, List<SqlColumn<?, ?>>> indexColumns = Maps.newLinkedHashMap();
+			Map<String, Boolean> indexUnique = Maps.newLinkedHashMap();
 			
 			while (resultSet.next()) {
 				String indexName = resultSet.getString("INDEX_NAME");

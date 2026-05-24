@@ -16,18 +16,18 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query.util;
+package net.luis.utils.io.database.transaction;
 
 /**
  *
  * @author Luis-St
  *
  */
-
-public enum SqlSetType {
+public interface SqlTransactionListener {
 	
-	EXPRESSION,
-	INCREMENT,
-	DECREMENT,
-	NULL
+	default void afterCommit() {}
+	
+	default void afterRollback() {}
+	
+	default void afterClose() {}
 }

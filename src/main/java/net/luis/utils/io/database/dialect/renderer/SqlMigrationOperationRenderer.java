@@ -18,7 +18,9 @@
 
 package net.luis.utils.io.database.dialect.renderer;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.database.SqlReferentialAction;
+import net.luis.utils.io.database.audit.*;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
@@ -169,6 +171,34 @@ public class SqlMigrationOperationRenderer {
 		SqlRenderingHelper.renderList(renderer, columns, (r, col) -> r.literal(this.dialect.quoteIdentifier(col.name())));
 		renderer.closingBracket();
 		return renderer.toSql();
+	}
+	
+	public @NonNull List<SqlRendered> renderEnableAuditing(@NonNull SqlTable<?> table, @NonNull SqlAuditConfig config) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(config, "Sql audit config must not be null");
+		
+		List<SqlRendered> results = Lists.newArrayList();
+		for (SqlAuditColumn column : config.auditColumns()) {
+			SqlRenderer renderer = SqlRenderer.empty();
+			renderer.alter().table().literal(this.dialect.quoteIdentifier(table.name())).add().column().literal(this.dialect.quoteIdentifier(column.name())).literal(this.dialect.getTypeName(column.type()));
+			
+			if (column.role() == SqlAuditRole.VERSION) {
+				renderer.default_().literal("0").not().null_();
+			}
+			results.add(renderer.toSql());
+		}
+		return List.copyOf(results);
+	}
+	
+	public @NonNull List<SqlRendered> renderDisableAuditing(@NonNull SqlTable<?> table, @NonNull SqlAuditConfig config) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(config, "Sql audit config must not be null");
+		
+		List<SqlRendered> results = Lists.newArrayList();
+		for (SqlAuditColumn column : config.auditColumns()) {
+			results.add(SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(table.name())).drop().column().literal(this.dialect.quoteIdentifier(column.name())).toSql());
+		}
+		return List.copyOf(results);
 	}
 	
 	public @NonNull SqlRendered renderDropConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName) throws SqlException {

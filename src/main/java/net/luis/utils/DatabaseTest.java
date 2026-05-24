@@ -89,18 +89,18 @@ public class DatabaseTest {
 		config.setPassword("test");
 		DATA_SOURCE = new HikariDataSource(config);
 		
-		PERSON_TABLE = SqlTable.of(Person.class, "person");
+		PERSON_TABLE = SqlTable.create(Person.class, "person");
 		ID = PERSON_TABLE.column("id", SqlTypes.INTEGER, Person::id, col -> col.primaryKey().notNull().autoIncrement());
 		NAME = PERSON_TABLE.column("name", SqlTypes.STRING.configure(SqlParameter.length(64)), Person::name, SqlColumnBuilder::notNull);
 		EMAIL = PERSON_TABLE.column("email", SqlTypes.STRING.configure(SqlParameter.length(320)), Person::email, col -> col.notNull().unique());
 		VERSION = PERSON_TABLE.column("version", SqlTypes.LONG, Person::version, col -> col.notNull().defaultValue(0L));
 		CREATED_AT = PERSON_TABLE.column("created_at", SqlTypes.INSTANT.configure(SqlParameter.fractional(3)), Person::createdAt, SqlColumnBuilder::notNull);
 		
-		ROLE_TABLE = SqlTable.of(Role.class, "role");
+		ROLE_TABLE = SqlTable.create(Role.class, "role");
 		ROLE_ID = ROLE_TABLE.column("id", SqlTypes.INTEGER, Role::id, col -> col.primaryKey().notNull().autoIncrement());
 		ROLE_NAME = ROLE_TABLE.column("name", SqlTypes.STRING.configure(SqlParameter.length(64)), Role::name, SqlColumnBuilder::notNull);
 		
-		PERSON_ROLE_TABLE = SqlTable.of(PersonRole.class, "person_role");
+		PERSON_ROLE_TABLE = SqlTable.create(PersonRole.class, "person_role");
 		PR_PERSON_ID = PERSON_ROLE_TABLE.column("person_id", SqlTypes.INTEGER, PersonRole::personId, col -> col.primaryKey().notNull().foreignKey(PERSON_TABLE));
 		PR_ROLE_ID = PERSON_ROLE_TABLE.column("role_id", SqlTypes.INTEGER, PersonRole::roleId, col -> col.primaryKey().notNull().foreignKey(ROLE_TABLE));
 		PERSON_ROLE_PK = PERSON_ROLE_TABLE.compositePrimaryKey(PR_PERSON_ID, PR_ROLE_ID);

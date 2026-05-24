@@ -18,8 +18,9 @@
 
 package net.luis.utils.io.database.transaction;
 
-import net.luis.utils.io.database.SqlConnectionSource;
-import net.luis.utils.io.database.SqlProvider;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import net.luis.utils.io.database.*;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlClientException;
 import net.luis.utils.io.database.exception.SqlException;
@@ -57,9 +58,9 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	private final boolean originalAutoCommit;
 	private final boolean originalReadOnly;
 	private final int originalIsolationLevel;
-	private final Map<String, Savepoint> savepoints = new LinkedHashMap<>();
+	private final Map<String, Savepoint> savepoints = Maps.newLinkedHashMap();
+	private final List<SqlTransactionListener> listeners = Lists.newArrayList();
 	private @Nullable Savepoint nestedSavepoint;
-	private @Nullable Runnable onClose;
 	private SqlTransactionState state = SqlTransactionState.ACTIVE;
 	
 	public SqlTransaction(
@@ -102,10 +103,6 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		this.nestedSavepoint = Objects.requireNonNull(nestedSavepoint, "Nested savepoint must not be null");
 	}
 	
-	public void setOnClose(@Nullable Runnable onClose) {
-		this.onClose = onClose;
-	}
-	
 	public @NonNull Connection getConnection() {
 		return this.connection;
 	}
@@ -142,11 +139,16 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		return this.state == SqlTransactionState.ROLLED_BACK;
 	}
 	
+	public void addListener(@NonNull SqlTransactionListener listener) {
+		this.listeners.add(Objects.requireNonNull(listener, "Sql transaction listener must not be null"));
+	}
+	
 	public void commit() throws SqlException {
 		if (!this.isActive()) {
 			throw new SqlTransactionStateException("Sql transaction is not active");
 		}
 		if (this.nonTransactional) {
+			this.fireAfterCommit();
 			return;
 		}
 		
@@ -157,11 +159,13 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 			} catch (SQLException e) {
 				throw new SqlTransactionSavepointException("Failed to release nested savepoint", e);
 			}
+			this.fireAfterCommit();
 			return;
 		}
 		
 		if (!this.ownsCommit) {
 			this.state = SqlTransactionState.COMMITTED;
+			this.fireAfterCommit();
 			return;
 		}
 		
@@ -171,6 +175,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		} catch (SQLException e) {
 			throw new SqlTransactionCommitException("Failed to commit transaction", e);
 		}
+		this.fireAfterCommit();
 	}
 	
 	public void rollback() throws SqlException {
@@ -178,6 +183,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 			throw new SqlTransactionStateException("Sql transaction is not active");
 		}
 		if (this.nonTransactional) {
+			this.fireAfterRollback();
 			return;
 		}
 		
@@ -188,6 +194,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 			} catch (SQLException e) {
 				throw new SqlTransactionRollbackException("Failed to rollback to nested savepoint", e);
 			}
+			this.fireAfterRollback();
 			return;
 		}
 		
@@ -201,6 +208,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		} catch (SQLException e) {
 			throw new SqlTransactionRollbackException("Failed to rollback transaction", e);
 		}
+		this.fireAfterRollback();
 	}
 	
 	public void rollbackTo(@NonNull SqlSavepoint savepoint) throws SqlException {
@@ -330,15 +338,34 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		} catch (SQLException e) {
 			throw new SqlTransactionConnectionException("Failed to close transaction", e);
 		} finally {
-			if (this.onClose != null) {
-				try {
-					this.onClose.run();
-				} catch (RuntimeException e) {
-					throw new SqlClientException("onClose callback failed", e);
-				}
+			try {
+				this.fireAfterClose();
+			} catch (RuntimeException e) {
+				throw new SqlClientException("afterClose listener failed", e);
 			}
 		}
 	}
+	
+	//region Listeners helper methods
+	
+	private void fireAfterCommit() {
+		for (SqlTransactionListener listener : this.listeners) {
+			listener.afterCommit();
+		}
+	}
+	
+	private void fireAfterRollback() {
+		for (SqlTransactionListener listener : this.listeners) {
+			listener.afterRollback();
+		}
+	}
+	
+	private void fireAfterClose() {
+		for (SqlTransactionListener listener : this.listeners) {
+			listener.afterClose();
+		}
+	}
+	//endregion
 	
 	private enum SqlTransactionState {
 		

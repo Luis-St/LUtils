@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query.util;
+package net.luis.utils.io.database.audit;
 
 /**
  *
@@ -24,10 +24,8 @@ package net.luis.utils.io.database.query.util;
  *
  */
 
-public enum SqlSetType {
+public enum SqlAuditValueSource {
 	
-	EXPRESSION,
-	INCREMENT,
-	DECREMENT,
-	NULL
+	ORM_CLOCK,
+	DATABASE
 }

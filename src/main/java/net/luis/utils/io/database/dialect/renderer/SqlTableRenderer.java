@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.dialect.renderer;
 
 import net.luis.utils.io.database.SqlReferentialAction;
+import net.luis.utils.io.database.audit.SqlAuditColumn;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
@@ -64,6 +65,12 @@ public class SqlTableRenderer {
 				renderer.comma();
 			}
 			renderer.rendered(this.renderColumnForTable(columns.get(i), hasCompositeKey));
+		}
+		
+		if (table.auditConfig().isPresent()) {
+			for (SqlAuditColumn auditColumn : table.auditConfig().get().auditColumns()) {
+				renderer.comma().rendered(this.renderAuditColumnForTable(auditColumn));
+			}
 		}
 		
 		SqlRendered tableConstraints = this.renderTableConstraints(table);
@@ -136,6 +143,24 @@ public class SqlTableRenderer {
 		
 		for (SqlCondition check : column.checks()) {
 			renderer.check().openingBracket().rendered(check.toSql(this.dialect)).closingBracket();
+		}
+		return renderer.toSql();
+	}
+	
+	protected @NonNull SqlRendered renderAuditColumnForTable(@NonNull SqlAuditColumn column) throws SqlException {
+		Objects.requireNonNull(column, "Sql audit column must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.literal(this.dialect.quoteIdentifier(column.name()));
+		
+		try {
+			renderer.literal(this.dialect.getTypeName(column.type()));
+		} catch (SqlDialectUnsupportedRenderingException e) {
+			throw new SqlDialectUnsupportedRenderingException("Audit column type is not supported by dialect " + this.dialect.name(), e);
+		}
+		
+		if (!column.nullable()) {
+			renderer.not().null_();
 		}
 		return renderer.toSql();
 	}

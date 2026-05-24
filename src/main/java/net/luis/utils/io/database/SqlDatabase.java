@@ -20,6 +20,7 @@ package net.luis.utils.io.database;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.function.throwable.ThrowableSupplier;
+import net.luis.utils.io.database.audit.SqlAuditUserProvider;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.database.SqlConnectionException;
@@ -51,6 +52,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	private final SqlIsolationLevel defaultTransactionIsolationLevel;
 	private final SqlPropagation defaultTransactionPropagation;
 	private final boolean autoCloseDataSource;
+	private final SqlAuditUserProvider auditUserProvider;
 	private final SqlTransactionManager transactionManager;
 	
 	SqlDatabase(
@@ -59,7 +61,8 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		@NonNull Duration queryTimeout,
 		@NonNull SqlIsolationLevel defaultTransactionIsolationLevel,
 		@NonNull SqlPropagation defaultTransactionPropagation,
-		boolean autoCloseDataSource
+		boolean autoCloseDataSource,
+		@NonNull SqlAuditUserProvider auditUserProvider
 	) throws SqlConnectionException {
 		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
@@ -67,6 +70,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		this.defaultTransactionIsolationLevel = Objects.requireNonNull(defaultTransactionIsolationLevel, "Default transaction isolation level must not be null");
 		this.defaultTransactionPropagation = Objects.requireNonNull(defaultTransactionPropagation, "Default transaction propagation behavior must not be null");
 		this.autoCloseDataSource = autoCloseDataSource;
+		this.auditUserProvider = Objects.requireNonNull(auditUserProvider, "Audit user provider must not be null");
 		this.transactionManager = new SqlTransactionManager(dataSource, dialect, queryTimeout);
 	}
 	
@@ -80,6 +84,10 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	
 	public @NonNull SqlDialect getDialect() {
 		return this.dialect;
+	}
+	
+	public @NonNull SqlAuditUserProvider getAuditUserProvider() {
+		return this.auditUserProvider;
 	}
 	
 	public boolean health() {
@@ -156,7 +164,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 	@Override
 	public @NonNull <T> SqlQueryProvider<T> from(@NonNull SqlTable<T> table) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
-		return new SqlQueryProvider<>(table, this.dialect, SqlConnectionSource.pooled(this.dataSource), this.queryTimeout);
+		return new SqlQueryProvider<>(table, this.dialect, SqlConnectionSource.pooled(this.dataSource), this.queryTimeout, this.auditUserProvider, null);
 	}
 	
 	public @NonNull SqlTransaction beginTransaction() throws SqlException {
@@ -207,6 +215,27 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 			}
 			throw new SqlException("Sql transaction failed", e);
 		}
+	}
+	
+	public @NonNull SqlSession openSession() {
+		return new SqlSession(this, SqlConnectionSource.pooled(this.dataSource), this.queryTimeout, null);
+	}
+	
+	public @NonNull SqlSession openSession(@NonNull SqlAuditUserProvider auditUserProvider) {
+		Objects.requireNonNull(auditUserProvider, "Sql audit user provider must not be null");
+		return new SqlSession(this, SqlConnectionSource.pooled(this.dataSource), this.queryTimeout, auditUserProvider);
+	}
+	
+	public @NonNull SqlSession openSession(@NonNull SqlTransaction transaction) {
+		Objects.requireNonNull(transaction, "Sql transaction must not be null");
+		return new SqlSession(this, SqlConnectionSource.fixed(transaction.getConnection()), this.queryTimeout, null, transaction);
+	}
+	
+	public @NonNull SqlSession openSession(@NonNull SqlTransaction transaction, @NonNull SqlAuditUserProvider auditUserProvider) {
+		Objects.requireNonNull(transaction, "Sql transaction must not be null");
+		Objects.requireNonNull(auditUserProvider, "Audit user provider must not be null");
+		
+		return new SqlSession(this, SqlConnectionSource.fixed(transaction.getConnection()), this.queryTimeout, auditUserProvider, transaction);
 	}
 	
 	@Override

@@ -20,9 +20,11 @@ package net.luis.utils.io.database.query.crud;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.SqlConnectionSource;
+import net.luis.utils.io.database.audit.*;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
+import net.luis.utils.io.database.function.functions.temporal.SqlCurrentTimestampFunction;
 import net.luis.utils.io.database.query.SqlQuery;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
@@ -34,6 +36,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.sql.ResultSet;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,12 +60,30 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	private final boolean isUpsert;
 	private final boolean isInsertOrIgnore;
 	private final boolean isInsertFromSelect;
+	private final @Nullable SqlAuditUserProvider auditUserProvider;
 	
 	public SqlInsertQuery(
-		@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<E> entities
+		@NonNull SqlTable<E> table,
+		@NonNull SqlDialect dialect,
+		@NonNull SqlConnectionSource connectionSource,
+		@NonNull Duration queryTimeout,
+		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
+		@NonNull List<E> entities
+	) throws SqlStatementBuilderException {
+		this(table, dialect, connectionSource, queryTimeout, rowMapper, entities, null);
+	}
+	
+	public SqlInsertQuery(
+		@NonNull SqlTable<E> table,
+		@NonNull SqlDialect dialect,
+		@NonNull SqlConnectionSource connectionSource,
+		@NonNull Duration queryTimeout,
+		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
+		@NonNull List<E> entities,
+		@Nullable SqlAuditUserProvider auditUserProvider
 	) throws SqlStatementBuilderException {
 		Objects.requireNonNull(entities, "Entities must not be null");
-		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, null, null, false, false, false);
+		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, null, null, false, false, false, auditUserProvider);
 	}
 	
 	private SqlInsertQuery(
@@ -77,7 +98,8 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		@Nullable List<SqlColumn<E, ?>> conflictColumns,
 		boolean isUpsert,
 		boolean isInsertOrIgnore,
-		boolean isInsertFromSelect
+		boolean isInsertFromSelect,
+		@Nullable SqlAuditUserProvider auditUserProvider
 	) throws SqlStatementBuilderException {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
@@ -91,6 +113,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		this.isUpsert = isUpsert;
 		this.isInsertOrIgnore = isInsertOrIgnore;
 		this.isInsertFromSelect = isInsertFromSelect;
+		this.auditUserProvider = auditUserProvider;
 		
 		if (entities.isEmpty() && !isInsertFromSelect) {
 			throw new IllegalArgumentException("Entities list must not be empty for insert queries");
@@ -127,7 +150,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		Objects.requireNonNull(entities, "List of entities must not be null");
 		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
 		
-		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, null, List.copyOf(conflictColumns), false, true, false);
+		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, null, List.copyOf(conflictColumns), false, true, false, null);
 	}
 	
 	public static <E> @NonNull SqlInsertQuery<E> upsert(
@@ -140,7 +163,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		@NonNull SqlColumn<E, ?> conflictColumn
 	) throws SqlStatementBuilderException {
 		Objects.requireNonNull(entities, "List of entities must not be null");
-		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, conflictColumn, null, true, false, false);
+		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, conflictColumn, null, true, false, false, null);
 	}
 	
 	public static <E> @NonNull SqlInsertQuery<E> insertFromSelect(
@@ -151,7 +174,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
 		@NonNull SqlSelectQuery<?> fromSelect
 	) throws SqlStatementBuilderException {
-		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), fromSelect, null, null, false, false, true);
+		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), fromSelect, null, null, false, false, true, null);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -197,6 +220,13 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 			
 			renderer.literal(dialect.quoteIdentifier(columns.get(i).name()));
 		}
+		
+		SqlAuditConfig auditConfig = this.table.auditConfig().orElse(null);
+		if (auditConfig != null && !this.isInsertFromSelect) {
+			for (SqlAuditColumn column : auditConfig.auditColumns()) {
+				renderer.comma().literal(dialect.quoteIdentifier(column.name()));
+			}
+		}
 		renderer.closingBracket();
 		
 		if (this.isInsertFromSelect) {
@@ -222,6 +252,28 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 					} else {
 						addParameter(renderer, column.type(), value);
 					}
+				}
+				
+				if (auditConfig != null) {
+					String auditUser = SqlQueryExecutor.resolveUser(this.auditUserProvider);
+					
+					renderer.comma();
+					if (auditConfig.valueSource() == SqlAuditValueSource.DATABASE) {
+						renderer.literal("1");
+						renderer.comma();
+						renderer.rendered(dialect.renderFunction(new SqlCurrentTimestampFunction<>(auditConfig.timestampType())));
+					} else {
+						renderer.parameter(auditConfig.versionType(), 1L);
+						renderer.comma().parameter(auditConfig.timestampType(), LocalDateTime.now(auditConfig.clock()));
+					}
+					
+					renderer.comma();
+					if (auditUser == null) {
+						renderer.null_();
+					} else {
+						renderer.parameter(auditConfig.userType(), auditUser);
+					}
+					renderer.comma().null_().comma().null_();
 				}
 				
 				renderer.closingBracket();

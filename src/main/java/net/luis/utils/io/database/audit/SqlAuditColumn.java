@@ -16,7 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.query.util;
+package net.luis.utils.io.database.audit;
+
+import net.luis.utils.io.database.type.SqlType;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -24,10 +29,20 @@ package net.luis.utils.io.database.query.util;
  *
  */
 
-public enum SqlSetType {
+public record SqlAuditColumn(
+	@NonNull String name,
+	@NonNull SqlType<?> type,
+	@NonNull SqlAuditRole role,
+	boolean nullable
+) {
 	
-	EXPRESSION,
-	INCREMENT,
-	DECREMENT,
-	NULL
+	public SqlAuditColumn {
+		Objects.requireNonNull(name, "Sql audit column name must not be null");
+		Objects.requireNonNull(type, "Sql audit column type must not be null");
+		Objects.requireNonNull(role, "Sql audit column role must not be null");
+		
+		if (name.isBlank()) {
+			throw new IllegalArgumentException("Sql audit column name must not be blank");
+		}
+	}
 }

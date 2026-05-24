@@ -51,6 +51,10 @@ class SqlMigrationRenderer {
 		for (SqlMigrationOperation operation : operations) {
 			if (operation instanceof SqlAlterColumnOperation op) {
 				results.addAll(this.renderAlterColumn(op));
+			} else if (operation instanceof SqlEnableAuditingOperation op) {
+				results.addAll(this.migrationRenderer.renderEnableAuditing(op.table(), op.config()));
+			} else if (operation instanceof SqlDisableAuditingOperation op) {
+				results.addAll(this.migrationRenderer.renderDisableAuditing(op.table(), op.config()));
 			} else {
 				results.add(this.renderOperation(operation));
 			}
@@ -77,6 +81,8 @@ class SqlMigrationRenderer {
 			case SqlAddCheckConstraintOperation op -> this.migrationRenderer.renderAddCheckConstraint(op.table(), op.name(), op.condition());
 			case SqlAddCompositePrimaryKeyOperation op -> this.migrationRenderer.renderAddCompositePrimaryKey(op.table(), op.name(), op.columns());
 			case SqlDropConstraintOperation op -> this.migrationRenderer.renderDropConstraint(op.table(), op.name());
+			case SqlEnableAuditingOperation _ -> throw new IllegalStateException("SqlEnableAuditingOperation should be handled separately");
+			case SqlDisableAuditingOperation _ -> throw new IllegalStateException("SqlDisableAuditingOperation should be handled separately");
 			case SqlExecuteDataOperation _ -> SqlRendered.of("");
 		};
 	}

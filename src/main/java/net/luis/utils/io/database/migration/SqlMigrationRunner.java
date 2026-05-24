@@ -52,7 +52,7 @@ public final class SqlMigrationRunner {
 	private final SqlMigrationStore store;
 	private final SqlMigrationSchemaStore schemaStore;
 	private final SqlMigrationRenderer renderer;
-	private final List<RegisteredSqlMigration> registeredMigrations = new java.util.concurrent.CopyOnWriteArrayList<>();
+	private final List<RegisteredSqlMigration> registeredMigrations = Lists.newCopyOnWriteArrayList();
 	
 	private SqlMigrationRunner(@NonNull SqlMigrationContext context, @NonNull SqlMigrationStore store, @NonNull SqlMigrationSchemaStore schemaStore) {
 		this.context = Objects.requireNonNull(context, "Sql migration context must not be null");

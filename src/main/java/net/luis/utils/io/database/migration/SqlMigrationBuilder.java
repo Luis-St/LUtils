@@ -21,6 +21,7 @@ package net.luis.utils.io.database.migration;
 import com.google.common.collect.Lists;
 import net.luis.utils.function.throwable.ThrowableConsumer;
 import net.luis.utils.io.database.SqlReferentialAction;
+import net.luis.utils.io.database.audit.SqlAuditConfig;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.index.SqlIndex;
@@ -90,6 +91,22 @@ public class SqlMigrationBuilder {
 	
 	public void renameColumn(@NonNull SqlColumn<?, ?> from, @NonNull SqlColumn<?, ?> to) {
 		this.operations.add(new SqlRenameColumnOperation(from, to));
+	}
+	
+	public void enableAuditing(@NonNull SqlTable<?> table) {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		this.enableAuditing(table, table.auditConfig().orElse(SqlAuditConfig.DEFAULT));
+	}
+	
+	public void enableAuditing(@NonNull SqlTable<?> table, @NonNull SqlAuditConfig config) {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(config, "Sql audit config must not be null");
+		this.operations.add(new SqlEnableAuditingOperation(table, config));
+	}
+	
+	public void disableAuditing(@NonNull SqlTable<?> table) {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		this.operations.add(new SqlDisableAuditingOperation(table, table.auditConfig().orElse(SqlAuditConfig.DEFAULT)));
 	}
 	
 	public <C> void alterColumn(@NonNull SqlColumn<?, C> column, @NonNull Consumer<SqlMigrationColumnAlter<C>> changes) {

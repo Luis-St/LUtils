@@ -21,6 +21,7 @@ package net.luis.utils.io.database.table;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.database.SqlReferentialAction;
+import net.luis.utils.io.database.audit.SqlAuditConfig;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.type.SqlType;
 import org.jetbrains.annotations.Unmodifiable;
@@ -44,17 +45,19 @@ public class SqlTable<E> {
 	private final Class<E> type;
 	private final String name;
 	private final String schema;
+	private final Map</*Name*/ String, SqlColumn<E, ?>> columns = Maps.newLinkedHashMap();
 	private final List<SqlTableForeignKey<E, ?>> foreignKeys = Lists.newArrayList();
 	private final List<SqlUniqueConstraint<E>> uniqueConstraints = Lists.newArrayList();
 	private final List<SqlCondition> checkConstraints = Lists.newArrayList();
-	private final Map</*Name*/ String, SqlColumn<E, ?>> columns = Maps.newLinkedHashMap();
 	private final AtomicInteger columnCounter = new AtomicInteger(1);
+	private final SqlAuditConfig auditConfig;
 	private Optional<SqlCompositePrimaryKey<E>> compositePrimaryKey = Optional.empty();
 	
-	protected SqlTable(@NonNull Class<E> type, @NonNull String name, @NonNull String schema) {
+	protected SqlTable(@NonNull Class<E> type, @NonNull String name, @NonNull String schema, @Nullable SqlAuditConfig auditConfig) {
 		this.type = Objects.requireNonNull(type, "Type must not be null");
 		this.name = Objects.requireNonNull(name, "Sql table name must not be null");
 		this.schema = Objects.requireNonNull(schema, "Sql schema name must not be null");
+		this.auditConfig = auditConfig;
 		
 		if (name.isBlank()) {
 			throw new IllegalArgumentException("Sql table name must not be blank");
@@ -114,12 +117,29 @@ public class SqlTable<E> {
 	
 	//region Table factory methods
 	
-	public static <T> @NonNull SqlTable<T> of(@NonNull Class<T> type, @NonNull String name) {
-		return of(type, name, "public");
+	public static <T> @NonNull SqlTable<T> create(@NonNull Class<T> type, @NonNull String name) {
+		return create(type, name, "public");
 	}
 	
-	public static <T> @NonNull SqlTable<T> of(@NonNull Class<T> type, @NonNull String name, @NonNull String schema) {
-		return new SqlTable<>(type, name, schema);
+	public static <T> @NonNull SqlTable<T> create(@NonNull Class<T> type, @NonNull String name, @NonNull String schema) {
+		return new SqlTable<>(type, name, schema, null);
+	}
+	
+	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name) {
+		return audited(type, name, "public", SqlAuditConfig.DEFAULT);
+	}
+	
+	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull String schema) {
+		return audited(type, name, schema, SqlAuditConfig.DEFAULT);
+	}
+	
+	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull SqlAuditConfig config) {
+		return audited(type, name, "public", config);
+	}
+	
+	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull String schema, @NonNull SqlAuditConfig config) {
+		Objects.requireNonNull(config, "Sql audit config must not be null");
+		return new SqlTable<>(type, name, schema, config);
 	}
 	//endregion
 	
@@ -141,6 +161,9 @@ public class SqlTable<E> {
 		if (this.columns.containsKey(column.name())) {
 			throw new IllegalStateException("Sql column with name '" + name + "' already exists in table '" + this.name + "'");
 		}
+		if (this.auditConfig != null && this.auditConfig.columnNames().contains(column.name())) {
+			throw new IllegalStateException("Sql column name '" + column.name() + "' in table '" + this.name + "' collides with a reserved audit column name");
+		}
 		
 		SqlColumn<E, ?> previous = this.columnForIndex(column.index());
 		if (previous != null) {
@@ -148,7 +171,7 @@ public class SqlTable<E> {
 		}
 		
 		if (this.compositePrimaryKey.isEmpty()) {
-			List<SqlColumn<E, ?>> primaryKeyColumns = new ArrayList<>(this.columns.values().stream().filter(SqlColumn::primaryKey).toList());
+			List<SqlColumn<E, ?>> primaryKeyColumns = Lists.newArrayList(this.columns.values().stream().filter(SqlColumn::primaryKey).toList());
 			if (column.primaryKey()) {
 				primaryKeyColumns.add(column);
 			}
@@ -272,8 +295,8 @@ public class SqlTable<E> {
 	}
 	
 	public @Nullable SqlColumn<E, ?> columnForIndex(int index) {
-		if (index <= 1) {
-			throw new IllegalArgumentException("Sql column index must be greater than 1, but was " + index);
+		if (index < 1) {
+			throw new IllegalArgumentException("Sql column index must be greater than 0, but was " + index);
 		}
 		
 		Map<Integer, SqlColumn<E, ?>> indexes = Maps.newHashMap();
@@ -313,6 +336,14 @@ public class SqlTable<E> {
 		return Collections.unmodifiableList(this.checkConstraints);
 	}
 	
+	public boolean isAudited() {
+		return this.auditConfig != null;
+	}
+	
+	public @NonNull Optional<SqlAuditConfig> auditConfig() {
+		return Optional.ofNullable(this.auditConfig);
+	}
+	
 	//region Object overrides
 	
 	@Override
@@ -327,12 +358,13 @@ public class SqlTable<E> {
 		if (!this.checkConstraints.equals(sqlTable.checkConstraints)) return false;
 		if (!this.columns.equals(sqlTable.columns)) return false;
 		if (this.columnCounter.get() != sqlTable.columnCounter.get()) return false;
+		if (!Objects.equals(this.auditConfig, sqlTable.auditConfig)) return false;
 		return Objects.equals(this.compositePrimaryKey, sqlTable.compositePrimaryKey);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.type, this.name, this.schema, this.foreignKeys, this.uniqueConstraints, this.checkConstraints, this.columns, this.columnCounter.get());
+		return Objects.hash(this.type, this.name, this.schema, this.foreignKeys, this.uniqueConstraints, this.checkConstraints, this.columns, this.columnCounter.get(), this.auditConfig);
 	}
 	
 	@Override

@@ -27,6 +27,7 @@ import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.type.SqlType;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.sql.Types;
 import java.util.*;
@@ -43,7 +44,7 @@ public record SqlColumn<E, C>(
 	@NonNull String name,
 	int index,
 	@NonNull SqlType<C> type,
-	@NonNull Function<E, C> getter,
+	@NonNull Function<E, @Nullable C> getter,
 	boolean nullable,
 	@NonNull Optional<C> defaultValue,
 	boolean autoIncrement,

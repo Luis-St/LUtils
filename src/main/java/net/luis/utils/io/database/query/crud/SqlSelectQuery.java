@@ -21,6 +21,7 @@ package net.luis.utils.io.database.query.crud;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.SqlPage;
+import net.luis.utils.io.database.audit.*;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
@@ -74,11 +75,24 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	private final boolean skipLocked;
 	private final boolean noWait;
 	
-	public SqlSelectQuery(@NonNull SqlTable<?> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper) {
+	public SqlSelectQuery(
+		@NonNull SqlTable<?> table,
+		@NonNull SqlDialect dialect,
+		@NonNull SqlConnectionSource connectionSource,
+		@NonNull Duration queryTimeout,
+		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper
+	) {
 		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), -1, -1, false, null, null, null, null, false, false);
 	}
 	
-	public SqlSelectQuery(@NonNull SqlTable<?> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper, @NonNull List<SqlExpression<?>> selectedExpressions) {
+	public SqlSelectQuery(
+		@NonNull SqlTable<?> table,
+		@NonNull SqlDialect dialect,
+		@NonNull SqlConnectionSource connectionSource,
+		@NonNull Duration queryTimeout,
+		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
+		@NonNull List<SqlExpression<?>> selectedExpressions
+	) {
 		this(table, dialect, connectionSource, queryTimeout, rowMapper, selectedExpressions, List.of(), List.of(), List.of(), List.of(), List.of(), -1, -1, false, null, null, null, null, false, false);
 	}
 	
@@ -593,6 +607,42 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 			this.orderByClauses,
 			this.setOperations,
 			SqlQuery.copyAndAdd(this.commonTableExpressions, commonTableExpression),
+			this.limit,
+			this.offset,
+			this.isDistinct,
+			this.whereCondition,
+			this.whereExistsSubquery,
+			this.havingCondition,
+			this.lockMode,
+			this.skipLocked,
+			this.noWait
+		);
+	}
+	
+	public @NonNull SqlSelectQuery<SqlAudited<E>> withAudit() throws SqlException {
+		SqlAuditConfig config = this.table.auditConfig().orElseThrow(() -> new SqlStatementBuilderException("withAudit() requires an audited sql table"));
+		if (!this.selectedExpressions.isEmpty()) {
+			throw new SqlStatementBuilderException("withAudit() is only supported for full-entity selects, not projections");
+		}
+		
+		int entityColumnCount = this.table.columns().size();
+		ThrowableFunction<ResultSet, E, SqlException> entityMapper = this.rowMapper;
+		ThrowableFunction<ResultSet, SqlAudited<E>, SqlException> auditMapper = resultSet -> {
+			E entity = entityMapper.apply(resultSet);
+			return SqlAudited.of(entity, SqlAuditMetadata.readFrom(resultSet, entityColumnCount + 1, config));
+		};
+		return new SqlSelectQuery<>(
+			this.table,
+			this.dialect,
+			this.connectionSource,
+			this.queryTimeout,
+			auditMapper,
+			this.selectedExpressions,
+			this.joins,
+			this.groupByColumns,
+			this.orderByClauses,
+			List.of(),
+			this.commonTableExpressions,
 			this.limit,
 			this.offset,
 			this.isDistinct,

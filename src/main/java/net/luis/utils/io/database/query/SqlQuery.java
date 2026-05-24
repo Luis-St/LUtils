@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.query;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.database.rendering.SqlRenderable;
 import org.jspecify.annotations.NonNull;
 
@@ -36,7 +37,7 @@ public interface SqlQuery<E> extends SqlRenderable {
 		Objects.requireNonNull(list, "List must not be null");
 		Objects.requireNonNull(element, "Element must not be null");
 		
-		List<T> copy = new ArrayList<>(list.size() + 1);
+		List<T> copy = Lists.newArrayListWithCapacity(list.size() + 1);
 		copy.addAll(list);
 		copy.add(element);
 		return Collections.unmodifiableList(copy);
@@ -46,7 +47,7 @@ public interface SqlQuery<E> extends SqlRenderable {
 		Objects.requireNonNull(list, "List must not be null");
 		Objects.requireNonNull(elements, "Elements must not be null");
 		
-		List<T> copy = new ArrayList<>(list.size() + elements.size());
+		List<T> copy = Lists.newArrayListWithCapacity(list.size() + elements.size());
 		copy.addAll(list);
 		copy.addAll(elements);
 		return Collections.unmodifiableList(copy);

@@ -18,28 +18,27 @@
 
 package net.luis.utils.io.database.migration.operation;
 
+import net.luis.utils.io.database.audit.SqlAuditConfig;
+import net.luis.utils.io.database.table.SqlTable;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+
 /**
+ * Migration operation that adds the audit columns to an existing table.<br>
  *
  * @author Luis-St
  *
+ * @param table The table to enable auditing on
+ * @param config The audit configuration describing the columns to add
  */
-
-public sealed interface SqlMigrationOperation permits
-	SqlCreateTableOperation,
-	SqlDropTableOperation,
-	SqlRenameTableOperation,
-	SqlAddColumnOperation,
-	SqlDropColumnOperation,
-	SqlRenameColumnOperation,
-	SqlAlterColumnOperation,
-	SqlCreateIndexOperation,
-	SqlDropIndexOperation,
-	SqlRenameIndexOperation,
-	SqlAddUniqueConstraintOperation,
-	SqlAddForeignKeyOperation,
-	SqlAddCheckConstraintOperation,
-	SqlAddCompositePrimaryKeyOperation,
-	SqlDropConstraintOperation,
-	SqlEnableAuditingOperation,
-	SqlDisableAuditingOperation,
-	SqlExecuteDataOperation {}
+public record SqlEnableAuditingOperation(
+	@NonNull SqlTable<?> table,
+	@NonNull SqlAuditConfig config
+) implements SqlMigrationOperation {
+	
+	public SqlEnableAuditingOperation {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(config, "Sql audit config must not be null");
+	}
+}

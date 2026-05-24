@@ -94,7 +94,7 @@ public class DatabaseMigrationTest {
 		DATA_SOURCE = new HikariDataSource(config);
 		
 		// User table (current schema)
-		USER_TABLE = SqlTable.of(User.class, "user");
+		USER_TABLE = SqlTable.create(User.class, "user");
 		USER_ID = USER_TABLE.column("id", SqlTypes.INTEGER, User::id, col -> col.primaryKey().notNull().autoIncrement());
 		USERNAME = USER_TABLE.column("username", SqlTypes.STRING.configure(SqlParameter.length(64)), User::username, SqlColumnBuilder::notNull);
 		USER_EMAIL = USER_TABLE.column("email", SqlTypes.STRING.configure(SqlParameter.length(320)), User::email, col -> col.notNull().unique());
@@ -103,7 +103,7 @@ public class DatabaseMigrationTest {
 		USER_VERSION = USER_TABLE.column("version", SqlTypes.LONG, User::version, col -> col.notNull().defaultValue(0L));
 		
 		// Role table (current schema)
-		ROLE_TABLE = SqlTable.of(Role.class, "role");
+		ROLE_TABLE = SqlTable.create(Role.class, "role");
 		ROLE_ID = ROLE_TABLE.column("id", SqlTypes.INTEGER, Role::id, col -> col.primaryKey().notNull().autoIncrement());
 		ROLE_NAME = ROLE_TABLE.column("name", SqlTypes.STRING.configure(SqlParameter.length(64)), Role::name, SqlColumnBuilder::notNull);
 		ROLE_DESCRIPTION = ROLE_TABLE.column("description", SqlTypes.STRING.configure(SqlParameter.length(512)), Role::description);
@@ -111,7 +111,7 @@ public class DatabaseMigrationTest {
 		ROLE_ACTIVE = ROLE_TABLE.column("active", SqlTypes.BOOLEAN, Role::active, col -> col.notNull().defaultValue(true));
 		
 		// UserRole junction table (current schema)
-		USER_ROLE_TABLE = SqlTable.of(UserRole.class, "user_role");
+		USER_ROLE_TABLE = SqlTable.create(UserRole.class, "user_role");
 		UR_USER_ID = USER_ROLE_TABLE.column("user_id", SqlTypes.INTEGER, UserRole::userId, SqlColumnBuilder::notNull);
 		UR_ROLE_ID = USER_ROLE_TABLE.column("role_id", SqlTypes.INTEGER, UserRole::roleId, SqlColumnBuilder::notNull);
 		UR_ASSIGNED_AT = USER_ROLE_TABLE.column("assigned_at", SqlTypes.INSTANT.configure(SqlParameter.fractional(3)), UserRole::assignedAt, SqlColumnBuilder::notNull);
@@ -158,8 +158,9 @@ public class DatabaseMigrationTest {
 	}
 	
 	static @NonNull SqlMigration createInitialSchema() {
-		// Person table phantom (typed for data seeding)
-		SqlTable<Person> personTable = SqlTable.of(Person.class, "person");
+		// ToDo: SqlMigrationSchema not correctly used
+		
+		SqlTable<Person> personTable = SqlTable.create(Person.class, "person");
 		SqlColumn<Person, Integer> personId = personTable.column("id", SqlTypes.INTEGER, Person::id, col -> col.primaryKey().notNull().autoIncrement());
 		SqlColumn<Person, String> firstName = personTable.column("first_name", SqlTypes.STRING.configure(SqlParameter.length(64)), Person::firstName, SqlColumnBuilder::notNull);
 		SqlColumn<Person, String> lastName = personTable.column("last_name", SqlTypes.STRING.configure(SqlParameter.length(64)), Person::lastName, SqlColumnBuilder::notNull);
@@ -226,7 +227,9 @@ public class DatabaseMigrationTest {
 	}
 	
 	static @NonNull SqlMigration addRelationshipsAndAuditLog() {
-		SqlTable<Void> auditLogTable = SqlTable.of(Void.class, "audit_log");
+		// ToDo: SqlMigrationSchema not correctly used
+		
+		SqlTable<Void> auditLogTable = SqlTable.create(Void.class, "audit_log");
 		SqlColumn<Void, Integer> auditId = auditLogTable.column("id", SqlTypes.INTEGER, v -> null, col -> col.primaryKey().notNull().autoIncrement());
 		SqlColumn<Void, Integer> auditUserId = auditLogTable.column("user_id", SqlTypes.INTEGER, v -> null, SqlColumnBuilder::notNull);
 		SqlColumn<Void, String> auditAction = auditLogTable.column("action", SqlTypes.STRING.configure(SqlParameter.length(64)), v -> null, SqlColumnBuilder::notNull);
@@ -338,11 +341,11 @@ public class DatabaseMigrationTest {
 				SqlColumn<Void, Long> version = schema.column("user", "version", Long.class);
 				SqlColumn<Void, String> email = schema.column("user", "email", String.class);
 				
-				SqlTable<Void> temp = SqlTable.of(Void.class, "user");
+				SqlTable<Void> temp = SqlTable.create(Void.class, "user");
 				SqlColumn<Void, String> lastName = temp.column("last_name", SqlTypes.STRING.configure(SqlParameter.length(64)), v -> null, SqlColumnBuilder::notNull);
 				SqlColumn<Void, String> firstName = temp.column("first_name", SqlTypes.STRING.configure(SqlParameter.length(64)), v -> null);
 				
-				SqlTable<Void> personTarget = SqlTable.of(Void.class, "person");
+				SqlTable<Void> personTarget = SqlTable.create(Void.class, "person");
 				
 				builder.renameIndex(userTable, "idx_user_email", "idx_person_email");
 				builder.alterColumn(version, col -> col.setDefault(0L));
@@ -356,7 +359,8 @@ public class DatabaseMigrationTest {
 	}
 	
 	static @NonNull SqlMigration restructureAndCleanup() {
-		SqlTable<Void> auditLogTable = SqlTable.of(Void.class, "audit_log");
+		// ToDo: SqlMigrationSchema not correctly used
+		SqlTable<Void> auditLogTable = SqlTable.create(Void.class, "audit_log");
 		SqlColumn<Void, Integer> auditId = auditLogTable.column("id", SqlTypes.INTEGER, v -> null, col -> col.primaryKey().notNull().autoIncrement());
 		SqlColumn<Void, Integer> auditUserId = auditLogTable.column("user_id", SqlTypes.INTEGER, v -> null, SqlColumnBuilder::notNull);
 		SqlColumn<Void, String> auditAction = auditLogTable.column("action", SqlTypes.STRING.configure(SqlParameter.length(64)), v -> null, SqlColumnBuilder::notNull);

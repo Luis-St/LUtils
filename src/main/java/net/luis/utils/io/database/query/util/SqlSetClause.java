@@ -24,6 +24,7 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.rendering.*;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -35,14 +36,17 @@ import java.util.Objects;
 
 public record SqlSetClause<E, V>(
 	@NonNull SqlColumn<E, V> column,
-	@NonNull SqlExpression<V> expression,
+	@Nullable SqlExpression<V> expression,
 	@NonNull SqlSetType type
 ) implements SqlRenderable {
 	
 	public SqlSetClause {
 		Objects.requireNonNull(column, "Sql Column must not be null");
-		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(type, "Sql set type must not be null");
+		
+		if (type != SqlSetType.NULL) {
+			Objects.requireNonNull(expression, "Sql expression must not be null");
+		}
 	}
 	
 	@Override
@@ -56,9 +60,12 @@ public record SqlSetClause<E, V>(
 			case EXPRESSION -> renderer.literal(quotedColumn).literal("=");
 			case INCREMENT -> renderer.literal(quotedColumn).literal("=").literal(qualifiedColumn).literal("+");
 			case DECREMENT -> renderer.literal(quotedColumn).literal("=").literal(qualifiedColumn).literal("-");
+			case NULL -> renderer.literal(quotedColumn).literal("=").null_();
 		}
 		
-		renderer.rendered(dialect.renderExpression(this.expression));
+		if (this.expression != null) {
+			renderer.rendered(dialect.renderExpression(this.expression));
+		}
 		return renderer.toSql();
 	}
 }

@@ -46,7 +46,6 @@ import java.util.Objects;
  * @author Luis-St
  *
  */
-
 public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	
 	private final SqlTable<E> table;
@@ -59,7 +58,13 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	private final @Nullable SqlCondition whereCondition;
 	private final boolean allowAll;
 	
-	public SqlUpdateQuery(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper) {
+	public SqlUpdateQuery(
+		@NonNull SqlTable<E> table,
+		@NonNull SqlDialect dialect,
+		@NonNull SqlConnectionSource connectionSource,
+		@NonNull Duration queryTimeout,
+		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper
+	) {
 		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), List.of(), null, false);
 	}
 	
@@ -124,10 +129,26 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 		return this.withJoin(new SqlJoinClause(SqlJoinType.CROSS, table, null));
 	}
 	
-	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @NonNull V value) {
+	public <V> @NonNull SqlUpdateQuery<E> setNull(@NonNull SqlColumn<E, V> column) {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
-		return this.set(column, Sql.of(value, column.type()));
+		return new SqlUpdateQuery<>(
+			this.table,
+			this.dialect,
+			this.connectionSource,
+			this.queryTimeout,
+			this.rowMapper,
+			SqlQuery.copyAndAdd(this.setClauses, new SqlSetClause<>(column, null, SqlSetType.NULL)),
+			this.joins,
+			this.whereCondition,
+			this.allowAll
+		);
+	}
+	
+	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @Nullable V value) {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		
+		return value == null ? this.setNull(column) : this.set(column, Sql.of(value, column.type()));
 	}
 	
 	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> expression) {
@@ -186,6 +207,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	
 	public @NonNull SqlUpdateQuery<E> where(@NonNull SqlCondition condition) {
 		Objects.requireNonNull(condition, "Sql where condition must not be null");
+		
 		SqlCondition combined = this.whereCondition != null ? SqlCondition.allOf(this.whereCondition, condition) : condition;
 		return new SqlUpdateQuery<>(
 			this.table,
@@ -216,7 +238,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	
 	public int execute() throws SqlException {
 		if (this.whereCondition == null && !this.allowAll) {
-			throw new SqlStatementBuilderException("UPDATE without WHERE clause would affect all rows; call allowAll() to confirm this is intentional");
+			throw new SqlStatementBuilderException("UPDATE without WHERE clause would affect all rows, call allowAll() to confirm this is intentional");
 		}
 		return SqlQueryExecutor.executeUpdate(this.dialect, this.connectionSource, this.toSql(this.dialect), this.queryTimeout);
 	}

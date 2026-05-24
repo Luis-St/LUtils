@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database;
 
+import net.luis.utils.io.database.audit.SqlAuditUserProvider;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.database.SqlConnectionException;
 import net.luis.utils.io.database.transaction.SqlIsolationLevel;
@@ -42,6 +43,7 @@ public class SqlDatabaseBuilder {
 	private SqlIsolationLevel defaultTransactionIsolationLevel = SqlIsolationLevel.READ_COMMITTED;
 	private SqlPropagation defaultTransactionPropagation = SqlPropagation.REQUIRED;
 	private boolean autoCloseDataSource;
+	private SqlAuditUserProvider auditUserProvider = SqlAuditUserProvider.empty();
 	
 	public SqlDatabaseBuilder(@NonNull DataSource dataSource, @NonNull SqlDialect dialect) {
 		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");
@@ -68,7 +70,12 @@ public class SqlDatabaseBuilder {
 		return this;
 	}
 	
+	public @NonNull SqlDatabaseBuilder auditUserProvider(@NonNull SqlAuditUserProvider auditUserProvider) {
+		this.auditUserProvider = Objects.requireNonNull(auditUserProvider, "Audit user provider must not be null");
+		return this;
+	}
+	
 	public @NonNull SqlDatabase build() throws SqlConnectionException {
-		return new SqlDatabase(this.dataSource, this.dialect, this.queryTimeout, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation, this.autoCloseDataSource);
+		return new SqlDatabase(this.dataSource, this.dialect, this.queryTimeout, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation, this.autoCloseDataSource, this.auditUserProvider);
 	}
 }

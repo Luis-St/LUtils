@@ -19,6 +19,7 @@
 package net.luis.utils.io.database.query.row;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.database.SqlResultMappingException;
@@ -80,7 +81,7 @@ public final class SqlRowMapper {
 		Objects.requireNonNull(rowType, "Row type must not be null");
 		Objects.requireNonNull(expressions, "Sql expressions must not be null");
 		
-		List<SqlType<?>> types = new ArrayList<>(expressions.size());
+		List<SqlType<?>> types = Lists.newArrayListWithCapacity(expressions.size());
 		for (SqlExpression<?> expression : expressions) {
 			types.add(expression.type());
 		}
@@ -179,7 +180,7 @@ public final class SqlRowMapper {
 			types[m] = expressions.get(expressionIndex).type();
 		}
 		
-		Map<String, Integer> methodIndexMap = new HashMap<>();
+		Map<String, Integer> methodIndexMap = Maps.newHashMap();
 		for (int i = 0; i < methodNames.length; i++) {
 			methodIndexMap.put(methodNames[i], i);
 		}
@@ -210,7 +211,7 @@ public final class SqlRowMapper {
 			return index != null ? index : Integer.MAX_VALUE;
 		}));
 		
-		Map<String, Integer> methodIndexMap = new HashMap<>();
+		Map<String, Integer> methodIndexMap = Maps.newHashMap();
 		for (int i = 0; i < methods.length; i++) {
 			methodIndexMap.put(methods[i].getName(), i);
 		}

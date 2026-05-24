@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.type.infer;
 
+import com.google.common.collect.Maps;
 import net.luis.utils.io.database.exception.client.SqlTypeNotFoundException;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
@@ -35,7 +36,7 @@ public class SqlLookupTypeInferrer implements SqlTypeInferrer {
 	private final Map<Class<?>, SqlType<?>> lookup;
 	
 	SqlLookupTypeInferrer(@NonNull Map<Class<?>, SqlType<?>> lookup) {
-		this.lookup = Collections.unmodifiableMap(new LinkedHashMap<>(Objects.requireNonNull(lookup, "Sql type lookup map must not be null")));
+		this.lookup = Collections.unmodifiableMap(Maps.newLinkedHashMap(Objects.requireNonNull(lookup, "Sql type lookup map must not be null")));
 	}
 	
 	@Override

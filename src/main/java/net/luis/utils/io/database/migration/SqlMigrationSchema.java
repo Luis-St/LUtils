@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.migration;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.dialect.SqlDialect;
@@ -92,7 +93,7 @@ public final class SqlMigrationSchema {
 				Set<String> primaryKeyColumns = loadPrimaryKeyColumns(meta, schema, tableName);
 				Set<String> uniqueColumns = loadUniqueColumns(meta, schema, tableName);
 				
-				SqlTable<Void> table = SqlTable.of(Void.class, tableName, schema);
+				SqlTable<Void> table = SqlTable.create(Void.class, tableName, schema);
 				Map<String, SqlColumn<Void, ?>> tableColumns = Maps.newLinkedHashMap();
 				
 				try (ResultSet colRs = meta.getColumns(null, schema, tableName, "%")) {
@@ -154,9 +155,9 @@ public final class SqlMigrationSchema {
 		Map<String, SqlTable<Void>> tables = Maps.newLinkedHashMap();
 		Map<String, Map<String, SqlColumn<Void, ?>>> columns = Maps.newLinkedHashMap();
 		
-		Map<String, List<SqlSchemaColumnInfo>> grouped = new LinkedHashMap<>();
+		Map<String, List<SqlSchemaColumnInfo>> grouped = Maps.newLinkedHashMap();
 		for (SqlSchemaColumnInfo info : columnInfos) {
-			grouped.computeIfAbsent(info.tableName(), _ -> new ArrayList<>()).add(info);
+			grouped.computeIfAbsent(info.tableName(), _ -> Lists.newArrayList()).add(info);
 		}
 		for (List<SqlSchemaColumnInfo> group : grouped.values()) {
 			group.sort(Comparator.comparingInt(SqlSchemaColumnInfo::ordinalPosition));
@@ -166,7 +167,7 @@ public final class SqlMigrationSchema {
 			String tableName = entry.getKey();
 			List<SqlSchemaColumnInfo> tableColumnInfos = entry.getValue();
 			
-			SqlTable<Void> table = SqlTable.of(Void.class, tableName, schema);
+			SqlTable<Void> table = SqlTable.create(Void.class, tableName, schema);
 			Map<String, SqlColumn<Void, ?>> tableColumns = Maps.newLinkedHashMap();
 			
 			int primaryKeyCount = 0;
@@ -197,7 +198,7 @@ public final class SqlMigrationSchema {
 	
 	private static @NonNull List<String> discoverTableNames(@NonNull DatabaseMetaData meta, @NonNull String schema) throws SQLException {
 		try (ResultSet rs = meta.getTables(null, schema, "%", new String[] { "TABLE" })) {
-			List<String> tableNames = new ArrayList<>();
+			List<String> tableNames = Lists.newArrayList();
 			
 			while (rs.next()) {
 				tableNames.add(rs.getString("TABLE_NAME"));
@@ -229,7 +230,7 @@ public final class SqlMigrationSchema {
 				String colName = idxRs.getString("COLUMN_NAME");
 				
 				if (indexName != null && colName != null) {
-					indexColumns.computeIfAbsent(indexName, _ -> new ArrayList<>()).add(colName);
+					indexColumns.computeIfAbsent(indexName, _ -> Lists.newArrayList()).add(colName);
 				}
 			}
 		}
@@ -274,7 +275,7 @@ public final class SqlMigrationSchema {
 	}
 	
 	public @NonNull List<SqlSchemaColumnInfo> extractColumnInfos() {
-		List<SqlSchemaColumnInfo> infos = new ArrayList<>();
+		List<SqlSchemaColumnInfo> infos = Lists.newArrayList();
 		for (Map.Entry<String, Map<String, SqlColumn<Void, ?>>> tableEntry : this.columns.entrySet()) {
 			int ordinal = 0;
 			String tableName = tableEntry.getKey();

@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.migration.store;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
@@ -174,7 +175,7 @@ public class SqlMigrationSchemaStore {
 		Objects.requireNonNull(version, "Version must not be null");
 		String versionStr = version.toString();
 		
-		List<SqlSchemaColumnInfo> columnInfos = new ArrayList<>();
+		List<SqlSchemaColumnInfo> columnInfos = Lists.newArrayList();
 		try (Connection connection = this.dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(this.dialect.getSelectSchemaColumnsSql())) {
 			statement.setString(1, versionStr);
 			try (ResultSet rs = statement.executeQuery()) {
@@ -212,7 +213,7 @@ public class SqlMigrationSchemaStore {
 			try (ResultSet rs = statement.executeQuery()) {
 				while (rs.next()) {
 					String tableName = rs.getString("table_name");
-					checkConstraints.computeIfAbsent(tableName, k -> new ArrayList<>()).add(new SqlCheckConstraintInfo(rs.getString("constraint_name"), rs.getString("check_clause")));
+					checkConstraints.computeIfAbsent(tableName, k -> Lists.newArrayList()).add(new SqlCheckConstraintInfo(rs.getString("constraint_name"), rs.getString("check_clause")));
 				}
 			}
 		} catch (SQLException e) {

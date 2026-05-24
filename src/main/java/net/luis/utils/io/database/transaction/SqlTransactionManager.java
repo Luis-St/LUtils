@@ -20,9 +20,9 @@ package net.luis.utils.io.database.transaction;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.transaction.SqlTransactionPropagationException;
 import net.luis.utils.io.database.exception.database.transaction.SqlTransactionConnectionException;
 import net.luis.utils.io.database.exception.database.transaction.SqlTransactionSavepointException;
-import net.luis.utils.io.database.exception.client.transaction.SqlTransactionPropagationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
@@ -66,7 +66,13 @@ public class SqlTransactionManager {
 			case NEVER -> this.resolveNever(current, readOnly, isolationLevel);
 		};
 		
-		tx.setOnClose(() -> this.restore(tx));
+		tx.addListener(new SqlTransactionListener() {
+			
+			@Override
+			public void afterClose() {
+				SqlTransactionManager.this.restore(tx);
+			}
+		});
 		CURRENT_TRANSACTION.set(tx);
 		return tx;
 	}
