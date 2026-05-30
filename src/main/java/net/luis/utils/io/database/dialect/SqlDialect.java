@@ -34,11 +34,13 @@ import net.luis.utils.io.database.query.SqlSetOperation;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.*;
 import org.jspecify.annotations.NonNull;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -64,6 +66,14 @@ public interface SqlDialect {
 	
 	@NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlException;
 	
+	default @NonNull Optional<SqlValueBinder> bindingOverride(@NonNull SqlType<?> type) {
+		return Optional.empty();
+	}
+	
+	default @NonNull Optional<SqlValueReader> readingOverride(@NonNull SqlType<?> type) {
+		return Optional.empty();
+	}
+	
 	@NonNull SqlRendered renderExpression(@NonNull SqlExpression<?> expression) throws SqlException;
 	
 	@NonNull SqlRendered renderFunction(@NonNull SqlFunction<?> function) throws SqlException;
@@ -78,6 +88,10 @@ public interface SqlDialect {
 	
 	boolean isFeatureSupported(@NonNull SqlFeature feature);
 	
+	default int maxBindParameters() {
+		return 65535;
+	}
+	
 	boolean isIndexMethodSupported(@NonNull SqlIndexMethod method);
 	
 	@NonNull String getIndexMethodName(@NonNull SqlIndexMethod method) throws SqlException;
@@ -88,7 +102,7 @@ public interface SqlDialect {
 	
 	void renderReferentialAction(@NonNull SqlRenderer renderer, @NonNull SqlReferentialAction action) throws SqlException;
 	
-	@NonNull SqlRendered renderLimitOffset(long limit, long offset) throws SqlException;
+	@NonNull SqlRendered renderLimitOffset(long limit, long offset, boolean hasOrdering) throws SqlException;
 	
 	@NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException;
 	
@@ -103,6 +117,8 @@ public interface SqlDialect {
 	@NonNull SqlRendered renderOrdering(@NonNull SqlOrdering ordering, @NonNull SqlNullOrdering nullOrdering) throws SqlException;
 	
 	@NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) throws SqlException;
+	
+	@NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull SqlColumn<?, ?> conflictColumn, @NonNull SqlRendered valueTuples) throws SqlException;
 	
 	@NonNull SqlRendered renderInsertOrIgnoreModifier() throws SqlException;
 	

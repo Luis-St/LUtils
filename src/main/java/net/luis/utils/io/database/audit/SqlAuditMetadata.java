@@ -18,7 +18,9 @@
 
 package net.luis.utils.io.database.audit;
 
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -57,15 +59,16 @@ public record SqlAuditMetadata(
 		);
 	}
 	
-	public static @NonNull SqlAuditMetadata readFrom(@NonNull ResultSet resultSet, int startIndex, @NonNull SqlAuditConfig config) throws SqlException {
+	public static @NonNull SqlAuditMetadata readFrom(@NonNull SqlDialect dialect, @NonNull ResultSet resultSet, int startIndex, @NonNull SqlAuditConfig config) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(resultSet, "Result set must not be null");
 		Objects.requireNonNull(config, "Sql audit config must not be null");
 		
-		Long version = config.versionType().get(resultSet, startIndex);
-		LocalDateTime createdAt = config.timestampType().get(resultSet, startIndex + 1);
-		String createdBy = config.userType().get(resultSet, startIndex + 2);
-		LocalDateTime updatedAt = config.timestampType().get(resultSet, startIndex + 3);
-		String updatedBy = config.userType().get(resultSet, startIndex + 4);
+		Long version = SqlType.getValue(config.versionType(), dialect, resultSet, startIndex);
+		LocalDateTime createdAt = SqlType.getValue(config.timestampType(), dialect, resultSet, startIndex + 1);
+		String createdBy = SqlType.getValue(config.userType(), dialect, resultSet, startIndex + 2);
+		LocalDateTime updatedAt = SqlType.getValue(config.timestampType(), dialect, resultSet, startIndex + 3);
+		String updatedBy = SqlType.getValue(config.userType(), dialect, resultSet, startIndex + 4);
 		return SqlAuditMetadata.of(version == null ? -1L : version, createdAt, createdBy, updatedAt, updatedBy);
 	}
 	

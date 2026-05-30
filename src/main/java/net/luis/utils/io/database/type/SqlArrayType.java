@@ -23,6 +23,7 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.exception.database.SqlResultMappingException;
 import net.luis.utils.io.database.exception.database.statement.SqlStatementBindException;
+import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -36,6 +37,7 @@ import java.util.Objects;
  *
  */
 
+@SuppressWarnings({ "unchecked", "ClassEscapesDefinedScope" })
 public final class SqlArrayType<E> implements SqlType<E[]> {
 	
 	private final SqlType<E> elementType;
@@ -59,14 +61,17 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public @NonNull Class<E[]> javaType() {
 		return (Class<E[]>) Array.newInstance(this.elementType.javaType(), 0).getClass();
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
-	public E @Nullable [] get(@NonNull ResultSet resultSet, int columnIndex) throws SqlException {
+	@ApiStatus.Internal
+	public E @Nullable [] get(@NonNull SqlTypeInternalAccess access, @NonNull ResultSet resultSet, int columnIndex) throws SqlException {
+		if (access == null) {
+			throw new IllegalCallerException("SqlType#get should only be called from inside the net.luis.utils.io.database.type package, external callers should use SqlType#getValue");
+		}
+		
 		Objects.requireNonNull(resultSet, "Result set must not be null");
 		if (columnIndex < 1) {
 			throw new IllegalArgumentException("Column index must be greater than or equal to 1");
@@ -96,8 +101,13 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 	}
 	
 	@Override
-	public void set(@NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, E @Nullable [] value) throws SqlException {
-		Objects.requireNonNull(dialect, "Dialect must not be null");
+	@ApiStatus.Internal
+	public void set(@NonNull SqlTypeInternalAccess access, @NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, E @Nullable [] value) throws SqlException {
+		if (access == null) {
+			throw new IllegalCallerException("SqlType#set should only be called from inside the net.luis.utils.io.database.type package, external callers should use SqlType#setValue");
+		}
+		
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(preparedStatement, "Prepared statement must not be null");
 		if (columnIndex < 1) {
 			throw new IllegalArgumentException("Sql column index must be greater than or equal to 1");

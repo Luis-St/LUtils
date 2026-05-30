@@ -22,6 +22,7 @@ import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.audit.*;
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
 import net.luis.utils.io.database.function.functions.temporal.SqlCurrentTimestampFunction;
@@ -37,8 +38,7 @@ import org.jspecify.annotations.Nullable;
 import java.sql.ResultSet;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  *
@@ -48,19 +48,7 @@ import java.util.Objects;
 
 public class SqlInsertQuery<E> implements SqlQuery<E> {
 	
-	private final SqlTable<E> table;
-	private final SqlDialect dialect;
-	private final SqlConnectionSource connectionSource;
-	private final Duration queryTimeout;
-	private final ThrowableFunction<ResultSet, E, SqlException> rowMapper;
-	private final List<E> entities;
-	private final @Nullable SqlSelectQuery<?> fromSelect;
-	private final @Nullable SqlColumn<E, ?> conflictColumn;
-	private final @Nullable List<SqlColumn<E, ?>> conflictColumns;
-	private final boolean isUpsert;
-	private final boolean isInsertOrIgnore;
-	private final boolean isInsertFromSelect;
-	private final @Nullable SqlAuditUserProvider auditUserProvider;
+	private final SqlInsertQueryConfig<E> config;
 	
 	public SqlInsertQuery(
 		@NonNull SqlTable<E> table,
@@ -83,59 +71,11 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		@Nullable SqlAuditUserProvider auditUserProvider
 	) throws SqlStatementBuilderException {
 		Objects.requireNonNull(entities, "Entities must not be null");
-		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, null, null, false, false, false, auditUserProvider);
+		this(SqlInsertQueryConfig.create(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, null, null, false, false, false, auditUserProvider));
 	}
 	
-	private SqlInsertQuery(
-		@NonNull SqlTable<E> table,
-		@NonNull SqlDialect dialect,
-		@NonNull SqlConnectionSource connectionSource,
-		@NonNull Duration queryTimeout,
-		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
-		@NonNull List<E> entities,
-		@Nullable SqlSelectQuery<?> fromSelect,
-		@Nullable SqlColumn<E, ?> conflictColumn,
-		@Nullable List<SqlColumn<E, ?>> conflictColumns,
-		boolean isUpsert,
-		boolean isInsertOrIgnore,
-		boolean isInsertFromSelect,
-		@Nullable SqlAuditUserProvider auditUserProvider
-	) throws SqlStatementBuilderException {
-		this.table = Objects.requireNonNull(table, "Sql table must not be null");
-		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		this.connectionSource = Objects.requireNonNull(connectionSource, "Sql connection source must not be null");
-		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
-		this.rowMapper = Objects.requireNonNull(rowMapper, "Row mapper must not be null");
-		this.entities = entities;
-		this.fromSelect = fromSelect;
-		this.conflictColumn = conflictColumn;
-		this.conflictColumns = conflictColumns;
-		this.isUpsert = isUpsert;
-		this.isInsertOrIgnore = isInsertOrIgnore;
-		this.isInsertFromSelect = isInsertFromSelect;
-		this.auditUserProvider = auditUserProvider;
-		
-		if (entities.isEmpty() && !isInsertFromSelect) {
-			throw new IllegalArgumentException("Entities list must not be empty for insert queries");
-		}
-		
-		if (isUpsert && isInsertOrIgnore) {
-			throw new SqlStatementBuilderException("Upsert and insert or ignore are mutually exclusive");
-		}
-		
-		if (isUpsert && conflictColumn == null) {
-			throw new SqlStatementBuilderException("Conflict column must be specified for upsert queries");
-		}
-		
-		if (isInsertOrIgnore) {
-			if (conflictColumns == null || conflictColumns.isEmpty()) {
-				throw new SqlStatementBuilderException("Conflict columns must be specified for insert or ignore queries");
-			}
-		}
-		
-		if (isInsertFromSelect && fromSelect == null) {
-			throw new SqlStatementBuilderException("From select query must be specified for insert from select queries");
-		}
+	SqlInsertQuery(@NonNull SqlInsertQueryConfig<E> config) {
+		this.config = Objects.requireNonNull(config, "Sql insert query config must not be null");
 	}
 	
 	public static <E> @NonNull SqlInsertQuery<E> insertOrIgnore(
@@ -150,7 +90,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		Objects.requireNonNull(entities, "List of entities must not be null");
 		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
 		
-		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, null, List.copyOf(conflictColumns), false, true, false, null);
+		return new SqlInsertQuery<>(SqlInsertQueryConfig.create(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, null, List.copyOf(conflictColumns), false, true, false, null));
 	}
 	
 	public static <E> @NonNull SqlInsertQuery<E> upsert(
@@ -163,7 +103,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		@NonNull SqlColumn<E, ?> conflictColumn
 	) throws SqlStatementBuilderException {
 		Objects.requireNonNull(entities, "List of entities must not be null");
-		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, conflictColumn, null, true, false, false, null);
+		return new SqlInsertQuery<>(SqlInsertQueryConfig.create(table, dialect, connectionSource, queryTimeout, rowMapper, List.copyOf(entities), null, conflictColumn, null, true, false, false, null));
 	}
 	
 	public static <E> @NonNull SqlInsertQuery<E> insertFromSelect(
@@ -174,7 +114,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
 		@NonNull SqlSelectQuery<?> fromSelect
 	) throws SqlStatementBuilderException {
-		return new SqlInsertQuery<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), fromSelect, null, null, false, false, true, null);
+		return new SqlInsertQuery<>(SqlInsertQueryConfig.create(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), fromSelect, null, null, false, false, true, null));
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -185,32 +125,90 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	}
 	
 	public int execute() throws SqlException {
-		return SqlQueryExecutor.executeUpdate(this.dialect, this.connectionSource, this.toSql(this.dialect), this.queryTimeout);
+		List<SqlRendered> chunks = this.renderChunks(this.config.dialect());
+		if (chunks.size() == 1) {
+			return SqlQueryExecutor.executeUpdate(this.config.dialect(), this.config.connectionSource(), chunks.getFirst(), this.config.queryTimeout());
+		}
+		return SqlQueryExecutor.executeBatchedUpdate(this.config.dialect(), this.config.connectionSource(), chunks, this.config.queryTimeout());
+	}
+	
+	public @NonNull List<Long> executeReturningKeys() throws SqlException {
+		List<Long> keys = new ArrayList<>();
+		for (SqlRendered chunk : this.renderChunks(this.config.dialect())) {
+			keys.addAll(SqlQueryExecutor.executeUpdateReturningKeys(this.config.dialect(), this.config.connectionSource(), chunk, this.config.queryTimeout()));
+		}
+		return keys;
 	}
 	
 	public @NonNull List<E> returning() throws SqlException {
 		return SqlQueryExecutor.executeReturningQuery(
-			this.dialect, this.connectionSource, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.columns())), this.queryTimeout, this.rowMapper
+			this.config.dialect(), this.config.connectionSource(), this.toSql(this.config.dialect()), this.config.dialect().renderReturning(List.copyOf(this.config.table().columns())), this.config.queryTimeout(), this.config.rowMapper()
 		);
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		return this.renderInsert(dialect, this.config.entities());
+	}
+	
+	private @NonNull List<SqlRendered> renderChunks(@NonNull SqlDialect dialect) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		if (this.config.isInsertFromSelect()) {
+			return List.of(this.renderInsert(dialect, this.config.entities()));
+		}
+		
+		int paramsPerRow = this.config.table().columns().size();
+		SqlAuditConfig auditConfig = this.config.table().auditConfig().orElse(null);
+		if (auditConfig != null) {
+			paramsPerRow += auditConfig.auditColumns().size();
+		}
+		
+		int maxRows = Math.max(1, dialect.maxBindParameters() / Math.max(1, paramsPerRow));
+		if (this.config.entities().size() <= maxRows) {
+			return List.of(this.renderInsert(dialect, this.config.entities()));
+		}
+		
+		List<SqlRendered> chunks = new ArrayList<>();
+		for (int start = 0; start < this.config.entities().size(); start += maxRows) {
+			int end = Math.min(start + maxRows, this.config.entities().size());
+			chunks.add(this.renderInsert(dialect, this.config.entities().subList(start, end)));
+		}
+		return chunks;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private @NonNull SqlRendered renderInsert(@NonNull SqlDialect dialect, @NonNull List<E> rows) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(rows, "Sql rows must not be null");
+		
+		SqlTable<E> table = this.config.table();
+		if (this.config.isUpsert() && !dialect.isFeatureSupported(SqlFeature.UPSERT_SUFFIX)) {
+			SqlColumn<E, ?> conflictColumn = Objects.requireNonNull(this.config.conflictColumn(), "Conflict column must not be null");
+			
+			SqlRenderer valueTuples = SqlRenderer.empty();
+			for (int e = 0; e < rows.size(); e++) {
+				if (e > 0) {
+					valueTuples.comma();
+				}
+				this.renderValueTuple(valueTuples, rows.get(e), table.columns(), table.auditConfig().orElse(null), dialect);
+			}
+			return dialect.renderUpsertStatement(table, (List<SqlColumn<?, ?>>) (List<?>) table.columns(), conflictColumn, valueTuples.toSql());
+		}
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		
-		List<SqlColumn<E, ?>> columns = this.table.columns();
+		List<SqlColumn<E, ?>> columns = table.columns();
 		renderer.insert();
 		
-		if (this.isInsertOrIgnore) {
+		if (this.config.isInsertOrIgnore()) {
 			SqlRendered modifier = dialect.renderInsertOrIgnoreModifier();
 			if (!modifier.sql().isEmpty()) {
 				renderer.rendered(modifier);
 			}
 		}
 		
-		renderer.into().literal(dialect.quoteIdentifier(this.table.name()));
+		renderer.into().literal(dialect.quoteIdentifier(table.name()));
 		
 		renderer.openingBracket();
 		for (int i = 0; i < columns.size(); i++) {
@@ -221,75 +219,79 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 			renderer.literal(dialect.quoteIdentifier(columns.get(i).name()));
 		}
 		
-		SqlAuditConfig auditConfig = this.table.auditConfig().orElse(null);
-		if (auditConfig != null && !this.isInsertFromSelect) {
+		SqlAuditConfig auditConfig = table.auditConfig().orElse(null);
+		if (auditConfig != null && !this.config.isInsertFromSelect()) {
 			for (SqlAuditColumn column : auditConfig.auditColumns()) {
 				renderer.comma().literal(dialect.quoteIdentifier(column.name()));
 			}
 		}
 		renderer.closingBracket();
 		
-		if (this.isInsertFromSelect) {
-			renderer.rendered(Objects.requireNonNull(this.fromSelect, "From select query must not be null").toSql(dialect));
+		if (this.config.isInsertFromSelect()) {
+			renderer.rendered(Objects.requireNonNull(this.config.fromSelect(), "From select query must not be null").toSql(dialect));
 		} else {
 			renderer.values();
-			for (int e = 0; e < this.entities.size(); e++) {
+			for (int e = 0; e < rows.size(); e++) {
 				if (e > 0) {
 					renderer.comma();
 				}
-				
-				E entity = this.entities.get(e);
-				renderer.openingBracket();
-				for (int i = 0; i < columns.size(); i++) {
-					if (i > 0) {
-						renderer.comma();
-					}
-					
-					SqlColumn<E, ?> column = columns.get(i);
-					Object value = column.getter().apply(entity);
-					if (value == null) {
-						renderer.null_();
-					} else {
-						addParameter(renderer, column.type(), value);
-					}
-				}
-				
-				if (auditConfig != null) {
-					String auditUser = SqlQueryExecutor.resolveUser(this.auditUserProvider);
-					
-					renderer.comma();
-					if (auditConfig.valueSource() == SqlAuditValueSource.DATABASE) {
-						renderer.literal("1");
-						renderer.comma();
-						renderer.rendered(dialect.renderFunction(new SqlCurrentTimestampFunction<>(auditConfig.timestampType())));
-					} else {
-						renderer.parameter(auditConfig.versionType(), 1L);
-						renderer.comma().parameter(auditConfig.timestampType(), LocalDateTime.now(auditConfig.clock()));
-					}
-					
-					renderer.comma();
-					if (auditUser == null) {
-						renderer.null_();
-					} else {
-						renderer.parameter(auditConfig.userType(), auditUser);
-					}
-					renderer.comma().null_().comma().null_();
-				}
-				
-				renderer.closingBracket();
+				this.renderValueTuple(renderer, rows.get(e), columns, auditConfig, dialect);
 			}
 		}
 		
-		if (this.isUpsert) {
-			renderer.rendered(dialect.renderUpsertClause(Objects.requireNonNull(this.conflictColumn, "Conflict column must not be null"), (List<SqlColumn<?, ?>>) (List<?>) columns));
+		if (this.config.isUpsert()) {
+			renderer.rendered(dialect.renderUpsertClause(Objects.requireNonNull(this.config.conflictColumn(), "Conflict column must not be null"), (List<SqlColumn<?, ?>>) (List<?>) columns));
 		}
 		
-		if (this.isInsertOrIgnore) {
-			SqlRendered suffix = dialect.renderInsertOrIgnoreSuffix((List<SqlColumn<?, ?>>) (List<?>) Objects.requireNonNull(this.conflictColumns, "Conflict columns must not be null"));
+		if (this.config.isInsertOrIgnore()) {
+			List<SqlColumn<E, ?>> conflictColumns = Objects.requireNonNull(this.config.conflictColumns(), "Conflict columns must not be null");
+			SqlRendered suffix = dialect.renderInsertOrIgnoreSuffix((List<SqlColumn<?, ?>>) (List<?>) conflictColumns);
+			
 			if (!suffix.sql().isEmpty()) {
 				renderer.rendered(suffix);
 			}
 		}
 		return renderer.toSql();
+	}
+	
+	private void renderValueTuple(@NonNull SqlRenderer renderer, @NonNull E entity, @NonNull List<SqlColumn<E, ?>> columns, @Nullable SqlAuditConfig auditConfig, @NonNull SqlDialect dialect) throws SqlException {
+		renderer.openingBracket();
+		for (int i = 0; i < columns.size(); i++) {
+			if (i > 0) {
+				renderer.comma();
+			}
+			
+			SqlColumn<E, ?> column = columns.get(i);
+			Object value = column.getter().apply(entity);
+			if (value == null) {
+				renderer.null_();
+			} else {
+				addParameter(renderer, column.type(), value);
+			}
+		}
+		
+		if (auditConfig != null) {
+			String auditUser = SqlQueryExecutor.resolveUser(this.config.auditUserProvider());
+			
+			renderer.comma();
+			if (auditConfig.valueSource() == SqlAuditValueSource.DATABASE) {
+				renderer.literal("1");
+				renderer.comma();
+				renderer.rendered(dialect.renderFunction(new SqlCurrentTimestampFunction<>(auditConfig.timestampType())));
+			} else {
+				renderer.parameter(auditConfig.versionType(), 1L);
+				renderer.comma().parameter(auditConfig.timestampType(), LocalDateTime.now(auditConfig.clock()));
+			}
+			
+			renderer.comma();
+			if (auditUser == null) {
+				renderer.null_();
+			} else {
+				renderer.parameter(auditConfig.userType(), auditUser);
+			}
+			renderer.comma().null_().comma().null_();
+		}
+		
+		renderer.closingBracket();
 	}
 }

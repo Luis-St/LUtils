@@ -23,6 +23,7 @@ import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.SqlClientException;
 import net.luis.utils.io.database.exception.database.statement.SqlStatementBindException;
+import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -36,6 +37,7 @@ import java.util.Objects;
  *
  */
 
+@SuppressWarnings("ClassEscapesDefinedScope")
 public final class MappedSqlType<S, T> implements SqlType<T> {
 	
 	private final SqlType<S> sourceType;
@@ -78,8 +80,9 @@ public final class MappedSqlType<S, T> implements SqlType<T> {
 	}
 	
 	@Override
-	public @Nullable T get(@NonNull ResultSet resultSet, int columnIndex) throws SqlException {
-		S source = this.sourceType.get(resultSet, columnIndex);
+	@ApiStatus.Internal
+	public @Nullable T get(@NonNull SqlTypeInternalAccess access, @NonNull ResultSet resultSet, int columnIndex) throws SqlException {
+		S source = this.sourceType.get(access, resultSet, columnIndex);
 		if (source == null) {
 			return null;
 		}
@@ -87,8 +90,9 @@ public final class MappedSqlType<S, T> implements SqlType<T> {
 	}
 	
 	@Override
-	public void set(@NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, @Nullable T value) throws SqlException {
-		this.sourceType.set(dialect, preparedStatement, columnIndex, this.fromTargetToSource.apply(value));
+	@ApiStatus.Internal
+	public void set(@NonNull SqlTypeInternalAccess access, @NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, @Nullable T value) throws SqlException {
+		this.sourceType.set(access, dialect, preparedStatement, columnIndex, this.fromTargetToSource.apply(value));
 	}
 	
 	//region Object overrides

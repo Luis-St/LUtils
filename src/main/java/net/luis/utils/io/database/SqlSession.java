@@ -100,6 +100,49 @@ public class SqlSession implements SqlProvider, AutoCloseable {
 		}
 	}
 	
+	//region Static helper methods
+	
+	@SuppressWarnings("unchecked")
+	private static <E> @NonNull SqlCondition primaryKeyCondition(@NonNull SqlTable<E> table, @NonNull E entity) throws SqlIncompletePrimaryKeyException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(entity, "Entity must not be null");
+		
+		List<SqlColumn<E, ?>> primaryKey = table.primaryKeyColumns();
+		if (primaryKey.isEmpty()) {
+			throw new SqlIncompletePrimaryKeyException("Table '" + table.name() + "' has no primary key columns");
+		}
+		
+		List<SqlCondition> conditions = Lists.newArrayListWithCapacity(primaryKey.size());
+		for (SqlColumn<E, ?> column : primaryKey) {
+			Object value = column.getter().apply(entity);
+			if (value == null) {
+				throw new SqlIncompletePrimaryKeyException("Primary key column '" + column.name() + "' of table '" + table.name() + "' is null");
+			}
+			
+			SqlColumn<E, Object> typed = (SqlColumn<E, Object>) column;
+			conditions.add(Sql.equalTo(typed, Sql.of(value, typed.type())));
+		}
+		return conditions.size() == 1 ? conditions.getFirst() : SqlCondition.allOf(conditions);
+	}
+	
+	private static <E, V> @NonNull SqlUpdateQuery<E> applyColumn(@NonNull SqlUpdateQuery<E> query, @NonNull SqlColumn<E, V> column, @NonNull E entity) {
+		Objects.requireNonNull(query, "Sql update query must not be null");
+		Objects.requireNonNull(column, "Sql column must not be null");
+		Objects.requireNonNull(entity, "Entity must not be null");
+		
+		return query.set(column, column.getter().apply(entity));
+	}
+	
+	@SuppressWarnings("ReturnOfNull")
+	private static  <E, V> @NonNull SqlColumn<E, V> auditColumn(@NonNull SqlTable<E> table, @NonNull String name, @NonNull SqlType<V> type) {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(name, "Audit column name must not be null");
+		Objects.requireNonNull(type, "Audit column type must not be null");
+		
+		return new SqlColumn<>(table, name, 1, type, entity -> null, true, Optional.empty(), false, false, false, Optional.empty(), List.of());
+	}
+	//endregion
+	
 	//region Helper methods
 	
 	private void ensureActive() throws SqlTransactionStateException {
@@ -123,46 +166,6 @@ public class SqlSession implements SqlProvider, AutoCloseable {
 		if (this.transaction != null && !this.snapshots.containsKey(key)) {
 			this.snapshots.put(key, Optional.ofNullable(this.tracked.get(key)));
 		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	private <E> @NonNull SqlCondition primaryKeyCondition(@NonNull SqlTable<E> table, @NonNull E entity) throws SqlIncompletePrimaryKeyException {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		Objects.requireNonNull(entity, "Entity must not be null");
-		
-		List<SqlColumn<E, ?>> primaryKey = table.primaryKeyColumns();
-		if (primaryKey.isEmpty()) {
-			throw new SqlIncompletePrimaryKeyException("Table '" + table.name() + "' has no primary key columns");
-		}
-		
-		List<SqlCondition> conditions = Lists.newArrayListWithCapacity(primaryKey.size());
-		for (SqlColumn<E, ?> column : primaryKey) {
-			Object value = column.getter().apply(entity);
-			if (value == null) {
-				throw new SqlIncompletePrimaryKeyException("Primary key column '" + column.name() + "' of table '" + table.name() + "' is null");
-			}
-			
-			SqlColumn<E, Object> typed = (SqlColumn<E, Object>) column;
-			conditions.add(Sql.equalTo(typed, Sql.of(value, typed.type())));
-		}
-		return conditions.size() == 1 ? conditions.getFirst() : SqlCondition.allOf(conditions);
-	}
-	
-	private <E, V> @NonNull SqlUpdateQuery<E> applyColumn(@NonNull SqlUpdateQuery<E> query, @NonNull SqlColumn<E, V> column, @NonNull E entity) {
-		Objects.requireNonNull(query, "Sql update query must not be null");
-		Objects.requireNonNull(column, "Sql column must not be null");
-		Objects.requireNonNull(entity, "Entity must not be null");
-		
-		return query.set(column, column.getter().apply(entity));
-	}
-	
-	@SuppressWarnings("ReturnOfNull")
-	private <E, V> @NonNull SqlColumn<E, V> auditColumn(@NonNull SqlTable<E> table, @NonNull String name, @NonNull SqlType<V> type) {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		Objects.requireNonNull(name, "Audit column name must not be null");
-		Objects.requireNonNull(type, "Audit column type must not be null");
-		
-		return new SqlColumn<>(table, name, 1, type, entity -> null, true, Optional.empty(), false, false, false, Optional.empty(), List.of());
 	}
 	//endregion
 	
@@ -311,7 +314,7 @@ public class SqlSession implements SqlProvider, AutoCloseable {
 		Objects.requireNonNull(entity, "Entity must not be null");
 		this.ensureActive();
 		
-		SqlAudited<E> reloaded = this.provider(table).select().where(this.primaryKeyCondition(table, entity)).withAudit().fetchOne();
+		SqlAudited<E> reloaded = this.provider(table).select().where(primaryKeyCondition(table, entity)).withAudit().fetchOne();
 		SqlEntityKey key = this.extractKey(table, reloaded.entity());
 		this.tracked.put(key, reloaded.audit());
 		return reloaded.audit();
@@ -355,14 +358,14 @@ public class SqlSession implements SqlProvider, AutoCloseable {
 		LocalDateTime now = LocalDateTime.now(config.clock());
 		String user = (this.override != null ? this.override : this.database.getAuditUserProvider()).get().orElse(null);
 		
-		SqlColumn<E, Long> versionColumn = this.auditColumn(table, config.versionColumn(), config.versionType());
-		SqlColumn<E, LocalDateTime> updatedAtColumn = this.auditColumn(table, config.updatedAtColumn(), config.timestampType());
-		SqlColumn<E, String> updatedByColumn = this.auditColumn(table, config.updatedByColumn(), config.userType());
+		SqlColumn<E, Long> versionColumn = auditColumn(table, config.versionColumn(), config.versionType());
+		SqlColumn<E, LocalDateTime> updatedAtColumn = auditColumn(table, config.updatedAtColumn(), config.timestampType());
+		SqlColumn<E, String> updatedByColumn = auditColumn(table, config.updatedByColumn(), config.userType());
 		
-		SqlUpdateQuery<E> query = this.provider(table).update().where(this.primaryKeyCondition(table, entity).and(Sql.equalTo(versionColumn, Sql.of(expectedVersion, config.versionType()))));
+		SqlUpdateQuery<E> query = this.provider(table).update().where(primaryKeyCondition(table, entity).and(Sql.equalTo(versionColumn, Sql.of(expectedVersion, config.versionType()))));
 		for (SqlColumn<E, ?> column : table.columns()) {
 			if (!column.primaryKey()) {
-				query = this.applyColumn(query, column, entity);
+				query = applyColumn(query, column, entity);
 			}
 		}
 		query = query

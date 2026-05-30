@@ -21,7 +21,7 @@ package net.luis.utils.io.database.dialect.renderer.expression.function;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.renderer.SqlRenderingHelper;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnknownConstructException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.SqlNumericFunction;
@@ -86,7 +86,7 @@ public class SqlNumericFunctionRenderer {
 			case SqlNumericTruncateFunction<?> func -> this.renderTruncate(func);
 			
 			case null -> throw new NullPointerException("Sql numeric function must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql numeric function type: " + function.getClass().getName() + " in dialect " + this.dialect.name());
+			default -> throw new SqlDialectUnknownConstructException("Unknown sql numeric function type: " + function.getClass().getName() + " in dialect " + this.dialect.name());
 		};
 	}
 	

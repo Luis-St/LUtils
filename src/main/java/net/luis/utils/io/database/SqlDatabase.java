@@ -59,6 +59,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		@NonNull DataSource dataSource,
 		@NonNull SqlDialect dialect,
 		@NonNull Duration queryTimeout,
+		@NonNull Duration connectionAcquisitionTimeout,
 		@NonNull SqlIsolationLevel defaultTransactionIsolationLevel,
 		@NonNull SqlPropagation defaultTransactionPropagation,
 		boolean autoCloseDataSource,
@@ -71,7 +72,7 @@ public class SqlDatabase implements SqlProvider, AutoCloseable {
 		this.defaultTransactionPropagation = Objects.requireNonNull(defaultTransactionPropagation, "Default transaction propagation behavior must not be null");
 		this.autoCloseDataSource = autoCloseDataSource;
 		this.auditUserProvider = Objects.requireNonNull(auditUserProvider, "Audit user provider must not be null");
-		this.transactionManager = new SqlTransactionManager(dataSource, dialect, queryTimeout);
+		this.transactionManager = new SqlTransactionManager(dataSource, dialect, queryTimeout, connectionAcquisitionTimeout);
 	}
 	
 	public static @NonNull SqlDatabaseBuilder builder(@NonNull DataSource dataSource, @NonNull SqlDialect dialect) {

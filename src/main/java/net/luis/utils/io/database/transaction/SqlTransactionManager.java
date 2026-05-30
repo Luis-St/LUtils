@@ -32,6 +32,7 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.concurrent.*;
 
 /**
  *
@@ -43,14 +44,26 @@ public class SqlTransactionManager {
 	
 	private static final Logger LOGGER = LogManager.getLogger(SqlTransactionManager.class);
 	private static final ThreadLocal<SqlTransaction> CURRENT_TRANSACTION = new ThreadLocal<>();
+	public static final Duration DEFAULT_CONNECTION_ACQUISITION_TIMEOUT = Duration.ofSeconds(10);
+	private static final ExecutorService ACQUIRE_EXECUTOR = Executors.newCachedThreadPool(runnable -> {
+		Thread thread = new Thread(runnable, "sql-tx-connection-acquire");
+		thread.setDaemon(true);
+		return thread;
+	});
 	private final DataSource dataSource;
 	private final SqlDialect dialect;
 	private final Duration queryTimeout;
+	private final Duration connectionAcquisitionTimeout;
 	
 	public SqlTransactionManager(@NonNull DataSource dataSource, @NonNull SqlDialect dialect, @NonNull Duration queryTimeout) {
+		this(dataSource, dialect, queryTimeout, DEFAULT_CONNECTION_ACQUISITION_TIMEOUT);
+	}
+	
+	public SqlTransactionManager(@NonNull DataSource dataSource, @NonNull SqlDialect dialect, @NonNull Duration queryTimeout, @NonNull Duration connectionAcquisitionTimeout) {
 		this.dataSource = Objects.requireNonNull(dataSource, "Data source must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
+		this.connectionAcquisitionTimeout = Objects.requireNonNull(connectionAcquisitionTimeout, "Connection acquisition timeout must not be null");
 	}
 	
 	public @NonNull SqlTransaction begin(boolean readOnly, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlException {
@@ -132,7 +145,7 @@ public class SqlTransactionManager {
 	}
 	
 	private @NonNull SqlTransaction createNewTransaction(boolean readOnly, @NonNull SqlIsolationLevel isolationLevel, @Nullable SqlTransaction suspended) throws SqlException {
-		Connection connection = this.acquireConnection(readOnly, isolationLevel);
+		Connection connection = this.acquireConnection(readOnly, isolationLevel, suspended != null);
 		
 		try {
 			connection.setAutoCommit(false);
@@ -148,7 +161,7 @@ public class SqlTransactionManager {
 	}
 	
 	private @NonNull SqlTransaction createNonTransactional(boolean readOnly, @NonNull SqlIsolationLevel isolationLevel, @Nullable SqlTransaction suspended) throws SqlException {
-		Connection connection = this.acquireConnection(readOnly, isolationLevel);
+		Connection connection = this.acquireConnection(readOnly, isolationLevel, suspended != null);
 		
 		try {
 			connection.setAutoCommit(true);
@@ -160,17 +173,63 @@ public class SqlTransactionManager {
 	}
 	
 	@SuppressWarnings("MagicConstant")
-	private @NonNull Connection acquireConnection(boolean readOnly, @NonNull SqlIsolationLevel isolationLevel) throws SqlException {
+	private @NonNull Connection acquireConnection(boolean readOnly, @NonNull SqlIsolationLevel isolationLevel, boolean bounded) throws SqlException {
 		Objects.requireNonNull(isolationLevel, "Transaction isolation level must not be null");
 		
+		Connection connection = bounded ? this.acquireConnectionBounded() : this.acquireConnectionDirect();
 		try {
-			Connection connection = this.dataSource.getConnection();
 			connection.setReadOnly(readOnly);
 			connection.setTransactionIsolation(isolationLevel.jdbcLevel());
 			return connection;
 		} catch (SQLException e) {
+			this.closeConnectionQuietly(connection);
+			throw new SqlTransactionConnectionException("Failed to configure acquired connection", e);
+		}
+	}
+	
+	private @NonNull Connection acquireConnectionDirect() throws SqlException {
+		try {
+			return this.dataSource.getConnection();
+		} catch (SQLException e) {
 			throw new SqlTransactionConnectionException("Failed to acquire connection from data source", e);
 		}
+	}
+	
+	private @NonNull Connection acquireConnectionBounded() throws SqlException {
+		CompletableFuture<Connection> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return this.dataSource.getConnection();
+			} catch (SQLException e) {
+				throw new CompletionException(e);
+			}
+		}, ACQUIRE_EXECUTOR);
+		
+		try {
+			return future.get(this.connectionAcquisitionTimeout.toMillis(), TimeUnit.MILLISECONDS);
+		} catch (TimeoutException e) {
+			this.releaseLateConnection(future);
+			throw new SqlTransactionConnectionException(
+				"Timed out after " + this.connectionAcquisitionTimeout + " acquiring a connection while a suspended transaction still holds one (REQUIRES_NEW/NOT_SUPPORTED), " +
+					"the connection pool is likely too small for the transaction nesting depth", new SQLException(e));
+		} catch (ExecutionException e) {
+			Throwable cause = e.getCause();
+			if (cause instanceof SQLException sqlException) {
+				throw new SqlTransactionConnectionException("Failed to acquire connection from data source", sqlException);
+			}
+			throw new SqlTransactionConnectionException("Failed to acquire connection from data source", new SQLException(cause));
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			this.releaseLateConnection(future);
+			throw new SqlTransactionConnectionException("Interrupted while acquiring a connection from data source", new SQLException(e));
+		}
+	}
+	
+	private void releaseLateConnection(@NonNull CompletableFuture<Connection> future) {
+		future.whenComplete((connection, throwable) -> {
+			if (connection != null) {
+				this.closeConnectionQuietly(connection);
+			}
+		});
 	}
 	
 	private void closeConnectionQuietly(@NonNull Connection connection) {

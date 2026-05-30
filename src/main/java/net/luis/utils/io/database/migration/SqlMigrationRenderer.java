@@ -19,16 +19,21 @@
 package net.luis.utils.io.database.migration;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.dialect.renderer.SqlMigrationOperationRenderer;
+import net.luis.utils.io.database.dialect.renderer.SqlRenderingHelper;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.migration.operation.*;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  *
@@ -55,6 +60,8 @@ class SqlMigrationRenderer {
 				results.addAll(this.migrationRenderer.renderEnableAuditing(op.table(), op.config()));
 			} else if (operation instanceof SqlDisableAuditingOperation op) {
 				results.addAll(this.migrationRenderer.renderDisableAuditing(op.table(), op.config()));
+			} else if (this.dialect.isFeatureSupported(SqlFeature.TABLE_REBUILD) && this.isRebuiltConstraint(operation)) {
+				results.addAll(this.renderAddConstraintViaRebuild(operation));
 			} else {
 				results.add(this.renderOperation(operation));
 			}
@@ -91,8 +98,11 @@ class SqlMigrationRenderer {
 		Objects.requireNonNull(op, "Alter column operation must not be null");
 		
 		SqlColumn<?, ?> column = op.column();
-		List<SqlRendered> results = Lists.newArrayList();
+		if (this.dialect.isFeatureSupported(SqlFeature.TABLE_REBUILD)) {
+			return this.renderAlterColumnViaRebuild(column, op.alterations());
+		}
 		
+		List<SqlRendered> results = Lists.newArrayList();
 		for (SqlColumnAlteration alteration : op.alterations()) {
 			switch (alteration) {
 				case SqlSetTypeAlteration setType -> results.add(this.dialect.columnRenderer().renderAlterColumnType(column, setType.type()));
@@ -102,5 +112,84 @@ class SqlMigrationRenderer {
 			}
 		}
 		return results;
+	}
+	
+	private @NonNull List<SqlRendered> renderAlterColumnViaRebuild(@NonNull SqlColumn<?, ?> column, @NonNull List<SqlColumnAlteration> alterations) throws SqlException {
+		SqlColumn<?, ?> altered = column;
+		for (SqlColumnAlteration alteration : alterations) {
+			altered = applyAlteration(altered, alteration);
+		}
+		
+		SqlTable<?> table = column.owningTable();
+		List<SqlColumn<?, ?>> newColumns = new ArrayList<>();
+		for (SqlColumn<?, ?> existing : table.columns()) {
+			newColumns.add(existing.name().equals(column.name()) ? altered : existing);
+		}
+		return this.dialect.tableRenderer().renderTableRebuild(table, newColumns, List.of());
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static @NonNull SqlColumn<?, ?> applyAlteration(@NonNull SqlColumn<?, ?> column, @NonNull SqlColumnAlteration alteration) {
+		SqlType<?> type = column.type();
+		boolean nullable = column.nullable();
+		Optional<?> defaultValue = column.defaultValue();
+		switch (alteration) {
+			case SqlSetTypeAlteration setType -> type = setType.type();
+			case SqlSetNullableAlteration setNullable -> nullable = setNullable.nullable();
+			case SqlSetDefaultAlteration setDefault -> defaultValue = Optional.of(setDefault.value());
+			case SqlDropDefaultAlteration _ -> defaultValue = Optional.empty();
+		}
+		return new SqlColumn(column.owningTable(), column.name(), column.index(), type, column.getter(), nullable, defaultValue, column.autoIncrement(), column.unique(), column.primaryKey(), column.foreignKey(), column.checks());
+	}
+	
+	private boolean isRebuiltConstraint(@NonNull SqlMigrationOperation operation) {
+		return operation instanceof SqlAddUniqueConstraintOperation || operation instanceof SqlAddForeignKeyOperation || operation instanceof SqlAddCheckConstraintOperation || operation instanceof SqlAddCompositePrimaryKeyOperation;
+	}
+	
+	private @NonNull List<SqlRendered> renderAddConstraintViaRebuild(@NonNull SqlMigrationOperation operation) throws SqlException {
+		SqlTable<?> table = switch (operation) {
+			case SqlAddUniqueConstraintOperation op -> op.table();
+			case SqlAddForeignKeyOperation op -> op.table();
+			case SqlAddCheckConstraintOperation op -> op.table();
+			case SqlAddCompositePrimaryKeyOperation op -> op.table();
+			default -> throw new IllegalStateException("Operation is not a rebuilt constraint: " + operation.getClass().getName());
+		};
+		
+		SqlRendered constraint = this.renderInlineConstraint(operation);
+		return this.dialect.tableRenderer().renderTableRebuild(table, List.copyOf(table.columns()), List.of(constraint));
+	}
+	
+	private @NonNull SqlRendered renderInlineConstraint(@NonNull SqlMigrationOperation operation) throws SqlException {
+		SqlRenderer renderer = SqlRenderer.empty();
+		switch (operation) {
+			case SqlAddUniqueConstraintOperation op -> {
+				renderer.unique().openingBracket();
+				SqlRenderingHelper.renderList(renderer, op.columns(), (r, col) -> r.literal(this.dialect.quoteIdentifier(col.name())));
+				renderer.closingBracket();
+			}
+			case SqlAddCompositePrimaryKeyOperation op -> {
+				renderer.primary().key().openingBracket();
+				SqlRenderingHelper.renderList(renderer, op.columns(), (r, col) -> r.literal(this.dialect.quoteIdentifier(col.name())));
+				renderer.closingBracket();
+			}
+			case SqlAddCheckConstraintOperation op -> renderer.check().openingBracket().rendered(this.dialect.renderCondition(op.condition())).closingBracket();
+			case SqlAddForeignKeyOperation op -> {
+				renderer.foreign().key().openingBracket();
+				SqlRenderingHelper.renderList(renderer, op.columns(), (r, col) -> r.literal(this.dialect.quoteIdentifier(col.name())));
+				renderer.closingBracket().references().literal(this.dialect.quoteIdentifier(op.referencedTable().name())).openingBracket();
+				SqlRenderingHelper.renderList(renderer, op.referencedColumns(), (r, col) -> r.literal(this.dialect.quoteIdentifier(col.name())));
+				renderer.closingBracket();
+				if (op.onDelete() != SqlReferentialAction.NO_ACTION) {
+					renderer.on().delete();
+					this.dialect.renderReferentialAction(renderer, op.onDelete());
+				}
+				if (op.onUpdate() != SqlReferentialAction.NO_ACTION) {
+					renderer.on().update();
+					this.dialect.renderReferentialAction(renderer, op.onUpdate());
+				}
+			}
+			default -> throw new IllegalStateException("Operation is not a rebuilt constraint: " + operation.getClass().getName());
+		}
+		return renderer.toSql();
 	}
 }

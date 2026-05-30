@@ -39,7 +39,6 @@ import java.util.*;
  *
  */
 
-@SuppressWarnings("DuplicatedCode")
 public class SqlMigrationSchemaStore {
 	
 	private final DataSource dataSource;

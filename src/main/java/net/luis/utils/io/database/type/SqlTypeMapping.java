@@ -16,7 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.database.dialect;
+package net.luis.utils.io.database.type;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
 
 /**
  *
@@ -24,30 +29,21 @@ package net.luis.utils.io.database.dialect;
  *
  */
 
-public enum SqlFeature {
+public record SqlTypeMapping(
+	@NonNull String nativeTypeName,
+	@Nullable SqlValueBinder binder,
+	@Nullable SqlValueReader reader
+) {
 	
-	RETURNING,
-	LATERAL_JOIN,
-	CTE,
-	RECURSIVE_CTE,
-	NULLS_ORDERING,
-	SCHEMAS,
-	WINDOW_FUNCTIONS,
-	FOR_UPDATE,
-	FOR_SHARE,
-	SKIP_LOCKED,
-	NO_WAIT,
-	TRUNCATE_CASCADE,
-	IS_DISTINCT_FROM,
-	UPSERT_SUFFIX,
-	TRANSACTIONAL_DDL,
-	ROW_LOCKING,
-	UPSERT,
-	INSERT_OR_IGNORE,
-	RENAME_INDEX,
-	ALTER_COLUMN,
-	ADD_CONSTRAINT,
-	DROP_CONSTRAINT,
-	ARRAY_TYPE,
-	TABLE_REBUILD
+	public SqlTypeMapping {
+		Objects.requireNonNull(nativeTypeName, "Sql native type name must not be null");
+		
+		if (nativeTypeName.isBlank()) {
+			throw new IllegalArgumentException("Sql native type name must not be blank");
+		}
+	}
+	
+	public SqlTypeMapping(@NonNull String nativeTypeName) {
+		this(nativeTypeName, null, null);
+	}
 }

@@ -18,10 +18,13 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.condition.conditions.comparison.SqlIsDistinctFromCondition;
 import net.luis.utils.io.database.dialect.renderer.*;
+import net.luis.utils.io.database.dialect.renderer.expression.condition.SqlComparisonConditionRenderer;
 import net.luis.utils.io.database.dialect.renderer.expression.condition.SqlStringConditionRenderer;
 import net.luis.utils.io.database.dialect.renderer.expression.function.*;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.numeric.SqlRandomFunction;
@@ -32,7 +35,7 @@ import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
-import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlFractionalParameter;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
@@ -57,17 +60,32 @@ public class MySqlDialect extends AbstractSqlDialect {
 		SqlFeature.FOR_UPDATE,
 		SqlFeature.FOR_SHARE,
 		SqlFeature.SKIP_LOCKED,
-		SqlFeature.NO_WAIT
+		SqlFeature.NO_WAIT,
+		SqlFeature.UPSERT_SUFFIX,
+		SqlFeature.ROW_LOCKING,
+		SqlFeature.INSERT_OR_IGNORE,
+		SqlFeature.RENAME_INDEX,
+		SqlFeature.ALTER_COLUMN,
+		SqlFeature.ADD_CONSTRAINT,
+		SqlFeature.DROP_CONSTRAINT
 	);
 	
 	private static final Set<SqlIndexMethod> SUPPORTED_INDEX_METHODS = Set.of(
 		SqlIndexMethod.BTREE,
 		SqlIndexMethod.HASH
 	);
+	private static final SqlTypeRegistry TYPE_REGISTRY = SqlTypeRegistry.builder()
+		.register(SqlTypes.JSON, "JSON")
+		.build();
 	
 	@Override
 	public @NonNull String name() {
 		return "MySQL";
+	}
+	
+	@Override
+	protected @NonNull SqlTypeRegistry createTypeRegistry() {
+		return TYPE_REGISTRY;
 	}
 	
 	@Override
@@ -77,6 +95,7 @@ public class MySqlDialect extends AbstractSqlDialect {
 			.numericFunctionRenderer(new MySqlNumericFunctionRenderer(this))
 			.temporalFunctionRenderer(new MySqlTemporalFunctionRenderer(this))
 			.stringConditionRenderer(new MySqlStringConditionRenderer(this))
+			.comparisonConditionRenderer(new MySqlComparisonConditionRenderer(this))
 			.tableRenderer(new MySqlTableRenderer(this))
 			.indexRenderer(new MySqlIndexRenderer(this))
 			.columnRenderer(new MySqlColumnRenderer(this))
@@ -153,7 +172,7 @@ public class MySqlDialect extends AbstractSqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderInsertOrIgnoreSuffix(@NonNull List<SqlColumn<?, ?>> conflictColumns) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("INSERT OR IGNORE suffix is not supported by dialect " + this.name());
+		throw new SqlDialectFeatureException(SqlFeature.INSERT_OR_IGNORE, this);
 	}
 	
 	@Override
@@ -189,14 +208,9 @@ class MySqlIndexRenderer extends SqlIndexRenderer {
 	}
 	
 	@Override
-	@SuppressWarnings("DuplicatedCode")
 	public @NonNull SqlRendered renderDropIndex(@Nullable SqlTable<?> owningTable, @NonNull String indexName) throws SqlException {
 		Objects.requireNonNull(owningTable, "Sql index owning table must not be null");
-		Objects.requireNonNull(indexName, "Sql index name must not be null");
-		
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.drop().index().literal(this.dialect.quoteIdentifier(indexName)).on().literal(this.dialect.quoteIdentifier(owningTable.name()));
-		return renderer.toSql();
+		return this.renderStandardDropIndexOnTable(owningTable, indexName);
 	}
 	
 	@Override
@@ -315,6 +329,22 @@ class MySqlStringConditionRenderer extends SqlStringConditionRenderer {
 		Objects.requireNonNull(right, "Right sql rendered must not be null");
 		
 		return renderer.literal("CONCAT").openingBracket().rendered(left).comma().rendered(right).closingBracket().toSql();
+	}
+}
+
+class MySqlComparisonConditionRenderer extends SqlComparisonConditionRenderer {
+	
+	MySqlComparisonConditionRenderer(@NonNull SqlDialect dialect) {
+		super(dialect);
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderIsDistinctFrom(@NonNull SqlIsDistinctFromCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.not().openingBracket().rendered(condition.first().toSql(this.dialect)).literal("<=>").rendered(condition.second().toSql(this.dialect)).closingBracket();
+		return renderer.toSql();
 	}
 }
 

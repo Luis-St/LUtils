@@ -19,13 +19,13 @@
 package net.luis.utils.io.database.dialect;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.data.xml.*;
 import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.renderer.*;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.dialect.*;
 import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.orderable.*;
 import net.luis.utils.io.database.function.SqlFunction;
@@ -39,14 +39,15 @@ import net.luis.utils.io.database.query.SqlSetOperation;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.*;
 import org.intellij.lang.annotations.Language;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.sql.*;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  *
@@ -59,10 +60,29 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	private static final String SCHEMA_COLUMNS_TABLE = "_sql_schema_columns";
 	private static final String SCHEMA_CHECK_CONSTRAINTS_TABLE = "_sql_schema_check_constraints";
+	private final SqlTypeRegistry typeRegistry;
 	private final SqlDialectRenderer renderer;
 	
 	protected AbstractSqlDialect() {
+		this.typeRegistry = this.createTypeRegistry();
 		this.renderer = this.createRenderer();
+	}
+	
+	protected static @Nullable XmlElement readXmlElement(@Nullable SQLXML xml) throws SQLException {
+		if (xml == null) {
+			return null;
+		}
+		
+		String content = xml.getString();
+		String document = content.stripLeading().startsWith("<?xml") ? content : "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + content;
+		try (XmlReader reader = new XmlReader(document)) {
+			reader.readDeclaration();
+			return reader.readXmlElement();
+		}
+	}
+	
+	protected @NonNull SqlTypeRegistry createTypeRegistry() {
+		return SqlTypeRegistry.empty();
 	}
 	
 	protected @NonNull SqlDialectRenderer createRenderer() {
@@ -97,12 +117,22 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	@Override
 	public boolean isTypeSupported(@NonNull SqlType<?> type) {
 		Objects.requireNonNull(type, "Sql type must not be null");
+		
+		if (this.typeRegistry.resolve(type).isPresent()) {
+			return true;
+		}
 		return !(type.baseType() instanceof SqlArrayType<?>);
 	}
 	
 	@Override
 	public @NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlException {
 		Objects.requireNonNull(type, "Sql type must not be null");
+		
+		Optional<SqlTypeMapping> mapping = this.typeRegistry.resolve(type);
+		if (mapping.isPresent()) {
+			return mapping.get().nativeTypeName();
+		}
+		
 		if (!this.isTypeSupported(type)) {
 			throw new SqlDialectUnsupportedRenderingException("Sql type " + type + " is not supported by dialect " + this.name());
 		}
@@ -110,8 +140,20 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		return switch (type.baseType()) {
 			case SqlScalarType<?> scalar -> this.getScalarTypeName(scalar.jdbcType());
 			case ParameterizedSqlType<?, ?> parameterized -> this.getParameterizedTypeName(parameterized.jdbcType(), parameterized.parameter());
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql type structure: " + type);
+			default -> throw new SqlDialectUnknownConstructException("Unknown sql type structure: " + type);
 		};
+	}
+	
+	@Override
+	public @NonNull Optional<SqlValueBinder> bindingOverride(@NonNull SqlType<?> type) {
+		Objects.requireNonNull(type, "Sql type must not be null");
+		return this.typeRegistry.resolve(type).map(SqlTypeMapping::binder);
+	}
+	
+	@Override
+	public @NonNull Optional<SqlValueReader> readingOverride(@NonNull SqlType<?> type) {
+		Objects.requireNonNull(type, "Sql type must not be null");
+		return this.typeRegistry.resolve(type).map(SqlTypeMapping::reader);
 	}
 	
 	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
@@ -243,7 +285,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case RangeWindowFrame _ -> renderer.range();
 			case GroupsWindowFrame _ -> renderer.groups();
 			
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql window frame type: " + frame.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnknownConstructException("Unknown sql window frame type: " + frame.getClass().getName() + " in dialect " + this.name());
 		}
 		
 		renderer.between().rendered(this.renderFrameBound(frame.start())).and().rendered(this.renderFrameBound(frame.end()));
@@ -262,7 +304,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case UnboundedFollowingFrameBound _ -> renderer.unbounded().following();
 			
 			case null -> throw new NullPointerException("Sql frame bound must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql frame bound type: " + bound.getClass().getName() + " in dialect " + this.name());
+			default -> throw new SqlDialectUnknownConstructException("Unknown sql frame bound type: " + bound.getClass().getName() + " in dialect " + this.name());
 		}).toSql();
 	}
 	
@@ -321,7 +363,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderLimitOffset(long limit, long offset) throws SqlException {
+	public @NonNull SqlRendered renderLimitOffset(long limit, long offset, boolean hasOrdering) throws SqlException {
 		if (limit < -1) {
 			throw new IllegalArgumentException("Limit must be non-negative or -1 for no limit");
 		}
@@ -341,7 +383,20 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("RETURNING clause is not supported by dialect " + this.name());
+		throw new SqlDialectFeatureException(SqlFeature.RETURNING, this);
+	}
+	
+	protected @NonNull SqlRendered renderStandardReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
+		Objects.requireNonNull(columns, "Sql columns must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.returning();
+		if (columns.isEmpty()) {
+			renderer.literal("*");
+		} else {
+			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.name())));
+		}
+		return renderer.toSql();
 	}
 	
 	@Override
@@ -378,7 +433,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull SqlRendered renderLateralJoin() throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("LATERAL join is not supported by dialect " + this.name());
+		throw new SqlDialectFeatureException(SqlFeature.LATERAL_JOIN, this);
 	}
 	
 	@Override
@@ -428,8 +483,13 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	}
 	
 	@Override
+	public @NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull SqlColumn<?, ?> conflictColumn, @NonNull SqlRendered valueTuples) throws SqlException {
+		throw new SqlDialectFeatureException(SqlFeature.UPSERT, this);
+	}
+	
+	@Override
 	public @NonNull SqlRendered renderInsertOrIgnoreModifier() throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("INSERT OR IGNORE modifier is not supported by dialect " + this.name());
+		throw new SqlDialectFeatureException(SqlFeature.INSERT_OR_IGNORE, this);
 	}
 	
 	@Override
@@ -456,7 +516,10 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		Objects.requireNonNull(schema, "Sql schema must not be null");
 		Objects.requireNonNull(tableName, "Sql table name must not be null");
 		
-		String sqlQuery = Objects.requireNonNull(this.getCheckConstraintsQueryString(), "Sql check constraints query string must not be null");
+		String sqlQuery = this.getCheckConstraintsQueryString();
+		if (sqlQuery == null) {
+			return List.of();
+		}
 		
 		List<SqlCheckConstraintInfo> results = Lists.newArrayList();
 		try (PreparedStatement statement = connection.prepareStatement(sqlQuery)) {
@@ -474,7 +537,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	}
 	
 	@Language("SQL")
-	protected abstract @NonNull String getCheckConstraintsQueryString();
+	protected abstract @Nullable String getCheckConstraintsQueryString();
 	
 	@Override
 	public @NonNull String getCreateSchemaColumnsTableSql() throws SqlException {

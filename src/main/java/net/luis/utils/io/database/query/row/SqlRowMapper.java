@@ -21,6 +21,7 @@ package net.luis.utils.io.database.query.row;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.database.SqlResultMappingException;
 import net.luis.utils.io.database.expression.SqlAliasedExpression;
@@ -28,6 +29,7 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.table.SqlAliasedColumn;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.type.SqlType;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -43,6 +45,7 @@ import java.util.stream.Stream;
  *
  */
 
+@SuppressWarnings("unchecked")
 public final class SqlRowMapper {
 	
 	private static final Map<String, Integer> ORDINAL_NAMES = Map.ofEntries(
@@ -77,20 +80,24 @@ public final class SqlRowMapper {
 		};
 	}
 	
-	public static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forExpressions(@NonNull Class<R> rowType, @NonNull List<SqlExpression<?>> expressions) {
+	public static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forExpressions(@NonNull Class<R> rowType, @NonNull List<SqlExpression<?>> expressions, @NonNull SqlDialect dialect) {
 		Objects.requireNonNull(rowType, "Row type must not be null");
 		Objects.requireNonNull(expressions, "Sql expressions must not be null");
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		
 		List<SqlType<?>> types = Lists.newArrayListWithCapacity(expressions.size());
+		List<String> expressionNames = Lists.newArrayListWithCapacity(expressions.size());
 		for (SqlExpression<?> expression : expressions) {
 			types.add(expression.type());
+			expressionNames.add(resolveExpressionName(expression));
 		}
-		return createProxyMapper(rowType, types);
+		return createProxyMapper(rowType, types, expressionNames, dialect);
 	}
 	
-	public static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forProjection(@NonNull Class<R> targetType, @NonNull List<SqlExpression<?>> expressions) {
+	public static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forProjection(@NonNull Class<R> targetType, @NonNull List<SqlExpression<?>> expressions, @NonNull SqlDialect dialect) {
 		Objects.requireNonNull(targetType, "Target type must not be null");
 		Objects.requireNonNull(expressions, "Sql expressions must not be null");
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		
 		List<String> expressionNames = Lists.newArrayList();
 		for (SqlExpression<?> expression : expressions) {
@@ -98,15 +105,21 @@ public final class SqlRowMapper {
 		}
 		
 		if (targetType.isRecord()) {
-			return forRecordProjection(targetType, expressions, expressionNames);
+			return forRecordProjection(dialect, targetType, expressions, expressionNames);
 		}
 		if (targetType.isInterface()) {
-			return forInterfaceProjection(targetType, expressions, expressionNames);
+			return forInterfaceProjection(dialect, targetType, expressions, expressionNames);
 		}
 		throw new IllegalArgumentException("Sql projection target must be an interface or a record, got: " + targetType.getName());
 	}
 	
-	private static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forRecordProjection(@NonNull Class<R> recordType, @NonNull List<SqlExpression<?>> expressions, @NonNull List<String> expressionNames) {
+	private static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forRecordProjection(
+		@NonNull SqlDialect dialect,
+		@NonNull Class<R> recordType,
+		@NonNull List<SqlExpression<?>> expressions,
+		@NonNull List<String> expressionNames
+	) {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(recordType, "Record type must not be null");
 		Objects.requireNonNull(expressions, "Sql expressions must not be null");
 		Objects.requireNonNull(expressionNames, "Sql expression names must not be null");
@@ -144,7 +157,7 @@ public final class SqlRowMapper {
 		return resultSet -> {
 			Object[] args = new Object[components.length];
 			for (int i = 0; i < args.length; i++) {
-				args[i] = types[i].get(resultSet, mapping[i] + 1);
+				args[i] = SqlType.getValue(types[i], dialect, resultSet, mapping[i] + 1);
 			}
 			
 			try {
@@ -155,8 +168,13 @@ public final class SqlRowMapper {
 		};
 	}
 	
-	@SuppressWarnings("unchecked")
-	private static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forInterfaceProjection(@NonNull Class<R> interfaceType, @NonNull List<SqlExpression<?>> expressions, @NonNull List<String> expressionNames) {
+	private static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forInterfaceProjection(
+		@NonNull SqlDialect dialect,
+		@NonNull Class<R> interfaceType,
+		@NonNull List<SqlExpression<?>> expressions,
+		@NonNull List<String> expressionNames
+	) {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(interfaceType, "Interface type must not be null");
 		Objects.requireNonNull(expressions, "Sql expressions must not be null");
 		Objects.requireNonNull(expressionNames, "Sql expression names must not be null");
@@ -185,49 +203,81 @@ public final class SqlRowMapper {
 			methodIndexMap.put(methodNames[i], i);
 		}
 		
+		Constructor<?> proxyConstructor = resolveProxyConstructor(interfaceType);
+		
 		return resultSet -> {
 			Object[] values = new Object[methods.length];
 			for (int i = 0; i < values.length; i++) {
-				values[i] = types[i].get(resultSet, mapping[i] + 1);
+				values[i] = SqlType.getValue(types[i], dialect, resultSet, mapping[i] + 1);
 			}
 			
-			return (R) Proxy.newProxyInstance(
-				interfaceType.getClassLoader(),
-				new Class<?>[] { interfaceType },
-				new SqlRowInvocationHandler(values, methodIndexMap)
-			);
+			try {
+				return (R) proxyConstructor.newInstance((InvocationHandler) new SqlRowInvocationHandler(values, methodIndexMap));
+			} catch (ReflectiveOperationException e) {
+				throw new SqlResultMappingException("Failed to construct proxy for " + interfaceType.getSimpleName() + " from result set", e, interfaceType);
+			}
 		};
 	}
 	
-	@SuppressWarnings("unchecked")
-	private static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> createProxyMapper(@NonNull Class<R> rowType, @NonNull List<SqlType<?>> types) {
+	private static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> createProxyMapper(@NonNull Class<R> rowType, @NonNull List<SqlType<?>> types, @NonNull List<String> expressionNames, @NonNull SqlDialect dialect) {
 		Objects.requireNonNull(rowType, "Row type must not be null");
 		Objects.requireNonNull(types, "Sql types must not be null");
+		Objects.requireNonNull(expressionNames, "Sql expression names must not be null");
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		
 		Method[] methods = Arrays.stream(rowType.getMethods()).filter(m -> m.getParameterCount() == 0 && !m.isDefault()).toArray(Method[]::new);
 		
-		Arrays.sort(methods, Comparator.comparingInt(m -> {
-			Integer index = ORDINAL_NAMES.get(m.getName());
-			return index != null ? index : Integer.MAX_VALUE;
-		}));
-		
+		int[] mapping = new int[methods.length];
 		Map<String, Integer> methodIndexMap = Maps.newHashMap();
-		for (int i = 0; i < methods.length; i++) {
-			methodIndexMap.put(methods[i].getName(), i);
-		}
 		
-		return resultSet -> {
-			Object[] values = new Object[types.size()];
-			for (int i = 0; i < values.length; i++) {
-				values[i] = types.get(i).get(resultSet, i + 1);
+		for (int m = 0; m < methods.length; m++) {
+			String name = methods[m].getName();
+			
+			int column;
+			Integer ordinal = ORDINAL_NAMES.get(name);
+			if (ordinal != null) {
+				// Ordinal accessors (SqlRowN) always bind positionally, so a column aliased "first" cannot hijack first()
+				if (ordinal >= types.size()) {
+					throw new IllegalArgumentException("Ordinal accessor '" + name + "()' on " + rowType.getSimpleName() + " maps to column index " + ordinal + " but only " + types.size() + " columns were selected");
+				}
+				column = ordinal;
+			} else {
+				column = expressionNames.indexOf(name);
+				if (column < 0) {
+					throw new IllegalArgumentException("Accessor '" + name + "()' on " + rowType.getSimpleName() + " matches no selected expression and is not an ordinal accessor, use a record or forProjection(...) for named columns");
+				}
 			}
 			
-			return (R) Proxy.newProxyInstance(
-				rowType.getClassLoader(),
-				new Class<?>[] { rowType },
-				new SqlRowInvocationHandler(values, methodIndexMap)
-			);
+			mapping[m] = column;
+			methodIndexMap.put(name, m);
+		}
+		
+		Constructor<?> proxyConstructor = resolveProxyConstructor(rowType);
+		return resultSet -> {
+			Object[] values = new Object[methods.length];
+			for (int i = 0; i < values.length; i++) {
+				values[i] = SqlType.getValue(types.get(mapping[i]), dialect, resultSet, mapping[i] + 1);
+			}
+			
+			try {
+				return (R) proxyConstructor.newInstance((InvocationHandler) new SqlRowInvocationHandler(values, methodIndexMap));
+			} catch (ReflectiveOperationException e) {
+				throw new SqlResultMappingException("Failed to construct proxy for " + rowType.getSimpleName() + " from result set", e, rowType);
+			}
 		};
+	}
+	
+	private static @NonNull Constructor<?> resolveProxyConstructor(@NonNull Class<?> rowType) {
+		try {
+			// Create one throwaway proxy to obtain (and cache) the proxy class once per mapper, then reuse its constructor per row.
+			// This avoids the deprecated Proxy.getProxyClass while still skipping the per-row proxy-class cache lookup of Proxy.newProxyInstance.
+			Object sample = Proxy.newProxyInstance(rowType.getClassLoader(), new Class<?>[] { rowType }, new SqlRowInvocationHandler(ArrayUtils.EMPTY_OBJECT_ARRAY, Map.of()));
+			Constructor<?> proxyConstructor = sample.getClass().getConstructor(InvocationHandler.class);
+			proxyConstructor.setAccessible(true);
+			return proxyConstructor;
+		} catch (NoSuchMethodException e) {
+			throw new IllegalStateException("Cannot resolve proxy constructor for " + rowType.getSimpleName(), e);
+		}
 	}
 	
 	private record SqlRowInvocationHandler(

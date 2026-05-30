@@ -60,18 +60,22 @@ final class SqlQueryExecutor {
 	}
 	
 	static @NonNull PreparedStatement prepare(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
+		return prepare(dialect, connection, rendered, timeout, false);
+	}
+	
+	static @NonNull PreparedStatement prepare(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout, boolean returnGeneratedKeys) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(connection, "Connection must not be null");
 		Objects.requireNonNull(rendered, "Sql rendered must not be null");
 		Objects.requireNonNull(timeout, "Query timeout must not be null");
 		
 		try {
-			PreparedStatement statement = connection.prepareStatement(rendered.sql());
+			PreparedStatement statement = returnGeneratedKeys ? connection.prepareStatement(rendered.sql(), Statement.RETURN_GENERATED_KEYS) : connection.prepareStatement(rendered.sql());
 			
 			List<Pair<SqlType<?>, Object>> parameters = rendered.parameters();
 			for (int i = 0; i < parameters.size(); i++) {
 				Pair<SqlType<?>, Object> pair = parameters.get(i);
-				SqlType.setUnsafe(pair.getFirst(), dialect, statement, i + 1, pair.getSecond());
+				SqlType.setValue(pair.getFirst(), dialect, statement, i + 1, pair.getSecond());
 			}
 			
 			long seconds = timeout.toSeconds();
@@ -81,7 +85,15 @@ final class SqlQueryExecutor {
 			statement.setQueryTimeout((int) Math.min(seconds, Integer.MAX_VALUE));
 			return statement;
 		} catch (SQLException e) {
-			throw new SqlQueryExecutionException("Failed to prepare statement with generated keys: " + rendered.sql(), e, rendered.sql());
+			throw new SqlQueryExecutionException("Failed to prepare statement: " + rendered.sql(), e, rendered.sql());
+		}
+	}
+	
+	private static void rollbackQuietly(@NonNull Connection connection, boolean ownsTransaction) {
+		if (ownsTransaction) {
+			try {
+				connection.rollback();
+			} catch (SQLException ignored) {}
 		}
 	}
 	
@@ -119,6 +131,77 @@ final class SqlQueryExecutor {
 			return statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new SqlQueryExecutionException("Failed to execute update: " + rendered.sql(), e, rendered.sql());
+		}
+	}
+	
+	static int executeBatchedUpdate(@NonNull SqlDialect dialect, @NonNull SqlConnectionSource source, @NonNull List<SqlRendered> renderedList, @NonNull Duration timeout) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(source, "Sql connection source must not be null");
+		Objects.requireNonNull(renderedList, "Sql rendered list must not be null");
+		Objects.requireNonNull(timeout, "Query timeout must not be null");
+		if (renderedList.isEmpty()) {
+			return 0;
+		}
+		
+		String firstSql = renderedList.getFirst().sql();
+		try (SqlConnectionHandle handle = source.open()) {
+			Connection connection = handle.connection();
+			
+			boolean ownsTransaction;
+			try {
+				ownsTransaction = connection.getAutoCommit();
+				if (ownsTransaction) {
+					connection.setAutoCommit(false);
+				}
+			} catch (SQLException e) {
+				throw new SqlQueryExecutionException("Failed to begin batched update transaction", e, firstSql);
+			}
+			
+			try {
+				int total = 0;
+				for (SqlRendered rendered : renderedList) {
+					try (PreparedStatement statement = prepare(dialect, connection, rendered, timeout)) {
+						total += statement.executeUpdate();
+					}
+				}
+				
+				if (ownsTransaction) {
+					connection.commit();
+				}
+				return total;
+			} catch (SqlException e) {
+				rollbackQuietly(connection, ownsTransaction);
+				throw e;
+			} catch (SQLException e) {
+				rollbackQuietly(connection, ownsTransaction);
+				throw new SqlQueryExecutionException("Failed to execute batched update", e, firstSql);
+			} finally {
+				if (ownsTransaction) {
+					try {
+						connection.setAutoCommit(true);
+					} catch (SQLException ignored) {}
+				}
+			}
+		}
+	}
+	
+	static @NonNull List<Long> executeUpdateReturningKeys(@NonNull SqlDialect dialect, @NonNull SqlConnectionSource source, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(source, "Sql connection source must not be null");
+		Objects.requireNonNull(rendered, "Sql rendered must not be null");
+		Objects.requireNonNull(timeout, "Query timeout must not be null");
+		
+		List<Long> keys = Lists.newArrayList();
+		try (SqlConnectionHandle handle = source.open(); PreparedStatement statement = prepare(dialect, handle.connection(), rendered, timeout, true)) {
+			statement.executeUpdate();
+			try (ResultSet resultSet = statement.getGeneratedKeys()) {
+				while (resultSet.next()) {
+					keys.add(resultSet.getLong(1));
+				}
+				return keys;
+			}
+		} catch (SQLException e) {
+			throw new SqlQueryExecutionException("Failed to execute update returning generated keys: " + rendered.sql(), e, rendered.sql());
 		}
 	}
 	

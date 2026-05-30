@@ -22,7 +22,7 @@ import net.luis.utils.io.database.condition.conditions.SqlNumericCondition;
 import net.luis.utils.io.database.condition.conditions.numeric.*;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnknownConstructException;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import org.jspecify.annotations.NonNull;
@@ -51,7 +51,7 @@ public class SqlNumericConditionRenderer {
 			case SqlModEqualsCondition cond -> this.renderModEquals(cond);
 			
 			case null -> throw new NullPointerException("Sql numeric condition must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql numeric condition type: " + condition.getClass().getName() + " in dialect " + this.dialect.name());
+			default -> throw new SqlDialectUnknownConstructException("Unknown sql numeric condition type: " + condition.getClass().getName() + " in dialect " + this.dialect.name());
 		};
 	}
 	

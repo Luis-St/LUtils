@@ -82,6 +82,10 @@ public class SqlTableRenderer {
 		return renderer.toSql();
 	}
 	
+	public @NonNull List<SqlRendered> renderTableRebuild(@NonNull SqlTable<?> table, @NonNull List<? extends SqlColumn<?, ?>> newColumns, @NonNull List<SqlRendered> extraInlineConstraints) throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("Table rebuild is not supported by dialect " + this.dialect.name());
+	}
+	
 	public @NonNull SqlRendered renderDropTable(@NonNull SqlTable<?> table, boolean ifExists) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		
@@ -232,7 +236,7 @@ public class SqlTableRenderer {
 			if (!first) {
 				renderer.comma();
 			}
-
+			
 			renderer.unique().openingBracket();
 			SqlRenderingHelper.renderList(renderer, uniqueConstraint.columns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.name())));
 			renderer.closingBracket();

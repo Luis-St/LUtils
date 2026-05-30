@@ -21,6 +21,7 @@ package net.luis.utils.io.database.migration;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlMigrationConflictException;
 import net.luis.utils.io.database.exception.database.SqlMigrationExecutionException;
@@ -235,6 +236,7 @@ public final class SqlMigrationRunner {
 	
 	private void applyMigration(@NonNull RegisteredSqlMigration registered) throws SqlException {
 		Objects.requireNonNull(registered, "Registered sql migration must not be null");
+		this.ensureAtomicExecutionAllowed(registered.migration());
 		
 		List<SqlRendered> rendered = this.renderMigrationUp(registered.migration());
 		SqlMigrationInfo info = new SqlMigrationInfo(
@@ -243,18 +245,28 @@ public final class SqlMigrationRunner {
 			SqlMigrationStatus.APPLIED,
 			Instant.now()
 		);
-		this.context.executeAndSave(rendered, this.store, info);
-		
-		SqlMigrationSchema schema = SqlMigrationSchema.load(this.context.dataSource(), this.context.dialect());
-		this.schemaStore.save(registered.migration().version(), schema.extractColumnInfos(), schema.extractCheckConstraints());
+		this.context.executeAndSave(rendered, this.store, info, this.schemaStore);
 	}
 	
 	private void rollbackMigration(@NonNull RegisteredSqlMigration registered) throws SqlException {
 		Objects.requireNonNull(registered, "Registered sql migration must not be null");
+		this.ensureAtomicExecutionAllowed(registered.migration());
 		
 		List<SqlRendered> rendered = this.renderMigrationDown(registered.migration());
-		this.context.executeAndUpdate(rendered, this.store, registered.migration().version(), SqlMigrationStatus.ROLLED_BACK);
-		this.schemaStore.delete(registered.migration().version());
+		this.context.executeAndUpdate(rendered, this.store, registered.migration().version(), SqlMigrationStatus.ROLLED_BACK, this.schemaStore);
+	}
+	
+	private void ensureAtomicExecutionAllowed(@NonNull SqlMigration migration) throws SqlException {
+		Objects.requireNonNull(migration, "Sql migration must not be null");
+		
+		if (this.context.dialect().isFeatureSupported(SqlFeature.TRANSACTIONAL_DDL) || migration.allowsNonAtomicExecution()) {
+			return;
+		}
+		
+		throw new SqlMigrationConflictException(
+			"Migration " + migration.version() + " cannot be executed atomically on dialect '" + this.context.dialect().name() + "' because it implicitly commits on DDL, " +
+				"a mid-migration failure may leave the schema half-applied without the possibility of a rollback. Override SqlMigration.allowsNonAtomicExecution() to accept this risk."
+		);
 	}
 	
 	private @NonNull List<SqlRendered> renderMigrationUp(@NonNull SqlMigration migration) throws SqlException {
@@ -345,7 +357,7 @@ public final class SqlMigrationRunner {
 					List<Pair<SqlType<?>, Object>> params = rendered.parameters();
 					for (int i = 0; i < params.size(); i++) {
 						Pair<SqlType<?>, Object> pair = params.get(i);
-						SqlType.setUnsafe(pair.getFirst(), this.database.getDialect(), statement, i + 1, pair.getSecond());
+						SqlType.setValue(pair.getFirst(), this.database.getDialect(), statement, i + 1, pair.getSecond());
 					}
 					statement.execute();
 				}
@@ -353,16 +365,21 @@ public final class SqlMigrationRunner {
 		}
 		
 		@Override
-		public void executeAndSave(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull SqlMigrationInfo info) throws SqlException {
+		public void executeAndSave(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull SqlMigrationInfo info, @NonNull SqlMigrationSchemaStore schemaStore) throws SqlException {
 			Objects.requireNonNull(statements, "Sql rendered statements must not be null");
 			Objects.requireNonNull(store, "Sql migration store must not be null");
 			Objects.requireNonNull(info, "Sql migration info must not be null");
+			Objects.requireNonNull(schemaStore, "Sql migration schema store must not be null");
 			
 			try (Connection connection = this.database.getDataSource().getConnection()) {
 				connection.setAutoCommit(false);
 				try {
 					this.executeStatements(connection, statements);
 					store.save(connection, info);
+					
+					SqlMigrationSchema schema = SqlMigrationSchema.load(connection, this.database.getDialect(), "public");
+					schemaStore.save(connection, info.version(), schema.extractColumnInfos(), schema.extractCheckConstraints());
+					
 					connection.commit();
 				} catch (SQLException e) {
 					connection.rollback();
@@ -374,17 +391,21 @@ public final class SqlMigrationRunner {
 		}
 		
 		@Override
-		public void executeAndUpdate(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull Version version, @NonNull SqlMigrationStatus status) throws SqlException {
+		public void executeAndUpdate(@NonNull List<SqlRendered> statements, @NonNull SqlMigrationStore store, @NonNull Version version, @NonNull SqlMigrationStatus status, @NonNull SqlMigrationSchemaStore schemaStore) throws SqlException {
 			Objects.requireNonNull(statements, "Sql rendered statements must not be null");
 			Objects.requireNonNull(store, "Sql migration store must not be null");
 			Objects.requireNonNull(version, "Sql migration version must not be null");
 			Objects.requireNonNull(status, "Sql migration status must not be null");
+			Objects.requireNonNull(schemaStore, "Sql migration schema store must not be null");
 			
 			try (Connection connection = this.database.getDataSource().getConnection()) {
 				connection.setAutoCommit(false);
 				try {
 					this.executeStatements(connection, statements);
+					
 					store.update(connection, version, status);
+					schemaStore.delete(connection, version);
+					
 					connection.commit();
 				} catch (SQLException e) {
 					connection.rollback();

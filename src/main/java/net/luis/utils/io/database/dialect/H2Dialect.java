@@ -21,6 +21,7 @@ package net.luis.utils.io.database.dialect;
 import net.luis.utils.io.database.dialect.renderer.SqlDialectRenderer;
 import net.luis.utils.io.database.dialect.renderer.expression.function.SqlTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.temporal.*;
@@ -28,6 +29,8 @@ import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
+import net.luis.utils.io.database.type.SqlTypeRegistry;
+import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlLengthParameter;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
@@ -50,17 +53,35 @@ public class H2Dialect extends AbstractSqlDialect {
 		SqlFeature.NULLS_ORDERING,
 		SqlFeature.SCHEMAS,
 		SqlFeature.WINDOW_FUNCTIONS,
-		SqlFeature.FOR_UPDATE
+		SqlFeature.FOR_UPDATE,
+		SqlFeature.IS_DISTINCT_FROM,
+		SqlFeature.UPSERT_SUFFIX,
+		SqlFeature.TRANSACTIONAL_DDL,
+		SqlFeature.ROW_LOCKING,
+		SqlFeature.INSERT_OR_IGNORE,
+		SqlFeature.RENAME_INDEX,
+		SqlFeature.ALTER_COLUMN,
+		SqlFeature.ADD_CONSTRAINT,
+		SqlFeature.DROP_CONSTRAINT
 	);
 	
 	private static final Set<SqlIndexMethod> SUPPORTED_INDEX_METHODS = Set.of(
 		SqlIndexMethod.BTREE,
 		SqlIndexMethod.HASH
 	);
+	private static final SqlTypeRegistry TYPE_REGISTRY = SqlTypeRegistry.builder()
+		.register(SqlTypes.UUID, "UUID")
+		.register(SqlTypes.JSON, "JSON")
+		.build();
 	
 	@Override
 	public @NonNull String name() {
 		return "H2";
+	}
+	
+	@Override
+	protected @NonNull SqlTypeRegistry createTypeRegistry() {
+		return TYPE_REGISTRY;
 	}
 	
 	@Override
@@ -110,13 +131,13 @@ public class H2Dialect extends AbstractSqlDialect {
 		Objects.requireNonNull(mode, "Sql Lock mode must not be null");
 		
 		if (mode == SqlLockMode.FOR_SHARE) {
-			throw new SqlDialectUnsupportedRenderingException("FOR SHARE is not supported by dialect " + this.name());
+			throw new SqlDialectFeatureException(SqlFeature.FOR_SHARE, this);
 		}
 		if (skipLocked) {
-			throw new SqlDialectUnsupportedRenderingException("SKIP LOCKED is not supported by dialect " + this.name());
+			throw new SqlDialectFeatureException(SqlFeature.SKIP_LOCKED, this);
 		}
 		if (noWait) {
-			throw new SqlDialectUnsupportedRenderingException("NOWAIT is not supported by dialect " + this.name());
+			throw new SqlDialectFeatureException(SqlFeature.NO_WAIT, this);
 		}
 		
 		SqlRenderer renderer = SqlRenderer.empty();

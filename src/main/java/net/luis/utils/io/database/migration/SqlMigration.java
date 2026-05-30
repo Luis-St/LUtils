@@ -37,4 +37,8 @@ public interface SqlMigration {
 	void up(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) throws SqlException;
 	
 	void down(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) throws SqlException;
+	
+	default boolean allowsNonAtomicExecution() {
+		return false;
+	}
 }

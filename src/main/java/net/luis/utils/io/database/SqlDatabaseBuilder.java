@@ -21,8 +21,7 @@ package net.luis.utils.io.database;
 import net.luis.utils.io.database.audit.SqlAuditUserProvider;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.database.SqlConnectionException;
-import net.luis.utils.io.database.transaction.SqlIsolationLevel;
-import net.luis.utils.io.database.transaction.SqlPropagation;
+import net.luis.utils.io.database.transaction.*;
 import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
@@ -40,6 +39,7 @@ public class SqlDatabaseBuilder {
 	private final DataSource dataSource;
 	private final SqlDialect dialect;
 	private Duration queryTimeout = Duration.ofSeconds(30);
+	private Duration connectionAcquisitionTimeout = SqlTransactionManager.DEFAULT_CONNECTION_ACQUISITION_TIMEOUT;
 	private SqlIsolationLevel defaultTransactionIsolationLevel = SqlIsolationLevel.READ_COMMITTED;
 	private SqlPropagation defaultTransactionPropagation = SqlPropagation.REQUIRED;
 	private boolean autoCloseDataSource;
@@ -52,6 +52,11 @@ public class SqlDatabaseBuilder {
 	
 	public @NonNull SqlDatabaseBuilder queryTimeout(@NonNull Duration queryTimeout) {
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
+		return this;
+	}
+	
+	public @NonNull SqlDatabaseBuilder connectionAcquisitionTimeout(@NonNull Duration connectionAcquisitionTimeout) {
+		this.connectionAcquisitionTimeout = Objects.requireNonNull(connectionAcquisitionTimeout, "Connection acquisition timeout must not be null");
 		return this;
 	}
 	
@@ -76,6 +81,15 @@ public class SqlDatabaseBuilder {
 	}
 	
 	public @NonNull SqlDatabase build() throws SqlConnectionException {
-		return new SqlDatabase(this.dataSource, this.dialect, this.queryTimeout, this.defaultTransactionIsolationLevel, this.defaultTransactionPropagation, this.autoCloseDataSource, this.auditUserProvider);
+		return new SqlDatabase(
+			this.dataSource,
+			this.dialect,
+			this.queryTimeout,
+			this.connectionAcquisitionTimeout,
+			this.defaultTransactionIsolationLevel,
+			this.defaultTransactionPropagation,
+			this.autoCloseDataSource,
+			this.auditUserProvider
+		);
 	}
 }

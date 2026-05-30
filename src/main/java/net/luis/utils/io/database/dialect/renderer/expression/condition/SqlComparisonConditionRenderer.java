@@ -23,11 +23,13 @@ import net.luis.utils.io.database.condition.conditions.comparison.*;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.renderer.SqlRenderingHelper;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnknownConstructException;
+import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import org.jspecify.annotations.NonNull;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -37,6 +39,8 @@ import java.util.Objects;
  */
 
 public class SqlComparisonConditionRenderer {
+	
+	protected static final int MAX_IN_LIST_SIZE = 1000;
 	
 	protected final SqlDialect dialect;
 	
@@ -56,7 +60,7 @@ public class SqlComparisonConditionRenderer {
 			case SqlLessThanCondition cond -> this.renderLessThan(cond);
 			
 			case null -> throw new NullPointerException("Sql comparison condition must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql comparison condition type: " + condition.getClass().getName() + " in dialect " + this.dialect.name());
+			default -> throw new SqlDialectUnknownConstructException("Unknown sql comparison condition type: " + condition.getClass().getName() + " in dialect " + this.dialect.name());
 		};
 	}
 	
@@ -83,9 +87,31 @@ public class SqlComparisonConditionRenderer {
 	protected @NonNull SqlRendered renderInList(@NonNull SqlInListCondition condition) throws SqlException {
 		Objects.requireNonNull(condition, "Sql condition must not be null");
 		
+		List<SqlExpression<?>> options = condition.options();
+		if (options.size() <= MAX_IN_LIST_SIZE) {
+			return this.renderInListGroup(condition.value(), options);
+		}
+		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.rendered(condition.value().toSql(this.dialect)).in().openingBracket();
-		SqlRenderingHelper.renderList(renderer, condition.options(), (r, item) -> r.rendered(item.toSql(this.dialect)));
+		renderer.openingBracket();
+		for (int i = 0; i < options.size(); i += MAX_IN_LIST_SIZE) {
+			if (i > 0) {
+				renderer.or();
+			}
+			
+			renderer.rendered(this.renderInListGroup(condition.value(), options.subList(i, Math.min(i + MAX_IN_LIST_SIZE, options.size()))));
+		}
+		renderer.closingBracket();
+		return renderer.toSql();
+	}
+	
+	protected @NonNull SqlRendered renderInListGroup(@NonNull SqlExpression<?> value, @NonNull List<SqlExpression<?>> options) throws SqlException {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(options, "Sql options list must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.rendered(value.toSql(this.dialect)).in().openingBracket();
+		SqlRenderingHelper.renderList(renderer, options, (r, item) -> r.rendered(item.toSql(this.dialect)));
 		renderer.closingBracket();
 		return renderer.toSql();
 	}

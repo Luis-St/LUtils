@@ -22,7 +22,7 @@ import net.luis.utils.io.database.condition.*;
 import net.luis.utils.io.database.condition.conditions.*;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnknownConstructException;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import org.jspecify.annotations.NonNull;
@@ -91,7 +91,7 @@ public final class SqlConditionRenderer {
 			case SqlTemporalCondition cond -> this.temporalRenderer.render(cond);
 			
 			case null -> throw new NullPointerException("Sql condition must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql condition type: " + condition.getClass().getName() + " in dialect " + this.dialect.name());
+			default -> throw new SqlDialectUnknownConstructException("Unknown sql condition type: " + condition.getClass().getName() + " in dialect " + this.dialect.name());
 		};
 	}
 	

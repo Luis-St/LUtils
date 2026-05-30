@@ -48,15 +48,7 @@ import java.util.Objects;
  */
 public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	
-	private final SqlTable<E> table;
-	private final SqlDialect dialect;
-	private final SqlConnectionSource connectionSource;
-	private final Duration queryTimeout;
-	private final ThrowableFunction<ResultSet, E, SqlException> rowMapper;
-	private final List<SqlSetClause<E, ?>> setClauses;
-	private final List<SqlJoinClause> joins;
-	private final @Nullable SqlCondition whereCondition;
-	private final boolean allowAll;
+	private final SqlUpdateQueryConfig<E> config;
 	
 	public SqlUpdateQuery(
 		@NonNull SqlTable<E> table,
@@ -65,43 +57,15 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 		@NonNull Duration queryTimeout,
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper
 	) {
-		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), List.of(), null, false);
+		this(new SqlUpdateQueryConfig<>(table, dialect, connectionSource, queryTimeout, rowMapper));
 	}
 	
-	private SqlUpdateQuery(
-		@NonNull SqlTable<E> table,
-		@NonNull SqlDialect dialect,
-		@NonNull SqlConnectionSource connectionSource,
-		@NonNull Duration queryTimeout,
-		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
-		@NonNull List<SqlSetClause<E, ?>> setClauses,
-		@NonNull List<SqlJoinClause> joins,
-		@Nullable SqlCondition whereCondition,
-		boolean allowAll
-	) {
-		this.table = Objects.requireNonNull(table, "Sql table must not be null");
-		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		this.connectionSource = Objects.requireNonNull(connectionSource, "Sql connection source must not be null");
-		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
-		this.rowMapper = Objects.requireNonNull(rowMapper, "Row mapper must not be null");
-		this.setClauses = Objects.requireNonNull(setClauses, "Sql set clauses must not be null");
-		this.joins = Objects.requireNonNull(joins, "Sql join clauses must not be null");
-		this.whereCondition = whereCondition;
-		this.allowAll = allowAll;
+	SqlUpdateQuery(@NonNull SqlUpdateQueryConfig<E> config) {
+		this.config = Objects.requireNonNull(config, "Sql update query config must not be null");
 	}
 	
 	private @NonNull SqlUpdateQuery<E> withJoin(@NonNull SqlJoinClause join) {
-		return new SqlUpdateQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
-			this.rowMapper,
-			this.setClauses,
-			SqlQuery.copyAndAdd(this.joins, join),
-			this.whereCondition,
-			this.allowAll
-		);
+		return new SqlUpdateQuery<>(this.config.withJoins(SqlQuery.copyAndAdd(this.config.joins(), join)));
 	}
 	
 	@Override
@@ -132,17 +96,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	public <V> @NonNull SqlUpdateQuery<E> setNull(@NonNull SqlColumn<E, V> column) {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
-		return new SqlUpdateQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
-			this.rowMapper,
-			SqlQuery.copyAndAdd(this.setClauses, new SqlSetClause<>(column, null, SqlSetType.NULL)),
-			this.joins,
-			this.whereCondition,
-			this.allowAll
-		);
+		return new SqlUpdateQuery<>(this.config.withSetClauses(SqlQuery.copyAndAdd(this.config.setClauses(), new SqlSetClause<>(column, null, SqlSetType.NULL))));
 	}
 	
 	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @Nullable V value) {
@@ -152,17 +106,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> expression) {
-		return new SqlUpdateQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
-			this.rowMapper,
-			SqlQuery.copyAndAdd(this.setClauses, new SqlSetClause<>(column, expression, SqlSetType.EXPRESSION)),
-			this.joins,
-			this.whereCondition,
-			this.allowAll
-		);
+		return new SqlUpdateQuery<>(this.config.withSetClauses(SqlQuery.copyAndAdd(this.config.setClauses(), new SqlSetClause<>(column, expression, SqlSetType.EXPRESSION))));
 	}
 	
 	public <V extends Number> @NonNull SqlUpdateQuery<E> increment(@NonNull SqlColumn<E, V> column, @NonNull V incrementBy) {
@@ -172,17 +116,7 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public <V extends Number> @NonNull SqlUpdateQuery<E> increment(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> incrementByExpression) {
-		return new SqlUpdateQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
-			this.rowMapper,
-			SqlQuery.copyAndAdd(this.setClauses, new SqlSetClause<>(column, incrementByExpression, SqlSetType.INCREMENT)),
-			this.joins,
-			this.whereCondition,
-			this.allowAll
-		);
+		return new SqlUpdateQuery<>(this.config.withSetClauses(SqlQuery.copyAndAdd(this.config.setClauses(), new SqlSetClause<>(column, incrementByExpression, SqlSetType.INCREMENT))));
 	}
 	
 	public <V extends Number> @NonNull SqlUpdateQuery<E> decrement(@NonNull SqlColumn<E, V> column, @NonNull V decrementBy) {
@@ -192,87 +126,58 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public <V extends Number> @NonNull SqlUpdateQuery<E> decrement(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> decrementByExpression) {
-		return new SqlUpdateQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
-			this.rowMapper,
-			SqlQuery.copyAndAdd(this.setClauses, new SqlSetClause<>(column, decrementByExpression, SqlSetType.DECREMENT)),
-			this.joins,
-			this.whereCondition,
-			this.allowAll
-		);
+		return new SqlUpdateQuery<>(this.config.withSetClauses(SqlQuery.copyAndAdd(this.config.setClauses(), new SqlSetClause<>(column, decrementByExpression, SqlSetType.DECREMENT))));
 	}
 	
 	public @NonNull SqlUpdateQuery<E> where(@NonNull SqlCondition condition) {
 		Objects.requireNonNull(condition, "Sql where condition must not be null");
 		
-		SqlCondition combined = this.whereCondition != null ? SqlCondition.allOf(this.whereCondition, condition) : condition;
-		return new SqlUpdateQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
-			this.rowMapper,
-			this.setClauses,
-			this.joins,
-			combined,
-			this.allowAll
-		);
+		SqlCondition existing = this.config.whereCondition();
+		SqlCondition combined = existing != null ? SqlCondition.allOf(existing, condition) : condition;
+		return new SqlUpdateQuery<>(this.config.withWhereCondition(combined));
 	}
 	
 	public @NonNull SqlUpdateQuery<E> allowAll() {
-		return new SqlUpdateQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
-			this.rowMapper,
-			this.setClauses,
-			this.joins,
-			this.whereCondition,
-			true
-		);
+		return new SqlUpdateQuery<>(this.config.withAllowAll());
 	}
 	
 	public int execute() throws SqlException {
-		if (this.whereCondition == null && !this.allowAll) {
+		if (this.config.whereCondition() == null && !this.config.allowAll()) {
 			throw new SqlStatementBuilderException("UPDATE without WHERE clause would affect all rows, call allowAll() to confirm this is intentional");
 		}
-		return SqlQueryExecutor.executeUpdate(this.dialect, this.connectionSource, this.toSql(this.dialect), this.queryTimeout);
+		return SqlQueryExecutor.executeUpdate(this.config.dialect(), this.config.connectionSource(), this.toSql(this.config.dialect()), this.config.queryTimeout());
 	}
 	
 	public @NonNull List<E> returning() throws SqlException {
 		return SqlQueryExecutor.executeReturningQuery(
-			this.dialect, this.connectionSource, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.columns())), this.queryTimeout, this.rowMapper
+			this.config.dialect(), this.config.connectionSource(), this.toSql(this.config.dialect()), this.config.dialect().renderReturning(List.copyOf(this.config.table().columns())), this.config.queryTimeout(), this.config.rowMapper()
 		);
 	}
 	
 	@Override
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		if (this.setClauses.isEmpty()) {
+		if (this.config.setClauses().isEmpty()) {
 			throw new SqlStatementBuilderException("Sql update query must have at least one SET clause");
 		}
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.update().literal(dialect.quoteIdentifier(this.table.name()));
-		for (SqlJoinClause join : this.joins) {
+		renderer.update().literal(dialect.quoteIdentifier(this.config.table().name()));
+		for (SqlJoinClause join : this.config.joins()) {
 			renderer.rendered(join.toSql(dialect));
 		}
 		
 		renderer.set();
-		for (int i = 0; i < this.setClauses.size(); i++) {
+		for (int i = 0; i < this.config.setClauses().size(); i++) {
 			if (i > 0) {
 				renderer.comma();
 			}
 			
-			renderer.rendered(this.setClauses.get(i).toSql(dialect));
+			renderer.rendered(this.config.setClauses().get(i).toSql(dialect));
 		}
 		
-		if (this.whereCondition != null) {
-			renderer.where().rendered(dialect.renderCondition(this.whereCondition));
+		if (this.config.whereCondition() != null) {
+			renderer.where().rendered(dialect.renderCondition(this.config.whereCondition()));
 		}
 		return renderer.toSql();
 	}

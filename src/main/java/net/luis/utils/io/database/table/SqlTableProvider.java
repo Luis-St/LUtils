@@ -70,7 +70,7 @@ public class SqlTableProvider<E> {
 			
 			for (int i = 0; i < parameters.size(); i++) {
 				Pair<SqlType<?>, Object> pair = parameters.get(i);
-				SqlType.setUnsafe(pair.getFirst(), this.dialect, statement, i + 1, pair.getSecond());
+				SqlType.setValue(pair.getFirst(), this.dialect, statement, i + 1, pair.getSecond());
 			}
 			
 			long seconds = this.queryTimeout.toSeconds();

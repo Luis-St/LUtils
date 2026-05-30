@@ -19,12 +19,18 @@
 package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.io.database.SqlReferentialAction;
+import net.luis.utils.io.database.audit.SqlAuditColumn;
 import net.luis.utils.io.database.condition.SqlCondition;
+import net.luis.utils.io.database.condition.conditions.comparison.SqlIsDistinctFromCondition;
 import net.luis.utils.io.database.dialect.renderer.*;
+import net.luis.utils.io.database.dialect.renderer.expression.condition.SqlComparisonConditionRenderer;
+import net.luis.utils.io.database.dialect.renderer.expression.function.SqlNumericFunctionRenderer;
 import net.luis.utils.io.database.dialect.renderer.expression.function.SqlTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateFunction;
 import net.luis.utils.io.database.function.functions.temporal.*;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -51,7 +57,13 @@ public class SqliteDialect extends AbstractSqlDialect {
 		SqlFeature.RETURNING,
 		SqlFeature.CTE,
 		SqlFeature.RECURSIVE_CTE,
-		SqlFeature.NULLS_ORDERING
+		SqlFeature.NULLS_ORDERING,
+		SqlFeature.UPSERT_SUFFIX,
+		SqlFeature.INSERT_OR_IGNORE,
+		SqlFeature.TRANSACTIONAL_DDL,
+		SqlFeature.ALTER_COLUMN,
+		SqlFeature.ADD_CONSTRAINT,
+		SqlFeature.TABLE_REBUILD
 	);
 	
 	@Override
@@ -63,6 +75,8 @@ public class SqliteDialect extends AbstractSqlDialect {
 	protected @NonNull SqlDialectRenderer createRenderer() {
 		return SqlDialectRenderer.builder(this)
 			.temporalFunctionRenderer(new SqliteTemporalFunctionRenderer(this))
+			.numericFunctionRenderer(new SqliteNumericFunctionRenderer(this))
+			.comparisonConditionRenderer(new SqliteComparisonConditionRenderer(this))
 			.tableRenderer(new SqliteTableRenderer(this))
 			.indexRenderer(new SqliteIndexRenderer(this))
 			.columnRenderer(new SqliteColumnRenderer(this))
@@ -98,28 +112,53 @@ public class SqliteDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	@SuppressWarnings("DuplicatedCode")
+	public int maxBindParameters() {
+		return 999;
+	}
+	
+	@Override
 	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
-		Objects.requireNonNull(columns, "Columns must not be null");
-		
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.returning();
-		if (columns.isEmpty()) {
-			renderer.literal("*");
-		} else {
-			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.name())));
-		}
-		return renderer.toSql();
+		return this.renderStandardReturning(columns);
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("Row-level locking is not supported by dialect " + this.name());
+		throw new SqlDialectFeatureException(SqlFeature.ROW_LOCKING, this);
 	}
 	
 	@Override
-	protected @NonNull String getCheckConstraintsQueryString() {
-		return "";
+	protected @Nullable String getCheckConstraintsQueryString() {
+		return null;
+	}
+}
+
+class SqliteNumericFunctionRenderer extends SqlNumericFunctionRenderer {
+	
+	SqliteNumericFunctionRenderer(@NonNull SqlDialect dialect) {
+		super(dialect);
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderTruncate(@NonNull SqlNumericTruncateFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		return SqlRenderingHelper.renderFunctionCall(this.dialect, "TRUNC", function.expression());
+	}
+}
+
+class SqliteComparisonConditionRenderer extends SqlComparisonConditionRenderer {
+	
+	SqliteComparisonConditionRenderer(@NonNull SqlDialect dialect) {
+		super(dialect);
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderIsDistinctFrom(@NonNull SqlIsDistinctFromCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.rendered(condition.first().toSql(this.dialect)).is().not().rendered(condition.second().toSql(this.dialect));
+		return renderer.toSql();
 	}
 }
 
@@ -160,6 +199,60 @@ class SqliteTableRenderer extends SqlTableRenderer {
 		renderer.delete().from().literal(this.dialect.quoteIdentifier(table.name()));
 		return renderer.toSql();
 	}
+	
+	@Override
+	public @NonNull List<SqlRendered> renderTableRebuild(@NonNull SqlTable<?> table, @NonNull List<? extends SqlColumn<?, ?>> newColumns, @NonNull List<SqlRendered> extraInlineConstraints) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(newColumns, "Sql columns must not be null");
+		Objects.requireNonNull(extraInlineConstraints, "Extra inline constraints must not be null");
+		
+		String original = this.dialect.quoteIdentifier(table.name());
+		String temp = this.dialect.quoteIdentifier("_" + table.name() + "_rebuild");
+		boolean hasCompositeKey = table.compositePrimaryKey().isPresent();
+		
+		List<String> columnNames = new ArrayList<>();
+		SqlRenderer create = SqlRenderer.empty();
+		create.create().table().literal(temp).openingBracket();
+		for (int i = 0; i < newColumns.size(); i++) {
+			if (i > 0) {
+				create.comma();
+			}
+			SqlColumn<?, ?> column = newColumns.get(i);
+			create.rendered(this.renderColumnForTable(column, hasCompositeKey));
+			columnNames.add(this.dialect.quoteIdentifier(column.name()));
+		}
+		if (table.auditConfig().isPresent()) {
+			for (SqlAuditColumn auditColumn : table.auditConfig().get().auditColumns()) {
+				create.comma().rendered(this.renderAuditColumnForTable(auditColumn));
+				columnNames.add(this.dialect.quoteIdentifier(auditColumn.name()));
+			}
+		}
+		
+		SqlRendered tableConstraints = this.renderTableConstraints(table);
+		if (!tableConstraints.sql().isEmpty()) {
+			create.comma().rendered(tableConstraints);
+		}
+		for (SqlRendered extra : extraInlineConstraints) {
+			if (!extra.sql().isEmpty()) {
+				create.comma().rendered(extra);
+			}
+		}
+		create.closingBracket();
+		
+		String columns = String.join(", ", columnNames);
+		SqlRenderer copy = SqlRenderer.empty();
+		copy.insert().into().literal(temp).openingBracket().literal(columns).closingBracket();
+		copy.select().literal(columns).from().literal(original);
+		
+		List<SqlRendered> statements = new ArrayList<>();
+		statements.add(SqlRendered.of("PRAGMA foreign_keys=OFF"));
+		statements.add(create.toSql());
+		statements.add(copy.toSql());
+		statements.add(SqlRenderer.empty().drop().table().literal(original).toSql());
+		statements.add(SqlRenderer.empty().alter().table().literal(temp).rename().to().literal(original).toSql());
+		statements.add(SqlRendered.of("PRAGMA foreign_keys=ON"));
+		return List.copyOf(statements);
+	}
 }
 
 class SqliteIndexRenderer extends SqlIndexRenderer {
@@ -170,7 +263,7 @@ class SqliteIndexRenderer extends SqlIndexRenderer {
 	
 	@Override
 	public @NonNull SqlRendered renderRenameIndex(@Nullable SqlTable<?> table, @NonNull String from, @NonNull String to) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("RENAME INDEX is not supported by dialect SQLite");
+		throw new SqlDialectFeatureException(SqlFeature.RENAME_INDEX, this.dialect);
 	}
 }
 
@@ -182,22 +275,22 @@ class SqliteColumnRenderer extends SqlColumnRenderer {
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnType(@NonNull SqlColumn<?, ?> column, @NonNull SqlType<?> newType) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN is not supported by dialect SQLite, table recreation is required");
+		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN cannot be rendered as a single statement on SQLite, it is emulated via a table rebuild through the migration API");
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnNullability(@NonNull SqlColumn<?, ?> column, boolean nullable) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN is not supported by dialect SQLite, table recreation is required");
+		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN cannot be rendered as a single statement on SQLite, it is emulated via a table rebuild through the migration API");
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnSetDefault(@NonNull SqlColumn<?, ?> column, @NonNull String renderedDefault) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN is not supported by dialect SQLite, table recreation is required");
+		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN cannot be rendered as a single statement on SQLite, it is emulated via a table rebuild through the migration API");
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderAlterColumnDropDefault(@NonNull SqlColumn<?, ?> column) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN is not supported by dialect SQLite, table recreation is required");
+		throw new SqlDialectUnsupportedRenderingException("ALTER COLUMN cannot be rendered as a single statement on SQLite, it is emulated via a table rebuild through the migration API");
 	}
 }
 
@@ -209,7 +302,7 @@ class SqliteMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 	
 	@Override
 	public @NonNull SqlRendered renderAddUniqueConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("ADD CONSTRAINT is not supported by dialect SQLite, table recreation is required");
+		throw new SqlDialectUnsupportedRenderingException("ADD CONSTRAINT cannot be rendered as a single statement on SQLite, it is emulated via a table rebuild through the migration API");
 	}
 	
 	@Override
@@ -222,22 +315,22 @@ class SqliteMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 		@NonNull SqlReferentialAction onDelete,
 		@NonNull SqlReferentialAction onUpdate
 	) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("ADD CONSTRAINT is not supported by dialect SQLite, table recreation is required");
+		throw new SqlDialectUnsupportedRenderingException("ADD CONSTRAINT cannot be rendered as a single statement on SQLite, it is emulated via a table rebuild through the migration API");
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderAddCheckConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull SqlCondition condition) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("ADD CONSTRAINT is not supported by dialect SQLite, table recreation is required");
+		throw new SqlDialectUnsupportedRenderingException("ADD CONSTRAINT cannot be rendered as a single statement on SQLite, it is emulated via a table rebuild through the migration API");
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderAddCompositePrimaryKey(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("ADD CONSTRAINT is not supported by dialect SQLite, table recreation is required");
+		throw new SqlDialectUnsupportedRenderingException("ADD CONSTRAINT cannot be rendered as a single statement on SQLite, it is emulated via a table rebuild through the migration API");
 	}
 	
 	@Override
 	public @NonNull SqlRendered renderDropConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName) throws SqlException {
-		throw new SqlDialectUnsupportedRenderingException("DROP CONSTRAINT is not supported by dialect SQLite, table recreation is required");
+		throw new SqlDialectFeatureException(SqlFeature.DROP_CONSTRAINT, this.dialect);
 	}
 }
 

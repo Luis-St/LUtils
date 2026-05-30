@@ -79,14 +79,26 @@ public final class SqlMigrationSchema {
 		Objects.requireNonNull(dataSource, "Data source must not be null");
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(schema, "Sql schema must not be null");
-		
+
+		try (Connection connection = dataSource.getConnection()) {
+			return load(connection, dialect, schema);
+		} catch (SQLException e) {
+			throw new SqlSchemaIntrospectionException("Failed to load schema metadata for schema " + schema, e);
+		}
+	}
+
+	public static @NonNull SqlMigrationSchema load(@NonNull Connection connection, @NonNull SqlDialect dialect, @NonNull String schema) throws SqlException {
+		Objects.requireNonNull(connection, "Connection must not be null");
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(schema, "Sql schema must not be null");
+
 		Map<String, SqlTable<Void>> tables = Maps.newLinkedHashMap();
 		Map<String, Map<String, SqlColumn<Void, ?>>> columns = Maps.newLinkedHashMap();
 		Map<String, List<SqlCheckConstraintInfo>> checkConstraints = Maps.newLinkedHashMap();
-		
-		try (Connection connection = dataSource.getConnection()) {
+
+		try {
 			DatabaseMetaData meta = connection.getMetaData();
-			
+
 			List<String> tableNames = discoverTableNames(meta, schema);
 			
 			for (String tableName : tableNames) {

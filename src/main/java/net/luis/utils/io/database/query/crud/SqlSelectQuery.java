@@ -54,26 +54,7 @@ import java.util.*;
 
 public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	
-	private final SqlTable<?> table;
-	private final SqlDialect dialect;
-	private final SqlConnectionSource connectionSource;
-	private final Duration queryTimeout;
-	private final ThrowableFunction<ResultSet, E, SqlException> rowMapper;
-	private final List<SqlExpression<?>> selectedExpressions;
-	private final List<SqlJoinClause> joins;
-	private final List<SqlColumn<?, ?>> groupByColumns;
-	private final List<SqlOrderable<?>> orderByClauses;
-	private final List<SqlSetOperationEntry<E>> setOperations;
-	private final List<SqlCommonTableExpression> commonTableExpressions;
-	private final long limit;
-	private final long offset;
-	private final boolean isDistinct;
-	private final @Nullable SqlCondition whereCondition;
-	private final @Nullable SqlSelectQuery<?> whereExistsSubquery;
-	private final @Nullable SqlCondition havingCondition;
-	private final @Nullable SqlLockMode lockMode;
-	private final boolean skipLocked;
-	private final boolean noWait;
+	private final SqlSelectQueryConfig<E> config;
 	
 	public SqlSelectQuery(
 		@NonNull SqlTable<?> table,
@@ -82,7 +63,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		@NonNull Duration queryTimeout,
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper
 	) {
-		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), -1, -1, false, null, null, null, null, false, false);
+		this(new SqlSelectQueryConfig<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.of()));
 	}
 	
 	public SqlSelectQuery(
@@ -93,195 +74,51 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
 		@NonNull List<SqlExpression<?>> selectedExpressions
 	) {
-		this(table, dialect, connectionSource, queryTimeout, rowMapper, selectedExpressions, List.of(), List.of(), List.of(), List.of(), List.of(), -1, -1, false, null, null, null, null, false, false);
+		this(new SqlSelectQueryConfig<>(table, dialect, connectionSource, queryTimeout, rowMapper, selectedExpressions));
 	}
 	
-	private SqlSelectQuery(
-		@NonNull SqlTable<?> table,
-		@NonNull SqlDialect dialect,
-		@NonNull SqlConnectionSource connectionSource,
-		@NonNull Duration queryTimeout,
-		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
-		@NonNull List<SqlExpression<?>> selectedExpressions,
-		@NonNull List<SqlJoinClause> joins,
-		@NonNull List<SqlColumn<?, ?>> groupByColumns,
-		@NonNull List<SqlOrderable<?>> orderByClauses,
-		@NonNull List<SqlSetOperationEntry<E>> setOperations,
-		@NonNull List<SqlCommonTableExpression> commonTableExpressions,
-		long limit,
-		long offset,
-		boolean isDistinct,
-		@Nullable SqlCondition whereCondition,
-		@Nullable SqlSelectQuery<?> whereExistsSubquery,
-		@Nullable SqlCondition havingCondition,
-		@Nullable SqlLockMode lockMode,
-		boolean skipLocked, boolean noWait
-	) {
-		this.table = Objects.requireNonNull(table, "Sql table must not be null");
-		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		this.connectionSource = Objects.requireNonNull(connectionSource, "Sql connection source must not be null");
-		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
-		this.rowMapper = Objects.requireNonNull(rowMapper, "Row mapper must not be null");
-		this.selectedExpressions = Objects.requireNonNull(selectedExpressions, "Selected expressions must not be null");
-		this.joins = Objects.requireNonNull(joins, "Sql join clauses must not be null");
-		this.groupByColumns = Objects.requireNonNull(groupByColumns, "Sql group by columns must not be null");
-		this.orderByClauses = Objects.requireNonNull(orderByClauses, "Sql order by clauses must not be null");
-		this.setOperations = Objects.requireNonNull(setOperations, "Sql set operations must not be null");
-		this.commonTableExpressions = Objects.requireNonNull(commonTableExpressions, "Sql common table expressions must not be null");
-		this.limit = limit;
-		this.offset = offset;
-		this.isDistinct = isDistinct;
-		this.whereCondition = whereCondition;
-		this.whereExistsSubquery = whereExistsSubquery;
-		this.havingCondition = havingCondition;
-		this.lockMode = lockMode;
-		this.skipLocked = skipLocked;
-		this.noWait = noWait;
-		
-		if (limit < -1) {
-			throw new IllegalArgumentException("Limit must be non-negative or -1 for no limit");
+	SqlSelectQuery(@NonNull SqlSelectQueryConfig<E> config) {
+		this.config = Objects.requireNonNull(config, "Sql select query config must not be null");
+	}
+	
+	public @NonNull SqlSelectQuery<E> forUpdate() throws SqlException {
+		if (!this.config.dialect().isFeatureSupported(SqlFeature.FOR_UPDATE)) {
+			throw new SqlDialectFeatureException(SqlFeature.FOR_UPDATE, this.config.dialect());
 		}
-		if (offset < -1) {
-			throw new IllegalArgumentException("Offset must be non-negative or -1 for no offset");
+		return new SqlSelectQuery<>(this.config.withLockMode(SqlLockMode.FOR_UPDATE));
+	}
+	
+	public @NonNull SqlSelectQuery<E> forShare() throws SqlException {
+		if (!this.config.dialect().isFeatureSupported(SqlFeature.FOR_SHARE)) {
+			throw new SqlDialectFeatureException(SqlFeature.FOR_SHARE, this.config.dialect());
 		}
-	}
-	
-	private @NonNull SqlSelectQuery<E> copy(
-		@NonNull List<SqlJoinClause> joins,
-		@NonNull List<SqlColumn<?, ?>> groupByColumns,
-		@NonNull List<SqlOrderable<?>> orderByClauses,
-		@NonNull List<SqlSetOperationEntry<E>> setOperations,
-		@NonNull List<SqlCommonTableExpression> commonTableExpressions,
-		long limit,
-		long offset,
-		boolean isDistinct,
-		@Nullable SqlCondition whereCondition,
-		@Nullable SqlSelectQuery<?> whereExistsSubquery,
-		@Nullable SqlCondition havingCondition,
-		@Nullable SqlLockMode lockMode,
-		boolean skipLocked,
-		boolean noWait
-	) {
-		return new SqlSelectQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
-			this.rowMapper,
-			this.selectedExpressions,
-			joins,
-			groupByColumns,
-			orderByClauses,
-			setOperations,
-			commonTableExpressions,
-			limit,
-			offset,
-			isDistinct,
-			whereCondition,
-			whereExistsSubquery,
-			havingCondition,
-			lockMode,
-			skipLocked,
-			noWait
-		);
-	}
-	
-	private @NonNull SqlSelectQuery<E> withLockMode(@NonNull SqlLockMode lockMode) {
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			this.setOperations,
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			lockMode,
-			this.skipLocked,
-			this.noWait
-		);
-	}
-	
-	public @NonNull SqlSelectQuery<E> forUpdate() {
-		return this.withLockMode(SqlLockMode.FOR_UPDATE);
+		return new SqlSelectQuery<>(this.config.withLockMode(SqlLockMode.FOR_SHARE));
 	}
 	
 	public @NonNull SqlSelectQuery<E> skipLocked() throws SqlException {
-		if (this.lockMode == null) {
+		if (this.config.lockMode() == null) {
 			throw new SqlStatementBuilderException("skipLocked() requires a lock mode to be set first (e.g. forUpdate() or forShare())");
 		}
-		if (!this.dialect.isFeatureSupported(SqlFeature.SKIP_LOCKED)) {
-			throw new SqlDialectFeatureException(SqlFeature.SKIP_LOCKED, this.dialect);
+		if (!this.config.dialect().isFeatureSupported(SqlFeature.SKIP_LOCKED)) {
+			throw new SqlDialectFeatureException(SqlFeature.SKIP_LOCKED, this.config.dialect());
 		}
 		
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			this.setOperations,
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			true,
-			this.noWait
-		);
-	}
-	
-	public @NonNull SqlSelectQuery<E> forShare() {
-		return this.withLockMode(SqlLockMode.FOR_SHARE);
+		return new SqlSelectQuery<>(this.config.withSkipLocked());
 	}
 	
 	public @NonNull SqlSelectQuery<E> noWait() throws SqlException {
-		if (this.lockMode == null) {
+		if (this.config.lockMode() == null) {
 			throw new SqlStatementBuilderException("noWait() requires a lock mode to be set first (e.g. forUpdate() or forShare())");
 		}
-		if (!this.dialect.isFeatureSupported(SqlFeature.NO_WAIT)) {
-			throw new SqlDialectFeatureException(SqlFeature.NO_WAIT, this.dialect);
+		if (!this.config.dialect().isFeatureSupported(SqlFeature.NO_WAIT)) {
+			throw new SqlDialectFeatureException(SqlFeature.NO_WAIT, this.config.dialect());
 		}
 		
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			this.setOperations,
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			true
-		);
+		return new SqlSelectQuery<>(this.config.withNoWait());
 	}
 	
 	private @NonNull SqlSelectQuery<E> withJoin(@NonNull SqlJoinClause join) {
-		return this.copy(
-			SqlQuery.copyAndAdd(this.joins, join),
-			this.groupByColumns,
-			this.orderByClauses,
-			this.setOperations,
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		return new SqlSelectQuery<>(this.config.withJoins(SqlQuery.copyAndAdd(this.config.joins(), join)));
 	}
 	
 	@Override
@@ -314,8 +151,8 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public @NonNull SqlSelectQuery<E> lateralJoin(@NonNull SqlJoinType type, @NonNull SqlSelectQuery<?> subquery, @NonNull SqlAlias alias) throws SqlException {
-		if (!this.dialect.isFeatureSupported(SqlFeature.LATERAL_JOIN)) {
-			throw new SqlDialectFeatureException(SqlFeature.LATERAL_JOIN, this.dialect);
+		if (!this.config.dialect().isFeatureSupported(SqlFeature.LATERAL_JOIN)) {
+			throw new SqlDialectFeatureException(SqlFeature.LATERAL_JOIN, this.config.dialect());
 		}
 		return this.withJoin(new SqlJoinClause(type, subquery, alias));
 	}
@@ -323,103 +160,31 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	public @NonNull SqlSelectQuery<E> where(@NonNull SqlCondition condition) {
 		Objects.requireNonNull(condition, "Sql where condition must not be null");
 		
-		SqlCondition combined = this.whereCondition != null ? SqlCondition.allOf(this.whereCondition, condition) : condition;
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			this.setOperations,
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			combined,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		SqlCondition existing = this.config.whereCondition();
+		SqlCondition combined = existing != null ? SqlCondition.allOf(existing, condition) : condition;
+		return new SqlSelectQuery<>(this.config.withWhereCondition(combined));
 	}
 	
 	public @NonNull SqlSelectQuery<E> whereExists(@NonNull SqlSelectQuery<?> subquery) {
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			this.setOperations,
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			Objects.requireNonNull(subquery, "Sql subquery must not be null"),
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		Objects.requireNonNull(subquery, "Sql subquery must not be null");
+		return new SqlSelectQuery<>(this.config.withWhereExistsSubquery(subquery));
 	}
 	
 	public final @NonNull SqlSelectQuery<E> groupBy(SqlColumn<?, ?> @NonNull ... columns) {
 		Objects.requireNonNull(columns, "Group by sql columns must not be null");
 		
-		return this.copy(
-			this.joins,
-			SqlQuery.copyAndAddAll(this.groupByColumns, Arrays.asList(columns)),
-			this.orderByClauses,
-			this.setOperations,
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		return new SqlSelectQuery<>(this.config.withGroupByColumns(SqlQuery.copyAndAddAll(this.config.groupByColumns(), Arrays.asList(columns))));
 	}
 	
 	public @NonNull SqlSelectQuery<E> having(@NonNull SqlCondition condition) {
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			this.setOperations,
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			Objects.requireNonNull(condition, "Sql having condition must not be null"),
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		Objects.requireNonNull(condition, "Sql having condition must not be null");
+		return new SqlSelectQuery<>(this.config.withHavingCondition(condition));
 	}
 	
 	public @NonNull SqlSelectQuery<E> orderBy(SqlOrderable<?> @NonNull ... orderables) {
 		Objects.requireNonNull(orderables, "Sql order by clauses must not be null");
 		
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			SqlQuery.copyAndAddAll(this.orderByClauses, Arrays.asList(orderables)),
-			this.setOperations,
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		return new SqlSelectQuery<>(this.config.withOrderByClauses(SqlQuery.copyAndAddAll(this.config.orderByClauses(), Arrays.asList(orderables))));
 	}
 	
 	public @NonNull SqlSelectQuery<E> limit(long limit) {
@@ -427,22 +192,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 			throw new IllegalArgumentException("Limit must be non-negative");
 		}
 		
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			this.setOperations,
-			this.commonTableExpressions,
-			limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		return new SqlSelectQuery<>(this.config.withLimit(limit));
 	}
 	
 	public @NonNull SqlSelectQuery<E> offset(long offset) {
@@ -450,148 +200,58 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 			throw new IllegalArgumentException("Offset must be non-negative");
 		}
 		
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			this.setOperations,
-			this.commonTableExpressions,
-			this.limit,
-			offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		return new SqlSelectQuery<>(this.config.withOffset(offset));
 	}
 	
 	public @NonNull SqlSelectQuery<E> distinct() {
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			this.setOperations,
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			true,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		return new SqlSelectQuery<>(this.config.withDistinct());
 	}
 	
 	public @NonNull SqlSelectQuery<E> union(@NonNull SqlSelectQuery<E> other) {
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			SqlQuery.copyAndAdd(this.setOperations, new SqlSetOperationEntry<>(SqlSetOperation.UNION, other)),
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		return new SqlSelectQuery<>(this.config.withSetOperations(SqlQuery.copyAndAdd(this.config.setOperations(), new SqlSetOperationEntry<>(SqlSetOperation.UNION, other))));
 	}
 	
 	public @NonNull SqlSelectQuery<E> unionAll(@NonNull SqlSelectQuery<E> other) {
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			SqlQuery.copyAndAdd(this.setOperations, new SqlSetOperationEntry<>(SqlSetOperation.UNION_ALL, other)),
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		return new SqlSelectQuery<>(this.config.withSetOperations(SqlQuery.copyAndAdd(this.config.setOperations(), new SqlSetOperationEntry<>(SqlSetOperation.UNION_ALL, other))));
 	}
 	
 	public @NonNull SqlSelectQuery<E> intersect(@NonNull SqlSelectQuery<E> other) {
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			SqlQuery.copyAndAdd(this.setOperations, new SqlSetOperationEntry<>(SqlSetOperation.INTERSECT, other)),
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		return new SqlSelectQuery<>(this.config.withSetOperations(SqlQuery.copyAndAdd(this.config.setOperations(), new SqlSetOperationEntry<>(SqlSetOperation.INTERSECT, other))));
 	}
 	
 	public @NonNull SqlSelectQuery<E> except(@NonNull SqlSelectQuery<E> other) {
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			SqlQuery.copyAndAdd(this.setOperations, new SqlSetOperationEntry<>(SqlSetOperation.EXCEPT, other)),
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		return new SqlSelectQuery<>(this.config.withSetOperations(SqlQuery.copyAndAdd(this.config.setOperations(), new SqlSetOperationEntry<>(SqlSetOperation.EXCEPT, other))));
 	}
 	
 	public <R> @NonNull SqlSelectQuery<R> projectInto(@NonNull Class<R> type) throws SqlException {
 		Objects.requireNonNull(type, "Sql projection type must not be null");
-		if (this.selectedExpressions.isEmpty()) {
+		if (this.config.selectedExpressions().isEmpty()) {
 			throw new SqlStatementBuilderException("Cannot project into " + type.getSimpleName() + ": No expressions selected");
 		}
 		
-		ThrowableFunction<ResultSet, R, SqlException> projectionMapper = SqlRowMapper.forProjection(type, this.selectedExpressions);
-		return new SqlSelectQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
+		ThrowableFunction<ResultSet, R, SqlException> projectionMapper = SqlRowMapper.forProjection(type, this.config.selectedExpressions(), this.config.dialect());
+		return new SqlSelectQuery<>(new SqlSelectQueryConfig<>(
+			this.config.table(),
+			this.config.dialect(),
+			this.config.connectionSource(),
+			this.config.queryTimeout(),
 			projectionMapper,
-			this.selectedExpressions,
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
+			this.config.selectedExpressions(),
+			this.config.joins(),
+			this.config.groupByColumns(),
+			this.config.orderByClauses(),
 			List.of(),
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+			this.config.commonTableExpressions(),
+			this.config.limit(),
+			this.config.offset(),
+			this.config.isDistinct(),
+			this.config.whereCondition(),
+			this.config.whereExistsSubquery(),
+			this.config.havingCondition(),
+			this.config.lockMode(),
+			this.config.skipLocked(),
+			this.config.noWait()
+		));
 	}
 	
 	public @NonNull SqlCommonTableExpression asCommonExpression(@NonNull SqlAlias alias, boolean recursive) {
@@ -601,62 +261,47 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	public @NonNull SqlSelectQuery<E> with(@NonNull SqlCommonTableExpression commonTableExpression) {
 		Objects.requireNonNull(commonTableExpression, "Sql common table expression must not be null");
 		
-		return this.copy(
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
-			this.setOperations,
-			SqlQuery.copyAndAdd(this.commonTableExpressions, commonTableExpression),
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+		return new SqlSelectQuery<>(this.config.withCommonTableExpressions(SqlQuery.copyAndAdd(this.config.commonTableExpressions(), commonTableExpression)));
 	}
 	
 	public @NonNull SqlSelectQuery<SqlAudited<E>> withAudit() throws SqlException {
-		SqlAuditConfig config = this.table.auditConfig().orElseThrow(() -> new SqlStatementBuilderException("withAudit() requires an audited sql table"));
-		if (!this.selectedExpressions.isEmpty()) {
+		SqlAuditConfig auditConfig = this.config.table().auditConfig().orElseThrow(() -> new SqlStatementBuilderException("withAudit() requires an audited sql table"));
+		if (!this.config.selectedExpressions().isEmpty()) {
 			throw new SqlStatementBuilderException("withAudit() is only supported for full-entity selects, not projections");
 		}
 		
-		int entityColumnCount = this.table.columns().size();
-		ThrowableFunction<ResultSet, E, SqlException> entityMapper = this.rowMapper;
+		int entityColumnCount = this.config.table().columns().size();
+		ThrowableFunction<ResultSet, E, SqlException> entityMapper = this.config.rowMapper();
 		ThrowableFunction<ResultSet, SqlAudited<E>, SqlException> auditMapper = resultSet -> {
 			E entity = entityMapper.apply(resultSet);
-			return SqlAudited.of(entity, SqlAuditMetadata.readFrom(resultSet, entityColumnCount + 1, config));
+			return SqlAudited.of(entity, SqlAuditMetadata.readFrom(this.config.dialect(), resultSet, entityColumnCount + 1, auditConfig));
 		};
-		return new SqlSelectQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
+		return new SqlSelectQuery<>(new SqlSelectQueryConfig<>(
+			this.config.table(),
+			this.config.dialect(),
+			this.config.connectionSource(),
+			this.config.queryTimeout(),
 			auditMapper,
-			this.selectedExpressions,
-			this.joins,
-			this.groupByColumns,
-			this.orderByClauses,
+			this.config.selectedExpressions(),
+			this.config.joins(),
+			this.config.groupByColumns(),
+			this.config.orderByClauses(),
 			List.of(),
-			this.commonTableExpressions,
-			this.limit,
-			this.offset,
-			this.isDistinct,
-			this.whereCondition,
-			this.whereExistsSubquery,
-			this.havingCondition,
-			this.lockMode,
-			this.skipLocked,
-			this.noWait
-		);
+			this.config.commonTableExpressions(),
+			this.config.limit(),
+			this.config.offset(),
+			this.config.isDistinct(),
+			this.config.whereCondition(),
+			this.config.whereExistsSubquery(),
+			this.config.havingCondition(),
+			this.config.lockMode(),
+			this.config.skipLocked(),
+			this.config.noWait()
+		));
 	}
 	
 	private @NonNull List<E> executeAndMap() throws SqlException {
-		return SqlQueryExecutor.executeQueryAndMap(this.dialect, this.connectionSource, this.toSql(this.dialect), this.queryTimeout, this.rowMapper);
+		return SqlQueryExecutor.executeQueryAndMap(this.config.dialect(), this.config.connectionSource(), this.toSql(this.config.dialect()), this.config.queryTimeout(), this.config.rowMapper());
 	}
 	
 	public @NonNull List<E> fetch() throws SqlException {
@@ -687,21 +332,27 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public long count() throws SqlException {
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.select().literal("COUNT(*)").from().openingBracket();
-		renderer.rendered(this.toSql(this.dialect));
-		renderer.closingBracket().as().literal(this.dialect.quoteIdentifier("__count"));
+		SqlDialect dialect = this.config.dialect();
+		SqlSelectQueryConfig<E> stripped = this.config.withOrderByClauses(List.of()).withLimit(-1).withOffset(-1);
+		boolean needsWrap = stripped.isDistinct() || !stripped.groupByColumns().isEmpty() || stripped.havingCondition() != null || !stripped.setOperations().isEmpty();
 		
-		return SqlQueryExecutor.executeScalarQuery(this.dialect, this.connectionSource, renderer.toSql(), this.queryTimeout, resultSet -> resultSet.next() ? resultSet.getLong(1) : 0L);
+		SqlRendered countSql;
+		if (needsWrap) {
+			SqlRenderer renderer = SqlRenderer.empty();
+			renderer.select().literal("COUNT(*)").from().openingBracket();
+			renderer.rendered(this.render(stripped, dialect, false));
+			renderer.closingBracket().as().literal(dialect.quoteIdentifier("__count"));
+			countSql = renderer.toSql();
+		} else {
+			countSql = this.render(stripped, dialect, true);
+		}
+		return SqlQueryExecutor.executeScalarQuery(dialect, this.config.connectionSource(), countSql, this.config.queryTimeout(), resultSet -> resultSet.next() ? resultSet.getLong(1) : 0L);
 	}
 	
 	public boolean exists() throws SqlException {
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.select().literal("1").from().openingBracket();
-		renderer.rendered(this.limit(1).toSql(this.dialect));
-		renderer.closingBracket().as().literal(this.dialect.quoteIdentifier("__exists"));
-		
-		return SqlQueryExecutor.executeScalarQuery(this.dialect, this.connectionSource, renderer.toSql(), this.queryTimeout, ResultSet::next);
+		SqlDialect dialect = this.config.dialect();
+		SqlSelectQueryConfig<E> core = this.config.withOrderByClauses(List.of()).withLimit(1);
+		return SqlQueryExecutor.executeScalarQuery(dialect, this.config.connectionSource(), this.render(core, dialect, false), this.config.queryTimeout(), ResultSet::next);
 	}
 	
 	public @NonNull SqlPage<E> fetchPage(int page, int pageSize) throws SqlException {
@@ -711,7 +362,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		if (pageSize <= 0) {
 			throw new IllegalArgumentException("Page size must be positive");
 		}
-		if (this.orderByClauses.isEmpty()) {
+		if (this.config.orderByClauses().isEmpty()) {
 			throw new SqlStatementBuilderException("Pagination requires an ORDER BY clause for deterministic results");
 		}
 		
@@ -724,21 +375,25 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	@Override
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		return this.render(this.config, dialect, false);
+	}
+	
+	private @NonNull SqlRendered render(@NonNull SqlSelectQueryConfig<?> cfg, @NonNull SqlDialect dialect, boolean countStar) throws SqlException {
 		SqlRenderer renderer = SqlRenderer.empty();
 		
-		if (!this.commonTableExpressions.isEmpty()) {
+		if (!cfg.commonTableExpressions().isEmpty()) {
 			renderer.with();
 			
-			if (this.commonTableExpressions.stream().anyMatch(SqlCommonTableExpression::recursive)) {
+			if (cfg.commonTableExpressions().stream().anyMatch(SqlCommonTableExpression::recursive)) {
 				renderer.recursive();
 			}
 			
-			for (int i = 0; i < this.commonTableExpressions.size(); i++) {
+			for (int i = 0; i < cfg.commonTableExpressions().size(); i++) {
 				if (i > 0) {
 					renderer.comma();
 				}
 				
-				SqlCommonTableExpression commonTableExpression = this.commonTableExpressions.get(i);
+				SqlCommonTableExpression commonTableExpression = cfg.commonTableExpressions().get(i);
 				renderer.literal(dialect.quoteIdentifier(commonTableExpression.alias().get()));
 				renderer.as().openingBracket();
 				renderer.rendered(commonTableExpression.query().toSql(dialect));
@@ -747,69 +402,77 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		}
 		
 		renderer.select();
-		if (this.isDistinct) {
-			renderer.distinct();
-		}
-		
-		if (this.selectedExpressions.isEmpty()) {
-			renderer.literal("*");
+		if (countStar) {
+			renderer.literal("COUNT(*)");
 		} else {
-			for (int i = 0; i < this.selectedExpressions.size(); i++) {
-				if (i > 0) {
-					renderer.comma();
+			if (cfg.isDistinct()) {
+				renderer.distinct();
+			}
+			
+			if (cfg.selectedExpressions().isEmpty()) {
+				renderer.literal("*");
+			} else {
+				for (int i = 0; i < cfg.selectedExpressions().size(); i++) {
+					if (i > 0) {
+						renderer.comma();
+					}
+					renderer.rendered(dialect.renderExpression(cfg.selectedExpressions().get(i)));
 				}
-				renderer.rendered(dialect.renderExpression(this.selectedExpressions.get(i)));
 			}
 		}
 		
-		renderer.from().literal(dialect.quoteIdentifier(this.table.name()));
+		renderer.from().literal(dialect.quoteIdentifier(cfg.table().name()));
 		
-		for (SqlJoinClause join : this.joins) {
+		for (SqlJoinClause join : cfg.joins()) {
 			renderer.rendered(join.toSql(dialect));
 		}
 		
-		if (this.whereCondition != null) {
-			renderer.where().rendered(dialect.renderCondition(this.whereCondition));
+		if (cfg.whereCondition() != null) {
+			renderer.where().rendered(dialect.renderCondition(cfg.whereCondition()));
 		}
 		
-		if (this.whereExistsSubquery != null) {
-			if (this.whereCondition != null) {
+		if (cfg.whereExistsSubquery() != null) {
+			if (cfg.whereCondition() != null) {
 				renderer.and();
 			} else {
 				renderer.where();
 			}
 			
 			renderer.exists().openingBracket();
-			renderer.rendered(this.whereExistsSubquery.toSql(dialect));
+			renderer.rendered(cfg.whereExistsSubquery().toSql(dialect));
 			renderer.closingBracket();
 		}
 		
-		if (!this.groupByColumns.isEmpty()) {
+		if (!cfg.groupByColumns().isEmpty()) {
 			renderer.groupBy();
 			
-			for (int i = 0; i < this.groupByColumns.size(); i++) {
+			for (int i = 0; i < cfg.groupByColumns().size(); i++) {
 				if (i > 0) {
 					renderer.comma();
 				}
 				
-				renderer.rendered(this.groupByColumns.get(i).toSql(dialect));
+				renderer.rendered(cfg.groupByColumns().get(i).toSql(dialect));
 			}
 		}
 		
-		if (this.havingCondition != null) {
-			renderer.having().rendered(dialect.renderCondition(this.havingCondition));
+		if (cfg.havingCondition() != null) {
+			renderer.having().rendered(dialect.renderCondition(cfg.havingCondition()));
 		}
 		
-		for (SqlSetOperationEntry<E> entry : this.setOperations) {
+		for (SqlSetOperationEntry<?> entry : cfg.setOperations()) {
 			renderer.rendered(dialect.renderSetOperation(entry.operation()));
 			renderer.rendered(entry.query().toSql(dialect));
 		}
 		
-		if (!this.orderByClauses.isEmpty()) {
+		if (countStar) {
+			return renderer.toSql();
+		}
+		
+		if (!cfg.orderByClauses().isEmpty()) {
 			renderer.orderBy();
 			
-			for (int i = 0; i < this.orderByClauses.size(); i++) {
-				SqlOrderable<?> orderable = this.orderByClauses.get(i);
+			for (int i = 0; i < cfg.orderByClauses().size(); i++) {
+				SqlOrderable<?> orderable = cfg.orderByClauses().get(i);
 				if (i > 0) {
 					renderer.comma();
 				}
@@ -823,18 +486,19 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 			}
 		}
 		
-		if (this.limit >= 0 || this.offset >= 0) {
+		if (cfg.limit() >= 0 || cfg.offset() >= 0) {
 			renderer.rendered(dialect.renderLimitOffset(
-				this.limit,
-				this.offset >= 0 ? this.offset : 0
+				cfg.limit(),
+				cfg.offset() >= 0 ? cfg.offset() : 0,
+				!cfg.orderByClauses().isEmpty()
 			));
 		}
 		
-		if (this.lockMode != null) {
-			if (this.skipLocked && this.lockMode == SqlLockMode.FOR_SHARE) {
+		if (cfg.lockMode() != null) {
+			if (cfg.skipLocked() && cfg.lockMode() == SqlLockMode.FOR_SHARE) {
 				throw new SqlStatementBuilderException("Skip locked is only allowed with FOR UPDATE lock mode");
 			}
-			renderer.rendered(dialect.renderLockClause(this.lockMode, this.skipLocked, this.noWait));
+			renderer.rendered(dialect.renderLockClause(cfg.lockMode(), cfg.skipLocked(), cfg.noWait()));
 		}
 		return renderer.toSql();
 	}

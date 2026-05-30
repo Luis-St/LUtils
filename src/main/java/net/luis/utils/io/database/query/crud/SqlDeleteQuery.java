@@ -32,7 +32,6 @@ import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import java.sql.ResultSet;
 import java.time.Duration;
@@ -47,50 +46,24 @@ import java.util.Objects;
 
 public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	
-	private final SqlTable<E> table;
-	private final SqlDialect dialect;
-	private final SqlConnectionSource connectionSource;
-	private final Duration queryTimeout;
-	private final ThrowableFunction<ResultSet, E, SqlException> rowMapper;
-	private final List<SqlJoinClause> joins;
-	private final @Nullable SqlCondition whereCondition;
-	private final boolean allowAll;
+	private final SqlDeleteQueryConfig<E> config;
 	
-	public SqlDeleteQuery(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout, @NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper) {
-		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), null, false);
-	}
-	
-	private SqlDeleteQuery(
+	public SqlDeleteQuery(
 		@NonNull SqlTable<E> table,
 		@NonNull SqlDialect dialect,
 		@NonNull SqlConnectionSource connectionSource,
 		@NonNull Duration queryTimeout,
-		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
-		@NonNull List<SqlJoinClause> joins,
-		@Nullable SqlCondition whereCondition,
-		boolean allowAll
+		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper
 	) {
-		this.table = Objects.requireNonNull(table, "Sql table must not be null");
-		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		this.connectionSource = Objects.requireNonNull(connectionSource, "Sql connection source must not be null");
-		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
-		this.rowMapper = Objects.requireNonNull(rowMapper, "Row mapper must not be null");
-		this.joins = Objects.requireNonNull(joins, "Sql join clauses must not be null");
-		this.whereCondition = whereCondition;
-		this.allowAll = allowAll;
+		this(new SqlDeleteQueryConfig<>(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), null, false));
+	}
+	
+	SqlDeleteQuery(@NonNull SqlDeleteQueryConfig<E> config) {
+		this.config = Objects.requireNonNull(config, "Sql delete query config must not be null");
 	}
 	
 	private @NonNull SqlDeleteQuery<E> withJoin(@NonNull SqlJoinClause join) {
-		return new SqlDeleteQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
-			this.rowMapper,
-			SqlQuery.copyAndAdd(this.joins, join),
-			this.whereCondition,
-			this.allowAll
-		);
+		return new SqlDeleteQuery<>(this.config.withJoins(SqlQuery.copyAndAdd(this.config.joins(), join)));
 	}
 	
 	@Override
@@ -121,42 +94,30 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	public @NonNull SqlDeleteQuery<E> where(@NonNull SqlCondition condition) {
 		Objects.requireNonNull(condition, "Sql where condition must not be null");
 		
-		SqlCondition combined = this.whereCondition != null ? SqlCondition.allOf(this.whereCondition, condition) : condition;
-		return new SqlDeleteQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
-			this.rowMapper,
-			this.joins,
-			combined,
-			this.allowAll
-		);
+		SqlCondition existing = this.config.whereCondition();
+		SqlCondition combined = existing != null ? SqlCondition.allOf(existing, condition) : condition;
+		return new SqlDeleteQuery<>(this.config.withWhereCondition(combined));
 	}
 	
 	public @NonNull SqlDeleteQuery<E> allowAll() {
-		return new SqlDeleteQuery<>(
-			this.table,
-			this.dialect,
-			this.connectionSource,
-			this.queryTimeout,
-			this.rowMapper,
-			this.joins,
-			this.whereCondition,
-			true
-		);
+		return new SqlDeleteQuery<>(this.config.withAllowAll());
 	}
 	
 	public int execute() throws SqlException {
-		if (this.whereCondition == null && !this.allowAll) {
+		if (this.config.whereCondition() == null && !this.config.allowAll()) {
 			throw new SqlStatementBuilderException("DELETE without WHERE clause would affect all rows, call allowAll() to confirm this is intentional");
 		}
-		return SqlQueryExecutor.executeUpdate(this.dialect, this.connectionSource, this.toSql(this.dialect), this.queryTimeout);
+		return SqlQueryExecutor.executeUpdate(this.config.dialect(), this.config.connectionSource(), this.toSql(this.config.dialect()), this.config.queryTimeout());
 	}
 	
 	public @NonNull List<E> returning() throws SqlException {
 		return SqlQueryExecutor.executeReturningQuery(
-			this.dialect, this.connectionSource, this.toSql(this.dialect), this.dialect.renderReturning(List.copyOf(this.table.columns())), this.queryTimeout, this.rowMapper
+			this.config.dialect(),
+			this.config.connectionSource(),
+			this.toSql(this.config.dialect()),
+			this.config.dialect().renderReturning(List.copyOf(this.config.table().columns())),
+			this.config.queryTimeout(),
+			this.config.rowMapper()
 		);
 	}
 	
@@ -165,13 +126,13 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.delete().from().literal(dialect.quoteIdentifier(this.table.name()));
-		for (SqlJoinClause join : this.joins) {
+		renderer.delete().from().literal(dialect.quoteIdentifier(this.config.table().name()));
+		for (SqlJoinClause join : this.config.joins()) {
 			renderer.rendered(join.toSql(dialect));
 		}
 		
-		if (this.whereCondition != null) {
-			renderer.where().rendered(dialect.renderCondition(this.whereCondition));
+		if (this.config.whereCondition() != null) {
+			renderer.where().rendered(dialect.renderCondition(this.config.whereCondition()));
 		}
 		return renderer.toSql();
 	}

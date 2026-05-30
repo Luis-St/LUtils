@@ -18,11 +18,11 @@
 
 package net.luis.utils.io.database.dialect;
 
-import net.luis.utils.io.database.dialect.renderer.SqlRenderingHelper;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.rendering.SqlRendered;
-import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.type.SqlTypeRegistry;
+import net.luis.utils.io.database.type.SqlTypes;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -43,12 +43,28 @@ public class MariaDbDialect extends MySqlDialect {
 		SqlFeature.FOR_UPDATE,
 		SqlFeature.FOR_SHARE,
 		SqlFeature.SKIP_LOCKED,
-		SqlFeature.NO_WAIT
+		SqlFeature.NO_WAIT,
+		SqlFeature.UPSERT_SUFFIX,
+		SqlFeature.ROW_LOCKING,
+		SqlFeature.INSERT_OR_IGNORE,
+		SqlFeature.RENAME_INDEX,
+		SqlFeature.ALTER_COLUMN,
+		SqlFeature.ADD_CONSTRAINT,
+		SqlFeature.DROP_CONSTRAINT
 	);
+	private static final SqlTypeRegistry TYPE_REGISTRY = SqlTypeRegistry.builder()
+		.register(SqlTypes.JSON, "JSON")
+		.register(SqlTypes.UUID, "UUID")
+		.build();
 	
 	@Override
 	public @NonNull String name() {
 		return "MariaDB";
+	}
+	
+	@Override
+	protected @NonNull SqlTypeRegistry createTypeRegistry() {
+		return TYPE_REGISTRY;
 	}
 	
 	@Override
@@ -58,17 +74,7 @@ public class MariaDbDialect extends MySqlDialect {
 	}
 	
 	@Override
-	@SuppressWarnings("DuplicatedCode")
 	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
-		Objects.requireNonNull(columns, "Sql columns must not be null");
-		
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.returning();
-		if (columns.isEmpty()) {
-			renderer.literal("*");
-		} else {
-			SqlRenderingHelper.renderList(renderer, columns, (r, column) -> r.literal(this.quoteIdentifier(column.name())));
-		}
-		return renderer.toSql();
+		return this.renderStandardReturning(columns);
 	}
 }

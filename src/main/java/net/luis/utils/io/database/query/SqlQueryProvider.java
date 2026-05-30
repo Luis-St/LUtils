@@ -30,6 +30,7 @@ import net.luis.utils.io.database.query.crud.*;
 import net.luis.utils.io.database.query.row.*;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -72,8 +73,8 @@ public class SqlQueryProvider<E> {
 		this.connectionSource = Objects.requireNonNull(connectionSource, "Sql connection source must not be null");
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 		this.auditUserProvider = auditUserProvider;
-		this.entityRowMapper = createRowMapper(table);
-		this.selectRowMapper = createSelectRowMapper(table, this.entityRowMapper, session);
+		this.entityRowMapper = createRowMapper(table, dialect);
+		this.selectRowMapper = createSelectRowMapper(table, this.entityRowMapper, session, dialect);
 	}
 	
 	//region Row mapper creation
@@ -81,10 +82,12 @@ public class SqlQueryProvider<E> {
 	private static <E> @NonNull ThrowableFunction<ResultSet, E, SqlException> createSelectRowMapper(
 		@NonNull SqlTable<E> table,
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> entityRowMapper,
-		@Nullable SqlSession session
+		@Nullable SqlSession session,
+		@NonNull SqlDialect dialect
 	) {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(entityRowMapper, "Entity row mapper must not be null");
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		if (session == null || !table.isAudited()) {
 			return entityRowMapper;
 		}
@@ -93,14 +96,15 @@ public class SqlQueryProvider<E> {
 		SqlAuditConfig config = table.auditConfig().orElseThrow();
 		return resultSet -> {
 			E entity = entityRowMapper.apply(resultSet);
-			SqlAuditMetadata metadata = SqlAuditMetadata.readFrom(resultSet, entityColumnCount + 1, config);
+			SqlAuditMetadata metadata = SqlAuditMetadata.readFrom(dialect, resultSet, entityColumnCount + 1, config);
 			session.track(table, entity, metadata);
 			return entity;
 		};
 	}
 	
-	private static <E> @NonNull ThrowableFunction<ResultSet, E, SqlException> createRowMapper(@NonNull SqlTable<E> table) {
+	private static <E> @NonNull ThrowableFunction<ResultSet, E, SqlException> createRowMapper(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect) {
 		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		
 		List<SqlColumn<E, ?>> sorted = table.columns().stream().sorted(Comparator.comparingInt(SqlColumn::index)).toList();
 		Constructor<E> constructor = findMatchingConstructor(table.type(), sorted);
@@ -108,7 +112,7 @@ public class SqlQueryProvider<E> {
 		return resultSet -> {
 			Object[] args = new Object[sorted.size()];
 			for (int i = 0; i < sorted.size(); i++) {
-				args[i] = sorted.get(i).type().get(resultSet, i + 1);
+				args[i] = SqlType.getValue(sorted.get(i).type(), dialect, resultSet, i + 1);
 			}
 			
 			try {
@@ -196,7 +200,7 @@ public class SqlQueryProvider<E> {
 		this.ensureNotNull(expressions);
 		
 		List<SqlExpression<?>> expressionList = List.of(expressions);
-		return new SqlSelectQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, SqlRowMapper.forExpressions(rowType, expressionList), expressionList);
+		return new SqlSelectQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, SqlRowMapper.forExpressions(rowType, expressionList, this.dialect), expressionList);
 	}
 	
 	public @NonNull SqlSelectQuery<E> select() {
@@ -207,7 +211,7 @@ public class SqlQueryProvider<E> {
 		Objects.requireNonNull(e1, "Sql expression must not be null");
 		
 		ThrowableFunction<ResultSet, E1, SqlException> mapper = rs -> {
-			return e1.type().get(rs, 1);
+			return SqlType.getValue(e1.type(), this.dialect, rs, 1);
 		};
 		return new SqlSelectQuery<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, mapper, List.of(e1));
 	}
@@ -421,7 +425,7 @@ public class SqlQueryProvider<E> {
 		ThrowableFunction<ResultSet, Object[], SqlException> mapper = rs -> {
 			Object[] values = new Object[expressions.length];
 			for (int i = 0; i < expressions.length; i++) {
-				values[i] = expressions[i].type().get(rs, i + 1);
+				values[i] = SqlType.getValue(expressions[i].type(), this.dialect, rs, i + 1);
 			}
 			return values;
 		};

@@ -21,7 +21,7 @@ package net.luis.utils.io.database.dialect.renderer.expression.function;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.renderer.SqlRenderingHelper;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnknownConstructException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.generic.*;
@@ -56,7 +56,7 @@ public class SqlGenericFunctionRenderer {
 			case SqlUnsafeFunction<?> func -> this.renderUnsafe(func);
 			
 			case null -> throw new NullPointerException("Sql function must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql function type: " + function.getClass().getName() + " in dialect " + this.dialect.name());
+			default -> throw new SqlDialectUnknownConstructException("Unknown sql function type: " + function.getClass().getName() + " in dialect " + this.dialect.name());
 		};
 	}
 	

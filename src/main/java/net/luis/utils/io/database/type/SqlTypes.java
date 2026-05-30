@@ -19,9 +19,11 @@
 package net.luis.utils.io.database.type;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.data.json.*;
+import net.luis.utils.io.data.xml.*;
 import net.luis.utils.io.database.exception.SqlClientException;
 import net.luis.utils.io.database.type.parameter.*;
-
+import net.luis.utils.io.network.address.*;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -83,11 +85,26 @@ public final class SqlTypes {
 	
 	public static final SqlType<UUID> UUID = FIXED_STRING.configure(SqlParameter.length(36)).map(UUID.class, nullable(java.util.UUID::toString), java.util.UUID::fromString);
 	
+	public static final SqlType<JsonElement> JSON = TEXT.map(JsonElement.class, nullable(element -> element.toString(JsonConfig.DEFAULT)), string -> new JsonReader(string).readJson());
+	public static final SqlType<XmlElement> XML = TEXT.map(XmlElement.class, nullable(element -> element.toString(XmlConfig.DEFAULT)), SqlTypes::readXml);
+	
+	@SuppressWarnings("unchecked")
+	public static final SqlType<IpAddress<?>> IP_ADDRESS = STRING.configure(SqlParameter.length(64)).<IpAddress<?>>map((Class<IpAddress<?>>) (Class<?>) IpAddress.class, nullable(IpAddress::toString), IpAddresses::parse);
+	@SuppressWarnings("unchecked")
+	public static final SqlType<IpNetwork<?, ?>> IP_NETWORK = STRING.configure(SqlParameter.length(64)).<IpNetwork<?, ?>>map((Class<IpNetwork<?, ?>>) (Class<?>) IpNetwork.class, nullable(IpNetwork::toString), IpAddresses::parseNetwork);
+	
 	private SqlTypes() {}
 	
 	private static <I, O, X extends Throwable> @NonNull ThrowableFunction<@Nullable I, @Nullable O, X> nullable(@NonNull Function<@NonNull I, @Nullable O> function) {
 		Objects.requireNonNull(function, "Function must not be null");
 		return value -> value == null ? null : function.apply(value);
+	}
+	
+	private static @NonNull XmlElement readXml(@NonNull String xml) {
+		String content = xml.stripLeading().startsWith("<?xml") ? xml : "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + xml;
+		XmlReader reader = new XmlReader(content);
+		reader.readDeclaration();
+		return reader.readXmlElement();
 	}
 	
 	public static <E extends Enum<E>> @NonNull SqlType<E> enumName(@NonNull Class<E> clazz) {

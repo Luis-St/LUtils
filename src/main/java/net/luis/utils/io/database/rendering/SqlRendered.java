@@ -32,14 +32,15 @@ import java.util.Objects;
  *
  */
 
-public record SqlRendered(
-	@NonNull @Unmodifiable List<String> statements,
-	@NonNull @Unmodifiable List<Pair<SqlType<?>, Object>> parameters
-) {
+public final class SqlRendered {
 	
-	public SqlRendered {
-		statements = List.copyOf(Objects.requireNonNull(statements, "Sql statements must not be null"));
-		parameters = List.copyOf(Objects.requireNonNull(parameters, "Sql parameters must not be null"));
+	private final @Unmodifiable List<String> statements;
+	private final @Unmodifiable List<Pair<SqlType<?>, Object>> parameters;
+	private String cachedSql;
+	
+	public SqlRendered(@NonNull @Unmodifiable List<String> statements, @NonNull @Unmodifiable List<Pair<SqlType<?>, Object>> parameters) {
+		this.statements = List.copyOf(Objects.requireNonNull(statements, "Sql statements must not be null"));
+		this.parameters = List.copyOf(Objects.requireNonNull(parameters, "Sql parameters must not be null"));
 	}
 	
 	public static @NonNull SqlRendered of(@NonNull String sql) {
@@ -48,7 +49,62 @@ public record SqlRendered(
 		return new SqlRendered(List.of(sql), List.of());
 	}
 	
-	public @NonNull String sql() {
-		return String.join(" ", this.statements);
+	//region Static helper methods
+	
+	private static @NonNull String joinTokens(@NonNull List<String> tokens) {
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < tokens.size(); i++) {
+			String token = tokens.get(i);
+			if (i > 0 && needsSeparator(tokens.get(i - 1), token)) {
+				builder.append(' ');
+			}
+			builder.append(token);
+		}
+		return builder.toString();
 	}
+	
+	private static boolean needsSeparator(@NonNull String previous, @NonNull String current) {
+		if ("(".equals(current) || ")".equals(current) || ",".equals(current)) {
+			return false;
+		}
+		return !"(".equals(previous);
+	}
+	//endregion
+	
+	public @NonNull @Unmodifiable List<String> statements() {
+		return this.statements;
+	}
+	
+	public @NonNull @Unmodifiable List<Pair<SqlType<?>, Object>> parameters() {
+		return this.parameters;
+	}
+	
+	public @NonNull String sql() {
+		if (this.cachedSql == null) {
+			this.cachedSql = joinTokens(this.statements);
+		}
+		return this.cachedSql;
+	}
+	
+	//region Object overrides
+	
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof SqlRendered that)) return false;
+		
+		if (!this.statements.equals(that.statements)) return false;
+		if (!this.parameters.equals(that.parameters)) return false;
+		return Objects.equals(this.cachedSql, that.cachedSql);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.statements, this.parameters);
+	}
+	
+	@Override
+	public String toString() {
+		return "SqlRendered[statements=" + this.statements + ", parameters=" + this.parameters + "]";
+	}
+	//endregion
 }

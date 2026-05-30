@@ -18,10 +18,14 @@
 
 package net.luis.utils.io.database.type.infer;
 
+import net.luis.utils.io.data.json.JsonElement;
+import net.luis.utils.io.data.xml.XmlElement;
 import net.luis.utils.io.database.exception.client.SqlTypeNotFoundException;
 import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
+import net.luis.utils.io.network.address.IpAddress;
+import net.luis.utils.io.network.address.IpNetwork;
 import org.jspecify.annotations.NonNull;
 
 import java.math.BigDecimal;
@@ -82,6 +86,10 @@ public class SqlStandardTypeInferrer implements SqlTypeInferrer {
 			case Month _ -> SqlTypes.MONTH;
 			case DayOfWeek _ -> SqlTypes.DAY_OF_WEEK;
 			case Duration _ -> SqlTypes.DURATION;
+			case JsonElement _ -> SqlTypes.JSON;
+			case XmlElement _ -> SqlTypes.XML;
+			case IpAddress<?> _ -> SqlTypes.IP_ADDRESS;
+			case IpNetwork<?, ?> _ -> SqlTypes.IP_NETWORK;
 			case Enum<?> e -> inferEnumType(e);
 			
 			case null -> throw new NullPointerException("Value must not be null");

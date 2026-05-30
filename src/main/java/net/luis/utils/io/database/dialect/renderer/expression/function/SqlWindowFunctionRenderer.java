@@ -21,7 +21,7 @@ package net.luis.utils.io.database.dialect.renderer.expression.function;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnknownConstructException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.SqlWindowFunction;
 import net.luis.utils.io.database.function.functions.window.*;
@@ -64,7 +64,7 @@ public class SqlWindowFunctionRenderer {
 			case SqlWindowedAggregate<?> func -> this.renderWindowedAggregate(func);
 			
 			case null -> throw new NullPointerException("Sql window function must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql window function type: " + function.getClass().getName() + " in dialect " + this.dialect.name());
+			default -> throw new SqlDialectUnknownConstructException("Unknown sql window function type: " + function.getClass().getName() + " in dialect " + this.dialect.name());
 		};
 	}
 	

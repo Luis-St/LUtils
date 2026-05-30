@@ -80,6 +80,15 @@ public class SqlIndexRenderer {
 		return renderer.toSql();
 	}
 	
+	protected @NonNull SqlRendered renderStandardDropIndexOnTable(@NonNull SqlTable<?> owningTable, @NonNull String indexName) throws SqlException {
+		Objects.requireNonNull(owningTable, "Sql index owning table must not be null");
+		Objects.requireNonNull(indexName, "Sql index name must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.drop().index().literal(this.dialect.quoteIdentifier(indexName)).on().literal(this.dialect.quoteIdentifier(owningTable.name()));
+		return renderer.toSql();
+	}
+	
 	public @NonNull SqlRendered renderRenameIndex(@Nullable SqlTable<?> table, @NonNull String from, @NonNull String to) throws SqlException {
 		Objects.requireNonNull(from, "Sql source index name must not be null");
 		Objects.requireNonNull(to, "Sql target index name must not be null");

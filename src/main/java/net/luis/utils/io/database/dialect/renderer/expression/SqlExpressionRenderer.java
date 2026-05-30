@@ -20,7 +20,7 @@ package net.luis.utils.io.database.dialect.renderer.expression;
 
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnknownConstructException;
 import net.luis.utils.io.database.expression.*;
 import net.luis.utils.io.database.expression.orderable.OrderedSqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
@@ -54,7 +54,7 @@ public class SqlExpressionRenderer {
 			case SqlValueExpression<?> value -> this.renderValue(value);
 			
 			case null -> throw new NullPointerException("Sql expression must not be null");
-			default -> throw new SqlDialectUnsupportedRenderingException("Unknown sql expression type: " + expression.getClass().getName() + " in dialect " + this.dialect.name());
+			default -> throw new SqlDialectUnknownConstructException("Unknown sql expression type: " + expression.getClass().getName() + " in dialect " + this.dialect.name());
 		};
 	}
 	
