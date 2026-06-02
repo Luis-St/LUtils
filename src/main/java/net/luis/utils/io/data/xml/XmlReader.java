@@ -463,7 +463,7 @@ public class XmlReader implements AutoCloseable {
 	}
 	
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		this.reader.readRemaining(); // Assert that there is no remaining content
 	}
 }
