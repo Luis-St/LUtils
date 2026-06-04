@@ -28,7 +28,6 @@ import net.luis.utils.io.database.dialect.renderer.expression.condition.SqlStrin
 import net.luis.utils.io.database.dialect.renderer.expression.function.*;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.numeric.*;
@@ -70,7 +69,8 @@ public class SqlServerDialect extends AbstractSqlDialect {
 		SqlFeature.UPSERT,
 		SqlFeature.ALTER_COLUMN,
 		SqlFeature.ADD_CONSTRAINT,
-		SqlFeature.DROP_CONSTRAINT
+		SqlFeature.DROP_CONSTRAINT,
+		SqlFeature.OFFSET_WITHOUT_LIMIT
 	);
 	
 	private static final Set<SqlIndexMethod> SUPPORTED_INDEX_METHODS = Set.of(
@@ -120,25 +120,25 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getScalarTypeName(int jdbcType) {
 		return switch (jdbcType) {
-			case Types.BOOLEAN -> "BIT";
-			case Types.TINYINT -> "TINYINT";
-			case Types.LONGVARCHAR, Types.LONGNVARCHAR, Types.NCLOB -> "NVARCHAR(MAX)";
-			case Types.CLOB -> "VARCHAR(MAX)";
-			case Types.LONGVARBINARY, Types.BLOB -> "VARBINARY(MAX)";
+			case Types.BOOLEAN -> Optional.of("BIT");
+			case Types.TINYINT -> Optional.of("TINYINT");
+			case Types.LONGVARCHAR, Types.LONGNVARCHAR, Types.NCLOB -> Optional.of("NVARCHAR(MAX)");
+			case Types.CLOB -> Optional.of("VARCHAR(MAX)");
+			case Types.LONGVARBINARY, Types.BLOB -> Optional.of("VARBINARY(MAX)");
 			default -> super.getScalarTypeName(jdbcType);
 		};
 	}
 	
 	@Override
-	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) {
 		Objects.requireNonNull(parameter, "Sql parameter must not be null");
 		
 		if (parameter instanceof SqlFractionalParameter fractional) {
 			return switch (jdbcType) {
-				case Types.TIMESTAMP -> "DATETIME2(" + fractional.digits() + ")";
-				case Types.TIMESTAMP_WITH_TIMEZONE -> "DATETIMEOFFSET(" + fractional.digits() + ")";
+				case Types.TIMESTAMP -> Optional.of("DATETIME2(" + fractional.digits() + ")");
+				case Types.TIMESTAMP_WITH_TIMEZONE -> Optional.of("DATETIMEOFFSET(" + fractional.digits() + ")");
 				default -> super.getParameterizedTypeName(jdbcType, parameter);
 			};
 		}

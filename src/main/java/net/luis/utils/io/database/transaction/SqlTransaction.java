@@ -20,7 +20,8 @@ package net.luis.utils.io.database.transaction;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.luis.utils.io.database.*;
+import net.luis.utils.io.database.SqlConnectionSource;
+import net.luis.utils.io.database.SqlProvider;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlClientException;
 import net.luis.utils.io.database.exception.SqlException;
@@ -73,7 +74,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		boolean ownsCommit,
 		boolean nonTransactional,
 		@Nullable SqlTransaction suspended
-	) {
+	) throws SqlTransactionConnectionException {
 		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		this.readOnly = readOnly;
@@ -90,7 +91,7 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 				this.originalReadOnly = connection.isReadOnly();
 				this.originalIsolationLevel = connection.getTransactionIsolation();
 			} catch (SQLException e) {
-				throw new RuntimeException("Failed to read original connection state", e);
+				throw new SqlTransactionConnectionException("Failed to read original connection state", e);
 			}
 		} else {
 			this.originalAutoCommit = true;

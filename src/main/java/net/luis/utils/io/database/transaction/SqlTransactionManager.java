@@ -45,11 +45,6 @@ public class SqlTransactionManager {
 	private static final Logger LOGGER = LogManager.getLogger(SqlTransactionManager.class);
 	private static final ThreadLocal<SqlTransaction> CURRENT_TRANSACTION = new ThreadLocal<>();
 	public static final Duration DEFAULT_CONNECTION_ACQUISITION_TIMEOUT = Duration.ofSeconds(10);
-	private static final ExecutorService ACQUIRE_EXECUTOR = Executors.newCachedThreadPool(runnable -> {
-		Thread thread = new Thread(runnable, "sql-tx-connection-acquire");
-		thread.setDaemon(true);
-		return thread;
-	});
 	private final DataSource dataSource;
 	private final SqlDialect dialect;
 	private final Duration queryTimeout;
@@ -88,6 +83,10 @@ public class SqlTransactionManager {
 		});
 		CURRENT_TRANSACTION.set(tx);
 		return tx;
+	}
+	
+	private static @NonNull ExecutorService acquireExecutor() {
+		return AcquireExecutorHolder.INSTANCE;
 	}
 	
 	private @NonNull SqlTransaction resolveRequired(@Nullable SqlTransaction current, boolean readOnly, @NonNull SqlIsolationLevel isolationLevel) throws SqlException {
@@ -156,7 +155,7 @@ public class SqlTransactionManager {
 		return new SqlTransaction(connection, this.dialect, readOnly, this.queryTimeout, isolationLevel, true, true, false, suspended);
 	}
 	
-	private @NonNull SqlTransaction createJoiningTransaction(@NonNull SqlTransaction current) {
+	private @NonNull SqlTransaction createJoiningTransaction(@NonNull SqlTransaction current) throws SqlException {
 		return new SqlTransaction(current.getConnection(), this.dialect, current.isReadOnly(), this.queryTimeout, current.getIsolationLevel(), false, false, false, null);
 	}
 	
@@ -202,7 +201,7 @@ public class SqlTransactionManager {
 			} catch (SQLException e) {
 				throw new CompletionException(e);
 			}
-		}, ACQUIRE_EXECUTOR);
+		}, acquireExecutor());
 		
 		try {
 			return future.get(this.connectionAcquisitionTimeout.toMillis(), TimeUnit.MILLISECONDS);
@@ -245,6 +244,22 @@ public class SqlTransactionManager {
 			CURRENT_TRANSACTION.set(suspended);
 		} else {
 			CURRENT_TRANSACTION.remove();
+		}
+	}
+	
+	private static final class AcquireExecutorHolder {
+		
+		private static final ExecutorService INSTANCE = create();
+		
+		private static @NonNull ExecutorService create() {
+			ExecutorService executor = Executors.newCachedThreadPool(runnable -> {
+				Thread thread = new Thread(runnable, "sql-tx-connection-acquire");
+				thread.setDaemon(true);
+				return thread;
+			});
+			
+			Runtime.getRuntime().addShutdownHook(new Thread(executor::shutdownNow, "sql-tx-connection-acquire-shutdown"));
+			return executor;
 		}
 	}
 }

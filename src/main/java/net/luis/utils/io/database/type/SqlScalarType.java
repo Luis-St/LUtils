@@ -48,6 +48,7 @@ public final class SqlScalarType<T> implements SqlType<T> {
 		return this.javaType;
 	}
 	
+	@Override
 	public @NonNull SqlArrayType<T> array() {
 		return new SqlArrayType<>(this);
 	}

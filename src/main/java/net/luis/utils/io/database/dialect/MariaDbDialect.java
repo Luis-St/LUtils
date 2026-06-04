@@ -50,7 +50,8 @@ public class MariaDbDialect extends MySqlDialect {
 		SqlFeature.RENAME_INDEX,
 		SqlFeature.ALTER_COLUMN,
 		SqlFeature.ADD_CONSTRAINT,
-		SqlFeature.DROP_CONSTRAINT
+		SqlFeature.DROP_CONSTRAINT,
+		SqlFeature.JOINED_DML
 	);
 	private static final SqlTypeRegistry TYPE_REGISTRY = SqlTypeRegistry.builder()
 		.register(SqlTypes.JSON, "JSON")

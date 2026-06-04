@@ -19,7 +19,8 @@
 package net.luis.utils.io.database.dialect;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.io.data.xml.*;
+import net.luis.utils.io.data.xml.XmlElement;
+import net.luis.utils.io.data.xml.XmlReader;
 import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.renderer.*;
@@ -117,11 +118,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	@Override
 	public boolean isTypeSupported(@NonNull SqlType<?> type) {
 		Objects.requireNonNull(type, "Sql type must not be null");
-		
 		if (this.typeRegistry.resolve(type).isPresent()) {
 			return true;
 		}
-		return !(type.baseType() instanceof SqlArrayType<?>);
+		
+		return this.resolveTypeName(type.baseType()).isPresent();
 	}
 	
 	@Override
@@ -133,14 +134,16 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			return mapping.get().nativeTypeName();
 		}
 		
-		if (!this.isTypeSupported(type)) {
-			throw new SqlDialectUnsupportedRenderingException("Sql type " + type + " is not supported by dialect " + this.name());
-		}
-		
-		return switch (type.baseType()) {
+		return this.resolveTypeName(type.baseType()).orElseThrow(
+			() -> new SqlDialectUnsupportedRenderingException("Sql type " + type + " is not supported by dialect " + this.name())
+		);
+	}
+	
+	private @NonNull Optional<String> resolveTypeName(@NonNull SqlType<?> baseType) {
+		return switch (baseType) {
 			case SqlScalarType<?> scalar -> this.getScalarTypeName(scalar.jdbcType());
 			case ParameterizedSqlType<?, ?> parameterized -> this.getParameterizedTypeName(parameterized.jdbcType(), parameterized.parameter());
-			default -> throw new SqlDialectUnknownConstructException("Unknown sql type structure: " + type);
+			default -> Optional.empty();
 		};
 	}
 	
@@ -156,8 +159,8 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		return this.typeRegistry.resolve(type).map(SqlTypeMapping::reader);
 	}
 	
-	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
-		return switch (jdbcType) {
+	protected @NonNull Optional<String> getScalarTypeName(int jdbcType) {
+		return Optional.ofNullable(switch (jdbcType) {
 			case Types.BOOLEAN -> "BOOLEAN";
 			case Types.TINYINT -> "TINYINT";
 			case Types.SMALLINT -> "SMALLINT";
@@ -171,55 +174,55 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case Types.CLOB -> "CLOB";
 			case Types.LONGVARBINARY, Types.BLOB -> "BLOB";
 			case Types.DATE -> "DATE";
-			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported JDBC scalar type: " + jdbcType + " in dialect " + this.name());
-		};
+			default -> null;
+		});
 	}
 	
-	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) {
 		Objects.requireNonNull(parameter, "Sql parameter must not be null");
 		
 		return switch (parameter) {
 			case SqlLengthParameter length -> this.getLengthParameterizedTypeName(jdbcType, length);
 			case SqlPrecisionParameter precision -> this.getPrecisionParameterizedTypeName(jdbcType, precision);
 			case SqlFractionalParameter fractional -> this.getFractionalParameterizedTypeName(jdbcType, fractional);
-			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported sql parameter type: " + parameter.getClass().getName() + " in dialect " + this.name());
+			default -> Optional.empty();
 		};
 	}
 	
-	protected @NonNull String getLengthParameterizedTypeName(int jdbcType, @NonNull SqlLengthParameter length) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getLengthParameterizedTypeName(int jdbcType, @NonNull SqlLengthParameter length) {
 		Objects.requireNonNull(length, "Length parameter must not be null");
 		
-		return switch (jdbcType) {
+		return Optional.ofNullable(switch (jdbcType) {
 			case Types.CHAR -> "CHAR(" + length.length() + ")";
 			case Types.VARCHAR -> "VARCHAR(" + length.length() + ")";
 			case Types.NCHAR -> "NCHAR(" + length.length() + ")";
 			case Types.NVARCHAR -> "NVARCHAR(" + length.length() + ")";
 			case Types.BINARY -> "BINARY(" + length.length() + ")";
 			case Types.VARBINARY -> "VARBINARY(" + length.length() + ")";
-			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported length-parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
-		};
+			default -> null;
+		});
 	}
 	
-	protected @NonNull String getPrecisionParameterizedTypeName(int jdbcType, @NonNull SqlPrecisionParameter precision) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getPrecisionParameterizedTypeName(int jdbcType, @NonNull SqlPrecisionParameter precision) {
 		Objects.requireNonNull(precision, "Precision parameter must not be null");
 		
-		return switch (jdbcType) {
+		return Optional.ofNullable(switch (jdbcType) {
 			case Types.NUMERIC -> "NUMERIC(" + precision.precision() + ", " + precision.scale() + ")";
 			case Types.DECIMAL -> "DECIMAL(" + precision.precision() + ", " + precision.scale() + ")";
-			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported precision-parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
-		};
+			default -> null;
+		});
 	}
 	
-	protected @NonNull String getFractionalParameterizedTypeName(int jdbcType, @NonNull SqlFractionalParameter fractional) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getFractionalParameterizedTypeName(int jdbcType, @NonNull SqlFractionalParameter fractional) {
 		Objects.requireNonNull(fractional, "Fractional parameter must not be null");
 		
-		return switch (jdbcType) {
+		return Optional.ofNullable(switch (jdbcType) {
 			case Types.TIME -> "TIME(" + fractional.digits() + ")";
 			case Types.TIMESTAMP -> "TIMESTAMP(" + fractional.digits() + ")";
 			case Types.TIME_WITH_TIMEZONE -> "TIME(" + fractional.digits() + ") WITH TIME ZONE";
 			case Types.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP(" + fractional.digits() + ") WITH TIME ZONE";
-			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported fractional-parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
-		};
+			default -> null;
+		});
 	}
 	
 	@Override
@@ -369,6 +372,9 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		}
 		if (offset < 0) {
 			throw new IllegalArgumentException("Offset must be non-negative");
+		}
+		if (offset > 0 && limit < 0 && !this.isFeatureSupported(SqlFeature.OFFSET_WITHOUT_LIMIT)) {
+			throw new SqlDialectFeatureException(SqlFeature.OFFSET_WITHOUT_LIMIT, this);
 		}
 		
 		SqlRenderer renderer = SqlRenderer.empty();

@@ -118,7 +118,8 @@ public record SqlColumn<E, C>(
 		if (this.autoIncrement != sqlColumn.autoIncrement) return false;
 		if (!this.name.equals(sqlColumn.name)) return false;
 		if (!this.type.equals(sqlColumn.type)) return false;
-		if (!this.owningTable.equals(sqlColumn.owningTable)) return false;
+		if (!this.owningTable.schema().equals(sqlColumn.owningTable.schema())) return false;
+		if (!this.owningTable.name().equals(sqlColumn.owningTable.name())) return false;
 		if (!this.defaultValue.equals(sqlColumn.defaultValue)) return false;
 		if (!this.checks.equals(sqlColumn.checks)) return false;
 		return this.foreignKey.equals(sqlColumn.foreignKey);
@@ -126,7 +127,7 @@ public record SqlColumn<E, C>(
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.owningTable, this.name, this.index, this.type, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.foreignKey, this.checks);
+		return Objects.hash(this.owningTable.schema(), this.owningTable.name(), this.name, this.index, this.type, this.nullable, this.defaultValue, this.autoIncrement, this.unique, this.primaryKey, this.foreignKey, this.checks);
 	}
 	//endregion
 }

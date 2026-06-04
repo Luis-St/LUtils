@@ -18,13 +18,14 @@
 
 package net.luis.utils.io.database.migration;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
 import net.luis.utils.io.database.SqlDatabase;
+import net.luis.utils.io.database.audit.SqlAuditColumn;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlSchemaObjectNotFoundException;
 import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
+import net.luis.utils.io.database.migration.operation.*;
 import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.type.ParameterizedSqlType;
 import net.luis.utils.io.database.type.SqlType;
@@ -79,26 +80,26 @@ public final class SqlMigrationSchema {
 		Objects.requireNonNull(dataSource, "Data source must not be null");
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(schema, "Sql schema must not be null");
-
+		
 		try (Connection connection = dataSource.getConnection()) {
 			return load(connection, dialect, schema);
 		} catch (SQLException e) {
 			throw new SqlSchemaIntrospectionException("Failed to load schema metadata for schema " + schema, e);
 		}
 	}
-
+	
 	public static @NonNull SqlMigrationSchema load(@NonNull Connection connection, @NonNull SqlDialect dialect, @NonNull String schema) throws SqlException {
 		Objects.requireNonNull(connection, "Connection must not be null");
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(schema, "Sql schema must not be null");
-
+		
 		Map<String, SqlTable<Void>> tables = Maps.newLinkedHashMap();
 		Map<String, Map<String, SqlColumn<Void, ?>>> columns = Maps.newLinkedHashMap();
 		Map<String, List<SqlCheckConstraintInfo>> checkConstraints = Maps.newLinkedHashMap();
-
+		
 		try {
 			DatabaseMetaData meta = connection.getMetaData();
-
+			
 			List<String> tableNames = discoverTableNames(meta, schema);
 			
 			for (String tableName : tableNames) {
@@ -206,6 +207,200 @@ public final class SqlMigrationSchema {
 		}
 		
 		return new SqlMigrationSchema(schema, Collections.unmodifiableMap(tables), Collections.unmodifiableMap(columns), Collections.unmodifiableMap(constraintsCopy));
+	}
+	
+	public static @NonNull SqlMigrationSchema applyOperations(@NonNull SqlMigrationSchema base, @NonNull List<SqlMigrationOperation> operations) throws SqlException {
+		Objects.requireNonNull(base, "Base sql migration schema must not be null");
+		Objects.requireNonNull(operations, "Sql migration operations must not be null");
+		
+		Map<String, List<SqlSchemaColumnInfo>> tables = Maps.newLinkedHashMap();
+		for (SqlSchemaColumnInfo info : base.extractColumnInfos()) {
+			tables.computeIfAbsent(info.tableName(), _ -> Lists.newArrayList()).add(info);
+		}
+		
+		Map<String, List<SqlCheckConstraintInfo>> checks = Maps.newLinkedHashMap();
+		for (Map.Entry<String, List<SqlCheckConstraintInfo>> entry : base.extractCheckConstraints().entrySet()) {
+			checks.put(entry.getKey(), Lists.newArrayList(entry.getValue()));
+		}
+		
+		for (SqlMigrationOperation operation : operations) {
+			applyOperation(tables, checks, operation);
+		}
+		
+		List<SqlSchemaColumnInfo> columnInfos = Lists.newArrayList();
+		for (List<SqlSchemaColumnInfo> tableColumns : tables.values()) {
+			int ordinal = 0;
+			for (SqlSchemaColumnInfo info : tableColumns) {
+				columnInfos.add(withOrdinalPosition(info, ordinal++));
+			}
+		}
+		return fromSnapshot(base.schema, columnInfos, checks);
+	}
+	
+	private static void applyOperation(
+		@NonNull Map<String, List<SqlSchemaColumnInfo>> tables,
+		@NonNull Map<String, List<SqlCheckConstraintInfo>> checks,
+		@NonNull SqlMigrationOperation operation
+	) {
+		switch (operation) {
+			case SqlCreateTableOperation op -> {
+				String tableName = op.table().name();
+				Set<String> primaryKeyNames = Sets.newLinkedHashSet();
+				for (SqlColumn<?, ?> column : op.primaryKeyColumns()) {
+					primaryKeyNames.add(column.name());
+				}
+				
+				List<SqlSchemaColumnInfo> columns = Lists.newArrayList();
+				int ordinal = 0;
+				for (SqlColumnDefinition definition : op.columns()) {
+					boolean primaryKey = primaryKeyNames.contains(definition.column().name());
+					columns.add(columnInfo(tableName, definition.column().name(), definition.type(), !definition.options().notNull(), definition.options().autoIncrement(), primaryKey, definition.options().unique(), ordinal++));
+				}
+				tables.put(tableName, columns);
+				checks.putIfAbsent(tableName, Lists.newArrayList());
+			}
+			case SqlDropTableOperation op -> {
+				tables.remove(op.table().name());
+				checks.remove(op.table().name());
+			}
+			case SqlRenameTableOperation op -> {
+				String from = op.from().name();
+				String to = op.to().name();
+				
+				List<SqlSchemaColumnInfo> columns = tables.remove(from);
+				if (columns != null) {
+					List<SqlSchemaColumnInfo> renamed = Lists.newArrayList();
+					for (SqlSchemaColumnInfo info : columns) {
+						renamed.add(withTableName(info, to));
+					}
+					tables.put(to, renamed);
+				}
+				
+				List<SqlCheckConstraintInfo> tableChecks = checks.remove(from);
+				if (tableChecks != null) {
+					checks.put(to, tableChecks);
+				}
+			}
+			case SqlAddColumnOperation op -> {
+				String tableName = op.column().owningTable().name();
+				List<SqlSchemaColumnInfo> columns = tables.get(tableName);
+				if (columns != null) {
+					columns.add(columnInfo(tableName, op.column().name(), op.type(), !op.options().notNull(), op.options().autoIncrement(), false, op.options().unique(), columns.size()));
+				}
+			}
+			case SqlDropColumnOperation op -> {
+				List<SqlSchemaColumnInfo> columns = tables.get(op.column().owningTable().name());
+				if (columns != null) {
+					columns.removeIf(info -> info.columnName().equals(op.column().name()));
+				}
+			}
+			case SqlRenameColumnOperation op -> {
+				List<SqlSchemaColumnInfo> columns = tables.get(op.from().owningTable().name());
+				if (columns != null) {
+					for (int i = 0; i < columns.size(); i++) {
+						if (columns.get(i).columnName().equals(op.from().name())) {
+							columns.set(i, withColumnName(columns.get(i), op.to().name()));
+							break;
+						}
+					}
+				}
+			}
+			case SqlAlterColumnOperation op -> {
+				List<SqlSchemaColumnInfo> columns = tables.get(op.column().owningTable().name());
+				if (columns != null) {
+					for (int i = 0; i < columns.size(); i++) {
+						SqlSchemaColumnInfo info = columns.get(i);
+						if (info.columnName().equals(op.column().name())) {
+							for (SqlColumnAlteration alteration : op.alterations()) {
+								info = applyAlteration(info, alteration);
+							}
+							columns.set(i, info);
+							break;
+						}
+					}
+				}
+			}
+			case SqlAddCheckConstraintOperation op -> checks.computeIfAbsent(op.table().name(), _ -> Lists.newArrayList()).add(new SqlCheckConstraintInfo(op.name(), op.condition().toString()));
+			case SqlDropConstraintOperation op -> {
+				List<SqlCheckConstraintInfo> tableChecks = checks.get(op.table().name());
+				if (tableChecks != null) {
+					tableChecks.removeIf(info -> info.constraintName().equals(op.name()));
+				}
+			}
+			case SqlEnableAuditingOperation op -> {
+				String tableName = op.table().name();
+				List<SqlSchemaColumnInfo> columns = tables.get(tableName);
+				if (columns != null) {
+					for (SqlAuditColumn auditColumn : op.config().auditColumns()) {
+						columns.add(columnInfo(tableName, auditColumn.name(), auditColumn.type(), auditColumn.nullable(), false, false, false, columns.size()));
+					}
+				}
+			}
+			case SqlDisableAuditingOperation op -> {
+				List<SqlSchemaColumnInfo> columns = tables.get(op.table().name());
+				if (columns != null) {
+					Set<String> auditNames = new LinkedHashSet<>();
+					for (SqlAuditColumn auditColumn : op.config().auditColumns()) {
+						auditNames.add(auditColumn.name());
+					}
+					columns.removeIf(info -> auditNames.contains(info.columnName()));
+				}
+			}
+			case SqlAddCompositePrimaryKeyOperation op -> setColumnFlags(tables, op.table().name(), op.columns(), true, false);
+			case SqlAddUniqueConstraintOperation op -> setColumnFlags(tables, op.table().name(), op.columns(), false, true);
+			case SqlAddForeignKeyOperation _, SqlCreateIndexOperation _, SqlDropIndexOperation _, SqlRenameIndexOperation _, SqlExecuteDataOperation _ -> {}
+		}
+	}
+	
+	private static void setColumnFlags(@NonNull Map<String, List<SqlSchemaColumnInfo>> tables, @NonNull String tableName, @NonNull List<SqlColumn<?, ?>> columns, boolean primaryKey, boolean unique) {
+		List<SqlSchemaColumnInfo> tableColumns = tables.get(tableName);
+		if (tableColumns == null) {
+			return;
+		}
+		
+		Set<String> names = new LinkedHashSet<>();
+		for (SqlColumn<?, ?> column : columns) {
+			names.add(column.name());
+		}
+		
+		for (int i = 0; i < tableColumns.size(); i++) {
+			SqlSchemaColumnInfo info = tableColumns.get(i);
+			if (names.contains(info.columnName())) {
+				tableColumns.set(i, new SqlSchemaColumnInfo(
+					info.tableName(), info.columnName(), info.jdbcType(), info.parameter(), info.nullable(), info.autoIncrement(), primaryKey || info.primaryKey(), unique || info.unique(), info.ordinalPosition()
+				));
+			}
+		}
+	}
+	
+	private static @NonNull SqlSchemaColumnInfo applyAlteration(@NonNull SqlSchemaColumnInfo info, @NonNull SqlColumnAlteration alteration) {
+		return switch (alteration) {
+			case SqlSetTypeAlteration setType -> {
+				SqlParameter parameter = setType.type().baseType() instanceof ParameterizedSqlType<?, ?> parameterized ? parameterized.parameter() : null;
+				yield new SqlSchemaColumnInfo(info.tableName(), info.columnName(), setType.type().jdbcType(), parameter, info.nullable(), info.autoIncrement(), info.primaryKey(), info.unique(), info.ordinalPosition());
+			}
+			case SqlSetNullableAlteration setNullable -> new SqlSchemaColumnInfo(
+				info.tableName(), info.columnName(), info.jdbcType(), info.parameter(), setNullable.nullable(), info.autoIncrement(), info.primaryKey(), info.unique(), info.ordinalPosition()
+			);
+			case SqlSetDefaultAlteration _, SqlDropDefaultAlteration _ -> info;
+		};
+	}
+	
+	private static @NonNull SqlSchemaColumnInfo columnInfo(@NonNull String tableName, @NonNull String columnName, @NonNull SqlType<?> type, boolean nullable, boolean autoIncrement, boolean primaryKey, boolean unique, int ordinal) {
+		SqlParameter parameter = type.baseType() instanceof ParameterizedSqlType<?, ?> parameterized ? parameterized.parameter() : null;
+		return new SqlSchemaColumnInfo(tableName, columnName, type.jdbcType(), parameter, nullable, autoIncrement, primaryKey, unique, ordinal);
+	}
+	
+	private static @NonNull SqlSchemaColumnInfo withTableName(@NonNull SqlSchemaColumnInfo info, @NonNull String tableName) {
+		return new SqlSchemaColumnInfo(tableName, info.columnName(), info.jdbcType(), info.parameter(), info.nullable(), info.autoIncrement(), info.primaryKey(), info.unique(), info.ordinalPosition());
+	}
+	
+	private static @NonNull SqlSchemaColumnInfo withColumnName(@NonNull SqlSchemaColumnInfo info, @NonNull String columnName) {
+		return new SqlSchemaColumnInfo(info.tableName(), columnName, info.jdbcType(), info.parameter(), info.nullable(), info.autoIncrement(), info.primaryKey(), info.unique(), info.ordinalPosition());
+	}
+	
+	private static @NonNull SqlSchemaColumnInfo withOrdinalPosition(@NonNull SqlSchemaColumnInfo info, int ordinalPosition) {
+		return new SqlSchemaColumnInfo(info.tableName(), info.columnName(), info.jdbcType(), info.parameter(), info.nullable(), info.autoIncrement(), info.primaryKey(), info.unique(), ordinalPosition);
 	}
 	
 	private static @NonNull List<String> discoverTableNames(@NonNull DatabaseMetaData meta, @NonNull String schema) throws SQLException {

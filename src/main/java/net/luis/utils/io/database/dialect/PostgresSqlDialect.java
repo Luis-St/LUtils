@@ -29,7 +29,6 @@ import net.luis.utils.io.database.dialect.renderer.expression.condition.SqlStrin
 import net.luis.utils.io.database.dialect.renderer.expression.function.SqlNumericFunctionRenderer;
 import net.luis.utils.io.database.dialect.renderer.expression.function.SqlTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateFunction;
@@ -79,7 +78,8 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 		SqlFeature.ALTER_COLUMN,
 		SqlFeature.ADD_CONSTRAINT,
 		SqlFeature.DROP_CONSTRAINT,
-		SqlFeature.ARRAY_TYPE
+		SqlFeature.ARRAY_TYPE,
+		SqlFeature.OFFSET_WITHOUT_LIMIT
 	);
 	
 	private static final Set<SqlIndexMethod> SUPPORTED_INDEX_METHODS = Set.of(
@@ -159,19 +159,19 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getScalarTypeName(int jdbcType) {
 		return switch (jdbcType) {
-			case Types.LONGVARBINARY, Types.BLOB -> "BYTEA";
-			case Types.LONGNVARCHAR, Types.NCLOB, Types.CLOB -> "TEXT";
+			case Types.LONGVARBINARY, Types.BLOB -> Optional.of("BYTEA");
+			case Types.LONGNVARCHAR, Types.NCLOB, Types.CLOB -> Optional.of("TEXT");
 			default -> super.getScalarTypeName(jdbcType);
 		};
 	}
 	
 	@Override
-	protected @NonNull String getLengthParameterizedTypeName(int jdbcType, @NonNull SqlLengthParameter length) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getLengthParameterizedTypeName(int jdbcType, @NonNull SqlLengthParameter length) {
 		return switch (jdbcType) {
-			case Types.NCHAR -> "CHAR(" + length.length() + ")";
-			case Types.NVARCHAR -> "VARCHAR(" + length.length() + ")";
+			case Types.NCHAR -> Optional.of("CHAR(" + length.length() + ")");
+			case Types.NVARCHAR -> Optional.of("VARCHAR(" + length.length() + ")");
 			default -> super.getLengthParameterizedTypeName(jdbcType, length);
 		};
 	}

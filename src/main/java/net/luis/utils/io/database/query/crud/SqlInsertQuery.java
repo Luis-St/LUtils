@@ -118,7 +118,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static <T> void addParameter(@NonNull SqlRenderer renderer, @NonNull SqlType<T> type, @NonNull Object value) {
+	private static <T> void addParameter(@NonNull SqlRenderer renderer, @NonNull SqlType<T> type, @Nullable Object value) {
 		Objects.requireNonNull(renderer, "Sql renderer must not be null");
 		
 		renderer.parameter(type, (T) value);
@@ -133,17 +133,19 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	}
 	
 	public @NonNull List<Long> executeReturningKeys() throws SqlException {
-		List<Long> keys = new ArrayList<>();
-		for (SqlRendered chunk : this.renderChunks(this.config.dialect())) {
-			keys.addAll(SqlQueryExecutor.executeUpdateReturningKeys(this.config.dialect(), this.config.connectionSource(), chunk, this.config.queryTimeout()));
-		}
-		return keys;
+		List<SqlRendered> chunks = this.renderChunks(this.config.dialect());
+		return SqlQueryExecutor.executeUpdateReturningKeys(this.config.dialect(), this.config.connectionSource(), chunks, this.config.queryTimeout());
 	}
 	
 	public @NonNull List<E> returning() throws SqlException {
-		return SqlQueryExecutor.executeReturningQuery(
-			this.config.dialect(), this.config.connectionSource(), this.toSql(this.config.dialect()), this.config.dialect().renderReturning(List.copyOf(this.config.table().columns())), this.config.queryTimeout(), this.config.rowMapper()
-		);
+		SqlDialect dialect = this.config.dialect();
+		List<SqlRendered> chunks = this.renderChunks(dialect);
+		SqlRendered returning = dialect.renderReturning(List.copyOf(this.config.table().columns()));
+		
+		if (chunks.size() == 1) {
+			return SqlQueryExecutor.executeReturningQuery(dialect, this.config.connectionSource(), chunks.getFirst(), returning, this.config.queryTimeout(), this.config.rowMapper());
+		}
+		return SqlQueryExecutor.executeBatchedReturningQuery(dialect, this.config.connectionSource(), chunks, returning, this.config.queryTimeout(), this.config.rowMapper());
 	}
 	
 	@Override
@@ -263,33 +265,41 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 			
 			SqlColumn<E, ?> column = columns.get(i);
 			Object value = column.getter().apply(entity);
-			if (value == null) {
-				renderer.null_();
-			} else {
-				addParameter(renderer, column.type(), value);
-			}
+			addParameter(renderer, column.type(), value);
 		}
 		
 		if (auditConfig != null) {
 			String auditUser = SqlQueryExecutor.resolveUser(this.config.auditUserProvider());
+			boolean databaseSource = auditConfig.valueSource() == SqlAuditValueSource.DATABASE;
+			LocalDateTime now = LocalDateTime.now(auditConfig.clock());
 			
-			renderer.comma();
-			if (auditConfig.valueSource() == SqlAuditValueSource.DATABASE) {
-				renderer.literal("1");
+			for (SqlAuditColumn column : auditConfig.auditColumns()) {
 				renderer.comma();
-				renderer.rendered(dialect.renderFunction(new SqlCurrentTimestampFunction<>(auditConfig.timestampType())));
-			} else {
-				renderer.parameter(auditConfig.versionType(), 1L);
-				renderer.comma().parameter(auditConfig.timestampType(), LocalDateTime.now(auditConfig.clock()));
+				switch (column.role()) {
+					case VERSION -> {
+						if (databaseSource) {
+							renderer.literal("1");
+						} else {
+							renderer.parameter(auditConfig.versionType(), 1L);
+						}
+					}
+					case CREATED_AT -> {
+						if (databaseSource) {
+							renderer.rendered(dialect.renderFunction(new SqlCurrentTimestampFunction<>(auditConfig.timestampType())));
+						} else {
+							renderer.parameter(auditConfig.timestampType(), now);
+						}
+					}
+					case CREATED_BY -> {
+						if (auditUser == null) {
+							renderer.null_();
+						} else {
+							renderer.parameter(auditConfig.userType(), auditUser);
+						}
+					}
+					case UPDATED_AT, UPDATED_BY -> renderer.null_();
+				}
 			}
-			
-			renderer.comma();
-			if (auditUser == null) {
-				renderer.null_();
-			} else {
-				renderer.parameter(auditConfig.userType(), auditUser);
-			}
-			renderer.comma().null_().comma().null_();
 		}
 		
 		renderer.closingBracket();

@@ -25,7 +25,6 @@ import net.luis.utils.io.database.dialect.renderer.expression.condition.SqlStrin
 import net.luis.utils.io.database.dialect.renderer.expression.function.*;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.numeric.SqlRandomFunction;
 import net.luis.utils.io.database.function.functions.string.SqlConcatFunction;
@@ -67,7 +66,8 @@ public class MySqlDialect extends AbstractSqlDialect {
 		SqlFeature.RENAME_INDEX,
 		SqlFeature.ALTER_COLUMN,
 		SqlFeature.ADD_CONSTRAINT,
-		SqlFeature.DROP_CONSTRAINT
+		SqlFeature.DROP_CONSTRAINT,
+		SqlFeature.JOINED_DML
 	);
 	
 	private static final Set<SqlIndexMethod> SUPPORTED_INDEX_METHODS = Set.of(
@@ -105,24 +105,24 @@ public class MySqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getScalarTypeName(int jdbcType) {
 		return switch (jdbcType) {
-			case Types.BOOLEAN -> "TINYINT(1)";
-			case Types.TINYINT -> "TINYINT";
-			case Types.LONGVARCHAR, Types.LONGNVARCHAR, Types.NCLOB, Types.CLOB -> "LONGTEXT";
-			case Types.LONGVARBINARY, Types.BLOB -> "LONGBLOB";
+			case Types.BOOLEAN -> Optional.of("TINYINT(1)");
+			case Types.TINYINT -> Optional.of("TINYINT");
+			case Types.LONGVARCHAR, Types.LONGNVARCHAR, Types.NCLOB, Types.CLOB -> Optional.of("LONGTEXT");
+			case Types.LONGVARBINARY, Types.BLOB -> Optional.of("LONGBLOB");
 			default -> super.getScalarTypeName(jdbcType);
 		};
 	}
 	
 	@Override
-	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) {
 		Objects.requireNonNull(parameter, "Sql parameter must not be null");
 		
 		if (parameter instanceof SqlFractionalParameter fractional) {
 			return switch (jdbcType) {
-				case Types.TIMESTAMP_WITH_TIMEZONE -> "DATETIME(" + fractional.digits() + ")";
-				case Types.TIME_WITH_TIMEZONE -> "TIME(" + fractional.digits() + ")";
+				case Types.TIMESTAMP_WITH_TIMEZONE -> Optional.of("DATETIME(" + fractional.digits() + ")");
+				case Types.TIME_WITH_TIMEZONE -> Optional.of("TIME(" + fractional.digits() + ")");
 				default -> super.getParameterizedTypeName(jdbcType, parameter);
 			};
 		}

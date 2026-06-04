@@ -23,8 +23,10 @@ import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.SqlJoinableQuery;
 import net.luis.utils.io.database.query.SqlQuery;
@@ -159,6 +161,9 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		if (this.config.setClauses().isEmpty()) {
 			throw new SqlStatementBuilderException("Sql update query must have at least one SET clause");
+		}
+		if (!this.config.joins().isEmpty() && !dialect.isFeatureSupported(SqlFeature.JOINED_DML)) {
+			throw new SqlDialectFeatureException(SqlFeature.JOINED_DML, dialect);
 		}
 		
 		SqlRenderer renderer = SqlRenderer.empty();

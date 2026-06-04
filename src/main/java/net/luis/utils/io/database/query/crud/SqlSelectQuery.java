@@ -410,7 +410,22 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 			}
 			
 			if (cfg.selectedExpressions().isEmpty()) {
-				renderer.literal("*");
+				SqlTable<?> table = cfg.table();
+				String tableName = dialect.quoteIdentifier(table.name());
+				
+				List<? extends SqlColumn<?, ?>> columns = table.columns().stream().sorted(Comparator.comparingInt(SqlColumn::index)).toList();
+				for (int i = 0; i < columns.size(); i++) {
+					if (i > 0) {
+						renderer.comma();
+					}
+					renderer.literal(tableName + "." + dialect.quoteIdentifier(columns.get(i).name()));
+				}
+				
+				table.auditConfig().ifPresent(auditConfig -> {
+					for (SqlAuditColumn auditColumn : auditConfig.auditColumns()) {
+						renderer.comma().literal(tableName + "." + dialect.quoteIdentifier(auditColumn.name()));
+					}
+				});
 			} else {
 				for (int i = 0; i < cfg.selectedExpressions().size(); i++) {
 					if (i > 0) {

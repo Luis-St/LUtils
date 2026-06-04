@@ -94,6 +94,26 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		}
 	}
 	
+	private static @Nullable Object temporalFallback(@NonNull ResultSet resultSet, int columnIndex, @NonNull Class<?> javaType) throws SQLException {
+		if (javaType == LocalDate.class) {
+			Date value = resultSet.getDate(columnIndex);
+			return value == null ? null : value.toLocalDate();
+		} else if (javaType == LocalTime.class) {
+			Time value = resultSet.getTime(columnIndex);
+			return value == null ? null : value.toLocalTime();
+		} else if (javaType == LocalDateTime.class) {
+			Timestamp value = resultSet.getTimestamp(columnIndex);
+			return value == null ? null : value.toLocalDateTime();
+		} else if (javaType == OffsetDateTime.class) {
+			Timestamp value = resultSet.getTimestamp(columnIndex);
+			return value == null ? null : OffsetDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC);
+		} else if (javaType == OffsetTime.class) {
+			Time value = resultSet.getTime(columnIndex);
+			return value == null ? null : value.toLocalTime().atOffset(ZoneOffset.UTC);
+		}
+		throw new UnsupportedOperationException("No temporal fallback for type " + javaType.getName());
+	}
+	
 	int jdbcType();
 	
 	@NonNull Class<T> javaType();
@@ -103,6 +123,10 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 			return mapped.sourceType().baseType();
 		}
 		return this;
+	}
+	
+	default @NonNull SqlArrayType<T> array() {
+		throw new UnsupportedOperationException("Array types are not supported for " + this);
 	}
 	
 	@ApiStatus.Internal
@@ -127,26 +151,6 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 				throw new SqlResultMappingException("Failed to retrieve value from result set at column index " + columnIndex, fallback, this.javaType(), null);
 			}
 		}
-	}
-	
-	private static @Nullable Object temporalFallback(@NonNull ResultSet resultSet, int columnIndex, @NonNull Class<?> javaType) throws SQLException {
-		if (javaType == LocalDate.class) {
-			Date value = resultSet.getDate(columnIndex);
-			return value == null ? null : value.toLocalDate();
-		} else if (javaType == LocalTime.class) {
-			Time value = resultSet.getTime(columnIndex);
-			return value == null ? null : value.toLocalTime();
-		} else if (javaType == LocalDateTime.class) {
-			Timestamp value = resultSet.getTimestamp(columnIndex);
-			return value == null ? null : value.toLocalDateTime();
-		} else if (javaType == OffsetDateTime.class) {
-			Timestamp value = resultSet.getTimestamp(columnIndex);
-			return value == null ? null : OffsetDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC);
-		} else if (javaType == OffsetTime.class) {
-			Time value = resultSet.getTime(columnIndex);
-			return value == null ? null : value.toLocalTime().atOffset(ZoneOffset.UTC);
-		}
-		throw new UnsupportedOperationException("No temporal fallback for type " + javaType.getName());
 	}
 	
 	@ApiStatus.Internal

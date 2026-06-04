@@ -25,6 +25,7 @@ import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlMigrationConflictException;
 import net.luis.utils.io.database.exception.database.SqlMigrationExecutionException;
+import net.luis.utils.io.database.migration.operation.SqlMigrationOperation;
 import net.luis.utils.io.database.migration.store.*;
 import net.luis.utils.io.database.query.SqlQueryProvider;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -33,8 +34,12 @@ import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import javax.sql.DataSource;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -76,6 +81,52 @@ public final class SqlMigrationRunner {
 		schemaStore.initialize();
 		return new SqlMigrationRunner(context, store, schemaStore);
 	}
+	
+	//region Static helper methods
+	
+	private static @NonNull String computeChecksum(@NonNull List<SqlRendered> rendered) {
+		Objects.requireNonNull(rendered, "Sql rendered list must not be null");
+		
+		StringBuilder content = new StringBuilder();
+		for (SqlRendered statement : rendered) {
+			content.append(statement.sql()).append('\n');
+			for (Pair<SqlType<?>, Object> parameter : statement.parameters()) {
+				SqlType<?> type = parameter.getFirst();
+				content.append(type.jdbcType()).append(':').append(type.javaType().getName()).append('=').append(stableParameterValue(parameter.getSecond())).append('\n');
+			}
+		}
+		
+		try {
+			byte[] hash = MessageDigest.getInstance("SHA-256").digest(content.toString().getBytes(StandardCharsets.UTF_8));
+			return HexFormat.of().formatHex(hash);
+		} catch (NoSuchAlgorithmException e) {
+			throw new IllegalStateException("SHA-256 algorithm is not available", e);
+		}
+	}
+	
+	private static @NonNull String stableParameterValue(@Nullable Object value) {
+		return switch (value) {
+			case null -> "null";
+			case byte[] bytes -> HexFormat.of().formatHex(bytes);
+			default -> value.getClass().isArray() ? arrayToString(value) : String.valueOf(value);
+		};
+	}
+	
+	private static @NonNull String arrayToString(@NonNull Object array) {
+		Objects.requireNonNull(array, "Array must not be null");
+		
+		int length = java.lang.reflect.Array.getLength(array);
+		StringBuilder builder = new StringBuilder("[");
+		for (int i = 0; i < length; i++) {
+			if (i > 0) {
+				builder.append(", ");
+			}
+			
+			builder.append(stableParameterValue(java.lang.reflect.Array.get(array, i)));
+		}
+		return builder.append(']').toString();
+	}
+	//endregion
 	
 	public void register(@NonNull SqlMigration migration) throws SqlException {
 		Objects.requireNonNull(migration, "Sql migration must not be null");
@@ -141,7 +192,7 @@ public final class SqlMigrationRunner {
 		}
 		List<SqlMigrationInfo> applied = this.store.loadAll().stream()
 			.filter(info -> info.status() == SqlMigrationStatus.APPLIED)
-			.sorted(Comparator.comparing(SqlMigrationInfo::appliedAt, Comparator.nullsFirst(Comparator.naturalOrder())))
+			.sorted(Comparator.comparing(SqlMigrationInfo::version))
 			.toList();
 		
 		List<SqlMigrationInfo> toRollback = applied.subList(Math.max(0, applied.size() - count), applied.size());
@@ -159,7 +210,7 @@ public final class SqlMigrationRunner {
 		List<SqlMigrationInfo> applied = this.store.loadAll().stream()
 			.filter(info -> info.status() == SqlMigrationStatus.APPLIED)
 			.filter(info -> info.version().compareTo(targetVersion) > 0)
-			.sorted(Comparator.comparing(SqlMigrationInfo::appliedAt, Comparator.nullsFirst(Comparator.naturalOrder())))
+			.sorted(Comparator.comparing(SqlMigrationInfo::version))
 			.toList();
 		
 		List<SqlMigrationInfo> reversed = Lists.newArrayList(applied);
@@ -174,10 +225,21 @@ public final class SqlMigrationRunner {
 	public void validate() throws SqlException {
 		List<SqlMigrationInfo> applied = this.store.loadAll().stream()
 			.filter(info -> info.status() == SqlMigrationStatus.APPLIED)
+			.sorted(Comparator.comparing(SqlMigrationInfo::version))
 			.toList();
 		
+		SqlMigrationSchema schema = SqlMigrationSchema.empty();
 		for (SqlMigrationInfo info : applied) {
-			this.findRegistered(info.version());
+			RegisteredSqlMigration registered = this.findRegistered(info.version());
+			List<SqlMigrationOperation> operations = this.buildOperations(registered.migration(), true, true, schema);
+			
+			if (info.checksum() != null) {
+				String checksum = computeChecksum(this.renderer.render(operations));
+				if (!checksum.equals(info.checksum())) {
+					throw new SqlMigrationConflictException("Migration " + info.version() + " has been modified since it was applied (checksum mismatch)");
+				}
+			}
+			schema = SqlMigrationSchema.applyOperations(schema, operations);
 		}
 	}
 	
@@ -197,6 +259,7 @@ public final class SqlMigrationRunner {
 					registered.migration().version(),
 					registered.migration().description(),
 					SqlMigrationStatus.PENDING,
+					null,
 					null
 				));
 			}
@@ -211,10 +274,13 @@ public final class SqlMigrationRunner {
 			.map(SqlMigrationInfo::version)
 			.collect(Collectors.toSet());
 		
+		SqlMigrationSchema schema = this.latestAppliedSchema();
 		List<SqlRendered> results = Lists.newArrayList();
 		for (RegisteredSqlMigration registered : this.registeredMigrations) {
 			if (!appliedVersions.contains(registered.migration().version())) {
-				results.addAll(this.renderMigration(registered.migration(), true, true));
+				List<SqlMigrationOperation> operations = this.buildOperations(registered.migration(), true, true, schema);
+				results.addAll(this.renderer.render(operations));
+				schema = SqlMigrationSchema.applyOperations(schema, operations);
 			}
 		}
 		return List.copyOf(results);
@@ -243,7 +309,8 @@ public final class SqlMigrationRunner {
 			registered.migration().version(),
 			registered.migration().description(),
 			SqlMigrationStatus.APPLIED,
-			Instant.now()
+			Instant.now(),
+			computeChecksum(rendered)
 		);
 		this.context.executeAndSave(rendered, this.store, info, this.schemaStore);
 	}
@@ -280,23 +347,31 @@ public final class SqlMigrationRunner {
 	private @NonNull List<SqlRendered> renderMigration(@NonNull SqlMigration migration, boolean up, boolean dryRun) throws SqlException {
 		Objects.requireNonNull(migration, "Sql migration must not be null");
 		
+		SqlMigrationSchema schema = this.latestAppliedSchema();
+		return this.renderer.render(this.buildOperations(migration, up, dryRun, schema));
+	}
+	
+	private @NonNull SqlMigrationSchema latestAppliedSchema() throws SqlException {
 		List<SqlMigrationInfo> applied = this.store.loadAll().stream()
 			.filter(info -> info.status() == SqlMigrationStatus.APPLIED)
 			.sorted(Comparator.comparing(SqlMigrationInfo::version))
 			.toList();
 		
-		SqlMigrationSchema schema;
 		if (applied.isEmpty()) {
-			schema = SqlMigrationSchema.empty();
-		} else {
-			Version latestVersion = applied.getLast().version();
-			SqlSchemaSnapshot snapshot = this.schemaStore.load(latestVersion);
-			
-			if (snapshot == null) {
-				throw new SqlMigrationConflictException("Schema snapshot not found for applied version " + latestVersion);
-			}
-			schema = SqlMigrationSchema.fromSnapshot(snapshot.columns(), snapshot.checkConstraints());
+			return SqlMigrationSchema.empty();
 		}
+		
+		Version latestVersion = applied.getLast().version();
+		SqlSchemaSnapshot snapshot = this.schemaStore.load(latestVersion);
+		if (snapshot == null) {
+			throw new SqlMigrationConflictException("Schema snapshot not found for applied version " + latestVersion);
+		}
+		return SqlMigrationSchema.fromSnapshot(snapshot.columns(), snapshot.checkConstraints());
+	}
+	
+	private @NonNull List<SqlMigrationOperation> buildOperations(@NonNull SqlMigration migration, boolean up, boolean dryRun, @NonNull SqlMigrationSchema schema) throws SqlException {
+		Objects.requireNonNull(migration, "Sql migration must not be null");
+		Objects.requireNonNull(schema, "Sql migration schema must not be null");
 		
 		SqlMigrationBuilder builder = new SqlMigrationBuilder(this.context, dryRun);
 		if (up) {
@@ -304,7 +379,7 @@ public final class SqlMigrationRunner {
 		} else {
 			migration.down(builder, schema);
 		}
-		return this.renderer.render(builder.getOperations());
+		return builder.getOperations();
 	}
 	
 	private @NonNull RegisteredSqlMigration findRegistered(@NonNull Version version) throws SqlException {

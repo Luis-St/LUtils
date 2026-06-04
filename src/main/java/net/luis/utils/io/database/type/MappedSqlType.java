@@ -20,8 +20,8 @@ package net.luis.utils.io.database.type;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.SqlClientException;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.database.statement.SqlStatementBindException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NonNull;
@@ -72,6 +72,11 @@ public final class MappedSqlType<S, T> implements SqlType<T> {
 	
 	public @NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlClientException> fromSourceToTarget() {
 		return this.fromSourceToTarget;
+	}
+	
+	@Override
+	public @NonNull SqlArrayType<T> array() {
+		return new SqlArrayType<>(this);
 	}
 	
 	@Override

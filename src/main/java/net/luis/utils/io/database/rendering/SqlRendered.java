@@ -93,8 +93,7 @@ public final class SqlRendered {
 		if (!(o instanceof SqlRendered that)) return false;
 		
 		if (!this.statements.equals(that.statements)) return false;
-		if (!this.parameters.equals(that.parameters)) return false;
-		return Objects.equals(this.cachedSql, that.cachedSql);
+		return this.parameters.equals(that.parameters);
 	}
 	
 	@Override

@@ -55,6 +55,7 @@ public final class ParameterizedSqlType<T, P extends SqlParameter> implements Sq
 		return this.parameter;
 	}
 	
+	@Override
 	public @NonNull SqlArrayType<T> array() {
 		return new SqlArrayType<>(this);
 	}

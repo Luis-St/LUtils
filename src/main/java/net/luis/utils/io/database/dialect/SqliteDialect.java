@@ -85,24 +85,24 @@ public class SqliteDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
-		return switch (jdbcType) {
+	protected @NonNull Optional<String> getScalarTypeName(int jdbcType) {
+		return Optional.ofNullable(switch (jdbcType) {
 			case Types.BOOLEAN, Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT -> "INTEGER";
 			case Types.REAL, Types.FLOAT, Types.DOUBLE -> "REAL";
 			case Types.LONGVARCHAR, Types.LONGNVARCHAR, Types.CLOB, Types.NCLOB, Types.DATE -> "TEXT";
 			case Types.LONGVARBINARY, Types.BLOB -> "BLOB";
-			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported scalar JDBC type: " + jdbcType + " in dialect " + this.name());
-		};
+			default -> null;
+		});
 	}
 	
 	@Override
-	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedRenderingException {
-		return switch (jdbcType) {
+	protected @NonNull Optional<String> getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) {
+		return Optional.ofNullable(switch (jdbcType) {
 			case Types.CHAR, Types.VARCHAR, Types.NCHAR, Types.NVARCHAR, Types.TIME, Types.TIMESTAMP, Types.TIME_WITH_TIMEZONE, Types.TIMESTAMP_WITH_TIMEZONE -> "TEXT";
 			case Types.BINARY, Types.VARBINARY -> "BLOB";
 			case Types.NUMERIC, Types.DECIMAL -> "NUMERIC";
-			default -> throw new SqlDialectUnsupportedRenderingException("Unsupported parameterized JDBC type: " + jdbcType + " in dialect " + this.name());
-		};
+			default -> null;
+		});
 	}
 	
 	@Override
@@ -245,12 +245,16 @@ class SqliteTableRenderer extends SqlTableRenderer {
 		copy.select().literal(columns).from().literal(original);
 		
 		List<SqlRendered> statements = new ArrayList<>();
-		statements.add(SqlRendered.of("PRAGMA foreign_keys=OFF"));
+		// PRAGMA foreign_keys is a silent no-op inside a transaction, and migrations always run in one, so it cannot be used here.
+		// legacy_alter_table keeps the RENAME from rewriting references in other schema objects; defer_foreign_keys postpones FK
+		// enforcement to commit time (honored within a transaction, auto-reset on commit/rollback) instead of disabling it outright.
+		statements.add(SqlRendered.of("PRAGMA legacy_alter_table=ON"));
+		statements.add(SqlRendered.of("PRAGMA defer_foreign_keys=ON"));
 		statements.add(create.toSql());
 		statements.add(copy.toSql());
 		statements.add(SqlRenderer.empty().drop().table().literal(original).toSql());
 		statements.add(SqlRenderer.empty().alter().table().literal(temp).rename().to().literal(original).toSql());
-		statements.add(SqlRendered.of("PRAGMA foreign_keys=ON"));
+		statements.add(SqlRendered.of("PRAGMA legacy_alter_table=OFF"));
 		return List.copyOf(statements);
 	}
 }

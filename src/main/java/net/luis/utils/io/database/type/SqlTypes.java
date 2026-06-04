@@ -57,7 +57,12 @@ public final class SqlTypes {
 	public static final ParameterizableSqlType<BigInteger, SqlPrecisionParameter> BIG_INTEGER = NUMERIC.map(BigInteger.class, nullable(BigDecimal::new), BigDecimal::toBigInteger);
 	
 	public static final ParameterizableSqlType<String, SqlLengthParameter> FIXED_STRING = new DirectParameterizableSqlType<>(Types.CHAR, String.class, SqlLengthParameter.class);
-	public static final SqlType<Character> CHARACTER = FIXED_STRING.configure(SqlParameter.length(1)).map(Character.class, nullable(String::valueOf), s -> s.charAt(0));
+	public static final SqlType<Character> CHARACTER = FIXED_STRING.configure(SqlParameter.length(1)).map(Character.class, nullable(String::valueOf), s -> {
+		if (s.isEmpty()) {
+			throw new SqlClientException("Unable to read CHARACTER from an empty string value");
+		}
+		return s.charAt(0);
+	});
 	public static final ParameterizableSqlType<String, SqlLengthParameter> STRING = new DirectParameterizableSqlType<>(Types.VARCHAR, String.class, SqlLengthParameter.class);
 	public static final SqlScalarType<String> TEXT = new SqlScalarType<>(Types.LONGVARCHAR, String.class);
 	public static final ParameterizableSqlType<String, SqlLengthParameter> UNICODE_FIXED_STRING = new DirectParameterizableSqlType<>(Types.NCHAR, String.class, SqlLengthParameter.class);
@@ -89,9 +94,9 @@ public final class SqlTypes {
 	public static final SqlType<XmlElement> XML = TEXT.map(XmlElement.class, nullable(element -> element.toString(XmlConfig.DEFAULT)), SqlTypes::readXml);
 	
 	@SuppressWarnings("unchecked")
-	public static final SqlType<IpAddress<?>> IP_ADDRESS = STRING.configure(SqlParameter.length(64)).<IpAddress<?>>map((Class<IpAddress<?>>) (Class<?>) IpAddress.class, nullable(IpAddress::toString), IpAddresses::parse);
+	public static final SqlType<IpAddress<?>> IP_ADDRESS = STRING.configure(SqlParameter.length(64)).map((Class<IpAddress<?>>) (Class<?>) IpAddress.class, nullable(IpAddress::toString), IpAddresses::parse);
 	@SuppressWarnings("unchecked")
-	public static final SqlType<IpNetwork<?, ?>> IP_NETWORK = STRING.configure(SqlParameter.length(64)).<IpNetwork<?, ?>>map((Class<IpNetwork<?, ?>>) (Class<?>) IpNetwork.class, nullable(IpNetwork::toString), IpAddresses::parseNetwork);
+	public static final SqlType<IpNetwork<?, ?>> IP_NETWORK = STRING.configure(SqlParameter.length(64)).map((Class<IpNetwork<?, ?>>) (Class<?>) IpNetwork.class, nullable(IpNetwork::toString), IpAddresses::parseNetwork);
 	
 	private SqlTypes() {}
 	
@@ -102,9 +107,11 @@ public final class SqlTypes {
 	
 	private static @NonNull XmlElement readXml(@NonNull String xml) {
 		String content = xml.stripLeading().startsWith("<?xml") ? xml : "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + xml;
-		XmlReader reader = new XmlReader(content);
-		reader.readDeclaration();
-		return reader.readXmlElement();
+		
+		try (XmlReader reader = new XmlReader(content)) {
+			reader.readDeclaration();
+			return reader.readXmlElement();
+		}
 	}
 	
 	public static <E extends Enum<E>> @NonNull SqlType<E> enumName(@NonNull Class<E> clazz) {

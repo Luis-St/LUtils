@@ -152,6 +152,8 @@ public final class SqlRowMapper {
 			constructor.setAccessible(true);
 		} catch (NoSuchMethodException e) {
 			throw new IllegalStateException("Cannot find canonical constructor for record " + recordType.getSimpleName(), e);
+		} catch (InaccessibleObjectException e) {
+			throw new IllegalStateException("Cannot access canonical constructor for record " + recordType.getSimpleName() + ", if it lives in a named module, open its package to LUtils (e.g. 'opens your.package;' in module-info.java)", e);
 		}
 		
 		return resultSet -> {
@@ -277,6 +279,9 @@ public final class SqlRowMapper {
 			return proxyConstructor;
 		} catch (NoSuchMethodException e) {
 			throw new IllegalStateException("Cannot resolve proxy constructor for " + rowType.getSimpleName(), e);
+		} catch (InaccessibleObjectException e) {
+			throw new IllegalStateException("Cannot access proxy constructor for " + rowType.getSimpleName() +
+				"; if it lives in a named module, open its package to LUtils (e.g. 'opens your.package;' in module-info.java)", e);
 		}
 	}
 	

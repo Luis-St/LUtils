@@ -22,7 +22,6 @@ import net.luis.utils.io.database.dialect.renderer.SqlDialectRenderer;
 import net.luis.utils.io.database.dialect.renderer.expression.function.SqlTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
-import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.temporal.*;
 import net.luis.utils.io.database.index.SqlIndexMethod;
@@ -36,8 +35,7 @@ import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
 
 import java.sql.Types;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  *
@@ -62,7 +60,8 @@ public class H2Dialect extends AbstractSqlDialect {
 		SqlFeature.RENAME_INDEX,
 		SqlFeature.ALTER_COLUMN,
 		SqlFeature.ADD_CONSTRAINT,
-		SqlFeature.DROP_CONSTRAINT
+		SqlFeature.DROP_CONSTRAINT,
+		SqlFeature.OFFSET_WITHOUT_LIMIT
 	);
 	
 	private static final Set<SqlIndexMethod> SUPPORTED_INDEX_METHODS = Set.of(
@@ -92,22 +91,22 @@ public class H2Dialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	protected @NonNull String getScalarTypeName(int jdbcType) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getScalarTypeName(int jdbcType) {
 		return switch (jdbcType) {
-			case Types.CLOB -> "CHARACTER LARGE OBJECT";
-			case Types.BLOB, Types.LONGVARBINARY -> "BINARY LARGE OBJECT";
+			case Types.CLOB -> Optional.of("CHARACTER LARGE OBJECT");
+			case Types.BLOB, Types.LONGVARBINARY -> Optional.of("BINARY LARGE OBJECT");
 			default -> super.getScalarTypeName(jdbcType);
 		};
 	}
 	
 	@Override
-	protected @NonNull String getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) throws SqlDialectUnsupportedRenderingException {
+	protected @NonNull Optional<String> getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) {
 		Objects.requireNonNull(parameter, "Sql parameter must not be null");
 		
 		if (parameter instanceof SqlLengthParameter length) {
 			return switch (jdbcType) {
-				case Types.VARCHAR -> "CHARACTER VARYING(" + length.length() + ")";
-				case Types.VARBINARY -> "BINARY VARYING(" + length.length() + ")";
+				case Types.VARCHAR -> Optional.of("CHARACTER VARYING(" + length.length() + ")");
+				case Types.VARBINARY -> Optional.of("BINARY VARYING(" + length.length() + ")");
 				default -> super.getParameterizedTypeName(jdbcType, parameter);
 			};
 		}

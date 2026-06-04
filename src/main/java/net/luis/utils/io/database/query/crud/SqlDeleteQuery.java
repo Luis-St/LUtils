@@ -22,8 +22,10 @@ import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.query.SqlJoinableQuery;
 import net.luis.utils.io.database.query.SqlQuery;
 import net.luis.utils.io.database.query.util.SqlJoinClause;
@@ -124,6 +126,9 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 	@Override
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		if (!this.config.joins().isEmpty() && !dialect.isFeatureSupported(SqlFeature.JOINED_DML)) {
+			throw new SqlDialectFeatureException(SqlFeature.JOINED_DML, dialect);
+		}
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.delete().from().literal(dialect.quoteIdentifier(this.config.table().name()));

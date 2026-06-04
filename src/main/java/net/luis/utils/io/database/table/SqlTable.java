@@ -299,11 +299,12 @@ public class SqlTable<E> {
 			throw new IllegalArgumentException("Sql column index must be greater than 0, but was " + index);
 		}
 		
-		Map<Integer, SqlColumn<E, ?>> indexes = Maps.newHashMap();
 		for (SqlColumn<E, ?> existing : this.columns.values()) {
-			indexes.put(existing.index(), existing);
+			if (existing.index() == index) {
+				return existing;
+			}
 		}
-		return indexes.get(index);
+		return null;
 	}
 	
 	public @NonNull Optional<SqlCompositePrimaryKey<E>> compositePrimaryKey() {

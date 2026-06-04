@@ -18,12 +18,14 @@
 
 package net.luis.utils.io.database.audit;
 
+import com.google.common.collect.Sets;
 import net.luis.utils.io.database.type.SqlType;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,6 +61,16 @@ public record SqlAuditConfig(
 		Objects.requireNonNull(userType, "Sql user type must not be null");
 		Objects.requireNonNull(valueSource, "Sql audit value source must not be null");
 		Objects.requireNonNull(clock, "Clock must not be null");
+
+		List<String> names = List.of(versionColumn, createdAtColumn, createdByColumn, updatedAtColumn, updatedByColumn);
+		for (String name : names) {
+			if (name.isBlank()) {
+				throw new IllegalArgumentException("Sql audit column names must not be blank");
+			}
+		}
+		if (Sets.newLinkedHashSet(names).size() != names.size()) {
+			throw new IllegalArgumentException("Sql audit column names must be distinct, but got: " + names);
+		}
 	}
 	
 	public static @NonNull SqlAuditConfigBuilder builder() {

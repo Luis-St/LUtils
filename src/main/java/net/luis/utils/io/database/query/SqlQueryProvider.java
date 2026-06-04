@@ -35,6 +35,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InaccessibleObjectException;
 import java.sql.ResultSet;
 import java.time.Duration;
 import java.util.*;
@@ -177,7 +178,11 @@ public class SqlQueryProvider<E> {
 				}
 				
 				if (matches) {
-					constructor.setAccessible(true);
+					try {
+						constructor.setAccessible(true);
+					} catch (InaccessibleObjectException e) {
+						throw new IllegalStateException("Cannot access matching constructor on " + type.getSimpleName() + ", if it lives in a named module, open its package to LUtils (e.g. 'opens your.package;' in module-info.java)", e);
+					}
 					return (Constructor<E>) constructor;
 				}
 			}

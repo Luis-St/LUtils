@@ -51,6 +51,27 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 		this.elementType = elementType;
 	}
 	
+	private static @Nullable Object toSourceValue(@NonNull SqlType<?> type, @Nullable Object value) throws SqlException {
+		Objects.requireNonNull(type, "Sql type must not be null");
+		if (type instanceof MappedSqlType<?, ?> mapped) {
+			return toSourceValue(mapped.sourceType(), ((MappedSqlType<Object, Object>) mapped).fromTargetToSource().apply(value));
+		}
+		return value;
+	}
+	
+	private static @Nullable Object fromSourceValue(@NonNull SqlType<?> type, @Nullable Object value) throws SqlException {
+		Objects.requireNonNull(type, "Sql type must not be null");
+		if (type instanceof MappedSqlType<?, ?> mapped) {
+			Object source = fromSourceValue(mapped.sourceType(), value);
+			if (source == null) {
+				return null;
+			}
+			
+			return ((MappedSqlType<Object, Object>) mapped).fromSourceToTarget().apply(source);
+		}
+		return value;
+	}
+	
 	public @NonNull SqlType<E> elementType() {
 		return this.elementType;
 	}
@@ -89,7 +110,7 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 				
 				E[] result = (E[]) Array.newInstance(this.elementType.javaType(), length);
 				for (int i = 0; i < length; i++) {
-					result[i] = this.elementType.javaType().cast(Array.get(arrayData, i));
+					result[i] = this.elementType.javaType().cast(fromSourceValue(this.elementType, Array.get(arrayData, i)));
 				}
 				return result;
 			} finally {
@@ -119,11 +140,17 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 				return;
 			}
 			
-			if (!dialect.isTypeSupported(this.elementType)) {
+			SqlType<?> baseType = this.elementType.baseType();
+			if (!dialect.isTypeSupported(baseType)) {
 				throw new SqlDialectUnsupportedRenderingException("Element type " + this.elementType + " is not supported by the current sql dialect " + dialect.name());
 			}
 			
-			java.sql.Array array = preparedStatement.getConnection().createArrayOf(dialect.getTypeName(this.elementType), value);
+			Object[] elements = new Object[value.length];
+			for (int i = 0; i < value.length; i++) {
+				elements[i] = toSourceValue(this.elementType, value[i]);
+			}
+			
+			java.sql.Array array = preparedStatement.getConnection().createArrayOf(dialect.getTypeName(baseType), elements);
 			preparedStatement.setArray(columnIndex, array);
 		} catch (SQLException e) {
 			throw new SqlStatementBindException("Failed to bind array value to prepared statement at column index " + columnIndex, e, columnIndex);

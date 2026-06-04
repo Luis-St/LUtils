@@ -59,6 +59,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		String description = this.dialect.quoteIdentifier("description");
 		String status = this.dialect.quoteIdentifier("status");
 		String appliedAt = this.dialect.quoteIdentifier("applied_at");
+		String checksum = this.dialect.quoteIdentifier("checksum");
 		
 		String varchar64 = this.dialect.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(64)));
 		String varchar256 = this.dialect.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(256)));
@@ -69,7 +70,8 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 			version + " " + varchar64 + " NOT NULL PRIMARY KEY, " +
 			description + " " + varchar256 + " NOT NULL, " +
 			status + " " + varchar32 + " NOT NULL, " +
-			appliedAt + " " + timestampType + " NULL" +
+			appliedAt + " " + timestampType + " NULL, " +
+			checksum + " " + varchar64 + " NULL" +
 			")";
 	}
 	
@@ -79,8 +81,9 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		String description = this.dialect.quoteIdentifier("description");
 		String status = this.dialect.quoteIdentifier("status");
 		String appliedAt = this.dialect.quoteIdentifier("applied_at");
+		String checksum = this.dialect.quoteIdentifier("checksum");
 		
-		return "SELECT " + version + ", " + description + ", " + status + ", " + appliedAt + " FROM " + table;
+		return "SELECT " + version + ", " + description + ", " + status + ", " + appliedAt + ", " + checksum + " FROM " + table;
 	}
 	
 	private @NonNull String buildSaveSql() {
@@ -89,8 +92,9 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		String description = this.dialect.quoteIdentifier("description");
 		String status = this.dialect.quoteIdentifier("status");
 		String appliedAt = this.dialect.quoteIdentifier("applied_at");
+		String checksum = this.dialect.quoteIdentifier("checksum");
 		
-		return "INSERT INTO " + table + " (" + version + ", " + description + ", " + status + ", " + appliedAt + ") VALUES (?, ?, ?, ?)";
+		return "INSERT INTO " + table + " (" + version + ", " + description + ", " + status + ", " + appliedAt + ", " + checksum + ") VALUES (?, ?, ?, ?, ?)";
 	}
 	
 	private @NonNull String buildUpdateSql() {
@@ -129,8 +133,9 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 				SqlMigrationStatus status = SqlMigrationStatus.valueOf(resultSet.getString("status"));
 				Timestamp timestamp = resultSet.getTimestamp("applied_at");
 				Instant appliedAt = timestamp != null ? timestamp.toInstant() : null;
+				String checksum = resultSet.getString("checksum");
 				
-				results.add(new SqlMigrationInfo(version, description, status, appliedAt));
+				results.add(new SqlMigrationInfo(version, description, status, appliedAt, checksum));
 			}
 			results.sort(Comparator.comparing(SqlMigrationInfo::version));
 			return List.copyOf(results);
@@ -160,6 +165,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 			statement.setString(2, info.description());
 			statement.setString(3, info.status().name());
 			statement.setTimestamp(4, info.appliedAt() != null ? Timestamp.from(info.appliedAt()) : null);
+			statement.setString(5, info.checksum());
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new SqlMigrationExecutionException("Failed to save migration info for version " + info.version(), e);
