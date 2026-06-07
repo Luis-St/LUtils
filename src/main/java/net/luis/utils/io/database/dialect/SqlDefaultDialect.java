@@ -18,22 +18,40 @@
 
 package net.luis.utils.io.database.dialect;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
+import java.util.Set;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public final class SqlDialects {
+public class SqlDefaultDialect extends AbstractSqlDialect {
 	
-	public static final SqlDialect DEFAULT = new SqlDefaultDialect();
-	public static final SqlDialect H2 = new H2Dialect();
-	public static final SqlDialect MARIA_DB = new MariaDbDialect();
-	public static final SqlDialect MYSQL = new MySqlDialect();
-	public static final SqlDialect POSTGRESQL = new PostgresSqlDialect();
-	public static final SqlDialect SQLITE = new SqliteDialect();
-	public static final SqlDialect SQL_SERVER = new SqlServerDialect();
+	private static final Set<SqlFeature> SUPPORTED_FEATURES = Set.of(
+		SqlFeature.CTE,
+		SqlFeature.RECURSIVE_CTE,
+		SqlFeature.ALTER_COLUMN,
+		SqlFeature.ADD_CONSTRAINT
+	);
 	
-	private SqlDialects() {}
+	@Override
+	public @NonNull String name() {
+		return "Default";
+	}
 	
+	@Override
+	public boolean isFeatureSupported(@NonNull SqlFeature feature) {
+		Objects.requireNonNull(feature, "Sql feature must not be null");
+		return SUPPORTED_FEATURES.contains(feature);
+	}
+	
+	@Override
+	protected @Nullable String getCheckConstraintsQueryString() {
+		return null;
+	}
 }
