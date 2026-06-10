@@ -61,6 +61,10 @@ public class SqlTransactionManager {
 		this.connectionAcquisitionTimeout = Objects.requireNonNull(connectionAcquisitionTimeout, "Connection acquisition timeout must not be null");
 	}
 	
+	private static @NonNull ExecutorService acquireExecutor() {
+		return AcquireExecutorHolder.INSTANCE;
+	}
+	
 	public @NonNull SqlTransaction begin(boolean readOnly, @NonNull SqlIsolationLevel isolationLevel, @NonNull SqlPropagation propagation) throws SqlException {
 		SqlTransaction current = CURRENT_TRANSACTION.get();
 		
@@ -83,10 +87,6 @@ public class SqlTransactionManager {
 		});
 		CURRENT_TRANSACTION.set(tx);
 		return tx;
-	}
-	
-	private static @NonNull ExecutorService acquireExecutor() {
-		return AcquireExecutorHolder.INSTANCE;
 	}
 	
 	private @NonNull SqlTransaction resolveRequired(@Nullable SqlTransaction current, boolean readOnly, @NonNull SqlIsolationLevel isolationLevel) throws SqlException {

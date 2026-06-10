@@ -46,7 +46,7 @@ public record SqlCaseWhenFunction<T>(
 		if (branches.isEmpty()) {
 			throw new IllegalArgumentException("Sql branches list must not be empty");
 		}
-		if (branches.contains(null)) {
+		if (branches.stream().anyMatch(Objects::isNull)) {
 			throw new IllegalArgumentException("Sql branches list must not contain null sql case when branches");
 		}
 		

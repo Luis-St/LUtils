@@ -41,7 +41,7 @@ public record SqlGreatestFunction<T>(@NonNull @Unmodifiable List<SqlExpression<T
 		if (expressions.isEmpty()) {
 			throw new IllegalArgumentException("Sql expression list must not be empty");
 		}
-		if (expressions.contains(null)) {
+		if (expressions.stream().anyMatch(Objects::isNull)) {
 			throw new IllegalArgumentException("Sql expression list must not contain null sql expressions");
 		}
 		

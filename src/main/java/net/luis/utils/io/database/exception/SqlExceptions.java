@@ -19,9 +19,10 @@
 package net.luis.utils.io.database.exception;
 
 import net.luis.utils.io.database.exception.database.*;
-import net.luis.utils.io.database.exception.database.concurrency.*;
+import net.luis.utils.io.database.exception.database.concurrency.SqlDeadlockException;
+import net.luis.utils.io.database.exception.database.concurrency.SqlTimeoutException;
 import net.luis.utils.io.database.exception.database.constraint.*;
-import net.luis.utils.io.database.exception.database.statement.*;
+import net.luis.utils.io.database.exception.database.statement.SqlSyntaxException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

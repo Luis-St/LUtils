@@ -46,7 +46,7 @@ public record SqlConcatFunction<T extends CharSequence>(
 		if (expressions.isEmpty()) {
 			throw new IllegalArgumentException("Sql expression list must not be empty");
 		}
-		if (expressions.contains(null)) {
+		if (expressions.stream().anyMatch(Objects::isNull)) {
 			throw new IllegalArgumentException("Sql expression list must not contain null sql expressions");
 		}
 		if (separator.isPresent() && separator.get().isEmpty()) {

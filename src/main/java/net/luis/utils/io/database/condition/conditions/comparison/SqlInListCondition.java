@@ -44,7 +44,7 @@ public record SqlInListCondition(
 		if (options.isEmpty()) {
 			throw new IllegalArgumentException("Sql options list must not be empty");
 		}
-		if (options.contains(null)) {
+		if (options.stream().anyMatch(Objects::isNull)) {
 			throw new IllegalArgumentException("Sql options list must not contain null values");
 		}
 		options = List.copyOf(options);

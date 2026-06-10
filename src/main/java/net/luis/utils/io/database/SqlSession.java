@@ -134,7 +134,7 @@ public class SqlSession implements SqlProvider, AutoCloseable {
 	}
 	
 	@SuppressWarnings("ReturnOfNull")
-	private static  <E, V> @NonNull SqlColumn<E, V> auditColumn(@NonNull SqlTable<E> table, @NonNull String name, @NonNull SqlType<V> type) {
+	private static <E, V> @NonNull SqlColumn<E, V> auditColumn(@NonNull SqlTable<E> table, @NonNull String name, @NonNull SqlType<V> type) {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(name, "Audit column name must not be null");
 		Objects.requireNonNull(type, "Audit column type must not be null");

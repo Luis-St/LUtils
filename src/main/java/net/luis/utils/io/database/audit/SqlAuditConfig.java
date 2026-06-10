@@ -25,7 +25,6 @@ import org.jspecify.annotations.NonNull;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -61,7 +60,7 @@ public record SqlAuditConfig(
 		Objects.requireNonNull(userType, "Sql user type must not be null");
 		Objects.requireNonNull(valueSource, "Sql audit value source must not be null");
 		Objects.requireNonNull(clock, "Clock must not be null");
-
+		
 		List<String> names = List.of(versionColumn, createdAtColumn, createdByColumn, updatedAtColumn, updatedByColumn);
 		for (String name : names) {
 			if (name.isBlank()) {

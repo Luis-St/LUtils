@@ -24,6 +24,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -38,6 +39,19 @@ public record SqlIndex(
 	@Nullable SqlCondition whereCondition,
 	@NonNull SqlIndexMethod method
 ) {
+	
+	public SqlIndex {
+		Objects.requireNonNull(name, "Sql index name must not be null");
+		Objects.requireNonNull(columns, "Sql index columns must not be null");
+		Objects.requireNonNull(method, "Sql index method must not be null");
+		
+		if (name.isBlank()) {
+			throw new IllegalArgumentException("Sql index name must not be blank");
+		}
+		if (columns.isEmpty()) {
+			throw new IllegalArgumentException("Sql index columns must not be empty");
+		}
+	}
 	
 	public SqlIndex(@NonNull String name, @NonNull List<SqlColumn<?, ?>> columns, boolean unique, @NonNull SqlIndexMethod method) {
 		this(name, columns, unique, null, method);

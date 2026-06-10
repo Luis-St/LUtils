@@ -32,7 +32,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -66,6 +65,34 @@ public class SqlTable<E> {
 			throw new IllegalArgumentException("Sql schema name must not be blank");
 		}
 	}
+	
+	//region Table factory methods
+	
+	public static <T> @NonNull SqlTable<T> create(@NonNull Class<T> type, @NonNull String name) {
+		return create(type, name, "public");
+	}
+	
+	public static <T> @NonNull SqlTable<T> create(@NonNull Class<T> type, @NonNull String name, @NonNull String schema) {
+		return new SqlTable<>(type, name, schema, null);
+	}
+	
+	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name) {
+		return audited(type, name, "public", SqlAuditConfig.DEFAULT);
+	}
+	
+	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull String schema) {
+		return audited(type, name, schema, SqlAuditConfig.DEFAULT);
+	}
+	
+	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull SqlAuditConfig config) {
+		return audited(type, name, "public", config);
+	}
+	
+	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull String schema, @NonNull SqlAuditConfig config) {
+		Objects.requireNonNull(config, "Sql audit config must not be null");
+		return new SqlTable<>(type, name, schema, config);
+	}
+	//endregion
 	
 	//region Helper methods
 	
@@ -115,34 +142,6 @@ public class SqlTable<E> {
 	}
 	//endregion
 	
-	//region Table factory methods
-	
-	public static <T> @NonNull SqlTable<T> create(@NonNull Class<T> type, @NonNull String name) {
-		return create(type, name, "public");
-	}
-	
-	public static <T> @NonNull SqlTable<T> create(@NonNull Class<T> type, @NonNull String name, @NonNull String schema) {
-		return new SqlTable<>(type, name, schema, null);
-	}
-	
-	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name) {
-		return audited(type, name, "public", SqlAuditConfig.DEFAULT);
-	}
-	
-	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull String schema) {
-		return audited(type, name, schema, SqlAuditConfig.DEFAULT);
-	}
-	
-	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull SqlAuditConfig config) {
-		return audited(type, name, "public", config);
-	}
-	
-	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull String schema, @NonNull SqlAuditConfig config) {
-		Objects.requireNonNull(config, "Sql audit config must not be null");
-		return new SqlTable<>(type, name, schema, config);
-	}
-	//endregion
-	
 	//region Column factory methods
 	
 	public <C> @NonNull SqlColumn<E, C> column(@NonNull String name, @NonNull SqlType<C> type, @NonNull Function<E, C> getter) {
@@ -163,23 +162,6 @@ public class SqlTable<E> {
 		}
 		if (this.auditConfig != null && this.auditConfig.columnNames().contains(column.name())) {
 			throw new IllegalStateException("Sql column name '" + column.name() + "' in table '" + this.name + "' collides with a reserved audit column name");
-		}
-		
-		SqlColumn<E, ?> previous = this.columnForIndex(column.index());
-		if (previous != null) {
-			throw new IllegalStateException("Multiple columns (" + column.name() + " and " + previous.name() + ") in table '" + this.name + "' share the same index " + column.index());
-		}
-		
-		if (this.compositePrimaryKey.isEmpty()) {
-			List<SqlColumn<E, ?>> primaryKeyColumns = Lists.newArrayList(this.columns.values().stream().filter(SqlColumn::primaryKey).toList());
-			if (column.primaryKey()) {
-				primaryKeyColumns.add(column);
-			}
-			
-			if (primaryKeyColumns.size() > 1) {
-				String columnNames = primaryKeyColumns.stream().map(SqlColumn::name).collect(Collectors.joining("', '", "'", "'"));
-				throw new IllegalStateException("Multiple columns (" + columnNames + ") in table '" + this.name + "' are marked as primary keys but no composite primary key is defined");
-			}
 		}
 		
 		this.columns.put(column.name(), column);
@@ -291,6 +273,7 @@ public class SqlTable<E> {
 	}
 	
 	public @Nullable SqlColumn<E, ?> columnForName(@NonNull String name) {
+		Objects.requireNonNull(name, "Sql column name must not be null");
 		return this.columns.get(name);
 	}
 	
@@ -358,14 +341,13 @@ public class SqlTable<E> {
 		if (!this.uniqueConstraints.equals(sqlTable.uniqueConstraints)) return false;
 		if (!this.checkConstraints.equals(sqlTable.checkConstraints)) return false;
 		if (!this.columns.equals(sqlTable.columns)) return false;
-		if (this.columnCounter.get() != sqlTable.columnCounter.get()) return false;
 		if (!Objects.equals(this.auditConfig, sqlTable.auditConfig)) return false;
 		return Objects.equals(this.compositePrimaryKey, sqlTable.compositePrimaryKey);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.type, this.name, this.schema, this.foreignKeys, this.uniqueConstraints, this.checkConstraints, this.columns, this.columnCounter.get(), this.auditConfig);
+		return Objects.hash(this.type, this.name, this.schema, this.foreignKeys, this.uniqueConstraints, this.checkConstraints, this.columns, this.auditConfig);
 	}
 	
 	@Override

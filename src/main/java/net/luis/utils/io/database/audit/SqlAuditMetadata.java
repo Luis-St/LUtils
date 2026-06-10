@@ -69,7 +69,7 @@ public record SqlAuditMetadata(
 		String createdBy = SqlType.getValue(config.userType(), dialect, resultSet, startIndex + 2);
 		LocalDateTime updatedAt = SqlType.getValue(config.timestampType(), dialect, resultSet, startIndex + 3);
 		String updatedBy = SqlType.getValue(config.userType(), dialect, resultSet, startIndex + 4);
-		return SqlAuditMetadata.of(version == null ? -1L : version, createdAt, createdBy, updatedAt, updatedBy);
+		return of(version == null ? -1L : version, createdAt, createdBy, updatedAt, updatedBy);
 	}
 	
 	public @NonNull SqlAuditMetadata bumped(@Nullable LocalDateTime updatedAt, @Nullable String updatedBy) {

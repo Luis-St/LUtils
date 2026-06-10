@@ -47,7 +47,7 @@ public record SqlUnsafeFunction<T>(
 		if (expression.isBlank()) {
 			throw new IllegalArgumentException("Sql expression string must not be blank");
 		}
-		if (arguments.contains(null)) {
+		if (!arguments.isEmpty() && arguments.stream().anyMatch(Objects::isNull)) {
 			throw new IllegalArgumentException("Sql function arguments must not contain null sql expressions");
 		}
 		arguments = List.copyOf(arguments);

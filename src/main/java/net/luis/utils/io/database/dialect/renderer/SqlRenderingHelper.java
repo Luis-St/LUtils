@@ -78,6 +78,7 @@ public final class SqlRenderingHelper {
 	}
 	
 	public static <T> void renderList(@NonNull SqlRenderer renderer, @NonNull List<T> values, @NonNull ThrowableBiConsumer<SqlRenderer, T, SqlException> itemRenderer) throws SqlException {
+		Objects.requireNonNull(renderer, "Sql renderer must not be null");
 		Objects.requireNonNull(values, "Values list must not be null");
 		Objects.requireNonNull(itemRenderer, "Item renderer function must not be null");
 		

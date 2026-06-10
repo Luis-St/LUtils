@@ -51,6 +51,20 @@ class SqlMigrationRenderer {
 		this.migrationRenderer = dialect.migrationRenderer();
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static @NonNull SqlColumn<?, ?> applyAlteration(@NonNull SqlColumn<?, ?> column, @NonNull SqlColumnAlteration alteration) {
+		SqlType<?> type = column.type();
+		boolean nullable = column.nullable();
+		Optional<?> defaultValue = column.defaultValue();
+		switch (alteration) {
+			case SqlSetTypeAlteration setType -> type = setType.type();
+			case SqlSetNullableAlteration setNullable -> nullable = setNullable.nullable();
+			case SqlSetDefaultAlteration setDefault -> defaultValue = Optional.of(setDefault.value());
+			case SqlDropDefaultAlteration _ -> defaultValue = Optional.empty();
+		}
+		return new SqlColumn(column.owningTable(), column.name(), column.index(), type, column.getter(), nullable, defaultValue, column.autoIncrement(), column.unique(), column.primaryKey(), column.foreignKey(), column.checks());
+	}
+	
 	@NonNull List<SqlRendered> render(@NonNull List<SqlMigrationOperation> operations) throws SqlException {
 		List<SqlRendered> results = Lists.newArrayList();
 		for (SqlMigrationOperation operation : operations) {
@@ -126,20 +140,6 @@ class SqlMigrationRenderer {
 			newColumns.add(existing.name().equals(column.name()) ? altered : existing);
 		}
 		return this.dialect.tableRenderer().renderTableRebuild(table, newColumns, List.of());
-	}
-	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static @NonNull SqlColumn<?, ?> applyAlteration(@NonNull SqlColumn<?, ?> column, @NonNull SqlColumnAlteration alteration) {
-		SqlType<?> type = column.type();
-		boolean nullable = column.nullable();
-		Optional<?> defaultValue = column.defaultValue();
-		switch (alteration) {
-			case SqlSetTypeAlteration setType -> type = setType.type();
-			case SqlSetNullableAlteration setNullable -> nullable = setNullable.nullable();
-			case SqlSetDefaultAlteration setDefault -> defaultValue = Optional.of(setDefault.value());
-			case SqlDropDefaultAlteration _ -> defaultValue = Optional.empty();
-		}
-		return new SqlColumn(column.owningTable(), column.name(), column.index(), type, column.getter(), nullable, defaultValue, column.autoIncrement(), column.unique(), column.primaryKey(), column.foreignKey(), column.checks());
 	}
 	
 	private boolean isRebuiltConstraint(@NonNull SqlMigrationOperation operation) {

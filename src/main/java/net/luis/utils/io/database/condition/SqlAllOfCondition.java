@@ -41,7 +41,7 @@ public record SqlAllOfCondition(@NonNull @Unmodifiable List<SqlCondition> condit
 		if (conditions.size() == 1) {
 			throw new IllegalArgumentException("Sql conditions list must contain at least 2 conditions");
 		}
-		if (conditions.contains(null)) {
+		if (conditions.stream().anyMatch(Objects::isNull)) {
 			throw new IllegalArgumentException("Sql conditions list must not contain null conditions");
 		}
 		conditions = List.copyOf(conditions);

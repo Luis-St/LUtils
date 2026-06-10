@@ -37,7 +37,7 @@ public record SqlCompositePrimaryKey<E>(
 	public SqlCompositePrimaryKey {
 		Objects.requireNonNull(columns, "Sql referenced columns must not be null");
 		
-		if (columns.size() > 1) {
+		if (columns.size() < 2) {
 			throw new IllegalArgumentException("Sql referenced columns must contain at least 2 columns");
 		}
 		
