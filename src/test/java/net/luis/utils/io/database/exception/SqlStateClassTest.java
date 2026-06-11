@@ -30,40 +30,66 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class SqlStateClassTest {
-
+	
 	@Test
-	void fromStateWithKnownPrefixes() {
+	void fromStateWithNullReturnsEmpty() {
+		assertTrue(SqlStateClass.fromState(null).isEmpty());
+	}
+	
+	@Test
+	void fromStateWithTooShortStringReturnsEmpty() {
+		assertTrue(SqlStateClass.fromState("0").isEmpty());
+	}
+	
+	@Test
+	void fromStateWithEmptyStringReturnsEmpty() {
+		assertTrue(SqlStateClass.fromState("").isEmpty());
+	}
+	
+	@Test
+	void fromStateMatchesKnownClass() {
 		assertEquals(Optional.of(SqlStateClass.CONNECTION), SqlStateClass.fromState("08006"));
-		assertEquals(Optional.of(SqlStateClass.DATA), SqlStateClass.fromState("22003"));
-		assertEquals(Optional.of(SqlStateClass.INTEGRITY_CONSTRAINT), SqlStateClass.fromState("23505"));
-		assertEquals(Optional.of(SqlStateClass.AUTHORIZATION), SqlStateClass.fromState("28000"));
-		assertEquals(Optional.of(SqlStateClass.TRANSACTION_ROLLBACK), SqlStateClass.fromState("40001"));
-		assertEquals(Optional.of(SqlStateClass.SYNTAX_OR_ACCESS), SqlStateClass.fromState("42601"));
 	}
-
+	
 	@Test
-	void fromStateUsesOnlyLeadingTwoCharacters() {
-		assertEquals(Optional.of(SqlStateClass.INTEGRITY_CONSTRAINT), SqlStateClass.fromState("23"));
-		assertEquals(Optional.of(SqlStateClass.SYNTAX_OR_ACCESS), SqlStateClass.fromState("42P01"));
+	void fromStateWithUnknownPrefixReturnsEmpty() {
+		assertTrue(SqlStateClass.fromState("99999").isEmpty());
 	}
-
+	
 	@Test
-	void fromStateIsCaseInsensitive() {
+	void fromStateMatchesCaseInsensitively() {
 		assertEquals(Optional.of(SqlStateClass.FEATURE_NOT_SUPPORTED), SqlStateClass.fromState("0a000"));
+		assertEquals(Optional.of(SqlStateClass.SAVEPOINT), SqlStateClass.fromState("3b001"));
 	}
-
+	
 	@Test
-	void fromStateWithNullOrMalformed() {
-		assertEquals(Optional.empty(), SqlStateClass.fromState(null));
-		assertEquals(Optional.empty(), SqlStateClass.fromState(""));
-		assertEquals(Optional.empty(), SqlStateClass.fromState("0"));
-		assertEquals(Optional.empty(), SqlStateClass.fromState("99999"));
+	void fromStateExactlyTwoCharacters() {
+		assertEquals(Optional.of(SqlStateClass.INTEGRITY_CONSTRAINT), SqlStateClass.fromState("23"));
 	}
-
+	
 	@Test
-	void getCode() {
-		assertEquals("08", SqlStateClass.CONNECTION.getCode());
+	void fromStateIgnoresSubclassCharacters() {
+		assertEquals(Optional.of(SqlStateClass.SYNTAX_OR_ACCESS), SqlStateClass.fromState("42XYZ"));
+	}
+	
+	@Test
+	void getCodeReturnsTwoCharacterCode() {
 		assertEquals("23", SqlStateClass.INTEGRITY_CONSTRAINT.getCode());
-		assertEquals("42", SqlStateClass.SYNTAX_OR_ACCESS.getCode());
+		assertEquals("58", SqlStateClass.SYSTEM_ERROR.getCode());
+		assertEquals("0A", SqlStateClass.FEATURE_NOT_SUPPORTED.getCode());
+	}
+	
+	@Test
+	void fromStateResolvesEveryConstant() {
+		for (SqlStateClass value : SqlStateClass.values()) {
+			assertEquals(Optional.of(value), SqlStateClass.fromState(value.getCode()));
+		}
+	}
+	
+	@Test
+	void everyCodeIsTwoCharacters() {
+		for (SqlStateClass value : SqlStateClass.values()) {
+			assertEquals(2, value.getCode().length());
+		}
 	}
 }

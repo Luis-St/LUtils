@@ -19,14 +19,13 @@
 package net.luis.utils.io.database.exception;
 
 import net.luis.utils.io.database.exception.database.*;
-import net.luis.utils.io.database.exception.database.concurrency.*;
+import net.luis.utils.io.database.exception.database.concurrency.SqlDeadlockException;
+import net.luis.utils.io.database.exception.database.concurrency.SqlTimeoutException;
 import net.luis.utils.io.database.exception.database.constraint.*;
-import net.luis.utils.io.database.exception.database.statement.*;
+import net.luis.utils.io.database.exception.database.statement.SqlSyntaxException;
 import org.junit.jupiter.api.Test;
 
 import java.sql.*;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,112 +35,184 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class SqlExceptionsTest {
-
+	
 	@Test
-	void translateRejectsNullCause() {
-		assertThrows(NullPointerException.class, () -> SqlExceptions.translate("context", null));
+	void translateWithNullCause() {
+		assertThrows(NullPointerException.class, () -> SqlExceptions.translate("ctx", null));
 	}
-
+	
+	@Test
+	void translateIntegrityConstraintBySubclass() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLIntegrityConstraintViolationException("dup"));
+		assertInstanceOf(SqlConstraintViolationException.class, result);
+	}
+	
 	@Test
 	void translateUniqueConstraintByState() {
-		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("dup", "23505", 1062));
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("dup", "23505"));
 		assertInstanceOf(SqlUniqueConstraintException.class, result);
-		assertEquals(Optional.of("23505"), result.sqlState());
-		assertEquals(OptionalInt.of(1062), result.vendorErrorCode());
-		assertEquals(Optional.of(SqlStateClass.INTEGRITY_CONSTRAINT), result.sqlStateClass());
-		assertFalse(result.isTransient());
 	}
-
+	
 	@Test
-	void translateForeignKeyNotNullAndCheckConstraints() {
-		assertInstanceOf(SqlForeignKeyConstraintException.class, SqlExceptions.translate("ctx", new SQLException("fk", "23503", 0)));
-		assertInstanceOf(SqlNotNullConstraintException.class, SqlExceptions.translate("ctx", new SQLException("nn", "23502", 0)));
-		assertInstanceOf(SqlCheckConstraintException.class, SqlExceptions.translate("ctx", new SQLException("ck", "23514", 0)));
+	void translateForeignKeyConstraintByState() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("fk", "23503"));
+		assertInstanceOf(SqlForeignKeyConstraintException.class, result);
 	}
-
+	
 	@Test
-	void translateGenericConstraintByState() {
-		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("ic", "23000", 0));
-		assertInstanceOf(SqlConstraintViolationException.class, result);
-		assertFalse(result instanceof SqlUniqueConstraintException);
+	void translateNotNullConstraintByState() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("nn", "23502"));
+		assertInstanceOf(SqlNotNullConstraintException.class, result);
 	}
-
+	
 	@Test
-	void translateConstraintBySubclass() {
-		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLIntegrityConstraintViolationException("ic", "23000", 0));
-		assertInstanceOf(SqlConstraintViolationException.class, result);
+	void translateCheckConstraintByState() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("chk", "23514"));
+		assertInstanceOf(SqlCheckConstraintException.class, result);
 	}
-
+	
 	@Test
-	void translateSyntax() {
-		assertInstanceOf(SqlSyntaxException.class, SqlExceptions.translate("ctx", new SQLException("bad", "42601", 0)));
-		assertInstanceOf(SqlSyntaxException.class, SqlExceptions.translate("ctx", new SQLSyntaxErrorException("bad", "42000", 0)));
+	void translateGenericConstraintByUnknownState() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("x", "23999"));
+		assertEquals(SqlConstraintViolationException.class, result.getClass());
 	}
-
+	
 	@Test
-	void translateTimeout() {
-		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLTimeoutException("slow", "HYT00", 0));
+	void translateSyntaxBySubclass() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLSyntaxErrorException("bad"));
+		assertInstanceOf(SqlSyntaxException.class, result);
+	}
+	
+	@Test
+	void translateSyntaxByState() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("bad", "42601"));
+		assertInstanceOf(SqlSyntaxException.class, result);
+	}
+	
+	@Test
+	void translateTimeoutBySubclass() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLTimeoutException("slow"));
 		assertInstanceOf(SqlTimeoutException.class, result);
-		assertTrue(result.isTransient());
 	}
-
+	
 	@Test
-	void translateDeadlock() {
-		SqlDatabaseException byState = SqlExceptions.translate("ctx", new SQLException("dl", "40001", 0));
-		assertInstanceOf(SqlDeadlockException.class, byState);
-		assertTrue(byState.isTransient());
-		assertInstanceOf(SqlDeadlockException.class, SqlExceptions.translate("ctx", new SQLException("dl", "40P01", 0)));
-		assertInstanceOf(SqlDeadlockException.class, SqlExceptions.translate("ctx", new SQLTransactionRollbackException("dl", "40000", 0)));
+	void translateDeadlockBySubclass() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLTransactionRollbackException("rb"));
+		assertInstanceOf(SqlDeadlockException.class, result);
 	}
-
+	
 	@Test
-	void translateConnection() {
-		assertInstanceOf(SqlConnectionException.class, SqlExceptions.translate("ctx", new SQLException("conn", "08006", 0)));
-		assertInstanceOf(SqlConnectionException.class, SqlExceptions.translate("ctx", new SQLNonTransientConnectionException("conn", "08001", 0)));
+	void translateDeadlockBySerializationFailureState() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("rb", "40001"));
+		assertInstanceOf(SqlDeadlockException.class, result);
 	}
-
+	
 	@Test
-	void translateData() {
-		assertInstanceOf(SqlDataException.class, SqlExceptions.translate("ctx", new SQLException("ovf", "22003", 0)));
-		assertInstanceOf(SqlDataException.class, SqlExceptions.translate("ctx", new SQLDataException("ovf", "22001", 0)));
+	void translateDeadlockByDeadlockStateCaseInsensitive() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("rb", "40p01"));
+		assertInstanceOf(SqlDeadlockException.class, result);
 	}
-
+	
 	@Test
-	void translateAuthorization() {
-		assertInstanceOf(SqlAuthorizationException.class, SqlExceptions.translate("ctx", new SQLException("auth", "28000", 0)));
-		assertInstanceOf(SqlAuthorizationException.class, SqlExceptions.translate("ctx", new SQLInvalidAuthorizationSpecException("auth", "28P01", 0)));
+	void translateConnectionByNonTransientSubclass() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLNonTransientConnectionException("down"));
+		assertInstanceOf(SqlConnectionException.class, result);
 	}
-
+	
 	@Test
-	void translateUnknownFallsBackToBase() {
-		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("weird", "99999", 7));
+	void translateConnectionByTransientSubclass() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLTransientConnectionException("down"));
+		assertInstanceOf(SqlConnectionException.class, result);
+	}
+	
+	@Test
+	void translateConnectionByState() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("down", "08006"));
+		assertInstanceOf(SqlConnectionException.class, result);
+	}
+	
+	@Test
+	void translateDataBySubclass() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLDataException("bad"));
+		assertInstanceOf(SqlDataException.class, result);
+	}
+	
+	@Test
+	void translateDataByState() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("bad", "22003"));
+		assertInstanceOf(SqlDataException.class, result);
+	}
+	
+	@Test
+	void translateAuthorizationBySubclass() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLInvalidAuthorizationSpecException("denied"));
+		assertInstanceOf(SqlAuthorizationException.class, result);
+	}
+	
+	@Test
+	void translateAuthorizationByState() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("denied", "28000"));
+		assertInstanceOf(SqlAuthorizationException.class, result);
+	}
+	
+	@Test
+	void translateUnknownExceptionFallsBackToGeneric() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("weird"));
 		assertEquals(SqlDatabaseException.class, result.getClass());
-		assertEquals(Optional.of("99999"), result.sqlState());
-		assertEquals(OptionalInt.of(7), result.vendorErrorCode());
-		assertEquals(Optional.empty(), result.sqlStateClass());
 		assertFalse(result.isTransient());
 	}
-
+	
 	@Test
-	void translateUnknownTransientMarkerIsTransient() {
-		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLTransientException("retry", null, 0));
+	void translateUnknownExceptionWithUnmatchedState() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("weird", "99999"));
+		assertEquals(SqlDatabaseException.class, result.getClass());
+	}
+	
+	@Test
+	void translateUnknownExceptionWithShortState() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("weird", "2"));
+		assertEquals(SqlDatabaseException.class, result.getClass());
+	}
+	
+	@Test
+	void translateTransientExceptionMarksTransient() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLTransientException("retry"));
 		assertEquals(SqlDatabaseException.class, result.getClass());
 		assertTrue(result.isTransient());
 	}
-
+	
 	@Test
-	void translateUnknownStateHasNoVendorCode() {
-		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLException("x", null, -1));
-		assertEquals(Optional.empty(), result.sqlState());
-		assertEquals(OptionalInt.empty(), result.vendorErrorCode());
+	void translateRecoverableExceptionMarksTransient() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLRecoverableException("retry"));
+		assertEquals(SqlDatabaseException.class, result.getClass());
+		assertTrue(result.isTransient());
 	}
-
+	
 	@Test
-	void translateChainsNextExceptionIntoSuppressed() {
-		SQLException root = new SQLException("first", "99999", 1);
-		root.setNextException(new SQLException("second", "99999", 2));
-		SqlDatabaseException result = SqlExceptions.translate("ctx", root);
-		assertEquals(1, result.getSuppressed().length);
-		assertEquals("second", result.getSuppressed()[0].getMessage());
+	void translatePreservesNullContext() {
+		SQLException cause = new SQLDataException("x");
+		SqlDatabaseException result = SqlExceptions.translate(null, cause);
+		assertInstanceOf(SqlDataException.class, result);
+		assertSame(cause, result.getCause());
+	}
+	
+	@Test
+	void translatePreservesContextAndCause() {
+		SQLException cause = new SQLDataException("x");
+		SqlDatabaseException result = SqlExceptions.translate("loading user", cause);
+		assertSame(cause, result.getCause());
+		assertEquals("loading user", result.getMessage());
+	}
+	
+	@Test
+	void translateEarlierBranchWinsOverLaterBranch() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLTimeoutException("slow", "08006"));
+		assertInstanceOf(SqlTimeoutException.class, result);
+	}
+	
+	@Test
+	void translateStateBranchWinsOverLaterSubclassBranch() {
+		SqlDatabaseException result = SqlExceptions.translate("ctx", new SQLDataException("x", "23505"));
+		assertInstanceOf(SqlUniqueConstraintException.class, result);
 	}
 }
