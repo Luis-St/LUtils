@@ -145,32 +145,32 @@ public class DatabaseTest {
 			
 			// Two-column typed select returning SqlRow2
 			List<SqlRow2<Integer, String>> rows = persons.select(ID, NAME)
-				.where(Sql.startsWith(NAME, Sql.of("A")))
+				.where(Sql.startsWith(NAME, "A"))
 				.fetch();
 			
 			// Conditions - static combinators or instance chaining
 			persons.select()
-				.where(SqlCondition.allOf(Sql.greaterThan(ID, Sql.of(5)), Sql.isNull(NAME).not()))
+				.where(SqlCondition.allOf(Sql.greaterThan(ID, 5), Sql.isNull(NAME).not()))
 				.orderBy(NAME.ascending())
 				.limit(10)
 				.fetch();
 			
 			// Fetch variants
-			persons.select().where(Sql.equalTo(ID, Sql.of(5))).fetchOne();
-			persons.select().where(Sql.equalTo(ID, Sql.of(999))).fetchFirst();
-			persons.select().where(Sql.equalTo(ID, Sql.of(1))).fetchOneOrNull();
+			persons.select().where(Sql.equalTo(ID, 5)).fetchOne();
+			persons.select().where(Sql.equalTo(ID, 999)).fetchFirst();
+			persons.select().where(Sql.equalTo(ID, 1)).fetchOneOrNull();
 			
 			// Count and exists
 			long count = persons.select().count();
-			boolean exists = persons.select().where(Sql.equalTo(NAME, Sql.of("Alice"))).exists();
+			boolean exists = persons.select().where(Sql.equalTo(NAME, "Alice")).exists();
 			
 			// Pagination
 			persons.select().orderBy(ID.ascending()).fetchPage(0, 20);
 			
 			// Type-specific column operations
-			persons.select().where(Sql.contains(NAME, Sql.of("li"))).fetch();
-			persons.select().where(Sql.between(ID, Sql.of(1), Sql.of(100))).fetch();
-			persons.select().where(Sql.withinLast(CREATED_AT, Sql.of(Duration.ofHours(24)))).fetch();
+			persons.select().where(Sql.contains(NAME, "li")).fetch();
+			persons.select().where(Sql.between(ID, 1, 100)).fetch();
+			persons.select().where(Sql.withinLast(CREATED_AT, Duration.ofHours(24))).fetch();
 		}
 	}
 	
@@ -181,7 +181,7 @@ public class DatabaseTest {
 				persons.insert(new Person(10, "Dave", "dave@example.com", 0, Instant.now())).execute();
 				persons.update()
 					.set(NAME, "David")
-					.where(Sql.equalTo(ID, Sql.of(10)))
+					.where(Sql.equalTo(ID, 10))
 					.execute();
 				tx.commit();
 			}
@@ -195,30 +195,30 @@ public class DatabaseTest {
 			// Update with SET
 			int updated = persons.update()
 				.set(NAME, "Alice Updated")
-				.where(Sql.equalTo(ID, Sql.of(1)))
+				.where(Sql.equalTo(ID, 1))
 				.execute();
 			
 			// Increment numeric column
 			persons.update()
 				.increment(ID, 1)
-				.where(Sql.equalTo(NAME, Sql.of("Bob")))
+				.where(Sql.equalTo(NAME, "Bob"))
 				.execute();
 			
 			// Decrement numeric column
 			persons.update()
 				.increment(ID, 1)
-				.where(Sql.equalTo(NAME, Sql.of("Alice")))
+				.where(Sql.equalTo(NAME, "Alice"))
 				.execute();
 			
 			// Update with RETURNING
 			List<Person> updatedPersons = persons.update()
 				.set(EMAIL, "new@example.com")
-				.where(Sql.equalTo(ID, Sql.of(2)))
+				.where(Sql.equalTo(ID, 2))
 				.returning();
 			
 			// Delete
 			int deleted = persons.delete()
-				.where(Sql.lessThan(ID, Sql.of(0)))
+				.where(Sql.lessThan(ID, 0))
 				.execute();
 		}
 	}
@@ -228,7 +228,7 @@ public class DatabaseTest {
 			try (SqlTransaction tx = db.beginTransaction()) {
 				// FOR UPDATE locking
 				tx.from(PERSON_TABLE).select()
-					.where(Sql.lessThan(ID, Sql.of(1)))
+					.where(Sql.lessThan(ID, 1))
 					.forUpdate()
 					.fetch();
 				

@@ -120,7 +120,7 @@ public class SqlSession implements SqlProvider, AutoCloseable {
 			}
 			
 			SqlColumn<E, Object> typed = (SqlColumn<E, Object>) column;
-			conditions.add(Sql.equalTo(typed, Sql.of(value, typed.type())));
+			conditions.add(Sql.equalTo(typed, value));
 		}
 		return conditions.size() == 1 ? conditions.getFirst() : SqlCondition.allOf(conditions);
 	}

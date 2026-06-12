@@ -70,6 +70,10 @@ public class Sql {
 		return new SqlEqualToCondition(expression, other);
 	}
 	
+	public static <T> @NonNull SqlCondition equalTo(@NonNull SqlExpression<T> expression, @NonNull T value) {
+		return equalTo(expression, of(value, expression.type()));
+	}
+	
 	@SafeVarargs
 	public static <T> @NonNull SqlCondition in(@NonNull SqlExpression<T> expression, SqlExpression<T> @NonNull ... otherExpressions) {
 		Objects.requireNonNull(otherExpressions, "Other sql expressions must not be null");
@@ -81,12 +85,28 @@ public class Sql {
 		return new SqlInListCondition(expression, options);
 	}
 	
+	@SafeVarargs
+	public static <T> @NonNull SqlCondition in(@NonNull SqlExpression<T> expression, @NonNull T @NonNull ... values) {
+		Objects.requireNonNull(values, "Values must not be null");
+		
+		SqlType<T> type = expression.type();
+		List<SqlExpression<?>> options = Lists.newArrayList();
+		for (T value : values) {
+			options.add(of(Objects.requireNonNull(value, "Value must not be null"), type));
+		}
+		return new SqlInListCondition(expression, options);
+	}
+	
 	public static <T> @NonNull SqlCondition in(@NonNull SqlExpression<T> expression, @NonNull SqlSelectQuery<T> subquery) {
 		return new SqlInQueryCondition(expression, subquery);
 	}
 	
 	public static <T> @NonNull SqlCondition isDistinctFrom(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> other) {
 		return new SqlIsDistinctFromCondition(expression, other);
+	}
+	
+	public static <T> @NonNull SqlCondition isDistinctFrom(@NonNull SqlExpression<T> expression, @NonNull T value) {
+		return isDistinctFrom(expression, of(value, expression.type()));
 	}
 	
 	public static <T> @NonNull SqlCondition isNull(@NonNull SqlExpression<T> expression) {
@@ -119,9 +139,17 @@ public class Sql {
 		return new SqlNullIfFunction<>(expression, compareValue);
 	}
 	
+	public static <T> @NonNull SqlExpression<T> nullIf(@NonNull SqlExpression<T> expression, @NonNull T compareValue) {
+		return nullIf(expression, of(compareValue, expression.type()));
+	}
+	
 	public static <T> @NonNull SqlExpression<T> caseWhen(@NonNull SqlCondition condition, @NonNull SqlExpression<T> thenValue, @NonNull SqlExpression<T> elseValue) {
 		List<SqlCaseWhenBranch<T>> branches = List.of(new SqlCaseWhenBranch<>(condition, thenValue));
 		return new SqlCaseWhenFunction<>(branches, elseValue);
+	}
+	
+	public static <T> @NonNull SqlExpression<T> caseWhen(@NonNull SqlCondition condition, @NonNull T thenValue, @NonNull T elseValue) throws SqlTypeNotFoundException {
+		return caseWhen(condition, of(thenValue), of(elseValue));
 	}
 	
 	@Deprecated
@@ -135,20 +163,41 @@ public class Sql {
 		return new SqlGreaterThanCondition(expression, other, false);
 	}
 	
+	public static <T> @NonNull SqlCondition greaterThan(@NonNull SqlExpression<T> expression, @NonNull T value) {
+		return greaterThan(expression, of(value, expression.type()));
+	}
+	
 	public static <T> @NonNull SqlCondition greaterThanOrEqualTo(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> other) {
 		return new SqlGreaterThanCondition(expression, other, true);
+	}
+	
+	public static <T> @NonNull SqlCondition greaterThanOrEqualTo(@NonNull SqlExpression<T> expression, @NonNull T value) {
+		return greaterThanOrEqualTo(expression, of(value, expression.type()));
 	}
 	
 	public static <T> @NonNull SqlCondition lessThan(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> other) {
 		return new SqlLessThanCondition(expression, other, false);
 	}
 	
+	public static <T> @NonNull SqlCondition lessThan(@NonNull SqlExpression<T> expression, @NonNull T value) {
+		return lessThan(expression, of(value, expression.type()));
+	}
+	
 	public static <T> @NonNull SqlCondition lessThanOrEqualTo(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> other) {
 		return new SqlLessThanCondition(expression, other, true);
 	}
 	
+	public static <T> @NonNull SqlCondition lessThanOrEqualTo(@NonNull SqlExpression<T> expression, @NonNull T value) {
+		return lessThanOrEqualTo(expression, of(value, expression.type()));
+	}
+	
 	public static <T> @NonNull SqlCondition between(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> start, @NonNull SqlExpression<T> end) {
 		return new SqlBetweenCondition(expression, start, end);
+	}
+	
+	public static <T> @NonNull SqlCondition between(@NonNull SqlExpression<T> expression, @NonNull T start, @NonNull T end) {
+		SqlType<T> type = expression.type();
+		return between(expression, of(start, type), of(end, type));
 	}
 	
 	public static <T> @NonNull SqlExpression<T> min(@NonNull SqlExpression<T> expression) {
@@ -201,6 +250,10 @@ public class Sql {
 		return new SqlModEqualsCondition(expression, divisor, remainder);
 	}
 	
+	public static @NonNull SqlCondition modEquals(@NonNull SqlExpression<? extends Number> expression, @NonNull Number divisor, @NonNull Number remainder) throws SqlTypeNotFoundException {
+		return modEquals(expression, of(divisor), of(remainder));
+	}
+	
 	public static @NonNull SqlExpression<Double> random() {
 		return new SqlRandomFunction();
 	}
@@ -213,16 +266,32 @@ public class Sql {
 		return new SqlNumericAddFunction<>(expression, addend);
 	}
 	
+	public static <T extends Number> @NonNull SqlExpression<T> add(@NonNull SqlExpression<T> expression, @NonNull Number addend) throws SqlTypeNotFoundException {
+		return add(expression, of(addend));
+	}
+	
 	public static <T extends Number> @NonNull SqlExpression<T> subtract(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> subtrahend) {
 		return new SqlNumericSubtractFunction<>(expression, subtrahend);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> subtract(@NonNull SqlExpression<T> expression, @NonNull Number subtrahend) throws SqlTypeNotFoundException {
+		return subtract(expression, of(subtrahend));
 	}
 	
 	public static <T extends Number> @NonNull SqlExpression<T> multiply(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> multiplier) {
 		return new SqlNumericMultiplyFunction<>(expression, multiplier);
 	}
 	
+	public static <T extends Number> @NonNull SqlExpression<T> multiply(@NonNull SqlExpression<T> expression, @NonNull Number multiplier) throws SqlTypeNotFoundException {
+		return multiply(expression, of(multiplier));
+	}
+	
 	public static <T extends Number> @NonNull SqlExpression<T> divide(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> divisor) {
 		return new SqlNumericDivideFunction<>(expression, divisor);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> divide(@NonNull SqlExpression<T> expression, @NonNull Number divisor) throws SqlTypeNotFoundException {
+		return divide(expression, of(divisor));
 	}
 	
 	public static <T extends Number> @NonNull SqlExpression<T> negate(@NonNull SqlExpression<T> expression) {
@@ -249,6 +318,10 @@ public class Sql {
 		return new SqlRoundFunction<>(expression, precision);
 	}
 	
+	public static <T extends Number> @NonNull SqlExpression<T> round(@NonNull SqlExpression<T> expression, @NonNull Number precision) throws SqlTypeNotFoundException {
+		return round(expression, of(precision));
+	}
+	
 	public static <T extends Number> @NonNull SqlExpression<T> ceil(@NonNull SqlExpression<T> expression) {
 		return new SqlCeilFunction<>(expression);
 	}
@@ -265,8 +338,16 @@ public class Sql {
 		return new SqlModFunction<>(expression, divisor);
 	}
 	
+	public static <T extends Number> @NonNull SqlExpression<T> mod(@NonNull SqlExpression<T> expression, @NonNull Number divisor) throws SqlTypeNotFoundException {
+		return mod(expression, of(divisor));
+	}
+	
 	public static <T extends Number> @NonNull SqlExpression<T> pow(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> exponent) {
 		return new SqlPowFunction<>(expression, exponent);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> pow(@NonNull SqlExpression<T> expression, @NonNull Number exponent) throws SqlTypeNotFoundException {
+		return pow(expression, of(exponent));
 	}
 	
 	public static @NonNull SqlExpression<Double> sqrt(@NonNull SqlExpression<? extends Number> expression) {
@@ -333,24 +414,48 @@ public class Sql {
 		return new SqlBitwiseAndFunction<>(expression, other);
 	}
 	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseAnd(@NonNull SqlExpression<T> expression, @NonNull T other) {
+		return bitwiseAnd(expression, of(other, expression.type()));
+	}
+	
 	public static <T extends Number> @NonNull SqlExpression<T> bitwiseAnd(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other, @NonNull SqlType<T> type) {
 		return new SqlBitwiseAndFunction<>(expression, other, type);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseAnd(@NonNull SqlExpression<T> expression, @NonNull Number other, @NonNull SqlType<T> type) throws SqlTypeNotFoundException {
+		return bitwiseAnd(expression, of(other), type);
 	}
 	
 	public static <T extends Number> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> other) {
 		return new SqlBitwiseOrFunction<>(expression, other);
 	}
 	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull T other) {
+		return bitwiseOr(expression, of(other, expression.type()));
+	}
+	
 	public static <T extends Number> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other, @NonNull SqlType<T> type) {
 		return new SqlBitwiseOrFunction<>(expression, other, type);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseOr(@NonNull SqlExpression<T> expression, @NonNull Number other, @NonNull SqlType<T> type) throws SqlTypeNotFoundException {
+		return bitwiseOr(expression, of(other), type);
 	}
 	
 	public static <T extends Number> @NonNull SqlExpression<T> bitwiseXor(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<T> other) {
 		return new SqlBitwiseXorFunction<>(expression, other);
 	}
 	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseXor(@NonNull SqlExpression<T> expression, @NonNull T other) {
+		return bitwiseXor(expression, of(other, expression.type()));
+	}
+	
 	public static <T extends Number> @NonNull SqlExpression<T> bitwiseXor(@NonNull SqlExpression<T> expression, @NonNull SqlExpression<? extends Number> other, @NonNull SqlType<T> type) {
 		return new SqlBitwiseXorFunction<>(expression, other, type);
+	}
+	
+	public static <T extends Number> @NonNull SqlExpression<T> bitwiseXor(@NonNull SqlExpression<T> expression, @NonNull Number other, @NonNull SqlType<T> type) throws SqlTypeNotFoundException {
+		return bitwiseXor(expression, of(other), type);
 	}
 	
 	public static <T extends Number> @NonNull SqlExpression<T> bitwiseNot(@NonNull SqlExpression<T> expression) {
@@ -365,20 +470,40 @@ public class Sql {
 		return new SqlStartsWithCondition(expression, prefix);
 	}
 	
+	public static @NonNull SqlCondition startsWith(@NonNull SqlExpression<String> expression, @NonNull String prefix) {
+		return startsWith(expression, of(prefix, expression.type()));
+	}
+	
 	public static @NonNull SqlCondition contains(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> substring) {
 		return new SqlContainsCondition(expression, substring);
+	}
+	
+	public static @NonNull SqlCondition contains(@NonNull SqlExpression<String> expression, @NonNull String substring) {
+		return contains(expression, of(substring, expression.type()));
 	}
 	
 	public static @NonNull SqlCondition endsWith(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> suffix) {
 		return new SqlEndsWithCondition(expression, suffix);
 	}
 	
+	public static @NonNull SqlCondition endsWith(@NonNull SqlExpression<String> expression, @NonNull String suffix) {
+		return endsWith(expression, of(suffix, expression.type()));
+	}
+	
 	public static @NonNull SqlCondition like(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> pattern) {
 		return new SqlLikeCondition(expression, pattern);
 	}
 	
+	public static @NonNull SqlCondition like(@NonNull SqlExpression<String> expression, @NonNull String pattern) {
+		return like(expression, of(pattern, expression.type()));
+	}
+	
 	public static @NonNull SqlCondition equalsIgnoreCase(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> value) {
 		return new SqlEqualsIgnoreCaseCondition(expression, value);
+	}
+	
+	public static @NonNull SqlCondition equalsIgnoreCase(@NonNull SqlExpression<String> expression, @NonNull String value) {
+		return equalsIgnoreCase(expression, of(value, expression.type()));
 	}
 	
 	public static @NonNull SqlExpression<String> lower(@NonNull SqlExpression<String> expression) {
@@ -405,6 +530,10 @@ public class Sql {
 		return new SqlTrimCharsFunction<>(expression, characters);
 	}
 	
+	public static @NonNull SqlExpression<String> trimChars(@NonNull SqlExpression<String> expression, @NonNull String characters) {
+		return trimChars(expression, of(characters, expression.type()));
+	}
+	
 	public static @NonNull SqlExpression<Integer> length(@NonNull SqlExpression<String> expression) {
 		return new SqlLengthFunction<>(expression, SqlTypes.INTEGER);
 	}
@@ -417,6 +546,10 @@ public class Sql {
 		return new SqlSubstringFunction<>(expression, start, length);
 	}
 	
+	public static @NonNull SqlExpression<String> substring(@NonNull SqlExpression<String> expression, int start, int length) {
+		return substring(expression, of(start, SqlTypes.INTEGER), of(length, SqlTypes.INTEGER));
+	}
+	
 	@SafeVarargs
 	public static @NonNull SqlExpression<String> concat(SqlExpression<String> @NonNull ... values) {
 		Objects.requireNonNull(values, "Sql values must not be null");
@@ -424,6 +557,16 @@ public class Sql {
 		List<SqlExpression<String>> list = Lists.newArrayList();
 		for (SqlExpression<String> value : values) {
 			list.add(Objects.requireNonNull(value, "Sql value expression must not be null"));
+		}
+		return new SqlConcatFunction<>(list, Optional.empty(), false, false);
+	}
+	
+	public static @NonNull SqlExpression<String> concat(@NonNull String @NonNull ... values) throws SqlTypeNotFoundException {
+		Objects.requireNonNull(values, "Values must not be null");
+		
+		List<SqlExpression<String>> list = Lists.newArrayList();
+		for (String value : values) {
+			list.add(of(Objects.requireNonNull(value, "Value must not be null")));
 		}
 		return new SqlConcatFunction<>(list, Optional.empty(), false, false);
 	}
@@ -440,6 +583,17 @@ public class Sql {
 		return new SqlConcatFunction<>(list, Optional.of(separator), false, false);
 	}
 	
+	public static @NonNull SqlExpression<String> concatWithSeparator(@NonNull String separator, @NonNull String @NonNull ... values) throws SqlTypeNotFoundException {
+		Objects.requireNonNull(separator, "Separator must not be null");
+		Objects.requireNonNull(values, "Values must not be null");
+		
+		List<SqlExpression<String>> list = Lists.newArrayList();
+		for (String value : values) {
+			list.add(of(Objects.requireNonNull(value, "Value must not be null")));
+		}
+		return new SqlConcatFunction<>(list, Optional.of(separator), false, false);
+	}
+	
 	@SafeVarargs
 	public static @NonNull SqlExpression<String> concatDistinctWithSeparator(@NonNull String separator, SqlExpression<String> @NonNull ... values) {
 		Objects.requireNonNull(separator, "Separator must not be null");
@@ -448,6 +602,17 @@ public class Sql {
 		List<SqlExpression<String>> list = Lists.newArrayList();
 		for (SqlExpression<String> value : values) {
 			list.add(Objects.requireNonNull(value, "Sql value expression must not be null"));
+		}
+		return new SqlConcatFunction<>(list, Optional.of(separator), true, false);
+	}
+	
+	public static @NonNull SqlExpression<String> concatDistinctWithSeparator(@NonNull String separator, @NonNull String @NonNull ... values) throws SqlTypeNotFoundException {
+		Objects.requireNonNull(separator, "Separator must not be null");
+		Objects.requireNonNull(values, "Values must not be null");
+		
+		List<SqlExpression<String>> list = Lists.newArrayList();
+		for (String value : values) {
+			list.add(of(Objects.requireNonNull(value, "Value must not be null")));
 		}
 		return new SqlConcatFunction<>(list, Optional.of(separator), true, false);
 	}
@@ -464,8 +629,23 @@ public class Sql {
 		return new SqlConcatFunction<>(list, Optional.of(separator), false, true);
 	}
 	
+	public static @NonNull SqlExpression<String> concatOrderedWithSeparator(@NonNull String separator, @NonNull String @NonNull ... values) throws SqlTypeNotFoundException {
+		Objects.requireNonNull(separator, "Separator must not be null");
+		Objects.requireNonNull(values, "Values must not be null");
+		
+		List<SqlExpression<String>> list = Lists.newArrayList();
+		for (String value : values) {
+			list.add(of(Objects.requireNonNull(value, "Value must not be null")));
+		}
+		return new SqlConcatFunction<>(list, Optional.of(separator), false, true);
+	}
+	
 	public static @NonNull SqlExpression<String> replace(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> search, @NonNull SqlExpression<String> replacement) {
 		return new SqlReplaceFunction<>(expression, search, replacement);
+	}
+	
+	public static @NonNull SqlExpression<String> replace(@NonNull SqlExpression<String> expression, @NonNull String search, @NonNull String replacement) {
+		return replace(expression, of(search, expression.type()), of(replacement, expression.type()));
 	}
 	
 	public static <T extends Number> @NonNull SqlExpression<T> position(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<String> substring, @NonNull SqlType<T> type) {
@@ -476,16 +656,32 @@ public class Sql {
 		return new SqlLeftFunction<>(expression, n);
 	}
 	
+	public static @NonNull SqlExpression<String> left(@NonNull SqlExpression<String> expression, int n) {
+		return left(expression, of(n, SqlTypes.INTEGER));
+	}
+	
 	public static @NonNull SqlExpression<String> right(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<Integer> n) {
 		return new SqlRightFunction<>(expression, n);
+	}
+	
+	public static @NonNull SqlExpression<String> right(@NonNull SqlExpression<String> expression, int n) {
+		return right(expression, of(n, SqlTypes.INTEGER));
 	}
 	
 	public static @NonNull SqlExpression<String> leftPad(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<Integer> length, @NonNull SqlExpression<String> fill) {
 		return new SqlLeftPadFunction<>(expression, length, fill);
 	}
 	
+	public static @NonNull SqlExpression<String> leftPad(@NonNull SqlExpression<String> expression, int length, @NonNull String fill) {
+		return leftPad(expression, of(length, SqlTypes.INTEGER), of(fill, expression.type()));
+	}
+	
 	public static @NonNull SqlExpression<String> rightPad(@NonNull SqlExpression<String> expression, @NonNull SqlExpression<Integer> length, @NonNull SqlExpression<String> fill) {
 		return new SqlRightPadFunction<>(expression, length, fill);
+	}
+	
+	public static @NonNull SqlExpression<String> rightPad(@NonNull SqlExpression<String> expression, int length, @NonNull String fill) {
+		return rightPad(expression, of(length, SqlTypes.INTEGER), of(fill, expression.type()));
 	}
 	
 	public static @NonNull SqlExpression<String> hex(@NonNull SqlExpression<? extends CharSequence> expression) {
@@ -508,16 +704,32 @@ public class Sql {
 		return new SqlWithinLastCondition(expression, duration);
 	}
 	
+	public static @NonNull SqlCondition withinLast(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Duration duration) {
+		return withinLast(expression, of(duration, SqlTypes.DURATION));
+	}
+	
 	public static @NonNull SqlCondition withinNext(@NonNull SqlExpression<? extends Temporal> expression, @NonNull SqlExpression<Duration> duration) {
 		return new SqlWithinNextCondition(expression, duration);
+	}
+	
+	public static @NonNull SqlCondition withinNext(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Duration duration) {
+		return withinNext(expression, of(duration, SqlTypes.DURATION));
 	}
 	
 	public static @NonNull SqlCondition before(@NonNull SqlExpression<? extends Temporal> expression, @NonNull SqlExpression<? extends Temporal> timestamp) {
 		return new SqlBeforeCondition(expression, timestamp);
 	}
 	
+	public static @NonNull SqlCondition before(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Temporal timestamp) throws SqlTypeNotFoundException {
+		return before(expression, of(timestamp));
+	}
+	
 	public static @NonNull SqlCondition after(@NonNull SqlExpression<? extends Temporal> expression, @NonNull SqlExpression<? extends Temporal> timestamp) {
 		return new SqlAfterCondition(expression, timestamp);
+	}
+	
+	public static @NonNull SqlCondition after(@NonNull SqlExpression<? extends Temporal> expression, @NonNull Temporal timestamp) throws SqlTypeNotFoundException {
+		return after(expression, of(timestamp));
 	}
 	
 	public static @NonNull SqlExpression<Instant> now() {
@@ -560,8 +772,16 @@ public class Sql {
 		return new SqlMakeDateFunction<>(year, month, day, type);
 	}
 	
+	public static <T extends Temporal> @NonNull SqlExpression<T> makeDate(int year, int month, int day, @NonNull SqlType<T> type) {
+		return makeDate(of(year, SqlTypes.INTEGER), of(month, SqlTypes.INTEGER), of(day, SqlTypes.INTEGER), type);
+	}
+	
 	public static <T extends Temporal> @NonNull SqlExpression<T> makeTime(@NonNull SqlExpression<Integer> hour, @NonNull SqlExpression<Integer> minute, @NonNull SqlExpression<Integer> second, @NonNull SqlType<T> type) {
 		return new SqlMakeTimeFunction<>(hour, minute, second, type);
+	}
+	
+	public static <T extends Temporal> @NonNull SqlExpression<T> makeTime(int hour, int minute, int second, @NonNull SqlType<T> type) {
+		return makeTime(of(hour, SqlTypes.INTEGER), of(minute, SqlTypes.INTEGER), of(second, SqlTypes.INTEGER), type);
 	}
 	
 	public static @NonNull SqlExpression<Integer> extract(@NonNull SqlExpression<?> expression, @NonNull SqlTemporalPart part) {
@@ -580,8 +800,16 @@ public class Sql {
 		return new SqlTemporalAddFunction<>(expression, part, amount, type);
 	}
 	
+	public static <T extends Temporal> @NonNull SqlExpression<T> add(@NonNull SqlExpression<T> expression, @NonNull SqlTemporalPart part, int amount, @NonNull SqlType<T> type) {
+		return add(expression, part, of(amount, SqlTypes.INTEGER), type);
+	}
+	
 	public static <T extends Temporal> @NonNull SqlExpression<T> subtract(@NonNull SqlExpression<T> expression, @NonNull SqlTemporalPart part, @NonNull SqlExpression<?> amount, @NonNull SqlType<T> type) {
 		return new SqlTemporalSubtractFunction<>(expression, part, amount, type);
+	}
+	
+	public static <T extends Temporal> @NonNull SqlExpression<T> subtract(@NonNull SqlExpression<T> expression, @NonNull SqlTemporalPart part, int amount, @NonNull SqlType<T> type) {
+		return subtract(expression, part, of(amount, SqlTypes.INTEGER), type);
 	}
 	
 	public static <T extends Number> @NonNull SqlExpression<T> toEpoch(@NonNull SqlExpression<?> expression, @NonNull SqlType<T> type) {
