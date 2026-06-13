@@ -24,6 +24,7 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.database.SqlMigrationExecutionException;
 import net.luis.utils.io.database.migration.SqlMigrationInfo;
 import net.luis.utils.io.database.migration.SqlMigrationStatus;
+import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import net.luis.utils.util.Version;
@@ -40,7 +41,7 @@ import java.util.*;
  *
  */
 
-@SuppressWarnings({ "SqlSourceToSinkFlow", "DuplicatedCode" })
+@SuppressWarnings({ "DuplicatedCode", "SqlSourceToSinkFlow" })
 public class SqlMigrationTableStore implements SqlMigrationStore {
 	
 	private static final String TABLE_NAME = "_sql_migrations";
@@ -54,25 +55,13 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 	}
 	
 	private @NonNull String buildInitializeSql() throws SqlException {
-		String table = this.dialect.quoteIdentifier(TABLE_NAME);
-		String version = this.dialect.quoteIdentifier("version");
-		String description = this.dialect.quoteIdentifier("description");
-		String status = this.dialect.quoteIdentifier("status");
-		String appliedAt = this.dialect.quoteIdentifier("applied_at");
-		String checksum = this.dialect.quoteIdentifier("checksum");
-		
-		String varchar64 = this.dialect.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(64)));
-		String varchar256 = this.dialect.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(256)));
-		String varchar32 = this.dialect.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(32)));
-		String timestampType = this.dialect.getTypeName(SqlTypes.LOCAL_DATE_TIME.configure(SqlParameter.fractional(6)));
-		
-		return "CREATE TABLE IF NOT EXISTS " + table + " (" +
-			version + " " + varchar64 + " NOT NULL PRIMARY KEY, " +
-			description + " " + varchar256 + " NOT NULL, " +
-			status + " " + varchar32 + " NOT NULL, " +
-			appliedAt + " " + timestampType + " NULL, " +
-			checksum + " " + varchar64 + " NULL" +
-			")";
+		SqlTable<Void> table = SqlTable.create(Void.class, TABLE_NAME);
+		table.column("version", SqlTypes.STRING.configure(SqlParameter.length(64)), v -> null, col -> col.primaryKey().notNull());
+		table.column("description", SqlTypes.STRING.configure(SqlParameter.length(256)), v -> null, col -> col.notNull());
+		table.column("status", SqlTypes.STRING.configure(SqlParameter.length(32)), v -> null, col -> col.notNull());
+		table.column("applied_at", SqlTypes.LONG, v -> null);
+		table.column("checksum", SqlTypes.STRING.configure(SqlParameter.length(64)), v -> null);
+		return this.dialect.tableRenderer().renderCreateTable(table, true).sql();
 	}
 	
 	private @NonNull String buildLoadSql() {
@@ -131,8 +120,8 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 				Version version = Version.parse(resultSet.getString("version"));
 				String description = resultSet.getString("description");
 				SqlMigrationStatus status = SqlMigrationStatus.valueOf(resultSet.getString("status"));
-				Timestamp timestamp = resultSet.getTimestamp("applied_at");
-				Instant appliedAt = timestamp != null ? timestamp.toInstant() : null;
+				long appliedAtMillis = resultSet.getLong("applied_at");
+				Instant appliedAt = resultSet.wasNull() ? null : Instant.ofEpochMilli(appliedAtMillis);
 				String checksum = resultSet.getString("checksum");
 				
 				results.add(new SqlMigrationInfo(version, description, status, appliedAt, checksum));
@@ -164,7 +153,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 			statement.setString(1, info.version().toString());
 			statement.setString(2, info.description());
 			statement.setString(3, info.status().name());
-			statement.setTimestamp(4, info.appliedAt() != null ? Timestamp.from(info.appliedAt()) : null);
+			statement.setObject(4, info.appliedAt() != null ? info.appliedAt().toEpochMilli() : null);
 			statement.setString(5, info.checksum());
 			statement.executeUpdate();
 		} catch (SQLException e) {
@@ -194,7 +183,7 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		
 		try (PreparedStatement statement = connection.prepareStatement(this.buildUpdateSql())) {
 			statement.setString(1, status.name());
-			statement.setTimestamp(2, now != null ? Timestamp.from(now) : null);
+			statement.setObject(2, now != null ? now.toEpochMilli() : null);
 			statement.setString(3, version.toString());
 			statement.executeUpdate();
 		} catch (SQLException e) {

@@ -26,8 +26,10 @@ import net.luis.utils.io.database.function.functions.SqlAggregateFunction;
 import net.luis.utils.io.database.function.functions.aggregate.*;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
+import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
+import java.math.BigInteger;
 import java.util.Objects;
 
 /**
@@ -61,7 +63,19 @@ public class SqlAggregateFunctionRenderer {
 	protected @NonNull SqlRendered renderAverage(@NonNull SqlAverageFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
+		if (isIntegralType(function.expression().type())) {
+			SqlRenderer renderer = SqlRenderer.empty();
+			renderer.literal("ROUND").openingBracket();
+			renderer.literal("AVG").openingBracket().rendered(function.expression().toSql(this.dialect)).literal("*").literal("1.0").closingBracket();
+			renderer.comma().literal("0").closingBracket();
+			return renderer.toSql();
+		}
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "AVG", function.expression());
+	}
+	
+	private static boolean isIntegralType(@NonNull SqlType<?> type) {
+		Class<?> javaType = type.javaType();
+		return javaType == Integer.class || javaType == Long.class || javaType == Short.class || javaType == Byte.class || javaType == BigInteger.class;
 	}
 	
 	protected @NonNull SqlRendered renderCount(@NonNull SqlCountFunction function) throws SqlException {

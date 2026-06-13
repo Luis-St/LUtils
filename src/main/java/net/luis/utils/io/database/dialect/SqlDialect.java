@@ -66,6 +66,10 @@ public interface SqlDialect {
 	
 	@NonNull String getTypeName(@NonNull SqlType<?> type) throws SqlException;
 	
+	default @NonNull String getCastTypeName(@NonNull SqlType<?> type) throws SqlException {
+		return this.getTypeName(type);
+	}
+	
 	default @NonNull Optional<SqlValueBinder> bindingOverride(@NonNull SqlType<?> type) {
 		return Optional.empty();
 	}
@@ -108,6 +112,10 @@ public interface SqlDialect {
 	
 	@NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlException;
 	
+	default @NonNull SqlRendered renderLockHint(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlException {
+		return SqlRendered.of("");
+	}
+	
 	@NonNull SqlRendered renderSetOperation(@NonNull SqlSetOperation operation) throws SqlException;
 	
 	@NonNull SqlRendered renderLateralJoin() throws SqlException;
@@ -121,6 +129,10 @@ public interface SqlDialect {
 	@NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull SqlColumn<?, ?> conflictColumn, @NonNull SqlRendered valueTuples) throws SqlException;
 	
 	@NonNull SqlRendered renderInsertOrIgnoreModifier() throws SqlException;
+	
+	default boolean usesInsertOrIgnoreModifier() {
+		return false;
+	}
 	
 	@NonNull SqlRendered renderInsertOrIgnoreSuffix(@NonNull List<SqlColumn<?, ?>> conflictColumns) throws SqlException;
 	

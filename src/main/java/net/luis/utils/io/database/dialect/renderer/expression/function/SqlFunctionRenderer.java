@@ -66,7 +66,7 @@ public class SqlFunctionRenderer {
 	
 	public @NonNull SqlRendered render(@NonNull SqlFunction<?> function) throws SqlException {
 		if (function instanceof SqlCastFunction<?>(var value, var targetType)) {
-			return SqlRenderer.empty().cast().openingBracket().rendered(value.toSql(this.dialect)).as().literal(this.dialect.getTypeName(targetType)).closingBracket().toSql();
+			return SqlRenderer.empty().cast().openingBracket().rendered(value.toSql(this.dialect)).as().literal(this.dialect.getCastTypeName(targetType)).closingBracket().toSql();
 		}
 		
 		SqlRendered rendered = switch (function) {

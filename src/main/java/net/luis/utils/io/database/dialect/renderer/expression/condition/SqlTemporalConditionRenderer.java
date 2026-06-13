@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect.renderer.expression.condition;
 
+import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.condition.conditions.SqlTemporalCondition;
 import net.luis.utils.io.database.condition.conditions.temporal.*;
 import net.luis.utils.io.database.dialect.SqlDialect;
@@ -25,10 +26,19 @@ import net.luis.utils.io.database.dialect.renderer.SqlRenderingHelper;
 import net.luis.utils.io.database.dialect.renderer.expression.function.SqlTemporalFunctionRenderer;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnknownConstructException;
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.expression.SqlValueExpression;
+import net.luis.utils.io.database.function.functions.temporal.*;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
+import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -37,6 +47,7 @@ import java.util.Objects;
  *
  */
 
+@SuppressWarnings("unchecked")
 public class SqlTemporalConditionRenderer {
 	
 	private final SqlTemporalFunctionRenderer temporalRenderer;
@@ -74,10 +85,15 @@ public class SqlTemporalConditionRenderer {
 	protected @NonNull SqlRendered renderWithinLast(@NonNull SqlWithinLastCondition condition) throws SqlException {
 		Objects.requireNonNull(condition, "Sql condition must not be null");
 		
+		SqlType<LocalDateTime> timestampType = SqlTypes.LOCAL_DATE_TIME.configure(SqlParameter.fractional(0));
+		SqlExpression<LocalDateTime> now = new SqlCurrentTimestampFunction<>(timestampType);
+		SqlRendered lowerBound = this.temporalRenderer.render(new SqlTemporalSubtractFunction<>(now, SqlTemporalPart.SECOND, this.durationInSeconds(condition.duration()), timestampType));
+		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.rendered(condition.value().toSql(this.dialect));
-		renderer.literal(">=").openingBracket().keyword("CURRENT_TIMESTAMP").literal("-");
-		renderer.rendered(this.temporalRenderer.renderInterval(condition.duration(), "SECOND"));
+		renderer.openingBracket();
+		renderer.rendered(condition.value().toSql(this.dialect)).literal(">=").openingBracket().rendered(lowerBound).closingBracket();
+		renderer.literal("AND");
+		renderer.rendered(condition.value().toSql(this.dialect)).literal("<=").openingBracket().rendered(now.toSql(this.dialect)).closingBracket();
 		renderer.closingBracket();
 		return renderer.toSql();
 	}
@@ -85,11 +101,26 @@ public class SqlTemporalConditionRenderer {
 	protected @NonNull SqlRendered renderWithinNext(@NonNull SqlWithinNextCondition condition) throws SqlException {
 		Objects.requireNonNull(condition, "Sql condition must not be null");
 		
+		SqlType<LocalDateTime> timestampType = SqlTypes.LOCAL_DATE_TIME.configure(SqlParameter.fractional(0));
+		SqlExpression<LocalDateTime> now = new SqlCurrentTimestampFunction<>(timestampType);
+		SqlRendered upperBound = this.temporalRenderer.render(new SqlTemporalAddFunction<>(now, SqlTemporalPart.SECOND, this.durationInSeconds(condition.duration()), timestampType));
+		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.rendered(condition.value().toSql(this.dialect));
-		renderer.literal("<=").openingBracket().keyword("CURRENT_TIMESTAMP").literal("+");
-		renderer.rendered(this.temporalRenderer.renderInterval(condition.duration(), "SECOND"));
+		renderer.openingBracket();
+		renderer.rendered(condition.value().toSql(this.dialect)).literal(">=").openingBracket().rendered(now.toSql(this.dialect)).closingBracket();
+		renderer.literal("AND");
+		renderer.rendered(condition.value().toSql(this.dialect)).literal("<=").openingBracket().rendered(upperBound).closingBracket();
 		renderer.closingBracket();
 		return renderer.toSql();
+	}
+	
+	private @NonNull SqlExpression<? extends Number> durationInSeconds(@NonNull SqlExpression<?> duration) {
+		Objects.requireNonNull(duration, "Sql duration expression must not be null");
+		
+		if (duration instanceof SqlValueExpression<?> value && value.value() instanceof Duration constant) {
+			return new SqlValueExpression<>(constant.toSeconds(), SqlTypes.LONG);
+		}
+		SqlExpression<Long> nanoseconds = (SqlExpression<Long>) duration;
+		return Sql.divide(nanoseconds, new SqlValueExpression<>(1_000_000_000L, SqlTypes.LONG));
 	}
 }

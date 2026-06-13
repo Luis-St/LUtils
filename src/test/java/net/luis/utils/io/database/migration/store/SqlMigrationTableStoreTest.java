@@ -40,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class SqlMigrationTableStoreTest {
 	
 	private static final Instant APPLIED_AT = Instant.ofEpochSecond(1_700_000_000L);
+	private static final long APPLIED_AT_MILLIS = APPLIED_AT.toEpochMilli();
 	
 	private static SqlMigrationTableStore store(DataSource dataSource) {
 		return new SqlMigrationTableStore(dataSource, SqlTestFixtures.DIALECT);
@@ -178,7 +179,7 @@ class SqlMigrationTableStoreTest {
 	@Test
 	void loadAllReadsSingleAppliedRow() throws Exception {
 		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
-		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(migrationRow("1.0.0", "APPLIED", APPLIED_AT))));
+		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(migrationRow("1.0.0", "APPLIED", APPLIED_AT_MILLIS))));
 		
 		List<SqlMigrationInfo> result = store(dataSource).loadAll();
 		assertEquals(1, result.size());
@@ -264,7 +265,7 @@ class SqlMigrationTableStoreTest {
 	void loadAllReadsMultipleRows() throws Exception {
 		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
 		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(
-			migrationRow("1.0.0", "APPLIED", APPLIED_AT),
+			migrationRow("1.0.0", "APPLIED", APPLIED_AT_MILLIS),
 			migrationRow("1.1.0", "PENDING", null),
 			migrationRow("1.2.0", "ROLLED_BACK", null)
 		)));
@@ -290,7 +291,7 @@ class SqlMigrationTableStoreTest {
 		row.put("version", "1.2.3");
 		row.put("description", "create users");
 		row.put("status", "APPLIED");
-		row.put("applied_at", APPLIED_AT);
+		row.put("applied_at", APPLIED_AT_MILLIS);
 		row.put("checksum", "deadbeef");
 		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(row)));
 		
@@ -304,7 +305,7 @@ class SqlMigrationTableStoreTest {
 		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
 		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(
 			migrationRow("3.0.0", "PENDING", null),
-			migrationRow("1.0.0", "APPLIED", APPLIED_AT),
+			migrationRow("1.0.0", "APPLIED", APPLIED_AT_MILLIS),
 			migrationRow("2.0.0", "PENDING", null)
 		)));
 		

@@ -42,4 +42,9 @@ public record SqlSignFunction(@NonNull SqlExpression<? extends Number> expressio
 	public @NonNull SqlType<Integer> type() {
 		return SqlTypes.INTEGER;
 	}
+	
+	@Override
+	public boolean requiresCast() {
+		return true;
+	}
 }

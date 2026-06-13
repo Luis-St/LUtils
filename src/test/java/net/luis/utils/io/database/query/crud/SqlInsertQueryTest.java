@@ -189,12 +189,21 @@ class SqlInsertQueryTest {
 	}
 	
 	@Test
-	void toSqlInsertOrIgnoreEntersModifierBranch() throws SqlException {
+	void toSqlInsertOrIgnoreRendersConflictSuffix() throws SqlException {
 		SqlTable<Object> table = oneColumnTable();
 		SqlColumn<Object, Integer> id = table.column("conflict", INTEGER_TYPE, object -> 0);
 		SqlInsertQuery<Object> query = SqlInsertQuery.insertOrIgnore(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), List.of(id));
-		// The default dialect does not render an insert-or-ignore modifier, so entering the branch surfaces the feature exception.
-		assertThrows(net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException.class, () -> query.toSql(DIALECT));
+		String sql = query.toSql(DIALECT).sql();
+		assertTrue(sql.contains("ON CONFLICT"));
+		assertTrue(sql.contains("DO NOTHING"));
+	}
+	
+	@Test
+	void toSqlInsertOrIgnoreRendersModifierForMySql() throws SqlException {
+		SqlTable<Object> table = oneColumnTable();
+		SqlColumn<Object, Integer> id = table.column("conflict", INTEGER_TYPE, object -> 0);
+		SqlInsertQuery<Object> query = SqlInsertQuery.insertOrIgnore(table, SqlDialects.MYSQL, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), List.of(id));
+		assertTrue(query.toSql(SqlDialects.MYSQL).sql().contains("IGNORE"));
 	}
 	
 	@Test

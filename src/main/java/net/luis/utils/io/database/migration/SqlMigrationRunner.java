@@ -452,7 +452,11 @@ public final class SqlMigrationRunner {
 					this.executeStatements(connection, statements);
 					store.save(connection, info);
 					
-					SqlMigrationSchema schema = SqlMigrationSchema.load(connection, this.database.getDialect(), "public");
+					String introspectionSchema = connection.getSchema();
+					if (introspectionSchema == null || introspectionSchema.isBlank()) {
+						introspectionSchema = "public";
+					}
+					SqlMigrationSchema schema = SqlMigrationSchema.load(connection, this.database.getDialect(), introspectionSchema);
 					schemaStore.save(connection, info.version(), schema.extractColumnInfos(), schema.extractCheckConstraints());
 					
 					connection.commit();

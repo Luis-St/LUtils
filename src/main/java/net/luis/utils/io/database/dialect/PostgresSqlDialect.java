@@ -26,12 +26,14 @@ import net.luis.utils.io.database.condition.conditions.string.SqlEqualsIgnoreCas
 import net.luis.utils.io.database.dialect.renderer.*;
 import net.luis.utils.io.database.dialect.renderer.expression.condition.SqlComparisonConditionRenderer;
 import net.luis.utils.io.database.dialect.renderer.expression.condition.SqlStringConditionRenderer;
-import net.luis.utils.io.database.dialect.renderer.expression.function.SqlNumericFunctionRenderer;
-import net.luis.utils.io.database.dialect.renderer.expression.function.SqlTemporalFunctionRenderer;
+import net.luis.utils.io.database.dialect.renderer.expression.function.*;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.SqlValueExpression;
-import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateFunction;
+import net.luis.utils.io.database.function.functions.numeric.*;
+import net.luis.utils.io.database.function.functions.numeric.bitwise.SqlBitwiseXorFunction;
+import net.luis.utils.io.database.function.functions.string.SqlHexFunction;
+import net.luis.utils.io.database.function.functions.string.SqlUnhexFunction;
 import net.luis.utils.io.database.function.functions.temporal.*;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -58,6 +60,7 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 	
 	private static final Set<SqlFeature> SUPPORTED_FEATURES = Set.of(
 		SqlFeature.RETURNING,
+		SqlFeature.UPDATE_RETURNING,
 		SqlFeature.LATERAL_JOIN,
 		SqlFeature.CTE,
 		SqlFeature.RECURSIVE_CTE,
@@ -136,6 +139,7 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 		return SqlDialectRenderer.builder(this)
 			.temporalFunctionRenderer(new PostgresSqlTemporalFunctionRenderer(this))
 			.numericFunctionRenderer(new PostgresSqlNumericFunctionRenderer(this))
+			.stringFunctionRenderer(new PostgresSqlStringFunctionRenderer(this))
 			.stringConditionRenderer(new PostgresSqlStringConditionRenderer(this))
 			.comparisonConditionRenderer(new PostgresSqlComparisonConditionRenderer(this))
 			.tableRenderer(new PostgresSqlTableRenderer(this))
@@ -295,10 +299,29 @@ class PostgresSqlTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	}
 	
 	@Override
+	protected @NonNull SqlRendered renderExtract(@NonNull SqlExtractFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		String field = switch (function.part()) {
+			case DAY_OF_WEEK -> "ISODOW";
+			case DAY_OF_YEAR -> "DOY";
+			default -> function.part().name();
+		};
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.literal("EXTRACT").openingBracket().keyword(field).from().rendered(function.expression().toSql(this.dialect)).closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
 	protected @NonNull SqlRendered renderFromEpoch(@NonNull SqlFromEpochFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
-		return SqlRenderingHelper.renderFunctionCall(this.dialect, "TO_TIMESTAMP", function.expression());
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.openingBracket();
+		renderer.literal("TO_TIMESTAMP").openingBracket().rendered(function.expression().toSql(this.dialect)).closingBracket();
+		renderer.literal("AT").literal("TIME").literal("ZONE").literal("'UTC'");
+		renderer.closingBracket();
+		return renderer.toSql();
 	}
 	
 	@Override
@@ -342,7 +365,78 @@ class PostgresSqlNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	protected @NonNull SqlRendered renderTruncate(@NonNull SqlNumericTruncateFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
-		SqlExpression<Integer> zero = new SqlValueExpression<>(0, SqlTypes.INTEGER);
-		return SqlRenderingHelper.renderFunctionCall(this.dialect, "TRUNC", function.expression(), zero);
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.literal("TRUNC").openingBracket();
+		renderer.cast().openingBracket().rendered(function.expression().toSql(this.dialect)).as().literal("numeric").closingBracket();
+		renderer.comma().literal("0").closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderRound(@NonNull SqlRoundFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlExpression<? extends Number> precision = function.precision();
+		if (precision == null) {
+			return super.renderRound(function);
+		}
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.literal("ROUND").openingBracket();
+		renderer.cast().openingBracket().rendered(function.expression().toSql(this.dialect)).as().literal("numeric").closingBracket();
+		renderer.comma().rendered(precision.toSql(this.dialect)).closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderBitwiseXor(@NonNull SqlBitwiseXorFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		return SqlRenderingHelper.renderInfix(this.dialect, function.firstOperand(), "#", function.secondOperand());
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderLog(@NonNull SqlLogFunction function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlExpression<? extends Number> base = function.base();
+		if (base == null) {
+			return SqlRenderingHelper.renderFunctionCall(this.dialect, "LN", function.expression());
+		}
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.cast().openingBracket();
+		renderer.literal("LOG").openingBracket();
+		renderer.cast().openingBracket().rendered(base.toSql(this.dialect)).as().literal("numeric").closingBracket();
+		renderer.comma();
+		renderer.cast().openingBracket().rendered(function.expression().toSql(this.dialect)).as().literal("numeric").closingBracket();
+		renderer.closingBracket();
+		renderer.as().literal("double precision").closingBracket();
+		return renderer.toSql();
+	}
+}
+
+class PostgresSqlStringFunctionRenderer extends SqlStringFunctionRenderer {
+	
+	PostgresSqlStringFunctionRenderer(@NonNull SqlDialect dialect) {
+		super(dialect);
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderHex(@NonNull SqlHexFunction function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.literal("encode").openingBracket();
+		renderer.literal("convert_to").openingBracket().rendered(function.expression().toSql(this.dialect)).comma().literal("'UTF8'").closingBracket();
+		renderer.comma().literal("'hex'").closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderUnhex(@NonNull SqlUnhexFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.literal("decode").openingBracket().rendered(function.expression().toSql(this.dialect)).comma().literal("'hex'").closingBracket();
+		return renderer.toSql();
 	}
 }

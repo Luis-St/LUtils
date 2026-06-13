@@ -95,6 +95,6 @@ public final class SqlRenderingHelper {
 		Objects.requireNonNull(inner, "Inner rendered must not be null");
 		Objects.requireNonNull(type, "Target type must not be null");
 		
-		return SqlRenderer.empty().cast().openingBracket().rendered(inner).as().literal(dialect.getTypeName(type)).closingBracket().toSql();
+		return SqlRenderer.empty().cast().openingBracket().rendered(inner).as().literal(dialect.getCastTypeName(type)).closingBracket().toSql();
 	}
 }

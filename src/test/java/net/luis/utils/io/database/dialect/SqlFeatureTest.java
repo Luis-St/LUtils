@@ -41,11 +41,12 @@ class SqlFeatureTest {
 	
 	@Test
 	void valuesContainsAllConstants() {
-		assertEquals(26, SqlFeature.values().length);
+		assertEquals(27, SqlFeature.values().length);
 		assertNotNull(SqlFeature.RETURNING);
 		assertNotNull(SqlFeature.JOINED_DML);
 		assertNotNull(SqlFeature.OFFSET_WITHOUT_LIMIT);
 		assertNotNull(SqlFeature.UPSERT);
+		assertNotNull(SqlFeature.UPDATE_RETURNING);
 	}
 	
 	@Test

@@ -31,9 +31,9 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.sql.*;
+import java.sql.Date;
 import java.time.*;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  *
@@ -94,6 +94,35 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		}
 	}
 	
+	private static @Nullable Object numericFallback(@NonNull ResultSet resultSet, int columnIndex, @NonNull Class<?> javaType) throws SQLException {
+		if (!Number.class.isAssignableFrom(javaType)) {
+			throw new UnsupportedOperationException("No numeric fallback for type " + javaType.getName());
+		}
+		
+		Object raw = resultSet.getObject(columnIndex);
+		if (raw == null || resultSet.wasNull()) {
+			return null;
+		}
+		if (!(raw instanceof Number number)) {
+			throw new UnsupportedOperationException("Result value at column index " + columnIndex + " is not numeric: " + raw.getClass().getName());
+		}
+		
+		if (javaType == Integer.class) {
+			return number.intValue();
+		} else if (javaType == Long.class) {
+			return number.longValue();
+		} else if (javaType == Double.class) {
+			return number.doubleValue();
+		} else if (javaType == Float.class) {
+			return number.floatValue();
+		} else if (javaType == Short.class) {
+			return number.shortValue();
+		} else if (javaType == Byte.class) {
+			return number.byteValue();
+		}
+		throw new UnsupportedOperationException("No numeric fallback for type " + javaType.getName());
+	}
+	
 	private static @Nullable Object temporalFallback(@NonNull ResultSet resultSet, int columnIndex, @NonNull Class<?> javaType) throws SQLException {
 		if (javaType == LocalDate.class) {
 			Date value = resultSet.getDate(columnIndex);
@@ -141,8 +170,23 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		}
 		
 		try {
+			if (this.javaType() == OffsetDateTime.class && this.jdbcType() == Types.TIMESTAMP_WITH_TIMEZONE) {
+				Timestamp value = resultSet.getTimestamp(columnIndex, Calendar.getInstance(TimeZone.getTimeZone("UTC")));
+				return value == null ? null : this.javaType().cast(OffsetDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC));
+			}
+			
+			if (this.javaType() == OffsetTime.class && this.jdbcType() == Types.TIME_WITH_TIMEZONE) {
+				Time value = resultSet.getTime(columnIndex, Calendar.getInstance(TimeZone.getTimeZone("UTC")));
+				return value == null ? null : this.javaType().cast(value.toLocalTime().atOffset(ZoneOffset.UTC));
+			}
 			return resultSet.getObject(columnIndex, this.javaType());
 		} catch (SQLException e) {
+			try {
+				return this.javaType().cast(numericFallback(resultSet, columnIndex, this.javaType()));
+			} catch (UnsupportedOperationException _) {} catch (SQLException fallback) {
+				throw new SqlResultMappingException("Failed to retrieve value from result set at column index " + columnIndex, fallback, this.javaType(), null);
+			}
+			
 			try {
 				return this.javaType().cast(temporalFallback(resultSet, columnIndex, this.javaType()));
 			} catch (UnsupportedOperationException ignored) {

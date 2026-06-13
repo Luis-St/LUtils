@@ -19,7 +19,10 @@
 package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
+import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.type.SqlTypeRegistry;
 import net.luis.utils.io.database.type.SqlTypes;
@@ -77,5 +80,18 @@ public class MariaDbDialect extends MySqlDialect {
 	@Override
 	public @NonNull SqlRendered renderReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
 		return this.renderStandardReturning(columns);
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderLockClause(@NonNull SqlLockMode mode, boolean skipLocked, boolean noWait) throws SqlException {
+		Objects.requireNonNull(mode, "Sql lock mode must not be null");
+		if (mode != SqlLockMode.FOR_SHARE) {
+			return super.renderLockClause(mode, skipLocked, noWait);
+		}
+		
+		if (noWait) {
+			throw new SqlDialectFeatureException(SqlFeature.NO_WAIT, this); // MariaDB cannot combine NOWAIT with a shared lock
+		}
+		return SqlRenderer.empty().literal("LOCK").literal("IN").literal("SHARE").literal("MODE").toSql(); // MariaDB has no FOR SHARE keyword
 	}
 }

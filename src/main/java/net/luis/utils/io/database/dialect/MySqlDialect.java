@@ -27,8 +27,10 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.functions.numeric.SqlRandomFunction;
+import net.luis.utils.io.database.function.functions.numeric.bitwise.SqlBitwiseNotFunction;
 import net.luis.utils.io.database.function.functions.string.SqlConcatFunction;
 import net.luis.utils.io.database.function.functions.temporal.*;
+import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
@@ -105,6 +107,20 @@ public class MySqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	public @NonNull String getCastTypeName(@NonNull SqlType<?> type) throws SqlException {
+		Objects.requireNonNull(type, "Sql type must not be null");
+		if (type.baseType() instanceof SqlScalarType<?> scalar) {
+			return switch (scalar.jdbcType()) {
+				case Types.BOOLEAN, Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT -> "SIGNED"; // MySQL CAST does not accept INTEGER, only SIGNED/UNSIGNED
+				case Types.DOUBLE -> "DOUBLE";
+				case Types.FLOAT, Types.REAL -> "FLOAT";
+				default -> this.getTypeName(type);
+			};
+		}
+		return this.getTypeName(type);
+	}
+	
+	@Override
 	protected @NonNull Optional<String> getScalarTypeName(int jdbcType) {
 		return switch (jdbcType) {
 			case Types.BOOLEAN -> Optional.of("TINYINT(1)");
@@ -166,6 +182,11 @@ public class MySqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	public boolean usesInsertOrIgnoreModifier() {
+		return true;
+	}
+	
+	@Override
 	public @NonNull SqlRendered renderInsertOrIgnoreModifier() throws SqlException {
 		return SqlRendered.of("IGNORE");
 	}
@@ -177,7 +198,9 @@ public class MySqlDialect extends AbstractSqlDialect {
 	
 	@Override
 	protected @NonNull String getCheckConstraintsQueryString() {
-		return "SELECT CONSTRAINT_NAME, CHECK_CLAUSE FROM information_schema.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = ? AND TABLE_NAME = ?";
+		return "SELECT cc.CONSTRAINT_NAME, cc.CHECK_CLAUSE FROM information_schema.CHECK_CONSTRAINTS cc " +
+			"JOIN information_schema.TABLE_CONSTRAINTS tc ON tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME " +
+			"WHERE tc.CONSTRAINT_SCHEMA = ? AND tc.TABLE_NAME = ?";
 	}
 }
 
@@ -205,6 +228,31 @@ class MySqlIndexRenderer extends SqlIndexRenderer {
 	
 	MySqlIndexRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index) throws SqlException {
+		Objects.requireNonNull(index, "Sql index must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.create();
+		if (index.unique()) {
+			renderer.unique();
+		}
+		
+		renderer.index().literal(this.dialect.quoteIdentifier(index.name()));
+		renderer.on().literal(this.dialect.quoteIdentifier(index.columns().getFirst().owningTable().name()));
+		
+		renderer.openingBracket();
+		SqlRenderingHelper.renderList(renderer, index.columns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.name())));
+		renderer.closingBracket();
+		
+		renderer.using().literal(this.dialect.getIndexMethodName(index.method()));
+		
+		if (index.whereCondition() != null) {
+			renderer.where().rendered(index.whereCondition().toSql(this.dialect));
+		}
+		return renderer.toSql();
 	}
 	
 	@Override
@@ -314,6 +362,15 @@ class MySqlNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	protected @NonNull SqlRendered renderRandom(@NonNull SqlRandomFunction function) throws SqlException {
 		return SqlRendered.of("RAND()");
 	}
+	
+	@Override
+	protected @NonNull SqlRendered renderBitwiseNot(@NonNull SqlBitwiseNotFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		// MySQL/MariaDB ~ yields an unsigned BIGINT; cast back to SIGNED to preserve the signed result
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.cast().openingBracket().literal("~").openingBracket().rendered(function.expression().toSql(this.dialect)).closingBracket().as().literal("SIGNED").closingBracket();
+		return renderer.toSql();
+	}
 }
 
 class MySqlStringConditionRenderer extends SqlStringConditionRenderer {
@@ -406,6 +463,56 @@ class MySqlTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
 	MySqlTemporalFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderExtract(@NonNull SqlExtractFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		return switch (function.part()) {
+			case DAY_OF_WEEK -> {
+				SqlRenderer renderer = SqlRenderer.empty();
+				renderer.openingBracket().literal("WEEKDAY").openingBracket().rendered(function.expression().toSql(this.dialect)).closingBracket().literal("+").literal("1").closingBracket();
+				yield renderer.toSql();
+			}
+			case DAY_OF_YEAR -> SqlRenderingHelper.renderFunctionCall(this.dialect, "DAYOFYEAR", function.expression());
+			case WEEK -> {
+				SqlRenderer renderer = SqlRenderer.empty();
+				renderer.literal("WEEK").openingBracket().rendered(function.expression().toSql(this.dialect)).comma().literal("3").closingBracket();
+				yield renderer.toSql();
+			}
+			default -> super.renderExtract(function);
+		};
+	}
+	
+	private void renderDateFormat(@NonNull SqlRenderer renderer, @NonNull SqlRendered inner, @NonNull String format) {
+		renderer.literal("DATE_FORMAT").openingBracket().rendered(inner).comma().literal("'" + format + "'").closingBracket();
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderTemporalTruncate(@NonNull SqlTemporalTruncateFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlRendered inner = function.expression().toSql(this.dialect);
+		SqlRenderer renderer = SqlRenderer.empty();
+		switch (function.part()) {
+			case YEAR -> this.renderDateFormat(renderer, inner, "%Y-01-01");
+			case MONTH -> this.renderDateFormat(renderer, inner, "%Y-%m-01");
+			case DAY, DAY_OF_WEEK, DAY_OF_YEAR -> this.renderDateFormat(renderer, inner, "%Y-%m-%d");
+			case HOUR -> this.renderDateFormat(renderer, inner, "%Y-%m-%d %H:00:00");
+			case MINUTE -> this.renderDateFormat(renderer, inner, "%Y-%m-%d %H:%i:00");
+			case SECOND -> this.renderDateFormat(renderer, inner, "%Y-%m-%d %H:%i:%s");
+			case WEEK -> {
+				renderer.literal("DATE_SUB").openingBracket().literal("DATE").openingBracket().rendered(inner).closingBracket();
+				renderer.comma().literal("INTERVAL").literal("WEEKDAY").openingBracket().rendered(inner).closingBracket().literal("DAY").closingBracket();
+			}
+			case QUARTER -> {
+				renderer.literal("DATE_ADD").openingBracket();
+				renderer.literal("MAKEDATE").openingBracket().literal("YEAR").openingBracket().rendered(inner).closingBracket().comma().literal("1").closingBracket();
+				renderer.comma().literal("INTERVAL").openingBracket().openingBracket().literal("QUARTER").openingBracket().rendered(inner).closingBracket().literal("-").literal("1").closingBracket().literal("*").literal("3").closingBracket().literal("MONTH").closingBracket();
+			}
+		}
+		return renderer.toSql();
 	}
 	
 	@Override

@@ -44,6 +44,8 @@ class PostgresSqlNumericFunctionRendererTest {
 		SqlNumericTruncateFunction<?> function = new SqlNumericTruncateFunction<>(new SqlValueExpression<>(5));
 		var rendered = RENDERER.renderTruncate(function);
 		assertTrue(rendered.sql().contains("TRUNC("));
-		assertEquals(2, rendered.parameters().size());
+		assertTrue(rendered.sql().contains("CAST("));
+		assertTrue(rendered.sql().contains("numeric"));
+		assertEquals(1, rendered.parameters().size());
 	}
 }

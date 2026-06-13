@@ -39,8 +39,7 @@ import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.query.SqlSetOperation;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
-import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.*;
 import org.intellij.lang.annotations.Language;
@@ -547,63 +546,33 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	
 	@Override
 	public @NonNull String getCreateSchemaColumnsTableSql() throws SqlException {
-		String table = this.quoteIdentifier(SCHEMA_COLUMNS_TABLE);
-		String version = this.quoteIdentifier("version");
-		String tableName = this.quoteIdentifier("table_name");
-		String columnName = this.quoteIdentifier("column_name");
-		String jdbcType = this.quoteIdentifier("jdbc_type");
-		String length = this.quoteIdentifier("length");
-		String precision = this.quoteIdentifier("precision");
-		String scale = this.quoteIdentifier("scale");
-		String fractional = this.quoteIdentifier("fractional");
-		String isNullable = this.quoteIdentifier("is_nullable");
-		String isAutoIncrement = this.quoteIdentifier("is_auto_increment");
-		String isPrimaryKey = this.quoteIdentifier("is_primary_key");
-		String isUnique = this.quoteIdentifier("is_unique");
-		String ordinalPosition = this.quoteIdentifier("ordinal_position");
-		
-		String varchar64 = this.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(64)));
-		String varchar256 = this.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(256)));
-		String intType = this.getTypeName(SqlTypes.INTEGER);
-		String boolType = this.getTypeName(SqlTypes.BOOLEAN);
-		
-		return "CREATE TABLE IF NOT EXISTS " + table + " (" +
-			version + " " + varchar64 + " NOT NULL, " +
-			tableName + " " + varchar256 + " NOT NULL, " +
-			columnName + " " + varchar256 + " NOT NULL, " +
-			jdbcType + " " + intType + " NOT NULL, " +
-			length + " " + intType + " NULL, " +
-			precision + " " + intType + " NULL, " +
-			scale + " " + intType + " NULL, " +
-			fractional + " " + intType + " NULL, " +
-			isNullable + " " + boolType + " NOT NULL, " +
-			isAutoIncrement + " " + boolType + " NOT NULL, " +
-			isPrimaryKey + " " + boolType + " NOT NULL, " +
-			isUnique + " " + boolType + " NOT NULL, " +
-			ordinalPosition + " " + intType + " NOT NULL, " +
-			"PRIMARY KEY (" + version + ", " + tableName + ", " + columnName + ")" +
-			")";
+		SqlTable<Void> table = SqlTable.create(Void.class, SCHEMA_COLUMNS_TABLE);
+		SqlColumn<Void, String> version = table.column("version", SqlTypes.STRING.configure(SqlParameter.length(64)), v -> null, col -> col.primaryKey().notNull());
+		SqlColumn<Void, String> tableName = table.column("table_name", SqlTypes.STRING.configure(SqlParameter.length(256)), v -> null, col -> col.primaryKey().notNull());
+		SqlColumn<Void, String> columnName = table.column("column_name", SqlTypes.STRING.configure(SqlParameter.length(256)), v -> null, col -> col.primaryKey().notNull());
+		table.column("jdbc_type", SqlTypes.INTEGER, v -> null, col -> col.notNull());
+		table.column("length", SqlTypes.INTEGER, v -> null);
+		table.column("precision", SqlTypes.INTEGER, v -> null);
+		table.column("scale", SqlTypes.INTEGER, v -> null);
+		table.column("fractional", SqlTypes.INTEGER, v -> null);
+		table.column("is_nullable", SqlTypes.BOOLEAN, v -> null, col -> col.notNull());
+		table.column("is_auto_increment", SqlTypes.BOOLEAN, v -> null, col -> col.notNull());
+		table.column("is_primary_key", SqlTypes.BOOLEAN, v -> null, col -> col.notNull());
+		table.column("is_unique", SqlTypes.BOOLEAN, v -> null, col -> col.notNull());
+		table.column("ordinal_position", SqlTypes.INTEGER, v -> null, col -> col.notNull());
+		table.compositePrimaryKey(version, tableName, columnName);
+		return this.tableRenderer().renderCreateTable(table, true).sql();
 	}
 	
 	@Override
 	public @NonNull String getCreateSchemaCheckConstraintsTableSql() throws SqlException {
-		String table = this.quoteIdentifier(SCHEMA_CHECK_CONSTRAINTS_TABLE);
-		String version = this.quoteIdentifier("version");
-		String tableName = this.quoteIdentifier("table_name");
-		String constraintName = this.quoteIdentifier("constraint_name");
-		String checkClause = this.quoteIdentifier("check_clause");
-		
-		String varchar64 = this.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(64)));
-		String varchar256 = this.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(256)));
-		String textType = this.getTypeName(SqlTypes.TEXT);
-		
-		return "CREATE TABLE IF NOT EXISTS " + table + " (" +
-			version + " " + varchar64 + " NOT NULL, " +
-			tableName + " " + varchar256 + " NOT NULL, " +
-			constraintName + " " + varchar256 + " NOT NULL, " +
-			checkClause + " " + textType + " NOT NULL, " +
-			"PRIMARY KEY (" + version + ", " + tableName + ", " + constraintName + ")" +
-			")";
+		SqlTable<Void> table = SqlTable.create(Void.class, SCHEMA_CHECK_CONSTRAINTS_TABLE);
+		SqlColumn<Void, String> version = table.column("version", SqlTypes.STRING.configure(SqlParameter.length(64)), v -> null, col -> col.primaryKey().notNull());
+		SqlColumn<Void, String> tableName = table.column("table_name", SqlTypes.STRING.configure(SqlParameter.length(256)), v -> null, col -> col.primaryKey().notNull());
+		SqlColumn<Void, String> constraintName = table.column("constraint_name", SqlTypes.STRING.configure(SqlParameter.length(256)), v -> null, col -> col.primaryKey().notNull());
+		table.column("check_clause", SqlTypes.TEXT, v -> null, SqlColumnBuilder::notNull);
+		table.compositePrimaryKey(version, tableName, constraintName);
+		return this.tableRenderer().renderCreateTable(table, true).sql();
 	}
 	
 	@Override

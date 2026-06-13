@@ -310,7 +310,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	
 	public @NonNull Optional<E> fetchFirst() throws SqlException {
 		List<E> results = this.limit(1).executeAndMap();
-		return results.isEmpty() ? Optional.empty() : Optional.of(results.getFirst());
+		return results.isEmpty() ? Optional.empty() : Optional.ofNullable(results.getFirst());
 	}
 	
 	public @NonNull E fetchOne() throws SqlException {
@@ -379,6 +379,9 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	private @NonNull SqlRendered render(@NonNull SqlSelectQueryConfig<?> cfg, @NonNull SqlDialect dialect, boolean countStar) throws SqlException {
+		Objects.requireNonNull(cfg, "Sql select query config must not be null");
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		
 		if (!cfg.commonTableExpressions().isEmpty()) {
@@ -437,6 +440,12 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		}
 		
 		renderer.from().literal(dialect.quoteIdentifier(cfg.table().name()));
+		if (cfg.lockMode() != null) {
+			SqlRendered lockHint = dialect.renderLockHint(cfg.lockMode(), cfg.skipLocked(), cfg.noWait());
+			if (!lockHint.sql().isEmpty()) {
+				renderer.rendered(lockHint);
+			}
+		}
 		
 		for (SqlJoinClause join : cfg.joins()) {
 			renderer.rendered(join.toSql(dialect));
@@ -513,7 +522,11 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 			if (cfg.skipLocked() && cfg.lockMode() == SqlLockMode.FOR_SHARE) {
 				throw new SqlStatementBuilderException("Skip locked is only allowed with FOR UPDATE lock mode");
 			}
-			renderer.rendered(dialect.renderLockClause(cfg.lockMode(), cfg.skipLocked(), cfg.noWait()));
+			
+			SqlRendered lockClause = dialect.renderLockClause(cfg.lockMode(), cfg.skipLocked(), cfg.noWait());
+			if (!lockClause.sql().isEmpty()) {
+				renderer.rendered(lockClause);
+			}
 		}
 		return renderer.toSql();
 	}

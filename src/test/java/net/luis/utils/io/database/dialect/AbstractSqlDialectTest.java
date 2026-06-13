@@ -725,7 +725,7 @@ class AbstractSqlDialectTest {
 		String sql = DIALECT.getCreateSchemaColumnsTableSql();
 		assertTrue(sql.contains("CREATE TABLE IF NOT EXISTS"));
 		assertTrue(sql.contains("\"_sql_schema_columns\""));
-		assertTrue(sql.contains("PRIMARY KEY ("));
+		assertTrue(sql.contains("PRIMARY KEY("));
 		assertTrue(sql.contains("VARCHAR(64)"));
 		assertTrue(sql.contains("INTEGER"));
 		assertTrue(sql.contains("BOOLEAN"));
@@ -737,7 +737,7 @@ class AbstractSqlDialectTest {
 		assertTrue(sql.contains("\"_sql_schema_check_constraints\""));
 		assertTrue(sql.contains("\"check_clause\""));
 		assertTrue(sql.contains("TEXT"));
-		assertTrue(sql.contains("PRIMARY KEY ("));
+		assertTrue(sql.contains("PRIMARY KEY("));
 	}
 	
 	@Test

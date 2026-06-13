@@ -151,6 +151,10 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	public @NonNull List<E> returning() throws SqlException {
+		if (!this.config.dialect().isFeatureSupported(SqlFeature.UPDATE_RETURNING)) {
+			throw new SqlDialectFeatureException(SqlFeature.UPDATE_RETURNING, this.config.dialect());
+		}
+		
 		return SqlQueryExecutor.executeReturningQuery(
 			this.config.dialect(), this.config.connectionSource(), this.toSql(this.config.dialect()), this.config.dialect().renderReturning(List.copyOf(this.config.table().columns())), this.config.queryTimeout(), this.config.rowMapper()
 		);

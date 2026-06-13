@@ -24,14 +24,18 @@ import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.condition.conditions.comparison.SqlIsDistinctFromCondition;
 import net.luis.utils.io.database.dialect.renderer.*;
 import net.luis.utils.io.database.dialect.renderer.expression.condition.SqlComparisonConditionRenderer;
-import net.luis.utils.io.database.dialect.renderer.expression.function.SqlNumericFunctionRenderer;
-import net.luis.utils.io.database.dialect.renderer.expression.function.SqlTemporalFunctionRenderer;
+import net.luis.utils.io.database.dialect.renderer.expression.function.*;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.functions.generic.SqlGreatestFunction;
+import net.luis.utils.io.database.function.functions.generic.SqlLeastFunction;
 import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateFunction;
+import net.luis.utils.io.database.function.functions.numeric.bitwise.SqlBitwiseXorFunction;
+import net.luis.utils.io.database.function.functions.string.*;
 import net.luis.utils.io.database.function.functions.temporal.*;
+import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
@@ -39,6 +43,7 @@ import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
+import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -55,6 +60,7 @@ public class SqliteDialect extends AbstractSqlDialect {
 	
 	private static final Set<SqlFeature> SUPPORTED_FEATURES = Set.of(
 		SqlFeature.RETURNING,
+		SqlFeature.UPDATE_RETURNING,
 		SqlFeature.CTE,
 		SqlFeature.RECURSIVE_CTE,
 		SqlFeature.NULLS_ORDERING,
@@ -76,7 +82,9 @@ public class SqliteDialect extends AbstractSqlDialect {
 		return SqlDialectRenderer.builder(this)
 			.temporalFunctionRenderer(new SqliteTemporalFunctionRenderer(this))
 			.numericFunctionRenderer(new SqliteNumericFunctionRenderer(this))
+			.stringFunctionRenderer(new SqliteStringFunctionRenderer(this))
 			.comparisonConditionRenderer(new SqliteComparisonConditionRenderer(this))
+			.genericFunctionRenderer(new SqliteGenericFunctionRenderer(this))
 			.tableRenderer(new SqliteTableRenderer(this))
 			.indexRenderer(new SqliteIndexRenderer(this))
 			.columnRenderer(new SqliteColumnRenderer(this))
@@ -132,6 +140,25 @@ public class SqliteDialect extends AbstractSqlDialect {
 	}
 }
 
+class SqliteGenericFunctionRenderer extends SqlGenericFunctionRenderer {
+	
+	SqliteGenericFunctionRenderer(@NonNull SqlDialect dialect) {
+		super(dialect);
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderGreatest(@NonNull SqlGreatestFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		return SqlRenderingHelper.renderFunctionCallWithList(this.dialect, "MAX", function.expressions());
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderLeast(@NonNull SqlLeastFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		return SqlRenderingHelper.renderFunctionCallWithList(this.dialect, "MIN", function.expressions());
+	}
+}
+
 class SqliteNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	
 	SqliteNumericFunctionRenderer(@NonNull SqlDialect dialect) {
@@ -143,6 +170,19 @@ class SqliteNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "TRUNC", function.expression());
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderBitwiseXor(@NonNull SqlBitwiseXorFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlRendered first = function.firstOperand().toSql(this.dialect);
+		SqlRendered second = function.secondOperand().toSql(this.dialect);
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.openingBracket().rendered(first).literal("|").rendered(second).closingBracket();
+		renderer.literal("-");
+		renderer.openingBracket().rendered(first).literal("&").rendered(second).closingBracket();
+		return renderer.toSql();
 	}
 }
 
@@ -245,9 +285,6 @@ class SqliteTableRenderer extends SqlTableRenderer {
 		copy.select().literal(columns).from().literal(original);
 		
 		List<SqlRendered> statements = new ArrayList<>();
-		// PRAGMA foreign_keys is a silent no-op inside a transaction, and migrations always run in one, so it cannot be used here.
-		// legacy_alter_table keeps the RENAME from rewriting references in other schema objects; defer_foreign_keys postpones FK
-		// enforcement to commit time (honored within a transaction, auto-reset on commit/rollback) instead of disabling it outright.
 		statements.add(SqlRendered.of("PRAGMA legacy_alter_table=ON"));
 		statements.add(SqlRendered.of("PRAGMA defer_foreign_keys=ON"));
 		statements.add(create.toSql());
@@ -263,6 +300,29 @@ class SqliteIndexRenderer extends SqlIndexRenderer {
 	
 	SqliteIndexRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index) throws SqlException {
+		Objects.requireNonNull(index, "Sql index must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.create();
+		if (index.unique()) {
+			renderer.unique();
+		}
+		
+		renderer.index().literal(this.dialect.quoteIdentifier(index.name()));
+		renderer.on().literal(this.dialect.quoteIdentifier(index.columns().getFirst().owningTable().name()));
+		
+		renderer.openingBracket();
+		SqlRenderingHelper.renderList(renderer, index.columns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.name())));
+		renderer.closingBracket();
+		
+		if (index.whereCondition() != null) {
+			renderer.where().rendered(index.whereCondition().toSql(this.dialect));
+		}
+		return renderer.toSql();
 	}
 	
 	@Override
@@ -359,6 +419,77 @@ class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	}
 	
 	@Override
+	protected @NonNull SqlRendered renderExtract(@NonNull SqlExtractFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlRendered inner = function.expression().toSql(this.dialect);
+		SqlRenderer renderer = SqlRenderer.empty();
+		if (function.part() == SqlTemporalPart.DAY_OF_WEEK) {
+			renderer.openingBracket().openingBracket().openingBracket();
+			renderer.cast().openingBracket().literal("strftime").openingBracket().literal("'%w'").comma().rendered(inner).closingBracket().as().literal("INTEGER").closingBracket();
+			renderer.literal("+").literal("6").closingBracket().literal("%").literal("7").closingBracket().literal("+").literal("1").closingBracket();
+			return renderer.toSql();
+		}
+		if (function.part() == SqlTemporalPart.QUARTER) {
+			renderer.openingBracket().openingBracket();
+			renderer.cast().openingBracket().literal("strftime").openingBracket().literal("'%m'").comma().rendered(inner).closingBracket().as().literal("INTEGER").closingBracket();
+			renderer.literal("+").literal("2").closingBracket().literal("/").literal("3").closingBracket();
+			return renderer.toSql();
+		}
+		
+		String format = switch (function.part()) {
+			case YEAR -> "%Y";
+			case MONTH -> "%m";
+			case DAY -> "%d";
+			case HOUR -> "%H";
+			case MINUTE -> "%M";
+			case SECOND -> "%S";
+			case WEEK -> "%W";
+			case DAY_OF_WEEK -> "%w";
+			case DAY_OF_YEAR -> "%j";
+			default -> throw new SqlDialectUnsupportedRenderingException("EXTRACT part " + function.part() + " is not supported by dialect " + this.dialect.name());
+		};
+		renderer.cast().openingBracket().literal("strftime").openingBracket().literal("'" + format + "'").comma().rendered(inner).closingBracket().as().literal("INTEGER").closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderTemporalTruncate(@NonNull SqlTemporalTruncateFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlRendered inner = function.expression().toSql(this.dialect);
+		SqlRenderer renderer = SqlRenderer.empty();
+		switch (function.part()) {
+			case WEEK -> {
+				renderer.literal("strftime").openingBracket().literal("'%Y-%m-%d 00:00:00'").comma().rendered(inner).comma();
+				renderer.literal("'-' ||").openingBracket().openingBracket().literal("strftime").openingBracket().literal("'%w'").comma().rendered(inner).closingBracket().literal("+").literal("6").closingBracket().literal("%").literal("7").closingBracket().literal("|| ' days'");
+				renderer.closingBracket();
+			}
+			case QUARTER -> {
+				renderer.literal("printf").openingBracket().literal("'%s-%02d-01 00:00:00'").comma();
+				renderer.literal("strftime").openingBracket().literal("'%Y'").comma().rendered(inner).closingBracket().comma();
+				renderer.openingBracket().openingBracket().openingBracket();
+				renderer.cast().openingBracket().literal("strftime").openingBracket().literal("'%m'").comma().rendered(inner).closingBracket().as().literal("INTEGER").closingBracket();
+				renderer.literal("-").literal("1").closingBracket().literal("/").literal("3").closingBracket().literal("*").literal("3").literal("+").literal("1").closingBracket();
+				renderer.closingBracket();
+			}
+			default -> {
+				String format = switch (function.part()) {
+					case YEAR -> "%Y-01-01 00:00:00";
+					case MONTH -> "%Y-%m-01 00:00:00";
+					case DAY, DAY_OF_WEEK, DAY_OF_YEAR -> "%Y-%m-%d 00:00:00";
+					case HOUR -> "%Y-%m-%d %H:00:00";
+					case MINUTE -> "%Y-%m-%d %H:%M:00";
+					case SECOND -> "%Y-%m-%d %H:%M:%S";
+					default -> throw new SqlDialectUnsupportedRenderingException("DATE_TRUNC part " + function.part() + " is not supported by dialect " + this.dialect.name());
+				};
+				renderer.literal("strftime").openingBracket().literal("'" + format + "'").comma().rendered(inner).closingBracket();
+			}
+		}
+		return renderer.toSql();
+	}
+	
+	@Override
 	protected @NonNull SqlRendered renderFromEpoch(@NonNull SqlFromEpochFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
@@ -449,6 +580,127 @@ class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(duration.toSql(this.dialect)).literal("|| ' " + toSqliteModifier(part) + "'");
+		return renderer.toSql();
+	}
+}
+
+class SqliteStringFunctionRenderer extends SqlStringFunctionRenderer {
+	
+	SqliteStringFunctionRenderer(@NonNull SqlDialect dialect) {
+		super(dialect);
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderConcat(@NonNull SqlConcatFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		boolean distinct = function.distinct();
+		boolean ordered = function.ordered();
+		if (!distinct && !ordered) {
+			return super.renderConcat(function); // plain concatenation uses the || operator, which SQLite supports
+		}
+		
+		List<? extends SqlExpression<? extends CharSequence>> values = function.expressions();
+		Optional<String> separator = function.separator();
+		SqlExpression<? extends CharSequence> first = values.isEmpty() ? null : values.getFirst();
+		
+		SqlRenderer renderer = SqlRenderer.empty(); // SQLite has no STRING_AGG; group_concat is the aggregate equivalent
+		renderer.literal("group_concat").openingBracket();
+		if (distinct) {
+			renderer.distinct();
+		}
+		if (first != null) {
+			renderer.rendered(first.toSql(this.dialect));
+		}
+		if (!distinct) { // SQLite forbids a separator argument together with DISTINCT
+			renderer.comma().parameter(DEFAULT_STRING_TYPE, separator.orElse(","));
+		}
+		if (ordered && first != null) {
+			renderer.orderBy().rendered(first.toSql(this.dialect));
+		}
+		renderer.closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderPosition(@NonNull SqlPositionFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		// SQLite has no POSITION(x IN y); INSTR(y, x) is the equivalent (note the reversed argument order)
+		return SqlRenderingHelper.renderFunctionCall(this.dialect, "INSTR", function.expression(), function.substring());
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderSubstring(@NonNull SqlSubstringFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty(); // SQLite has no SUBSTRING(x FROM a FOR b); substr(x, a, b) is the equivalent
+		renderer.literal("substr").openingBracket().rendered(function.expression().toSql(this.dialect)).comma().rendered(function.start().toSql(this.dialect));
+		SqlExpression<? extends Number> length = function.length();
+		if (length != null) {
+			renderer.comma().rendered(length.toSql(this.dialect));
+		}
+		renderer.closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderTrimChars(@NonNull SqlTrimCharsFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		// SQLite has no TRIM(chars FROM x); TRIM(x, chars) is the equivalent
+		return SqlRenderingHelper.renderFunctionCall(this.dialect, "TRIM", function.expression(), function.characters());
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderLeft(@NonNull SqlLeftFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty(); // SQLite has no LEFT; substr from the start emulates it
+		renderer.literal("substr").openingBracket().rendered(function.expression().toSql(this.dialect)).comma().literal("1").comma().rendered(function.length().toSql(this.dialect)).closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderRight(@NonNull SqlRightFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty(); // SQLite has no RIGHT; a negative substr start counts from the end
+		renderer.literal("substr").openingBracket().rendered(function.expression().toSql(this.dialect)).comma().literal("-").openingBracket().rendered(function.length().toSql(this.dialect)).closingBracket().closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderLeftPad(@NonNull SqlLeftPadFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		return this.renderPad(function.expression(), function.length(), function.fill(), true);
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderRightPad(@NonNull SqlRightPadFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		return this.renderPad(function.expression(), function.length(), function.fill(), false);
+	}
+	
+	private @NonNull SqlRendered renderPad(@NonNull SqlExpression<?> expression, @NonNull SqlExpression<?> length, @NonNull SqlExpression<?> fill, boolean left) throws SqlException {
+		SqlRendered value = expression.toSql(this.dialect); // SQLite has no LPAD/RPAD; hex(zeroblob()) builds a fill run of the requested length
+		SqlRendered count = length.toSql(this.dialect);
+		
+		SqlRenderer pad = SqlRenderer.empty();
+		pad.literal("substr").openingBracket();
+		pad.literal("replace").openingBracket().literal("hex").openingBracket().literal("zeroblob").openingBracket().rendered(count).closingBracket().closingBracket().comma().literal("'00'").comma().rendered(fill.toSql(this.dialect)).closingBracket();
+		pad.comma().literal("1").comma().rendered(count).literal("-").literal("length").openingBracket().rendered(value).closingBracket();
+		pad.closingBracket();
+		SqlRendered fillRun = pad.toSql();
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.case_().when().literal("length").openingBracket().rendered(value).closingBracket().literal(">=").rendered(count).then();
+		renderer.literal("substr").openingBracket().rendered(value).comma().literal("1").comma().rendered(count).closingBracket();
+		renderer.else_();
+		if (left) {
+			renderer.rendered(fillRun).literal("||").rendered(value);
+		} else {
+			renderer.rendered(value).literal("||").rendered(fillRun);
+		}
+		renderer.end();
 		return renderer.toSql();
 	}
 }

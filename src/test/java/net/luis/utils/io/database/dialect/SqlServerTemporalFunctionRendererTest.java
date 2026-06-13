@@ -85,7 +85,7 @@ class SqlServerTemporalFunctionRendererTest {
 	void renderToEpochUsesDateDiffSecond() throws SqlException {
 		SqlToEpochFunction<?> function = new SqlToEpochFunction<>(new SqlValueExpression<>(5), SqlTypes.LONG);
 		String sql = RENDERER.renderToEpoch(function).sql();
-		assertTrue(sql.contains("DATEDIFF("));
+		assertTrue(sql.contains("DATEDIFF_BIG("));
 		assertTrue(sql.contains("SECOND"));
 		assertTrue(sql.contains("'1970-01-01'"));
 	}

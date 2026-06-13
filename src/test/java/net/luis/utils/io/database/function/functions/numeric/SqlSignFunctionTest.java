@@ -61,9 +61,9 @@ class SqlSignFunctionTest {
 	}
 	
 	@Test
-	void requiresCastDefaultsFalse() {
+	void requiresCastForIntegerResult() {
 		SqlSignFunction function = new SqlSignFunction(SqlTestFixtures.integerExpression());
-		assertFalse(function.requiresCast());
+		assertTrue(function.requiresCast());
 	}
 	
 	@Test

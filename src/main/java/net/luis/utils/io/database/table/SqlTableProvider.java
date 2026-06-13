@@ -93,8 +93,12 @@ public class SqlTableProvider<E> {
 	}
 	
 	public boolean exists() throws SqlException {
-		try (SqlConnectionHandle handle = this.connectionSource.open(); ResultSet resultSet = handle.connection().getMetaData().getTables(null, this.table.schema(), this.table.name(), new String[] { "TABLE" })) {
-			return resultSet.next();
+		try (SqlConnectionHandle handle = this.connectionSource.open()) {
+			String schema = handle.connection().getSchema();
+			
+			try (ResultSet resultSet = handle.connection().getMetaData().getTables(null, schema, this.table.name(), new String[] { "TABLE" })) {
+				return resultSet.next();
+			}
 		} catch (SQLException e) {
 			throw SqlExceptions.translate("Failed to check if table '" + this.table.name() + "' exists", e);
 		}
@@ -143,37 +147,40 @@ public class SqlTableProvider<E> {
 	}
 	
 	public @NonNull @Unmodifiable List<SqlIndex> getIndexes() throws SqlException {
-		try (SqlConnectionHandle handle = this.connectionSource.open(); ResultSet resultSet = handle.connection().getMetaData().getIndexInfo(null, this.table.schema(), this.table.name(), false, false)) {
-			Map<String, List<SqlColumn<?, ?>>> indexColumns = Maps.newLinkedHashMap();
-			Map<String, Boolean> indexUnique = Maps.newLinkedHashMap();
+		try (SqlConnectionHandle handle = this.connectionSource.open()) {
+			String schema = handle.connection().getSchema();
 			
-			while (resultSet.next()) {
-				String indexName = resultSet.getString("INDEX_NAME");
+			try (ResultSet resultSet = handle.connection().getMetaData().getIndexInfo(null, schema, this.table.name(), false, false)) {
+				Map<String, List<SqlColumn<?, ?>>> indexColumns = Maps.newLinkedHashMap();
+				Map<String, Boolean> indexUnique = Maps.newLinkedHashMap();
 				
-				if (indexName == null) {
-					continue;
-				}
-				
-				String columnName = resultSet.getString("COLUMN_NAME");
-				boolean nonUnique = resultSet.getBoolean("NON_UNIQUE");
-				indexColumns.computeIfAbsent(indexName, k -> Lists.newArrayList());
-				indexUnique.putIfAbsent(indexName, !nonUnique);
-				
-				if (columnName != null) {
-					for (SqlColumn<E, ?> column : this.table.columns()) {
-						if (column.name().equals(columnName)) {
-							indexColumns.get(indexName).add(column);
-							break;
+				while (resultSet.next()) {
+					String indexName = resultSet.getString("INDEX_NAME");
+					if (indexName == null) {
+						continue;
+					}
+					
+					String columnName = resultSet.getString("COLUMN_NAME");
+					boolean nonUnique = resultSet.getBoolean("NON_UNIQUE");
+					indexColumns.computeIfAbsent(indexName, k -> Lists.newArrayList());
+					indexUnique.putIfAbsent(indexName, !nonUnique);
+					
+					if (columnName != null) {
+						for (SqlColumn<E, ?> column : this.table.columns()) {
+							if (column.name().equals(columnName)) {
+								indexColumns.get(indexName).add(column);
+								break;
+							}
 						}
 					}
 				}
+				
+				List<SqlIndex> indexes = Lists.newArrayList();
+				for (Map.Entry<String, List<SqlColumn<?, ?>>> entry : indexColumns.entrySet()) {
+					indexes.add(new SqlIndex(entry.getKey(), List.copyOf(entry.getValue()), indexUnique.getOrDefault(entry.getKey(), false), SqlIndexMethod.BTREE));
+				}
+				return Collections.unmodifiableList(indexes);
 			}
-			
-			List<SqlIndex> indexes = Lists.newArrayList();
-			for (Map.Entry<String, List<SqlColumn<?, ?>>> entry : indexColumns.entrySet()) {
-				indexes.add(new SqlIndex(entry.getKey(), List.copyOf(entry.getValue()), indexUnique.getOrDefault(entry.getKey(), false), SqlIndexMethod.BTREE));
-			}
-			return Collections.unmodifiableList(indexes);
 		} catch (SQLException e) {
 			throw new SqlSchemaIntrospectionException("Failed to get indexes for sql table '" + this.table.name() + "'", e);
 		}

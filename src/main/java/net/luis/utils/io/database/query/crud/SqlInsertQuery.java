@@ -203,7 +203,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 		List<SqlColumn<E, ?>> columns = table.columns();
 		renderer.insert();
 		
-		if (this.config.isInsertOrIgnore()) {
+		if (this.config.isInsertOrIgnore() && dialect.usesInsertOrIgnoreModifier()) {
 			SqlRendered modifier = dialect.renderInsertOrIgnoreModifier();
 			if (!modifier.sql().isEmpty()) {
 				renderer.rendered(modifier);
@@ -245,10 +245,10 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 			renderer.rendered(dialect.renderUpsertClause(Objects.requireNonNull(this.config.conflictColumn(), "Conflict column must not be null"), (List<SqlColumn<?, ?>>) (List<?>) columns));
 		}
 		
-		if (this.config.isInsertOrIgnore()) {
+		if (this.config.isInsertOrIgnore() && !dialect.usesInsertOrIgnoreModifier()) {
 			List<SqlColumn<E, ?>> conflictColumns = Objects.requireNonNull(this.config.conflictColumns(), "Conflict columns must not be null");
 			SqlRendered suffix = dialect.renderInsertOrIgnoreSuffix((List<SqlColumn<?, ?>>) (List<?>) conflictColumns);
-			
+
 			if (!suffix.sql().isEmpty()) {
 				renderer.rendered(suffix);
 			}
