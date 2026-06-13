@@ -43,6 +43,14 @@ public final class ClassPathUtils {
 	 * The logger for this class.<br>
 	 */
 	private static final Logger LOGGER = LogManager.getLogger(ClassPathUtils.class);
+	/**
+	 * An empty array of fields, used to return an empty array when a class cannot be linked.<br>
+	 */
+	public static final Field[] EMPTY_FIELD_ARRAY = new Field[0];
+	/**
+	 * An empty array of methods, used to return an empty array when a class cannot be linked.<br>
+	 */
+	public static final Method[] EMPTY_METHOD_ARRAY = new Method[0];
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
@@ -157,7 +165,7 @@ public final class ClassPathUtils {
 	 */
 	public static @NonNull List<Method> getAnnotatedMethods(@NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
-		return getAllClasses().stream().map(Class::getDeclaredMethods).flatMap(methods -> Lists.newArrayList(methods).stream()).filter(method -> method.isAnnotationPresent(annotation)).collect(Collectors.toList());
+		return getAllClasses().stream().map(ClassPathUtils::getDeclaredMethodsSafely).flatMap(methods -> Lists.newArrayList(methods).stream()).filter(method -> method.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
 	
 	/**
@@ -170,7 +178,7 @@ public final class ClassPathUtils {
 	 */
 	public static @NonNull List<Method> getAnnotatedMethods(@Nullable String packageName, @NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
-		return getClasses(packageName).stream().map(Class::getDeclaredMethods).flatMap(methods -> Lists.newArrayList(methods).stream()).filter(method -> method.isAnnotationPresent(annotation)).collect(Collectors.toList());
+		return getClasses(packageName).stream().map(ClassPathUtils::getDeclaredMethodsSafely).flatMap(methods -> Lists.newArrayList(methods).stream()).filter(method -> method.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
 	
 	/**
@@ -182,7 +190,7 @@ public final class ClassPathUtils {
 	 */
 	public static @NonNull List<Field> getAnnotatedFields(@NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
-		return getAllClasses().stream().map(Class::getDeclaredFields).flatMap(fields -> Lists.newArrayList(fields).stream()).filter(field -> field.isAnnotationPresent(annotation)).collect(Collectors.toList());
+		return getAllClasses().stream().map(ClassPathUtils::getDeclaredFieldsSafely).flatMap(fields -> Lists.newArrayList(fields).stream()).filter(field -> field.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
 	
 	/**
@@ -195,10 +203,48 @@ public final class ClassPathUtils {
 	 */
 	public static @NonNull List<Field> getAnnotatedFields(@Nullable String packageName, @NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
-		return getClasses(packageName).stream().map(Class::getDeclaredFields).flatMap(fields -> Lists.newArrayList(fields).stream()).filter(field -> field.isAnnotationPresent(annotation)).collect(Collectors.toList());
+		return getClasses(packageName).stream().map(ClassPathUtils::getDeclaredFieldsSafely).flatMap(fields -> Lists.newArrayList(fields).stream()).filter(field -> field.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
 	
 	//region Internal
+	
+	/**
+	 * Gets the declared methods of the given class, tolerating classes that cannot be linked.<br>
+	 * Reflective access to a class whose referenced types are missing (e.g. an optional dependency) throws a {@link LinkageError},<br>
+	 * such classes are skipped by returning an empty array so classpath scanning does not fail.<br>
+	 *
+	 * @param clazz The class to inspect
+	 * @return The declared methods, or an empty array if the class cannot be linked
+	 * @throws NullPointerException If the given class is null
+	 */
+	private static @NonNull Method[] getDeclaredMethodsSafely(@NonNull Class<?> clazz) {
+		Objects.requireNonNull(clazz, "Class must not be null");
+		
+		try {
+			return clazz.getDeclaredMethods();
+		} catch (LinkageError e) {
+			return EMPTY_METHOD_ARRAY;
+		}
+	}
+	
+	/**
+	 * Gets the declared fields of the given class, tolerating classes that cannot be linked.<br>
+	 * Reflective access to a class whose referenced types are missing (e.g. an optional dependency) throws a {@link LinkageError},<br>
+	 * such classes are skipped by returning an empty array so classpath scanning does not fail.<br>
+	 *
+	 * @param clazz The class to inspect
+	 * @return The declared fields, or an empty array if the class cannot be linked
+	 * @throws NullPointerException If the given class is null
+	 */
+	private static @NonNull Field[] getDeclaredFieldsSafely(@NonNull Class<?> clazz) {
+		Objects.requireNonNull(clazz, "Class must not be null");
+		
+		try {
+			return clazz.getDeclaredFields();
+		} catch (LinkageError e) {
+			return EMPTY_FIELD_ARRAY;
+		}
+	}
 	
 	/**
 	 * The mode which determines if the classes should be included or excluded.<br>
