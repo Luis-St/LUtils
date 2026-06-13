@@ -9,10 +9,14 @@ val hikaricp: String by project
 val postgresql: String by project
 val mysql: String by project
 val mariadb: String by project
+val mssqlJdbc: String by project
+val h2: String by project
+val sqlite: String by project
 val jspecify: String by project
 val jetBrainsAnnotations: String by project
 val junitJupiter: String by project
 val junitPlatformLauncher: String by project
+val testcontainers: String by project
 
 val mavenUserName: String? = System.getenv("MAVEN_USERNAME")
 val mavenPassword: String? = System.getenv("MAVEN_PASSWORD")
@@ -45,12 +49,21 @@ dependencies {
 	runtimeOnly("org.postgresql:postgresql:${postgresql}") // PostgreSQL Driver
 	runtimeOnly("com.mysql:mysql-connector-j:${mysql}") // MySQL Driver
 	runtimeOnly("org.mariadb.jdbc:mariadb-java-client:${mariadb}") // MariaDB Driver
+	runtimeOnly("com.microsoft.sqlserver:mssql-jdbc:${mssqlJdbc}") // SQL Server Driver
+	runtimeOnly("com.h2database:h2:${h2}") // H2 Driver (embedded)
+	runtimeOnly("org.xerial:sqlite-jdbc:${sqlite}") // SQLite Driver (embedded)
 	// Other
 	implementation("org.jspecify:jspecify:${jspecify}") // Nullability
 	implementation("org.jetbrains:annotations:${jetBrainsAnnotations}") // Annotations
 	// Test
 	testImplementation("org.junit.jupiter:junit-jupiter:${junitJupiter}")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junitPlatformLauncher}")
+	// Test - Database
+	testImplementation("org.testcontainers:junit-jupiter:${testcontainers}") // Testcontainers JUnit 5 integration
+	testImplementation("org.testcontainers:postgresql:${testcontainers}") // PostgreSQL container
+	testImplementation("org.testcontainers:mysql:${testcontainers}") // MySQL container
+	testImplementation("org.testcontainers:mariadb:${testcontainers}") // MariaDB container
+	testImplementation("org.testcontainers:mssqlserver:${testcontainers}") // SQL Server container
 }
 
 licenseManager {
