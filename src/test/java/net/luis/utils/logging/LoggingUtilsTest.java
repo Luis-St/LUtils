@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import java.util.*;
 
@@ -32,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
+@ResourceLock("net.luis.utils.logging")
 class LoggingUtilsTest {
 	
 	@BeforeAll

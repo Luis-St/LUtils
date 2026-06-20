@@ -19,6 +19,7 @@
 package net.luis.utils.io.reader;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
+@ResourceLock("net.luis.utils.io.reader.StringScope.SCOPE_REGISTRY")
 public class StringScopeTest {
 	
 	@Test

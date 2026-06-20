@@ -21,6 +21,7 @@ package net.luis.utils.logging;
 import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
+@ResourceLock("net.luis.utils.logging")
 class LoggingHelperTest {
 	
 	@BeforeAll

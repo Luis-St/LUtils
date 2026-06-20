@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -36,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
+@ResourceLock("net.luis.utils.logging")
 class LoggerConfigurationTest {
 	
 	@AfterAll
