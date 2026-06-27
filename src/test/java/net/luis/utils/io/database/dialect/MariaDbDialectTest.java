@@ -20,6 +20,8 @@ package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
+import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.type.SqlTypes;
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +46,16 @@ class MariaDbDialectTest {
 	@Test
 	void renderReturningNullColumns() {
 		assertThrows(NullPointerException.class, () -> DIALECT.renderReturning(null));
+	}
+	
+	@Test
+	void renderLockClauseNullMode() {
+		assertThrows(NullPointerException.class, () -> DIALECT.renderLockClause(null, false, false));
+	}
+	
+	@Test
+	void renderLockClauseForShareNoWaitUnsupported() {
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderLockClause(SqlLockMode.FOR_SHARE, false, true));
 	}
 	
 	@Test
@@ -93,6 +105,19 @@ class MariaDbDialectTest {
 		String sql = DIALECT.renderReturning(List.of(SqlTestFixtures.integerColumn())).sql();
 		assertTrue(sql.contains("RETURNING"));
 		assertTrue(sql.contains("`id`"));
+	}
+	
+	@Test
+	void renderLockClauseForShareUsesLockInShareMode() throws SqlException {
+		String sql = DIALECT.renderLockClause(SqlLockMode.FOR_SHARE, false, false).sql();
+		assertTrue(sql.contains("LOCK IN SHARE MODE"));
+	}
+	
+	@Test
+	void renderLockClauseForUpdateDelegatesToSuper() throws SqlException {
+		String sql = DIALECT.renderLockClause(SqlLockMode.FOR_UPDATE, false, false).sql();
+		assertTrue(sql.contains("FOR UPDATE"));
+		assertFalse(sql.contains("LOCK IN SHARE MODE"));
 	}
 	
 	@Test

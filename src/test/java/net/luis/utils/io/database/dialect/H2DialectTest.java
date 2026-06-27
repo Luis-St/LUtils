@@ -18,17 +18,22 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.temporal.SqlFromEpochFunction;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
+import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Types;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -74,6 +79,31 @@ class H2DialectTest {
 	@Test
 	void renderLockClauseNoWaitUnsupported() {
 		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderLockClause(SqlLockMode.FOR_UPDATE, false, true));
+	}
+	
+	@Test
+	void renderUpsertClauseUnsupported() {
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), List.of()));
+	}
+	
+	@Test
+	void renderUpsertStatementNullTable() {
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(null, List.of(), SqlTestFixtures.integerColumn(), SqlRendered.of("(?)")));
+	}
+	
+	@Test
+	void renderUpsertStatementNullColumns() {
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), null, SqlTestFixtures.integerColumn(), SqlRendered.of("(?)")));
+	}
+	
+	@Test
+	void renderUpsertStatementNullConflictColumn() {
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), null, SqlRendered.of("(?)")));
+	}
+	
+	@Test
+	void renderUpsertStatementNullValueTuples() {
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), SqlTestFixtures.integerColumn(), null));
 	}
 	
 	@Test
@@ -164,6 +194,35 @@ class H2DialectTest {
 	}
 	
 	@Test
+	void renderUpsertStatementSingleColumn() throws SqlException {
+		String sql = DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(SqlTestFixtures.integerColumn()), SqlTestFixtures.integerColumn(), SqlRendered.of("(?)")).sql();
+		assertTrue(sql.contains("MERGE INTO"));
+		assertTrue(sql.contains("KEY"));
+		assertTrue(sql.contains("VALUES"));
+		assertTrue(sql.contains(DIALECT.quoteIdentifier("test_table")));
+		assertTrue(sql.contains(DIALECT.quoteIdentifier("id")));
+		assertFalse(sql.contains(","));
+	}
+	
+	@Test
+	void renderUpsertStatementMultipleColumns() throws SqlException {
+		List<SqlColumn<?, ?>> columns = List.of(SqlTestFixtures.integerColumn(), SqlTestFixtures.stringColumn());
+		String sql = DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), columns, SqlTestFixtures.integerColumn(), SqlRendered.of("(?)")).sql();
+		assertTrue(sql.contains("MERGE INTO"));
+		assertTrue(sql.contains(","));
+		assertTrue(sql.contains("KEY"));
+	}
+	
+	@Test
+	void renderUpsertStatementWithAuditConfig() throws SqlException {
+		SqlTable<Object> table = SqlTestFixtures.auditedTable();
+		List<String> auditColumns = table.auditConfig().orElseThrow().columnNames();
+		String sql = DIALECT.renderUpsertStatement(table, List.of(SqlTestFixtures.integerColumn()), SqlTestFixtures.integerColumn(), SqlRendered.of("(?)")).sql();
+		assertTrue(sql.contains("MERGE INTO"));
+		assertTrue(sql.contains(DIALECT.quoteIdentifier(auditColumns.getFirst())));
+	}
+	
+	@Test
 	void nameReturnsH2() {
 		assertEquals("H2", DIALECT.name());
 	}
@@ -174,6 +233,13 @@ class H2DialectTest {
 		assertTrue(query.contains("INFORMATION_SCHEMA.CHECK_CONSTRAINTS"));
 		assertTrue(query.contains("TABLE_SCHEMA = ?"));
 		assertTrue(query.contains("TABLE_NAME = ?"));
+	}
+	
+	@Test
+	void getCheckConstraintsQueryStringJoinsTableConstraints() {
+		String query = DIALECT.getCheckConstraintsQueryString();
+		assertTrue(query.contains("TABLE_CONSTRAINTS"));
+		assertTrue(query.contains("JOIN"));
 	}
 	
 	@Test

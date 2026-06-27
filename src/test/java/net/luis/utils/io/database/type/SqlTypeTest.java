@@ -29,9 +29,10 @@ import org.junit.jupiter.api.Test;
 
 import javax.sql.rowset.CachedRowSet;
 import java.sql.*;
+import java.sql.Date;
 import java.time.*;
-import java.util.Map;
-import java.util.Optional;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static net.luis.utils.io.database.SqlTestFixtures.*;
@@ -231,9 +232,77 @@ class SqlTypeTest {
 	}
 	
 	@Test
-	void getNonTemporalTypeThrowsMappingException() {
+	void getNumericFallbackCoercesInteger() throws Exception {
 		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.INTEGER, 42);
+		Object value = SqlTypes.INTEGER.get(SqlTypeInternalAccess.INSTANCE, rowSet, 1);
+		assertEquals(42, value);
+		assertInstanceOf(Integer.class, value);
+	}
+	
+	@Test
+	void getNumericFallbackCoercesLong() throws Exception {
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.BIGINT, 42L);
+		Object value = SqlTypes.LONG.get(SqlTypeInternalAccess.INSTANCE, rowSet, 1);
+		assertEquals(42L, value);
+		assertInstanceOf(Long.class, value);
+	}
+	
+	@Test
+	void getNumericFallbackCoercesDouble() throws Exception {
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.DOUBLE, 1.5d);
+		Object value = SqlTypes.DOUBLE.get(SqlTypeInternalAccess.INSTANCE, rowSet, 1);
+		assertEquals(1.5d, value);
+		assertInstanceOf(Double.class, value);
+	}
+	
+	@Test
+	void getNumericFallbackCoercesFloat() throws Exception {
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.FLOAT, 1.5d);
+		Object value = SqlTypes.FLOAT.get(SqlTypeInternalAccess.INSTANCE, rowSet, 1);
+		assertEquals(1.5d, value);
+		assertInstanceOf(Double.class, value);
+	}
+	
+	@Test
+	void getNumericFallbackCoercesFloatViaReal() throws Exception {
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.REAL, 1.5f);
+		Object value = SqlTypes.REAL.get(SqlTypeInternalAccess.INSTANCE, rowSet, 1);
+		assertEquals(1.5f, value);
+		assertInstanceOf(Float.class, value);
+	}
+	
+	@Test
+	void getNumericFallbackCoercesShort() throws Exception {
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.SMALLINT, (short) 7);
+		Object value = SqlTypes.SHORT.get(SqlTypeInternalAccess.INSTANCE, rowSet, 1);
+		assertEquals((short) 7, value);
+		assertInstanceOf(Short.class, value);
+	}
+	
+	@Test
+	void getNumericFallbackCoercesByte() throws Exception {
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.TINYINT, (byte) 3);
+		Object value = SqlTypes.BYTE.get(SqlTypeInternalAccess.INSTANCE, rowSet, 1);
+		assertEquals((byte) 3, value);
+		assertInstanceOf(Byte.class, value);
+	}
+	
+	@Test
+	void getNumericFallbackReturnsNullForNullColumn() throws Exception {
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.INTEGER, null);
+		assertNull(SqlTypes.INTEGER.get(SqlTypeInternalAccess.INSTANCE, rowSet, 1));
+	}
+	
+	@Test
+	void getNumericFallbackNonNumericValueThrowsMappingException() {
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.INTEGER, "not-a-number");
 		assertThrows(SqlResultMappingException.class, () -> SqlTypes.INTEGER.get(SqlTypeInternalAccess.INSTANCE, rowSet, 1));
+	}
+	
+	@Test
+	void getNonNumericNonTemporalTypeThrowsMappingException() {
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.BOOLEAN, true);
+		assertThrows(SqlResultMappingException.class, () -> SqlTypes.BOOLEAN.get(SqlTypeInternalAccess.INSTANCE, rowSet, 1));
 	}
 	
 	@Test
@@ -295,17 +364,39 @@ class SqlTypeTest {
 	}
 	
 	@Test
-	void getTemporalFallbackCoversOffsetDateTime() throws Exception {
+	void getOffsetDateTimeUsesTimestampWithTimezoneBranch() throws Exception {
 		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.TIMESTAMP, Timestamp.valueOf("2020-01-15 10:15:30"));
-		OffsetDateTime expected = OffsetDateTime.ofInstant(Timestamp.valueOf("2020-01-15 10:15:30").toInstant(), ZoneOffset.UTC);
-		assertEquals(expected, SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6)).get(SqlTypeInternalAccess.INSTANCE, rowSet, 1));
+		CachedRowSet expectedSource = SqlRowSets.singleColumn(Types.TIMESTAMP, Timestamp.valueOf("2020-01-15 10:15:30"));
+		Calendar utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+		OffsetDateTime expected = OffsetDateTime.ofInstant(expectedSource.getTimestamp(1, utc).toInstant(), ZoneOffset.UTC);
+		OffsetDateTime actual = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6)).get(SqlTypeInternalAccess.INSTANCE, rowSet, 1);
+		assertNotNull(actual);
+		assertEquals(ZoneOffset.UTC, actual.getOffset());
+		assertEquals(expected.truncatedTo(ChronoUnit.SECONDS), actual.truncatedTo(ChronoUnit.SECONDS));
 	}
 	
 	@Test
-	void getTemporalFallbackCoversOffsetTime() throws Exception {
+	void getOffsetDateTimeWithTimezoneBranchReturnsNullForNullColumn() throws Exception {
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.TIMESTAMP, null);
+		assertNull(SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6)).get(SqlTypeInternalAccess.INSTANCE, rowSet, 1));
+	}
+	
+	@Test
+	void getOffsetTimeUsesTimeWithTimezoneBranch() throws Exception {
 		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.TIME, Time.valueOf("10:15:30"));
-		OffsetTime expected = LocalTime.of(10, 15, 30).atOffset(ZoneOffset.UTC);
-		assertEquals(expected, SqlTypes.OFFSET_TIME.configure(SqlParameter.fractional(6)).get(SqlTypeInternalAccess.INSTANCE, rowSet, 1));
+		CachedRowSet expectedSource = SqlRowSets.singleColumn(Types.TIME, Time.valueOf("10:15:30"));
+		Calendar utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+		OffsetTime expected = expectedSource.getTime(1, utc).toLocalTime().atOffset(ZoneOffset.UTC);
+		OffsetTime actual = SqlTypes.OFFSET_TIME.configure(SqlParameter.fractional(6)).get(SqlTypeInternalAccess.INSTANCE, rowSet, 1);
+		assertNotNull(actual);
+		assertEquals(ZoneOffset.UTC, actual.getOffset());
+		assertEquals(expected.truncatedTo(ChronoUnit.SECONDS), actual.truncatedTo(ChronoUnit.SECONDS));
+	}
+	
+	@Test
+	void getOffsetTimeWithTimezoneBranchReturnsNullForNullColumn() throws Exception {
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.TIME, null);
+		assertNull(SqlTypes.OFFSET_TIME.configure(SqlParameter.fractional(6)).get(SqlTypeInternalAccess.INSTANCE, rowSet, 1));
 	}
 	
 	@Test

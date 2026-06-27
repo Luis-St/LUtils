@@ -271,8 +271,6 @@ public final class SqlRowMapper {
 	
 	private static @NonNull Constructor<?> resolveProxyConstructor(@NonNull Class<?> rowType) {
 		try {
-			// Create one throwaway proxy to obtain (and cache) the proxy class once per mapper, then reuse its constructor per row.
-			// This avoids the deprecated Proxy.getProxyClass while still skipping the per-row proxy-class cache lookup of Proxy.newProxyInstance.
 			Object sample = Proxy.newProxyInstance(rowType.getClassLoader(), new Class<?>[] { rowType }, new SqlRowInvocationHandler(ArrayUtils.EMPTY_OBJECT_ARRAY, Map.of()));
 			Constructor<?> proxyConstructor = sample.getClass().getConstructor(InvocationHandler.class);
 			proxyConstructor.setAccessible(true);

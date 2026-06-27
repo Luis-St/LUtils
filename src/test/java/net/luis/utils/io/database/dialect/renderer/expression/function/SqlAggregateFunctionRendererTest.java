@@ -29,8 +29,12 @@ import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -95,9 +99,74 @@ class SqlAggregateFunctionRendererTest {
 	}
 	
 	@Test
-	void renderAverageFunction() throws SqlException {
-		SqlRendered rendered = RENDERER.render(new SqlAverageFunction<>(new SqlValueExpression<>(5)));
+	void renderAverageOfIntegralTypeWrapsInRound() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "stats");
+		SqlColumn<Object, Integer> column = table.column("n", SqlTypes.INTEGER, object -> 0);
+		
+		SqlRendered rendered = RENDERER.render(new SqlAverageFunction<>(column));
+		assertTrue(rendered.sql().contains("ROUND("));
 		assertTrue(rendered.sql().contains("AVG("));
+		assertTrue(rendered.sql().contains("* 1.0"));
+		assertTrue(rendered.sql().endsWith(", 0)"));
+	}
+	
+	@Test
+	void renderAverageOfNonIntegralTypeRendersPlainAvg() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "stats");
+		SqlColumn<Object, Double> column = table.column("d", SqlTypes.DOUBLE, object -> 0.0);
+		
+		SqlRendered rendered = RENDERER.render(new SqlAverageFunction<>(column));
+		assertTrue(rendered.sql().contains("AVG("));
+		assertFalse(rendered.sql().contains("ROUND("));
+		assertFalse(rendered.sql().contains("* 1.0"));
+	}
+	
+	@Test
+	void renderAverageOfLongWrapsInRound() throws SqlException {
+		SqlRendered rendered = RENDERER.render(new SqlAverageFunction<>(new SqlValueExpression<>(5L, SqlTypes.LONG)));
+		assertTrue(rendered.sql().contains("ROUND("));
+	}
+	
+	@Test
+	void renderAverageOfShortWrapsInRound() throws SqlException {
+		SqlRendered rendered = RENDERER.render(new SqlAverageFunction<>(new SqlValueExpression<>((short) 5, SqlTypes.SHORT)));
+		assertTrue(rendered.sql().contains("ROUND("));
+	}
+	
+	@Test
+	void renderAverageOfByteWrapsInRound() throws SqlException {
+		SqlRendered rendered = RENDERER.render(new SqlAverageFunction<>(new SqlValueExpression<>((byte) 5, SqlTypes.BYTE)));
+		assertTrue(rendered.sql().contains("ROUND("));
+	}
+	
+	@Test
+	void renderAverageOfBigIntegerWrapsInRound() throws SqlException {
+		SqlType<BigInteger> type = SqlTypes.BIG_INTEGER.configure(SqlParameter.precision(38, 0));
+		SqlRendered rendered = RENDERER.render(new SqlAverageFunction<>(new SqlValueExpression<>(BigInteger.valueOf(5), type)));
+		assertTrue(rendered.sql().contains("ROUND("));
+	}
+	
+	@Test
+	void renderAverageOfFloatRendersPlainAvg() throws SqlException {
+		SqlRendered rendered = RENDERER.render(new SqlAverageFunction<>(new SqlValueExpression<>(1.5d, SqlTypes.FLOAT)));
+		assertTrue(rendered.sql().contains("AVG("));
+		assertFalse(rendered.sql().contains("ROUND("));
+	}
+	
+	@Test
+	void renderAverageOfBigDecimalRendersPlainAvg() throws SqlException {
+		SqlType<BigDecimal> type = SqlTypes.NUMERIC.configure(SqlParameter.precision(10, 2));
+		SqlRendered rendered = RENDERER.render(new SqlAverageFunction<>(new SqlValueExpression<>(BigDecimal.valueOf(5), type)));
+		assertTrue(rendered.sql().contains("AVG("));
+		assertFalse(rendered.sql().contains("ROUND("));
+	}
+	
+	@Test
+	void renderAverageOfFloatJavaTypeRendersPlainAvg() throws SqlException {
+		SqlRendered rendered = RENDERER.render(new SqlAverageFunction<>(new SqlValueExpression<>(1.5f, SqlTypes.REAL)));
+		assertTrue(rendered.sql().contains("AVG("));
+		assertFalse(rendered.sql().contains("ROUND("));
+		assertFalse(rendered.sql().contains("* 1.0"));
 	}
 	
 	@Test

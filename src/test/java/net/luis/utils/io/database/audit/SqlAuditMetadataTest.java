@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.audit;
 
+import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.dialect.SqlDialects;
 import org.junit.jupiter.api.Test;
 
@@ -88,6 +89,48 @@ class SqlAuditMetadataTest {
 	void readFromWithNullConfig() throws Exception {
 		ResultSet resultSet = RowSetProvider.newFactory().createCachedRowSet();
 		assertThrows(NullPointerException.class, () -> SqlAuditMetadata.readFrom(SqlDialects.H2, resultSet, 0, null));
+	}
+	
+	@Test
+	void readFromParsesAllColumns() throws Exception {
+		ResultSet resultSet = SqlTestFixtures.resultRow(5L, NOW, "alice", LATER, "bob");
+		SqlAuditMetadata metadata = SqlAuditMetadata.readFrom(SqlTestFixtures.DIALECT, resultSet, 1, SqlAuditConfig.DEFAULT);
+		assertEquals(5L, metadata.version().getAsLong());
+		assertEquals(Optional.of(NOW), metadata.createdAt());
+		assertEquals(Optional.of("alice"), metadata.createdBy());
+		assertEquals(Optional.of(LATER), metadata.updatedAt());
+		assertEquals(Optional.of("bob"), metadata.updatedBy());
+	}
+	
+	@Test
+	void readFromReadsColumnsAtStartIndex() throws Exception {
+		ResultSet resultSet = SqlTestFixtures.resultRow("ignored", "ignored", 9L, NOW, "alice", LATER, "bob");
+		SqlAuditMetadata metadata = SqlAuditMetadata.readFrom(SqlTestFixtures.DIALECT, resultSet, 3, SqlAuditConfig.DEFAULT);
+		assertEquals(9L, metadata.version().getAsLong());
+		assertEquals(Optional.of(NOW), metadata.createdAt());
+		assertEquals(Optional.of("alice"), metadata.createdBy());
+		assertEquals(Optional.of(LATER), metadata.updatedAt());
+		assertEquals(Optional.of("bob"), metadata.updatedBy());
+	}
+	
+	@Test
+	void readFromWithNullVersionYieldsEmptyVersion() throws Exception {
+		ResultSet resultSet = SqlTestFixtures.resultRow(null, NOW, "alice", LATER, "bob");
+		SqlAuditMetadata metadata = SqlAuditMetadata.readFrom(SqlTestFixtures.DIALECT, resultSet, 1, SqlAuditConfig.DEFAULT);
+		assertTrue(metadata.version().isEmpty());
+		assertEquals(Optional.of(NOW), metadata.createdAt());
+		assertEquals(Optional.of("bob"), metadata.updatedBy());
+	}
+	
+	@Test
+	void readFromWithNullOptionalColumnsYieldsEmptyOptionals() throws Exception {
+		ResultSet resultSet = SqlTestFixtures.resultRow(3L, null, null, null, null);
+		SqlAuditMetadata metadata = SqlAuditMetadata.readFrom(SqlTestFixtures.DIALECT, resultSet, 1, SqlAuditConfig.DEFAULT);
+		assertEquals(3L, metadata.version().getAsLong());
+		assertTrue(metadata.createdAt().isEmpty());
+		assertTrue(metadata.createdBy().isEmpty());
+		assertTrue(metadata.updatedAt().isEmpty());
+		assertTrue(metadata.updatedBy().isEmpty());
 	}
 	
 	@Test

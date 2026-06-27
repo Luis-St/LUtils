@@ -19,7 +19,11 @@
 package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.io.database.SqlTestFixtures;
+import net.luis.utils.io.database.condition.conditions.comparison.SqlEqualToCondition;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.expression.SqlValueExpression;
+import net.luis.utils.io.database.index.SqlIndex;
+import net.luis.utils.io.database.index.SqlIndexMethod;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +36,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class MySqlIndexRendererTest {
 	
 	private static final MySqlIndexRenderer RENDERER = new MySqlIndexRenderer(SqlDialects.MYSQL);
+	
+	@Test
+	void renderCreateIndexNullIndex() {
+		assertThrows(NullPointerException.class, () -> RENDERER.renderCreateIndex(null));
+	}
 	
 	@Test
 	void renderDropIndexNullOwningTable() {
@@ -51,6 +60,41 @@ class MySqlIndexRendererTest {
 	@Test
 	void renderRenameIndexNullTo() {
 		assertThrows(NullPointerException.class, () -> RENDERER.renderRenameIndex(SqlTestFixtures.sampleTable(), "old", null));
+	}
+	
+	@Test
+	void renderCreateIndexNonUnique() throws SqlException {
+		SqlIndex index = new SqlIndex("idx", SqlTestFixtures.columns(), false, SqlIndexMethod.BTREE);
+		String sql = RENDERER.renderCreateIndex(index).sql();
+		assertTrue(sql.contains("CREATE INDEX"));
+		assertTrue(sql.contains("`idx`"));
+		assertTrue(sql.contains("`test_table`"));
+		assertTrue(sql.contains("USING"));
+		assertFalse(sql.contains("UNIQUE"));
+		assertFalse(sql.contains("WHERE"));
+	}
+	
+	@Test
+	void renderCreateIndexUnique() throws SqlException {
+		SqlIndex index = new SqlIndex("idx", SqlTestFixtures.columns(), true, SqlIndexMethod.BTREE);
+		String sql = RENDERER.renderCreateIndex(index).sql();
+		assertTrue(sql.contains("UNIQUE"));
+	}
+	
+	@Test
+	void renderCreateIndexWithWhereCondition() throws SqlException {
+		SqlEqualToCondition condition = new SqlEqualToCondition(new SqlValueExpression<>(1), new SqlValueExpression<>(1));
+		SqlIndex index = new SqlIndex("idx", SqlTestFixtures.columns(), false, condition, SqlIndexMethod.BTREE);
+		String sql = RENDERER.renderCreateIndex(index).sql();
+		assertTrue(sql.contains("WHERE"));
+	}
+	
+	@Test
+	void renderCreateIndexEmitsUsingMethod() throws SqlException {
+		SqlIndex index = new SqlIndex("idx", SqlTestFixtures.columns(), false, SqlIndexMethod.BTREE);
+		String sql = RENDERER.renderCreateIndex(index).sql();
+		assertTrue(sql.contains("USING"));
+		assertTrue(sql.contains(SqlDialects.MYSQL.getIndexMethodName(SqlIndexMethod.BTREE)));
 	}
 	
 	@Test

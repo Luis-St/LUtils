@@ -18,38 +18,34 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.condition.conditions.numeric.SqlModEqualsCondition;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.SqlValueExpression;
-import net.luis.utils.io.database.function.functions.numeric.SqlRandomFunction;
-import net.luis.utils.io.database.function.functions.numeric.bitwise.SqlBitwiseNotFunction;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link MySqlNumericFunctionRenderer}.<br>
+ * Test class for {@link H2NumericConditionRenderer}.<br>
  *
  * @author Luis-St
  */
-class MySqlNumericFunctionRendererTest {
+class H2NumericConditionRendererTest {
 	
-	private static final MySqlNumericFunctionRenderer RENDERER = new MySqlNumericFunctionRenderer(SqlDialects.MYSQL);
+	private static final H2NumericConditionRenderer RENDERER = new H2NumericConditionRenderer(SqlDialects.H2);
 	
 	@Test
-	void renderBitwiseNotNullFunction() {
-		assertThrows(NullPointerException.class, () -> RENDERER.renderBitwiseNot(null));
+	void renderModEqualsNullCondition() {
+		assertThrows(NullPointerException.class, () -> RENDERER.renderModEquals(null));
 	}
 	
 	@Test
-	void renderRandomProducesRandCall() throws SqlException {
-		assertEquals("RAND()", RENDERER.renderRandom(new SqlRandomFunction()).sql());
-	}
-	
-	@Test
-	void renderBitwiseNotCastsToSigned() throws SqlException {
-		String sql = RENDERER.renderBitwiseNot(new SqlBitwiseNotFunction<>(new SqlValueExpression<>(5))).sql();
+	void renderModEqualsProducesModComparison() throws SqlException {
+		SqlModEqualsCondition condition = new SqlModEqualsCondition(new SqlValueExpression<>(7), new SqlValueExpression<>(3), new SqlValueExpression<>(1));
+		String sql = RENDERER.renderModEquals(condition).sql();
+		assertTrue(sql.contains("MOD("));
+		assertTrue(sql.contains("="));
 		assertTrue(sql.contains("CAST("));
-		assertTrue(sql.contains("~"));
-		assertTrue(sql.contains("SIGNED"));
+		assertTrue(sql.contains(","));
 	}
 }

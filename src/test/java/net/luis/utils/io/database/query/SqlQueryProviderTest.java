@@ -25,6 +25,7 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.crud.SqlInsertQuery;
 import net.luis.utils.io.database.query.crud.SqlSelectQuery;
+import net.luis.utils.io.database.query.row.SqlRow4;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlTypes;
@@ -311,6 +312,132 @@ class SqlQueryProviderTest {
 		SqlDatabase database = SqlDatabase.builder(failingDataSource(), DIALECT).build();
 		SqlSession session = database.openSession();
 		assertDoesNotThrow(() -> new SqlQueryProvider<>(personTable(), DIALECT, SOURCE, TIMEOUT, null, session));
+	}
+	
+	@Test
+	void selectSingleExpressionWithNull() {
+		assertThrows(NullPointerException.class, () -> personProvider().select((SqlExpression<Integer>) null));
+	}
+	
+	@Test
+	void selectHighArityWithNullElement() {
+		assertThrows(NullPointerException.class, () -> personProvider().select(integerExpression(), integerExpression(), integerExpression(), null, integerExpression()));
+	}
+	
+	@Test
+	void selectFourExpressionsReturnsRow4Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(integerExpression(), integerExpression(), integerExpression(), integerExpression());
+		assertEquals(4, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectFiveExpressionsReturnsRow5Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression()
+		);
+		assertEquals(5, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectSixExpressionsReturnsRow6Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression()
+		);
+		assertEquals(6, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectSevenExpressionsReturnsRow7Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression()
+		);
+		assertEquals(7, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectEightExpressionsReturnsRow8Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression(), integerExpression()
+		);
+		assertEquals(8, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectNineExpressionsReturnsRow9Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression(), integerExpression(), integerExpression()
+		);
+		assertEquals(9, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectTenExpressionsReturnsRow10Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression()
+		);
+		assertEquals(10, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectElevenExpressionsReturnsRow11Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression()
+		);
+		assertEquals(11, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectTwelveExpressionsReturnsRow12Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression()
+		);
+		assertEquals(12, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectThirteenExpressionsReturnsRow13Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression(), integerExpression()
+		);
+		assertEquals(13, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectFourteenExpressionsReturnsRow14Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression(), integerExpression(), integerExpression()
+		);
+		assertEquals(14, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectFifteenExpressionsReturnsRow15Query() throws SqlException {
+		SqlSelectQuery<?> query = personProvider().select(
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression(),
+			integerExpression(), integerExpression(), integerExpression(), integerExpression(), integerExpression()
+		);
+		assertEquals(15, markerCount(query.toSql(DIALECT).sql()));
+	}
+	
+	@Test
+	void selectArityOverloadReturnTypeIsSqlRow() throws SqlException {
+		SqlSelectQuery<SqlRow4<Integer, String, Integer, String>> query = personProvider().select(integerExpression(), stringExpression(), integerExpression(), stringExpression());
+		assertNotNull(query);
+		assertEquals(4, markerCount(query.toSql(DIALECT).sql()));
 	}
 	
 	private record Person(int id, String name) {}

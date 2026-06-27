@@ -597,14 +597,14 @@ class SqliteStringFunctionRenderer extends SqlStringFunctionRenderer {
 		boolean distinct = function.distinct();
 		boolean ordered = function.ordered();
 		if (!distinct && !ordered) {
-			return super.renderConcat(function); // plain concatenation uses the || operator, which SQLite supports
+			return super.renderConcat(function);
 		}
 		
 		List<? extends SqlExpression<? extends CharSequence>> values = function.expressions();
 		Optional<String> separator = function.separator();
 		SqlExpression<? extends CharSequence> first = values.isEmpty() ? null : values.getFirst();
 		
-		SqlRenderer renderer = SqlRenderer.empty(); // SQLite has no STRING_AGG; group_concat is the aggregate equivalent
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("group_concat").openingBracket();
 		if (distinct) {
 			renderer.distinct();
@@ -612,7 +612,7 @@ class SqliteStringFunctionRenderer extends SqlStringFunctionRenderer {
 		if (first != null) {
 			renderer.rendered(first.toSql(this.dialect));
 		}
-		if (!distinct) { // SQLite forbids a separator argument together with DISTINCT
+		if (!distinct) {
 			renderer.comma().parameter(DEFAULT_STRING_TYPE, separator.orElse(","));
 		}
 		if (ordered && first != null) {
@@ -625,7 +625,6 @@ class SqliteStringFunctionRenderer extends SqlStringFunctionRenderer {
 	@Override
 	protected @NonNull SqlRendered renderPosition(@NonNull SqlPositionFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
-		// SQLite has no POSITION(x IN y); INSTR(y, x) is the equivalent (note the reversed argument order)
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "INSTR", function.expression(), function.substring());
 	}
 	
@@ -633,7 +632,7 @@ class SqliteStringFunctionRenderer extends SqlStringFunctionRenderer {
 	protected @NonNull SqlRendered renderSubstring(@NonNull SqlSubstringFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
-		SqlRenderer renderer = SqlRenderer.empty(); // SQLite has no SUBSTRING(x FROM a FOR b); substr(x, a, b) is the equivalent
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("substr").openingBracket().rendered(function.expression().toSql(this.dialect)).comma().rendered(function.start().toSql(this.dialect));
 		SqlExpression<? extends Number> length = function.length();
 		if (length != null) {
@@ -646,7 +645,7 @@ class SqliteStringFunctionRenderer extends SqlStringFunctionRenderer {
 	@Override
 	protected @NonNull SqlRendered renderTrimChars(@NonNull SqlTrimCharsFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
-		// SQLite has no TRIM(chars FROM x); TRIM(x, chars) is the equivalent
+		
 		return SqlRenderingHelper.renderFunctionCall(this.dialect, "TRIM", function.expression(), function.characters());
 	}
 	
@@ -654,7 +653,7 @@ class SqliteStringFunctionRenderer extends SqlStringFunctionRenderer {
 	protected @NonNull SqlRendered renderLeft(@NonNull SqlLeftFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
-		SqlRenderer renderer = SqlRenderer.empty(); // SQLite has no LEFT; substr from the start emulates it
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("substr").openingBracket().rendered(function.expression().toSql(this.dialect)).comma().literal("1").comma().rendered(function.length().toSql(this.dialect)).closingBracket();
 		return renderer.toSql();
 	}
@@ -663,7 +662,7 @@ class SqliteStringFunctionRenderer extends SqlStringFunctionRenderer {
 	protected @NonNull SqlRendered renderRight(@NonNull SqlRightFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
-		SqlRenderer renderer = SqlRenderer.empty(); // SQLite has no RIGHT; a negative substr start counts from the end
+		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("substr").openingBracket().rendered(function.expression().toSql(this.dialect)).comma().literal("-").openingBracket().rendered(function.length().toSql(this.dialect)).closingBracket().closingBracket();
 		return renderer.toSql();
 	}
@@ -681,7 +680,7 @@ class SqliteStringFunctionRenderer extends SqlStringFunctionRenderer {
 	}
 	
 	private @NonNull SqlRendered renderPad(@NonNull SqlExpression<?> expression, @NonNull SqlExpression<?> length, @NonNull SqlExpression<?> fill, boolean left) throws SqlException {
-		SqlRendered value = expression.toSql(this.dialect); // SQLite has no LPAD/RPAD; hex(zeroblob()) builds a fill run of the requested length
+		SqlRendered value = expression.toSql(this.dialect);
 		SqlRendered count = length.toSql(this.dialect);
 		
 		SqlRenderer pad = SqlRenderer.empty();

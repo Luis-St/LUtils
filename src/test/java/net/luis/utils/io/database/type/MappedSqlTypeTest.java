@@ -24,10 +24,10 @@ import net.luis.utils.io.database.exception.database.statement.SqlStatementBindE
 import org.junit.jupiter.api.Test;
 
 import javax.sql.rowset.CachedRowSet;
-import java.sql.Date;
-import java.sql.Types;
+import java.sql.*;
 import java.time.LocalDate;
 
+import static net.luis.utils.io.database.SqlTestFixtures.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -163,5 +163,86 @@ class MappedSqlTypeTest {
 		SqlType<String> outer = inner.map(String.class, value -> value == null ? null : Integer.parseInt(value), value -> Integer.toString(value));
 		assertEquals(SOURCE, outer.baseType());
 		assertEquals(SOURCE.jdbcType(), outer.jdbcType());
+	}
+	
+	@Test
+	void setWithNullAccessDelegatesToSourceGuard() {
+		MappedSqlType<String, Integer> mapped = new MappedSqlType<>(SOURCE, Integer.class, TO_SOURCE, TO_TARGET);
+		RecordingStatement statement = new RecordingStatement();
+		assertThrows(IllegalCallerException.class, () -> mapped.set(null, DIALECT, statement, 1, 42));
+	}
+	
+	@Test
+	void setWithNullDialectDelegatesToSourceGuard() {
+		MappedSqlType<String, Integer> mapped = new MappedSqlType<>(SOURCE, Integer.class, TO_SOURCE, TO_TARGET);
+		RecordingStatement statement = new RecordingStatement();
+		assertThrows(NullPointerException.class, () -> mapped.set(SqlTypeInternalAccess.INSTANCE, null, statement, 1, 42));
+	}
+	
+	@Test
+	void setWithNullPreparedStatementDelegatesToSourceGuard() {
+		MappedSqlType<String, Integer> mapped = new MappedSqlType<>(SOURCE, Integer.class, TO_SOURCE, TO_TARGET);
+		assertThrows(NullPointerException.class, () -> mapped.set(SqlTypeInternalAccess.INSTANCE, DIALECT, null, 1, 42));
+	}
+	
+	@Test
+	void setWithColumnIndexBelowOneDelegatesToSourceGuard() {
+		MappedSqlType<String, Integer> mapped = new MappedSqlType<>(SOURCE, Integer.class, TO_SOURCE, TO_TARGET);
+		RecordingStatement statement = new RecordingStatement();
+		assertThrows(IllegalArgumentException.class, () -> mapped.set(SqlTypeInternalAccess.INSTANCE, DIALECT, statement, 0, 42));
+	}
+	
+	@Test
+	void setPropagatesConversionFailure() {
+		MappedSqlType<String, Integer> mapped = new MappedSqlType<>(SOURCE, Integer.class, value -> {
+			throw new SqlStatementBindException("boom", new SQLException("boom"), 1);
+		}, TO_TARGET);
+		RecordingStatement statement = new RecordingStatement();
+		assertThrows(SqlStatementBindException.class, () -> mapped.set(SqlTypeInternalAccess.INSTANCE, DIALECT, statement, 1, 42));
+	}
+	
+	@Test
+	void setAppliesConversionAndDelegatesToSource() throws Exception {
+		MappedSqlType<String, Integer> mapped = new MappedSqlType<>(SOURCE, Integer.class, TO_SOURCE, TO_TARGET);
+		RecordingStatement statement = new RecordingStatement();
+		mapped.set(SqlTypeInternalAccess.INSTANCE, DIALECT, statement, 1, 42);
+		assertEquals("42", statement.capturedValue);
+		assertEquals(1, statement.capturedIndex);
+		assertEquals(SOURCE.jdbcType(), statement.capturedJdbcType);
+	}
+	
+	@Test
+	void setWithNullValueBindsNull() throws Exception {
+		MappedSqlType<String, Integer> mapped = new MappedSqlType<>(SOURCE, Integer.class, TO_SOURCE, TO_TARGET);
+		RecordingStatement statement = new RecordingStatement();
+		mapped.set(SqlTypeInternalAccess.INSTANCE, DIALECT, statement, 1, null);
+		assertNull(statement.capturedValue);
+		assertEquals(1, statement.calls);
+	}
+	
+	@Test
+	void setOnNestedMappedTypeChainsConversions() throws Exception {
+		SqlType<Integer> inner = SOURCE.map(Integer.class, TO_SOURCE, TO_TARGET);
+		SqlType<String> outer = inner.map(String.class, value -> value == null ? null : Integer.parseInt(value), value -> Integer.toString(value));
+		RecordingStatement statement = new RecordingStatement();
+		outer.set(SqlTypeInternalAccess.INSTANCE, DIALECT, statement, 1, "42");
+		assertEquals("42", statement.capturedValue);
+		assertEquals(1, statement.capturedIndex);
+	}
+	
+	private static final class RecordingStatement extends FakePreparedStatement {
+		
+		private int calls;
+		private int capturedIndex;
+		private Object capturedValue;
+		private int capturedJdbcType;
+		
+		@Override
+		public void setObject(int columnIndex, Object value, int jdbcType) {
+			this.calls++;
+			this.capturedIndex = columnIndex;
+			this.capturedValue = value;
+			this.capturedJdbcType = jdbcType;
+		}
 	}
 }

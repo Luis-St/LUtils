@@ -366,7 +366,7 @@ class MySqlNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	@Override
 	protected @NonNull SqlRendered renderBitwiseNot(@NonNull SqlBitwiseNotFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
-		// MySQL/MariaDB ~ yields an unsigned BIGINT; cast back to SIGNED to preserve the signed result
+		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.cast().openingBracket().literal("~").openingBracket().rendered(function.expression().toSql(this.dialect)).closingBracket().as().literal("SIGNED").closingBracket();
 		return renderer.toSql();

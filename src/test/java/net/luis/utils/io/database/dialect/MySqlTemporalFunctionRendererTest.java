@@ -37,6 +37,16 @@ class MySqlTemporalFunctionRendererTest {
 	private static final MySqlTemporalFunctionRenderer RENDERER = new MySqlTemporalFunctionRenderer(SqlDialects.MYSQL);
 	
 	@Test
+	void renderExtractNullFunction() {
+		assertThrows(NullPointerException.class, () -> RENDERER.renderExtract(null));
+	}
+	
+	@Test
+	void renderTemporalTruncateNullFunction() {
+		assertThrows(NullPointerException.class, () -> RENDERER.renderTemporalTruncate(null));
+	}
+	
+	@Test
 	void renderFromEpochNullFunction() {
 		assertThrows(NullPointerException.class, () -> RENDERER.renderFromEpoch(null));
 	}
@@ -74,6 +84,94 @@ class MySqlTemporalFunctionRendererTest {
 	@Test
 	void renderIntervalNullPart() {
 		assertThrows(NullPointerException.class, () -> RENDERER.renderInterval(new SqlValueExpression<>(5), null));
+	}
+	
+	@Test
+	void renderExtractDayOfWeekUsesWeekdayPlusOne() throws SqlException {
+		SqlExtractFunction<?> function = new SqlExtractFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.DAY_OF_WEEK, SqlTypes.INTEGER);
+		String sql = RENDERER.renderExtract(function).sql();
+		assertTrue(sql.contains("WEEKDAY("));
+		assertTrue(sql.contains("+"));
+		assertTrue(sql.contains("1"));
+	}
+	
+	@Test
+	void renderExtractDayOfYearUsesDayOfYear() throws SqlException {
+		SqlExtractFunction<?> function = new SqlExtractFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.DAY_OF_YEAR, SqlTypes.INTEGER);
+		assertTrue(RENDERER.renderExtract(function).sql().contains("DAYOFYEAR("));
+	}
+	
+	@Test
+	void renderExtractWeekUsesWeekMode3() throws SqlException {
+		SqlExtractFunction<?> function = new SqlExtractFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.WEEK, SqlTypes.INTEGER);
+		String sql = RENDERER.renderExtract(function).sql();
+		assertTrue(sql.contains("WEEK("));
+		assertTrue(sql.contains("3"));
+	}
+	
+	@Test
+	void renderExtractOtherPartDelegatesToSuper() throws SqlException {
+		SqlExtractFunction<?> function = new SqlExtractFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.YEAR, SqlTypes.INTEGER);
+		String sql = RENDERER.renderExtract(function).sql();
+		assertTrue(sql.contains("EXTRACT("));
+		assertFalse(sql.contains("WEEKDAY"));
+	}
+	
+	@Test
+	void renderTemporalTruncateYearUsesDateFormat() throws SqlException {
+		SqlTemporalTruncateFunction<?> function = new SqlTemporalTruncateFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.YEAR, SqlTypes.LOCAL_DATE);
+		String sql = RENDERER.renderTemporalTruncate(function).sql();
+		assertTrue(sql.contains("DATE_FORMAT("));
+		assertTrue(sql.contains("'%Y-01-01'"));
+	}
+	
+	@Test
+	void renderTemporalTruncateMonthUsesDateFormat() throws SqlException {
+		SqlTemporalTruncateFunction<?> function = new SqlTemporalTruncateFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.MONTH, SqlTypes.LOCAL_DATE);
+		assertTrue(RENDERER.renderTemporalTruncate(function).sql().contains("'%Y-%m-01'"));
+	}
+	
+	@Test
+	void renderTemporalTruncateDayUsesDateFormat() throws SqlException {
+		SqlTemporalTruncateFunction<?> function = new SqlTemporalTruncateFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.DAY, SqlTypes.LOCAL_DATE);
+		assertTrue(RENDERER.renderTemporalTruncate(function).sql().contains("'%Y-%m-%d'"));
+	}
+	
+	@Test
+	void renderTemporalTruncateHourUsesDateFormat() throws SqlException {
+		SqlTemporalTruncateFunction<?> function = new SqlTemporalTruncateFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.HOUR, SqlTypes.LOCAL_DATE);
+		assertTrue(RENDERER.renderTemporalTruncate(function).sql().contains("'%Y-%m-%d %H:00:00'"));
+	}
+	
+	@Test
+	void renderTemporalTruncateMinuteUsesDateFormat() throws SqlException {
+		SqlTemporalTruncateFunction<?> function = new SqlTemporalTruncateFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.MINUTE, SqlTypes.LOCAL_DATE);
+		assertTrue(RENDERER.renderTemporalTruncate(function).sql().contains("'%Y-%m-%d %H:%i:00'"));
+	}
+	
+	@Test
+	void renderTemporalTruncateSecondUsesDateFormat() throws SqlException {
+		SqlTemporalTruncateFunction<?> function = new SqlTemporalTruncateFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.SECOND, SqlTypes.LOCAL_DATE);
+		assertTrue(RENDERER.renderTemporalTruncate(function).sql().contains("'%Y-%m-%d %H:%i:%s'"));
+	}
+	
+	@Test
+	void renderTemporalTruncateWeekUsesDateSub() throws SqlException {
+		SqlTemporalTruncateFunction<?> function = new SqlTemporalTruncateFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.WEEK, SqlTypes.LOCAL_DATE);
+		String sql = RENDERER.renderTemporalTruncate(function).sql();
+		assertTrue(sql.contains("DATE_SUB("));
+		assertTrue(sql.contains("WEEKDAY("));
+		assertTrue(sql.contains("DAY"));
+	}
+	
+	@Test
+	void renderTemporalTruncateQuarterUsesDateAddMakedate() throws SqlException {
+		SqlTemporalTruncateFunction<?> function = new SqlTemporalTruncateFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.QUARTER, SqlTypes.LOCAL_DATE);
+		String sql = RENDERER.renderTemporalTruncate(function).sql();
+		assertTrue(sql.contains("DATE_ADD("));
+		assertTrue(sql.contains("MAKEDATE("));
+		assertTrue(sql.contains("QUARTER("));
+		assertTrue(sql.contains("MONTH"));
 	}
 	
 	@Test

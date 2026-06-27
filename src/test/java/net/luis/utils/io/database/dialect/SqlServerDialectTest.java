@@ -18,18 +18,23 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.data.xml.XmlConfig;
+import net.luis.utils.io.data.xml.XmlElement;
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Types;
+import java.lang.reflect.Proxy;
+import java.sql.*;
 import java.util.List;
+import java.util.concurrent.atomic.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -335,5 +340,102 @@ class SqlServerDialectTest {
 		List<SqlColumn<?, ?>> columns = List.of(id, name);
 		
 		assertTrue(DIALECT.renderUpsertStatement(table, columns, id, SqlRendered.of("(?, ?)")).sql().contains("MERGE"));
+	}
+	
+	@Test
+	void xmlBinderSetsSqlXml() throws SqlException {
+		XmlElement element = new XmlElement("root");
+		AtomicReference<String> setString = new AtomicReference<>();
+		AtomicReference<SQLXML> boundXml = new AtomicReference<>();
+		AtomicInteger boundIndex = new AtomicInteger();
+		SQLXML xml = recordingXml(setString, null);
+		PreparedStatement statement = bindingStatement(xml, boundXml, boundIndex, new AtomicInteger(), new AtomicBoolean());
+		
+		SqlType.setValue(SqlTypes.XML, DIALECT, statement, 1, element);
+		assertEquals(element.toString(XmlConfig.DEFAULT), setString.get());
+		assertSame(xml, boundXml.get());
+		assertEquals(1, boundIndex.get());
+	}
+	
+	@Test
+	void xmlBinderBindsNullAsSqlXmlNull() throws SqlException {
+		AtomicInteger boundIndex = new AtomicInteger();
+		AtomicInteger nullType = new AtomicInteger();
+		AtomicBoolean sqlXmlBound = new AtomicBoolean(false);
+		PreparedStatement statement = bindingStatement(null, new AtomicReference<>(), boundIndex, nullType, sqlXmlBound);
+		
+		SqlType.setValue(SqlTypes.XML, DIALECT, statement, 1, null);
+		assertEquals(1, boundIndex.get());
+		assertEquals(Types.SQLXML, nullType.get());
+		assertFalse(sqlXmlBound.get());
+	}
+	
+	@Test
+	void xmlReaderReadsElement() throws SqlException {
+		XmlElement expected = new XmlElement("root");
+		SQLXML xml = recordingXml(new AtomicReference<>(), expected.toString(XmlConfig.DEFAULT));
+		ResultSet resultSet = readingResultSet(xml);
+		
+		XmlElement parsed = SqlType.getValue(SqlTypes.XML, DIALECT, resultSet, 1);
+		assertNotNull(parsed);
+		assertEquals(expected, parsed);
+		assertEquals(expected.toString(XmlConfig.DEFAULT), parsed.toString(XmlConfig.DEFAULT));
+	}
+	
+	@Test
+	void uuidHasNoBindingOverride() {
+		assertTrue(DIALECT.bindingOverride(SqlTypes.UUID).isEmpty());
+		assertTrue(DIALECT.readingOverride(SqlTypes.UUID).isEmpty());
+	}
+	
+	private static SQLXML recordingXml(AtomicReference<String> setStringCapture, String document) {
+		return (SQLXML) Proxy.newProxyInstance(
+			SQLXML.class.getClassLoader(),
+			new Class<?>[] { SQLXML.class },
+			(proxy, method, args) -> switch (method.getName()) {
+				case "setString" -> {
+					setStringCapture.set((String) args[0]);
+					yield null;
+				}
+				case "getString" -> document;
+				case "toString" -> "FakeSqlXml";
+				default -> null;
+			}
+		);
+	}
+	
+	private static PreparedStatement bindingStatement(SQLXML createdXml, AtomicReference<SQLXML> boundXml, AtomicInteger capturedIndex, AtomicInteger nullType, AtomicBoolean sqlXmlBound) {
+		Connection connection = (Connection) Proxy.newProxyInstance(
+			Connection.class.getClassLoader(),
+			new Class<?>[] { Connection.class },
+			(proxy, method, args) -> "createSQLXML".equals(method.getName()) ? createdXml : null
+		);
+		return (PreparedStatement) Proxy.newProxyInstance(
+			PreparedStatement.class.getClassLoader(),
+			new Class<?>[] { PreparedStatement.class },
+			(proxy, method, args) -> switch (method.getName()) {
+				case "getConnection" -> connection;
+				case "setSQLXML" -> {
+					sqlXmlBound.set(true);
+					capturedIndex.set((Integer) args[0]);
+					boundXml.set((SQLXML) args[1]);
+					yield null;
+				}
+				case "setNull" -> {
+					capturedIndex.set((Integer) args[0]);
+					nullType.set((Integer) args[1]);
+					yield null;
+				}
+				default -> null;
+			}
+		);
+	}
+	
+	private static ResultSet readingResultSet(SQLXML xml) {
+		return (ResultSet) Proxy.newProxyInstance(
+			ResultSet.class.getClassLoader(),
+			new Class<?>[] { ResultSet.class },
+			(proxy, method, args) -> "getSQLXML".equals(method.getName()) ? xml : null
+		);
 	}
 }

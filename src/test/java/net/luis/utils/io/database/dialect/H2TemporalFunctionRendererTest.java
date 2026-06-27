@@ -43,8 +43,18 @@ class H2TemporalFunctionRendererTest {
 	}
 	
 	@Test
+	void renderExtractNullFunction() {
+		assertThrows(NullPointerException.class, () -> RENDERER.renderExtract(null));
+	}
+	
+	@Test
 	void renderFromEpochNullFunction() {
 		assertThrows(NullPointerException.class, () -> RENDERER.renderFromEpoch(null));
+	}
+	
+	@Test
+	void renderTemporalTruncateNullFunction() {
+		assertThrows(NullPointerException.class, () -> RENDERER.renderTemporalTruncate(null));
 	}
 	
 	@Test
@@ -68,12 +78,58 @@ class H2TemporalFunctionRendererTest {
 	}
 	
 	@Test
+	void renderExtractDayOfWeekUsesIsoDayOfWeek() throws SqlException {
+		SqlExtractFunction<?> function = new SqlExtractFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.DAY_OF_WEEK, SqlTypes.INTEGER);
+		String sql = RENDERER.renderExtract(function).sql();
+		assertTrue(sql.contains("EXTRACT("));
+		assertTrue(sql.contains("ISO_DAY_OF_WEEK"));
+		assertTrue(sql.contains("FROM"));
+	}
+	
+	@Test
+	void renderExtractDayOfYearUsesDayOfYear() throws SqlException {
+		SqlExtractFunction<?> function = new SqlExtractFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.DAY_OF_YEAR, SqlTypes.INTEGER);
+		String sql = RENDERER.renderExtract(function).sql();
+		assertTrue(sql.contains("EXTRACT("));
+		assertTrue(sql.contains("DAY_OF_YEAR"));
+	}
+	
+	@Test
+	void renderExtractOtherPartUsesPartName() throws SqlException {
+		SqlExtractFunction<?> function = new SqlExtractFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.YEAR, SqlTypes.INTEGER);
+		String sql = RENDERER.renderExtract(function).sql();
+		assertTrue(sql.contains("EXTRACT("));
+		assertTrue(sql.contains("YEAR"));
+		assertTrue(sql.contains("FROM"));
+	}
+	
+	@Test
 	void renderFromEpochProducesDateAdd() throws SqlException {
 		SqlFromEpochFunction<?> function = new SqlFromEpochFunction<>(new SqlValueExpression<>(5), SqlTypes.LOCAL_DATE);
 		String sql = RENDERER.renderFromEpoch(function).sql();
 		assertTrue(sql.contains("DATEADD"));
 		assertTrue(sql.contains("'SECOND'"));
 		assertTrue(sql.contains("TIMESTAMP '1970-01-01 00:00:00'"));
+	}
+	
+	@Test
+	void renderTemporalTruncateNonWeekUsesDateTrunc() throws SqlException {
+		SqlTemporalTruncateFunction<?> function = new SqlTemporalTruncateFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.DAY, SqlTypes.LOCAL_DATE);
+		String sql = RENDERER.renderTemporalTruncate(function).sql();
+		assertTrue(sql.contains("DATE_TRUNC("));
+		assertTrue(sql.contains("'DAY'"));
+		assertTrue(sql.contains("CAST("));
+		assertFalse(sql.contains("DATEADD"));
+	}
+	
+	@Test
+	void renderTemporalTruncateWeekUsesDateAdd() throws SqlException {
+		SqlTemporalTruncateFunction<?> function = new SqlTemporalTruncateFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.WEEK, SqlTypes.LOCAL_DATE);
+		String sql = RENDERER.renderTemporalTruncate(function).sql();
+		assertTrue(sql.contains("DATEADD("));
+		assertTrue(sql.contains("'DAY'"));
+		assertTrue(sql.contains("ISO_DAY_OF_WEEK"));
+		assertTrue(sql.contains("DATE_TRUNC("));
 	}
 	
 	@Test
@@ -85,11 +141,29 @@ class H2TemporalFunctionRendererTest {
 	}
 	
 	@Test
+	void renderTemporalAddCastsOperands() throws SqlException {
+		SqlTemporalAddFunction<?> function = new SqlTemporalAddFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.DAY, new SqlValueExpression<>(3), SqlTypes.LOCAL_DATE);
+		String sql = RENDERER.renderTemporalAdd(function).sql();
+		assertTrue(sql.contains("DATEADD"));
+		assertTrue(sql.contains("'DAY'"));
+		assertTrue(sql.contains("CAST("));
+	}
+	
+	@Test
 	void renderTemporalSubtractNegatesSubtrahend() throws SqlException {
 		SqlTemporalSubtractFunction<?> function = new SqlTemporalSubtractFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.DAY, new SqlValueExpression<>(3), SqlTypes.LOCAL_DATE);
 		String sql = RENDERER.renderTemporalSubtract(function).sql();
 		assertTrue(sql.contains("DATEADD"));
 		assertTrue(sql.contains("'DAY'"));
+		assertTrue(sql.contains("-"));
+	}
+	
+	@Test
+	void renderTemporalSubtractCastsOperands() throws SqlException {
+		SqlTemporalSubtractFunction<?> function = new SqlTemporalSubtractFunction<>(new SqlValueExpression<>(5), SqlTemporalPart.DAY, new SqlValueExpression<>(3), SqlTypes.LOCAL_DATE);
+		String sql = RENDERER.renderTemporalSubtract(function).sql();
+		assertTrue(sql.contains("DATEADD"));
+		assertTrue(sql.contains("CAST("));
 		assertTrue(sql.contains("-"));
 	}
 	

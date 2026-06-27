@@ -56,6 +56,11 @@ class MySqlDialectTest {
 	}
 	
 	@Test
+	void getCastTypeNameNullType() {
+		assertThrows(NullPointerException.class, () -> DIALECT.getCastTypeName(null));
+	}
+	
+	@Test
 	void getParameterizedTypeNameNullParameter() {
 		assertThrows(NullPointerException.class, () -> DIALECT.getParameterizedTypeName(Types.TIMESTAMP, null));
 	}
@@ -78,6 +83,34 @@ class MySqlDialectTest {
 	@Test
 	void renderInsertOrIgnoreSuffixUnsupported() {
 		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderInsertOrIgnoreSuffix(List.of()));
+	}
+	
+	@Test
+	void getCastTypeNameIntegralTypesUseSigned() throws SqlException {
+		assertEquals("SIGNED", DIALECT.getCastTypeName(SqlTypes.INTEGER));
+		assertEquals("SIGNED", DIALECT.getCastTypeName(SqlTypes.LONG));
+		assertEquals("SIGNED", DIALECT.getCastTypeName(SqlTypes.BOOLEAN));
+	}
+	
+	@Test
+	void getCastTypeNameDoubleUsesDouble() throws SqlException {
+		assertEquals("DOUBLE", DIALECT.getCastTypeName(SqlTypes.DOUBLE));
+	}
+	
+	@Test
+	void getCastTypeNameFloatUsesFloat() throws SqlException {
+		assertEquals("FLOAT", DIALECT.getCastTypeName(SqlTypes.FLOAT));
+	}
+	
+	@Test
+	void getCastTypeNameOtherScalarFallsBackToTypeName() throws SqlException {
+		assertEquals(DIALECT.getTypeName(SqlTypes.TEXT), DIALECT.getCastTypeName(SqlTypes.TEXT));
+		assertNotEquals("SIGNED", DIALECT.getCastTypeName(SqlTypes.TEXT));
+	}
+	
+	@Test
+	void getCastTypeNameNonScalarFallsBackToTypeName() throws SqlException {
+		assertEquals(DIALECT.getTypeName(SqlTestFixtures.STRING_TYPE), DIALECT.getCastTypeName(SqlTestFixtures.STRING_TYPE));
 	}
 	
 	@Test
@@ -199,6 +232,11 @@ class MySqlDialectTest {
 	}
 	
 	@Test
+	void usesInsertOrIgnoreModifierReturnsTrue() {
+		assertTrue(DIALECT.usesInsertOrIgnoreModifier());
+	}
+	
+	@Test
 	void nameReturnsMySql() {
 		assertEquals("MySQL", DIALECT.name());
 	}
@@ -224,6 +262,13 @@ class MySqlDialectTest {
 		assertTrue(query.contains("CHECK_CONSTRAINTS"));
 		assertTrue(query.contains("CONSTRAINT_SCHEMA = ?"));
 		assertTrue(query.contains("TABLE_NAME = ?"));
+	}
+	
+	@Test
+	void getCheckConstraintsQueryStringJoinsTableConstraints() {
+		String query = DIALECT.getCheckConstraintsQueryString();
+		assertTrue(query.contains("TABLE_CONSTRAINTS"));
+		assertTrue(query.contains("JOIN"));
 	}
 	
 	@Test

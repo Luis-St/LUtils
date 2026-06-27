@@ -131,11 +131,6 @@ public class SqlRenderer {
 		return this;
 	}
 	
-	public @NonNull SqlRenderer unknown() {
-		this.statements.add("UNKNOWN");
-		return this;
-	}
-	
 	public @NonNull SqlRenderer null_() {
 		this.statements.add("NULL");
 		return this;
@@ -148,11 +143,6 @@ public class SqlRenderer {
 	
 	public @NonNull SqlRenderer distinct() {
 		this.statements.add("DISTINCT");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer all() {
-		this.statements.add("ALL");
 		return this;
 	}
 	
@@ -203,11 +193,6 @@ public class SqlRenderer {
 	
 	public @NonNull SqlRenderer join() {
 		this.statements.add("JOIN");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer natural() {
-		this.statements.add("NATURAL");
 		return this;
 	}
 	
@@ -373,18 +358,8 @@ public class SqlRenderer {
 		return this;
 	}
 	
-	public @NonNull SqlRenderer escape() {
-		this.statements.add("ESCAPE");
-		return this;
-	}
-	
 	public @NonNull SqlRenderer any() {
 		this.statements.add("ANY");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer some() {
-		this.statements.add("SOME");
 		return this;
 	}
 	
@@ -565,21 +540,6 @@ public class SqlRenderer {
 		return this;
 	}
 	
-	public @NonNull SqlRenderer union() {
-		this.statements.add("UNION");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer intersect() {
-		this.statements.add("INTERSECT");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer except() {
-		this.statements.add("EXCEPT");
-		return this;
-	}
-	
 	public @NonNull SqlRenderer over() {
 		this.statements.add("OVER");
 		return this;
@@ -587,11 +547,6 @@ public class SqlRenderer {
 	
 	public @NonNull SqlRenderer partition() {
 		this.statements.add("PARTITION");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer window() {
-		this.statements.add("WINDOW");
 		return this;
 	}
 	
@@ -622,21 +577,6 @@ public class SqlRenderer {
 	
 	public @NonNull SqlRenderer currentRow() {
 		this.statements.add("CURRENT ROW");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer exclude() {
-		this.statements.add("EXCLUDE");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer ties() {
-		this.statements.add("TIES");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer filter() {
-		this.statements.add("FILTER");
 		return this;
 	}
 	
@@ -677,36 +617,6 @@ public class SqlRenderer {
 	
 	public @NonNull SqlRenderer lateral() {
 		this.statements.add("LATERAL");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer begin() {
-		this.statements.add("BEGIN");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer commit() {
-		this.statements.add("COMMIT");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer rollback() {
-		this.statements.add("ROLLBACK");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer savepoint() {
-		this.statements.add("SAVEPOINT");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer start() {
-		this.statements.add("START");
-		return this;
-	}
-	
-	public @NonNull SqlRenderer transaction() {
-		this.statements.add("TRANSACTION");
 		return this;
 	}
 	

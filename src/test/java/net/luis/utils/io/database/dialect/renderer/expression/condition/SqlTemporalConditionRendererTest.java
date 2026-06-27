@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect.renderer.expression.condition;
 
+import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.condition.conditions.SqlTemporalCondition;
 import net.luis.utils.io.database.condition.conditions.temporal.*;
 import net.luis.utils.io.database.dialect.SqlDialects;
@@ -26,7 +27,10 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnknownConstructException;
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.type.SqlTypes;
 import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -100,29 +104,61 @@ class SqlTemporalConditionRendererTest {
 	}
 	
 	@Test
-	void renderWithinLastCondition() throws SqlException {
-		SqlWithinLastCondition condition = new SqlWithinLastCondition(new SqlValueExpression<>(5), new SqlValueExpression<>(30));
+	void renderWithinLastRendersLowerAndUpperBound() throws SqlException {
+		SqlWithinLastCondition condition = new SqlWithinLastCondition(new SqlValueExpression<>(5), new SqlValueExpression<>(Duration.ofSeconds(30)));
 		SqlRendered rendered = RENDERER.render(condition);
+		assertTrue(rendered.sql().startsWith("("));
+		assertTrue(rendered.sql().endsWith(")"));
 		assertTrue(rendered.sql().contains(">="));
-		assertTrue(rendered.sql().contains("CURRENT_TIMESTAMP"));
-		assertTrue(rendered.sql().contains("-"));
-		assertTrue(rendered.sql().contains("INTERVAL"));
+		assertTrue(rendered.sql().contains("<="));
+		assertTrue(rendered.sql().contains("AND"));
+		assertTrue(rendered.sql().contains("CURRENT_TIMESTAMP -"));
 	}
 	
 	@Test
-	void renderWithinNextCondition() throws SqlException {
-		SqlWithinNextCondition condition = new SqlWithinNextCondition(new SqlValueExpression<>(5), new SqlValueExpression<>(30));
+	void renderWithinNextRendersLowerAndUpperBound() throws SqlException {
+		SqlWithinNextCondition condition = new SqlWithinNextCondition(new SqlValueExpression<>(5), new SqlValueExpression<>(Duration.ofSeconds(30)));
 		SqlRendered rendered = RENDERER.render(condition);
+		assertTrue(rendered.sql().startsWith("("));
+		assertTrue(rendered.sql().endsWith(")"));
+		assertTrue(rendered.sql().contains(">="));
 		assertTrue(rendered.sql().contains("<="));
-		assertTrue(rendered.sql().contains("CURRENT_TIMESTAMP"));
-		assertTrue(rendered.sql().contains("+"));
-		assertTrue(rendered.sql().contains("INTERVAL"));
+		assertTrue(rendered.sql().contains("AND"));
+		assertTrue(rendered.sql().contains("CURRENT_TIMESTAMP +"));
 	}
 	
 	@Test
 	void renderWithinLastUsesSecondPart() throws SqlException {
-		SqlWithinLastCondition condition = new SqlWithinLastCondition(new SqlValueExpression<>(5), new SqlValueExpression<>(30));
+		SqlWithinLastCondition condition = new SqlWithinLastCondition(new SqlValueExpression<>(5), new SqlValueExpression<>(Duration.ofSeconds(30)));
 		SqlRendered rendered = RENDERER.render(condition);
 		assertTrue(rendered.sql().contains("SECOND"));
+	}
+	
+	@Test
+	void renderWithinLastWithConstantDurationUsesSecondsLiteral() throws SqlException {
+		SqlWithinLastCondition condition = new SqlWithinLastCondition(new SqlValueExpression<>(5), new SqlValueExpression<>(Duration.ofMinutes(2)));
+		SqlRendered rendered = RENDERER.render(condition);
+		assertTrue(rendered.sql().contains("AND"));
+		assertFalse(rendered.sql().contains("/"));
+	}
+	
+	@Test
+	void renderWithinNextWithNonConstantDurationDividesNanoseconds() throws SqlException {
+		SqlWithinNextCondition condition = new SqlWithinNextCondition(new SqlValueExpression<>(5), new SqlValueExpression<>(5_000_000_000L, SqlTypes.LONG));
+		SqlRendered rendered = RENDERER.render(condition);
+		assertTrue(rendered.sql().contains("/"));
+		assertTrue(rendered.sql().contains(">="));
+		assertTrue(rendered.sql().contains("<="));
+		assertTrue(rendered.sql().contains("AND"));
+	}
+	
+	@Test
+	void renderWithinLastWithExpressionDurationDividesNanoseconds() throws SqlException {
+		SqlWithinLastCondition condition = new SqlWithinLastCondition(new SqlValueExpression<>(5), Sql.divide(new SqlValueExpression<>(10_000_000_000L, SqlTypes.LONG), new SqlValueExpression<>(2L, SqlTypes.LONG)));
+		SqlRendered rendered = RENDERER.render(condition);
+		assertTrue(rendered.sql().contains("/"));
+		assertTrue(rendered.sql().contains(">="));
+		assertTrue(rendered.sql().contains("<="));
+		assertTrue(rendered.sql().contains("AND"));
 	}
 }

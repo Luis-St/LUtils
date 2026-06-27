@@ -18,6 +18,9 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.data.json.JsonConfig;
+import net.luis.utils.io.data.json.JsonObject;
+import net.luis.utils.io.data.xml.*;
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.condition.conditions.comparison.SqlInListCondition;
 import net.luis.utils.io.database.exception.SqlException;
@@ -27,10 +30,13 @@ import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateF
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
+import net.luis.utils.io.network.address.*;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Types;
+import java.lang.reflect.Proxy;
+import java.sql.*;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -234,5 +240,206 @@ class PostgresSqlDialectTest {
 	void truncateRoutesThroughPostgresNumericRenderer() throws SqlException {
 		SqlNumericTruncateFunction<?> function = new SqlNumericTruncateFunction<>(new SqlValueExpression<>(5));
 		assertTrue(DIALECT.renderFunction(function).sql().contains("TRUNC("));
+	}
+	
+	@Test
+	void uuidBinderSetsObjectAsOther() throws Exception {
+		UUID uuid = UUID.randomUUID();
+		Captured captured = new Captured();
+		DIALECT.bindingOverride(SqlTypes.UUID).orElseThrow().bind(recordingStatement(captured, null), 1, uuid);
+		assertEquals(1, captured.objectIndex);
+		assertSame(uuid, captured.objectValue);
+		assertEquals(Types.OTHER, captured.objectSqlType);
+	}
+	
+	@Test
+	void uuidBinderBindsNull() throws Exception {
+		Captured captured = new Captured();
+		DIALECT.bindingOverride(SqlTypes.UUID).orElseThrow().bind(recordingStatement(captured, null), 1, null);
+		assertEquals(1, captured.objectIndex);
+		assertNull(captured.objectValue);
+		assertEquals(Types.OTHER, captured.objectSqlType);
+	}
+	
+	@Test
+	void jsonBinderSerialisesElement() throws Exception {
+		JsonObject json = new JsonObject();
+		json.add("k", 1);
+		Captured captured = new Captured();
+		DIALECT.bindingOverride(SqlTypes.JSON).orElseThrow().bind(recordingStatement(captured, null), 1, json);
+		assertEquals(json.toString(JsonConfig.DEFAULT), captured.objectValue);
+		assertEquals(Types.OTHER, captured.objectSqlType);
+		assertEquals(1, captured.objectIndex);
+	}
+	
+	@Test
+	void jsonBinderBindsNull() throws Exception {
+		Captured captured = new Captured();
+		DIALECT.bindingOverride(SqlTypes.JSON).orElseThrow().bind(recordingStatement(captured, null), 1, null);
+		assertEquals(1, captured.objectIndex);
+		assertNull(captured.objectValue);
+		assertEquals(Types.OTHER, captured.objectSqlType);
+	}
+	
+	@Test
+	void xmlBinderSetsSqlXml() throws Exception {
+		XmlElement element = new XmlValue("note", "hello");
+		String[] content = new String[1];
+		SQLXML xml = fakeSqlXml(content);
+		Captured captured = new Captured();
+		DIALECT.bindingOverride(SqlTypes.XML).orElseThrow().bind(recordingStatement(captured, xml), 1, element);
+		assertEquals(element.toString(XmlConfig.DEFAULT), content[0]);
+		assertEquals(1, captured.sqlXmlIndex);
+		assertSame(xml, captured.sqlXmlValue);
+	}
+	
+	@Test
+	void xmlBinderBindsNullAsSqlXmlNull() throws Exception {
+		Captured captured = new Captured();
+		DIALECT.bindingOverride(SqlTypes.XML).orElseThrow().bind(recordingStatement(captured, null), 1, null);
+		assertEquals(1, captured.nullIndex);
+		assertEquals(Types.SQLXML, captured.nullSqlType);
+		assertEquals(-1, captured.sqlXmlIndex);
+	}
+	
+	@Test
+	void ipAddressBinderSetsToStringAsOther() throws Exception {
+		IpAddress<?> ip = IpAddresses.parse("192.168.0.1");
+		Captured captured = new Captured();
+		DIALECT.bindingOverride(SqlTypes.IP_ADDRESS).orElseThrow().bind(recordingStatement(captured, null), 1, ip);
+		assertEquals(ip.toString(), captured.objectValue);
+		assertEquals(Types.OTHER, captured.objectSqlType);
+		assertEquals(1, captured.objectIndex);
+	}
+	
+	@Test
+	void ipAddressBinderBindsNull() throws Exception {
+		Captured captured = new Captured();
+		DIALECT.bindingOverride(SqlTypes.IP_ADDRESS).orElseThrow().bind(recordingStatement(captured, null), 1, null);
+		assertEquals(1, captured.objectIndex);
+		assertNull(captured.objectValue);
+		assertEquals(Types.OTHER, captured.objectSqlType);
+	}
+	
+	@Test
+	void ipNetworkBinderSetsToStringAsOther() throws Exception {
+		IpNetwork<?, ?> network = IpAddresses.parseNetwork("192.168.0.0/16");
+		Captured captured = new Captured();
+		DIALECT.bindingOverride(SqlTypes.IP_NETWORK).orElseThrow().bind(recordingStatement(captured, null), 1, network);
+		assertEquals(network.toString(), captured.objectValue);
+		assertEquals(Types.OTHER, captured.objectSqlType);
+		assertEquals(1, captured.objectIndex);
+	}
+	
+	@Test
+	void ipNetworkBinderBindsNull() throws Exception {
+		Captured captured = new Captured();
+		DIALECT.bindingOverride(SqlTypes.IP_NETWORK).orElseThrow().bind(recordingStatement(captured, null), 1, null);
+		assertEquals(1, captured.objectIndex);
+		assertNull(captured.objectValue);
+		assertEquals(Types.OTHER, captured.objectSqlType);
+	}
+	
+	@Test
+	void uuidReaderReadsUuid() throws Exception {
+		UUID uuid = UUID.randomUUID();
+		Object result = DIALECT.readingOverride(SqlTypes.UUID).orElseThrow().read(SqlTestFixtures.resultRow(uuid), 1);
+		assertEquals(uuid, result);
+	}
+	
+	@Test
+	void jsonReaderParsesString() throws Exception {
+		Object result = DIALECT.readingOverride(SqlTypes.JSON).orElseThrow().read(readerResultSet("{\"k\":1}", null), 1);
+		assertInstanceOf(JsonObject.class, result);
+		assertEquals(1, ((JsonObject) result).getAsInteger("k"));
+	}
+	
+	@Test
+	void jsonReaderReturnsNullForNullColumn() throws Exception {
+		Object result = DIALECT.readingOverride(SqlTypes.JSON).orElseThrow().read(readerResultSet(null, null), 1);
+		assertNull(result);
+	}
+	
+	@Test
+	void xmlReaderReadsElement() throws Exception {
+		XmlElement element = new XmlValue("note", "hello");
+		SQLXML xml = fakeSqlXml(new String[] { element.toString(XmlConfig.DEFAULT) });
+		Object result = DIALECT.readingOverride(SqlTypes.XML).orElseThrow().read(readerResultSet(null, xml), 1);
+		assertEquals(element, result);
+	}
+	
+	private static PreparedStatement recordingStatement(Captured captured, SQLXML xmlToCreate) {
+		return (PreparedStatement) Proxy.newProxyInstance(
+			PreparedStatement.class.getClassLoader(),
+			new Class<?>[] { PreparedStatement.class },
+			(proxy, method, args) -> {
+				switch (method.getName()) {
+					case "setObject" -> {
+						if (args.length == 3) {
+							captured.objectIndex = (Integer) args[0];
+							captured.objectValue = args[1];
+							captured.objectSqlType = (Integer) args[2];
+						}
+					}
+					case "setNull" -> {
+						captured.nullIndex = (Integer) args[0];
+						captured.nullSqlType = (Integer) args[1];
+					}
+					case "setSQLXML" -> {
+						captured.sqlXmlIndex = (Integer) args[0];
+						captured.sqlXmlValue = (SQLXML) args[1];
+					}
+					case "getConnection" -> {
+						return connectionReturning(xmlToCreate);
+					}
+				}
+				return null;
+			}
+		);
+	}
+	
+	private static Connection connectionReturning(SQLXML xml) {
+		return (Connection) Proxy.newProxyInstance(
+			Connection.class.getClassLoader(),
+			new Class<?>[] { Connection.class },
+			(proxy, method, args) -> "createSQLXML".equals(method.getName()) ? xml : null
+		);
+	}
+	
+	private static SQLXML fakeSqlXml(String[] content) {
+		return (SQLXML) Proxy.newProxyInstance(
+			SQLXML.class.getClassLoader(),
+			new Class<?>[] { SQLXML.class },
+			(proxy, method, args) -> {
+				if ("setString".equals(method.getName())) {
+					content[0] = (String) args[0];
+					return null;
+				}
+				return "getString".equals(method.getName()) ? content[0] : null;
+			}
+		);
+	}
+	
+	private static ResultSet readerResultSet(String stringValue, SQLXML xmlValue) {
+		return (ResultSet) Proxy.newProxyInstance(
+			ResultSet.class.getClassLoader(),
+			new Class<?>[] { ResultSet.class },
+			(proxy, method, args) -> switch (method.getName()) {
+				case "getString" -> stringValue;
+				case "getSQLXML" -> xmlValue;
+				default -> null;
+			}
+		);
+	}
+	
+	private static final class Captured {
+		
+		private int objectIndex = -1;
+		private Object objectValue;
+		private int objectSqlType = -1;
+		private int sqlXmlIndex = -1;
+		private SQLXML sqlXmlValue;
+		private int nullIndex = -1;
+		private int nullSqlType = -1;
 	}
 }
