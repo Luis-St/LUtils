@@ -507,7 +507,7 @@ public class JsonReader implements AutoCloseable {
 	}
 	
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		this.reader.readRemaining(); // Assert that there is no remaining content
 	}
 }

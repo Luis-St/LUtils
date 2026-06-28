@@ -24,10 +24,12 @@
 module net.luis.utils {
 	requires org.jspecify;
 	requires com.google.common;
+	requires com.zaxxer.hikari;
 	requires org.apache.commons.lang3;
 	requires org.apache.logging.log4j;
 	requires org.jetbrains.annotations;
 	requires org.apache.logging.log4j.core;
+	requires java.sql;
 	
 	exports net.luis.utils.annotation;
 	exports net.luis.utils.annotation.type;
@@ -85,7 +87,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.types.temporal.local;
 	exports net.luis.utils.io.codec.types.temporal.offset;
 	exports net.luis.utils.io.codec.types.temporal.zoned;
-	
+
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;
 	exports net.luis.utils.io.data.ini;

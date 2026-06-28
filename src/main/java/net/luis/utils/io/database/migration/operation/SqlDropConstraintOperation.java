@@ -1,0 +1,47 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.database.migration.operation;
+
+import net.luis.utils.io.database.table.SqlTable;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+
+/**
+ * Migration operation that drops a named constraint from an existing table.<br>
+ *
+ * @author Luis-St
+ *
+ * @param table The table to drop the constraint from
+ * @param name The name of the constraint to drop
+ */
+public record SqlDropConstraintOperation(
+	@NonNull SqlTable<?> table,
+	@NonNull String name
+) implements SqlMigrationOperation {
+	
+	/**
+	 * Constructs a new drop constraint operation with the given table and constraint name.<br>
+	 * @throws NullPointerException If the table or name is null
+	 */
+	public SqlDropConstraintOperation {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(name, "Sql constraint name must not be null");
+	}
+}

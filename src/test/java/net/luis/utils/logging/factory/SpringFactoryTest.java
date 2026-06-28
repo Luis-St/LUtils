@@ -188,7 +188,7 @@ class SpringFactoryTest {
 		LoggerContext context = new LoggerContext("TestContext");
 		String name = "TestConfiguration";
 		
-		assertThrows(NullPointerException.class, () -> factory.getConfiguration(context, name, null));
+		assertThrows(NullPointerException.class, () -> factory.getConfiguration(context, name, (URI) null));
 	}
 	
 	@Test

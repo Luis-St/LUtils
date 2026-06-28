@@ -142,4 +142,39 @@ class ClassPathUtilsTest {
 		assertNotNull(ClassPathUtils.Mode.valueOf("INCLUDE"));
 		assertNotNull(ClassPathUtils.Mode.valueOf("EXCLUDE"));
 	}
+	
+	@Test
+	void getAnnotatedMethodsScansEntireClasspathWithoutLinkageError() {
+		List<Method> methods = assertDoesNotThrow(() -> ClassPathUtils.getAnnotatedMethods(Override.class));
+		assertNotNull(methods);
+		assertTrue(methods.stream().allMatch(m -> m.isAnnotationPresent(Override.class)));
+	}
+	
+	@Test
+	void getAnnotatedFieldsScansEntireClasspathWithoutLinkageError() {
+		List<Field> fields = assertDoesNotThrow(() -> ClassPathUtils.getAnnotatedFields(Deprecated.class));
+		assertNotNull(fields);
+		assertTrue(fields.stream().allMatch(f -> f.isAnnotationPresent(Deprecated.class)));
+	}
+	
+	@Test
+	void getAnnotatedFieldsWithPackageFiltersCorrectly() {
+		List<Field> fields = ClassPathUtils.getAnnotatedFields("net.luis.utils", Deprecated.class);
+		assertNotNull(fields);
+		assertTrue(fields.stream().allMatch(f -> f.getDeclaringClass().getName().startsWith("net.luis.utils")));
+		assertTrue(fields.stream().allMatch(f -> f.isAnnotationPresent(Deprecated.class)));
+	}
+	
+	@Test
+	void getClassesWithNullModeIncludesClasses() {
+		List<Class<?>> classes = ClassPathUtils.getClasses("net.luis.utils.util", null);
+		assertNotNull(classes);
+		assertTrue(classes.stream().allMatch(c -> c.getName().startsWith("net.luis.utils.util")));
+	}
+	
+	@Test
+	void emptyArraysAreEmpty() {
+		assertEquals(0, ClassPathUtils.EMPTY_METHOD_ARRAY.length);
+		assertEquals(0, ClassPathUtils.EMPTY_FIELD_ARRAY.length);
+	}
 }

@@ -20,6 +20,8 @@ package net.luis.utils.io.reader;
 
 import net.luis.utils.exception.InvalidStringException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceAccessMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import java.io.Reader;
 import java.util.*;
@@ -31,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
+@ResourceLock(value = "net.luis.utils.io.reader.StringScope.SCOPE_REGISTRY", mode = ResourceAccessMode.READ)
 class ScopedStringReaderTest {
 	
 	@Test

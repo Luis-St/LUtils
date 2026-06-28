@@ -22,6 +22,7 @@ import net.luis.utils.io.FileUtils;
 import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
+@ResourceLock("net.luis.utils.logging")
 class LoggingIntegrationTest {
 	
 	@BeforeAll

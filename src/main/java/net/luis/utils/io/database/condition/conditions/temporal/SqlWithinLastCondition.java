@@ -1,0 +1,48 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.database.condition.conditions.temporal;
+
+import net.luis.utils.io.database.condition.conditions.SqlTemporalCondition;
+import net.luis.utils.io.database.expression.SqlExpression;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+
+/**
+ * A condition that checks whether a temporal value lies within the last given duration relative to now.<br>
+ *
+ * @author Luis-St
+ *
+ * @param value The temporal expression to check
+ * @param duration The duration that defines the time window ending at now
+ */
+public record SqlWithinLastCondition(
+	@NonNull SqlExpression<?> value,
+	@NonNull SqlExpression<?> duration
+) implements SqlTemporalCondition {
+	
+	/**
+	 * Constructs a new within-last condition with the given value and duration expressions.<br>
+	 * @throws NullPointerException If the value or duration expression is null
+	 */
+	public SqlWithinLastCondition {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(duration, "Sql duration expression must not be null");
+	}
+}

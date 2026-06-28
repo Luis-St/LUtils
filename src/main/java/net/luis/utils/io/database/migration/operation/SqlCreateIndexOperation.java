@@ -1,0 +1,48 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.database.migration.operation;
+
+import net.luis.utils.io.database.index.SqlIndex;
+import net.luis.utils.io.database.table.SqlTable;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+
+/**
+ * Migration operation that creates a new index on an existing table.<br>
+ *
+ * @author Luis-St
+ *
+ * @param index The index to create
+ * @param table The table the index is created on
+ */
+public record SqlCreateIndexOperation(
+	@NonNull SqlIndex index,
+	@NonNull SqlTable<?> table
+) implements SqlMigrationOperation {
+	
+	/**
+	 * Constructs a new create index operation with the given index and table.<br>
+	 * @throws NullPointerException If the index or table is null
+	 */
+	public SqlCreateIndexOperation {
+		Objects.requireNonNull(index, "Sql index must not be null");
+		Objects.requireNonNull(table, "Sql table must not be null");
+	}
+}
