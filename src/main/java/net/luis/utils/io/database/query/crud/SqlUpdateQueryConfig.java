@@ -35,11 +35,22 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Holds the immutable state of a {@link SqlUpdateQuery}.<br>
+ * Each builder operation on the query produces a new configuration via the {@code with...} methods.<br>
  *
  * @author Luis-St
  *
+ * @param <E> The type of the entities mapped from the affected rows
+ * @param table The table to update rows in
+ * @param dialect The sql dialect used to render the query
+ * @param connectionSource The connection source used to execute the query
+ * @param queryTimeout The timeout applied to the query execution
+ * @param rowMapper The row mapper used to map result rows to entities
+ * @param setClauses The set clauses describing the column assignments
+ * @param joins The join clauses applied to the update query
+ * @param whereCondition The condition restricting which rows are updated, or {@code null} for no condition
+ * @param allowAll Whether updating all rows without a where condition is explicitly allowed
  */
-
 record SqlUpdateQueryConfig<E>(
 	@NonNull SqlTable<E> table,
 	@NonNull SqlDialect dialect,
@@ -52,6 +63,16 @@ record SqlUpdateQueryConfig<E>(
 	boolean allowAll
 ) {
 	
+	/**
+	 * Constructs a new update query configuration with the given core components and default empty clauses.<br>
+	 * The set clauses and joins are empty, the where condition is {@code null} and the allow-all flag is disabled.<br>
+	 *
+	 * @param table The table to update rows in
+	 * @param dialect The sql dialect used to render the query
+	 * @param connectionSource The connection source used to execute the query
+	 * @param queryTimeout The timeout applied to the query execution
+	 * @param rowMapper The row mapper used to map result rows to entities
+	 */
 	SqlUpdateQueryConfig(
 		@NonNull SqlTable<E> table,
 		@NonNull SqlDialect dialect,
@@ -62,6 +83,10 @@ record SqlUpdateQueryConfig<E>(
 		this(table, dialect, connectionSource, queryTimeout, rowMapper, List.of(), List.of(), null, false);
 	}
 	
+	/**
+	 * Constructs a new update query configuration validating the required components.<br>
+	 * @throws NullPointerException If the table, dialect, connection source, query timeout, row mapper, set clauses or joins are null
+	 */
 	SqlUpdateQueryConfig {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
@@ -72,18 +97,40 @@ record SqlUpdateQueryConfig<E>(
 		Objects.requireNonNull(joins, "Sql join clauses must not be null");
 	}
 	
+	/**
+	 * Creates a copy of this configuration with the given set clauses.<br>
+	 *
+	 * @param setClauses The set clauses describing the column assignments
+	 * @return A new configuration with the updated set clauses
+	 */
 	@NonNull SqlUpdateQueryConfig<E> withSetClauses(@NonNull List<SqlSetClause<E, ?>> setClauses) {
 		return new SqlUpdateQueryConfig<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.rowMapper, setClauses, this.joins, this.whereCondition, this.allowAll);
 	}
 	
+	/**
+	 * Creates a copy of this configuration with the given join clauses.<br>
+	 *
+	 * @param joins The join clauses to apply
+	 * @return A new configuration with the updated joins
+	 */
 	@NonNull SqlUpdateQueryConfig<E> withJoins(@NonNull List<SqlJoinClause> joins) {
 		return new SqlUpdateQueryConfig<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.rowMapper, this.setClauses, joins, this.whereCondition, this.allowAll);
 	}
 	
+	/**
+	 * Creates a copy of this configuration with the given where condition.<br>
+	 *
+	 * @param whereCondition The condition restricting which rows are updated, or {@code null} for no condition
+	 * @return A new configuration with the updated where condition
+	 */
 	@NonNull SqlUpdateQueryConfig<E> withWhereCondition(@Nullable SqlCondition whereCondition) {
 		return new SqlUpdateQueryConfig<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.rowMapper, this.setClauses, this.joins, whereCondition, this.allowAll);
 	}
 	
+	/**
+	 * Creates a copy of this configuration that allows updating all rows without a where condition.<br>
+	 * @return A new configuration with the allow-all flag enabled
+	 */
 	@NonNull SqlUpdateQueryConfig<E> withAllowAll() {
 		return new SqlUpdateQueryConfig<>(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.rowMapper, this.setClauses, this.joins, this.whereCondition, true);
 	}

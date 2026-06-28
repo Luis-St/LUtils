@@ -24,13 +24,18 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Column alteration that changes the sql type of a column.<br>
  *
  * @author Luis-St
  *
+ * @param type The new sql type of the column
  */
-
 public record SqlSetTypeAlteration(@NonNull SqlType<?> type) implements SqlColumnAlteration {
 	
+	/**
+	 * Constructs a new set type alteration with the given sql type.<br>
+	 * @throws NullPointerException If the type is null
+	 */
 	public SqlSetTypeAlteration {
 		Objects.requireNonNull(type, "Sql type must not be null");
 	}

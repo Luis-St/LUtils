@@ -31,13 +31,17 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 
 /**
+ * SQL dialect implementation for MariaDB.<br>
+ * Provides MariaDB-specific SQL generation by extending {@link MySqlDialect}.<br>
  *
  * @author Luis-St
- *
  */
 
 public class MariaDbDialect extends MySqlDialect {
 	
+	/**
+	 * The set of SQL features supported by this dialect.
+	 */
 	private static final Set<SqlFeature> SUPPORTED_FEATURES = Set.of(
 		SqlFeature.CTE,
 		SqlFeature.RECURSIVE_CTE,
@@ -56,6 +60,9 @@ public class MariaDbDialect extends MySqlDialect {
 		SqlFeature.DROP_CONSTRAINT,
 		SqlFeature.JOINED_DML
 	);
+	/**
+	 * The registry of MariaDB-specific SQL type mappings.
+	 */
 	private static final SqlTypeRegistry TYPE_REGISTRY = SqlTypeRegistry.builder()
 		.register(SqlTypes.JSON, "JSON")
 		.register(SqlTypes.UUID, "UUID")

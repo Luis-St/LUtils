@@ -25,13 +25,18 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether an expression is {@code null}.<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
  */
-
 public record SqlIsNullCondition(@NonNull SqlExpression<?> value) implements SqlComparisonCondition {
 	
+	/**
+	 * Constructs a new is-null condition with the given value expression.<br>
+	 * @throws NullPointerException If the value expression is null
+	 */
 	public SqlIsNullCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 	}

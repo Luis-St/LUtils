@@ -21,9 +21,8 @@ package net.luis.utils.io.database.function.window.frame.bound;
 import net.luis.utils.io.database.function.window.SqlFrameBound;
 
 /**
+ * Frame bound representing {@code UNBOUNDED PRECEDING}, the start of the partition.<br>
  *
  * @author Luis-St
- *
  */
-
 public record UnboundedPrecedingFrameBound() implements SqlFrameBound {}

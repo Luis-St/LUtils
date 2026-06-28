@@ -27,9 +27,16 @@ import java.time.temporal.Temporal;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code MAKE_TIME} function.<br>
+ * Builds a time value from its hour, minute and second components.<br>
  *
  * @author Luis-St
  *
+ * @param hour The expression providing the hour component
+ * @param minute The expression providing the minute component
+ * @param second The expression providing the second component
+ * @param type The sql type of the result
+ * @param <T> The temporal result type of the function
  */
 
 public record SqlMakeTimeFunction<T extends Temporal>(
@@ -39,6 +46,10 @@ public record SqlMakeTimeFunction<T extends Temporal>(
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
+	/**
+	 * Constructs a new make time function with the given hour, minute, second and sql type.<br>
+	 * @throws NullPointerException If the hour, minute, second or sql type is null
+	 */
 	public SqlMakeTimeFunction {
 		Objects.requireNonNull(hour, "Sql hour expression must not be null");
 		Objects.requireNonNull(minute, "Sql minute expression must not be null");

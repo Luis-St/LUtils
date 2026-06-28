@@ -27,22 +27,48 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Holds the result of rendering an object into sql for a specific dialect.<br>
+ * It consists of the rendered sql statements (tokens) and the ordered list of typed parameters that are bound to the statement.<br>
+ *
+ * @see SqlRenderable
  *
  * @author Luis-St
- *
  */
-
 public final class SqlRendered {
 	
+	/**
+	 * The rendered sql statements as an ordered list of tokens.
+	 */
 	private final @Unmodifiable List<String> statements;
+	/**
+	 * The ordered list of parameters, each paired with its sql type.
+	 */
 	private final @Unmodifiable List<Pair<SqlType<?>, Object>> parameters;
+	/**
+	 * The cached sql string that is built lazily from the statements on first access.
+	 */
 	private String cachedSql;
 	
+	/**
+	 * Constructs a new rendered sql with the given statements and parameters.<br>
+	 * Both lists are copied defensively into immutable lists.<br>
+	 *
+	 * @param statements The rendered sql statements as an ordered list of tokens
+	 * @param parameters The ordered list of parameters, each paired with its sql type
+	 * @throws NullPointerException If the statements or parameters list is null
+	 */
 	public SqlRendered(@NonNull @Unmodifiable List<String> statements, @NonNull @Unmodifiable List<Pair<SqlType<?>, Object>> parameters) {
 		this.statements = List.copyOf(Objects.requireNonNull(statements, "Sql statements must not be null"));
 		this.parameters = List.copyOf(Objects.requireNonNull(parameters, "Sql parameters must not be null"));
 	}
 	
+	/**
+	 * Creates a rendered sql from the given sql string without any parameters.<br>
+	 *
+	 * @param sql The sql statement to wrap
+	 * @return A rendered sql containing the given statement and no parameters
+	 * @throws NullPointerException If the sql is null
+	 */
 	public static @NonNull SqlRendered of(@NonNull String sql) {
 		Objects.requireNonNull(sql, "Sql statement must not be null");
 		
@@ -51,6 +77,13 @@ public final class SqlRendered {
 	
 	//region Static helper methods
 	
+	/**
+	 * Joins the given sql tokens into a single sql string.<br>
+	 * A single space is inserted between two tokens whenever a separator is required between them.<br>
+	 *
+	 * @param tokens The sql tokens to join
+	 * @return The joined sql string
+	 */
 	private static @NonNull String joinTokens(@NonNull List<String> tokens) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < tokens.size(); i++) {
@@ -63,6 +96,14 @@ public final class SqlRendered {
 		return builder.toString();
 	}
 	
+	/**
+	 * Determines whether a separating space is required between the two given sql tokens.<br>
+	 * No separator is added before an opening parenthesis, a closing parenthesis or a comma, and none is added directly after an opening parenthesis.<br>
+	 *
+	 * @param previous The token that precedes the current token
+	 * @param current The token for which the separator is checked
+	 * @return True if a separating space is required between the tokens, false otherwise
+	 */
 	private static boolean needsSeparator(@NonNull String previous, @NonNull String current) {
 		if ("(".equals(current) || ")".equals(current) || ",".equals(current)) {
 			return false;
@@ -71,14 +112,28 @@ public final class SqlRendered {
 	}
 	//endregion
 	
+	/**
+	 * Returns the rendered sql statements as an ordered list of tokens.<br>
+	 * @return The unmodifiable list of sql tokens
+	 */
 	public @NonNull @Unmodifiable List<String> statements() {
 		return this.statements;
 	}
 	
+	/**
+	 * Returns the ordered list of parameters, each paired with its sql type.<br>
+	 * @return The unmodifiable list of typed parameters
+	 */
 	public @NonNull @Unmodifiable List<Pair<SqlType<?>, Object>> parameters() {
 		return this.parameters;
 	}
 	
+	/**
+	 * Returns the rendered sql as a single string built from the statements.<br>
+	 * The result is computed lazily on first access and cached for subsequent calls.<br>
+	 *
+	 * @return The joined sql string
+	 */
 	public @NonNull String sql() {
 		if (this.cachedSql == null) {
 			this.cachedSql = joinTokens(this.statements);

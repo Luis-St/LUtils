@@ -26,15 +26,27 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 
 /**
+ * A {@link SqlTypeInferrer} that resolves sql types from a fixed lookup map.<br>
+ * The lookup is first queried by the exact runtime class of the value and, if no match is found, by iterating the entries in insertion order and selecting the first key that is assignable from the value's class.<br>
+ *
+ * @see SqlTypeInferrer
  *
  * @author Luis-St
- *
  */
-
 public class SqlLookupTypeInferrer implements SqlTypeInferrer {
 	
+	/**
+	 * The unmodifiable map from java classes to their corresponding sql types.<br>
+	 */
 	private final Map<Class<?>, SqlType<?>> lookup;
 	
+	/**
+	 * Constructs a new lookup type inferrer with the given lookup map.<br>
+	 * The map is copied into an unmodifiable {@link LinkedHashMap} to preserve its iteration order.<br>
+	 *
+	 * @param lookup The map from java classes to their corresponding sql types
+	 * @throws NullPointerException If the lookup map is null
+	 */
 	SqlLookupTypeInferrer(@NonNull Map<Class<?>, SqlType<?>> lookup) {
 		this.lookup = Collections.unmodifiableMap(Maps.newLinkedHashMap(Objects.requireNonNull(lookup, "Sql type lookup map must not be null")));
 	}

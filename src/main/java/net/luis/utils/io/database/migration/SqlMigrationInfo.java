@@ -26,11 +26,16 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
+ * Holds the recorded information about a single migration as stored by the migration framework.<br>
  *
  * @author Luis-St
  *
+ * @param version The version that uniquely identifies the migration
+ * @param description The human-readable description of the migration
+ * @param status The current status of the migration
+ * @param appliedAt The instant at which the migration was applied or {@code null} if it has not been applied
+ * @param checksum The checksum of the migration or {@code null} if no checksum is recorded
  */
-
 public record SqlMigrationInfo(
 	@NonNull Version version,
 	@NonNull String description,
@@ -39,6 +44,10 @@ public record SqlMigrationInfo(
 	@Nullable String checksum
 ) {
 	
+	/**
+	 * Constructs a new migration info with the given values.<br>
+	 * @throws NullPointerException If the version, description or status is null
+	 */
 	public SqlMigrationInfo {
 		Objects.requireNonNull(version, "Sql migration version must not be null");
 		Objects.requireNonNull(description, "Sql migration description must not be null");

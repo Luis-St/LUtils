@@ -24,13 +24,18 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Migration operation that drops an existing table.<br>
  *
  * @author Luis-St
  *
+ * @param table The table to drop
  */
-
 public record SqlDropTableOperation(@NonNull SqlTable<?> table) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new drop table operation with the given table.<br>
+	 * @throws NullPointerException If the table is null
+	 */
 	public SqlDropTableOperation {
 		Objects.requireNonNull(table, "Sql table must not be null");
 	}

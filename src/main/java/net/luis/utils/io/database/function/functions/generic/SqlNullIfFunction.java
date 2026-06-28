@@ -26,16 +26,24 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code NULLIF} function.<br>
+ * It returns {@code null} if the expression equals the compare value, otherwise it returns the expression.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to return if it does not equal the compare value
+ * @param compareValue The value the expression is compared against
+ * @param <T> The type of the resulting value
  */
-
 public record SqlNullIfFunction<T>(
 	@NonNull SqlExpression<T> expression,
 	@NonNull SqlExpression<T> compareValue
 ) implements SqlFunction<T> {
 	
+	/**
+	 * Constructs a new sql null-if function with the given expression and compare value.<br>
+	 * @throws NullPointerException If the expression or compare value is null
+	 */
 	public SqlNullIfFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(compareValue, "Sql compareValue expression must not be null");

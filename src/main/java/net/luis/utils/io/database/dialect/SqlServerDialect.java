@@ -56,13 +56,17 @@ import java.sql.Types;
 import java.util.*;
 
 /**
+ * SQL dialect implementation for Microsoft SQL Server.<br>
+ * Provides SQL Server-specific SQL generation by extending {@link AbstractSqlDialect}.<br>
  *
  * @author Luis-St
- *
  */
 
 public class SqlServerDialect extends AbstractSqlDialect {
 	
+	/**
+	 * The set of SQL features supported by this dialect.
+	 */
 	private static final Set<SqlFeature> SUPPORTED_FEATURES = Set.of(
 		SqlFeature.CTE,
 		SqlFeature.RECURSIVE_CTE,
@@ -78,6 +82,9 @@ public class SqlServerDialect extends AbstractSqlDialect {
 		SqlFeature.OFFSET_WITHOUT_LIMIT
 	);
 	
+	/**
+	 * The set of index methods supported by this dialect.
+	 */
 	private static final Set<SqlIndexMethod> SUPPORTED_INDEX_METHODS = Set.of(
 		SqlIndexMethod.BTREE,
 		SqlIndexMethod.HASH,
@@ -85,6 +92,9 @@ public class SqlServerDialect extends AbstractSqlDialect {
 		SqlIndexMethod.NONCLUSTERED,
 		SqlIndexMethod.COLUMNSTORE
 	);
+	/**
+	 * The registry of SQL Server-specific SQL type mappings.
+	 */
 	private static final SqlTypeRegistry TYPE_REGISTRY = SqlTypeRegistry.builder()
 		.register(SqlTypes.UUID, "UNIQUEIDENTIFIER")
 		.register(SqlTypes.XML, "XML", (statement, index, value) -> {
@@ -308,8 +318,21 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 }
 
+/**
+ * SQL Server-specific renderer for table-related SQL statements.<br>
+ * Extends {@link SqlTableRenderer} to render {@code IF OBJECT_ID}-based existence checks for conditional table creation
+ * and {@code IDENTITY(1, 1)} auto-increment columns.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerTableRenderer extends SqlTableRenderer {
 	
+	/**
+	 * Constructs a new SQL Server table renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerTableRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -334,8 +357,21 @@ class SqlServerTableRenderer extends SqlTableRenderer {
 	}
 }
 
+/**
+ * SQL Server-specific renderer for index-related SQL statements.<br>
+ * Extends {@link SqlIndexRenderer} to render {@code CLUSTERED} and {@code NONCLUSTERED} index methods and standard
+ * drop-index statements, while rejecting index renaming as an unsupported feature.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerIndexRenderer extends SqlIndexRenderer {
 	
+	/**
+	 * Constructs a new SQL Server index renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerIndexRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -380,8 +416,21 @@ class SqlServerIndexRenderer extends SqlIndexRenderer {
 	}
 }
 
+/**
+ * SQL Server-specific renderer for column-related SQL statements.<br>
+ * Extends {@link SqlColumnRenderer} to render {@code ALTER TABLE ... ALTER COLUMN} statements for changing a column's
+ * type and nullability.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerColumnRenderer extends SqlColumnRenderer {
 	
+	/**
+	 * Constructs a new SQL Server column renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerColumnRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -413,8 +462,21 @@ class SqlServerColumnRenderer extends SqlColumnRenderer {
 	}
 }
 
+/**
+ * SQL Server-specific renderer for schema migration operations.<br>
+ * Extends {@link SqlMigrationOperationRenderer} to render table and column renaming through the {@code sp_rename}
+ * stored procedure.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 	
+	/**
+	 * Constructs a new SQL Server migration operation renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerMigrationOperationRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -437,8 +499,22 @@ class SqlServerMigrationOperationRenderer extends SqlMigrationOperationRenderer 
 	}
 }
 
+/**
+ * SQL Server-specific renderer for numeric SQL functions.<br>
+ * Extends {@link SqlNumericFunctionRenderer} to render SQL Server function names and idioms such as {@code RAND},
+ * {@code ATN2}, {@code CEILING}, the {@code %} modulo operator and {@code ROUND}-based rounding, logarithm,
+ * radians and truncation functions.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	
+	/**
+	 * Constructs a new SQL Server numeric function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerNumericFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -514,10 +590,38 @@ class SqlServerNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	}
 }
 
+/**
+ * SQL Server-specific renderer for window SQL functions.<br>
+ * Extends {@link SqlWindowFunctionRenderer} to emulate value-at functions, supporting only position 1 via
+ * {@code FIRST_VALUE} since SQL Server does not provide {@code NTH_VALUE}.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerWindowFunctionRenderer extends SqlWindowFunctionRenderer {
 	
+	/**
+	 * Constructs a new SQL Server window function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @param aggregateRenderer The aggregate function renderer used to render aggregate window functions
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerWindowFunctionRenderer(@NonNull SqlDialect dialect, @NonNull SqlAggregateFunctionRenderer aggregateRenderer) {
 		super(dialect, aggregateRenderer);
+	}
+	
+	/**
+	 * Checks whether the given position expression is a constant numeric value equal to the expected position.<br>
+	 *
+	 * @param position The position expression to check
+	 * @param expected The expected constant position value
+	 * @return True if the position is a constant value equal to the expected position, otherwise false
+	 */
+	private static boolean isConstantPosition(@NonNull SqlExpression<? extends Number> position, int expected) {
+		if (position instanceof SqlValueExpression<?> value && value.value() instanceof Number number) {
+			return number.intValue() == expected;
+		}
+		return false;
 	}
 	
 	@Override
@@ -529,17 +633,22 @@ class SqlServerWindowFunctionRenderer extends SqlWindowFunctionRenderer {
 		}
 		throw new SqlDialectUnsupportedRenderingException("SQL Server does not support NTH_VALUE; only position 1 (FIRST_VALUE) can be emulated");
 	}
-	
-	private static boolean isConstantPosition(@NonNull SqlExpression<? extends Number> position, int expected) {
-		if (position instanceof SqlValueExpression<?> value && value.value() instanceof Number number) {
-			return number.intValue() == expected;
-		}
-		return false;
-	}
 }
 
+/**
+ * SQL Server-specific renderer for numeric SQL conditions.<br>
+ * Extends {@link SqlNumericConditionRenderer} to render modulo-equality conditions using the {@code %} operator.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerNumericConditionRenderer extends SqlNumericConditionRenderer {
 	
+	/**
+	 * Constructs a new SQL Server numeric condition renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerNumericConditionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -555,8 +664,21 @@ class SqlServerNumericConditionRenderer extends SqlNumericConditionRenderer {
 	}
 }
 
+/**
+ * SQL Server-specific renderer for comparison SQL conditions.<br>
+ * Extends {@link SqlComparisonConditionRenderer} to emulate the {@code IS DISTINCT FROM} condition using a
+ * {@code CASE} expression since SQL Server lacks native support for it.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerComparisonConditionRenderer extends SqlComparisonConditionRenderer {
 	
+	/**
+	 * Constructs a new SQL Server comparison condition renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerComparisonConditionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -575,8 +697,21 @@ class SqlServerComparisonConditionRenderer extends SqlComparisonConditionRendere
 	}
 }
 
+/**
+ * SQL Server-specific renderer for string SQL conditions.<br>
+ * Extends {@link SqlStringConditionRenderer} to render string concatenation expressions using the {@code +}
+ * operator.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerStringConditionRenderer extends SqlStringConditionRenderer {
 	
+	/**
+	 * Constructs a new SQL Server string condition renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerStringConditionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -591,8 +726,22 @@ class SqlServerStringConditionRenderer extends SqlStringConditionRenderer {
 	}
 }
 
+/**
+ * SQL Server-specific renderer for string SQL functions.<br>
+ * Extends {@link SqlStringFunctionRenderer} to render SQL Server string idioms such as {@code +}- and
+ * {@code STRING_AGG}-based concatenation, {@code LEN}, {@code CHARINDEX}, {@code SUBSTRING}, {@code REPLICATE}-based
+ * padding and {@code CONVERT}-based hex and unhex functions.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerStringFunctionRenderer extends SqlStringFunctionRenderer {
 	
+	/**
+	 * Constructs a new SQL Server string function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerStringFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -670,6 +819,17 @@ class SqlServerStringFunctionRenderer extends SqlStringFunctionRenderer {
 		return this.renderPad(function.expression(), function.length(), function.fill(), false);
 	}
 	
+	/**
+	 * Renders a left or right padding expression for the given value, target length and fill string.<br>
+	 * If the value is already at least as long as the target length it is truncated with {@code LEFT}, otherwise it is padded with a {@code REPLICATE}-based fill run on the left or right side depending on the given flag.<br>
+	 *
+	 * @param expression The expression to pad
+	 * @param length The target length expression
+	 * @param fill The fill expression used for padding
+	 * @param left Whether to pad on the left side, otherwise on the right side
+	 * @return The rendered padding expression
+	 * @throws SqlException If rendering fails
+	 */
 	private @NonNull SqlRendered renderPad(@NonNull SqlExpression<?> expression, @NonNull SqlExpression<?> length, @NonNull SqlExpression<?> fill, boolean left) throws SqlException {
 		SqlRendered value = expression.toSql(this.dialect);
 		SqlRendered count = length.toSql(this.dialect);
@@ -716,12 +876,33 @@ class SqlServerStringFunctionRenderer extends SqlStringFunctionRenderer {
 	}
 }
 
+/**
+ * SQL Server-specific renderer for temporal SQL functions.<br>
+ * Extends {@link SqlTemporalFunctionRenderer} to render SQL Server temporal idioms such as {@code DATEPART}-based
+ * extraction, {@code GETDATE}-based current date, time and timestamp, {@code DATEADD} and {@code DATEDIFF}-based epoch
+ * conversions and temporal arithmetic, and {@code DATETRUNC}-based truncation.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
+	/**
+	 * Constructs a new SQL Server temporal function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerTemporalFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
 	
+	/**
+	 * Maps the given temporal part to its SQL Server {@code DATEPART} unit name.<br>
+	 *
+	 * @param part The temporal part to map
+	 * @return The SQL Server date part unit name
+	 * @throws NullPointerException If the temporal part is null
+	 */
 	private static @NonNull String toDatePart(@NonNull SqlTemporalPart part) {
 		Objects.requireNonNull(part, "Temporal part must not be null");
 		return switch (part) {
@@ -863,8 +1044,21 @@ class SqlServerTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	}
 }
 
+/**
+ * SQL Server-specific renderer for schema-related SQL statements.<br>
+ * Extends {@link SqlSchemaRenderer} to render schema creation with conditional existence checks via
+ * {@code sys.schemas} and {@code EXEC}, and schema dropping with optional {@code IF EXISTS}.<br>
+ *
+ * @author Luis-St
+ */
 class SqlServerSchemaRenderer extends SqlSchemaRenderer {
 	
+	/**
+	 * Constructs a new SQL Server schema renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlServerSchemaRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}

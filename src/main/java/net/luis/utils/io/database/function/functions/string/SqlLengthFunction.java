@@ -26,9 +26,14 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code LENGTH} (character length) function.<br>
+ * Returns the number of characters in the given string expression.<br>
  *
  * @author Luis-St
  *
+ * @param expression The string expression to measure
+ * @param type The numeric result type of the function
+ * @param <T> The numeric type the function evaluates to
  */
 
 public record SqlLengthFunction<T extends Number>(
@@ -36,6 +41,10 @@ public record SqlLengthFunction<T extends Number>(
 	@NonNull SqlType<T> type
 ) implements SqlStringFunction<T> {
 	
+	/**
+	 * Constructs a new length function with the given expression and result type.<br>
+	 * @throws NullPointerException If the expression or type is null
+	 */
 	public SqlLengthFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

@@ -38,43 +38,111 @@ import java.time.Duration;
 import java.util.*;
 
 /**
+ * Represents a single active database transaction bound to a {@link Connection}.<br>
+ * A transaction exposes schema and table access through {@link SqlProvider} while coordinating the begin,
+ * commit, rollback and savepoint lifecycle of the underlying connection.<br>
+ * <p>
+ *     Depending on how it was created a transaction may own its connection and commit, merely join an outer
+ *     transaction, run as a nested savepoint or execute non-transactionally in auto-commit mode.<br>
+ *     Registered {@link SqlTransactionListener listeners} are notified after the transaction commits, rolls
+ *     back and closes.
+ * </p>
+ * Instances are not thread-safe and must be confined to the thread that created them.<br>
+ *
+ * @see SqlTransactionManager
+ * @see SqlTransactionListener
+ * @see SqlSavepoint
  *
  * @author Luis-St
- *
  */
 
 // Not thread-safe - instances must be confined to a single thread
 @SuppressWarnings("SqlSourceToSinkFlow")
 public class SqlTransaction implements SqlProvider, AutoCloseable {
 	
+	/**
+	 * The jdbc connection backing this transaction.
+	 */
 	private final Connection connection;
+	/**
+	 * The sql dialect used to render statements within this transaction.
+	 */
 	private final SqlDialect dialect;
+	/**
+	 * Whether this transaction is read-only.
+	 */
 	private final boolean readOnly;
+	/**
+	 * The timeout applied to queries executed within this transaction.
+	 */
 	private final Duration queryTimeout;
+	/**
+	 * The isolation level of this transaction.
+	 */
 	private final SqlIsolationLevel isolationLevel;
+	/**
+	 * Whether this transaction owns the connection and must restore and close it.
+	 */
 	private final boolean ownsConnection;
+	/**
+	 * Whether this transaction is responsible for committing or rolling back the connection.
+	 */
 	private final boolean ownsCommit;
+	/**
+	 * Whether this transaction runs in auto-commit mode without transactional semantics.
+	 */
 	private final boolean nonTransactional;
+	/**
+	 * The outer transaction that was suspended for this one, or {@code null} if none.
+	 */
 	private final @Nullable SqlTransaction suspended;
+	/**
+	 * The original auto-commit state of the connection captured for restoration.
+	 */
 	private final boolean originalAutoCommit;
+	/**
+	 * The original read-only state of the connection captured for restoration.
+	 */
 	private final boolean originalReadOnly;
+	/**
+	 * The original isolation level of the connection captured for restoration.
+	 */
 	private final int originalIsolationLevel;
+	/**
+	 * The named savepoints created within this transaction.
+	 */
 	private final Map<String, Savepoint> savepoints = Maps.newLinkedHashMap();
+	/**
+	 * The registered transaction listeners.
+	 */
 	private final List<SqlTransactionListener> listeners = Lists.newArrayList();
+	/**
+	 * The savepoint backing this transaction when it represents a nested transaction, or {@code null} otherwise.
+	 */
 	private @Nullable Savepoint nestedSavepoint;
+	/**
+	 * The current lifecycle state of this transaction.
+	 */
 	private SqlTransactionState state = SqlTransactionState.ACTIVE;
 	
-	public SqlTransaction(
-		@NonNull Connection connection,
-		@NonNull SqlDialect dialect,
-		boolean readOnly,
-		@NonNull Duration queryTimeout,
-		@NonNull SqlIsolationLevel isolationLevel,
-		boolean ownsConnection,
-		boolean ownsCommit,
-		boolean nonTransactional,
-		@Nullable SqlTransaction suspended
-	) throws SqlTransactionConnectionException {
+	/**
+	 * Constructs a new sql transaction wrapping the given connection.<br>
+	 * If the transaction owns the connection the original auto-commit, read-only and isolation settings are
+	 * captured so they can be restored when the transaction is closed.<br>
+	 *
+	 * @param connection The jdbc connection backing this transaction
+	 * @param dialect The sql dialect used to render statements
+	 * @param readOnly Whether the transaction is read-only
+	 * @param queryTimeout The timeout applied to queries executed within this transaction
+	 * @param isolationLevel The isolation level of this transaction
+	 * @param ownsConnection Whether this transaction owns the connection and must restore and close it
+	 * @param ownsCommit Whether this transaction is responsible for committing or rolling back the connection
+	 * @param nonTransactional Whether this transaction runs in auto-commit mode without transactional semantics
+	 * @param suspended The outer transaction that was suspended for this one, or {@code null} if none
+	 * @throws NullPointerException If the connection, dialect, query timeout or isolation level is null
+	 * @throws SqlTransactionConnectionException If reading the original connection state fails
+	 */
+	public SqlTransaction(@NonNull Connection connection, @NonNull SqlDialect dialect, boolean readOnly, @NonNull Duration queryTimeout, @NonNull SqlIsolationLevel isolationLevel, boolean ownsConnection, boolean ownsCommit, boolean nonTransactional, @Nullable SqlTransaction suspended) throws SqlTransactionConnectionException {
 		this.connection = Objects.requireNonNull(connection, "Connection must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		this.readOnly = readOnly;
@@ -100,50 +168,112 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		}
 	}
 	
+	/**
+	 * Sets the savepoint that backs this transaction when it represents a nested transaction.<br>
+	 *
+	 * @param nestedSavepoint The savepoint to roll back to or release for this nested transaction
+	 * @throws NullPointerException If the nested savepoint is null
+	 */
 	void setNestedSavepoint(@NonNull Savepoint nestedSavepoint) {
 		this.nestedSavepoint = Objects.requireNonNull(nestedSavepoint, "Nested savepoint must not be null");
 	}
 	
+	/**
+	 * Returns the jdbc connection backing this transaction.<br>
+	 * @return The connection
+	 */
 	public @NonNull Connection getConnection() {
 		return this.connection;
 	}
 	
+	/**
+	 * Returns the sql dialect used to render statements within this transaction.<br>
+	 * @return The sql dialect
+	 */
 	public @NonNull SqlDialect getDialect() {
 		return this.dialect;
 	}
 	
+	/**
+	 * Returns whether this transaction is read-only.<br>
+	 * @return True if the transaction is read-only, false otherwise
+	 */
 	public boolean isReadOnly() {
 		return this.readOnly;
 	}
 	
+	/**
+	 * Returns the timeout applied to queries executed within this transaction.<br>
+	 * @return The query timeout
+	 */
 	public @NonNull Duration getQueryTimeout() {
 		return this.queryTimeout;
 	}
 	
+	/**
+	 * Returns the isolation level of this transaction.<br>
+	 * @return The isolation level
+	 */
 	public @NonNull SqlIsolationLevel getIsolationLevel() {
 		return this.isolationLevel;
 	}
 	
+	/**
+	 * Returns the outer transaction that was suspended in favor of this one.<br>
+	 * @return The suspended transaction or {@code null} if none was suspended
+	 */
 	public @Nullable SqlTransaction getSuspended() {
 		return this.suspended;
 	}
 	
+	/**
+	 * Returns whether this transaction is still active and has neither been committed nor rolled back.<br>
+	 * @return True if the transaction is active, false otherwise
+	 */
 	public boolean isActive() {
 		return this.state == SqlTransactionState.ACTIVE;
 	}
 	
+	/**
+	 * Returns whether this transaction has been committed.<br>
+	 * @return True if the transaction has been committed, false otherwise
+	 */
 	public boolean isCommitted() {
 		return this.state == SqlTransactionState.COMMITTED;
 	}
 	
+	/**
+	 * Returns whether this transaction has been rolled back.<br>
+	 * @return True if the transaction has been rolled back, false otherwise
+	 */
 	public boolean isRolledBack() {
 		return this.state == SqlTransactionState.ROLLED_BACK;
 	}
 	
+	/**
+	 * Registers a listener that is notified after this transaction commits, rolls back or closes.<br>
+	 *
+	 * @param listener The listener to register
+	 * @throws NullPointerException If the listener is null
+	 */
 	public void addListener(@NonNull SqlTransactionListener listener) {
 		this.listeners.add(Objects.requireNonNull(listener, "Sql transaction listener must not be null"));
 	}
 	
+	/**
+	 * Commits this transaction and notifies all registered listeners afterwards.<br>
+	 * The exact behavior depends on how the transaction was created:<br>
+	 * <ul>
+	 *     <li>A non-transactional transaction only notifies its listeners.</li>
+	 *     <li>A nested transaction releases its savepoint instead of committing the connection.</li>
+	 *     <li>A joining transaction marks itself committed without committing the outer connection.</li>
+	 *     <li>An owning transaction commits the underlying connection.</li>
+	 * </ul>
+	 *
+	 * @throws SqlTransactionStateException If the transaction is not active
+	 * @throws SqlTransactionSavepointException If releasing the nested savepoint fails
+	 * @throws SqlTransactionCommitException If committing the underlying connection fails
+	 */
 	public void commit() throws SqlException {
 		if (!this.isActive()) {
 			throw new SqlTransactionStateException("Sql transaction is not active");
@@ -179,6 +309,18 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		this.fireAfterCommit();
 	}
 	
+	/**
+	 * Rolls back this transaction and notifies all registered listeners afterwards.<br>
+	 * The exact behavior depends on how the transaction was created:<br>
+	 * <ul>
+	 *     <li>A non-transactional transaction only notifies its listeners.</li>
+	 *     <li>A nested transaction rolls back to its savepoint instead of the connection.</li>
+	 *     <li>An owning transaction rolls back the underlying connection.</li>
+	 * </ul>
+	 *
+	 * @throws SqlTransactionStateException If the transaction is not active or is a joining transaction
+	 * @throws SqlTransactionRollbackException If rolling back the connection or savepoint fails
+	 */
 	public void rollback() throws SqlException {
 		if (!this.isActive()) {
 			throw new SqlTransactionStateException("Sql transaction is not active");
@@ -212,6 +354,15 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		this.fireAfterRollback();
 	}
 	
+	/**
+	 * Rolls back this transaction to the given previously created savepoint.<br>
+	 * Changes made after the savepoint are discarded while the transaction remains active.<br>
+	 *
+	 * @param savepoint The savepoint to roll back to
+	 * @throws NullPointerException If the savepoint is null
+	 * @throws SqlTransactionStateException If the transaction is not active or the savepoint is unknown
+	 * @throws SqlTransactionRollbackException If rolling back to the savepoint fails
+	 */
 	public void rollbackTo(@NonNull SqlSavepoint savepoint) throws SqlException {
 		Objects.requireNonNull(savepoint, "Sql savepoint must not be null");
 		if (!this.isActive()) {
@@ -230,6 +381,16 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 		}
 	}
 	
+	/**
+	 * Creates a new savepoint with the given name within this transaction.<br>
+	 * The savepoint can later be used with {@link #rollbackTo(SqlSavepoint)} to discard changes made after it.<br>
+	 *
+	 * @param name The unique name of the savepoint
+	 * @return The created savepoint
+	 * @throws NullPointerException If the name is null
+	 * @throws SqlTransactionStateException If the transaction is not active, a savepoint with the name already exists or the execution is non-transactional
+	 * @throws SqlTransactionSavepointException If creating the savepoint fails
+	 */
 	public @NonNull SqlSavepoint savepoint(@NonNull String name) throws SqlException {
 		Objects.requireNonNull(name, "Sql savepoint name must not be null");
 		if (!this.isActive()) {
@@ -349,18 +510,27 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	
 	//region Listeners helper methods
 	
+	/**
+	 * Notifies all registered listeners that this transaction has committed.<br>
+	 */
 	private void fireAfterCommit() {
 		for (SqlTransactionListener listener : this.listeners) {
 			listener.afterCommit();
 		}
 	}
 	
+	/**
+	 * Notifies all registered listeners that this transaction has been rolled back.<br>
+	 */
 	private void fireAfterRollback() {
 		for (SqlTransactionListener listener : this.listeners) {
 			listener.afterRollback();
 		}
 	}
 	
+	/**
+	 * Notifies all registered listeners that this transaction has been closed.<br>
+	 */
 	private void fireAfterClose() {
 		for (SqlTransactionListener listener : this.listeners) {
 			listener.afterClose();
@@ -368,10 +538,24 @@ public class SqlTransaction implements SqlProvider, AutoCloseable {
 	}
 	//endregion
 	
+	/**
+	 * Represents the lifecycle state of a {@link SqlTransaction}.<br>
+	 *
+	 * @author Luis-St
+	 */
 	private enum SqlTransactionState {
 		
+		/**
+		 * The transaction is active and has neither been committed nor rolled back.
+		 */
 		ACTIVE,
+		/**
+		 * The transaction has been committed.
+		 */
 		COMMITTED,
+		/**
+		 * The transaction has been rolled back.
+		 */
 		ROLLED_BACK
 	}
 }

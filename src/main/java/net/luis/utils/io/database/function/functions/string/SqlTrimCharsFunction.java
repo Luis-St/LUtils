@@ -26,9 +26,14 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code TRIM} function with a set of trim characters.<br>
+ * Removes the given characters from the leading and trailing ends of the string expression.<br>
  *
  * @author Luis-St
  *
+ * @param expression The string expression to trim
+ * @param characters The characters to remove from both ends of the expression
+ * @param <T> The character sequence type of the expression
  */
 
 public record SqlTrimCharsFunction<T extends CharSequence>(
@@ -36,6 +41,10 @@ public record SqlTrimCharsFunction<T extends CharSequence>(
 	@NonNull SqlExpression<? extends CharSequence> characters
 ) implements SqlStringFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new trim characters function with the given expression and trim characters.<br>
+	 * @throws NullPointerException If the expression or characters expression is null
+	 */
 	public SqlTrimCharsFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(characters, "Sql characters expression must not be null");

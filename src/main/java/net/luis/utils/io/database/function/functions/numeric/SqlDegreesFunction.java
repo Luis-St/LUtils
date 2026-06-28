@@ -27,13 +27,19 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code DEGREES} function that converts a value from radians to degrees.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression in radians to convert to degrees
  */
 
 public record SqlDegreesFunction(@NonNull SqlExpression<? extends Number> expression) implements SqlNumericFunction<Double> {
 	
+	/**
+	 * Constructs a new degrees function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlDegreesFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

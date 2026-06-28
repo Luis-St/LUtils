@@ -27,16 +27,24 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code LAST_VALUE} window function.<br>
+ * It returns the value of the column from the last row within the window partition.<br>
  *
  * @author Luis-St
  *
+ * @param column The expression whose value is taken from the last row
+ * @param over The window clause defining the partitioning and ordering
+ * @param <T> The type of the resulting value
  */
-
 public record SqlLastValueFunction<T>(
 	@NonNull SqlExpression<T> column,
 	@NonNull SqlWindowClause over
 ) implements SqlWindowFunction<T> {
 	
+	/**
+	 * Constructs a new sql last value function with the given column and window clause.<br>
+	 * @throws NullPointerException If the column or window clause is null
+	 */
 	public SqlLastValueFunction {
 		Objects.requireNonNull(column, "Sql column expression must not be null");
 		Objects.requireNonNull(over, "Sql window clause must not be null");

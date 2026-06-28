@@ -25,13 +25,24 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
+ * Functional interface that binds a value to a parameter of a {@link PreparedStatement}.<br>
+ * It is used to customize how a value of a specific sql type is written to a statement.<br>
+ *
+ * @see SqlValueReader
+ * @see SqlTypeMapping
  *
  * @author Luis-St
- *
  */
-
 @FunctionalInterface
 public interface SqlValueBinder {
 	
+	/**
+	 * Binds the given value to the parameter at the given index of the prepared statement.<br>
+	 *
+	 * @param statement The prepared statement to bind the value to
+	 * @param index The one-based index of the parameter to bind
+	 * @param value The value to bind or {@code null} to bind a sql null
+	 * @throws SQLException If an error occurs while binding the value to the statement
+	 */
 	void bind(@NonNull PreparedStatement statement, int index, @Nullable Object value) throws SQLException;
 }

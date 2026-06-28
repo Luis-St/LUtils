@@ -25,13 +25,22 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * A condition that is the logical disjunction of at least two conditions.<br>
+ * It evaluates to {@code true} if any of the wrapped conditions is true.<br>
  *
  * @author Luis-St
  *
+ * @param conditions The conditions to combine
  */
-
 public record SqlAnyOfCondition(@NonNull @Unmodifiable List<SqlCondition> conditions) implements SqlCondition {
 	
+	/**
+	 * Constructs a new any-of condition with the given conditions.<br>
+	 * The conditions list is copied to ensure immutability.<br>
+	 *
+	 * @throws NullPointerException If the conditions list is null
+	 * @throws IllegalArgumentException If the conditions list is empty, contains fewer than two conditions or contains null conditions
+	 */
 	public SqlAnyOfCondition {
 		Objects.requireNonNull(conditions, "Sql conditions list must not be null");
 		

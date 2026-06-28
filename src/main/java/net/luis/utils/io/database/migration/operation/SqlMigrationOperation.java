@@ -19,11 +19,11 @@
 package net.luis.utils.io.database.migration.operation;
 
 /**
+ * A sealed interface representing a single schema-migration DDL operation.<br>
+ * Each permitted record models one concrete operation such as creating, dropping or renaming a table, column, index or constraint.<br>
  *
  * @author Luis-St
- *
  */
-
 public sealed interface SqlMigrationOperation permits
 	SqlCreateTableOperation,
 	SqlDropTableOperation,

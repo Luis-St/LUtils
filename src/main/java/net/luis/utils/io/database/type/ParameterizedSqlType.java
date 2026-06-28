@@ -24,17 +24,41 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A concrete sql type that has been parameterized with a fixed {@link SqlParameter}.<br>
+ * Instances of this class are created by configuring a {@link ParameterizableSqlType} with a parameter, for example to obtain a {@code VARCHAR(n)} or {@code DECIMAL(p, s)} type.<br>
+ *
+ * @see SqlType
+ * @see ParameterizableSqlType
+ * @see SqlParameter
  *
  * @author Luis-St
  *
+ * @param <T> The java type this sql type maps to
+ * @param <P> The type of parameter this type has been configured with
  */
-
 public final class ParameterizedSqlType<T, P extends SqlParameter> implements SqlType<T> {
 	
+	/**
+	 * The jdbc type code of this sql type.
+	 */
 	private final int jdbcType;
+	/**
+	 * The java type this sql type maps to.
+	 */
 	private final Class<T> javaType;
+	/**
+	 * The parameter this type has been configured with.
+	 */
 	private final P parameter;
 	
+	/**
+	 * Constructs a new parameterized sql type with the given jdbc type, java type and parameter.<br>
+	 *
+	 * @param jdbcType The jdbc type code of this sql type
+	 * @param javaType The java type this sql type maps to
+	 * @param parameter The parameter this type is configured with
+	 * @throws NullPointerException If the java type or parameter is null
+	 */
 	ParameterizedSqlType(int jdbcType, @NonNull Class<T> javaType, @NonNull P parameter) {
 		this.jdbcType = jdbcType;
 		this.javaType = Objects.requireNonNull(javaType, "Java type must not be null");
@@ -51,6 +75,10 @@ public final class ParameterizedSqlType<T, P extends SqlParameter> implements Sq
 		return this.javaType;
 	}
 	
+	/**
+	 * Returns the parameter this type has been configured with.<br>
+	 * @return The parameter
+	 */
 	public @NonNull P parameter() {
 		return this.parameter;
 	}

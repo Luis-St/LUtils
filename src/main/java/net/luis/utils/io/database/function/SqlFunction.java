@@ -27,14 +27,20 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents a sql function call that can be rendered into a sql fragment.<br>
+ * Functions are a kind of {@link SqlExpression} and are grouped by category through dedicated marker sub-interfaces.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the value the function evaluates to
  */
-
 @FunctionalInterface
 public interface SqlFunction<T> extends SqlExpression<T> {
 	
+	/**
+	 * Returns whether the result of this function requires an explicit cast when used in a sql statement.<br>
+	 * @return {@code true} if a cast is required, {@code false} otherwise
+	 */
 	default boolean requiresCast() {
 		return false;
 	}

@@ -30,16 +30,28 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code CASE WHEN} function.<br>
+ * It evaluates a list of conditional branches in order and returns the value of the first matching branch,<br>
+ * or the else value if no branch matches.<br>
  *
  * @author Luis-St
  *
+ * @param branches The list of conditional branches to evaluate in order
+ * @param elseValue The value to return if no branch matches, may be null
+ * @param <T> The type of the resulting value
  */
-
 public record SqlCaseWhenFunction<T>(
 	@NonNull @Unmodifiable List<SqlCaseWhenBranch<T>> branches,
 	@Nullable SqlExpression<T> elseValue
 ) implements SqlFunction<T> {
 	
+	/**
+	 * Constructs a new sql case when function with the given branches and else value.<br>
+	 * The branches list is copied to ensure immutability.<br>
+	 *
+	 * @throws NullPointerException If the branches list is null
+	 * @throws IllegalArgumentException If the branches list is empty, contains null branches, the branches have differing types or the else value type does not match the branch type
+	 */
 	public SqlCaseWhenFunction {
 		Objects.requireNonNull(branches, "Sql branches list must not be null");
 		

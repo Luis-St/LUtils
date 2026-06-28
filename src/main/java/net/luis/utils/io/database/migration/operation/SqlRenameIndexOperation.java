@@ -25,17 +25,24 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Migration operation that renames an existing index.<br>
  *
  * @author Luis-St
  *
+ * @param table The table the index belongs to, or {@code null} if not bound to a table
+ * @param from The current name of the index
+ * @param to The new name of the index
  */
-
 public record SqlRenameIndexOperation(
 	@Nullable SqlTable<?> table,
 	@NonNull String from,
 	@NonNull String to
 ) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new rename index operation with the given table and source and target index name.<br>
+	 * @throws NullPointerException If the source or target index name is null
+	 */
 	public SqlRenameIndexOperation {
 		Objects.requireNonNull(from, "Sql source index name must not be null");
 		Objects.requireNonNull(to, "Sql target index name must not be null");

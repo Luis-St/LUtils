@@ -25,17 +25,24 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Migration operation that adds a check constraint to an existing table.<br>
  *
  * @author Luis-St
  *
+ * @param table The table to add the constraint to
+ * @param name The name of the constraint
+ * @param condition The condition that must hold for the check constraint
  */
-
 public record SqlAddCheckConstraintOperation(
 	@NonNull SqlTable<?> table,
 	@NonNull String name,
 	@NonNull SqlCondition condition
 ) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new add check constraint operation with the given table, name and condition.<br>
+	 * @throws NullPointerException If the table, name or condition is null
+	 */
 	public SqlAddCheckConstraintOperation {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(name, "Sql constraint name must not be null");

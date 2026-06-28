@@ -25,16 +25,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Migration operation that creates a new index on an existing table.<br>
  *
  * @author Luis-St
  *
+ * @param index The index to create
+ * @param table The table the index is created on
  */
-
 public record SqlCreateIndexOperation(
 	@NonNull SqlIndex index,
 	@NonNull SqlTable<?> table
 ) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new create index operation with the given index and table.<br>
+	 * @throws NullPointerException If the index or table is null
+	 */
 	public SqlCreateIndexOperation {
 		Objects.requireNonNull(index, "Sql index must not be null");
 		Objects.requireNonNull(table, "Sql table must not be null");

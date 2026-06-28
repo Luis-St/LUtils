@@ -25,17 +25,24 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a value lies between the given lower and upper bounds, inclusive.<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
+ * @param lower The lower bound of the range
+ * @param upper The upper bound of the range
  */
-
 public record SqlBetweenCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlExpression<?> lower,
 	@NonNull SqlExpression<?> upper
 ) implements SqlComparisonCondition {
 	
+	/**
+	 * Constructs a new between condition with the given value, lower and upper bound expressions.<br>
+	 * @throws NullPointerException If the value, lower or upper bound expression is null
+	 */
 	public SqlBetweenCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 		Objects.requireNonNull(lower, "Sql lower bound expression must not be null");

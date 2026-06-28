@@ -21,9 +21,9 @@ package net.luis.utils.io.database.condition.conditions;
 import net.luis.utils.io.database.condition.SqlCondition;
 
 /**
+ * Marker interface for conditions that compare expressions against each other or against values.<br>
+ * Groups conditions such as equality, ordering, range and null checks.<br>
  *
  * @author Luis-St
- *
  */
-
 public interface SqlComparisonCondition extends SqlCondition {}

@@ -27,13 +27,19 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code EXP} (exponential) function that raises {@code e} to the power of the expression.<br>
  *
  * @author Luis-St
  *
+ * @param expression The exponent expression to raise {@code e} to the power of
  */
 
 public record SqlExpFunction(@NonNull SqlExpression<? extends Number> expression) implements SqlNumericFunction<Double> {
 	
+	/**
+	 * Constructs a new exp function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlExpFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

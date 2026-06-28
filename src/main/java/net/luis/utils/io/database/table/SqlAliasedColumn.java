@@ -29,16 +29,30 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents a {@link SqlColumn} that is referenced through a {@link SqlAlias}.<br>
+ * As a {@link SqlExpression} it renders the column qualified by the alias instead of by its owning table, which is used
+ * when the table of the column is aliased within a query.<br>
+ * Instances are usually created through {@link SqlColumn#of(SqlAlias)}.<br>
+ *
+ * @see SqlColumn
+ * @see SqlAlias
  *
  * @author Luis-St
  *
+ * @param <E> The type of the entity the owning table stores
+ * @param <C> The type of the value held by the wrapped column
+ * @param column The column referenced through the alias
+ * @param alias The alias the column is referenced with
  */
-
 public record SqlAliasedColumn<E, C>(
 	@NonNull SqlColumn<E, C> column,
 	@NonNull SqlAlias alias
 ) implements SqlExpression<C> {
 	
+	/**
+	 * Constructs a new aliased column validating the given components.<br>
+	 * @throws NullPointerException If the column or alias is null
+	 */
 	public SqlAliasedColumn {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(alias, "Sql alias must not be null");

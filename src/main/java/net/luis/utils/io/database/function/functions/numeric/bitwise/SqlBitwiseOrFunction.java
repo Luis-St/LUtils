@@ -26,9 +26,15 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL bitwise {@code OR} function.<br>
  *
  * @author Luis-St
  *
+ * @param firstOperand The first operand expression
+ * @param secondOperand The second operand expression
+ * @param type The sql type of the result
+ *
+ * @param <T> The numeric type of the result
  */
 
 public record SqlBitwiseOrFunction<T extends Number>(
@@ -37,6 +43,14 @@ public record SqlBitwiseOrFunction<T extends Number>(
 	@NonNull SqlType<T> type
 ) implements SqlNumericFunction<T> {
 	
+	/**
+	 * Constructs a new bitwise OR function inferring the sql type from the operand expressions.<br>
+	 *
+	 * @param firstOperand The first operand expression
+	 * @param secondOperand The second operand expression
+	 * @throws NullPointerException If the first or second operand is null
+	 * @throws IllegalArgumentException If the operands have different types
+	 */
 	public SqlBitwiseOrFunction(@NonNull SqlExpression<T> firstOperand, @NonNull SqlExpression<T> secondOperand) {
 		Objects.requireNonNull(firstOperand, "Sql first operand expression must not be null");
 		Objects.requireNonNull(secondOperand, "Sql second operand expression must not be null");
@@ -48,6 +62,10 @@ public record SqlBitwiseOrFunction<T extends Number>(
 		this(firstOperand, secondOperand, firstOperand.type());
 	}
 	
+	/**
+	 * Constructs a new bitwise OR function with the given operands and sql type.<br>
+	 * @throws NullPointerException If the first operand, second operand or type is null
+	 */
 	public SqlBitwiseOrFunction {
 		Objects.requireNonNull(firstOperand, "Sql first operand expression must not be null");
 		Objects.requireNonNull(secondOperand, "Sql second operand expression must not be null");

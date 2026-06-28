@@ -19,15 +19,15 @@
 package net.luis.utils.io.database.util;
 
 /**
+ * Represents a temporal part that can be extracted from a date, time or timestamp value.<br>
+ * The parts are used to build sql expressions that extract a specific component such as the year, month or day from a temporal value.<br>
  *
  * @author Luis-St
- *
  */
-
 public enum SqlTemporalPart {
 	
 	/**
-	 * The date part to extract from a date or time value.<br>
+	 * The year part to extract from a date or time value.<br>
 	 */
 	YEAR,
 	/**

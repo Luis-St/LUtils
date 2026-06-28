@@ -19,9 +19,8 @@
 package net.luis.utils.io.database.migration.operation;
 
 /**
+ * Column alteration that drops the default value of a column.<br>
  *
  * @author Luis-St
- *
  */
-
 public record SqlDropDefaultAlteration() implements SqlColumnAlteration {}

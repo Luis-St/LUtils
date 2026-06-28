@@ -26,13 +26,20 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL numeric negation ({@code -}) function that flips the sign of a value.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to negate
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlNegateFunction<T extends Number>(@NonNull SqlExpression<T> expression) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new negate function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlNegateFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

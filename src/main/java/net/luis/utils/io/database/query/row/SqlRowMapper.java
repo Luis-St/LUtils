@@ -40,14 +40,28 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * Factory for row mappers that turn a jdbc {@link ResultSet} row into a typed result object.<br>
+ * <p>
+ *     Depending on the requested target type, the produced mapper materializes one of three shapes:<br>
+ * </p>
+ * <ul>
+ *     <li>A dynamic proxy backed by the positional {@link SqlRow2}..{@code SqlRow16} accessor interfaces, where accessors like {@code first()} bind to columns by position</li>
+ *     <li>A record, whose canonical constructor is invoked with the column values matched by component name or, as a fallback, by position</li>
+ *     <li>An arbitrary interface, whose zero-argument methods are matched to selected expressions by name and served through a dynamic proxy</li>
+ * </ul>
+ * The column values are read using the {@link SqlType} of the selected expressions and the active {@link SqlDialect}.<br>
+ *
+ * @see SqlRowInvocationHandler
  *
  * @author Luis-St
- *
  */
-
 @SuppressWarnings("unchecked")
 public final class SqlRowMapper {
 	
+	/**
+	 * Maps the ordinal accessor names of the positional row interfaces to their zero-based column index.<br>
+	 * For example {@code first} maps to {@code 0} and {@code sixteenth} maps to {@code 15}.<br>
+	 */
 	private static final Map<String, Integer> ORDINAL_NAMES = Map.ofEntries(
 		Map.entry("first", 0),
 		Map.entry("second", 1),
@@ -67,8 +81,28 @@ public final class SqlRowMapper {
 		Map.entry("sixteenth", 15)
 	);
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a utility class that should not be instantiated.<br>
+	 */
 	private SqlRowMapper() {}
 	
+	/**
+	 * Resolves the column name that the given expression contributes to a result row.<br>
+	 * <p>
+	 *     The name is derived from the kind of expression:<br>
+	 * </p>
+	 * <ul>
+	 *     <li>For a {@link SqlColumn} the column name is used</li>
+	 *     <li>For a {@link SqlAliasedExpression} the alias is used</li>
+	 *     <li>For a {@link SqlAliasedColumn} the underlying column name is used</li>
+	 *     <li>For any other expression the simple class name is used as a fallback</li>
+	 * </ul>
+	 *
+	 * @param expression The expression to resolve the name of
+	 * @return The resolved column name of the expression
+	 * @throws NullPointerException If the expression is null
+	 */
 	private static @NonNull String resolveExpressionName(@NonNull SqlExpression<?> expression) {
 		return switch (expression) {
 			case SqlColumn<?, ?> column -> column.name();
@@ -80,6 +114,22 @@ public final class SqlRowMapper {
 		};
 	}
 	
+	/**
+	 * Creates a row mapper that materializes each result row as a dynamic proxy of the given row type.<br>
+	 * <p>
+	 *     The row type is typically one of the positional {@link SqlRow2}..{@code SqlRow16} interfaces.<br>
+	 *     Ordinal accessors such as {@code first()} bind to columns by position, while any other
+	 *     zero-argument accessor binds to the selected expression with a matching name.
+	 * </p>
+	 *
+	 * @param rowType The row interface to map each result row to
+	 * @param expressions The selected expressions in the order they appear in the result set
+	 * @param dialect The sql dialect used to read the column values
+	 * @param <R> The type of the mapped row
+	 * @return A mapper that maps a result set row to an instance of the row type
+	 * @throws NullPointerException If the row type, expressions or dialect is null
+	 * @throws IllegalArgumentException If an accessor of the row type matches neither an ordinal position nor a selected expression
+	 */
 	public static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forExpressions(@NonNull Class<R> rowType, @NonNull List<SqlExpression<?>> expressions, @NonNull SqlDialect dialect) {
 		Objects.requireNonNull(rowType, "Row type must not be null");
 		Objects.requireNonNull(expressions, "Sql expressions must not be null");
@@ -94,6 +144,21 @@ public final class SqlRowMapper {
 		return createProxyMapper(rowType, types, expressionNames, dialect);
 	}
 	
+	/**
+	 * Creates a row mapper that projects each result row into the given record or interface target type.<br>
+	 * <p>
+	 *     Record targets are mapped through their canonical constructor, interface targets through a
+	 *     dynamic proxy; in both cases columns are matched to the target by name.
+	 * </p>
+	 *
+	 * @param targetType The record or interface type to project each result row into
+	 * @param expressions The selected expressions in the order they appear in the result set
+	 * @param dialect The sql dialect used to read the column values
+	 * @param <R> The type of the projected row
+	 * @return A mapper that maps a result set row to an instance of the target type
+	 * @throws NullPointerException If the target type, expressions or dialect is null
+	 * @throws IllegalArgumentException If the target type is neither a record nor an interface, or if a component or method has no matching expression
+	 */
 	public static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forProjection(@NonNull Class<R> targetType, @NonNull List<SqlExpression<?>> expressions, @NonNull SqlDialect dialect) {
 		Objects.requireNonNull(targetType, "Target type must not be null");
 		Objects.requireNonNull(expressions, "Sql expressions must not be null");
@@ -113,6 +178,24 @@ public final class SqlRowMapper {
 		throw new IllegalArgumentException("Sql projection target must be an interface or a record, got: " + targetType.getName());
 	}
 	
+	/**
+	 * Creates a row mapper that projects each result row into the given record type.<br>
+	 * <p>
+	 *     Each record component is matched to a selected expression by name; if no expression name
+	 *     matches, the component is bound positionally by its declaration index.<br>
+	 *     The mapper invokes the canonical constructor of the record with the resolved column values.
+	 * </p>
+	 *
+	 * @param dialect The sql dialect used to read the column values
+	 * @param recordType The record type to project each result row into
+	 * @param expressions The selected expressions in the order they appear in the result set
+	 * @param expressionNames The resolved names of the selected expressions
+	 * @param <R> The type of the projected record
+	 * @return A mapper that maps a result set row to an instance of the record type
+	 * @throws NullPointerException If any of the arguments is null
+	 * @throws IllegalArgumentException If the type is not a record or a component has no matching expression
+	 * @throws IllegalStateException If the canonical constructor cannot be found or accessed
+	 */
 	private static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forRecordProjection(
 		@NonNull SqlDialect dialect,
 		@NonNull Class<R> recordType,
@@ -170,6 +253,25 @@ public final class SqlRowMapper {
 		};
 	}
 	
+	/**
+	 * Creates a row mapper that projects each result row into the given interface type.<br>
+	 * <p>
+	 *     Every zero-argument, non-default method of the interface is matched to a selected expression
+	 *     by name.<br>
+	 *     The resolved column values are served through a dynamic proxy backed by a
+	 *     {@link SqlRowInvocationHandler}.
+	 * </p>
+	 *
+	 * @param dialect The sql dialect used to read the column values
+	 * @param interfaceType The interface type to project each result row into
+	 * @param expressions The selected expressions in the order they appear in the result set
+	 * @param expressionNames The resolved names of the selected expressions
+	 * @param <R> The type of the projected interface
+	 * @return A mapper that maps a result set row to a proxy instance of the interface type
+	 * @throws NullPointerException If any of the arguments is null
+	 * @throws IllegalArgumentException If a method of the interface has no matching expression
+	 * @throws IllegalStateException If the proxy constructor cannot be resolved or accessed
+	 */
 	private static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> forInterfaceProjection(
 		@NonNull SqlDialect dialect,
 		@NonNull Class<R> interfaceType,
@@ -221,6 +323,25 @@ public final class SqlRowMapper {
 		};
 	}
 	
+	/**
+	 * Creates a row mapper that serves the given column types and names through a dynamic proxy of the row type.<br>
+	 * <p>
+	 *     For each zero-argument, non-default accessor of the row type a column is resolved: ordinal
+	 *     accessors such as {@code first()} bind to their fixed positional column, while all other
+	 *     accessors bind to the selected expression whose name matches the accessor name.<br>
+	 *     The resolved column values are served through a {@link SqlRowInvocationHandler}.
+	 * </p>
+	 *
+	 * @param rowType The row interface to map each result row to
+	 * @param types The sql types of the selected columns in result set order
+	 * @param expressionNames The resolved names of the selected expressions
+	 * @param dialect The sql dialect used to read the column values
+	 * @param <R> The type of the mapped row
+	 * @return A mapper that maps a result set row to a proxy instance of the row type
+	 * @throws NullPointerException If any of the arguments is null
+	 * @throws IllegalArgumentException If an ordinal accessor exceeds the column count or a non-ordinal accessor matches no expression
+	 * @throws IllegalStateException If the proxy constructor cannot be resolved or accessed
+	 */
 	private static <R> @NonNull ThrowableFunction<ResultSet, R, SqlException> createProxyMapper(@NonNull Class<R> rowType, @NonNull List<SqlType<?>> types, @NonNull List<String> expressionNames, @NonNull SqlDialect dialect) {
 		Objects.requireNonNull(rowType, "Row type must not be null");
 		Objects.requireNonNull(types, "Sql types must not be null");
@@ -269,6 +390,15 @@ public final class SqlRowMapper {
 		};
 	}
 	
+	/**
+	 * Resolves the dynamic proxy constructor for the given row type.<br>
+	 * The constructor accepts a single {@link InvocationHandler} and is made accessible for direct instantiation.<br>
+	 *
+	 * @param rowType The interface type to resolve the proxy constructor for
+	 * @return The accessible proxy constructor taking an invocation handler
+	 * @throws NullPointerException If the row type is null
+	 * @throws IllegalStateException If the proxy constructor cannot be resolved or accessed
+	 */
 	private static @NonNull Constructor<?> resolveProxyConstructor(@NonNull Class<?> rowType) {
 		try {
 			Object sample = Proxy.newProxyInstance(rowType.getClassLoader(), new Class<?>[] { rowType }, new SqlRowInvocationHandler(ArrayUtils.EMPTY_OBJECT_ARRAY, Map.of()));
@@ -283,11 +413,32 @@ public final class SqlRowMapper {
 		}
 	}
 	
+	/**
+	 * Invocation handler that backs the dynamic row proxies created by this mapper.<br>
+	 * <p>
+	 *     Accessor calls are answered from the precomputed column values, looking up the value index
+	 *     for the invoked method by name.<br>
+	 *     The {@code equals}, {@code hashCode} and {@code toString} methods are handled directly:
+	 *     equality is identity based, the hash code is derived from the values array and the string
+	 *     representation lists the values.
+	 * </p>
+	 *
+	 * @author Luis-St
+	 *
+	 * @param values The column values of a single result row, indexed by accessor position
+	 * @param methodIndexMap The mapping from accessor name to its index in the values array
+	 */
 	private record SqlRowInvocationHandler(
 		@NonNull Object[] values,
 		@NonNull Map<String, Integer> methodIndexMap
 	) implements InvocationHandler {
 		
+		/**
+		 * Constructs a new invocation handler for the given row values and accessor index mapping.<br>
+		 *
+		 * @throws NullPointerException If the values array or the method index map is null
+		 * @throws IllegalArgumentException If the method index map has more entries than the values array has elements
+		 */
 		private SqlRowInvocationHandler {
 			Objects.requireNonNull(values, "Values array must not be null");
 			Objects.requireNonNull(methodIndexMap, "Method index map must not be null");

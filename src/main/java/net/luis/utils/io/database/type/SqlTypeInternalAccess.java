@@ -19,15 +19,21 @@
 package net.luis.utils.io.database.type;
 
 /**
+ * Internal access token used to restrict the internal {@link SqlType} methods to callers inside this package.<br>
+ * Passing the {@link #INSTANCE} proves that a call originates from within the type package.<br>
  *
  * @author Luis-St
- *
  */
-
 @SuppressWarnings("InstantiationOfUtilityClass")
 final class SqlTypeInternalAccess {
 	
+	/**
+	 * The single shared instance used as the access token for internal type calls.
+	 */
 	static final SqlTypeInternalAccess INSTANCE = new SqlTypeInternalAccess();
 	
+	/**
+	 * Constructs a new sql type internal access token.<br>
+	 */
 	SqlTypeInternalAccess() {}
 }

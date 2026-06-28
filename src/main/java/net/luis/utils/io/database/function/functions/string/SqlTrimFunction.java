@@ -26,13 +26,21 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code TRIM} function.<br>
+ * Removes leading and trailing whitespace from the given string expression.<br>
  *
  * @author Luis-St
  *
+ * @param expression The string expression to trim
+ * @param <T> The character sequence type of the expression
  */
 
 public record SqlTrimFunction<T extends CharSequence>(@NonNull SqlExpression<T> expression) implements SqlStringFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new trim function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlTrimFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

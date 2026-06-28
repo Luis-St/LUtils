@@ -29,21 +29,38 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Represents a boolean condition that can be rendered into a sql predicate.<br>
+ * Conditions can be combined using {@link #and(SqlCondition)}, {@link #or(SqlCondition)} and negated using {@link #not()}.<br>
  *
  * @author Luis-St
- *
  */
-
 public interface SqlCondition extends SqlRenderable {
 	
+	/**
+	 * Creates a condition that always evaluates to {@code true}.<br>
+	 * @return A condition that is always true
+	 */
 	static @NonNull SqlCondition always() {
 		return new SqlAlwaysCondition();
 	}
 	
+	/**
+	 * Creates a condition that always evaluates to {@code false}.<br>
+	 * @return A condition that is always false
+	 */
 	static @NonNull SqlCondition never() {
 		return new SqlNeverCondition();
 	}
 	
+	/**
+	 * Creates a condition that is the logical conjunction of all the given conditions.<br>
+	 *
+	 * @param first The first condition
+	 * @param second The second condition
+	 * @param others The additional conditions
+	 * @return A condition that is true only if all the given conditions are true
+	 * @throws NullPointerException If any of the conditions is null
+	 */
 	@SuppressWarnings("DuplicatedCode")
 	static @NonNull SqlCondition allOf(@NonNull SqlCondition first, @NonNull SqlCondition second, SqlCondition @NonNull ... others) {
 		Objects.requireNonNull(first, "First sql condition must not be null");
@@ -60,6 +77,15 @@ public interface SqlCondition extends SqlRenderable {
 		return new SqlAllOfCondition(conditions);
 	}
 	
+	/**
+	 * Creates a condition that is the logical conjunction of all the given conditions.<br>
+	 * If the list contains a single condition, that condition is returned directly.<br>
+	 *
+	 * @param conditions The conditions to combine
+	 * @return A condition that is true only if all the given conditions are true
+	 * @throws NullPointerException If the conditions list is null
+	 * @throws IllegalArgumentException If the conditions list is empty or contains null conditions
+	 */
 	static @NonNull SqlCondition allOf(@NonNull List<SqlCondition> conditions) {
 		if (conditions.size() == 1) {
 			return conditions.getFirst();
@@ -67,6 +93,15 @@ public interface SqlCondition extends SqlRenderable {
 		return new SqlAllOfCondition(conditions);
 	}
 	
+	/**
+	 * Creates a condition that is the logical disjunction of all the given conditions.<br>
+	 *
+	 * @param first The first condition
+	 * @param second The second condition
+	 * @param others The additional conditions
+	 * @return A condition that is true if any of the given conditions is true
+	 * @throws NullPointerException If any of the conditions is null
+	 */
 	@SuppressWarnings("DuplicatedCode")
 	static @NonNull SqlCondition anyOf(@NonNull SqlCondition first, @NonNull SqlCondition second, SqlCondition @NonNull ... others) {
 		Objects.requireNonNull(first, "First sql condition must not be null");
@@ -83,6 +118,15 @@ public interface SqlCondition extends SqlRenderable {
 		return new SqlAnyOfCondition(conditions);
 	}
 	
+	/**
+	 * Creates a condition that is the logical disjunction of all the given conditions.<br>
+	 * If the list contains a single condition, that condition is returned directly.<br>
+	 *
+	 * @param conditions The conditions to combine
+	 * @return A condition that is true if any of the given conditions is true
+	 * @throws NullPointerException If the conditions list is null
+	 * @throws IllegalArgumentException If the conditions list is empty or contains null conditions
+	 */
 	static @NonNull SqlCondition anyOf(@NonNull List<SqlCondition> conditions) {
 		if (conditions.size() == 1) {
 			return conditions.getFirst();
@@ -90,14 +134,32 @@ public interface SqlCondition extends SqlRenderable {
 		return new SqlAnyOfCondition(conditions);
 	}
 	
+	/**
+	 * Combines this condition with the given condition using a logical conjunction.<br>
+	 *
+	 * @param other The condition to combine with this condition
+	 * @return A condition that is true only if both conditions are true
+	 * @throws NullPointerException If the other condition is null
+	 */
 	default @NonNull SqlCondition and(@NonNull SqlCondition other) {
 		return allOf(this, other);
 	}
 	
+	/**
+	 * Combines this condition with the given condition using a logical disjunction.<br>
+	 *
+	 * @param other The condition to combine with this condition
+	 * @return A condition that is true if either condition is true
+	 * @throws NullPointerException If the other condition is null
+	 */
 	default @NonNull SqlCondition or(@NonNull SqlCondition other) {
 		return anyOf(this, other);
 	}
 	
+	/**
+	 * Negates this condition.<br>
+	 * @return A condition that is true if this condition is false
+	 */
 	default @NonNull SqlCondition not() {
 		return new SqlNegatedCondition(this);
 	}

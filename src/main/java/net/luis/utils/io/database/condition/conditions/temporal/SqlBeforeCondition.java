@@ -25,16 +25,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a temporal value lies before the given later bound.<br>
  *
  * @author Luis-St
  *
+ * @param value The temporal expression to check
+ * @param laterBound The bound the value must lie before
  */
-
 public record SqlBeforeCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlExpression<?> laterBound
 ) implements SqlTemporalCondition {
 	
+	/**
+	 * Constructs a new before condition with the given value and later bound expressions.<br>
+	 * @throws NullPointerException If the value or later bound expression is null
+	 */
 	public SqlBeforeCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 		Objects.requireNonNull(laterBound, "Sql later bound expression must not be null");

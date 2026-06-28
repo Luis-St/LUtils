@@ -24,27 +24,59 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A parameterizable sql type whose java value is bound and read directly, without any conversion.<br>
+ * Configuring this type with a parameter produces a plain {@link ParameterizedSqlType} that binds and reads the java type as-is.<br>
+ *
+ * @see ParameterizableSqlType
+ * @see ParameterizedSqlType
+ * @see MappedParameterizableSqlType
  *
  * @author Luis-St
  *
+ * @param <T> The java type the configured sql type maps to
+ * @param <P> The type of parameter required to configure this type
  */
-
 public final class DirectParameterizableSqlType<T, P extends SqlParameter> implements ParameterizableSqlType<T, P> {
 	
+	/**
+	 * The jdbc type code of the configured sql type.
+	 */
 	private final int jdbcType;
+	/**
+	 * The java type the configured sql type maps to.
+	 */
 	private final Class<T> javaType;
+	/**
+	 * The class of the parameter required to configure this type.
+	 */
 	private final Class<P> parameterType;
 	
+	/**
+	 * Constructs a new direct parameterizable sql type with the given jdbc type, java type and parameter type.<br>
+	 *
+	 * @param jdbcType The jdbc type code of the configured sql type
+	 * @param javaType The java type the configured sql type maps to
+	 * @param parameterType The class of the parameter required to configure this type
+	 * @throws NullPointerException If the java type or parameter type is null
+	 */
 	DirectParameterizableSqlType(int jdbcType, @NonNull Class<T> javaType, @NonNull Class<P> parameterType) {
 		this.jdbcType = jdbcType;
 		this.javaType = Objects.requireNonNull(javaType, "Java type must not be null");
 		this.parameterType = Objects.requireNonNull(parameterType, "Parameter type must not be null");
 	}
 	
+	/**
+	 * Returns the jdbc type code of the configured sql type.<br>
+	 * @return The jdbc type code
+	 */
 	public int jdbcType() {
 		return this.jdbcType;
 	}
 	
+	/**
+	 * Returns the java type the configured sql type maps to.<br>
+	 * @return The java type class
+	 */
 	public @NonNull Class<T> javaType() {
 		return this.javaType;
 	}

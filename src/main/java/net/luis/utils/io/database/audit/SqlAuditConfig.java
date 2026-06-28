@@ -29,11 +29,22 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Configuration that describes how auditing is applied to a table.<br>
+ * It defines the names and sql types of the audit columns, the source of the audit values and the clock used to generate timestamps.<br>
  *
  * @author Luis-St
  *
+ * @param versionColumn The name of the version column
+ * @param createdAtColumn The name of the created-at column
+ * @param createdByColumn The name of the created-by column
+ * @param updatedAtColumn The name of the updated-at column
+ * @param updatedByColumn The name of the updated-by column
+ * @param versionType The sql type used for the version column
+ * @param timestampType The sql type used for the timestamp columns
+ * @param userType The sql type used for the user columns
+ * @param valueSource The source from which the audit values originate
+ * @param clock The clock used to generate timestamps
  */
-
 public record SqlAuditConfig(
 	@NonNull String versionColumn,
 	@NonNull String createdAtColumn,
@@ -47,8 +58,17 @@ public record SqlAuditConfig(
 	@NonNull Clock clock
 ) {
 	
+	/**
+	 * The default audit configuration using the standard column names, types and an utc clock.
+	 */
 	public static final SqlAuditConfig DEFAULT = builder().build();
 	
+	/**
+	 * Constructs a new audit config with the given column names, types, value source and clock.<br>
+	 *
+	 * @throws NullPointerException If any of the parameters is null
+	 * @throws IllegalArgumentException If any column name is blank or the column names are not distinct
+	 */
 	public SqlAuditConfig {
 		Objects.requireNonNull(versionColumn, "Sql version column name must not be null");
 		Objects.requireNonNull(createdAtColumn, "Sql created-at column name must not be null");
@@ -72,10 +92,18 @@ public record SqlAuditConfig(
 		}
 	}
 	
+	/**
+	 * Creates a new builder for an audit config initialized with the default values.<br>
+	 * @return A new audit config builder
+	 */
 	public static @NonNull SqlAuditConfigBuilder builder() {
 		return new SqlAuditConfigBuilder();
 	}
 	
+	/**
+	 * Returns the audit columns described by this configuration in their canonical order.<br>
+	 * @return An unmodifiable list of the audit columns
+	 */
 	public @NonNull @Unmodifiable List<SqlAuditColumn> auditColumns() {
 		return List.of(
 			new SqlAuditColumn(this.versionColumn, this.versionType, SqlAuditRole.VERSION, false),
@@ -86,6 +114,10 @@ public record SqlAuditConfig(
 		);
 	}
 	
+	/**
+	 * Returns the names of the audit columns in their canonical order.<br>
+	 * @return An unmodifiable list of the audit column names
+	 */
 	public @NonNull @Unmodifiable List<String> columnNames() {
 		return List.of(this.versionColumn, this.createdAtColumn, this.createdByColumn, this.updatedAtColumn, this.updatedByColumn);
 	}

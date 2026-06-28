@@ -24,9 +24,9 @@ import net.luis.utils.io.database.type.SqlTypes;
 import org.jspecify.annotations.NonNull;
 
 /**
+ * Represents the SQL {@code RANDOM} function that returns a random value.<br>
  *
  * @author Luis-St
- *
  */
 
 public record SqlRandomFunction() implements SqlNumericFunction<Double> {

@@ -19,21 +19,46 @@
 package net.luis.utils.io.database.dialect;
 
 /**
+ * Holder for the built-in {@link SqlDialect} instances.<br>
+ * Provides ready-to-use dialects for the supported database systems.<br>
  *
  * @author Luis-St
- *
  */
-
 public final class SqlDialects {
 	
+	/**
+	 * The default fallback dialect.
+	 */
 	public static final SqlDialect DEFAULT = new SqlDefaultDialect();
+	/**
+	 * The dialect for the H2 database.
+	 */
 	public static final SqlDialect H2 = new H2Dialect();
+	/**
+	 * The dialect for the MariaDB database.
+	 */
 	public static final SqlDialect MARIA_DB = new MariaDbDialect();
+	/**
+	 * The dialect for the MySQL database.
+	 */
 	public static final SqlDialect MYSQL = new MySqlDialect();
+	/**
+	 * The dialect for the PostgreSQL database.
+	 */
 	public static final SqlDialect POSTGRESQL = new PostgresSqlDialect();
+	/**
+	 * The dialect for the SQLite database.
+	 */
 	public static final SqlDialect SQLITE = new SqliteDialect();
+	/**
+	 * The dialect for the Microsoft SQL Server database.
+	 */
 	public static final SqlDialect SQL_SERVER = new SqlServerDialect();
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a holder class.<br>
+	 */
 	private SqlDialects() {}
 	
 }

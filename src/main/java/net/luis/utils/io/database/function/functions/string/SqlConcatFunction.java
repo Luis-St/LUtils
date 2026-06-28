@@ -27,9 +27,16 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 
 /**
+ * Represents the SQL {@code CONCAT} (variadic concatenation) function.<br>
+ * Concatenates all given string expressions, optionally separated, distinct and ordered.<br>
  *
  * @author Luis-St
  *
+ * @param expressions The string expressions to concatenate
+ * @param separator The optional separator placed between the concatenated expressions
+ * @param distinct Whether only distinct values are concatenated
+ * @param ordered Whether the values are concatenated in order
+ * @param <T> The character sequence type of the expressions
  */
 
 public record SqlConcatFunction<T extends CharSequence>(
@@ -39,6 +46,12 @@ public record SqlConcatFunction<T extends CharSequence>(
 	boolean ordered
 ) implements SqlStringFunction<T> {
 	
+	/**
+	 * Constructs a new concat function with the given expressions, separator, distinct and ordered flags.<br>
+	 *
+	 * @throws NullPointerException If the expression list or separator is null
+	 * @throws IllegalArgumentException If the expression list is empty, contains a null expression, the separator is empty or the expression types are not compatible
+	 */
 	public SqlConcatFunction {
 		Objects.requireNonNull(expressions, "Sql expression list must not be null");
 		Objects.requireNonNull(separator, "Separator must not be null");

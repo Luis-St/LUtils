@@ -49,13 +49,17 @@ import java.sql.Types;
 import java.util.*;
 
 /**
+ * SQL dialect implementation for H2.<br>
+ * Provides H2-specific SQL generation by extending {@link AbstractSqlDialect}.<br>
  *
  * @author Luis-St
- *
  */
 
 public class H2Dialect extends AbstractSqlDialect {
 	
+	/**
+	 * The set of SQL features supported by this dialect.
+	 */
 	private static final Set<SqlFeature> SUPPORTED_FEATURES = Set.of(
 		SqlFeature.CTE,
 		SqlFeature.RECURSIVE_CTE,
@@ -74,10 +78,16 @@ public class H2Dialect extends AbstractSqlDialect {
 		SqlFeature.OFFSET_WITHOUT_LIMIT
 	);
 	
+	/**
+	 * The set of index methods supported by this dialect.
+	 */
 	private static final Set<SqlIndexMethod> SUPPORTED_INDEX_METHODS = Set.of(
 		SqlIndexMethod.BTREE,
 		SqlIndexMethod.HASH
 	);
+	/**
+	 * The registry of H2-specific SQL type mappings.
+	 */
 	private static final SqlTypeRegistry TYPE_REGISTRY = SqlTypeRegistry.builder()
 		.register(SqlTypes.UUID, "UUID")
 		.register(SqlTypes.JSON, "JSON")
@@ -199,8 +209,20 @@ public class H2Dialect extends AbstractSqlDialect {
 	}
 }
 
+/**
+ * H2-specific implementation of {@link SqlGenericFunctionRenderer}.<br>
+ * Renders the {@code GREATEST}, {@code LEAST} and {@code COALESCE} functions with explicit casts on every argument.<br>
+ *
+ * @author Luis-St
+ */
 class H2GenericFunctionRenderer extends SqlGenericFunctionRenderer {
 	
+	/**
+	 * Constructs a new H2 generic function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	H2GenericFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -223,6 +245,14 @@ class H2GenericFunctionRenderer extends SqlGenericFunctionRenderer {
 		return this.renderTypedVariadic("COALESCE", function.expressions());
 	}
 	
+	/**
+	 * Renders a variadic function call with the given name, applying an explicit cast to its own type on every argument.<br>
+	 *
+	 * @param name The name of the function to render
+	 * @param expressions The expressions to render as the function arguments
+	 * @return The rendered function call
+	 * @throws SqlException If an error occurs while rendering the expressions
+	 */
 	private @NonNull SqlRendered renderTypedVariadic(@NonNull String name, @NonNull List<? extends SqlExpression<?>> expressions) throws SqlException {
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal(name).openingBracket();
@@ -241,8 +271,21 @@ class H2GenericFunctionRenderer extends SqlGenericFunctionRenderer {
 	}
 }
 
+/**
+ * H2-specific implementation of {@link SqlTemporalFunctionRenderer}.<br>
+ * Renders temporal functions such as {@code EXTRACT}, {@code DATEADD} and {@code DATE_TRUNC} using H2 syntax,
+ * including epoch conversion, temporal truncation, addition, subtraction and interval handling.<br>
+ *
+ * @author Luis-St
+ */
 class H2TemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
+	/**
+	 * Constructs a new H2 temporal function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	H2TemporalFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -318,6 +361,13 @@ class H2TemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders the given expression with an explicit cast to its own type.<br>
+	 *
+	 * @param expression The expression to render and cast
+	 * @return The rendered and casted expression
+	 * @throws SqlException If an error occurs while rendering the expression
+	 */
 	private @NonNull SqlRendered castExpression(@NonNull SqlExpression<?> expression) throws SqlException {
 		return SqlRenderingHelper.renderCast(this.dialect, expression.toSql(this.dialect), expression.type());
 	}
@@ -333,8 +383,21 @@ class H2TemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	}
 }
 
+/**
+ * H2-specific implementation of {@link SqlNumericFunctionRenderer}.<br>
+ * Renders numeric functions such as {@code RAND}, {@code CEIL}, {@code FLOOR}, {@code MOD}, {@code ROUND} and {@code TRUNCATE},
+ * as well as the {@code BITAND}, {@code BITOR}, {@code BITXOR} and {@code BITNOT} bitwise functions with explicit casts.<br>
+ *
+ * @author Luis-St
+ */
 class H2NumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	
+	/**
+	 * Constructs a new H2 numeric function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	H2NumericFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -383,6 +446,14 @@ class H2NumericFunctionRenderer extends SqlNumericFunctionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders a function call with the given name, applying an explicit cast to its own type on every argument.<br>
+	 *
+	 * @param name The name of the function to render
+	 * @param arguments The arguments to render as the function arguments
+	 * @return The rendered function call
+	 * @throws SqlException If an error occurs while rendering the arguments
+	 */
 	private @NonNull SqlRendered renderCastedCall(@NonNull String name, @NonNull SqlExpression<?> @NonNull ... arguments) throws SqlException {
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal(name).openingBracket();
@@ -420,6 +491,14 @@ class H2NumericFunctionRenderer extends SqlNumericFunctionRenderer {
 		return this.renderBitwiseFunction("BITNOT", function.expression());
 	}
 	
+	/**
+	 * Renders a bitwise function call with the given name, applying an explicit cast to its own type on every operand.<br>
+	 *
+	 * @param name The name of the bitwise function to render
+	 * @param operands The operands to render as the function arguments
+	 * @return The rendered bitwise function call
+	 * @throws SqlException If an error occurs while rendering the operands
+	 */
 	private @NonNull SqlRendered renderBitwiseFunction(@NonNull String name, @NonNull SqlExpression<?> @NonNull ... operands) throws SqlException {
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal(name).openingBracket();
@@ -434,8 +513,21 @@ class H2NumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	}
 }
 
+/**
+ * H2-specific implementation of {@link SqlStringFunctionRenderer}.<br>
+ * Renders string functions such as {@code HEX} and {@code UNHEX} using H2 raw-to-hex conversions,
+ * and the {@code CONCAT} function as {@code GROUP_CONCAT} when distinct or ordered aggregation is requested.<br>
+ *
+ * @author Luis-St
+ */
 class H2StringFunctionRenderer extends SqlStringFunctionRenderer {
 	
+	/**
+	 * Constructs a new H2 string function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	H2StringFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -495,8 +587,20 @@ class H2StringFunctionRenderer extends SqlStringFunctionRenderer {
 	}
 }
 
+/**
+ * H2-specific implementation of {@link SqlNumericConditionRenderer}.<br>
+ * Renders the modulo equality condition using the H2 {@code MOD} function with explicit casts on its operands.<br>
+ *
+ * @author Luis-St
+ */
 class H2NumericConditionRenderer extends SqlNumericConditionRenderer {
 	
+	/**
+	 * Constructs a new H2 numeric condition renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	H2NumericConditionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -513,6 +617,13 @@ class H2NumericConditionRenderer extends SqlNumericConditionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders the given expression with an explicit cast to its own type.<br>
+	 *
+	 * @param expression The expression to render and cast
+	 * @return The rendered and casted expression
+	 * @throws SqlException If an error occurs while rendering the expression
+	 */
 	private @NonNull SqlRendered castExpression(@NonNull SqlExpression<?> expression) throws SqlException {
 		return SqlRenderingHelper.renderCast(this.dialect, expression.toSql(this.dialect), expression.type());
 	}

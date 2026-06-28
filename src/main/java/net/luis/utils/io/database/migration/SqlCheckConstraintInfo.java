@@ -23,16 +23,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Describes a check constraint as read from the database schema.<br>
  *
  * @author Luis-St
  *
+ * @param constraintName The name of the check constraint
+ * @param checkClause The check clause that defines the constraint
  */
-
 public record SqlCheckConstraintInfo(
 	@NonNull String constraintName,
 	@NonNull String checkClause
 ) {
 	
+	/**
+	 * Constructs a new check constraint info with the given values.<br>
+	 * @throws NullPointerException If the constraint name or check clause is null
+	 */
 	public SqlCheckConstraintInfo {
 		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");
 		Objects.requireNonNull(checkClause, "Sql check clause must not be null");

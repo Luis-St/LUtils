@@ -25,11 +25,20 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Describes a single column as read from the live database schema.<br>
  *
  * @author Luis-St
  *
+ * @param tableName The name of the table the column belongs to
+ * @param columnName The name of the column
+ * @param jdbcType The JDBC type code of the column
+ * @param parameter The resolved parameter describing the column type or {@code null} if it could not be resolved
+ * @param nullable Whether the column accepts {@code null} values
+ * @param autoIncrement Whether the column is auto-incremented
+ * @param primaryKey Whether the column is part of the primary key
+ * @param unique Whether the column has a unique constraint
+ * @param ordinalPosition The ordinal position of the column within the table
  */
-
 public record SqlSchemaColumnInfo(
 	@NonNull String tableName,
 	@NonNull String columnName,
@@ -42,6 +51,10 @@ public record SqlSchemaColumnInfo(
 	int ordinalPosition
 ) {
 	
+	/**
+	 * Constructs a new schema column info with the given values.<br>
+	 * @throws NullPointerException If the table name or column name is null
+	 */
 	public SqlSchemaColumnInfo {
 		Objects.requireNonNull(tableName, "Table name must not be null");
 		Objects.requireNonNull(columnName, "Column name must not be null");

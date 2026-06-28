@@ -21,13 +21,18 @@ package net.luis.utils.io.database.function.window.frame.bound;
 import net.luis.utils.io.database.function.window.SqlFrameBound;
 
 /**
+ * Frame bound representing a fixed number of rows following the current row.<br>
  *
  * @author Luis-St
  *
+ * @param offset The number of rows following the current row
  */
-
 public record FollowingFrameBound(int offset) implements SqlFrameBound {
 	
+	/**
+	 * Constructs a new following frame bound validating the offset.<br>
+	 * @throws IllegalArgumentException If the offset is negative
+	 */
 	public FollowingFrameBound {
 		if (offset < 0) {
 			throw new IllegalArgumentException("Sql frame bound offset must not be negative");

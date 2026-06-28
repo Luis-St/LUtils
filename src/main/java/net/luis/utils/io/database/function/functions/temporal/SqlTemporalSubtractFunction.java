@@ -27,9 +27,16 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code DATE_SUB} function.<br>
+ * Subtracts a temporal interval from a temporal value.<br>
  *
  * @author Luis-St
  *
+ * @param minuend The temporal expression to subtract the interval from
+ * @param part The temporal part of the interval to subtract
+ * @param subtrahend The expression providing the interval amount to subtract
+ * @param type The sql type of the result
+ * @param <T> The result type of the function
  */
 
 public record SqlTemporalSubtractFunction<T>(
@@ -39,6 +46,10 @@ public record SqlTemporalSubtractFunction<T>(
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
+	/**
+	 * Constructs a new temporal subtract function with the given minuend, temporal part, subtrahend and sql type.<br>
+	 * @throws NullPointerException If the minuend, temporal part, subtrahend or sql type is null
+	 */
 	public SqlTemporalSubtractFunction {
 		Objects.requireNonNull(minuend, "Sql minuend expression must not be null");
 		Objects.requireNonNull(part, "Sql temporal part must not be null");

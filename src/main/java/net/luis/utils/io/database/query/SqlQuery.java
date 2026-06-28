@@ -25,14 +25,25 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 
 /**
+ * Represents a sql query that can be rendered into a sql statement.<br>
+ * It is the base abstraction for all query types and extends {@link SqlRenderable}.<br>
  *
  * @author Luis-St
  *
+ * @param <E> The type of the elements returned by the query
  */
-
 @FunctionalInterface
 public interface SqlQuery<E> extends SqlRenderable {
 	
+	/**
+	 * Creates an unmodifiable copy of the given list with the given element appended.<br>
+	 *
+	 * @param list The list to copy
+	 * @param element The element to append
+	 * @param <T> The type of the list elements
+	 * @return An unmodifiable list containing all elements of the given list followed by the given element
+	 * @throws NullPointerException If the list or element is null
+	 */
 	static <T> @NonNull List<T> copyAndAdd(@NonNull List<T> list, @NonNull T element) {
 		Objects.requireNonNull(list, "List must not be null");
 		Objects.requireNonNull(element, "Element must not be null");
@@ -43,6 +54,15 @@ public interface SqlQuery<E> extends SqlRenderable {
 		return Collections.unmodifiableList(copy);
 	}
 	
+	/**
+	 * Creates an unmodifiable copy of the given list with all the given elements appended.<br>
+	 *
+	 * @param list The list to copy
+	 * @param elements The elements to append
+	 * @param <T> The type of the list elements
+	 * @return An unmodifiable list containing all elements of the given list followed by the given elements
+	 * @throws NullPointerException If the list or elements is null
+	 */
 	static <T> @NonNull List<T> copyAndAddAll(@NonNull List<T> list, @NonNull Collection<? extends T> elements) {
 		Objects.requireNonNull(list, "List must not be null");
 		Objects.requireNonNull(elements, "Elements must not be null");

@@ -25,16 +25,30 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents a single entry of a sql set operation.<br>
+ * An entry combines a set operation with the select query it applies to.<br>
+ *
+ * @see SqlSetOperation
+ * @see SqlSelectQuery
  *
  * @author Luis-St
  *
+ * @param <E> The type of the elements returned by the query
+ * @param operation The set operation used to combine the query with the preceding queries
+ * @param query The select query that is combined using the set operation
  */
-
 public record SqlSetOperationEntry<E>(
 	@NonNull SqlSetOperation operation,
 	@NonNull SqlSelectQuery<E> query
 ) {
 	
+	/**
+	 * Constructs a new sql set operation entry with the given set operation and query.<br>
+	 *
+	 * @param operation The set operation used to combine the query with the preceding queries
+	 * @param query The select query that is combined using the set operation
+	 * @throws NullPointerException If the operation or the query is null
+	 */
 	public SqlSetOperationEntry {
 		Objects.requireNonNull(operation, "Sql set operation must not be null");
 		Objects.requireNonNull(query, "Sql query must not be null");

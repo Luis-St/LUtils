@@ -36,21 +36,43 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 
 /**
+ * Renders {@link SqlMigrationOperation}s into dialect-specific {@link SqlRendered} sql.<br>
+ * Each operation is dispatched to the matching renderer of the configured {@link SqlDialect}.<br>
+ * Operations that cannot be expressed directly are rewritten using table rebuilds when the dialect supports them.<br>
  *
  * @author Luis-St
- *
  */
 
 class SqlMigrationRenderer {
 	
+	/**
+	 * The dialect used to render the migration operations.
+	 */
 	private final SqlDialect dialect;
+	/**
+	 * The migration renderer of the dialect used to render migration-specific operations.
+	 */
 	private final SqlMigrationOperationRenderer migrationRenderer;
 	
+	/**
+	 * Constructs a new sql migration renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect used to render the migration operations
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqlMigrationRenderer(@NonNull SqlDialect dialect) {
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		this.migrationRenderer = dialect.migrationRenderer();
 	}
 	
+	/**
+	 * Applies the given alteration to the given column and returns a new column reflecting the change.<br>
+	 * The type, nullability and default value are derived from the alteration while all other column attributes are kept.<br>
+	 *
+	 * @param column The column to apply the alteration to
+	 * @param alteration The alteration to apply to the column
+	 * @return A new column with the alteration applied
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static @NonNull SqlColumn<?, ?> applyAlteration(@NonNull SqlColumn<?, ?> column, @NonNull SqlColumnAlteration alteration) {
 		SqlType<?> type = column.type();
@@ -65,6 +87,14 @@ class SqlMigrationRenderer {
 		return new SqlColumn(column.owningTable(), column.name(), column.index(), type, column.getter(), nullable, defaultValue, column.autoIncrement(), column.unique(), column.primaryKey(), column.foreignKey(), column.checks());
 	}
 	
+	/**
+	 * Renders the given migration operations into dialect-specific sql.<br>
+	 * Each operation is dispatched to the matching renderer of the dialect and the results are collected in order.<br>
+	 *
+	 * @param operations The migration operations to render
+	 * @return An immutable list of the rendered sql statements
+	 * @throws SqlException If an operation cannot be rendered by the dialect
+	 */
 	@NonNull List<SqlRendered> render(@NonNull List<SqlMigrationOperation> operations) throws SqlException {
 		List<SqlRendered> results = Lists.newArrayList();
 		for (SqlMigrationOperation operation : operations) {
@@ -83,6 +113,15 @@ class SqlMigrationRenderer {
 		return List.copyOf(results);
 	}
 	
+	/**
+	 * Renders the given migration operation into a single dialect-specific sql statement.<br>
+	 * The operation is dispatched to the matching renderer of the dialect based on its concrete type.<br>
+	 *
+	 * @param operation The migration operation to render
+	 * @return The rendered sql statement
+	 * @throws NullPointerException If the operation is null
+	 * @throws SqlException If the operation cannot be rendered by the dialect
+	 */
 	private @NonNull SqlRendered renderOperation(@NonNull SqlMigrationOperation operation) throws SqlException {
 		Objects.requireNonNull(operation, "Sql migration operation must not be null");
 		
@@ -108,6 +147,15 @@ class SqlMigrationRenderer {
 		};
 	}
 	
+	/**
+	 * Renders the given alter column operation into one or more dialect-specific sql statements.<br>
+	 * If the dialect supports table rebuilds the alterations are applied via a rebuild, otherwise each alteration is rendered individually.<br>
+	 *
+	 * @param op The alter column operation to render
+	 * @return A list of the rendered sql statements
+	 * @throws NullPointerException If the operation is null
+	 * @throws SqlException If an alteration cannot be rendered by the dialect
+	 */
 	private @NonNull List<SqlRendered> renderAlterColumn(@NonNull SqlAlterColumnOperation op) throws SqlException {
 		Objects.requireNonNull(op, "Alter column operation must not be null");
 		
@@ -128,6 +176,15 @@ class SqlMigrationRenderer {
 		return results;
 	}
 	
+	/**
+	 * Renders the given column alterations by rebuilding the owning table with the altered column.<br>
+	 * The alterations are applied to a copy of the column which then replaces the original column in the rebuilt table.<br>
+	 *
+	 * @param column The column to apply the alterations to
+	 * @param alterations The alterations to apply to the column
+	 * @return A list of the rendered sql statements that rebuild the table
+	 * @throws SqlException If the table rebuild cannot be rendered by the dialect
+	 */
 	private @NonNull List<SqlRendered> renderAlterColumnViaRebuild(@NonNull SqlColumn<?, ?> column, @NonNull List<SqlColumnAlteration> alterations) throws SqlException {
 		SqlColumn<?, ?> altered = column;
 		for (SqlColumnAlteration alteration : alterations) {
@@ -142,10 +199,23 @@ class SqlMigrationRenderer {
 		return this.dialect.tableRenderer().renderTableRebuild(table, newColumns, List.of());
 	}
 	
+	/**
+	 * Checks whether the given operation is a constraint operation that must be rendered via a table rebuild.<br>
+	 * @param operation The migration operation to check
+	 * @return True if the operation adds a constraint that requires a table rebuild, false otherwise
+	 */
 	private boolean isRebuiltConstraint(@NonNull SqlMigrationOperation operation) {
 		return operation instanceof SqlAddUniqueConstraintOperation || operation instanceof SqlAddForeignKeyOperation || operation instanceof SqlAddCheckConstraintOperation || operation instanceof SqlAddCompositePrimaryKeyOperation;
 	}
 	
+	/**
+	 * Renders the given constraint operation by rebuilding the owning table with the constraint added inline.<br>
+	 * The constraint is rendered inline and applied to the rebuilt table while all existing columns are kept.<br>
+	 *
+	 * @param operation The constraint operation to render
+	 * @return A list of the rendered sql statements that rebuild the table
+	 * @throws SqlException If the table rebuild cannot be rendered by the dialect
+	 */
 	private @NonNull List<SqlRendered> renderAddConstraintViaRebuild(@NonNull SqlMigrationOperation operation) throws SqlException {
 		SqlTable<?> table = switch (operation) {
 			case SqlAddUniqueConstraintOperation op -> op.table();
@@ -159,6 +229,14 @@ class SqlMigrationRenderer {
 		return this.dialect.tableRenderer().renderTableRebuild(table, List.copyOf(table.columns()), List.of(constraint));
 	}
 	
+	/**
+	 * Renders the given constraint operation into a single inline constraint definition.<br>
+	 * The rendered constraint can be embedded directly into a table definition during a rebuild.<br>
+	 *
+	 * @param operation The constraint operation to render
+	 * @return The rendered inline constraint
+	 * @throws SqlException If the constraint cannot be rendered by the dialect
+	 */
 	private @NonNull SqlRendered renderInlineConstraint(@NonNull SqlMigrationOperation operation) throws SqlException {
 		SqlRenderer renderer = SqlRenderer.empty();
 		switch (operation) {

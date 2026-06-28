@@ -32,19 +32,46 @@ import java.sql.ResultSet;
 import java.util.Objects;
 
 /**
+ * A sql type that maps the java value of an underlying source type to a different java type.<br>
+ * Values are bound by converting the target value to the source value and read by converting the source value back to the target value, using the given conversion functions.<br>
+ *
+ * @see SqlType
+ * @see MappedParameterizableSqlType
  *
  * @author Luis-St
  *
+ * @param <S> The java type of the underlying source type
+ * @param <T> The java type this type maps the source value to
  */
-
 @SuppressWarnings("ClassEscapesDefinedScope")
 public final class MappedSqlType<S, T> implements SqlType<T> {
 	
+	/**
+	 * The underlying source type that performs the actual binding and reading.
+	 */
 	private final SqlType<S> sourceType;
+	/**
+	 * The java type this type maps the source value to.
+	 */
 	private final Class<T> javaType;
+	/**
+	 * The function converting a target value into a source value when binding a value.
+	 */
 	private final ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource;
+	/**
+	 * The function converting a source value into a target value when reading a value.
+	 */
 	private final ThrowableFunction<@NonNull S, @Nullable T, SqlClientException> fromSourceToTarget;
 	
+	/**
+	 * Constructs a new mapped sql type wrapping the given source type.<br>
+	 *
+	 * @param sourceType The underlying source type that performs the actual binding and reading
+	 * @param javaType The java type this type maps the source value to
+	 * @param fromTargetToSource The function converting a target value into a source value when binding a value
+	 * @param fromSourceToTarget The function converting a source value into a target value when reading a value
+	 * @throws NullPointerException If the source type, java type or any of the functions is null
+	 */
 	MappedSqlType(
 		@NonNull SqlType<S> sourceType,
 		@NonNull Class<T> javaType,
@@ -57,6 +84,10 @@ public final class MappedSqlType<S, T> implements SqlType<T> {
 		this.fromSourceToTarget = Objects.requireNonNull(fromSourceToTarget, "Setter function must not be null");
 	}
 	
+	/**
+	 * Returns the underlying source type that performs the actual binding and reading.<br>
+	 * @return The source type
+	 */
 	public @NonNull SqlType<S> sourceType() {
 		return this.sourceType;
 	}
@@ -66,10 +97,18 @@ public final class MappedSqlType<S, T> implements SqlType<T> {
 		return this.javaType;
 	}
 	
+	/**
+	 * Returns the function converting a target value into a source value when binding a value.<br>
+	 * @return The target-to-source conversion function
+	 */
 	public @NonNull ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource() {
 		return this.fromTargetToSource;
 	}
 	
+	/**
+	 * Returns the function converting a source value into a target value when reading a value.<br>
+	 * @return The source-to-target conversion function
+	 */
 	public @NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlClientException> fromSourceToTarget() {
 		return this.fromSourceToTarget;
 	}

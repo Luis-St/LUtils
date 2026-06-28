@@ -27,13 +27,19 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code SIGN} function that returns the sign of a value.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to determine the sign of
  */
 
 public record SqlSignFunction(@NonNull SqlExpression<? extends Number> expression) implements SqlNumericFunction<Integer> {
 	
+	/**
+	 * Constructs a new sign function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlSignFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

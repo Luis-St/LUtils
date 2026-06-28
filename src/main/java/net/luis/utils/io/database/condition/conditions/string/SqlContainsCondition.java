@@ -25,16 +25,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a string value contains the given substring.<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
+ * @param substring The substring to search for
  */
-
 public record SqlContainsCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlExpression<?> substring
 ) implements SqlStringCondition {
 	
+	/**
+	 * Constructs a new contains condition with the given value and substring expressions.<br>
+	 * @throws NullPointerException If the value or substring expression is null
+	 */
 	public SqlContainsCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 		Objects.requireNonNull(substring, "Sql substring expression must not be null");

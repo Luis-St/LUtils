@@ -26,16 +26,24 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code CAST} function.<br>
+ * It converts the value of the given expression to the specified target type.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression whose value is converted
+ * @param type The target type to cast the value to
+ * @param <T> The type of the casted result value
  */
-
 public record SqlCastFunction<T>(
 	@NonNull SqlExpression<?> expression,
 	@NonNull SqlType<T> type
 ) implements SqlFunction<T> {
 	
+	/**
+	 * Constructs a new sql cast function with the given expression and target type.<br>
+	 * @throws NullPointerException If the expression or type is null
+	 */
 	public SqlCastFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

@@ -27,16 +27,23 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A sql expression that assigns an alias to a wrapped expression.<br>
  *
  * @author Luis-St
  *
+ * @param expression The wrapped expression
+ * @param alias The alias assigned to the expression
+ * @param <T> The type of the value the expression evaluates to
  */
-
 public record SqlAliasedExpression<T>(
 	@NonNull SqlExpression<T> expression,
 	@NonNull SqlAlias alias
 ) implements SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new aliased expression with the given expression and alias.<br>
+	 * @throws NullPointerException If the expression or alias is null
+	 */
 	public SqlAliasedExpression {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(alias, "Sql alias must not be null");

@@ -26,13 +26,21 @@ import java.time.temporal.Temporal;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code CURRENT_DATE} function.<br>
+ * Returns the current date of the database server.<br>
  *
  * @author Luis-St
  *
+ * @param type The sql type of the result
+ * @param <T> The temporal result type of the function
  */
 
 public record SqlCurrentDateFunction<T extends Temporal>(@NonNull SqlType<T> type) implements SqlTemporalFunction<T> {
 	
+	/**
+	 * Constructs a new current date function with the given sql type.<br>
+	 * @throws NullPointerException If the sql type is null
+	 */
 	public SqlCurrentDateFunction {
 		Objects.requireNonNull(type, "Sql type must not be null");
 	}

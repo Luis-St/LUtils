@@ -26,9 +26,14 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code TO_EPOCH} function.<br>
+ * Converts a temporal value into epoch seconds.<br>
  *
  * @author Luis-St
  *
+ * @param expression The temporal expression to convert into epoch seconds
+ * @param type The sql type of the result
+ * @param <T> The numeric result type of the function
  */
 
 public record SqlToEpochFunction<T extends Number>(
@@ -36,6 +41,10 @@ public record SqlToEpochFunction<T extends Number>(
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
+	/**
+	 * Constructs a new to epoch function with the given expression and sql type.<br>
+	 * @throws NullPointerException If the expression or sql type is null
+	 */
 	public SqlToEpochFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

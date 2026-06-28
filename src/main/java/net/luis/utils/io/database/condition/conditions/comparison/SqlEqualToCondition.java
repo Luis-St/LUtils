@@ -25,16 +25,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether two expressions are equal.<br>
  *
  * @author Luis-St
  *
+ * @param first The first expression to compare
+ * @param second The second expression to compare
  */
-
 public record SqlEqualToCondition(
 	@NonNull SqlExpression<?> first,
 	@NonNull SqlExpression<?> second
 ) implements SqlComparisonCondition {
 	
+	/**
+	 * Constructs a new equal-to condition with the given expressions.<br>
+	 * @throws NullPointerException If the first or second expression is null
+	 */
 	public SqlEqualToCondition {
 		Objects.requireNonNull(first, "Sql first expression must not be null");
 		Objects.requireNonNull(second, "Sql second expression must not be null");

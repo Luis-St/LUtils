@@ -25,16 +25,28 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents a single {@code WHEN ... THEN ...} branch of a sql {@code CASE} expression.<br>
+ * The condition is the {@code WHEN} predicate and the expression is the {@code THEN} result that is yielded when the condition is true.<br>
+ *
+ * @see SqlCondition
+ * @see SqlExpression
  *
  * @author Luis-St
  *
+ * @param <T> The type of the value the branch expression evaluates to
  */
-
 public record SqlCaseWhenBranch<T>(
 	@NonNull SqlCondition condition,
 	@NonNull SqlExpression<T> expression
 ) {
 	
+	/**
+	 * Constructs a new sql case-when branch with the given condition and expression.<br>
+	 *
+	 * @param condition The condition that acts as the {@code WHEN} predicate of the branch
+	 * @param expression The expression that acts as the {@code THEN} result of the branch
+	 * @throws NullPointerException If the condition or the expression is null
+	 */
 	public SqlCaseWhenBranch {
 		Objects.requireNonNull(condition, "Sql condition must not be null");
 		Objects.requireNonNull(expression, "Sql expression must not be null");

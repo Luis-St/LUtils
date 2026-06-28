@@ -28,9 +28,12 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code LOG} (logarithm) function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to calculate the logarithm of
+ * @param base The base of the logarithm or {@code null} to use the natural logarithm
  */
 
 public record SqlLogFunction(
@@ -38,6 +41,10 @@ public record SqlLogFunction(
 	@Nullable SqlExpression<? extends Number> base
 ) implements SqlNumericFunction<Double> {
 	
+	/**
+	 * Constructs a new log function with the given expression and base.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlLogFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

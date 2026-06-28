@@ -21,6 +21,7 @@ package net.luis.utils.io.database.expression;
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,7 +50,7 @@ class SqlTypedNestedExpressionTest {
 	private record TestNested<T>(SqlExpression<T> expression) implements SqlTypedNestedExpression<T> {
 		
 		@Override
-		public SqlRendered toSql(SqlDialect dialect) {
+		public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) {
 			return SqlRendered.of("test");
 		}
 	}

@@ -25,16 +25,32 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Represents a foreign key constraint of a sql table.<br>
+ * It binds the local columns of the owning table to a {@link SqlForeignKey} that describes the referenced table and columns.<br>
+ *
+ * @see SqlColumn
+ * @see SqlForeignKey
+ * @see SqlTable
  *
  * @author Luis-St
  *
+ * @param <E> The type of the entity the owning table maps to
+ * @param <T> The type of the entity the referenced table maps to
  */
-
 public record SqlTableForeignKey<E, T>(
 	@NonNull @Unmodifiable List<SqlColumn<E, ?>> getReferencingColumns,
 	@NonNull SqlForeignKey<T> getForeignKey
 ) {
 	
+	/**
+	 * Constructs a new table foreign key with the given referencing columns and foreign key.<br>
+	 * The referencing columns are copied into an unmodifiable list.<br>
+	 *
+	 * @param getReferencingColumns The local columns of the owning table that reference the foreign key
+	 * @param getForeignKey The foreign key describing the referenced table and columns
+	 * @throws NullPointerException If the referencing columns or the foreign key is null
+	 * @throws IllegalArgumentException If the referencing columns are empty
+	 */
 	public SqlTableForeignKey {
 		Objects.requireNonNull(getReferencingColumns, "Sql referencing columns must not be null");
 		Objects.requireNonNull(getForeignKey, "Sql foreign key must not be null");

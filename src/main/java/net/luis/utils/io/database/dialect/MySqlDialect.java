@@ -46,13 +46,17 @@ import java.sql.Types;
 import java.util.*;
 
 /**
+ * SQL dialect implementation for MySQL.<br>
+ * Provides MySQL-specific SQL generation by extending {@link AbstractSqlDialect}.<br>
  *
  * @author Luis-St
- *
  */
 
 public class MySqlDialect extends AbstractSqlDialect {
 	
+	/**
+	 * The set of SQL features supported by this dialect.
+	 */
 	private static final Set<SqlFeature> SUPPORTED_FEATURES = Set.of(
 		SqlFeature.CTE,
 		SqlFeature.RECURSIVE_CTE,
@@ -72,10 +76,16 @@ public class MySqlDialect extends AbstractSqlDialect {
 		SqlFeature.JOINED_DML
 	);
 	
+	/**
+	 * The set of index methods supported by this dialect.
+	 */
 	private static final Set<SqlIndexMethod> SUPPORTED_INDEX_METHODS = Set.of(
 		SqlIndexMethod.BTREE,
 		SqlIndexMethod.HASH
 	);
+	/**
+	 * The registry of MySQL-specific SQL type mappings.
+	 */
 	private static final SqlTypeRegistry TYPE_REGISTRY = SqlTypeRegistry.builder()
 		.register(SqlTypes.JSON, "JSON")
 		.build();
@@ -204,8 +214,20 @@ public class MySqlDialect extends AbstractSqlDialect {
 	}
 }
 
+/**
+ * MySQL-specific implementation of the {@link SqlTableRenderer}.<br>
+ * Specializes the rendering of auto-increment columns by using the MySQL {@code AUTO_INCREMENT} keyword.<br>
+ *
+ * @author Luis-St
+ */
 class MySqlTableRenderer extends SqlTableRenderer {
 	
+	/**
+	 * Constructs a new MySQL table renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	MySqlTableRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -224,8 +246,21 @@ class MySqlTableRenderer extends SqlTableRenderer {
 	}
 }
 
+/**
+ * MySQL-specific implementation of the {@link SqlIndexRenderer}.<br>
+ * Specializes the rendering of index creation, dropping and renaming using MySQL syntax,
+ * including the {@code USING} index method clause and {@code ALTER TABLE ... RENAME INDEX}.<br>
+ *
+ * @author Luis-St
+ */
 class MySqlIndexRenderer extends SqlIndexRenderer {
 	
+	/**
+	 * Constructs a new MySQL index renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	MySqlIndexRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -271,8 +306,21 @@ class MySqlIndexRenderer extends SqlIndexRenderer {
 	}
 }
 
+/**
+ * MySQL-specific implementation of the {@link SqlColumnRenderer}.<br>
+ * Specializes the rendering of column alterations using the MySQL {@code ALTER TABLE ... MODIFY COLUMN} syntax
+ * for changing a column type and its nullability.<br>
+ *
+ * @author Luis-St
+ */
 class MySqlColumnRenderer extends SqlColumnRenderer {
 	
+	/**
+	 * Constructs a new MySQL column renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	MySqlColumnRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -304,8 +352,21 @@ class MySqlColumnRenderer extends SqlColumnRenderer {
 	}
 }
 
+/**
+ * MySQL-specific implementation of the {@link SqlSchemaRenderer}.<br>
+ * Specializes the rendering of schema creation and dropping by mapping schemas to MySQL databases
+ * using {@code CREATE DATABASE} and {@code DROP DATABASE}.<br>
+ *
+ * @author Luis-St
+ */
 class MySqlSchemaRenderer extends SqlSchemaRenderer {
 	
+	/**
+	 * Constructs a new MySQL schema renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	MySqlSchemaRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -337,8 +398,20 @@ class MySqlSchemaRenderer extends SqlSchemaRenderer {
 	}
 }
 
+/**
+ * MySQL-specific implementation of the {@link SqlMigrationOperationRenderer}.<br>
+ * Specializes the rendering of table renaming using the MySQL {@code RENAME TABLE ... TO} syntax.<br>
+ *
+ * @author Luis-St
+ */
 class MySqlMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 	
+	/**
+	 * Constructs a new MySQL migration operation renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	MySqlMigrationOperationRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -352,8 +425,21 @@ class MySqlMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 	}
 }
 
+/**
+ * MySQL-specific implementation of the {@link SqlNumericFunctionRenderer}.<br>
+ * Specializes the rendering of the random function using {@code RAND()} and the bitwise not function
+ * by casting the result to a {@code SIGNED} integer.<br>
+ *
+ * @author Luis-St
+ */
 class MySqlNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	
+	/**
+	 * Constructs a new MySQL numeric function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	MySqlNumericFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -373,8 +459,20 @@ class MySqlNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	}
 }
 
+/**
+ * MySQL-specific implementation of the {@link SqlStringConditionRenderer}.<br>
+ * Specializes the rendering of string concatenation expressions using the MySQL {@code CONCAT} function.<br>
+ *
+ * @author Luis-St
+ */
 class MySqlStringConditionRenderer extends SqlStringConditionRenderer {
 	
+	/**
+	 * Constructs a new MySQL string condition renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	MySqlStringConditionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -389,8 +487,21 @@ class MySqlStringConditionRenderer extends SqlStringConditionRenderer {
 	}
 }
 
+/**
+ * MySQL-specific implementation of the {@link SqlComparisonConditionRenderer}.<br>
+ * Specializes the rendering of the is-distinct-from condition using the MySQL null-safe equality
+ * operator {@code <=>} negated.<br>
+ *
+ * @author Luis-St
+ */
 class MySqlComparisonConditionRenderer extends SqlComparisonConditionRenderer {
 	
+	/**
+	 * Constructs a new MySQL comparison condition renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	MySqlComparisonConditionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -405,8 +516,21 @@ class MySqlComparisonConditionRenderer extends SqlComparisonConditionRenderer {
 	}
 }
 
+/**
+ * MySQL-specific implementation of the {@link SqlStringFunctionRenderer}.<br>
+ * Specializes the rendering of the concat function using the MySQL {@code CONCAT}, {@code CONCAT_WS}
+ * and {@code GROUP_CONCAT} functions depending on the requested separator, distinct and ordering options.<br>
+ *
+ * @author Luis-St
+ */
 class MySqlStringFunctionRenderer extends SqlStringFunctionRenderer {
 	
+	/**
+	 * Constructs a new MySQL string function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	MySqlStringFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -459,8 +583,22 @@ class MySqlStringFunctionRenderer extends SqlStringFunctionRenderer {
 	}
 }
 
+/**
+ * MySQL-specific implementation of the {@link SqlTemporalFunctionRenderer}.<br>
+ * Specializes the rendering of temporal functions using MySQL syntax, including date part extraction,
+ * temporal truncation via {@code DATE_FORMAT}, epoch conversion, date and time construction,
+ * temporal addition and subtraction, and interval expressions.<br>
+ *
+ * @author Luis-St
+ */
 class MySqlTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
+	/**
+	 * Constructs a new MySQL temporal function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	MySqlTemporalFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -485,6 +623,13 @@ class MySqlTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 		};
 	}
 	
+	/**
+	 * Renders a {@code DATE_FORMAT} call wrapping the given inner expression with the given format string into the given renderer.<br>
+	 *
+	 * @param renderer The renderer to append the function call to
+	 * @param inner The rendered expression to format
+	 * @param format The MySQL date format string to apply
+	 */
 	private void renderDateFormat(@NonNull SqlRenderer renderer, @NonNull SqlRendered inner, @NonNull String format) {
 		renderer.literal("DATE_FORMAT").openingBracket().rendered(inner).comma().literal("'" + format + "'").closingBracket();
 	}

@@ -19,15 +19,27 @@
 package net.luis.utils.io.database.query;
 
 /**
+ * Represents a set operation that can be applied to combine the results of two sql queries.<br>
+ * It controls how the rows of the combined queries are merged.<br>
  *
  * @author Luis-St
- *
  */
-
 public enum SqlSetOperation {
 	
+	/**
+	 * Combines the results of both queries and removes duplicate rows.<br>
+	 */
 	UNION,
+	/**
+	 * Combines the results of both queries and keeps duplicate rows.<br>
+	 */
 	UNION_ALL,
+	/**
+	 * Returns only the rows that are present in the results of both queries.<br>
+	 */
 	INTERSECT,
+	/**
+	 * Returns only the rows that are present in the result of the first query but not in the result of the second query.<br>
+	 */
 	EXCEPT
 }

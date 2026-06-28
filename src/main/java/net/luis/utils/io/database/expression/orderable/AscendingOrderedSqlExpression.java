@@ -29,20 +29,33 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * An ordered sql expression that sorts its wrapped expression in ascending order.<br>
  *
  * @author Luis-St
  *
+ * @param expression The wrapped expression
+ * @param nullOrdering The null ordering applied to the expression
+ * @param <T> The type of the value the expression evaluates to
  */
-
 public record AscendingOrderedSqlExpression<T>(
 	@NonNull SqlExpression<T> expression,
 	@NonNull SqlNullOrdering nullOrdering
 ) implements OrderedSqlExpression<T> {
 	
+	/**
+	 * Constructs a new ascending ordered expression using the default null ordering.<br>
+	 *
+	 * @param expression The wrapped expression
+	 * @throws NullPointerException If the expression is null
+	 */
 	public AscendingOrderedSqlExpression(@NonNull SqlExpression<T> expression) {
 		this(expression, SqlNullOrdering.DEFAULT);
 	}
 	
+	/**
+	 * Constructs a new ascending ordered expression with the given expression and null ordering.<br>
+	 * @throws NullPointerException If the expression or null ordering is null
+	 */
 	public AscendingOrderedSqlExpression {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(nullOrdering, "Sql null ordering must not be null");

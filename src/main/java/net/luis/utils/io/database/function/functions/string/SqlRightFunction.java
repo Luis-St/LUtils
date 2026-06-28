@@ -26,9 +26,14 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code RIGHT} function.<br>
+ * Returns the rightmost characters of the given string expression up to the given length.<br>
  *
  * @author Luis-St
  *
+ * @param expression The string expression to take characters from
+ * @param length The number of trailing characters to return
+ * @param <T> The character sequence type of the expression
  */
 
 public record SqlRightFunction<T extends CharSequence>(
@@ -36,6 +41,10 @@ public record SqlRightFunction<T extends CharSequence>(
 	@NonNull SqlExpression<? extends Number> length
 ) implements SqlStringFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new right function with the given expression and length.<br>
+	 * @throws NullPointerException If the expression or length expression is null
+	 */
 	public SqlRightFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(length, "Sql length expression must not be null");

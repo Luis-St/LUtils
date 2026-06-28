@@ -27,11 +27,17 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Describes a database index over one or more columns of a table.<br>
+ * An index may be unique, may use a partial {@link SqlCondition where condition} and a specific {@link SqlIndexMethod index method}.<br>
  *
  * @author Luis-St
  *
+ * @param name The name of the index
+ * @param columns The columns covered by the index
+ * @param unique Whether the index enforces uniqueness
+ * @param whereCondition The optional condition for a partial index, or null for a full index
+ * @param method The index method used by the index
  */
-
 public record SqlIndex(
 	@NonNull String name,
 	@NonNull List<SqlColumn<?, ?>> columns,
@@ -40,6 +46,12 @@ public record SqlIndex(
 	@NonNull SqlIndexMethod method
 ) {
 	
+	/**
+	 * Constructs a new index with the given name, columns, uniqueness, where condition and method.<br>
+	 *
+	 * @throws NullPointerException If the name, columns or method is null
+	 * @throws IllegalArgumentException If the name is blank or the columns are empty
+	 */
 	public SqlIndex {
 		Objects.requireNonNull(name, "Sql index name must not be null");
 		Objects.requireNonNull(columns, "Sql index columns must not be null");
@@ -53,6 +65,16 @@ public record SqlIndex(
 		}
 	}
 	
+	/**
+	 * Constructs a new full index with the given name, columns, uniqueness and method.<br>
+	 *
+	 * @param name The name of the index
+	 * @param columns The columns covered by the index
+	 * @param unique Whether the index enforces uniqueness
+	 * @param method The index method used by the index
+	 * @throws NullPointerException If the name, columns or method is null
+	 * @throws IllegalArgumentException If the name is blank or the columns are empty
+	 */
 	public SqlIndex(@NonNull String name, @NonNull List<SqlColumn<?, ?>> columns, boolean unique, @NonNull SqlIndexMethod method) {
 		this(name, columns, unique, null, method);
 	}

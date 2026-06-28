@@ -25,13 +25,16 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Default fallback {@link SqlDialect} implementation.<br>
+ * Provides a generic dialect that supports only a minimal common set of {@link SqlFeature features}.<br>
  *
  * @author Luis-St
- *
  */
-
 public class SqlDefaultDialect extends AbstractSqlDialect {
 	
+	/**
+	 * The set of features supported by this default dialect.
+	 */
 	private static final Set<SqlFeature> SUPPORTED_FEATURES = Set.of(
 		SqlFeature.CTE,
 		SqlFeature.RECURSIVE_CTE,

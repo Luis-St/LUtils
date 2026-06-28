@@ -27,9 +27,16 @@ import java.time.temporal.Temporal;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code MAKE_DATE} function.<br>
+ * Builds a date value from its year, month and day components.<br>
  *
  * @author Luis-St
  *
+ * @param year The expression providing the year component
+ * @param month The expression providing the month component
+ * @param day The expression providing the day component
+ * @param type The sql type of the result
+ * @param <T> The temporal result type of the function
  */
 
 public record SqlMakeDateFunction<T extends Temporal>(
@@ -39,6 +46,10 @@ public record SqlMakeDateFunction<T extends Temporal>(
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
+	/**
+	 * Constructs a new make date function with the given year, month, day and sql type.<br>
+	 * @throws NullPointerException If the year, month, day or sql type is null
+	 */
 	public SqlMakeDateFunction {
 		Objects.requireNonNull(year, "Sql year expression must not be null");
 		Objects.requireNonNull(month, "Sql month expression must not be null");

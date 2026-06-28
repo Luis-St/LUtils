@@ -28,13 +28,23 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code COALESCE} function.<br>
+ * It returns the first non-null value from the given list of expressions.<br>
  *
  * @author Luis-St
  *
+ * @param expressions The list of expressions to evaluate in order
+ * @param <T> The type of the resulting value
  */
-
 public record SqlCoalesceFunction<T>(@NonNull @Unmodifiable List<SqlExpression<T>> expressions) implements SqlFunction<T> {
 	
+	/**
+	 * Constructs a new sql coalesce function with the given expressions.<br>
+	 * The expressions list is copied to ensure immutability.<br>
+	 *
+	 * @throws NullPointerException If the expressions list is null
+	 * @throws IllegalArgumentException If the expressions list is empty, contains null expressions or the expressions have differing types
+	 */
 	public SqlCoalesceFunction {
 		Objects.requireNonNull(expressions, "Sql expression list must not be null");
 		

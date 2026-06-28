@@ -23,16 +23,31 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A {@link SqlParameter} that holds a precision and a scale value.<br>
+ * It is used to configure parameterized sql types that take both a precision and a scale argument such as the {@code p} and {@code s} in a {@code DECIMAL(p, s)}.<br>
+ *
+ * @see SqlParameter
  *
  * @author Luis-St
- *
  */
-
 public final class SqlPrecisionParameter implements SqlParameter {
 	
+	/**
+	 * The total number of significant digits.<br>
+	 */
 	private final int precision;
+	/**
+	 * The number of digits after the decimal point.<br>
+	 */
 	private final int scale;
 	
+	/**
+	 * Constructs a new precision parameter with the given precision and scale.<br>
+	 *
+	 * @param precision The total number of significant digits
+	 * @param scale The number of digits after the decimal point
+	 * @throws IllegalArgumentException If the precision is not positive, the scale is negative or the scale exceeds the precision
+	 */
 	SqlPrecisionParameter(int precision, int scale) {
 		if (precision <= 0) {
 			throw new IllegalArgumentException("Precision must be positive");
@@ -48,10 +63,18 @@ public final class SqlPrecisionParameter implements SqlParameter {
 		this.scale = scale;
 	}
 	
+	/**
+	 * Returns the precision of this parameter.<br>
+	 * @return The precision
+	 */
 	public int precision() {
 		return this.precision;
 	}
 	
+	/**
+	 * Returns the scale of this parameter.<br>
+	 * @return The scale
+	 */
 	public int scale() {
 		return this.scale;
 	}

@@ -23,15 +23,26 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A {@link SqlParameter} that holds a single length value.<br>
+ * It is used to configure parameterized sql types that take a single length argument such as the {@code n} in a {@code VARCHAR(n)}.<br>
+ *
+ * @see SqlParameter
  *
  * @author Luis-St
- *
  */
-
 public final class SqlLengthParameter implements SqlParameter {
 	
+	/**
+	 * The length of the type.<br>
+	 */
 	private final int length;
 	
+	/**
+	 * Constructs a new length parameter with the given length.<br>
+	 *
+	 * @param length The length of the type
+	 * @throws IllegalArgumentException If the length is not positive
+	 */
 	SqlLengthParameter(int length) {
 		if (length <= 0) {
 			throw new IllegalArgumentException("Length must be positive");
@@ -39,6 +50,10 @@ public final class SqlLengthParameter implements SqlParameter {
 		this.length = length;
 	}
 	
+	/**
+	 * Returns the length of this parameter.<br>
+	 * @return The length
+	 */
 	public int length() {
 		return this.length;
 	}

@@ -27,13 +27,19 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code SQRT} (square root) function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to calculate the square root of
  */
 
 public record SqlSqrtFunction(@NonNull SqlExpression<? extends Number> expression) implements SqlNumericFunction<Double> {
 	
+	/**
+	 * Constructs a new sqrt function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlSqrtFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

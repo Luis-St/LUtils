@@ -26,9 +26,13 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL numeric addition ({@code +}) function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The base expression
+ * @param addend The expression to add
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlNumericAddFunction<T extends Number>(
@@ -36,6 +40,10 @@ public record SqlNumericAddFunction<T extends Number>(
 	@NonNull SqlExpression<? extends Number> addend
 ) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new numeric add function with the given expression and addend.<br>
+	 * @throws NullPointerException If the expression or addend is null
+	 */
 	public SqlNumericAddFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(addend, "Sql addend expression must not be null");

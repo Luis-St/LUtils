@@ -27,13 +27,19 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code ATAN} trigonometric function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The operand expression
  */
 
 public record SqlAtanFunction(@NonNull SqlExpression<? extends Number> expression) implements SqlNumericFunction<Double> {
 	
+	/**
+	 * Constructs a new arc tangent function with the given operand expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlAtanFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

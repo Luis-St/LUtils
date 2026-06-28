@@ -26,17 +26,26 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Migration operation that adds a unique constraint to an existing table.<br>
  *
  * @author Luis-St
  *
+ * @param table The table to add the constraint to
+ * @param name The name of the constraint
+ * @param columns The columns covered by the unique constraint
  */
-
 public record SqlAddUniqueConstraintOperation(
 	@NonNull SqlTable<?> table,
 	@NonNull String name,
 	@NonNull List<SqlColumn<?, ?>> columns
 ) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new add unique constraint operation with the given table, name and columns.<br>
+	 *
+	 * @throws NullPointerException If the table, name or columns are null
+	 * @throws IllegalArgumentException If the columns list is empty
+	 */
 	public SqlAddUniqueConstraintOperation {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(name, "Sql constraint name must not be null");

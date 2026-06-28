@@ -28,11 +28,18 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code LAG} window function.<br>
+ * It accesses the value of the column from a preceding row within the window partition,<br>
+ * offset by the given number of rows.<br>
  *
  * @author Luis-St
  *
+ * @param column The expression whose value is accessed from the preceding row
+ * @param offset The expression defining the number of rows to look back, may be null
+ * @param defaultValue The value to return if there is no preceding row, may be null
+ * @param over The window clause defining the partitioning and ordering
+ * @param <T> The type of the resulting value
  */
-
 public record SqlLagFunction<T>(
 	@NonNull SqlExpression<T> column,
 	@Nullable SqlExpression<? extends Number> offset,
@@ -40,6 +47,10 @@ public record SqlLagFunction<T>(
 	@NonNull SqlWindowClause over
 ) implements SqlWindowFunction<T> {
 	
+	/**
+	 * Constructs a new sql lag function with the given column, offset, default value and window clause.<br>
+	 * @throws NullPointerException If the column or window clause is null
+	 */
 	public SqlLagFunction {
 		Objects.requireNonNull(column, "Sql column expression must not be null");
 		Objects.requireNonNull(over, "Sql window clause must not be null");

@@ -25,16 +25,22 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Migration operation that drops an index by its name.<br>
  *
  * @author Luis-St
  *
+ * @param table The table the index belongs to, or {@code null} if not bound to a table
+ * @param index The name of the index to drop
  */
-
 public record SqlDropIndexOperation(
 	@Nullable SqlTable<?> table,
 	@NonNull String index
 ) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new drop index operation with the given table and index name.<br>
+	 * @throws NullPointerException If the index name is null
+	 */
 	public SqlDropIndexOperation {
 		Objects.requireNonNull(index, "Sql index name must not be null");
 	}

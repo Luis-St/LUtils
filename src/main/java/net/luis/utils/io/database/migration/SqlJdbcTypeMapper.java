@@ -27,15 +27,30 @@ import org.jspecify.annotations.Nullable;
 import java.sql.Types;
 
 /**
+ * Maps JDBC type codes to the library's {@link SqlType}s during schema introspection.<br>
+ * Used to reconstruct the appropriate {@link SqlType} from the metadata reported by a database driver.<br>
  *
  * @author Luis-St
- *
  */
 
 final class SqlJdbcTypeMapper {
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static utility class.<br>
+	 */
 	private SqlJdbcTypeMapper() {}
 	
+	/**
+	 * Maps the given JDBC type code to the matching {@link SqlType}.<br>
+	 * The column size and decimal digits are used to configure parameterized types such as numeric, string or temporal types.<br>
+	 *
+	 * @param jdbcType The JDBC type code as defined in {@link Types}
+	 * @param columnSize The column size used to configure length or precision
+	 * @param decimalDigits The number of decimal digits used to configure scale or fractional precision
+	 * @return The mapped sql type
+	 * @throws SqlSchemaIntrospectionException If the JDBC type code is not supported
+	 */
 	static @NonNull SqlType<?> mapJdbcType(int jdbcType, int columnSize, int decimalDigits) throws SqlSchemaIntrospectionException {
 		return switch (jdbcType) {
 			case Types.BIT, Types.BOOLEAN -> SqlTypes.BOOLEAN;
@@ -71,6 +86,15 @@ final class SqlJdbcTypeMapper {
 		};
 	}
 	
+	/**
+	 * Reconstructs a {@link SqlType} from the given JDBC type code and the optional stored parameter.<br>
+	 * If the parameter is {@code null} the type is reconstructed as a scalar type, otherwise the parameter is applied to the matching parameterizable type.<br>
+	 *
+	 * @param jdbcType The JDBC type code as defined in {@link Types}
+	 * @param parameter The parameter to apply to the type or {@code null} for a scalar type
+	 * @return The reconstructed sql type
+	 * @throws SqlSchemaIntrospectionException If the JDBC type code is not supported for the given parameter
+	 */
 	static @NonNull SqlType<?> reconstructType(int jdbcType, @Nullable SqlParameter parameter) throws SqlSchemaIntrospectionException {
 		if (parameter == null) {
 			return switch (jdbcType) {
@@ -111,6 +135,16 @@ final class SqlJdbcTypeMapper {
 		return configureUnsafe(base, parameter);
 	}
 	
+	/**
+	 * Configures the given parameterizable type with the given parameter using an unchecked cast.<br>
+	 * The cast is required because the concrete parameter type of the base type is not statically known.<br>
+	 *
+	 * @param base The parameterizable type to configure
+	 * @param parameter The parameter to apply to the type
+	 * @param <T> The value type of the parameterizable type
+	 * @param <P> The parameter type accepted by the parameterizable type
+	 * @return The configured sql type
+	 */
 	@SuppressWarnings("unchecked")
 	private static <T, P extends SqlParameter> @NonNull SqlType<T> configureUnsafe(@NonNull ParameterizableSqlType<T, ?> base, @NonNull SqlParameter parameter) {
 		return ((ParameterizableSqlType<T, P>) base).configure((P) parameter);

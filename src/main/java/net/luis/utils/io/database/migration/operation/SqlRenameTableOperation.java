@@ -24,16 +24,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Migration operation that renames an existing table.<br>
  *
  * @author Luis-St
  *
+ * @param from The table to rename
+ * @param to The table with the new name
  */
-
 public record SqlRenameTableOperation(
 	@NonNull SqlTable<?> from,
 	@NonNull SqlTable<?> to
 ) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new rename table operation with the given source and target table.<br>
+	 * @throws NullPointerException If the source or target table is null
+	 */
 	public SqlRenameTableOperation {
 		Objects.requireNonNull(from, "Sql source table must not be null");
 		Objects.requireNonNull(to, "Sql target table must not be null");

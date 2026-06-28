@@ -25,16 +25,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a temporal value lies within the last given duration relative to now.<br>
  *
  * @author Luis-St
  *
+ * @param value The temporal expression to check
+ * @param duration The duration that defines the time window ending at now
  */
-
 public record SqlWithinLastCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlExpression<?> duration
 ) implements SqlTemporalCondition {
 	
+	/**
+	 * Constructs a new within-last condition with the given value and duration expressions.<br>
+	 * @throws NullPointerException If the value or duration expression is null
+	 */
 	public SqlWithinLastCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 		Objects.requireNonNull(duration, "Sql duration expression must not be null");

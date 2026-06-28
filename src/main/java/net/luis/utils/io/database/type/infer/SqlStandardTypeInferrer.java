@@ -36,17 +36,33 @@ import java.time.*;
 import java.util.UUID;
 
 /**
+ * A {@link SqlTypeInferrer} that recognizes the built-in java, time and library types supported by {@link SqlTypes}.<br>
+ * The runtime class of the value is matched against the known types, applying a default {@link SqlParameter} configuration where one is required, for example a length for strings or a fractional precision for temporal types.<br>
+ *
+ * @see SqlTypeInferrer
+ * @see SqlTypes
  *
  * @author Luis-St
- *
  */
-
 public class SqlStandardTypeInferrer implements SqlTypeInferrer {
 	
+	/**
+	 * The singleton instance of the standard type inferrer.<br>
+	 */
 	static final SqlStandardTypeInferrer INSTANCE = new SqlStandardTypeInferrer();
 	
+	/**
+	 * Constructs a new standard type inferrer.<br>
+	 */
 	protected SqlStandardTypeInferrer() {}
 	
+	/**
+	 * Infers the sql type for an enum value based on its declaring class.<br>
+	 * The enum is stored using its constant name.<br>
+	 *
+	 * @param value The enum value to infer the sql type for
+	 * @return The sql type that stores the enum by its constant name
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static @NonNull SqlType<?> inferEnumType(@NonNull Enum value) {
 		return SqlTypes.enumName(value.getDeclaringClass());
@@ -58,6 +74,14 @@ public class SqlStandardTypeInferrer implements SqlTypeInferrer {
 		return (SqlType<T>) this.inferTypeInternal(value);
 	}
 	
+	/**
+	 * Resolves the sql type for the given value by matching its runtime type against the known built-in types.<br>
+	 *
+	 * @param value The value to infer the sql type for
+	 * @return The sql type matching the value
+	 * @throws NullPointerException If the value is null
+	 * @throws SqlTypeNotFoundException If no sql type is known for the value's java type
+	 */
 	private @NonNull SqlType<?> inferTypeInternal(@NonNull Object value) throws SqlTypeNotFoundException {
 		return switch (value) {
 			case Boolean _ -> SqlTypes.BOOLEAN;

@@ -25,16 +25,23 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether two expressions are distinct from each other.<br>
+ * Unlike a plain inequality, this comparison treats {@code null} values as comparable, so two nulls are not distinct.<br>
  *
  * @author Luis-St
  *
+ * @param first The first expression to compare
+ * @param second The second expression to compare
  */
-
 public record SqlIsDistinctFromCondition(
 	@NonNull SqlExpression<?> first,
 	@NonNull SqlExpression<?> second
 ) implements SqlComparisonCondition {
 	
+	/**
+	 * Constructs a new is-distinct-from condition with the given expressions.<br>
+	 * @throws NullPointerException If the first or second expression is null
+	 */
 	public SqlIsDistinctFromCondition {
 		Objects.requireNonNull(first, "Sql first expression must not be null");
 		Objects.requireNonNull(second, "Sql second expression must not be null");

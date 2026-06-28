@@ -25,16 +25,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a string value ends with the given suffix.<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
+ * @param suffix The suffix to test for
  */
-
 public record SqlEndsWithCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlExpression<?> suffix
 ) implements SqlStringCondition {
 	
+	/**
+	 * Constructs a new ends-with condition with the given value and suffix expressions.<br>
+	 * @throws NullPointerException If the value or suffix expression is null
+	 */
 	public SqlEndsWithCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 		Objects.requireNonNull(suffix, "Sql suffix expression must not be null");

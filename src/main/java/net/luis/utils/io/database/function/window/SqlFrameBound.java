@@ -22,29 +22,55 @@ import net.luis.utils.io.database.function.window.frame.bound.*;
 import org.jspecify.annotations.NonNull;
 
 /**
+ * Represents a single bound of a sql window frame.<br>
+ * A bound can be unbounded, the current row or a fixed offset preceding or following the current row.<br>
  *
  * @author Luis-St
- *
  */
-
 public interface SqlFrameBound {
 	
+	/**
+	 * Creates a frame bound representing {@code UNBOUNDED PRECEDING}.<br>
+	 * @return A new unbounded preceding frame bound
+	 */
 	static @NonNull SqlFrameBound unboundedPreceding() {
 		return new UnboundedPrecedingFrameBound();
 	}
 	
+	/**
+	 * Creates a frame bound representing the given number of rows preceding the current row.<br>
+	 *
+	 * @param offset The number of rows preceding the current row
+	 * @return A new preceding frame bound
+	 * @throws IllegalArgumentException If the offset is negative
+	 */
 	static @NonNull SqlFrameBound preceding(int offset) {
 		return new PrecedingFrameBound(offset);
 	}
 	
+	/**
+	 * Creates a frame bound representing {@code CURRENT ROW}.<br>
+	 * @return A new current row frame bound
+	 */
 	static @NonNull SqlFrameBound currentRow() {
 		return new CurrentRowFrameBound();
 	}
 	
+	/**
+	 * Creates a frame bound representing the given number of rows following the current row.<br>
+	 *
+	 * @param offset The number of rows following the current row
+	 * @return A new following frame bound
+	 * @throws IllegalArgumentException If the offset is negative
+	 */
 	static @NonNull SqlFrameBound following(int offset) {
 		return new FollowingFrameBound(offset);
 	}
 	
+	/**
+	 * Creates a frame bound representing {@code UNBOUNDED FOLLOWING}.<br>
+	 * @return A new unbounded following frame bound
+	 */
 	static @NonNull SqlFrameBound unboundedFollowing() {
 		return new UnboundedFollowingFrameBound();
 	}

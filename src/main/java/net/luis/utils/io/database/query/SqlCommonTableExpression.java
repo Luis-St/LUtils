@@ -24,17 +24,25 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents a common table expression (CTE) that can be referenced by a sql query.<br>
+ * It binds an {@link SqlAlias alias} to a {@link SqlSelectQuery select query} and may be marked as recursive.<br>
  *
  * @author Luis-St
  *
+ * @param alias The alias under which the common table expression is referenced
+ * @param query The select query that defines the common table expression
+ * @param recursive Whether the common table expression is recursive
  */
-
 public record SqlCommonTableExpression(
 	@NonNull SqlAlias alias,
 	@NonNull SqlSelectQuery<?> query,
 	boolean recursive
 ) {
 	
+	/**
+	 * Constructs a new common table expression with the given alias, query and recursive flag.<br>
+	 * @throws NullPointerException If the alias or query is null
+	 */
 	public SqlCommonTableExpression {
 		Objects.requireNonNull(alias, "Sql common table expression alias must not be null");
 		Objects.requireNonNull(query, "Sql common table expression query must not be null");

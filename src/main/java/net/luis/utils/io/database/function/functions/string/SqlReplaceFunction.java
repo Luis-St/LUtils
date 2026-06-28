@@ -26,9 +26,15 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code REPLACE} function.<br>
+ * Replaces all occurrences of the search string with the replacement string in the given string expression.<br>
  *
  * @author Luis-St
  *
+ * @param expression The string expression to replace within
+ * @param search The substring expression to search for
+ * @param replacement The substring expression to replace the search string with
+ * @param <T> The character sequence type of the expression
  */
 
 public record SqlReplaceFunction<T extends CharSequence>(
@@ -37,6 +43,10 @@ public record SqlReplaceFunction<T extends CharSequence>(
 	@NonNull SqlExpression<? extends CharSequence> replacement
 ) implements SqlStringFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new replace function with the given expression, search and replacement.<br>
+	 * @throws NullPointerException If the expression, search expression or replacement expression is null
+	 */
 	public SqlReplaceFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(search, "Sql search expression must not be null");

@@ -24,13 +24,18 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Migration operation that executes the raw data manipulation associated with the given table.<br>
  *
  * @author Luis-St
  *
+ * @param table The table whose data manipulation is executed
  */
-
 public record SqlExecuteDataOperation(@NonNull SqlTable<?> table) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new execute data operation with the given table.<br>
+	 * @throws NullPointerException If the table is null
+	 */
 	public SqlExecuteDataOperation {
 		Objects.requireNonNull(table, "Sql table must not be null");
 	}

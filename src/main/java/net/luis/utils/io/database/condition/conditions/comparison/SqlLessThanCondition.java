@@ -25,17 +25,25 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a value is less than the given threshold.<br>
+ * If {@code equalTo} is set, the condition also matches when the value equals the threshold.<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
+ * @param threshold The threshold to compare against
+ * @param equalTo Whether the comparison is inclusive of the threshold
  */
-
 public record SqlLessThanCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlExpression<?> threshold,
 	boolean equalTo
 ) implements SqlComparisonCondition {
 	
+	/**
+	 * Constructs a new less-than condition with the given value, threshold and inclusiveness.<br>
+	 * @throws NullPointerException If the value or threshold expression is null
+	 */
 	public SqlLessThanCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 		Objects.requireNonNull(threshold, "Sql threshold expression must not be null");

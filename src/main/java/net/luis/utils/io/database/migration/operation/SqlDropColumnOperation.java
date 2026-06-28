@@ -24,13 +24,18 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Migration operation that drops a column from an existing table.<br>
  *
  * @author Luis-St
  *
+ * @param column The column to drop
  */
-
 public record SqlDropColumnOperation(@NonNull SqlColumn<?, ?> column) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new drop column operation with the given column.<br>
+	 * @throws NullPointerException If the column is null
+	 */
 	public SqlDropColumnOperation {
 		Objects.requireNonNull(column, "Sql column must not be null");
 	}

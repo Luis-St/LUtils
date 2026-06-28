@@ -25,16 +25,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a string value starts with the given prefix.<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
+ * @param prefix The prefix to test for
  */
-
 public record SqlStartsWithCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlExpression<?> prefix
 ) implements SqlStringCondition {
 	
+	/**
+	 * Constructs a new starts-with condition with the given value and prefix expressions.<br>
+	 * @throws NullPointerException If the value or prefix expression is null
+	 */
 	public SqlStartsWithCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 		Objects.requireNonNull(prefix, "Sql prefix expression must not be null");

@@ -26,9 +26,15 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code POSITION} function.<br>
+ * Returns the position of the given substring within the given string expression.<br>
  *
  * @author Luis-St
  *
+ * @param substring The substring expression to search for
+ * @param expression The string expression to search within
+ * @param type The numeric result type of the function
+ * @param <T> The numeric type the function evaluates to
  */
 
 public record SqlPositionFunction<T extends Number>(
@@ -37,6 +43,10 @@ public record SqlPositionFunction<T extends Number>(
 	@NonNull SqlType<T> type
 ) implements SqlStringFunction<T> {
 	
+	/**
+	 * Constructs a new position function with the given substring, expression and result type.<br>
+	 * @throws NullPointerException If the substring expression, expression or type is null
+	 */
 	public SqlPositionFunction {
 		Objects.requireNonNull(substring, "Sql substring expression must not be null");
 		Objects.requireNonNull(expression, "Sql expression must not be null");

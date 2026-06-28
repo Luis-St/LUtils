@@ -21,9 +21,9 @@ package net.luis.utils.io.database.condition.conditions;
 import net.luis.utils.io.database.condition.SqlCondition;
 
 /**
+ * Marker interface for conditions that operate on temporal expressions.<br>
+ * Groups conditions such as before, after and relative time-window checks.<br>
  *
  * @author Luis-St
- *
  */
-
 public interface SqlTemporalCondition extends SqlCondition {}

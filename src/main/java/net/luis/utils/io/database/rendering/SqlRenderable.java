@@ -23,13 +23,24 @@ import net.luis.utils.io.database.exception.SqlException;
 import org.jspecify.annotations.NonNull;
 
 /**
+ * Represents an object that can be rendered into sql for a specific dialect.<br>
+ * Implementations translate themselves into a {@link SqlRendered} that holds the rendered sql statements together with the ordered parameters.<br>
+ *
+ * @see SqlRendered
+ * @see SqlDialect
  *
  * @author Luis-St
- *
  */
-
 @FunctionalInterface
 public interface SqlRenderable {
 	
+	/**
+	 * Renders this object into sql using the given dialect.<br>
+	 *
+	 * @param dialect The dialect that defines how this object is rendered into sql
+	 * @return The rendered sql containing the statements and the ordered parameters
+	 * @throws NullPointerException If the dialect is null
+	 * @throws SqlException If this object cannot be rendered into sql
+	 */
 	@NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException;
 }

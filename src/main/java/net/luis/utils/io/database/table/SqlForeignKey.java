@@ -26,11 +26,19 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Represents a foreign key reference to columns of another sql table.<br>
+ * The foreign key defines which table and columns are referenced as well as the referential actions<br>
+ * that are applied when the referenced rows are updated or deleted.<br>
+ *
+ * @see SqlTable
+ * @see SqlColumn
+ * @see SqlReferentialAction
+ * @see SqlTableForeignKey
  *
  * @author Luis-St
  *
+ * @param <T> The type of the entity the referenced table maps to
  */
-
 public record SqlForeignKey<T>(
 	@NonNull SqlTable<T> referencedTable,
 	@NonNull @Unmodifiable List<SqlColumn<T, ?>> referencedColumns,
@@ -38,6 +46,17 @@ public record SqlForeignKey<T>(
 	@NonNull SqlReferentialAction onDelete
 ) {
 	
+	/**
+	 * Constructs a new foreign key with the given referenced table, columns and referential actions.<br>
+	 * The referenced columns are copied into an unmodifiable list.<br>
+	 *
+	 * @param referencedTable The table that is referenced by this foreign key
+	 * @param referencedColumns The columns of the referenced table that are referenced
+	 * @param onUpdate The action to apply when a referenced row is updated
+	 * @param onDelete The action to apply when a referenced row is deleted
+	 * @throws NullPointerException If the referenced table, the referenced columns, the update action or the delete action is null
+	 * @throws IllegalArgumentException If the referenced columns are empty or contain a column that does not belong to the referenced table
+	 */
 	public SqlForeignKey {
 		Objects.requireNonNull(referencedTable, "Sql referenced table must not be null");
 		Objects.requireNonNull(referencedColumns, "Sql referenced columns must not be null");
@@ -57,16 +76,49 @@ public record SqlForeignKey<T>(
 		}
 	}
 	
+	/**
+	 * Creates a foreign key that references the primary key columns of the given table.<br>
+	 * Both the update and delete action are set to {@link SqlReferentialAction#NO_ACTION}.<br>
+	 *
+	 * @param referencedTable The table that is referenced by this foreign key
+	 * @return The created foreign key
+	 * @param <T> The type of the entity the referenced table maps to
+	 * @throws NullPointerException If the referenced table is null
+	 * @throws IllegalArgumentException If the referenced table has no primary key columns
+	 */
 	public static <T> @NonNull SqlForeignKey<T> of(@NonNull SqlTable<T> referencedTable) {
 		Objects.requireNonNull(referencedTable, "Sql referenced table must not be null");
 		
 		return new SqlForeignKey<>(referencedTable, referencedTable.primaryKeyColumns(), SqlReferentialAction.NO_ACTION, SqlReferentialAction.NO_ACTION);
 	}
 	
+	/**
+	 * Creates a foreign key that references the given column of the given table.<br>
+	 * Both the update and delete action are set to {@link SqlReferentialAction#NO_ACTION}.<br>
+	 *
+	 * @param referencedTable The table that is referenced by this foreign key
+	 * @param referencedColumn The column of the referenced table that is referenced
+	 * @return The created foreign key
+	 * @param <T> The type of the entity the referenced table maps to
+	 * @throws NullPointerException If the referenced table or the referenced column is null
+	 * @throws IllegalArgumentException If the referenced column does not belong to the referenced table
+	 */
 	public static <T> @NonNull SqlForeignKey<T> of(@NonNull SqlTable<T> referencedTable, @NonNull SqlColumn<T, ?> referencedColumn) {
 		return new SqlForeignKey<>(referencedTable, List.of(referencedColumn), SqlReferentialAction.NO_ACTION, SqlReferentialAction.NO_ACTION);
 	}
 	
+	/**
+	 * Creates a foreign key that references the given columns of the given table using the given referential actions.<br>
+	 *
+	 * @param referencedTable The table that is referenced by this foreign key
+	 * @param referencedColumns The columns of the referenced table that are referenced
+	 * @param onUpdate The action to apply when a referenced row is updated
+	 * @param onDelete The action to apply when a referenced row is deleted
+	 * @return The created foreign key
+	 * @param <T> The type of the entity the referenced table maps to
+	 * @throws NullPointerException If the referenced table, the referenced columns, the update action or the delete action is null
+	 * @throws IllegalArgumentException If the referenced columns are empty or contain a column that does not belong to the referenced table
+	 */
 	public static <T> @NonNull SqlForeignKey<T> of(@NonNull SqlTable<T> referencedTable, @NonNull List<SqlColumn<T, ?>> referencedColumns, @NonNull SqlReferentialAction onUpdate, @NonNull SqlReferentialAction onDelete) {
 		return new SqlForeignKey<>(referencedTable, referencedColumns, onUpdate, onDelete);
 	}

@@ -19,15 +19,29 @@
 package net.luis.utils.io.database.query.util;
 
 /**
+ * Represents the type of a sql set clause used in update statements.<br>
+ * The type determines how the value of the assigned column is computed.<br>
+ *
+ * @see SqlSetClause
  *
  * @author Luis-St
- *
  */
-
 public enum SqlSetType {
 	
+	/**
+	 * Assigns the result of an expression to the column.<br>
+	 */
 	EXPRESSION,
+	/**
+	 * Increments the current value of the column by the result of an expression.<br>
+	 */
 	INCREMENT,
+	/**
+	 * Decrements the current value of the column by the result of an expression.<br>
+	 */
 	DECREMENT,
+	/**
+	 * Assigns {@code null} to the column.<br>
+	 */
 	NULL
 }

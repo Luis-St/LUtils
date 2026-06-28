@@ -24,9 +24,9 @@ import net.luis.utils.io.database.type.SqlTypes;
 import org.jspecify.annotations.NonNull;
 
 /**
+ * Represents the SQL {@code PI} function that returns the value of {@code pi}.<br>
  *
  * @author Luis-St
- *
  */
 
 public record SqlPiFunction() implements SqlNumericFunction<Double> {

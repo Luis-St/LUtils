@@ -32,19 +32,39 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Renderer for temporal sql functions into dialect-specific sql.<br>
+ * Dispatches the given {@link SqlTemporalFunction} to the matching render method based on its concrete type<br>
+ * and produces the resulting {@link SqlRendered} using the configured {@link SqlDialect}.<br>
  *
  * @author Luis-St
- *
  */
 
 public class SqlTemporalFunctionRenderer {
 	
+	/**
+	 * The sql dialect used to render the functions.
+	 */
 	protected final SqlDialect dialect;
 	
+	/**
+	 * Constructs a new temporal sql function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The sql dialect used to render the functions
+	 * @throws NullPointerException If the dialect is null
+	 */
 	public SqlTemporalFunctionRenderer(@NonNull SqlDialect dialect) {
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 	}
 	
+	/**
+	 * Renders the given temporal sql function into dialect-specific sql.<br>
+	 * The function is dispatched to the matching render method based on its concrete type.<br>
+	 *
+	 * @param function The temporal function to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the function is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered render(@NonNull SqlTemporalFunction<?> function) throws SqlException {
 		return switch (function) {
 			case SqlTemporalAddFunction<?> func -> this.renderTemporalAdd(func);
@@ -67,6 +87,15 @@ public class SqlTemporalFunctionRenderer {
 		};
 	}
 	
+	/**
+	 * Renders the given temporal-add function into dialect-specific sql.<br>
+	 * The first summand is rendered, followed by a {@code +} operator and the second summand rendered as an interval of the function part.<br>
+	 *
+	 * @param function The temporal-add function to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the function is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderTemporalAdd(@NonNull SqlTemporalAddFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
@@ -77,18 +106,48 @@ public class SqlTemporalFunctionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders the current-date function into dialect-specific sql.<br>
+	 * The function is rendered as the {@code CURRENT_DATE} keyword.<br>
+	 *
+	 * @return The rendered sql
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderCurrentDate() throws SqlException {
 		return SqlRendered.of("CURRENT_DATE");
 	}
 	
+	/**
+	 * Renders the current-time function into dialect-specific sql.<br>
+	 * The function is rendered as the {@code CURRENT_TIME} keyword.<br>
+	 *
+	 * @return The rendered sql
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderCurrentTime() throws SqlException {
 		return SqlRendered.of("CURRENT_TIME");
 	}
 	
+	/**
+	 * Renders the current-timestamp function into dialect-specific sql.<br>
+	 * The function is rendered as the {@code CURRENT_TIMESTAMP} keyword.<br>
+	 *
+	 * @return The rendered sql
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderCurrentTimestamp() throws SqlException {
 		return SqlRendered.of("CURRENT_TIMESTAMP");
 	}
 	
+	/**
+	 * Renders the given extract function into dialect-specific sql.<br>
+	 * The function is rendered as an {@code EXTRACT(part FROM expression)} call.<br>
+	 *
+	 * @param function The extract function to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the function is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderExtract(@NonNull SqlExtractFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
@@ -97,22 +156,62 @@ public class SqlTemporalFunctionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders the given from-epoch function into dialect-specific sql.<br>
+	 * This base implementation does not support the function and requires a dialect-specific override.<br>
+	 *
+	 * @param function The from-epoch function to render
+	 * @return The rendered sql
+	 * @throws SqlException If the dialect does not support rendering this function
+	 */
 	protected @NonNull SqlRendered renderFromEpoch(@NonNull SqlFromEpochFunction<?> function) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("FROM_EPOCH is not supported by dialect " + this.dialect.name() + ", requires dialect-specific override");
 	}
 	
+	/**
+	 * Renders the given make-date function into dialect-specific sql.<br>
+	 * This base implementation does not support the function and requires a dialect-specific override.<br>
+	 *
+	 * @param function The make-date function to render
+	 * @return The rendered sql
+	 * @throws SqlException If the dialect does not support rendering this function
+	 */
 	protected @NonNull SqlRendered renderMakeDate(@NonNull SqlMakeDateFunction<?> function) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("MAKE_DATE is not supported by dialect " + this.dialect.name() + ", requires dialect-specific override");
 	}
 	
+	/**
+	 * Renders the given make-time function into dialect-specific sql.<br>
+	 * This base implementation does not support the function and requires a dialect-specific override.<br>
+	 *
+	 * @param function The make-time function to render
+	 * @return The rendered sql
+	 * @throws SqlException If the dialect does not support rendering this function
+	 */
 	protected @NonNull SqlRendered renderMakeTime(@NonNull SqlMakeTimeFunction<?> function) throws SqlException {
 		throw new SqlDialectUnsupportedRenderingException("MAKE_TIME is not supported by dialect " + this.dialect.name() + ", requires dialect-specific override");
 	}
 	
+	/**
+	 * Renders the now function into dialect-specific sql.<br>
+	 * The function is rendered as the {@code CURRENT_TIMESTAMP} keyword.<br>
+	 *
+	 * @return The rendered sql
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderNow() throws SqlException {
 		return SqlRendered.of("CURRENT_TIMESTAMP");
 	}
 	
+	/**
+	 * Renders the given temporal-subtract function into dialect-specific sql.<br>
+	 * The minuend is rendered, followed by a {@code -} operator and the subtrahend rendered as an interval of the function part.<br>
+	 *
+	 * @param function The temporal-subtract function to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the function is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderTemporalSubtract(@NonNull SqlTemporalSubtractFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
@@ -123,6 +222,15 @@ public class SqlTemporalFunctionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders the given to-date function into dialect-specific sql.<br>
+	 * The function is rendered as a {@code CAST(expression AS DATE)} call.<br>
+	 *
+	 * @param function The to-date function to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the function is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderToDate(@NonNull SqlToDateFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
@@ -130,6 +238,15 @@ public class SqlTemporalFunctionRenderer {
 		return SqlRenderer.empty().cast().openingBracket().rendered(inner).as().literal("DATE").closingBracket().toSql();
 	}
 	
+	/**
+	 * Renders the given to-time function into dialect-specific sql.<br>
+	 * The function is rendered as a {@code CAST(expression AS TIME)} call.<br>
+	 *
+	 * @param function The to-time function to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the function is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderToTime(@NonNull SqlToTimeFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
@@ -137,6 +254,15 @@ public class SqlTemporalFunctionRenderer {
 		return SqlRenderer.empty().cast().openingBracket().rendered(inner).as().literal("TIME").closingBracket().toSql();
 	}
 	
+	/**
+	 * Renders the given to-epoch function into dialect-specific sql.<br>
+	 * The function is rendered as an {@code EXTRACT(EPOCH FROM expression)} call.<br>
+	 *
+	 * @param function The to-epoch function to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the function is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderToEpoch(@NonNull SqlToEpochFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
@@ -145,6 +271,15 @@ public class SqlTemporalFunctionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders the given temporal-truncate function into dialect-specific sql.<br>
+	 * The function is rendered as a {@code DATE_TRUNC('part', expression)} call.<br>
+	 *
+	 * @param function The temporal-truncate function to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the function is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderTemporalTruncate(@NonNull SqlTemporalTruncateFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		
@@ -153,6 +288,16 @@ public class SqlTemporalFunctionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders the given duration as an interval expression for the given temporal part.<br>
+	 * The duration is rendered and multiplied by a single-unit {@code INTERVAL} of the given part.<br>
+	 *
+	 * @param duration The duration expression to render
+	 * @param part The temporal part of the interval
+	 * @return The rendered sql
+	 * @throws NullPointerException If the duration or the part is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderInterval(@NonNull SqlExpression<?> duration, @NonNull String part) throws SqlException {
 		Objects.requireNonNull(duration, "Sql duration expression must not be null");
 		Objects.requireNonNull(part, "Temporal part must not be null");

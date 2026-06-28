@@ -25,16 +25,23 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Window frame using the {@code ROWS} frame mode.<br>
+ * The frame is defined by the physical number of rows relative to the current row.<br>
  *
  * @author Luis-St
  *
+ * @param start The start bound of the frame
+ * @param end The end bound of the frame
  */
-
 public record RowsWindowFrame(
 	@NonNull SqlFrameBound start,
 	@NonNull SqlFrameBound end
 ) implements SqlWindowFrame {
 	
+	/**
+	 * Constructs a new rows window frame validating that both bounds are present.<br>
+	 * @throws NullPointerException If the start or end bound is null
+	 */
 	public RowsWindowFrame {
 		Objects.requireNonNull(start, "Sql start frame bound must not be null");
 		Objects.requireNonNull(end, "Sql end frame bound must not be null");

@@ -27,16 +27,24 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents an aggregate function evaluated as a window function.<br>
+ * It wraps an existing aggregate function and applies it over the rows defined by the window clause.<br>
  *
  * @author Luis-St
  *
+ * @param aggregate The aggregate function to evaluate over the window
+ * @param over The window clause defining the partitioning and ordering
+ * @param <T> The type of the resulting value
  */
-
 public record SqlWindowedAggregate<T>(
 	@NonNull SqlAggregateFunction<T> aggregate,
 	@NonNull SqlWindowClause over
 ) implements SqlWindowFunction<T> {
 	
+	/**
+	 * Constructs a new sql windowed aggregate with the given aggregate function and window clause.<br>
+	 * @throws NullPointerException If the aggregate function or window clause is null
+	 */
 	public SqlWindowedAggregate {
 		Objects.requireNonNull(aggregate, "Sql aggregate function must not be null");
 		Objects.requireNonNull(over, "Sql window clause must not be null");

@@ -24,15 +24,25 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
+ * Represents an alias that can be assigned to a sql table, column or query.<br>
+ * The alias is a non-blank string that is supplied through the {@link Supplier} interface.<br>
  *
  * @author Luis-St
- *
  */
-
 public class SqlAlias implements Supplier<String> {
 	
+	/**
+	 * The alias string this instance wraps.
+	 */
 	private final String alias;
 	
+	/**
+	 * Constructs a new alias with the given alias string.<br>
+	 *
+	 * @param alias The alias string
+	 * @throws NullPointerException If the alias is null
+	 * @throws IllegalArgumentException If the alias is empty or blank
+	 */
 	SqlAlias(@NonNull String alias) {
 		Objects.requireNonNull(alias, "Alias must not be null");
 		if (alias.isBlank()) {
@@ -42,10 +52,22 @@ public class SqlAlias implements Supplier<String> {
 		this.alias = alias;
 	}
 	
+	/**
+	 * Creates a new alias with the given alias string.<br>
+	 *
+	 * @param alias The alias string
+	 * @return A new alias instance
+	 * @throws NullPointerException If the alias is null
+	 * @throws IllegalArgumentException If the alias is empty or blank
+	 */
 	public static @NonNull SqlAlias of(@NonNull String alias) {
 		return new SqlAlias(alias);
 	}
 	
+	/**
+	 * Returns the alias string this instance wraps.<br>
+	 * @return The alias string
+	 */
 	@Override
 	public @NonNull String get() {
 		return this.alias;

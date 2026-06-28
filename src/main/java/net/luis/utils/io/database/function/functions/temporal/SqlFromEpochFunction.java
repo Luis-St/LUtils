@@ -27,9 +27,14 @@ import java.time.temporal.Temporal;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code FROM_EPOCH} function.<br>
+ * Converts epoch seconds into a temporal value.<br>
  *
  * @author Luis-St
  *
+ * @param expression The numeric expression providing the epoch seconds to convert
+ * @param type The sql type of the result
+ * @param <T> The temporal result type of the function
  */
 
 public record SqlFromEpochFunction<T extends Temporal>(
@@ -37,6 +42,10 @@ public record SqlFromEpochFunction<T extends Temporal>(
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
+	/**
+	 * Constructs a new from epoch function with the given expression and sql type.<br>
+	 * @throws NullPointerException If the expression or sql type is null
+	 */
 	public SqlFromEpochFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

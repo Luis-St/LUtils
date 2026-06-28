@@ -43,18 +43,51 @@ import java.time.Duration;
 import java.util.*;
 
 /**
+ * Provides table-level database operations for a single {@link SqlTable table definition}.<br>
+ * The provider binds a table definition to a {@link SqlDialect dialect} and a {@link SqlConnectionSource connection source}
+ * and acts as the entry point for executing schema operations against the database.<br>
+ * <p>
+ *     The provider can create, truncate and drop the table, check whether it exists and manage its indexes.<br>
+ *     Statements are rendered through the dialect and executed using connections obtained from the connection source.<br>
+ *     Every execution honors the configured query timeout.
+ * </p>
+ *
+ * @see SqlTable
+ * @see SqlDialect
+ * @see SqlConnectionSource
  *
  * @author Luis-St
  *
+ * @param <E> The type of the entity the bound table maps to
  */
-
 public class SqlTableProvider<E> {
 	
+	/**
+	 * The table definition this provider operates on.
+	 */
 	private final SqlTable<E> table;
+	/**
+	 * The dialect used to render the sql statements.
+	 */
 	private final SqlDialect dialect;
+	/**
+	 * The connection source used to obtain database connections.
+	 */
 	private final SqlConnectionSource connectionSource;
+	/**
+	 * The timeout applied to each executed statement.
+	 */
 	private final Duration queryTimeout;
 	
+	/**
+	 * Constructs a new table provider for the given table, dialect, connection source and query timeout.<br>
+	 *
+	 * @param table The table definition this provider operates on
+	 * @param dialect The dialect used to render the sql statements
+	 * @param connectionSource The connection source used to obtain database connections
+	 * @param queryTimeout The timeout applied to each executed statement
+	 * @throws NullPointerException If the table, dialect, connection source or query timeout is null
+	 */
 	public SqlTableProvider(@NonNull SqlTable<E> table, @NonNull SqlDialect dialect, @NonNull SqlConnectionSource connectionSource, @NonNull Duration queryTimeout) {
 		this.table = Objects.requireNonNull(table, "Sql table must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
@@ -62,6 +95,18 @@ public class SqlTableProvider<E> {
 		this.queryTimeout = Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 	}
 	
+	/**
+	 * Executes the given rendered statement against the database.<br>
+	 * <p>
+	 *     A connection is obtained from the connection source, the rendered parameters are bound to the
+	 *     prepared statement, the configured query timeout is applied and the statement is executed.<br>
+	 *     A non-zero timeout that rounds down to zero seconds is clamped to one second.
+	 * </p>
+	 *
+	 * @param rendered The rendered statement to execute
+	 * @throws NullPointerException If the rendered statement is null
+	 * @throws SqlException If the statement could not be executed
+	 */
 	private void executeStatement(@NonNull SqlRendered rendered) throws SqlException {
 		Objects.requireNonNull(rendered, "Sql rendered must not be null");
 		
@@ -84,14 +129,27 @@ public class SqlTableProvider<E> {
 		}
 	}
 	
+	/**
+	 * Creates the table in the database.<br>
+	 * @throws SqlException If the table could not be created, for example if it already exists
+	 */
 	public void create() throws SqlException {
 		this.executeStatement(this.dialect.tableRenderer().renderCreateTable(this.table, false));
 	}
 	
+	/**
+	 * Creates the table in the database only if it does not already exist.<br>
+	 * @throws SqlException If the statement could not be executed
+	 */
 	public void createIfNotExists() throws SqlException {
 		this.executeStatement(this.dialect.tableRenderer().renderCreateTable(this.table, true));
 	}
 	
+	/**
+	 * Checks whether the table exists in the database.<br>
+	 * @return {@code true} if the table exists, otherwise {@code false}
+	 * @throws SqlException If the existence check could not be performed
+	 */
 	public boolean exists() throws SqlException {
 		try (SqlConnectionHandle handle = this.connectionSource.open()) {
 			String schema = handle.connection().getSchema();
@@ -104,26 +162,74 @@ public class SqlTableProvider<E> {
 		}
 	}
 	
+	/**
+	 * Removes all rows from the table without dropping it.<br>
+	 * @throws SqlException If the table could not be truncated
+	 */
 	public void truncate() throws SqlException {
 		this.executeStatement(this.dialect.tableRenderer().renderTruncateTable(this.table));
 	}
 	
+	/**
+	 * Drops the table from the database.<br>
+	 * @throws SqlException If the table could not be dropped, for example if it does not exist
+	 */
 	public void drop() throws SqlException {
 		this.executeStatement(this.dialect.tableRenderer().renderDropTable(this.table, false));
 	}
 	
+	/**
+	 * Drops the table from the database only if it exists.<br>
+	 * @throws SqlException If the statement could not be executed
+	 */
 	public void dropIfExists() throws SqlException {
 		this.executeStatement(this.dialect.tableRenderer().renderDropTable(this.table, true));
 	}
 	
+	/**
+	 * Creates a non-unique index over the given columns of the table using the given index method.<br>
+	 *
+	 * @param name The name of the index
+	 * @param columns The columns the index is created over
+	 * @param method The index method to use
+	 * @throws NullPointerException If the name, columns or method is null
+	 * @throws IllegalArgumentException If the columns are empty or a column does not belong to the table
+	 * @throws SqlDialectException If the index method is not supported by the dialect
+	 * @throws SqlException If the index could not be created
+	 */
 	public void createIndex(@NonNull String name, @NonNull List<SqlColumn<E, ?>> columns, @NonNull SqlIndexMethod method) throws SqlException {
 		this.createIndex(name, columns, false, null, method);
 	}
 	
+	/**
+	 * Creates an index over the given columns of the table using the given index method.<br>
+	 *
+	 * @param name The name of the index
+	 * @param columns The columns the index is created over
+	 * @param unique Whether the index enforces uniqueness
+	 * @param method The index method to use
+	 * @throws NullPointerException If the name, columns or method is null
+	 * @throws IllegalArgumentException If the columns are empty or a column does not belong to the table
+	 * @throws SqlDialectException If the index method is not supported by the dialect
+	 * @throws SqlException If the index could not be created
+	 */
 	public void createIndex(@NonNull String name, @NonNull List<SqlColumn<E, ?>> columns, boolean unique, @NonNull SqlIndexMethod method) throws SqlException {
 		this.createIndex(name, columns, unique, null, method);
 	}
 	
+	/**
+	 * Creates an index over the given columns of the table using the given index method and an optional partial index condition.<br>
+	 *
+	 * @param name The name of the index
+	 * @param columns The columns the index is created over
+	 * @param unique Whether the index enforces uniqueness
+	 * @param whereCondition The condition that restricts the index to matching rows or {@code null} for a full index
+	 * @param method The index method to use
+	 * @throws NullPointerException If the name, columns or method is null
+	 * @throws IllegalArgumentException If the columns are empty or a column does not belong to the table
+	 * @throws SqlDialectException If the index method is not supported by the dialect
+	 * @throws SqlException If the index could not be created
+	 */
 	public void createIndex(@NonNull String name, @NonNull List<SqlColumn<E, ?>> columns, boolean unique, @Nullable SqlCondition whereCondition, @NonNull SqlIndexMethod method) throws SqlException {
 		Objects.requireNonNull(name, "Index name must not be null");
 		Objects.requireNonNull(columns, "Index columns must not be null");
@@ -146,6 +252,13 @@ public class SqlTableProvider<E> {
 		this.executeStatement(this.dialect.indexRenderer().renderCreateIndex(index));
 	}
 	
+	/**
+	 * Retrieves the indexes that currently exist on the table by introspecting the database metadata.<br>
+	 * Only columns that are part of the table definition are included, and the index method is reported as {@link SqlIndexMethod#BTREE}.<br>
+	 *
+	 * @return An unmodifiable list of the indexes on the table
+	 * @throws SqlSchemaIntrospectionException If the index metadata could not be retrieved
+	 */
 	public @NonNull @Unmodifiable List<SqlIndex> getIndexes() throws SqlException {
 		try (SqlConnectionHandle handle = this.connectionSource.open()) {
 			String schema = handle.connection().getSchema();
@@ -186,6 +299,13 @@ public class SqlTableProvider<E> {
 		}
 	}
 	
+	/**
+	 * Drops the index with the given name from the table.<br>
+	 *
+	 * @param name The name of the index to drop
+	 * @throws NullPointerException If the name is null
+	 * @throws SqlException If the index could not be dropped
+	 */
 	public void dropIndex(@NonNull String name) throws SqlException {
 		Objects.requireNonNull(name, "Index name must not be null");
 		this.executeStatement(this.dialect.indexRenderer().renderDropIndex(this.table, name));

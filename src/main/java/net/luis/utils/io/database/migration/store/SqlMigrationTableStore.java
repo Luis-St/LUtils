@@ -36,24 +36,47 @@ import java.time.Instant;
 import java.util.*;
 
 /**
+ * Implementation of {@link SqlMigrationStore} that records applied migrations in a database table.<br>
+ * The migration records are stored in a dedicated table created during initialization.<br>
  *
  * @author Luis-St
- *
  */
 
 @SuppressWarnings({ "DuplicatedCode", "SqlSourceToSinkFlow" })
 public class SqlMigrationTableStore implements SqlMigrationStore {
 	
+	/**
+	 * The name of the table used to store the migration records.
+	 */
 	private static final String TABLE_NAME = "_sql_migrations";
 	
+	/**
+	 * The data source used to obtain database connections.
+	 */
 	private final DataSource dataSource;
+	/**
+	 * The dialect used to render and quote the sql statements.
+	 */
 	private final SqlDialect dialect;
 	
+	/**
+	 * Constructs a new sql migration table store with the given data source and dialect.<br>
+	 *
+	 * @param dataSource The data source used to obtain database connections
+	 * @param dialect The dialect used to render and quote the sql statements
+	 * @throws NullPointerException If the data source or dialect is null
+	 */
 	public SqlMigrationTableStore(@NonNull DataSource dataSource, @NonNull SqlDialect dialect) {
 		this.dataSource = Objects.requireNonNull(dataSource, "Sql data source must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 	}
 	
+	/**
+	 * Builds the sql statement used to create the migration table.<br>
+	 *
+	 * @return The rendered create table sql statement
+	 * @throws SqlException If the create table statement could not be rendered
+	 */
 	private @NonNull String buildInitializeSql() throws SqlException {
 		SqlTable<Void> table = SqlTable.create(Void.class, TABLE_NAME);
 		table.column("version", SqlTypes.STRING.configure(SqlParameter.length(64)), v -> null, col -> col.primaryKey().notNull());
@@ -64,6 +87,10 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		return this.dialect.tableRenderer().renderCreateTable(table, true).sql();
 	}
 	
+	/**
+	 * Builds the sql statement used to load all migration records from the migration table.<br>
+	 * @return The rendered select sql statement
+	 */
 	private @NonNull String buildLoadSql() {
 		String table = this.dialect.quoteIdentifier(TABLE_NAME);
 		String version = this.dialect.quoteIdentifier("version");
@@ -75,6 +102,10 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		return "SELECT " + version + ", " + description + ", " + status + ", " + appliedAt + ", " + checksum + " FROM " + table;
 	}
 	
+	/**
+	 * Builds the sql statement used to insert a migration record into the migration table.<br>
+	 * @return The rendered insert sql statement
+	 */
 	private @NonNull String buildSaveSql() {
 		String table = this.dialect.quoteIdentifier(TABLE_NAME);
 		String version = this.dialect.quoteIdentifier("version");
@@ -86,6 +117,10 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		return "INSERT INTO " + table + " (" + version + ", " + description + ", " + status + ", " + appliedAt + ", " + checksum + ") VALUES (?, ?, ?, ?, ?)";
 	}
 	
+	/**
+	 * Builds the sql statement used to update the status and applied time of a migration record.<br>
+	 * @return The rendered update sql statement
+	 */
 	private @NonNull String buildUpdateSql() {
 		String table = this.dialect.quoteIdentifier(TABLE_NAME);
 		String version = this.dialect.quoteIdentifier("version");

@@ -21,10 +21,12 @@ package net.luis.utils.io.database.function.functions;
 import net.luis.utils.io.database.function.SqlFunction;
 
 /**
+ * Marker interface grouping all sql window functions.<br>
+ * Window functions compute a result over a set of rows related to the current row using an {@code OVER} clause.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the value the function evaluates to
  */
-
 @FunctionalInterface
 public interface SqlWindowFunction<T> extends SqlFunction<T> {}

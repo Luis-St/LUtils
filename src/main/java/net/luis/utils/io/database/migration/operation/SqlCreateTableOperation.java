@@ -26,17 +26,24 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Migration operation that creates a new table with the given columns and primary key columns.<br>
  *
  * @author Luis-St
  *
+ * @param table The table to create
+ * @param columns The definitions of the columns to create
+ * @param primaryKeyColumns The columns that form the primary key
  */
-
 public record SqlCreateTableOperation(
 	@NonNull SqlTable<?> table,
 	@NonNull List<SqlColumnDefinition> columns,
 	@NonNull List<SqlColumn<?, ?>> primaryKeyColumns
 ) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new create table operation with the given table, columns and primary key columns.<br>
+	 * @throws NullPointerException If the table, columns or primary key columns are null
+	 */
 	public SqlCreateTableOperation {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(columns, "Sql column definitions must not be null");

@@ -28,17 +28,30 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Represents an unsafe raw SQL function.<br>
+ * It serves as an escape hatch that embeds a raw SQL expression string together with its arguments,<br>
+ * bypassing the type-safe function abstractions.<br>
  *
  * @author Luis-St
  *
+ * @param expression The raw SQL expression string
+ * @param arguments The list of arguments referenced by the expression
+ * @param type The type of the resulting value
+ * @param <T> The type of the resulting value
  */
-
 public record SqlUnsafeFunction<T>(
 	@NonNull String expression,
 	@NonNull @Unmodifiable List<SqlExpression<?>> arguments,
 	@NonNull SqlType<T> type
 ) implements SqlFunction<T> {
 	
+	/**
+	 * Constructs a new sql unsafe function with the given expression, arguments and type.<br>
+	 * The arguments list is copied to ensure immutability.<br>
+	 *
+	 * @throws NullPointerException If the expression, arguments or type is null
+	 * @throws IllegalArgumentException If the expression is blank or the arguments contain null expressions
+	 */
 	public SqlUnsafeFunction {
 		Objects.requireNonNull(expression, "Sql expression string must not be null");
 		Objects.requireNonNull(arguments, "Sql function arguments must not be null");

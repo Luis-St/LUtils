@@ -19,9 +19,10 @@
 package net.luis.utils.io.database.migration.operation;
 
 /**
+ * Column alteration that changes whether a column is nullable.<br>
  *
  * @author Luis-St
  *
+ * @param nullable Whether the column should be nullable
  */
-
 public record SqlSetNullableAlteration(boolean nullable) implements SqlColumnAlteration {}

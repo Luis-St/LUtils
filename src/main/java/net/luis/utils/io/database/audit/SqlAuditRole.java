@@ -19,16 +19,31 @@
 package net.luis.utils.io.database.audit;
 
 /**
+ * Represents the semantic role of an {@link SqlAuditColumn audit column}.<br>
+ * Each role identifies which piece of audit information the column stores.<br>
  *
  * @author Luis-St
- *
  */
-
 public enum SqlAuditRole {
 	
+	/**
+	 * The optimistic-locking version counter of the row.<br>
+	 */
 	VERSION,
+	/**
+	 * The timestamp at which the row was created.<br>
+	 */
 	CREATED_AT,
+	/**
+	 * The user that created the row.<br>
+	 */
 	CREATED_BY,
+	/**
+	 * The timestamp at which the row was last updated.<br>
+	 */
 	UPDATED_AT,
+	/**
+	 * The user that last updated the row.<br>
+	 */
 	UPDATED_BY
 }

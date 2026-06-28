@@ -24,16 +24,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Migration operation that drops a named constraint from an existing table.<br>
  *
  * @author Luis-St
  *
+ * @param table The table to drop the constraint from
+ * @param name The name of the constraint to drop
  */
-
 public record SqlDropConstraintOperation(
 	@NonNull SqlTable<?> table,
 	@NonNull String name
 ) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new drop constraint operation with the given table and constraint name.<br>
+	 * @throws NullPointerException If the table or name is null
+	 */
 	public SqlDropConstraintOperation {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(name, "Sql constraint name must not be null");

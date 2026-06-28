@@ -26,13 +26,20 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code CEIL} (ceiling) function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to round up to the nearest integer
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlCeilFunction<T extends Number>(@NonNull SqlExpression<T> expression) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new ceil function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlCeilFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

@@ -34,11 +34,33 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
+ * Represents a single column of a {@link SqlTable}.<br>
+ * A column couples its database metadata, such as name, type, position and constraints, with a getter that extracts the
+ * column value from an entity of the owning table.<br>
+ * As a {@link SqlExpression} a column can be used in queries and can be aliased through {@link #of(SqlAlias)}.<br>
+ * Instances are usually created through a {@link SqlColumnBuilder}.<br>
+ *
+ * @see SqlTable
+ * @see SqlColumnBuilder
+ * @see SqlAliasedColumn
  *
  * @author Luis-St
  *
+ * @param <E> The type of the entity the owning table stores
+ * @param <C> The type of the value held by this column
+ * @param owningTable The table this column belongs to
+ * @param name The name of the column
+ * @param index The one-based position of the column within the table
+ * @param type The sql type of the column value
+ * @param getter The function that extracts the column value from an entity
+ * @param nullable Whether the column accepts {@code null} values
+ * @param defaultValue The default value of the column or an empty optional if none is set
+ * @param autoIncrement Whether the column is auto-incremented
+ * @param unique Whether the column values must be unique
+ * @param primaryKey Whether the column is part of the primary key
+ * @param foreignKey The foreign key referenced by the column or an empty optional if none is set
+ * @param checks The check conditions applied to the column values
  */
-
 public record SqlColumn<E, C>(
 	@NonNull SqlTable<E> owningTable,
 	@NonNull String name,
@@ -54,6 +76,9 @@ public record SqlColumn<E, C>(
 	@NonNull @Unmodifiable List<SqlCondition> checks
 ) implements SqlExpression<C> {
 	
+	/**
+	 * The set of jdbc type codes for which auto-increment is supported.
+	 */
 	private static final Set<Integer> NUMERIC_TYPES = Set.of(
 		Types.TINYINT,
 		Types.SMALLINT,
@@ -66,6 +91,13 @@ public record SqlColumn<E, C>(
 		Types.DECIMAL
 	);
 	
+	/**
+	 * Constructs a new sql column validating the given components.<br>
+	 * The checks list is copied into an unmodifiable list.<br>
+	 *
+	 * @throws NullPointerException If the owning table, name, type, getter, default value, foreign key or checks is null
+	 * @throws IllegalArgumentException If the name is blank, the index is less than 1 or auto-increment is set for a non-numeric type
+	 */
 	public SqlColumn {
 		Objects.requireNonNull(owningTable, "Owning Sql table must not be null");
 		Objects.requireNonNull(name, "Sql column name must not be null");
@@ -93,6 +125,14 @@ public record SqlColumn<E, C>(
 		return this.type;
 	}
 	
+	/**
+	 * Creates an aliased expression that references this column through the given alias.<br>
+	 *
+	 * @param alias The alias to reference this column with
+	 * @return An aliased column wrapping this column
+	 * @throws NullPointerException If the alias is null
+	 * @see SqlAliasedColumn
+	 */
 	public @NonNull SqlExpression<C> of(@NonNull SqlAlias alias) {
 		return new SqlAliasedColumn<>(this, alias);
 	}

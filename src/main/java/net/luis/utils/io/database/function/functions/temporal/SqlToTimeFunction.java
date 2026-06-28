@@ -27,9 +27,14 @@ import java.time.temporal.Temporal;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code TO_TIME} function.<br>
+ * Parses or converts an expression into a time value.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to convert into a time
+ * @param type The sql type of the result
+ * @param <T> The temporal result type of the function
  */
 
 public record SqlToTimeFunction<T extends Temporal>(
@@ -37,6 +42,10 @@ public record SqlToTimeFunction<T extends Temporal>(
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
+	/**
+	 * Constructs a new to time function with the given expression and sql type.<br>
+	 * @throws NullPointerException If the expression or sql type is null
+	 */
 	public SqlToTimeFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

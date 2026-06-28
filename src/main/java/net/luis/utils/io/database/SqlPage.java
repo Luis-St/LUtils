@@ -25,11 +25,13 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Represents a single page of results obtained from a paginated sql query.<br>
+ * A page carries the elements it contains together with the metadata required to navigate between pages.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the elements contained in the page
  */
-
 public record SqlPage<T>(
 	@NonNull @Unmodifiable List<T> content,
 	int page,
@@ -38,6 +40,18 @@ public record SqlPage<T>(
 	boolean hasPrevious
 ) {
 	
+	/**
+	 * Constructs a new sql page with the given content and pagination metadata.<br>
+	 * The given content is copied into an unmodifiable list.<br>
+	 *
+	 * @param content The elements contained in this page
+	 * @param page The zero-based index of this page
+	 * @param pageSize The maximum number of elements per page
+	 * @param hasNext Whether a following page exists
+	 * @param hasPrevious Whether a preceding page exists
+	 * @throws NullPointerException If the content is null
+	 * @throws IllegalArgumentException If the page index is negative or the page size is not positive
+	 */
 	public SqlPage {
 		Objects.requireNonNull(content, "Sql page content must not be null");
 		

@@ -19,16 +19,33 @@
 package net.luis.utils.io.database.query.util;
 
 /**
+ * Represents the type of a sql join clause.<br>
+ * The type determines which rows of the joined tables are included in the result.<br>
+ *
+ * @see SqlJoinClause
  *
  * @author Luis-St
- *
  */
-
 public enum SqlJoinType {
 	
+	/**
+	 * An inner join that returns only the rows that have matching values in both tables.<br>
+	 */
 	INNER,
+	/**
+	 * A left join that returns all rows from the left table and the matching rows from the right table.<br>
+	 */
 	LEFT,
+	/**
+	 * A right join that returns all rows from the right table and the matching rows from the left table.<br>
+	 */
 	RIGHT,
+	/**
+	 * A full outer join that returns all rows when there is a match in either the left or the right table.<br>
+	 */
 	FULL,
+	/**
+	 * A cross join that returns the cartesian product of the rows of both tables.<br>
+	 */
 	CROSS
 }

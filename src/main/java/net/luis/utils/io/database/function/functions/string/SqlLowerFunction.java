@@ -26,13 +26,21 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code LOWER} (lowercase) function.<br>
+ * Converts the given string expression to lower case.<br>
  *
  * @author Luis-St
  *
+ * @param expression The string expression to convert to lower case
+ * @param <T> The character sequence type of the expression
  */
 
 public record SqlLowerFunction<T extends CharSequence>(@NonNull SqlExpression<T> expression) implements SqlStringFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new lower function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlLowerFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

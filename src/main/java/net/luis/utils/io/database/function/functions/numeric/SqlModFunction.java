@@ -26,9 +26,13 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code MOD} (modulo) function that returns the remainder of a division.<br>
  *
  * @author Luis-St
  *
+ * @param expression The dividend expression
+ * @param divisor The divisor expression
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlModFunction<T extends Number>(
@@ -36,6 +40,10 @@ public record SqlModFunction<T extends Number>(
 	@NonNull SqlExpression<? extends Number> divisor
 ) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new mod function with the given expression and divisor.<br>
+	 * @throws NullPointerException If the expression or divisor is null
+	 */
 	public SqlModFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(divisor, "Sql divisor expression must not be null");

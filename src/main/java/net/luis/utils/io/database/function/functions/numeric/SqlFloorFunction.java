@@ -26,13 +26,20 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code FLOOR} function that rounds a value down to the nearest integer.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to round down to the nearest integer
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlFloorFunction<T extends Number>(@NonNull SqlExpression<T> expression) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new floor function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlFloorFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

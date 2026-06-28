@@ -26,15 +26,23 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code AVG} aggregate function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to average
+ *
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlAverageFunction<T extends Number>(
 	@NonNull SqlExpression<T> expression
 ) implements SqlAggregateFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new average function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlAverageFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

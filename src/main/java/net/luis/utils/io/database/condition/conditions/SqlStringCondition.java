@@ -21,9 +21,9 @@ package net.luis.utils.io.database.condition.conditions;
 import net.luis.utils.io.database.condition.SqlCondition;
 
 /**
+ * Marker interface for conditions that operate on string expressions.<br>
+ * Groups conditions such as contains, starts-with, ends-with, like and case-insensitive equality.<br>
  *
  * @author Luis-St
- *
  */
-
 public interface SqlStringCondition extends SqlCondition {}

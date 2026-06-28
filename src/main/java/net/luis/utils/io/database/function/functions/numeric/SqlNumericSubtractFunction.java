@@ -26,9 +26,13 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL numeric subtraction ({@code -}) function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The base expression
+ * @param subtrahend The expression to subtract
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlNumericSubtractFunction<T extends Number>(
@@ -36,6 +40,10 @@ public record SqlNumericSubtractFunction<T extends Number>(
 	@NonNull SqlExpression<? extends Number> subtrahend
 ) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new numeric subtract function with the given expression and subtrahend.<br>
+	 * @throws NullPointerException If the expression or subtrahend is null
+	 */
 	public SqlNumericSubtractFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(subtrahend, "Sql subtrahend expression must not be null");

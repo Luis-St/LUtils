@@ -21,9 +21,11 @@ package net.luis.utils.io.database.transaction;
 import org.jspecify.annotations.NonNull;
 
 /**
+ * Represents a named savepoint within a transaction that can be used to roll back part of the work done so far.<br>
+ * A savepoint is created via the owning transaction and identifies a point to which the transaction can later be rolled back by name.<br>
  *
  * @author Luis-St
  *
+ * @param name The unique name of the savepoint within its transaction
  */
-
 public record SqlSavepoint(@NonNull String name) {}

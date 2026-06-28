@@ -26,9 +26,12 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
+ * Represents the SQL {@code COUNT} aggregate function.<br>
+ * A {@code null} expression represents {@code COUNT(*)}.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to count or {@code null} to count all rows
  */
 
 public record SqlCountFunction(@Nullable SqlExpression<?> expression) implements SqlAggregateFunction<Long> {

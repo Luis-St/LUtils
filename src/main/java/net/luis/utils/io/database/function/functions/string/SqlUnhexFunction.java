@@ -26,9 +26,14 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code UNHEX} function.<br>
+ * Converts the given hexadecimal string expression back to its original value.<br>
  *
  * @author Luis-St
  *
+ * @param expression The hexadecimal string expression to convert
+ * @param type The result type of the function
+ * @param <T> The type the function evaluates to
  */
 
 public record SqlUnhexFunction<T>(
@@ -36,6 +41,10 @@ public record SqlUnhexFunction<T>(
 	@NonNull SqlType<T> type
 ) implements SqlStringFunction<T> {
 	
+	/**
+	 * Constructs a new unhex function with the given expression and result type.<br>
+	 * @throws NullPointerException If the expression or type is null
+	 */
 	public SqlUnhexFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

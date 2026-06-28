@@ -19,13 +19,19 @@
 package net.luis.utils.io.database.query;
 
 /**
+ * Represents the row locking mode that can be applied to a sql query.<br>
+ * It controls how the rows selected by a query are locked for concurrent access.<br>
  *
  * @author Luis-St
- *
  */
-
 public enum SqlLockMode {
 	
+	/**
+	 * Acquires an exclusive lock on the selected rows, preventing other transactions from reading or writing them.<br>
+	 */
 	FOR_UPDATE,
+	/**
+	 * Acquires a shared lock on the selected rows, allowing other transactions to read but not to write them.<br>
+	 */
 	FOR_SHARE
 }

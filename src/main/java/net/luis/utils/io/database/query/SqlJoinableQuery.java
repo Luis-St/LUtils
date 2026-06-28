@@ -23,20 +23,61 @@ import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
 
 /**
+ * Represents a sql query that can be extended with join clauses.<br>
+ * It provides methods to add inner, left, right, full and cross joins to another {@link SqlTable table}.<br>
  *
  * @author Luis-St
  *
+ * @param <E> The type of the elements returned by the query
  */
-
 public interface SqlJoinableQuery<E> extends SqlQuery<E> {
 	
+	/**
+	 * Adds an inner join with the given table using the given join condition.<br>
+	 *
+	 * @param table The table to join with
+	 * @param on The condition the joined rows must match
+	 * @return A new joinable query with the inner join applied
+	 * @throws NullPointerException If the table or condition is null
+	 */
 	@NonNull SqlJoinableQuery<E> innerJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
 	
+	/**
+	 * Adds a left outer join with the given table using the given join condition.<br>
+	 *
+	 * @param table The table to join with
+	 * @param on The condition the joined rows must match
+	 * @return A new joinable query with the left join applied
+	 * @throws NullPointerException If the table or condition is null
+	 */
 	@NonNull SqlJoinableQuery<E> leftJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
 	
+	/**
+	 * Adds a right outer join with the given table using the given join condition.<br>
+	 *
+	 * @param table The table to join with
+	 * @param on The condition the joined rows must match
+	 * @return A new joinable query with the right join applied
+	 * @throws NullPointerException If the table or condition is null
+	 */
 	@NonNull SqlJoinableQuery<E> rightJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
 	
+	/**
+	 * Adds a full outer join with the given table using the given join condition.<br>
+	 *
+	 * @param table The table to join with
+	 * @param on The condition the joined rows must match
+	 * @return A new joinable query with the full join applied
+	 * @throws NullPointerException If the table or condition is null
+	 */
 	@NonNull SqlJoinableQuery<E> fullJoin(@NonNull SqlTable<?> table, @NonNull SqlCondition on);
 	
+	/**
+	 * Adds a cross join with the given table.<br>
+	 *
+	 * @param table The table to join with
+	 * @return A new joinable query with the cross join applied
+	 * @throws NullPointerException If the table is null
+	 */
 	@NonNull SqlJoinableQuery<E> crossJoin(@NonNull SqlTable<?> table);
 }

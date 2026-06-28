@@ -34,38 +34,86 @@ import java.sql.*;
 import java.util.*;
 
 /**
+ * Storage for schema snapshots taken during migrations.<br>
+ * Stores and loads the columns and check constraints that make up a schema snapshot for a given version.<br>
  *
  * @author Luis-St
- *
  */
 
 public class SqlMigrationSchemaStore {
 	
+	/**
+	 * The data source used to obtain database connections.
+	 */
 	private final DataSource dataSource;
+	/**
+	 * The dialect used to render and quote the sql statements.
+	 */
 	private final SqlDialect dialect;
 	
+	/**
+	 * Constructs a new sql migration schema store with the given data source and dialect.<br>
+	 *
+	 * @param dataSource The data source used to obtain database connections
+	 * @param dialect The dialect used to render and quote the sql statements
+	 * @throws NullPointerException If the data source or dialect is null
+	 */
 	public SqlMigrationSchemaStore(@NonNull DataSource dataSource, @NonNull SqlDialect dialect) {
 		this.dataSource = Objects.requireNonNull(dataSource, "Sql data source must not be null");
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 	}
 	
 	//region Parameter decomposition
+	
+	/**
+	 * Decomposes the length value from the given parameter.<br>
+	 *
+	 * @param parameter The parameter to decompose the length from
+	 * @return The length if the parameter is a length parameter, otherwise {@code null}
+	 */
 	private static @Nullable Integer decomposeLength(@Nullable SqlParameter parameter) {
 		return parameter instanceof SqlLengthParameter length ? length.length() : null;
 	}
 	
+	/**
+	 * Decomposes the precision value from the given parameter.<br>
+	 *
+	 * @param parameter The parameter to decompose the precision from
+	 * @return The precision if the parameter is a precision parameter, otherwise {@code null}
+	 */
 	private static @Nullable Integer decomposePrecision(@Nullable SqlParameter parameter) {
 		return parameter instanceof SqlPrecisionParameter precision ? precision.precision() : null;
 	}
 	
+	/**
+	 * Decomposes the scale value from the given parameter.<br>
+	 *
+	 * @param parameter The parameter to decompose the scale from
+	 * @return The scale if the parameter is a precision parameter, otherwise {@code null}
+	 */
 	private static @Nullable Integer decomposeScale(@Nullable SqlParameter parameter) {
 		return parameter instanceof SqlPrecisionParameter precision ? precision.scale() : null;
 	}
 	
+	/**
+	 * Decomposes the fractional digits value from the given parameter.<br>
+	 *
+	 * @param parameter The parameter to decompose the fractional digits from
+	 * @return The fractional digits if the parameter is a fractional parameter, otherwise {@code null}
+	 */
 	private static @Nullable Integer decomposeFractional(@Nullable SqlParameter parameter) {
 		return parameter instanceof SqlFractionalParameter fractional ? fractional.digits() : null;
 	}
 	
+	/**
+	 * Sets the given integer value on the prepared statement at the given index.<br>
+	 * If the value is {@code null}, an sql null of type {@link Types#INTEGER} is set instead.<br>
+	 *
+	 * @param statement The prepared statement to set the value on
+	 * @param index The parameter index to set the value at
+	 * @param value The value to set or {@code null} to set sql null
+	 * @throws SQLException If the value could not be set on the statement
+	 */
 	private static void setNullableInt(@NonNull PreparedStatement statement, int index, @Nullable Integer value) throws SQLException {
 		if (value != null) {
 			statement.setInt(index, value);
@@ -74,6 +122,14 @@ public class SqlMigrationSchemaStore {
 		}
 	}
 	
+	/**
+	 * Reconstructs the parameter of a column from the current row of the given result set.<br>
+	 * Reads the length, precision, scale and fractional columns and rebuilds the matching parameter.<br>
+	 *
+	 * @param rs The result set positioned at the row to read the parameter from
+	 * @return The reconstructed parameter or {@code null} if the column has no length, precision or fractional information
+	 * @throws SQLException If the parameter values could not be read from the result set
+	 */
 	private static @Nullable SqlParameter reconstructParameter(@NonNull ResultSet rs) throws SQLException {
 		int length = rs.getInt("length");
 		if (!rs.wasNull()) {
@@ -94,6 +150,10 @@ public class SqlMigrationSchemaStore {
 	}
 	//endregion
 	
+	/**
+	 * Initializes the schema store by creating the tables used to store the columns and check constraints.<br>
+	 * @throws SqlException If the schema store tables could not be initialized
+	 */
 	public void initialize() throws SqlException {
 		try (Connection connection = this.dataSource.getConnection(); Statement statement = connection.createStatement()) {
 			statement.execute(this.dialect.getCreateSchemaColumnsTableSql());
@@ -103,6 +163,16 @@ public class SqlMigrationSchemaStore {
 		}
 	}
 	
+	/**
+	 * Saves a schema snapshot for the given version in a single transaction.<br>
+	 * The columns and check constraints are committed together and rolled back on failure.<br>
+	 *
+	 * @param version The version the snapshot belongs to
+	 * @param columnInfos The column infos to save
+	 * @param checkConstraints The check constraints to save, keyed by table name
+	 * @throws NullPointerException If the version, column infos or check constraints are null
+	 * @throws SqlException If the schema snapshot could not be saved
+	 */
 	public void save(@NonNull Version version, @NonNull List<SqlSchemaColumnInfo> columnInfos, @NonNull Map<String, List<SqlCheckConstraintInfo>> checkConstraints) throws SqlException {
 		Objects.requireNonNull(version, "Version must not be null");
 		Objects.requireNonNull(columnInfos, "Sql column infos must not be null");
@@ -122,6 +192,17 @@ public class SqlMigrationSchemaStore {
 		}
 	}
 	
+	/**
+	 * Saves a schema snapshot for the given version using the given connection.<br>
+	 * Transaction handling is left to the caller.<br>
+	 *
+	 * @param connection The connection to use
+	 * @param version The version the snapshot belongs to
+	 * @param columnInfos The column infos to save
+	 * @param checkConstraints The check constraints to save, keyed by table name
+	 * @throws NullPointerException If the connection, version, column infos or check constraints are null
+	 * @throws SqlException If the schema snapshot could not be saved
+	 */
 	public void save(@NonNull Connection connection, @NonNull Version version, @NonNull List<SqlSchemaColumnInfo> columnInfos, @NonNull Map<String, List<SqlCheckConstraintInfo>> checkConstraints) throws SqlException {
 		Objects.requireNonNull(connection, "Connection must not be null");
 		Objects.requireNonNull(version, "Version must not be null");
@@ -170,6 +251,14 @@ public class SqlMigrationSchemaStore {
 		}
 	}
 	
+	/**
+	 * Loads the schema snapshot stored for the given version.<br>
+	 *
+	 * @param version The version to load the snapshot for
+	 * @return The loaded schema snapshot or {@code null} if no snapshot exists for the version
+	 * @throws NullPointerException If the version is null
+	 * @throws SqlException If the schema snapshot could not be loaded
+	 */
 	public @Nullable SqlSchemaSnapshot load(@NonNull Version version) throws SqlException {
 		Objects.requireNonNull(version, "Version must not be null");
 		String versionStr = version.toString();
@@ -221,6 +310,14 @@ public class SqlMigrationSchemaStore {
 		return new SqlSchemaSnapshot(List.copyOf(columnInfos), Collections.unmodifiableMap(checkConstraints));
 	}
 	
+	/**
+	 * Deletes the schema snapshot stored for the given version in a single transaction.<br>
+	 * The columns and check constraints are removed together and rolled back on failure.<br>
+	 *
+	 * @param version The version to delete the snapshot for
+	 * @throws NullPointerException If the version is null
+	 * @throws SqlException If the schema snapshot could not be deleted
+	 */
 	public void delete(@NonNull Version version) throws SqlException {
 		Objects.requireNonNull(version, "Version must not be null");
 		
@@ -238,6 +335,15 @@ public class SqlMigrationSchemaStore {
 		}
 	}
 	
+	/**
+	 * Deletes the schema snapshot stored for the given version using the given connection.<br>
+	 * Transaction handling is left to the caller.<br>
+	 *
+	 * @param connection The connection to use
+	 * @param version The version to delete the snapshot for
+	 * @throws NullPointerException If the connection or version is null
+	 * @throws SqlException If the schema snapshot could not be deleted
+	 */
 	public void delete(@NonNull Connection connection, @NonNull Version version) throws SqlException {
 		Objects.requireNonNull(connection, "Connection must not be null");
 		Objects.requireNonNull(version, "Version must not be null");

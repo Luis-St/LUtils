@@ -31,19 +31,46 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Represents a single join clause of a sql query.<br>
+ * A join clause either joins a {@link SqlTable table} on a condition or a lateral {@link SqlSelectQuery subquery}.<br>
+ * The {@link SqlJoinType join type} determines which rows of the joined tables are included in the result.<br>
+ *
+ * @see SqlJoinType
  *
  * @author Luis-St
- *
  */
-
 public class SqlJoinClause implements SqlRenderable {
 	
+	/**
+	 * The type of the join.
+	 */
 	private final SqlJoinType type;
+	/**
+	 * The table to join, or {@code null} if a lateral subquery is joined.
+	 */
 	private final @Nullable SqlTable<?> table;
+	/**
+	 * The condition to join on, or {@code null} for a cross join or a lateral subquery.
+	 */
 	private final @Nullable SqlCondition on;
+	/**
+	 * The lateral subquery to join, or {@code null} if a table is joined.
+	 */
 	private final @Nullable SqlSelectQuery<?> lateralSubquery;
+	/**
+	 * The alias of the lateral subquery, or {@code null} if a table is joined.
+	 */
 	private final @Nullable SqlAlias lateralAlias;
 	
+	/**
+	 * Constructs a new sql join clause that joins the given table.<br>
+	 * The condition is ignored and set to {@code null} if the type is {@link SqlJoinType#CROSS}.<br>
+	 *
+	 * @param type The type of the join
+	 * @param table The table to join
+	 * @param on The condition to join on, may be null for a cross join
+	 * @throws NullPointerException If the type or the table is null, or if the condition is null and the type is not {@link SqlJoinType#CROSS}
+	 */
 	public SqlJoinClause(@NonNull SqlJoinType type, @NonNull SqlTable<?> table, @Nullable SqlCondition on) {
 		this.type = Objects.requireNonNull(type, "Sql join type must not be null");
 		this.table = Objects.requireNonNull(table, "Sql join table must not be null");
@@ -52,10 +79,25 @@ public class SqlJoinClause implements SqlRenderable {
 		this.lateralAlias = null;
 	}
 	
+	/**
+	 * Constructs a new sql join clause that cross joins the given lateral subquery.<br>
+	 *
+	 * @param lateralSubquery The lateral subquery to join
+	 * @param lateralAlias The alias of the lateral subquery
+	 * @throws NullPointerException If the lateral subquery or the lateral alias is null
+	 */
 	public SqlJoinClause(@NonNull SqlSelectQuery<?> lateralSubquery, @NonNull SqlAlias lateralAlias) {
 		this(SqlJoinType.CROSS, lateralSubquery, lateralAlias);
 	}
 	
+	/**
+	 * Constructs a new sql join clause that joins the given lateral subquery.<br>
+	 *
+	 * @param type The type of the join
+	 * @param lateralSubquery The lateral subquery to join
+	 * @param lateralAlias The alias of the lateral subquery
+	 * @throws NullPointerException If the type, the lateral subquery or the lateral alias is null
+	 */
 	public SqlJoinClause(@NonNull SqlJoinType type, @NonNull SqlSelectQuery<?> lateralSubquery, @NonNull SqlAlias lateralAlias) {
 		this.type = Objects.requireNonNull(type, "Sql join type must not be null");
 		this.table = null;
@@ -64,26 +106,50 @@ public class SqlJoinClause implements SqlRenderable {
 		this.lateralAlias = Objects.requireNonNull(lateralAlias, "Sql lateral alias must not be null");
 	}
 	
+	/**
+	 * Returns the type of this join.<br>
+	 * @return The join type
+	 */
 	public @NonNull SqlJoinType type() {
 		return this.type;
 	}
 	
+	/**
+	 * Returns the table that is joined.<br>
+	 * @return The joined table, or {@code null} if a lateral subquery is joined
+	 */
 	public @Nullable SqlTable<?> table() {
 		return this.table;
 	}
 	
+	/**
+	 * Returns the condition this join is joined on.<br>
+	 * @return The join condition, or {@code null} for a cross join or a lateral subquery
+	 */
 	public @Nullable SqlCondition on() {
 		return this.on;
 	}
 	
+	/**
+	 * Checks whether this join joins a lateral subquery.<br>
+	 * @return {@code true} if a lateral subquery is joined, {@code false} if a table is joined
+	 */
 	public boolean isLateral() {
 		return this.lateralSubquery != null;
 	}
 	
+	/**
+	 * Returns the lateral subquery that is joined.<br>
+	 * @return The lateral subquery, or {@code null} if a table is joined
+	 */
 	public @Nullable SqlSelectQuery<?> lateralSubquery() {
 		return this.lateralSubquery;
 	}
 	
+	/**
+	 * Returns the alias of the joined lateral subquery.<br>
+	 * @return The lateral alias, or {@code null} if a table is joined
+	 */
 	public @Nullable SqlAlias lateralAlias() {
 		return this.lateralAlias;
 	}

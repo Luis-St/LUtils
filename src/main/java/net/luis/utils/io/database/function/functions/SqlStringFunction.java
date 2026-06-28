@@ -21,10 +21,12 @@ package net.luis.utils.io.database.function.functions;
 import net.luis.utils.io.database.function.SqlFunction;
 
 /**
+ * Marker interface grouping all sql string functions.<br>
+ * String functions operate on character values and return a string result.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the value the function evaluates to
  */
-
 @FunctionalInterface
 public interface SqlStringFunction<T> extends SqlFunction<T> {}

@@ -21,10 +21,12 @@ package net.luis.utils.io.database.function.functions;
 import net.luis.utils.io.database.function.SqlFunction;
 
 /**
+ * Marker interface grouping all sql numeric functions.<br>
+ * Numeric functions operate on numeric values and return a numeric result.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the value the function evaluates to
  */
-
 @FunctionalInterface
 public interface SqlNumericFunction<T> extends SqlFunction<T> {}

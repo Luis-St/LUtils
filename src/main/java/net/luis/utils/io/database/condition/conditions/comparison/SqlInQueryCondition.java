@@ -26,16 +26,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a value is contained in the result of the given subquery.<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
+ * @param query The subquery providing the set of allowed values
  */
-
 public record SqlInQueryCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlSelectQuery<?> query
 ) implements SqlComparisonCondition {
 	
+	/**
+	 * Constructs a new in-query condition with the given value expression and subquery.<br>
+	 * @throws NullPointerException If the value expression or query is null
+	 */
 	public SqlInQueryCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 		Objects.requireNonNull(query, "Sql query must not be null");

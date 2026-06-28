@@ -28,15 +28,25 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 /**
+ * Functional interface that supplies {@link SqlConnectionHandle connection handles} on demand.<br>
+ * A source abstracts over how connections are obtained, for example from a pooled {@link DataSource} or from a single fixed {@link Connection}.<br>
+ *
+ * @see SqlConnectionHandle
  *
  * @author Luis-St
- *
  */
-
 @FunctionalInterface
 @SuppressWarnings("JDBCResourceOpenedButNotSafelyClosed")
 public interface SqlConnectionSource {
 	
+	/**
+	 * Creates a connection source that borrows a fresh connection from the given data source for every handle.<br>
+	 * Closing a handle returned by the source releases the connection back to the data source.<br>
+	 *
+	 * @param dataSource The data source to obtain connections from
+	 * @return A connection source backed by the given data source
+	 * @throws NullPointerException If the data source is null
+	 */
 	static @NonNull SqlConnectionSource pooled(@NonNull DataSource dataSource) {
 		Objects.requireNonNull(dataSource, "Data source must not be null");
 		
@@ -67,6 +77,14 @@ public interface SqlConnectionSource {
 		};
 	}
 	
+	/**
+	 * Creates a connection source that always hands out the given fixed connection.<br>
+	 * The connection is shared across all handles and closing a handle does not close the underlying connection.<br>
+	 *
+	 * @param connection The connection to be shared by all handles
+	 * @return A connection source backed by the given fixed connection
+	 * @throws NullPointerException If the connection is null
+	 */
 	static @NonNull SqlConnectionSource fixed(@NonNull Connection connection) {
 		Objects.requireNonNull(connection, "Connection must not be null");
 		
@@ -82,5 +100,11 @@ public interface SqlConnectionSource {
 		};
 	}
 	
+	/**
+	 * Opens a new connection handle from this source.<br>
+	 *
+	 * @return A handle wrapping the obtained connection
+	 * @throws SqlException If a connection could not be obtained
+	 */
 	@NonNull SqlConnectionHandle open() throws SqlException;
 }

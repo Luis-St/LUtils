@@ -26,9 +26,13 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code POW} (power) function that raises a value to the given exponent.<br>
  *
  * @author Luis-St
  *
+ * @param expression The base expression
+ * @param exponent The exponent expression
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlPowFunction<T extends Number>(
@@ -36,6 +40,10 @@ public record SqlPowFunction<T extends Number>(
 	@NonNull SqlExpression<? extends Number> exponent
 ) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new pow function with the given expression and exponent.<br>
+	 * @throws NullPointerException If the expression or exponent is null
+	 */
 	public SqlPowFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(exponent, "Sql exponent expression must not be null");

@@ -31,19 +31,46 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Renderer for boolean sql conditions into dialect-specific sql.<br>
+ * Acts as the dispatcher that handles logical conditions such as negation, conjunction and disjunction directly,<br>
+ * and delegates category-specific conditions to the matching comparison, numeric, string or temporal renderer.<br>
  *
  * @author Luis-St
- *
  */
 
 public final class SqlConditionRenderer {
 	
+	/**
+	 * The sql dialect used to render the conditions.
+	 */
 	private final SqlDialect dialect;
+	/**
+	 * The renderer for comparison conditions.
+	 */
 	private final SqlComparisonConditionRenderer comparisonRenderer;
+	/**
+	 * The renderer for numeric conditions.
+	 */
 	private final SqlNumericConditionRenderer numericRenderer;
+	/**
+	 * The renderer for string conditions.
+	 */
 	private final SqlStringConditionRenderer stringRenderer;
+	/**
+	 * The renderer for temporal conditions.
+	 */
 	private final SqlTemporalConditionRenderer temporalRenderer;
 	
+	/**
+	 * Constructs a new sql condition renderer for the given dialect and category renderers.<br>
+	 *
+	 * @param dialect The sql dialect used to render the conditions
+	 * @param comparisonRenderer The renderer for comparison conditions
+	 * @param numericRenderer The renderer for numeric conditions
+	 * @param stringRenderer The renderer for string conditions
+	 * @param temporalRenderer The renderer for temporal conditions
+	 * @throws NullPointerException If any of the arguments is null
+	 */
 	public SqlConditionRenderer(
 		@NonNull SqlDialect dialect,
 		@NonNull SqlComparisonConditionRenderer comparisonRenderer,
@@ -58,6 +85,15 @@ public final class SqlConditionRenderer {
 		this.temporalRenderer = Objects.requireNonNull(temporalRenderer, "Sql temporal condition renderer must not be null");
 	}
 	
+	/**
+	 * Renders the given sql condition into dialect-specific sql.<br>
+	 * Logical conditions are handled directly, while category-specific conditions are delegated to the matching renderer.<br>
+	 *
+	 * @param condition The sql condition to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the condition is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered render(@NonNull SqlCondition condition) throws SqlException {
 		SqlRenderer renderer = SqlRenderer.empty();
 		

@@ -26,9 +26,13 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL numeric multiplication ({@code *}) function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The base expression
+ * @param multiplier The expression to multiply by
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlNumericMultiplyFunction<T extends Number>(
@@ -36,6 +40,10 @@ public record SqlNumericMultiplyFunction<T extends Number>(
 	@NonNull SqlExpression<? extends Number> multiplier
 ) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new numeric multiply function with the given expression and multiplier.<br>
+	 * @throws NullPointerException If the expression or multiplier is null
+	 */
 	public SqlNumericMultiplyFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(multiplier, "Sql multiplier expression must not be null");

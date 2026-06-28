@@ -23,17 +23,26 @@ import net.luis.utils.io.database.expression.SqlTypedNestedExpression;
 import org.jspecify.annotations.NonNull;
 
 /**
+ * A sql expression that carries an ordering and a null ordering, used in order-by clauses.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the value the expression evaluates to
  */
-
 public interface OrderedSqlExpression<T> extends SqlTypedNestedExpression<T> {
 	
 	@Override
 	@NonNull SqlExpression<T> expression();
 	
+	/**
+	 * Returns the value ordering applied by this expression.<br>
+	 * @return The value ordering
+	 */
 	@NonNull SqlOrdering ordering();
 	
+	/**
+	 * Returns the null ordering applied by this expression.<br>
+	 * @return The null ordering
+	 */
 	@NonNull SqlNullOrdering nullOrdering();
 }

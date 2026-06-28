@@ -27,18 +27,31 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents a typed sql expression that can be rendered into a sql fragment.<br>
+ * Expressions can be aliased using {@link #as(SqlAlias)} and ordered through the inherited {@link SqlOrderable} methods.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the value the expression evaluates to
  */
-
 public interface SqlExpression<T> extends SqlOrderable<T>, SqlRenderable {
 	
+	/**
+	 * Wraps this expression in an aliased expression using the given alias.<br>
+	 *
+	 * @param alias The alias to assign to this expression
+	 * @return An aliased expression wrapping this expression
+	 * @throws NullPointerException If the alias is null
+	 */
 	default @NonNull SqlExpression<T> as(@NonNull SqlAlias alias) {
 		Objects.requireNonNull(alias, "Sql alias must not be null");
 		return new SqlAliasedExpression<>(this, alias);
 	}
 	
+	/**
+	 * Returns the sql type of the value this expression evaluates to.<br>
+	 * @return The sql type of this expression
+	 */
 	@NonNull SqlType<T> type();
 	
 	@Override

@@ -21,10 +21,12 @@ package net.luis.utils.io.database.function.functions;
 import net.luis.utils.io.database.function.SqlFunction;
 
 /**
+ * Marker interface grouping all sql aggregate functions.<br>
+ * Aggregate functions compute a single result from a set of input rows.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the value the function evaluates to
  */
-
 @FunctionalInterface
 public interface SqlAggregateFunction<T> extends SqlFunction<T> {}

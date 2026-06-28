@@ -23,16 +23,32 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A simple scalar sql type that maps a single java type to a fixed jdbc type code.<br>
+ *
+ * @see SqlType
  *
  * @author Luis-St
  *
+ * @param <T> The java type this scalar type maps
  */
-
 public final class SqlScalarType<T> implements SqlType<T> {
 	
+	/**
+	 * The jdbc type code of this scalar type.
+	 */
 	private final int jdbcType;
+	/**
+	 * The java type this scalar type maps.
+	 */
 	private final Class<T> javaType;
 	
+	/**
+	 * Constructs a new scalar sql type with the given jdbc type code and java type.<br>
+	 *
+	 * @param jdbcType The jdbc type code of the scalar type
+	 * @param javaType The java type the scalar type maps
+	 * @throws NullPointerException If the java type is null
+	 */
 	SqlScalarType(int jdbcType, @NonNull Class<T> javaType) {
 		this.jdbcType = jdbcType;
 		this.javaType = Objects.requireNonNull(javaType, "Java type must not be null");

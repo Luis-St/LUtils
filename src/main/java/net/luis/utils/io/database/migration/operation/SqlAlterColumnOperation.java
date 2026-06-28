@@ -25,16 +25,22 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Migration operation that applies a list of alterations to an existing column.<br>
  *
  * @author Luis-St
  *
+ * @param column The column to alter
+ * @param alterations The alterations to apply to the column
  */
-
 public record SqlAlterColumnOperation(
 	@NonNull SqlColumn<?, ?> column,
 	@NonNull List<SqlColumnAlteration> alterations
 ) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new alter column operation with the given column and alterations.<br>
+	 * @throws NullPointerException If the column or alterations are null
+	 */
 	public SqlAlterColumnOperation {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(alterations, "Sql column alterations must not be null");

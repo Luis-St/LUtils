@@ -42,22 +42,45 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
+ * Renderer for temporal sql conditions into dialect-specific sql.<br>
+ * Handles conditions such as before, after and within a duration relative to the current timestamp.<br>
  *
  * @author Luis-St
- *
  */
 
 @SuppressWarnings("unchecked")
 public class SqlTemporalConditionRenderer {
 	
+	/**
+	 * The renderer used to render temporal arithmetic functions.
+	 */
 	private final SqlTemporalFunctionRenderer temporalRenderer;
+	/**
+	 * The sql dialect used to render the conditions.
+	 */
 	protected final SqlDialect dialect;
 	
+	/**
+	 * Constructs a new sql temporal condition renderer for the given dialect and temporal function renderer.<br>
+	 *
+	 * @param dialect The sql dialect used to render the conditions
+	 * @param temporalRenderer The renderer used to render temporal arithmetic functions
+	 * @throws NullPointerException If the dialect or temporal renderer is null
+	 */
 	public SqlTemporalConditionRenderer(@NonNull SqlDialect dialect, @NonNull SqlTemporalFunctionRenderer temporalRenderer) {
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		this.temporalRenderer = Objects.requireNonNull(temporalRenderer, "Sql temporal function renderer must not be null");
 	}
 	
+	/**
+	 * Renders the given temporal condition into dialect-specific sql.<br>
+	 * The condition is dispatched to the matching render method based on its concrete type.<br>
+	 *
+	 * @param condition The temporal condition to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the condition is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered render(@NonNull SqlTemporalCondition condition) throws SqlException {
 		return switch (condition) {
 			case SqlAfterCondition cond -> this.renderAfter(cond);
@@ -70,18 +93,45 @@ public class SqlTemporalConditionRenderer {
 		};
 	}
 	
+	/**
+	 * Renders the given after condition into dialect-specific sql.<br>
+	 * Produces a {@code value > earlierBound} expression.<br>
+	 *
+	 * @param condition The after condition to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the condition is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderAfter(@NonNull SqlAfterCondition condition) throws SqlException {
 		Objects.requireNonNull(condition, "Sql condition must not be null");
 		
 		return SqlRenderingHelper.renderInfix(this.dialect, condition.value(), ">", condition.earlierBound());
 	}
 	
+	/**
+	 * Renders the given before condition into dialect-specific sql.<br>
+	 * Produces a {@code value < laterBound} expression.<br>
+	 *
+	 * @param condition The before condition to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the condition is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderBefore(@NonNull SqlBeforeCondition condition) throws SqlException {
 		Objects.requireNonNull(condition, "Sql condition must not be null");
 		
 		return SqlRenderingHelper.renderInfix(this.dialect, condition.value(), "<", condition.laterBound());
 	}
 	
+	/**
+	 * Renders the given within-last condition into dialect-specific sql.<br>
+	 * Produces an expression that checks whether the value lies between the current timestamp minus the duration and the current timestamp.<br>
+	 *
+	 * @param condition The within-last condition to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the condition is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderWithinLast(@NonNull SqlWithinLastCondition condition) throws SqlException {
 		Objects.requireNonNull(condition, "Sql condition must not be null");
 		
@@ -98,6 +148,15 @@ public class SqlTemporalConditionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders the given within-next condition into dialect-specific sql.<br>
+	 * Produces an expression that checks whether the value lies between the current timestamp and the current timestamp plus the duration.<br>
+	 *
+	 * @param condition The within-next condition to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the condition is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderWithinNext(@NonNull SqlWithinNextCondition condition) throws SqlException {
 		Objects.requireNonNull(condition, "Sql condition must not be null");
 		
@@ -114,6 +173,14 @@ public class SqlTemporalConditionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Converts the given duration expression into an expression yielding the duration in seconds.<br>
+	 * A constant {@link Duration} value is converted directly to its total seconds, otherwise the nanosecond expression is divided by one billion.<br>
+	 *
+	 * @param duration The duration expression to convert
+	 * @return An expression yielding the duration in seconds
+	 * @throws NullPointerException If the duration expression is null
+	 */
 	private @NonNull SqlExpression<? extends Number> durationInSeconds(@NonNull SqlExpression<?> duration) {
 		Objects.requireNonNull(duration, "Sql duration expression must not be null");
 		

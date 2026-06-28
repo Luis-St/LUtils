@@ -40,16 +40,29 @@ import java.time.Duration;
 import java.util.*;
 
 /**
+ * Internal helper that executes rendered sql statements against a {@link SqlConnectionSource}.<br>
+ * It centralizes the low-level jdbc plumbing shared by the crud query types, such as preparing
+ * statements, binding parameters, managing transactions and mapping result sets.<br>
+ * All methods are static and translate jdbc {@link SQLException}s into the library's
+ * {@link SqlException} hierarchy.<br>
  *
  * @author Luis-St
- *
  */
-
 @SuppressWarnings("SqlSourceToSinkFlow")
 final class SqlQueryExecutor {
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a utility class that should not be instantiated.<br>
+	 */
 	private SqlQueryExecutor() {}
 	
+	/**
+	 * Resolves the current user name from the given audit user provider.<br>
+	 *
+	 * @param userProvider The audit user provider to query, may be null
+	 * @return The resolved user name or {@code null} if the provider is null or supplies no user
+	 */
 	static @Nullable String resolveUser(@Nullable SqlAuditUserProvider userProvider) {
 		if (userProvider == null) {
 			return null;
@@ -59,10 +72,39 @@ final class SqlQueryExecutor {
 		return user.isEmpty() ? null : user.orElse(null);
 	}
 	
+	/**
+	 * Prepares a statement for the given rendered sql without requesting generated keys.<br>
+	 * This is a convenience overload that delegates to {@link #prepare(SqlDialect, Connection, SqlRendered, Duration, boolean)} with {@code returnGeneratedKeys} set to {@code false}.<br>
+	 *
+	 * @param dialect The sql dialect used to bind the parameters
+	 * @param connection The connection to prepare the statement on
+	 * @param rendered The rendered sql together with its parameters
+	 * @param timeout The query timeout to apply to the statement
+	 * @return The prepared statement with all parameters bound
+	 * @throws NullPointerException If any of the arguments is null
+	 * @throws SqlException If the statement could not be prepared
+	 */
 	static @NonNull PreparedStatement prepare(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
 		return prepare(dialect, connection, rendered, timeout, false);
 	}
 	
+	/**
+	 * Prepares a statement for the given rendered sql and binds all of its parameters.<br>
+	 * <p>
+	 *     The parameters of the rendered sql are bound positionally using the given dialect.<br>
+	 *     The query timeout is applied in whole seconds, rounding up any non-zero sub-second
+	 *     duration to one second and clamping the value to {@link Integer#MAX_VALUE}.
+	 * </p>
+	 *
+	 * @param dialect The sql dialect used to bind the parameters
+	 * @param connection The connection to prepare the statement on
+	 * @param rendered The rendered sql together with its parameters
+	 * @param timeout The query timeout to apply to the statement
+	 * @param returnGeneratedKeys Whether the statement should make generated keys retrievable
+	 * @return The prepared statement with all parameters bound
+	 * @throws NullPointerException If any of the non-primitive arguments is null
+	 * @throws SqlException If the statement could not be prepared
+	 */
 	static @NonNull PreparedStatement prepare(@NonNull SqlDialect dialect, @NonNull Connection connection, @NonNull SqlRendered rendered, @NonNull Duration timeout, boolean returnGeneratedKeys) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(connection, "Connection must not be null");
@@ -89,6 +131,13 @@ final class SqlQueryExecutor {
 		}
 	}
 	
+	/**
+	 * Rolls back the given connection, suppressing any error that occurs during the rollback.<br>
+	 * The rollback is only performed if the caller owns the surrounding transaction.<br>
+	 *
+	 * @param connection The connection to roll back
+	 * @param ownsTransaction Whether the caller started and therefore owns the transaction
+	 */
 	private static void rollbackQuietly(@NonNull Connection connection, boolean ownsTransaction) {
 		if (ownsTransaction) {
 			try {
@@ -97,6 +146,29 @@ final class SqlQueryExecutor {
 		}
 	}
 	
+	/**
+	 * Runs the given action inside a transaction on the given connection.<br>
+	 * <p>
+	 *     If the connection is in auto-commit mode it is switched to manual commit, the action is
+	 *     executed and the transaction is committed afterwards; in this case the method owns the
+	 *     transaction and restores the auto-commit mode when it returns.<br>
+	 *     If the connection is already in manual commit mode the action participates in the existing
+	 *     transaction without committing, rolling back or changing the auto-commit mode.
+	 * </p>
+	 * <p>
+	 *     Any failure of the action causes the owned transaction to be rolled back quietly before the
+	 *     error is rethrown.
+	 * </p>
+	 *
+	 * @param connection The connection to run the action on
+	 * @param firstSql The sql attached to thrown execution exceptions for diagnostics
+	 * @param beginErrorMessage The error message used if the transaction could not be started
+	 * @param operationErrorMessage The error message used if the action itself fails
+	 * @param action The action to execute within the transaction
+	 * @param <R> The type of the result produced by the action
+	 * @return The result produced by the action
+	 * @throws SqlException If the transaction could not be started or the action failed
+	 */
 	private static <R> R inTransaction(
 		@NonNull Connection connection,
 		@NonNull String firstSql,
@@ -138,6 +210,14 @@ final class SqlQueryExecutor {
 		}
 	}
 	
+	/**
+	 * Combines the given query with the given returning clause into a single rendered statement.<br>
+	 * The parameters of both rendered fragments are preserved in order.<br>
+	 *
+	 * @param query The rendered query to append the returning clause to
+	 * @param returning The rendered returning clause to append
+	 * @return The combined rendered statement
+	 */
 	private static @NonNull SqlRendered combine(@NonNull SqlRendered query, @NonNull SqlRendered returning) {
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.rendered(query);
@@ -145,6 +225,20 @@ final class SqlQueryExecutor {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Executes the given rendered query and maps its result set to a single scalar value.<br>
+	 * The connection, statement and result set are opened and closed within this method.<br>
+	 *
+	 * @param dialect The sql dialect used to prepare the statement
+	 * @param source The connection source to obtain a connection from
+	 * @param rendered The rendered query to execute
+	 * @param timeout The query timeout to apply
+	 * @param mapper The function that maps the result set to the scalar value
+	 * @param <T> The type of the mapped scalar value
+	 * @return The value produced by the mapper
+	 * @throws NullPointerException If any of the arguments is null
+	 * @throws SqlException If the query could not be executed or the result could not be mapped
+	 */
 	static <T> T executeScalarQuery(
 		@NonNull SqlDialect dialect,
 		@NonNull SqlConnectionSource source,
@@ -169,6 +263,18 @@ final class SqlQueryExecutor {
 		}
 	}
 	
+	/**
+	 * Executes the given rendered statement as an update and returns the affected row count.<br>
+	 * The connection and statement are opened and closed within this method.<br>
+	 *
+	 * @param dialect The sql dialect used to prepare the statement
+	 * @param source The connection source to obtain a connection from
+	 * @param rendered The rendered statement to execute
+	 * @param timeout The query timeout to apply
+	 * @return The number of rows affected by the update
+	 * @throws NullPointerException If any of the arguments is null
+	 * @throws SqlException If the update could not be executed
+	 */
 	static int executeUpdate(@NonNull SqlDialect dialect, @NonNull SqlConnectionSource source, @NonNull SqlRendered rendered, @NonNull Duration timeout) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(source, "Sql connection source must not be null");
@@ -182,6 +288,19 @@ final class SqlQueryExecutor {
 		}
 	}
 	
+	/**
+	 * Executes the given rendered statements as a single batched update inside one transaction.<br>
+	 * The returned count is the sum of the affected row counts of all statements.<br>
+	 * If the list is empty no statement is executed and {@code 0} is returned.<br>
+	 *
+	 * @param dialect The sql dialect used to prepare the statements
+	 * @param source The connection source to obtain a connection from
+	 * @param renderedList The rendered statements to execute
+	 * @param timeout The query timeout to apply to each statement
+	 * @return The total number of rows affected by all statements
+	 * @throws NullPointerException If any of the arguments is null
+	 * @throws SqlException If the transaction could not be started or any statement failed
+	 */
 	static int executeBatchedUpdate(@NonNull SqlDialect dialect, @NonNull SqlConnectionSource source, @NonNull List<SqlRendered> renderedList, @NonNull Duration timeout) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(source, "Sql connection source must not be null");
@@ -205,6 +324,19 @@ final class SqlQueryExecutor {
 		}
 	}
 	
+	/**
+	 * Executes the given rendered statements as a batched update inside one transaction and collects their generated keys.<br>
+	 * Each generated key is read from the first column of the statement's generated keys result set.<br>
+	 * If the list is empty no statement is executed and an empty list is returned.<br>
+	 *
+	 * @param dialect The sql dialect used to prepare the statements
+	 * @param source The connection source to obtain a connection from
+	 * @param renderedList The rendered statements to execute
+	 * @param timeout The query timeout to apply to each statement
+	 * @return The generated keys of all statements in execution order
+	 * @throws NullPointerException If any of the arguments is null
+	 * @throws SqlException If the transaction could not be started or any statement failed
+	 */
 	static @NonNull List<Long> executeUpdateReturningKeys(@NonNull SqlDialect dialect, @NonNull SqlConnectionSource source, @NonNull List<SqlRendered> renderedList, @NonNull Duration timeout) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		Objects.requireNonNull(source, "Sql connection source must not be null");
@@ -233,6 +365,20 @@ final class SqlQueryExecutor {
 		}
 	}
 	
+	/**
+	 * Executes the given rendered query and maps every row of its result set to an element.<br>
+	 * The row mapper is invoked once per row and the mapped elements are returned in result set order.<br>
+	 *
+	 * @param dialect The sql dialect used to prepare the statement
+	 * @param source The connection source to obtain a connection from
+	 * @param rendered The rendered query to execute
+	 * @param timeout The query timeout to apply
+	 * @param rowMapper The function that maps each row to an element
+	 * @param <T> The type of the mapped elements
+	 * @return The list of mapped elements, one per result row
+	 * @throws NullPointerException If any of the arguments is null
+	 * @throws SqlException If the query could not be executed or a row could not be mapped
+	 */
 	static <T> @NonNull List<T> executeQueryAndMap(
 		@NonNull SqlDialect dialect,
 		@NonNull SqlConnectionSource source,
@@ -261,6 +407,22 @@ final class SqlQueryExecutor {
 		}
 	}
 	
+	/**
+	 * Executes the given query combined with a returning clause and maps the returned rows.<br>
+	 * The query and returning clause are combined into a single statement before execution.<br>
+	 *
+	 * @param dialect The sql dialect used to prepare the statement
+	 * @param source The connection source to obtain a connection from
+	 * @param query The rendered query to execute
+	 * @param returning The rendered returning clause to append to the query
+	 * @param timeout The query timeout to apply
+	 * @param rowMapper The function that maps each returned row to an element
+	 * @param <T> The type of the mapped elements
+	 * @return The list of mapped elements, one per returned row
+	 * @throws NullPointerException If any of the arguments is null
+	 * @throws SqlDialectFeatureException If the dialect does not support the returning feature
+	 * @throws SqlException If the query could not be executed or a row could not be mapped
+	 */
 	static <T> @NonNull List<T> executeReturningQuery(
 		@NonNull SqlDialect dialect,
 		@NonNull SqlConnectionSource source,
@@ -283,6 +445,23 @@ final class SqlQueryExecutor {
 		return executeQueryAndMap(dialect, source, combine(query, returning), timeout, rowMapper);
 	}
 	
+	/**
+	 * Executes the given queries combined with a returning clause inside one transaction and maps all returned rows.<br>
+	 * Each query is combined with the same returning clause and executed in order, with their returned rows being collected into a single list.<br>
+	 * If the query list is empty no statement is executed and an empty list is returned.<br>
+	 *
+	 * @param dialect The sql dialect used to prepare the statements
+	 * @param source The connection source to obtain a connection from
+	 * @param queries The rendered queries to execute
+	 * @param returning The rendered returning clause to append to each query
+	 * @param timeout The query timeout to apply to each statement
+	 * @param rowMapper The function that maps each returned row to an element
+	 * @param <T> The type of the mapped elements
+	 * @return The list of mapped elements collected from all returned rows
+	 * @throws NullPointerException If any of the arguments is null
+	 * @throws SqlDialectFeatureException If the dialect does not support the returning feature
+	 * @throws SqlException If the transaction could not be started, a query failed or a row could not be mapped
+	 */
 	static <T> @NonNull List<T> executeBatchedReturningQuery(
 		@NonNull SqlDialect dialect,
 		@NonNull SqlConnectionSource source,

@@ -27,9 +27,13 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code HEX} function.<br>
+ * Returns the hexadecimal string representation of the given expression.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to convert to a hexadecimal string
+ * @param type The string result type of the function
  */
 
 public record SqlHexFunction(
@@ -37,10 +41,20 @@ public record SqlHexFunction(
 	@NonNull SqlType<String> type
 ) implements SqlStringFunction<String> {
 	
+	/**
+	 * Constructs a new hex function with the given expression and a {@link SqlTypes#TEXT} result type.<br>
+	 *
+	 * @param expression The expression to convert to a hexadecimal string
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlHexFunction(@NonNull SqlExpression<?> expression) {
 		this(expression, SqlTypes.TEXT);
 	}
 	
+	/**
+	 * Constructs a new hex function with the given expression and result type.<br>
+	 * @throws NullPointerException If the expression or type is null
+	 */
 	public SqlHexFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

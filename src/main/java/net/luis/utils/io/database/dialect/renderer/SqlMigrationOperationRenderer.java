@@ -36,19 +36,40 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Renders schema migration operations into dialect-specific sql.<br>
+ * Each {@code renderXxx} method translates a single migration operation, such as renaming a table,
+ * adding or dropping a column or managing constraints, into the {@code ALTER TABLE} statements
+ * supported by the configured {@link SqlDialect dialect}.<br>
  *
  * @author Luis-St
- *
  */
 
 public class SqlMigrationOperationRenderer {
 	
+	/**
+	 * The sql dialect used to render the migration operations.
+	 */
 	protected final SqlDialect dialect;
 	
+	/**
+	 * Constructs a new sql migration operation renderer for the given dialect.<br>
+	 *
+	 * @param dialect The sql dialect used to render the migration operations
+	 * @throws NullPointerException If the dialect is null
+	 */
 	public SqlMigrationOperationRenderer(@NonNull SqlDialect dialect) {
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 	}
 	
+	/**
+	 * Renders a statement that renames a table from the source table name to the target table name.<br>
+	 *
+	 * @param fromTable The source table to rename
+	 * @param toTable The target table providing the new name
+	 * @return The rendered rename table statement
+	 * @throws NullPointerException If the source table or target table is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderRenameTable(@NonNull SqlTable<?> fromTable, @NonNull SqlTable<?> toTable) throws SqlException {
 		Objects.requireNonNull(fromTable, "Sql source table must not be null");
 		Objects.requireNonNull(toTable, "Sql target table must not be null");
@@ -56,6 +77,17 @@ public class SqlMigrationOperationRenderer {
 		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(fromTable.name())).rename().to().literal(this.dialect.quoteIdentifier(toTable.name())).toSql();
 	}
 	
+	/**
+	 * Renders a statement that adds a column with the given type and options to the table.<br>
+	 *
+	 * @param table The table to add the column to
+	 * @param column The column to add
+	 * @param type The sql type of the new column
+	 * @param options The column options to apply to the new column
+	 * @return The rendered add column statement
+	 * @throws NullPointerException If the table, column, type or options is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderAddColumn(@NonNull SqlTable<?> table, @NonNull SqlColumn<?, ?> column, @NonNull SqlType<?> type, @NonNull SqlColumnOptions options) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(column, "Sql column must not be null");
@@ -68,6 +100,16 @@ public class SqlMigrationOperationRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Appends the column constraints and modifiers described by the given options to the renderer.<br>
+	 * Depending on the options this appends the not null, unique, auto increment, default value,
+	 * references and check clauses in that order.<br>
+	 *
+	 * @param renderer The renderer to append the column options to
+	 * @param options The column options to render
+	 * @throws NullPointerException If the renderer or options is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected void appendColumnOptions(@NonNull SqlRenderer renderer, @NonNull SqlColumnOptions options) throws SqlException {
 		if (options.notNull()) {
 			renderer.not().null_();
@@ -90,6 +132,15 @@ public class SqlMigrationOperationRenderer {
 		}
 	}
 	
+	/**
+	 * Renders a statement that drops the given column from the table.<br>
+	 *
+	 * @param table The table to drop the column from
+	 * @param column The column to drop
+	 * @return The rendered drop column statement
+	 * @throws NullPointerException If the table or column is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderDropColumn(@NonNull SqlTable<?> table, @NonNull SqlColumn<?, ?> column) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(column, "Sql column must not be null");
@@ -97,6 +148,16 @@ public class SqlMigrationOperationRenderer {
 		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(table.name())).drop().column().literal(this.dialect.quoteIdentifier(column.name())).toSql();
 	}
 	
+	/**
+	 * Renders a statement that renames a column of the table from the source column name to the target column name.<br>
+	 *
+	 * @param table The table that owns the column
+	 * @param fromColumn The source column to rename
+	 * @param toColumn The target column providing the new name
+	 * @return The rendered rename column statement
+	 * @throws NullPointerException If the table, source column or target column is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderRenameColumn(@NonNull SqlTable<?> table, @NonNull SqlColumn<?, ?> fromColumn, @NonNull SqlColumn<?, ?> toColumn) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(fromColumn, "Sql source column must not be null");
@@ -107,6 +168,16 @@ public class SqlMigrationOperationRenderer {
 			.literal(this.dialect.quoteIdentifier(toColumn.name())).toSql();
 	}
 	
+	/**
+	 * Renders a statement that adds a named unique constraint spanning the given columns to the table.<br>
+	 *
+	 * @param table The table to add the unique constraint to
+	 * @param constraintName The name of the unique constraint
+	 * @param columns The columns covered by the unique constraint
+	 * @return The rendered add unique constraint statement
+	 * @throws NullPointerException If the table, constraint name or columns is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderAddUniqueConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");
@@ -119,6 +190,22 @@ public class SqlMigrationOperationRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders a statement that adds a named foreign key constraint to the table.<br>
+	 * The constraint maps the given columns to the referenced columns of the referenced table and applies
+	 * the supplied referential actions on delete and on update.<br>
+	 *
+	 * @param table The table to add the foreign key to
+	 * @param constraintName The name of the foreign key constraint
+	 * @param columns The local columns that form the foreign key
+	 * @param referencedTable The table referenced by the foreign key
+	 * @param referencedColumns The referenced columns in the referenced table
+	 * @param onDelete The referential action applied on delete
+	 * @param onUpdate The referential action applied on update
+	 * @return The rendered add foreign key statement
+	 * @throws NullPointerException If any argument is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderAddForeignKey(
 		@NonNull SqlTable<?> table,
 		@NonNull String constraintName,
@@ -149,6 +236,16 @@ public class SqlMigrationOperationRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders a statement that adds a named check constraint based on the given condition to the table.<br>
+	 *
+	 * @param table The table to add the check constraint to
+	 * @param constraintName The name of the check constraint
+	 * @param condition The condition that the check constraint enforces
+	 * @return The rendered add check constraint statement
+	 * @throws NullPointerException If the table, constraint name or condition is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderAddCheckConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull SqlCondition condition) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");
@@ -160,6 +257,16 @@ public class SqlMigrationOperationRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders a statement that adds a named composite primary key spanning the given columns to the table.<br>
+	 *
+	 * @param table The table to add the composite primary key to
+	 * @param constraintName The name of the primary key constraint
+	 * @param columns The columns that form the composite primary key
+	 * @return The rendered add composite primary key statement
+	 * @throws NullPointerException If the table, constraint name or columns is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderAddCompositePrimaryKey(@NonNull SqlTable<?> table, @NonNull String constraintName, @NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");
@@ -173,6 +280,17 @@ public class SqlMigrationOperationRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders the statements that enable auditing for the table according to the given audit config.<br>
+	 * One add column statement is rendered for each audit column, where version columns additionally receive
+	 * a default value and a not null constraint.<br>
+	 *
+	 * @param table The table to enable auditing for
+	 * @param config The audit config describing the audit columns
+	 * @return The rendered statements that add the audit columns
+	 * @throws NullPointerException If the table or config is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull List<SqlRendered> renderEnableAuditing(@NonNull SqlTable<?> table, @NonNull SqlAuditConfig config) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(config, "Sql audit config must not be null");
@@ -190,6 +308,16 @@ public class SqlMigrationOperationRenderer {
 		return List.copyOf(results);
 	}
 	
+	/**
+	 * Renders the statements that disable auditing for the table according to the given audit config.<br>
+	 * One drop column statement is rendered for each audit column described by the config.<br>
+	 *
+	 * @param table The table to disable auditing for
+	 * @param config The audit config describing the audit columns
+	 * @return The rendered statements that drop the audit columns
+	 * @throws NullPointerException If the table or config is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull List<SqlRendered> renderDisableAuditing(@NonNull SqlTable<?> table, @NonNull SqlAuditConfig config) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(config, "Sql audit config must not be null");
@@ -201,6 +329,15 @@ public class SqlMigrationOperationRenderer {
 		return List.copyOf(results);
 	}
 	
+	/**
+	 * Renders a statement that drops the named constraint from the table.<br>
+	 *
+	 * @param table The table to drop the constraint from
+	 * @param constraintName The name of the constraint to drop
+	 * @return The rendered drop constraint statement
+	 * @throws NullPointerException If the table or constraint name is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderDropConstraint(@NonNull SqlTable<?> table, @NonNull String constraintName) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");

@@ -27,11 +27,17 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
+ * Holds the constraints and the default value applied to a column in a migration operation.<br>
  *
  * @author Luis-St
  *
+ * @param notNull Whether the column has a not-null constraint
+ * @param unique Whether the column has a unique constraint
+ * @param autoIncrement Whether the column is auto-incremented
+ * @param defaultValue The default value of the column, or empty if none
+ * @param referencesTable The table this column references as a foreign key, or {@code null} if none
+ * @param check The check constraint applied to the column, or {@code null} if none
  */
-
 public record SqlColumnOptions(
 	boolean notNull,
 	boolean unique,
@@ -41,8 +47,15 @@ public record SqlColumnOptions(
 	@Nullable SqlCondition check
 ) {
 	
+	/**
+	 * Column options without any constraints and no default value.
+	 */
 	public static final SqlColumnOptions EMPTY = new SqlColumnOptions(false, false, false, Optional.empty(), null, null);
 	
+	/**
+	 * Constructs a new column options instance with the given constraints and default value.<br>
+	 * @throws NullPointerException If the default value is null
+	 */
 	public SqlColumnOptions {
 		Objects.requireNonNull(defaultValue, "Sql default value must not be null");
 	}

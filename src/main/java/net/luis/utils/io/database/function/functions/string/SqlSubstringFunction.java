@@ -27,9 +27,15 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code SUBSTRING} function.<br>
+ * Extracts a substring from the given string expression starting at the given position with an optional length.<br>
  *
  * @author Luis-St
  *
+ * @param expression The string expression to extract from
+ * @param start The start position of the substring
+ * @param length The length of the substring or {@code null} to extract to the end of the string
+ * @param <T> The character sequence type of the expression
  */
 
 public record SqlSubstringFunction<T extends CharSequence>(
@@ -38,6 +44,10 @@ public record SqlSubstringFunction<T extends CharSequence>(
 	@Nullable SqlExpression<? extends Number> length
 ) implements SqlStringFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new substring function with the given expression, start and optional length.<br>
+	 * @throws NullPointerException If the expression or start expression is null
+	 */
 	public SqlSubstringFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(start, "Sql start expression must not be null");

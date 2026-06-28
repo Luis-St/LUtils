@@ -23,13 +23,18 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Column alteration that sets the default value of a column.<br>
  *
  * @author Luis-St
  *
+ * @param value The new default value of the column
  */
-
 public record SqlSetDefaultAlteration(@NonNull Object value) implements SqlColumnAlteration {
 	
+	/**
+	 * Constructs a new set default alteration with the given default value.<br>
+	 * @throws NullPointerException If the value is null
+	 */
 	public SqlSetDefaultAlteration {
 		Objects.requireNonNull(value, "Sql default value must not be null");
 	}

@@ -26,13 +26,21 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code UPPER} (uppercase) function.<br>
+ * Converts the given string expression to upper case.<br>
  *
  * @author Luis-St
  *
+ * @param expression The string expression to convert to upper case
+ * @param <T> The character sequence type of the expression
  */
 
 public record SqlUpperFunction<T extends CharSequence>(@NonNull SqlExpression<T> expression) implements SqlStringFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new upper function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlUpperFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

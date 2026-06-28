@@ -19,14 +19,22 @@
 package net.luis.utils.io.database.expression.orderable;
 
 /**
+ * Represents the value ordering direction of an ordered sql expression.<br>
  *
  * @author Luis-St
- *
  */
-
 public enum SqlOrdering {
 	
+	/**
+	 * The database default ordering is used.<br>
+	 */
 	DEFAULT,
+	/**
+	 * The values are ordered in ascending order.<br>
+	 */
 	ASCENDING,
+	/**
+	 * The values are ordered in descending order.<br>
+	 */
 	DESCENDING
 }

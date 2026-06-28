@@ -26,9 +26,14 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL bitwise {@code NOT} function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The operand expression
+ * @param type The sql type of the result
+ *
+ * @param <T> The numeric type of the result
  */
 
 public record SqlBitwiseNotFunction<T extends Number>(
@@ -36,12 +41,22 @@ public record SqlBitwiseNotFunction<T extends Number>(
 	@NonNull SqlType<T> type
 ) implements SqlNumericFunction<T> {
 	
+	/**
+	 * Constructs a new bitwise NOT function inferring the sql type from the operand expression.<br>
+	 *
+	 * @param expression The operand expression
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlBitwiseNotFunction(@NonNull SqlExpression<T> expression) {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		
 		this(expression, expression.type());
 	}
 	
+	/**
+	 * Constructs a new bitwise NOT function with the given operand and sql type.<br>
+	 * @throws NullPointerException If the expression or type is null
+	 */
 	public SqlBitwiseNotFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

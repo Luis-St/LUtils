@@ -31,21 +31,56 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Renderer for sql functions into dialect-specific sql.<br>
+ * Acts as the dispatcher that routes the given {@link SqlFunction} to the matching category renderer<br>
+ * based on its concrete type and produces the resulting {@link SqlRendered} using the configured {@link SqlDialect}.<br>
  *
  * @author Luis-St
- *
  */
 
 public class SqlFunctionRenderer {
 	
+	/**
+	 * The sql dialect used to render the functions.
+	 */
 	private final SqlDialect dialect;
+	/**
+	 * The renderer used for aggregate functions.
+	 */
 	private final SqlAggregateFunctionRenderer aggregateRenderer;
+	/**
+	 * The renderer used for numeric functions.
+	 */
 	private final SqlNumericFunctionRenderer numericRenderer;
+	/**
+	 * The renderer used for string functions.
+	 */
 	private final SqlStringFunctionRenderer stringRenderer;
+	/**
+	 * The renderer used for temporal functions.
+	 */
 	private final SqlTemporalFunctionRenderer temporalRenderer;
+	/**
+	 * The renderer used for window functions.
+	 */
 	private final SqlWindowFunctionRenderer windowRenderer;
+	/**
+	 * The renderer used for generic functions.
+	 */
 	private final SqlGenericFunctionRenderer genericRenderer;
 	
+	/**
+	 * Constructs a new sql function renderer for the given dialect and category renderers.<br>
+	 *
+	 * @param dialect The sql dialect used to render the functions
+	 * @param aggregateRenderer The renderer used for aggregate functions
+	 * @param numericRenderer The renderer used for numeric functions
+	 * @param stringRenderer The renderer used for string functions
+	 * @param temporalRenderer The renderer used for temporal functions
+	 * @param windowRenderer The renderer used for window functions
+	 * @param genericRenderer The renderer used for generic functions
+	 * @throws NullPointerException If any of the given arguments is null
+	 */
 	public SqlFunctionRenderer(
 		@NonNull SqlDialect dialect,
 		@NonNull SqlAggregateFunctionRenderer aggregateRenderer,
@@ -64,6 +99,16 @@ public class SqlFunctionRenderer {
 		this.genericRenderer = Objects.requireNonNull(genericRenderer, "Sql generic function renderer must not be null");
 	}
 	
+	/**
+	 * Renders the given sql function into dialect-specific sql.<br>
+	 * Cast functions are rendered directly, all other functions are dispatched to the matching category renderer<br>
+	 * based on their concrete type, and an implicit cast is applied afterwards if the function requires one.<br>
+	 *
+	 * @param function The sql function to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the function is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered render(@NonNull SqlFunction<?> function) throws SqlException {
 		if (function instanceof SqlCastFunction<?>(var value, var targetType)) {
 			return SqlRenderer.empty().cast().openingBracket().rendered(value.toSql(this.dialect)).as().literal(this.dialect.getCastTypeName(targetType)).closingBracket().toSql();

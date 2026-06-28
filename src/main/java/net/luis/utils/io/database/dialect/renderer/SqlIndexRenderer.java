@@ -31,19 +31,40 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Renders index ddl into dialect-specific sql.<br>
+ * Each {@code renderXxx} method translates an index operation, such as creating, dropping or renaming
+ * an {@link SqlIndex index}, into the statements supported by the configured {@link SqlDialect dialect}.<br>
  *
  * @author Luis-St
- *
  */
 
 public class SqlIndexRenderer {
 	
+	/**
+	 * The sql dialect used to render the index statements.
+	 */
 	protected final SqlDialect dialect;
 	
+	/**
+	 * Constructs a new sql index renderer for the given dialect.<br>
+	 *
+	 * @param dialect The sql dialect used to render the index statements
+	 * @throws NullPointerException If the dialect is null
+	 */
 	public SqlIndexRenderer(@NonNull SqlDialect dialect) {
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 	}
 	
+	/**
+	 * Renders a statement that creates the given index.<br>
+	 * The rendered statement honors the unique flag, index method and an optional where condition of the index.<br>
+	 *
+	 * @param index The index to create
+	 * @return The rendered create index statement
+	 * @throws NullPointerException If the index is null
+	 * @throws SqlException If rendering fails
+	 * @throws SqlDialectUnsupportedRenderingException If the index method is not supported by the dialect
+	 */
 	public @NonNull SqlRendered renderCreateIndex(@NonNull SqlIndex index) throws SqlException {
 		Objects.requireNonNull(index, "Sql index must not be null");
 		
@@ -72,6 +93,15 @@ public class SqlIndexRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders a statement that drops the index with the given name.<br>
+	 *
+	 * @param owningTable The table that owns the index, may be null if not required by the dialect
+	 * @param index The name of the index to drop
+	 * @return The rendered drop index statement
+	 * @throws NullPointerException If the index name is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderDropIndex(@Nullable SqlTable<?> owningTable, @NonNull String index) throws SqlException {
 		Objects.requireNonNull(index, "Sql index name must not be null");
 		
@@ -80,6 +110,16 @@ public class SqlIndexRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders a standard statement that drops the named index on its owning table.<br>
+	 * This produces a {@code DROP INDEX ... ON ...} statement for dialects that require the owning table.<br>
+	 *
+	 * @param owningTable The table that owns the index
+	 * @param indexName The name of the index to drop
+	 * @return The rendered drop index on table statement
+	 * @throws NullPointerException If the owning table or index name is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderStandardDropIndexOnTable(@NonNull SqlTable<?> owningTable, @NonNull String indexName) throws SqlException {
 		Objects.requireNonNull(owningTable, "Sql index owning table must not be null");
 		Objects.requireNonNull(indexName, "Sql index name must not be null");
@@ -89,6 +129,16 @@ public class SqlIndexRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders a statement that renames an index from the source name to the target name.<br>
+	 *
+	 * @param table The table that owns the index, may be null if not required by the dialect
+	 * @param from The current name of the index
+	 * @param to The new name of the index
+	 * @return The rendered rename index statement
+	 * @throws NullPointerException If the source name or target name is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered renderRenameIndex(@Nullable SqlTable<?> table, @NonNull String from, @NonNull String to) throws SqlException {
 		Objects.requireNonNull(from, "Sql source index name must not be null");
 		Objects.requireNonNull(to, "Sql target index name must not be null");

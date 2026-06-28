@@ -27,13 +27,19 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code COUNT(DISTINCT)} aggregate function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression whose distinct values are counted
  */
 
 public record SqlCountDistinctFunction(@NonNull SqlExpression<?> expression) implements SqlAggregateFunction<Long> {
 	
+	/**
+	 * Constructs a new count distinct function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlCountDistinctFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

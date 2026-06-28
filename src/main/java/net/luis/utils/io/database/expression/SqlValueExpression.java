@@ -28,21 +28,35 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A sql expression that represents a constant value of a given sql type.<br>
  *
  * @author Luis-St
  *
+ * @param value The constant value
+ * @param type The sql type of the value
+ * @param <T> The type of the value
  */
-
 public record SqlValueExpression<T>(
 	@NonNull T value,
 	@NonNull SqlType<T> type
 ) implements SqlExpression<T> {
 	
+	/**
+	 * Constructs a new value expression inferring the sql type from the given value.<br>
+	 *
+	 * @param value The constant value
+	 * @throws NullPointerException If the value is null
+	 * @throws SqlTypeNotFoundException If no sql type can be inferred for the value
+	 */
 	public SqlValueExpression(@NonNull T value) throws SqlTypeNotFoundException {
 		Objects.requireNonNull(value, "Sql value must not be null");
 		this(value, SqlType.inferType(value));
 	}
 	
+	/**
+	 * Constructs a new value expression with the given value and sql type.<br>
+	 * @throws NullPointerException If the value or type is null
+	 */
 	public SqlValueExpression {
 		Objects.requireNonNull(value, "Sql value must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

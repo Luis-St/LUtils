@@ -25,16 +25,23 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Window frame using the {@code GROUPS} frame mode.<br>
+ * The frame is defined by the number of peer groups relative to the current row's group.<br>
  *
  * @author Luis-St
  *
+ * @param start The start bound of the frame
+ * @param end The end bound of the frame
  */
-
 public record GroupsWindowFrame(
 	@NonNull SqlFrameBound start,
 	@NonNull SqlFrameBound end
 ) implements SqlWindowFrame {
 	
+	/**
+	 * Constructs a new groups window frame validating that both bounds are present.<br>
+	 * @throws NullPointerException If the start or end bound is null
+	 */
 	public GroupsWindowFrame {
 		Objects.requireNonNull(start, "Sql start frame bound must not be null");
 		Objects.requireNonNull(end, "Sql end frame bound must not be null");

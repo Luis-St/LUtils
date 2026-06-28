@@ -26,9 +26,14 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code LEFT} function.<br>
+ * Returns the leftmost characters of the given string expression up to the given length.<br>
  *
  * @author Luis-St
  *
+ * @param expression The string expression to take characters from
+ * @param length The number of leading characters to return
+ * @param <T> The character sequence type of the expression
  */
 
 public record SqlLeftFunction<T extends CharSequence>(
@@ -36,6 +41,10 @@ public record SqlLeftFunction<T extends CharSequence>(
 	@NonNull SqlExpression<? extends Number> length
 ) implements SqlStringFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new left function with the given expression and length.<br>
+	 * @throws NullPointerException If the expression or length expression is null
+	 */
 	public SqlLeftFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(length, "Sql length expression must not be null");

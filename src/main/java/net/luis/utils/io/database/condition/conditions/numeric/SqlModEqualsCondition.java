@@ -25,17 +25,24 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a numeric value modulo the given divisor equals the given remainder.<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
+ * @param divisor The divisor of the modulo operation
+ * @param remainder The expected remainder
  */
-
 public record SqlModEqualsCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlExpression<?> divisor,
 	@NonNull SqlExpression<?> remainder
 ) implements SqlNumericCondition {
 	
+	/**
+	 * Constructs a new modulo-equals condition with the given value, divisor and remainder expressions.<br>
+	 * @throws NullPointerException If the value, divisor or remainder expression is null
+	 */
 	public SqlModEqualsCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 		Objects.requireNonNull(divisor, "Sql divisor expression must not be null");

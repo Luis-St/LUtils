@@ -26,13 +26,20 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code ABS} (absolute value) function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to get the absolute value of
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlAbsFunction<T extends Number>(@NonNull SqlExpression<T> expression) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new abs function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlAbsFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

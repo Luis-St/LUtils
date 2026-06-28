@@ -28,13 +28,23 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code LEAST} function.<br>
+ * It returns the smallest value from the given list of expressions.<br>
  *
  * @author Luis-St
  *
+ * @param expressions The list of expressions to compare
+ * @param <T> The type of the resulting value
  */
-
 public record SqlLeastFunction<T>(@NonNull @Unmodifiable List<SqlExpression<T>> expressions) implements SqlFunction<T> {
 	
+	/**
+	 * Constructs a new sql least function with the given expressions.<br>
+	 * The expressions list is copied to ensure immutability.<br>
+	 *
+	 * @throws NullPointerException If the expressions list is null
+	 * @throws IllegalArgumentException If the expressions list is empty, contains null expressions or the expressions have differing types
+	 */
 	public SqlLeastFunction {
 		Objects.requireNonNull(expressions, "Sql expression list must not be null");
 		

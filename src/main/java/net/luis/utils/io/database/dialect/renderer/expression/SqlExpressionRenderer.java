@@ -32,19 +32,39 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Renderer for sql expressions into dialect-specific sql.<br>
+ * Dispatches the given {@link SqlExpression} to the matching render method based on its concrete type<br>
+ * and produces the resulting {@link SqlRendered} using the configured {@link SqlDialect}.<br>
  *
  * @author Luis-St
- *
  */
 
 public class SqlExpressionRenderer {
 	
+	/**
+	 * The sql dialect used to render the expressions.
+	 */
 	protected final SqlDialect dialect;
 	
+	/**
+	 * Constructs a new sql expression renderer for the given dialect.<br>
+	 *
+	 * @param dialect The sql dialect used to render the expressions
+	 * @throws NullPointerException If the dialect is null
+	 */
 	public SqlExpressionRenderer(@NonNull SqlDialect dialect) {
 		this.dialect = Objects.requireNonNull(dialect, "Sql dialect must not be null");
 	}
 	
+	/**
+	 * Renders the given sql expression into dialect-specific sql.<br>
+	 * The expression is dispatched to the matching render method based on its concrete type.<br>
+	 *
+	 * @param expression The sql expression to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the expression is null
+	 * @throws SqlException If rendering fails
+	 */
 	public @NonNull SqlRendered render(@NonNull SqlExpression<?> expression) throws SqlException {
 		return switch (expression) {
 			case OrderedSqlExpression<?> expr -> this.renderOrdered(expr);
@@ -58,6 +78,15 @@ public class SqlExpressionRenderer {
 		};
 	}
 	
+	/**
+	 * Renders the given ordered sql expression into dialect-specific sql.<br>
+	 * The underlying expression is rendered first, followed by the ordering and null ordering clause.<br>
+	 *
+	 * @param expression The ordered sql expression to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the expression is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderOrdered(@NonNull OrderedSqlExpression<?> expression) throws SqlException {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		
@@ -67,6 +96,15 @@ public class SqlExpressionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders the given aliased sql expression into dialect-specific sql.<br>
+	 * The underlying expression is rendered first, followed by an {@code AS} clause with the quoted alias.<br>
+	 *
+	 * @param expression The aliased sql expression to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the expression is null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderAliased(@NonNull SqlAliasedExpression<?> expression) throws SqlException {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		
@@ -76,6 +114,16 @@ public class SqlExpressionRenderer {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders the given value sql expression into dialect-specific sql.<br>
+	 * The value is rendered as a bound parameter using its type and value.<br>
+	 *
+	 * @param expression The value sql expression to render
+	 * @return The rendered sql
+	 * @throws NullPointerException If the expression is null
+	 * @throws SqlException If rendering fails
+	 * @param <T> The type of the value
+	 */
 	protected <T> @NonNull SqlRendered renderValue(@NonNull SqlValueExpression<T> expression) throws SqlException {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		

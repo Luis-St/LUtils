@@ -29,16 +29,23 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * An ordered sql expression that uses the database default value ordering with an explicit null ordering.<br>
  *
  * @author Luis-St
  *
+ * @param expression The wrapped expression
+ * @param nullOrdering The null ordering applied to the expression
+ * @param <T> The type of the value the expression evaluates to
  */
-
 public record DefaultOrderedSqlExpression<T>(
 	@NonNull SqlExpression<T> expression,
 	@NonNull SqlNullOrdering nullOrdering
 ) implements OrderedSqlExpression<T> {
 	
+	/**
+	 * Constructs a new default ordered expression with the given expression and null ordering.<br>
+	 * @throws NullPointerException If the expression or null ordering is null
+	 */
 	public DefaultOrderedSqlExpression {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(nullOrdering, "Sql null ordering must not be null");

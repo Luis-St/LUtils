@@ -27,16 +27,25 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a value is contained in the given list of options.<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
+ * @param options The options the value is tested against
  */
-
 public record SqlInListCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull @Unmodifiable List<SqlExpression<?>> options
 ) implements SqlComparisonCondition {
 	
+	/**
+	 * Constructs a new in-list condition with the given value and options.<br>
+	 * The options list is copied to ensure immutability.<br>
+	 *
+	 * @throws NullPointerException If the value expression or options list is null
+	 * @throws IllegalArgumentException If the options list is empty or contains null values
+	 */
 	public SqlInListCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 		Objects.requireNonNull(options, "Sql options list must not be null");

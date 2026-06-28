@@ -21,42 +21,123 @@ package net.luis.utils.io.database.query.row;
 import org.jspecify.annotations.NonNull;
 
 /**
+ * Represents a row of 16 typed columns returned from a sql query.<br>
+ * Each column value is accessed positionally through its ordinal accessor, where the n-th column is bound to the n-th accessor method.<br>
  *
  * @author Luis-St
  *
+ * @param <T1> The type of the first column
+ * @param <T2> The type of the second column
+ * @param <T3> The type of the third column
+ * @param <T4> The type of the fourth column
+ * @param <T5> The type of the fifth column
+ * @param <T6> The type of the sixth column
+ * @param <T7> The type of the seventh column
+ * @param <T8> The type of the eighth column
+ * @param <T9> The type of the ninth column
+ * @param <T10> The type of the tenth column
+ * @param <T11> The type of the eleventh column
+ * @param <T12> The type of the twelfth column
+ * @param <T13> The type of the thirteenth column
+ * @param <T14> The type of the fourteenth column
+ * @param <T15> The type of the fifteenth column
+ * @param <T16> The type of the sixteenth column
  */
-
 public interface SqlRow16<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> {
 	
+	/**
+	 * Returns the value of the first column of this row.<br>
+	 * @return The value of the first column
+	 */
 	@NonNull T1 first();
 	
+	/**
+	 * Returns the value of the second column of this row.<br>
+	 * @return The value of the second column
+	 */
 	@NonNull T2 second();
 	
+	/**
+	 * Returns the value of the third column of this row.<br>
+	 * @return The value of the third column
+	 */
 	@NonNull T3 third();
 	
+	/**
+	 * Returns the value of the fourth column of this row.<br>
+	 * @return The value of the fourth column
+	 */
 	@NonNull T4 fourth();
 	
+	/**
+	 * Returns the value of the fifth column of this row.<br>
+	 * @return The value of the fifth column
+	 */
 	@NonNull T5 fifth();
 	
+	/**
+	 * Returns the value of the sixth column of this row.<br>
+	 * @return The value of the sixth column
+	 */
 	@NonNull T6 sixth();
 	
+	/**
+	 * Returns the value of the seventh column of this row.<br>
+	 * @return The value of the seventh column
+	 */
 	@NonNull T7 seventh();
 	
+	/**
+	 * Returns the value of the eighth column of this row.<br>
+	 * @return The value of the eighth column
+	 */
 	@NonNull T8 eighth();
 	
+	/**
+	 * Returns the value of the ninth column of this row.<br>
+	 * @return The value of the ninth column
+	 */
 	@NonNull T9 ninth();
 	
+	/**
+	 * Returns the value of the tenth column of this row.<br>
+	 * @return The value of the tenth column
+	 */
 	@NonNull T10 tenth();
 	
+	/**
+	 * Returns the value of the eleventh column of this row.<br>
+	 * @return The value of the eleventh column
+	 */
 	@NonNull T11 eleventh();
 	
+	/**
+	 * Returns the value of the twelfth column of this row.<br>
+	 * @return The value of the twelfth column
+	 */
 	@NonNull T12 twelfth();
 	
+	/**
+	 * Returns the value of the thirteenth column of this row.<br>
+	 * @return The value of the thirteenth column
+	 */
 	@NonNull T13 thirteenth();
 	
+	/**
+	 * Returns the value of the fourteenth column of this row.<br>
+	 * @return The value of the fourteenth column
+	 */
 	@NonNull T14 fourteenth();
 	
+	/**
+	 * Returns the value of the fifteenth column of this row.<br>
+	 * @return The value of the fifteenth column
+	 */
 	@NonNull T15 fifteenth();
 	
+	/**
+	 * Returns the value of the sixteenth column of this row.<br>
+	 * @return The value of the sixteenth column
+	 */
 	@NonNull T16 sixteenth();
 }

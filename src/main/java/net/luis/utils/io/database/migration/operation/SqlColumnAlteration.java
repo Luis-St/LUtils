@@ -19,9 +19,9 @@
 package net.luis.utils.io.database.migration.operation;
 
 /**
+ * A sealed interface representing a single alteration applied to an existing column during a migration.<br>
+ * Each permitted record models one concrete alteration such as changing the type, nullability or default value of a column.<br>
  *
  * @author Luis-St
- *
  */
-
 public sealed interface SqlColumnAlteration permits SqlSetTypeAlteration, SqlSetNullableAlteration, SqlSetDefaultAlteration, SqlDropDefaultAlteration {}

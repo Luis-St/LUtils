@@ -27,9 +27,12 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code ATAN2} trigonometric function.<br>
  *
  * @author Luis-St
  *
+ * @param y The y coordinate expression
+ * @param x The x coordinate expression
  */
 
 public record SqlAtan2Function(
@@ -37,6 +40,10 @@ public record SqlAtan2Function(
 	@NonNull SqlExpression<? extends Number> x
 ) implements SqlNumericFunction<Double> {
 	
+	/**
+	 * Constructs a new two argument arc tangent function with the given coordinate expressions.<br>
+	 * @throws NullPointerException If the y or x expression is null
+	 */
 	public SqlAtan2Function {
 		Objects.requireNonNull(y, "Sql y expression must not be null");
 		Objects.requireNonNull(x, "Sql x expression must not be null");

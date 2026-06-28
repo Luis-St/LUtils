@@ -23,13 +23,19 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that negates the wrapped condition.<br>
+ * Negating this condition again yields the wrapped condition.<br>
  *
  * @author Luis-St
  *
+ * @param condition The condition to negate
  */
-
 public record SqlNegatedCondition(@NonNull SqlCondition condition) implements SqlCondition {
 	
+	/**
+	 * Constructs a new negated condition wrapping the given condition.<br>
+	 * @throws NullPointerException If the condition is null
+	 */
 	public SqlNegatedCondition {
 		Objects.requireNonNull(condition, "Sql condition must not be null");
 	}

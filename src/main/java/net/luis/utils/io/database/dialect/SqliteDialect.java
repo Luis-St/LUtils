@@ -51,13 +51,17 @@ import java.sql.Types;
 import java.util.*;
 
 /**
+ * Implementation of the {@link SqlDialect} for SQLite databases.<br>
+ * Extends {@link AbstractSqlDialect} and provides SQLite-specific SQL generation, type mapping and feature support.<br>
  *
  * @author Luis-St
- *
  */
 
 public class SqliteDialect extends AbstractSqlDialect {
 	
+	/**
+	 * The set of SQL features supported by this dialect.
+	 */
 	private static final Set<SqlFeature> SUPPORTED_FEATURES = Set.of(
 		SqlFeature.RETURNING,
 		SqlFeature.UPDATE_RETURNING,
@@ -140,8 +144,20 @@ public class SqliteDialect extends AbstractSqlDialect {
 	}
 }
 
+/**
+ * SQLite-specific renderer for generic SQL functions.<br>
+ * Specializes the rendering of the greatest and least functions, which are emulated using the {@code MAX} and {@code MIN} functions since SQLite has no dedicated {@code GREATEST} and {@code LEAST} functions.<br>
+ *
+ * @author Luis-St
+ */
 class SqliteGenericFunctionRenderer extends SqlGenericFunctionRenderer {
 	
+	/**
+	 * Constructs a new SQLite generic function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqliteGenericFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -159,8 +175,20 @@ class SqliteGenericFunctionRenderer extends SqlGenericFunctionRenderer {
 	}
 }
 
+/**
+ * SQLite-specific renderer for numeric SQL functions.<br>
+ * Specializes the rendering of the truncate function using the {@code TRUNC} function and emulates the bitwise xor function using a combination of bitwise or and and operators since SQLite has no dedicated bitwise xor operator.<br>
+ *
+ * @author Luis-St
+ */
 class SqliteNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	
+	/**
+	 * Constructs a new SQLite numeric function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqliteNumericFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -186,8 +214,20 @@ class SqliteNumericFunctionRenderer extends SqlNumericFunctionRenderer {
 	}
 }
 
+/**
+ * SQLite-specific renderer for comparison conditions.<br>
+ * Specializes the rendering of the is-distinct-from condition using the {@code IS NOT} operator since SQLite has no dedicated {@code IS DISTINCT FROM} operator.<br>
+ *
+ * @author Luis-St
+ */
 class SqliteComparisonConditionRenderer extends SqlComparisonConditionRenderer {
 	
+	/**
+	 * Constructs a new SQLite comparison condition renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqliteComparisonConditionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -202,8 +242,20 @@ class SqliteComparisonConditionRenderer extends SqlComparisonConditionRenderer {
 	}
 }
 
+/**
+ * SQLite-specific renderer for table-level SQL statements.<br>
+ * Specializes auto-increment rendering using the {@code AUTOINCREMENT} keyword, the rendering of single-column primary keys, truncation which is emulated using a {@code DELETE FROM} statement and the table rebuild which recreates the table via a temporary copy.<br>
+ *
+ * @author Luis-St
+ */
 class SqliteTableRenderer extends SqlTableRenderer {
 	
+	/**
+	 * Constructs a new SQLite table renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqliteTableRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -296,8 +348,20 @@ class SqliteTableRenderer extends SqlTableRenderer {
 	}
 }
 
+/**
+ * SQLite-specific renderer for index-level SQL statements.<br>
+ * Specializes the rendering of create-index statements and rejects index renaming since SQLite does not support renaming indexes.<br>
+ *
+ * @author Luis-St
+ */
 class SqliteIndexRenderer extends SqlIndexRenderer {
 	
+	/**
+	 * Constructs a new SQLite index renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqliteIndexRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -331,8 +395,20 @@ class SqliteIndexRenderer extends SqlIndexRenderer {
 	}
 }
 
+/**
+ * SQLite-specific renderer for column-level SQL statements.<br>
+ * Rejects all alter-column operations as single statements since SQLite emulates them via a table rebuild through the migration API.<br>
+ *
+ * @author Luis-St
+ */
 class SqliteColumnRenderer extends SqlColumnRenderer {
 	
+	/**
+	 * Constructs a new SQLite column renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqliteColumnRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -358,8 +434,20 @@ class SqliteColumnRenderer extends SqlColumnRenderer {
 	}
 }
 
+/**
+ * SQLite-specific renderer for migration operations.<br>
+ * Rejects adding unique, foreign key, check and composite primary key constraints as single statements since SQLite emulates them via a table rebuild through the migration API and rejects dropping constraints as an unsupported feature.<br>
+ *
+ * @author Luis-St
+ */
 class SqliteMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 	
+	/**
+	 * Constructs a new SQLite migration operation renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqliteMigrationOperationRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -398,12 +486,31 @@ class SqliteMigrationOperationRenderer extends SqlMigrationOperationRenderer {
 	}
 }
 
+/**
+ * SQLite-specific renderer for temporal SQL functions.<br>
+ * Specializes the rendering of temporal extraction, truncation, epoch conversion, current date and time access, temporal addition and subtraction, date and time conversion and interval rendering using SQLite's {@code strftime} and {@code datetime} functions.<br>
+ *
+ * @author Luis-St
+ */
 class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	
+	/**
+	 * Constructs a new SQLite temporal function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqliteTemporalFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
 	
+	/**
+	 * Converts the given temporal part name to the corresponding SQLite datetime modifier unit.<br>
+	 *
+	 * @param part The temporal part name to convert
+	 * @return The SQLite datetime modifier unit for the given part
+	 * @throws NullPointerException If the temporal part is null
+	 */
 	private static @NonNull String toSqliteModifier(@NonNull String part) {
 		Objects.requireNonNull(part, "Temporal part must not be null");
 		
@@ -584,8 +691,20 @@ class SqliteTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	}
 }
 
+/**
+ * SQLite-specific renderer for string SQL functions.<br>
+ * Specializes the rendering of distinct or ordered concatenation using {@code group_concat}, the position function using {@code INSTR}, the substring, trim, left and right functions and emulates left and right padding using SQLite primitives.<br>
+ *
+ * @author Luis-St
+ */
 class SqliteStringFunctionRenderer extends SqlStringFunctionRenderer {
 	
+	/**
+	 * Constructs a new SQLite string function renderer for the given dialect.<br>
+	 *
+	 * @param dialect The dialect this renderer belongs to
+	 * @throws NullPointerException If the dialect is null
+	 */
 	SqliteStringFunctionRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
 	}
@@ -679,6 +798,16 @@ class SqliteStringFunctionRenderer extends SqlStringFunctionRenderer {
 		return this.renderPad(function.expression(), function.length(), function.fill(), false);
 	}
 	
+	/**
+	 * Renders a left or right padding expression emulated using SQLite string primitives.<br>
+	 *
+	 * @param expression The expression to pad
+	 * @param length The expression giving the target length
+	 * @param fill The expression giving the fill character
+	 * @param left Whether to pad on the left ({@code true}) or on the right ({@code false})
+	 * @return The rendered padding expression
+	 * @throws SqlException If an error occurs while rendering the expressions
+	 */
 	private @NonNull SqlRendered renderPad(@NonNull SqlExpression<?> expression, @NonNull SqlExpression<?> length, @NonNull SqlExpression<?> fill, boolean left) throws SqlException {
 		SqlRendered value = expression.toSql(this.dialect);
 		SqlRendered count = length.toSql(this.dialect);

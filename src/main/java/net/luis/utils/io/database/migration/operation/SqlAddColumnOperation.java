@@ -25,17 +25,24 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Migration operation that adds a new column to an existing table.<br>
  *
  * @author Luis-St
  *
+ * @param column The column to add
+ * @param type The sql type of the column
+ * @param options The options describing constraints and the default value of the column
  */
-
 public record SqlAddColumnOperation(
 	@NonNull SqlColumn<?, ?> column,
 	@NonNull SqlType<?> type,
 	@NonNull SqlColumnOptions options
 ) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new add column operation with the given column, type and options.<br>
+	 * @throws NullPointerException If the column, type or options are null
+	 */
 	public SqlAddColumnOperation {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

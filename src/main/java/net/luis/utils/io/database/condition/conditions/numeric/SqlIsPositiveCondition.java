@@ -25,13 +25,18 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a numeric value is positive (greater than zero).<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
  */
-
 public record SqlIsPositiveCondition(@NonNull SqlExpression<?> value) implements SqlNumericCondition {
 	
+	/**
+	 * Constructs a new is-positive condition with the given value expression.<br>
+	 *
+	 */
 	public SqlIsPositiveCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 	}

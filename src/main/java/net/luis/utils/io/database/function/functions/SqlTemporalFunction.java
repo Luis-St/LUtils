@@ -21,10 +21,12 @@ package net.luis.utils.io.database.function.functions;
 import net.luis.utils.io.database.function.SqlFunction;
 
 /**
+ * Marker interface grouping all sql temporal functions.<br>
+ * Temporal functions operate on date and time values.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the value the function evaluates to
  */
-
 @FunctionalInterface
 public interface SqlTemporalFunction<T> extends SqlFunction<T> {}

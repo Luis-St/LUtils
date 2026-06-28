@@ -26,16 +26,24 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code RANK} window function.<br>
+ * It assigns a rank to each row within its window partition, leaving gaps in the ranking after ties.<br>
  *
  * @author Luis-St
  *
+ * @param over The window clause defining the partitioning and ordering
+ * @param type The type of the resulting value
+ * @param <T> The numeric type of the resulting value
  */
-
 public record SqlRankFunction<T extends Number>(
 	@NonNull SqlWindowClause over,
 	@NonNull SqlType<T> type
 ) implements SqlWindowFunction<T> {
 	
+	/**
+	 * Constructs a new sql rank function with the given window clause and type.<br>
+	 * @throws NullPointerException If the window clause or type is null
+	 */
 	public SqlRankFunction {
 		Objects.requireNonNull(over, "Sql window clause must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

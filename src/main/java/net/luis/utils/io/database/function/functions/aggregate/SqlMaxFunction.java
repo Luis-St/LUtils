@@ -26,13 +26,21 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code MAX} aggregate function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to determine the maximum of
+ *
+ * @param <T> The type of the expression
  */
 
 public record SqlMaxFunction<T>(@NonNull SqlExpression<T> expression) implements SqlAggregateFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new maximum function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlMaxFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

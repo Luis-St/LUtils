@@ -27,16 +27,24 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code FIRST_VALUE} window function.<br>
+ * It returns the value of the column from the first row within the window partition.<br>
  *
  * @author Luis-St
  *
+ * @param column The expression whose value is taken from the first row
+ * @param over The window clause defining the partitioning and ordering
+ * @param <T> The type of the resulting value
  */
-
 public record SqlFirstValueFunction<T>(
 	@NonNull SqlExpression<T> column,
 	@NonNull SqlWindowClause over
 ) implements SqlWindowFunction<T> {
 	
+	/**
+	 * Constructs a new sql first value function with the given column and window clause.<br>
+	 * @throws NullPointerException If the column or window clause is null
+	 */
 	public SqlFirstValueFunction {
 		Objects.requireNonNull(column, "Sql column expression must not be null");
 		Objects.requireNonNull(over, "Sql window clause must not be null");

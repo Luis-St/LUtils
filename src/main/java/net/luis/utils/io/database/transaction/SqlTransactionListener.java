@@ -19,15 +19,26 @@
 package net.luis.utils.io.database.transaction;
 
 /**
+ * A callback interface that is notified about lifecycle events of a transaction.<br>
+ * Listeners can be registered on a transaction to react after it has been committed, rolled back or closed.<br>
+ * All methods are optional and default to doing nothing, so implementations only need to override the events they are interested in.<br>
  *
  * @author Luis-St
- *
  */
 public interface SqlTransactionListener {
 	
+	/**
+	 * Invoked after the transaction has been successfully committed.<br>
+	 */
 	default void afterCommit() {}
 	
+	/**
+	 * Invoked after the transaction has been rolled back.<br>
+	 */
 	default void afterRollback() {}
 	
+	/**
+	 * Invoked after the transaction has been closed, regardless of whether it was committed or rolled back.<br>
+	 */
 	default void afterClose() {}
 }

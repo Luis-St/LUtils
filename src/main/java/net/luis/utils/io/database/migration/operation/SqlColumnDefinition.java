@@ -25,17 +25,24 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Defines a column together with its sql type and options for use in a migration operation.<br>
  *
  * @author Luis-St
  *
+ * @param column The column being defined
+ * @param type The sql type of the column
+ * @param options The options describing constraints and the default value of the column
  */
-
 public record SqlColumnDefinition(
 	@NonNull SqlColumn<?, ?> column,
 	@NonNull SqlType<?> type,
 	@NonNull SqlColumnOptions options
 ) {
 	
+	/**
+	 * Constructs a new column definition with the given column, type and options.<br>
+	 * @throws NullPointerException If the column, type or options are null
+	 */
 	public SqlColumnDefinition {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		Objects.requireNonNull(type, "Sql type must not be null");

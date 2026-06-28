@@ -19,14 +19,22 @@
 package net.luis.utils.io.database.expression.orderable;
 
 /**
+ * Represents how null values are ordered within an ordered sql expression.<br>
  *
  * @author Luis-St
- *
  */
-
 public enum SqlNullOrdering {
 	
+	/**
+	 * The database default null ordering is used.<br>
+	 */
 	DEFAULT,
+	/**
+	 * Null values are ordered before non-null values.<br>
+	 */
 	NULLS_FIRST,
+	/**
+	 * Null values are ordered after non-null values.<br>
+	 */
 	NULLS_LAST
 }

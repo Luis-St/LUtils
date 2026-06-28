@@ -21,11 +21,11 @@ package net.luis.utils.io.database.condition;
 import org.jspecify.annotations.NonNull;
 
 /**
+ * A condition that always evaluates to {@code true}.<br>
+ * Negating this condition yields a {@link SqlNeverCondition}.<br>
  *
  * @author Luis-St
- *
  */
-
 public record SqlAlwaysCondition() implements SqlCondition {
 	
 	@Override

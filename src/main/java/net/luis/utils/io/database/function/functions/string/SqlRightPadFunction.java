@@ -26,9 +26,15 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code RPAD} (right pad) function.<br>
+ * Pads the given string expression on the right with the fill characters up to the given length.<br>
  *
  * @author Luis-St
  *
+ * @param expression The string expression to pad
+ * @param length The target length of the padded result
+ * @param fill The characters used to pad the expression on the right
+ * @param <T> The character sequence type of the expression
  */
 
 public record SqlRightPadFunction<T extends CharSequence>(
@@ -37,6 +43,10 @@ public record SqlRightPadFunction<T extends CharSequence>(
 	@NonNull SqlExpression<? extends CharSequence> fill
 ) implements SqlStringFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new right pad function with the given expression, length and fill.<br>
+	 * @throws NullPointerException If the expression, length expression or fill expression is null
+	 */
 	public SqlRightPadFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(length, "Sql length expression must not be null");

@@ -25,13 +25,18 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a numeric value is equal to zero.<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
  */
-
 public record SqlIsZeroCondition(@NonNull SqlExpression<?> value) implements SqlNumericCondition {
 	
+	/**
+	 * Constructs a new is-zero condition with the given value expression.<br>
+	 * @throws NullPointerException If the value expression is null
+	 */
 	public SqlIsZeroCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 	}

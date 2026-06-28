@@ -44,14 +44,34 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * A query that updates rows in a table.<br>
+ * Column assignments are added through the {@code set}, {@code increment} and {@code decrement} methods and can be
+ * restricted to specific rows using a where condition.<br>
+ * The query is immutable, every builder method returns a new instance leaving this query unchanged.<br>
+ *
+ * @see SqlJoinableQuery
  *
  * @author Luis-St
  *
+ * @param <E> The type of the entities mapped from the affected rows
  */
 public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 	
+	/**
+	 * The immutable configuration backing this update query.
+	 */
 	private final SqlUpdateQueryConfig<E> config;
 	
+	/**
+	 * Constructs a new update query for the given table without any set clauses, joins or where condition.<br>
+	 *
+	 * @param table The table to update rows in
+	 * @param dialect The sql dialect used to render the query
+	 * @param connectionSource The connection source used to execute the query
+	 * @param queryTimeout The timeout applied to the query execution
+	 * @param rowMapper The row mapper used to map updated rows to entities
+	 * @throws NullPointerException If the table, dialect, connection source, query timeout or row mapper is null
+	 */
 	public SqlUpdateQuery(
 		@NonNull SqlTable<E> table,
 		@NonNull SqlDialect dialect,
@@ -62,10 +82,22 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 		this(new SqlUpdateQueryConfig<>(table, dialect, connectionSource, queryTimeout, rowMapper));
 	}
 	
+	/**
+	 * Constructs a new update query from the given configuration.<br>
+	 *
+	 * @param config The configuration backing this query
+	 * @throws NullPointerException If the config is null
+	 */
 	SqlUpdateQuery(@NonNull SqlUpdateQueryConfig<E> config) {
 		this.config = Objects.requireNonNull(config, "Sql update query config must not be null");
 	}
 	
+	/**
+	 * Creates a copy of this query with the given join clause appended.<br>
+	 *
+	 * @param join The join clause to append
+	 * @return A new update query with the additional join
+	 */
 	private @NonNull SqlUpdateQuery<E> withJoin(@NonNull SqlJoinClause join) {
 		return new SqlUpdateQuery<>(this.config.withJoins(SqlQuery.copyAndAdd(this.config.joins(), join)));
 	}
@@ -95,42 +127,113 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 		return this.withJoin(new SqlJoinClause(SqlJoinType.CROSS, table, null));
 	}
 	
+	/**
+	 * Adds a set clause that assigns {@code null} to the given column.<br>
+	 *
+	 * @param column The column to set to {@code null}
+	 * @return A new update query with the added set clause
+	 * @param <V> The value type of the column
+	 * @throws NullPointerException If the column is null
+	 */
 	public <V> @NonNull SqlUpdateQuery<E> setNull(@NonNull SqlColumn<E, V> column) {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
 		return new SqlUpdateQuery<>(this.config.withSetClauses(SqlQuery.copyAndAdd(this.config.setClauses(), new SqlSetClause<>(column, null, SqlSetType.NULL))));
 	}
 	
+	/**
+	 * Adds a set clause that assigns the given value to the column.<br>
+	 * If the value is {@code null}, the column is set to {@code null} as if {@link #setNull(SqlColumn)} was called.<br>
+	 *
+	 * @param column The column to assign
+	 * @param value The value to assign, or {@code null} to set the column to {@code null}
+	 * @return A new update query with the added set clause
+	 * @param <V> The value type of the column
+	 * @throws NullPointerException If the column is null
+	 */
 	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @Nullable V value) {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
 		return value == null ? this.setNull(column) : this.set(column, Sql.of(value, column.type()));
 	}
 	
+	/**
+	 * Adds a set clause that assigns the given expression to the column.<br>
+	 *
+	 * @param column The column to assign
+	 * @param expression The expression to assign to the column
+	 * @return A new update query with the added set clause
+	 * @param <V> The value type of the column
+	 * @throws NullPointerException If the column or expression is null
+	 */
 	public <V> @NonNull SqlUpdateQuery<E> set(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> expression) {
 		return new SqlUpdateQuery<>(this.config.withSetClauses(SqlQuery.copyAndAdd(this.config.setClauses(), new SqlSetClause<>(column, expression, SqlSetType.EXPRESSION))));
 	}
 	
+	/**
+	 * Adds a set clause that increments the column by the given numeric value.<br>
+	 *
+	 * @param column The numeric column to increment
+	 * @param incrementBy The value to add to the column
+	 * @return A new update query with the added set clause
+	 * @param <V> The numeric value type of the column
+	 * @throws NullPointerException If the column is null
+	 */
 	public <V extends Number> @NonNull SqlUpdateQuery<E> increment(@NonNull SqlColumn<E, V> column, @NonNull V incrementBy) {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
 		return this.increment(column, Sql.of(incrementBy, column.type()));
 	}
 	
+	/**
+	 * Adds a set clause that increments the column by the given numeric expression.<br>
+	 *
+	 * @param column The numeric column to increment
+	 * @param incrementByExpression The expression to add to the column
+	 * @return A new update query with the added set clause
+	 * @param <V> The numeric value type of the column
+	 * @throws NullPointerException If the column or expression is null
+	 */
 	public <V extends Number> @NonNull SqlUpdateQuery<E> increment(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> incrementByExpression) {
 		return new SqlUpdateQuery<>(this.config.withSetClauses(SqlQuery.copyAndAdd(this.config.setClauses(), new SqlSetClause<>(column, incrementByExpression, SqlSetType.INCREMENT))));
 	}
 	
+	/**
+	 * Adds a set clause that decrements the column by the given numeric value.<br>
+	 *
+	 * @param column The numeric column to decrement
+	 * @param decrementBy The value to subtract from the column
+	 * @return A new update query with the added set clause
+	 * @param <V> The numeric value type of the column
+	 * @throws NullPointerException If the column is null
+	 */
 	public <V extends Number> @NonNull SqlUpdateQuery<E> decrement(@NonNull SqlColumn<E, V> column, @NonNull V decrementBy) {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
 		return this.decrement(column, Sql.of(decrementBy, column.type()));
 	}
 	
+	/**
+	 * Adds a set clause that decrements the column by the given numeric expression.<br>
+	 *
+	 * @param column The numeric column to decrement
+	 * @param decrementByExpression The expression to subtract from the column
+	 * @return A new update query with the added set clause
+	 * @param <V> The numeric value type of the column
+	 * @throws NullPointerException If the column or expression is null
+	 */
 	public <V extends Number> @NonNull SqlUpdateQuery<E> decrement(@NonNull SqlColumn<E, V> column, @NonNull SqlExpression<V> decrementByExpression) {
 		return new SqlUpdateQuery<>(this.config.withSetClauses(SqlQuery.copyAndAdd(this.config.setClauses(), new SqlSetClause<>(column, decrementByExpression, SqlSetType.DECREMENT))));
 	}
 	
+	/**
+	 * Adds a where condition restricting which rows are updated.<br>
+	 * If a where condition is already present, both are combined using a logical conjunction.<br>
+	 *
+	 * @param condition The condition to add
+	 * @return A new update query with the added where condition
+	 * @throws NullPointerException If the condition is null
+	 */
 	public @NonNull SqlUpdateQuery<E> where(@NonNull SqlCondition condition) {
 		Objects.requireNonNull(condition, "Sql where condition must not be null");
 		
@@ -139,10 +242,21 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 		return new SqlUpdateQuery<>(this.config.withWhereCondition(combined));
 	}
 	
+	/**
+	 * Confirms that this query may update all rows even without a where condition.<br>
+	 * @return A new update query that is allowed to update all rows
+	 */
 	public @NonNull SqlUpdateQuery<E> allowAll() {
 		return new SqlUpdateQuery<>(this.config.withAllowAll());
 	}
 	
+	/**
+	 * Executes this update query and returns the number of affected rows.<br>
+	 *
+	 * @return The number of updated rows
+	 * @throws SqlStatementBuilderException If the query has no where condition and {@link #allowAll()} was not called
+	 * @throws SqlException If an error occurs while executing the query
+	 */
 	public int execute() throws SqlException {
 		if (this.config.whereCondition() == null && !this.config.allowAll()) {
 			throw new SqlStatementBuilderException("UPDATE without WHERE clause would affect all rows, call allowAll() to confirm this is intentional");
@@ -150,6 +264,13 @@ public class SqlUpdateQuery<E> implements SqlJoinableQuery<E> {
 		return SqlQueryExecutor.executeUpdate(this.config.dialect(), this.config.connectionSource(), this.toSql(this.config.dialect()), this.config.queryTimeout());
 	}
 	
+	/**
+	 * Executes this update query and returns the updated rows mapped to entities.<br>
+	 *
+	 * @return The list of updated entities
+	 * @throws SqlDialectFeatureException If the dialect does not support returning rows from an update
+	 * @throws SqlException If an error occurs while executing the query
+	 */
 	public @NonNull List<E> returning() throws SqlException {
 		if (!this.config.dialect().isFeatureSupported(SqlFeature.UPDATE_RETURNING)) {
 			throw new SqlDialectFeatureException(SqlFeature.UPDATE_RETURNING, this.config.dialect());

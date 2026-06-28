@@ -50,24 +50,50 @@ import java.sql.*;
 import java.util.*;
 
 /**
+ * Abstract base implementation of {@link SqlDialect} providing shared dialect behavior.<br>
+ * It manages the type registry and renderers, implements common feature checks, identifier quoting and<br>
+ * SQL rendering helpers, and defines abstract or protected hooks that concrete dialects override.<br>
  *
  * @author Luis-St
- *
  */
 
 @SuppressWarnings("SqlSourceToSinkFlow")
 public abstract class AbstractSqlDialect implements SqlDialect {
 	
+	/**
+	 * The name of the internal table used to store schema column metadata.
+	 */
 	private static final String SCHEMA_COLUMNS_TABLE = "_sql_schema_columns";
+	/**
+	 * The name of the internal table used to store schema check constraint metadata.
+	 */
 	private static final String SCHEMA_CHECK_CONSTRAINTS_TABLE = "_sql_schema_check_constraints";
+	/**
+	 * The type registry holding the dialect-specific type mappings.
+	 */
 	private final SqlTypeRegistry typeRegistry;
+	/**
+	 * The renderer providing the dialect-specific rendering components.
+	 */
 	private final SqlDialectRenderer renderer;
 	
+	/**
+	 * Constructs a new abstract sql dialect.<br>
+	 * The type registry and renderer are created using {@link #createTypeRegistry()} and {@link #createRenderer()}.<br>
+	 */
 	protected AbstractSqlDialect() {
 		this.typeRegistry = this.createTypeRegistry();
 		this.renderer = this.createRenderer();
 	}
 	
+	/**
+	 * Reads the given sql xml value into an {@link XmlElement}.<br>
+	 * If the content is missing the xml declaration, a default declaration is prepended before parsing.<br>
+	 *
+	 * @param xml The sql xml value to read or {@code null}
+	 * @return The parsed xml element or {@code null} if the given value is {@code null}
+	 * @throws SQLException If accessing the sql xml value fails
+	 */
 	protected static @Nullable XmlElement readXmlElement(@Nullable SQLXML xml) throws SQLException {
 		if (xml == null) {
 			return null;
@@ -81,10 +107,20 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		}
 	}
 	
+	/**
+	 * Creates the type registry used by this dialect.<br>
+	 * By default an empty registry is returned, concrete dialects should override this to register their type mappings.<br>
+	 * @return The type registry for this dialect
+	 */
 	protected @NonNull SqlTypeRegistry createTypeRegistry() {
 		return SqlTypeRegistry.empty();
 	}
 	
+	/**
+	 * Creates the renderer used by this dialect.<br>
+	 * By default a renderer with standard components is returned, concrete dialects should override this to customize rendering.<br>
+	 * @return The renderer for this dialect
+	 */
 	protected @NonNull SqlDialectRenderer createRenderer() {
 		return SqlDialectRenderer.builder(this).build();
 	}
@@ -138,6 +174,12 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		);
 	}
 	
+	/**
+	 * Resolves the native type name for the given base type by delegating to the matching scalar or parameterized type hook.<br>
+	 *
+	 * @param baseType The base type to resolve the native type name for
+	 * @return An optional containing the native type name or an empty optional if the type is not supported
+	 */
 	private @NonNull Optional<String> resolveTypeName(@NonNull SqlType<?> baseType) {
 		return switch (baseType) {
 			case SqlScalarType<?> scalar -> this.getScalarTypeName(scalar.jdbcType());
@@ -158,6 +200,13 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		return this.typeRegistry.resolve(type).map(SqlTypeMapping::reader);
 	}
 	
+	/**
+	 * Resolves the native type name for the given jdbc scalar type.<br>
+	 * Concrete dialects may override this to provide dialect-specific scalar type names.<br>
+	 *
+	 * @param jdbcType The jdbc type code as defined in {@link Types}
+	 * @return An optional containing the native type name or an empty optional if the type is not supported
+	 */
 	protected @NonNull Optional<String> getScalarTypeName(int jdbcType) {
 		return Optional.ofNullable(switch (jdbcType) {
 			case Types.BOOLEAN -> "BOOLEAN";
@@ -177,6 +226,15 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		});
 	}
 	
+	/**
+	 * Resolves the native type name for the given jdbc type and parameter.<br>
+	 * The resolution is delegated to the matching parameter-specific hook based on the parameter type.<br>
+	 *
+	 * @param jdbcType The jdbc type code as defined in {@link Types}
+	 * @param parameter The parameter describing the type configuration
+	 * @return An optional containing the native type name or an empty optional if the type is not supported
+	 * @throws NullPointerException If the parameter is null
+	 */
 	protected @NonNull Optional<String> getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) {
 		Objects.requireNonNull(parameter, "Sql parameter must not be null");
 		
@@ -188,6 +246,15 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		};
 	}
 	
+	/**
+	 * Resolves the native type name for the given jdbc type and length parameter.<br>
+	 * Concrete dialects may override this to provide dialect-specific length-parameterized type names.<br>
+	 *
+	 * @param jdbcType The jdbc type code as defined in {@link Types}
+	 * @param length The length parameter describing the type length
+	 * @return An optional containing the native type name or an empty optional if the type is not supported
+	 * @throws NullPointerException If the length parameter is null
+	 */
 	protected @NonNull Optional<String> getLengthParameterizedTypeName(int jdbcType, @NonNull SqlLengthParameter length) {
 		Objects.requireNonNull(length, "Length parameter must not be null");
 		
@@ -202,6 +269,15 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		});
 	}
 	
+	/**
+	 * Resolves the native type name for the given jdbc type and precision parameter.<br>
+	 * Concrete dialects may override this to provide dialect-specific precision-parameterized type names.<br>
+	 *
+	 * @param jdbcType The jdbc type code as defined in {@link Types}
+	 * @param precision The precision parameter describing the precision and scale
+	 * @return An optional containing the native type name or an empty optional if the type is not supported
+	 * @throws NullPointerException If the precision parameter is null
+	 */
 	protected @NonNull Optional<String> getPrecisionParameterizedTypeName(int jdbcType, @NonNull SqlPrecisionParameter precision) {
 		Objects.requireNonNull(precision, "Precision parameter must not be null");
 		
@@ -212,6 +288,15 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		});
 	}
 	
+	/**
+	 * Resolves the native type name for the given jdbc type and fractional parameter.<br>
+	 * Concrete dialects may override this to provide dialect-specific fractional-parameterized type names.<br>
+	 *
+	 * @param jdbcType The jdbc type code as defined in {@link Types}
+	 * @param fractional The fractional parameter describing the fractional seconds digits
+	 * @return An optional containing the native type name or an empty optional if the type is not supported
+	 * @throws NullPointerException If the fractional parameter is null
+	 */
 	protected @NonNull Optional<String> getFractionalParameterizedTypeName(int jdbcType, @NonNull SqlFractionalParameter fractional) {
 		Objects.requireNonNull(fractional, "Fractional parameter must not be null");
 		
@@ -263,6 +348,15 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		return renderer.toSql();
 	}
 	
+	/**
+	 * Renders a single ordering item into the given renderer.<br>
+	 * If the orderable carries an explicit ordering its ordering and null ordering are appended, otherwise only the expression is rendered.<br>
+	 *
+	 * @param renderer The renderer to write the ordering item into
+	 * @param orderable The orderable to render
+	 * @throws NullPointerException If the renderer or the orderable is null
+	 * @throws SqlException If the orderable type is unknown or rendering fails
+	 */
 	protected void renderOrderingItem(@NonNull SqlRenderer renderer, @NonNull SqlOrderable<?> orderable) throws SqlException {
 		Objects.requireNonNull(renderer, "Renderer must not be null");
 		Objects.requireNonNull(orderable, "Orderable must not be null");
@@ -391,6 +485,16 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		throw new SqlDialectFeatureException(SqlFeature.RETURNING, this);
 	}
 	
+	/**
+	 * Renders a standard {@code RETURNING} clause for the given columns.<br>
+	 * If the column list is empty a wildcard is rendered, otherwise the quoted column names are rendered.<br>
+	 * This helper can be used by dialects that support the standard returning syntax.<br>
+	 *
+	 * @param columns The columns to return
+	 * @return The rendered returning clause
+	 * @throws NullPointerException If the columns are null
+	 * @throws SqlException If rendering fails
+	 */
 	protected @NonNull SqlRendered renderStandardReturning(@NonNull List<SqlColumn<?, ?>> columns) throws SqlException {
 		Objects.requireNonNull(columns, "Sql columns must not be null");
 		
@@ -541,6 +645,13 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		return List.copyOf(results);
 	}
 	
+	/**
+	 * Returns the sql query used to introspect check constraints for a table.<br>
+	 * The query is expected to take the schema and table name as parameters and to select the constraint name and check clause.<br>
+	 * Concrete dialects must implement this to provide their dialect-specific introspection query.<br>
+	 *
+	 * @return The check constraints query string or {@code null} if the dialect does not support check constraint introspection
+	 */
 	@Language("SQL")
 	protected abstract @Nullable String getCheckConstraintsQueryString();
 	

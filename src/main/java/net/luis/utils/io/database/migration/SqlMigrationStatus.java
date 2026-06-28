@@ -19,14 +19,22 @@
 package net.luis.utils.io.database.migration;
 
 /**
+ * Represents the state of a migration as tracked by the migration framework.<br>
  *
  * @author Luis-St
- *
  */
-
 public enum SqlMigrationStatus {
 	
+	/**
+	 * The migration is known but has not been applied yet.<br>
+	 */
 	PENDING,
+	/**
+	 * The migration has been applied to the database.<br>
+	 */
 	APPLIED,
+	/**
+	 * The migration has been applied and then rolled back.<br>
+	 */
 	ROLLED_BACK
 }

@@ -25,16 +25,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a string value matches the given sql {@code LIKE} pattern.<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
+ * @param pattern The pattern to match against
  */
-
 public record SqlLikeCondition(
 	@NonNull SqlExpression<?> value,
 	@NonNull SqlExpression<?> pattern
 ) implements SqlStringCondition {
 	
+	/**
+	 * Constructs a new like condition with the given value and pattern expressions.<br>
+	 * @throws NullPointerException If the value or pattern expression is null
+	 */
 	public SqlLikeCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 		Objects.requireNonNull(pattern, "Sql pattern expression must not be null");

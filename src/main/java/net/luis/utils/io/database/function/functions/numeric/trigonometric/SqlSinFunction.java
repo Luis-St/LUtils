@@ -27,13 +27,19 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code SIN} trigonometric function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The operand expression
  */
 
 public record SqlSinFunction(@NonNull SqlExpression<? extends Number> expression) implements SqlNumericFunction<Double> {
 	
+	/**
+	 * Constructs a new sine function with the given operand expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlSinFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

@@ -26,13 +26,21 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code SUM} aggregate function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to sum
+ *
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlSumFunction<T extends Number>(@NonNull SqlExpression<T> expression) implements SqlAggregateFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new sum function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlSumFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

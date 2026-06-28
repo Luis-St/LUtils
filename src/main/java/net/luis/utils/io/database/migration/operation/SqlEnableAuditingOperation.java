@@ -37,6 +37,10 @@ public record SqlEnableAuditingOperation(
 	@NonNull SqlAuditConfig config
 ) implements SqlMigrationOperation {
 	
+	/**
+	 * Constructs a new enable auditing operation with the given table and audit configuration.<br>
+	 * @throws NullPointerException If the table or config is null
+	 */
 	public SqlEnableAuditingOperation {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(config, "Sql audit config must not be null");

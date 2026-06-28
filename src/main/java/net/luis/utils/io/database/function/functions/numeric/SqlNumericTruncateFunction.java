@@ -26,13 +26,20 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code TRUNC} (truncate) function that removes the fractional part of a value.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to truncate
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlNumericTruncateFunction<T extends Number>(@NonNull SqlExpression<T> expression) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new numeric truncate function with the given expression.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlNumericTruncateFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

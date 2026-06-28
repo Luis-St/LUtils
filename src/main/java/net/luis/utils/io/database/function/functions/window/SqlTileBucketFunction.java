@@ -27,17 +27,27 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code NTILE} window function.<br>
+ * It distributes the rows of each window partition into the given number of buckets and<br>
+ * returns the bucket number assigned to each row.<br>
  *
  * @author Luis-St
  *
+ * @param buckets The expression defining the number of buckets to distribute the rows into
+ * @param over The window clause defining the partitioning and ordering
+ * @param type The type of the resulting value
+ * @param <T> The numeric type of the resulting value
  */
-
 public record SqlTileBucketFunction<T extends Number>(
 	@NonNull SqlExpression<? extends Number> buckets,
 	@NonNull SqlWindowClause over,
 	@NonNull SqlType<T> type
 ) implements SqlWindowFunction<T> {
 	
+	/**
+	 * Constructs a new sql tile bucket function with the given buckets expression, window clause and type.<br>
+	 * @throws NullPointerException If the buckets expression, window clause or type is null
+	 */
 	public SqlTileBucketFunction {
 		Objects.requireNonNull(buckets, "Sql buckets expression must not be null");
 		Objects.requireNonNull(over, "Sql window clause must not be null");

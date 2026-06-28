@@ -19,16 +19,31 @@
 package net.luis.utils.io.database;
 
 /**
+ * Represents the referential action applied to the rows of a child table when a referenced parent row is updated or deleted.<br>
+ * The action defines how a foreign key constraint reacts to changes of the referenced row.<br>
  *
  * @author Luis-St
- *
  */
-
 public enum SqlReferentialAction {
 	
+	/**
+	 * Performs no referential action, deferring the constraint check to the end of the statement.<br>
+	 */
 	NO_ACTION,
+	/**
+	 * Rejects the update or delete of the referenced row if any child row still references it.<br>
+	 */
 	RESTRICT,
+	/**
+	 * Propagates the update or delete to the referencing child rows.<br>
+	 */
 	CASCADE,
+	/**
+	 * Sets the referencing columns of the child rows to {@code null}.<br>
+	 */
 	SET_NULL,
+	/**
+	 * Sets the referencing columns of the child rows to their default value.<br>
+	 */
 	SET_DEFAULT
 }

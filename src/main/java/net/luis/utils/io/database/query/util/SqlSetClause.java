@@ -29,17 +29,35 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Represents a single column assignment of a sql update statement.<br>
+ * A set clause assigns a value to a column based on the {@link SqlSetType set type}.<br>
+ * The expression is only required if the type is not {@link SqlSetType#NULL}.<br>
+ *
+ * @see SqlSetType
+ * @see SqlColumn
  *
  * @author Luis-St
  *
+ * @param <E> The type of the entity the column belongs to
+ * @param <V> The type of the value held by the column
+ * @param column The column that is assigned a value
+ * @param expression The expression used to compute the assigned value, or {@code null} if the type is {@link SqlSetType#NULL}
+ * @param type The set type that determines how the value is computed
  */
-
 public record SqlSetClause<E, V>(
 	@NonNull SqlColumn<E, V> column,
 	@Nullable SqlExpression<V> expression,
 	@NonNull SqlSetType type
 ) implements SqlRenderable {
 	
+	/**
+	 * Constructs a new sql set clause with the given column, expression and set type.<br>
+	 *
+	 * @param column The column that is assigned a value
+	 * @param expression The expression used to compute the assigned value, or {@code null} if the type is {@link SqlSetType#NULL}
+	 * @param type The set type that determines how the value is computed
+	 * @throws NullPointerException If the column or the type is null, or if the expression is null and the type is not {@link SqlSetType#NULL}
+	 */
 	public SqlSetClause {
 		Objects.requireNonNull(column, "Sql Column must not be null");
 		Objects.requireNonNull(type, "Sql set type must not be null");

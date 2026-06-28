@@ -35,11 +35,26 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Holds the immutable state of a {@link SqlInsertQuery}.<br>
+ * Supports plain inserts as well as upsert, insert-or-ignore and insert-from-select variants.<br>
  *
  * @author Luis-St
  *
+ * @param <E> The type of the entities to insert
+ * @param table The table to insert rows into
+ * @param dialect The sql dialect used to render the query
+ * @param connectionSource The connection source used to execute the query
+ * @param queryTimeout The timeout applied to the query execution
+ * @param rowMapper The row mapper used to map result rows to entities
+ * @param entities The entities to insert
+ * @param fromSelect The select query providing the rows for an insert-from-select query, or {@code null}
+ * @param conflictColumn The conflict column used for upsert queries, or {@code null}
+ * @param conflictColumns The conflict columns used for insert-or-ignore queries, or {@code null}
+ * @param isUpsert Whether this is an upsert query
+ * @param isInsertOrIgnore Whether this is an insert-or-ignore query
+ * @param isInsertFromSelect Whether this is an insert-from-select query
+ * @param auditUserProvider The provider supplying the current user for audit columns, or {@code null}
  */
-
 record SqlInsertQueryConfig<E>(
 	@NonNull SqlTable<E> table,
 	@NonNull SqlDialect dialect,
@@ -56,6 +71,12 @@ record SqlInsertQueryConfig<E>(
 	@Nullable SqlAuditUserProvider auditUserProvider
 ) {
 	
+	/**
+	 * Constructs a new insert query configuration validating the required components.<br>
+	 *
+	 * @throws NullPointerException If the table, dialect, connection source, query timeout, row mapper or entities are null
+	 * @throws IllegalArgumentException If the entities list is empty and this is not an insert-from-select query
+	 */
 	SqlInsertQueryConfig {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
@@ -69,6 +90,27 @@ record SqlInsertQueryConfig<E>(
 		}
 	}
 	
+	/**
+	 * Creates a new insert query configuration validating the consistency of the insert variant flags.<br>
+	 *
+	 * @param table The table to insert rows into
+	 * @param dialect The sql dialect used to render the query
+	 * @param connectionSource The connection source used to execute the query
+	 * @param queryTimeout The timeout applied to the query execution
+	 * @param rowMapper The row mapper used to map result rows to entities
+	 * @param entities The entities to insert
+	 * @param fromSelect The select query providing the rows for an insert-from-select query, or {@code null}
+	 * @param conflictColumn The conflict column used for upsert queries, or {@code null}
+	 * @param conflictColumns The conflict columns used for insert-or-ignore queries, or {@code null}
+	 * @param isUpsert Whether this is an upsert query
+	 * @param isInsertOrIgnore Whether this is an insert-or-ignore query
+	 * @param isInsertFromSelect Whether this is an insert-from-select query
+	 * @param auditUserProvider The provider supplying the current user for audit columns, or {@code null}
+	 * @return The created insert query configuration
+	 * @param <E> The type of the entities to insert
+	 * @throws SqlStatementBuilderException If upsert and insert-or-ignore are combined, an upsert is missing its conflict column,
+	 * an insert-or-ignore is missing its conflict columns, or an insert-from-select is missing its source query
+	 */
 	static <E> @NonNull SqlInsertQueryConfig<E> create(
 		@NonNull SqlTable<E> table,
 		@NonNull SqlDialect dialect,

@@ -27,9 +27,13 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code ROUND} function that rounds a value to a given precision.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to round
+ * @param precision The number of decimal places to round to or {@code null} to round to the nearest integer
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlRoundFunction<T extends Number>(
@@ -37,6 +41,10 @@ public record SqlRoundFunction<T extends Number>(
 	@Nullable SqlExpression<? extends Number> precision
 ) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new round function with the given expression and precision.<br>
+	 * @throws NullPointerException If the expression is null
+	 */
 	public SqlRoundFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 	}

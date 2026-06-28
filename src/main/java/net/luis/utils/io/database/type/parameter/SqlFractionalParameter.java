@@ -23,15 +23,26 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A {@link SqlParameter} that holds a number of fractional digits.<br>
+ * It is used to configure parameterized sql types that take a fractional digits argument such as the {@code n} in a {@code TIMESTAMP(n)}.<br>
+ *
+ * @see SqlParameter
  *
  * @author Luis-St
- *
  */
-
 public final class SqlFractionalParameter implements SqlParameter {
 	
+	/**
+	 * The number of fractional digits.<br>
+	 */
 	private final int digits;
 	
+	/**
+	 * Constructs a new fractional parameter with the given number of fractional digits.<br>
+	 *
+	 * @param digits The number of fractional digits
+	 * @throws IllegalArgumentException If the digits are not between 0 and 9 (both inclusive)
+	 */
 	SqlFractionalParameter(int digits) {
 		if (digits < 0 || digits > 9) {
 			throw new IllegalArgumentException("Fractional digits must be between 0 and 9");
@@ -39,6 +50,10 @@ public final class SqlFractionalParameter implements SqlParameter {
 		this.digits = digits;
 	}
 	
+	/**
+	 * Returns the number of fractional digits of this parameter.<br>
+	 * @return The fractional digits
+	 */
 	public int digits() {
 		return this.digits;
 	}

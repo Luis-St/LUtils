@@ -22,13 +22,18 @@ import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
 /**
+ * A sql expression that wraps another expression and derives its sql type from the wrapped expression.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the value the expression evaluates to
  */
-
 public interface SqlTypedNestedExpression<T> extends SqlExpression<T> {
 	
+	/**
+	 * Returns the wrapped expression.<br>
+	 * @return The wrapped expression
+	 */
 	@NonNull SqlExpression<T> expression();
 	
 	@Override

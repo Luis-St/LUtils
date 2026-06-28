@@ -25,15 +25,28 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Represents a composite primary key of a sql table that spans multiple columns.<br>
+ * A composite primary key combines two or more columns into a single primary key constraint.<br>
+ *
+ * @see SqlColumn
+ * @see SqlTable
  *
  * @author Luis-St
  *
+ * @param <E> The type of the entity the owning table maps to
  */
-
 public record SqlCompositePrimaryKey<E>(
 	@NonNull @Unmodifiable List<SqlColumn<E, ?>> columns
 ) {
 	
+	/**
+	 * Constructs a new composite primary key with the given columns.<br>
+	 * The columns are copied into an unmodifiable list.<br>
+	 *
+	 * @param columns The columns that make up the composite primary key
+	 * @throws NullPointerException If the columns list is null
+	 * @throws IllegalArgumentException If the columns list contains less than 2 columns
+	 */
 	public SqlCompositePrimaryKey {
 		Objects.requireNonNull(columns, "Sql referenced columns must not be null");
 		
@@ -44,6 +57,10 @@ public record SqlCompositePrimaryKey<E>(
 		columns = List.copyOf(columns);
 	}
 	
+	/**
+	 * Returns the columns that make up this composite primary key.<br>
+	 * @return The unmodifiable list of columns
+	 */
 	public @NonNull @Unmodifiable List<SqlColumn<E, ?>> referenceTarget() {
 		return this.columns;
 	}

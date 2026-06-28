@@ -24,6 +24,7 @@ import net.luis.utils.io.database.expression.orderable.*;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.type.SqlType;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -91,7 +92,7 @@ class SqlExpressionTest {
 	private record TestExpression(SqlType<String> type) implements SqlExpression<String> {
 		
 		@Override
-		public SqlRendered toSql(SqlDialect dialect) {
+		public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) {
 			return SqlRendered.of("test");
 		}
 	}

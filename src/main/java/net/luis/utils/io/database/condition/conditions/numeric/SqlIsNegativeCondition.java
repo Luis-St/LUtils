@@ -25,13 +25,18 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * A condition that checks whether a numeric value is negative (less than zero).<br>
  *
  * @author Luis-St
  *
+ * @param value The expression to check
  */
-
 public record SqlIsNegativeCondition(@NonNull SqlExpression<?> value) implements SqlNumericCondition {
 	
+	/**
+	 * Constructs a new is-negative condition with the given value expression.<br>
+	 * @throws NullPointerException If the value expression is null
+	 */
 	public SqlIsNegativeCondition {
 		Objects.requireNonNull(value, "Sql value expression must not be null");
 	}

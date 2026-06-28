@@ -25,18 +25,29 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
+ * Supplies the user that is recorded in the created-by and updated-by audit columns.<br>
+ * The provider returns an empty optional if no current user is available.<br>
  *
  * @author Luis-St
- *
  */
-
 @FunctionalInterface
 public interface SqlAuditUserProvider extends Supplier<Optional<String>> {
 	
+	/**
+	 * Creates a user provider that never supplies a user.<br>
+	 * @return A user provider that always returns an empty optional
+	 */
 	static @NonNull SqlAuditUserProvider empty() {
 		return Optional::empty;
 	}
 	
+	/**
+	 * Creates a user provider that always supplies the given user.<br>
+	 *
+	 * @param user The user to supply
+	 * @return A user provider that always returns the given user
+	 * @throws NullPointerException If the user is null
+	 */
 	static @NonNull SqlAuditUserProvider of(@NonNull String user) {
 		Objects.requireNonNull(user, "Sql audit user must not be null");
 		

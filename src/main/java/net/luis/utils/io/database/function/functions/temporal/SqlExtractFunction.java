@@ -27,9 +27,15 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code EXTRACT} function.<br>
+ * Extracts a temporal part from a temporal value.<br>
  *
  * @author Luis-St
  *
+ * @param expression The expression to extract the temporal part from
+ * @param part The temporal part to extract
+ * @param type The sql type of the result
+ * @param <T> The numeric result type of the function
  */
 
 public record SqlExtractFunction<T extends Number>(
@@ -38,6 +44,10 @@ public record SqlExtractFunction<T extends Number>(
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
+	/**
+	 * Constructs a new extract function with the given expression, temporal part and sql type.<br>
+	 * @throws NullPointerException If the expression, temporal part or sql type is null
+	 */
 	public SqlExtractFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(part, "Sql temporal part must not be null");

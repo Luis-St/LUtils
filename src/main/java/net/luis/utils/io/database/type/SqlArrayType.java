@@ -32,16 +32,30 @@ import java.sql.*;
 import java.util.Objects;
 
 /**
+ * A sql type representing an array whose elements are of a given element type.<br>
+ * Nested array types are not supported, the element type must not itself be an array type.<br>
+ *
+ * @see SqlType
  *
  * @author Luis-St
  *
+ * @param <E> The java type of the array elements
  */
-
 @SuppressWarnings({ "unchecked", "ClassEscapesDefinedScope" })
 public final class SqlArrayType<E> implements SqlType<E[]> {
 	
+	/**
+	 * The sql type of the array elements.
+	 */
 	private final SqlType<E> elementType;
 	
+	/**
+	 * Constructs a new array sql type with the given element type.<br>
+	 *
+	 * @param elementType The sql type of the array elements
+	 * @throws NullPointerException If the element type is null
+	 * @throws IllegalArgumentException If the element type is itself an array type
+	 */
 	SqlArrayType(@NonNull SqlType<E> elementType) {
 		Objects.requireNonNull(elementType, "Element type must not be null");
 		
@@ -51,6 +65,16 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 		this.elementType = elementType;
 	}
 	
+	/**
+	 * Converts the given value into the source representation of the given sql type.<br>
+	 * For a {@link MappedSqlType mapped} type the value is recursively converted using its target-to-source function, otherwise the value is returned unchanged.<br>
+	 *
+	 * @param type The sql type to convert the value for
+	 * @param value The value to convert
+	 * @return The converted source value
+	 * @throws NullPointerException If the type is null
+	 * @throws SqlException If the value could not be converted
+	 */
 	private static @Nullable Object toSourceValue(@NonNull SqlType<?> type, @Nullable Object value) throws SqlException {
 		Objects.requireNonNull(type, "Sql type must not be null");
 		if (type instanceof MappedSqlType<?, ?> mapped) {
@@ -59,6 +83,16 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 		return value;
 	}
 	
+	/**
+	 * Converts the given source value into the target representation of the given sql type.<br>
+	 * For a {@link MappedSqlType mapped} type the value is recursively converted using its source-to-target function, otherwise the value is returned unchanged.<br>
+	 *
+	 * @param type The sql type to convert the value for
+	 * @param value The source value to convert
+	 * @return The converted value or {@code null} if the converted source value is null
+	 * @throws NullPointerException If the type is null
+	 * @throws SqlException If the value could not be converted
+	 */
 	private static @Nullable Object fromSourceValue(@NonNull SqlType<?> type, @Nullable Object value) throws SqlException {
 		Objects.requireNonNull(type, "Sql type must not be null");
 		if (type instanceof MappedSqlType<?, ?> mapped) {
@@ -72,6 +106,10 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 		return value;
 	}
 	
+	/**
+	 * Returns the sql type of the array elements.<br>
+	 * @return The element sql type
+	 */
 	public @NonNull SqlType<E> elementType() {
 		return this.elementType;
 	}

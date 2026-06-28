@@ -26,9 +26,13 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL numeric division ({@code /}) function.<br>
  *
  * @author Luis-St
  *
+ * @param expression The dividend expression
+ * @param divisor The expression to divide by
+ * @param <T> The numeric type of the expression
  */
 
 public record SqlNumericDivideFunction<T extends Number>(
@@ -36,6 +40,10 @@ public record SqlNumericDivideFunction<T extends Number>(
 	@NonNull SqlExpression<? extends Number> divisor
 ) implements SqlNumericFunction<T>, SqlTypedNestedExpression<T> {
 	
+	/**
+	 * Constructs a new numeric divide function with the given expression and divisor.<br>
+	 * @throws NullPointerException If the expression or divisor is null
+	 */
 	public SqlNumericDivideFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(divisor, "Sql divisor expression must not be null");

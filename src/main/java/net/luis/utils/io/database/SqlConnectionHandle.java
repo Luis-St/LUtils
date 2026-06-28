@@ -24,15 +24,25 @@ import org.jspecify.annotations.NonNull;
 import java.sql.Connection;
 
 /**
+ * Represents a handle to a borrowed {@link Connection} obtained from a {@link SqlConnectionSource}.<br>
+ * Closing the handle releases the underlying connection back to its source, for example returning it to a connection pool.<br>
+ *
+ * @see SqlConnectionSource
  *
  * @author Luis-St
- *
  */
-
 public interface SqlConnectionHandle extends AutoCloseable {
 	
+	/**
+	 * Returns the underlying jdbc connection held by this handle.<br>
+	 * @return The underlying connection
+	 */
 	@NonNull Connection connection();
 	
+	/**
+	 * Releases the underlying connection back to its source.<br>
+	 * @throws SqlException If the connection could not be released
+	 */
 	@Override
 	void close() throws SqlException;
 }

@@ -21,18 +21,36 @@ package net.luis.utils.io.database.expression.orderable;
 import org.jspecify.annotations.NonNull;
 
 /**
+ * Represents something that can be turned into an ordered sql expression.<br>
+ * Provides factory methods for the supported value and null orderings.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the value the expression evaluates to
  */
-
 public interface SqlOrderable<T> {
 	
+	/**
+	 * Creates an ordered expression that sorts in ascending order.<br>
+	 * @return An ascending ordered expression
+	 */
 	@NonNull OrderedSqlExpression<T> ascending();
 	
+	/**
+	 * Creates an ordered expression that sorts in descending order.<br>
+	 * @return A descending ordered expression
+	 */
 	@NonNull OrderedSqlExpression<T> descending();
 	
+	/**
+	 * Creates an ordered expression that sorts null values first.<br>
+	 * @return An ordered expression with nulls ordered first
+	 */
 	@NonNull OrderedSqlExpression<T> nullsFirst();
 	
+	/**
+	 * Creates an ordered expression that sorts null values last.<br>
+	 * @return An ordered expression with nulls ordered last
+	 */
 	@NonNull OrderedSqlExpression<T> nullsLast();
 }

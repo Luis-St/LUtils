@@ -28,9 +28,15 @@ import java.time.temporal.Temporal;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code DATE_TRUNC} function.<br>
+ * Truncates a temporal value to the given temporal part.<br>
  *
  * @author Luis-St
  *
+ * @param expression The temporal expression to truncate
+ * @param part The temporal part to truncate to
+ * @param type The sql type of the result
+ * @param <T> The temporal result type of the function
  */
 
 public record SqlTemporalTruncateFunction<T extends Temporal>(
@@ -39,6 +45,10 @@ public record SqlTemporalTruncateFunction<T extends Temporal>(
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
+	/**
+	 * Constructs a new temporal truncate function with the given expression, temporal part and sql type.<br>
+	 * @throws NullPointerException If the expression, temporal part or sql type is null
+	 */
 	public SqlTemporalTruncateFunction {
 		Objects.requireNonNull(expression, "Sql expression must not be null");
 		Objects.requireNonNull(part, "Sql temporal part must not be null");

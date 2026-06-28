@@ -27,9 +27,16 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
+ * Represents the SQL {@code DATE_ADD} function.<br>
+ * Adds a temporal interval to a temporal value.<br>
  *
  * @author Luis-St
  *
+ * @param firstSummand The temporal expression to add the interval to
+ * @param part The temporal part of the interval to add
+ * @param secondSummand The expression providing the interval amount to add
+ * @param type The sql type of the result
+ * @param <T> The result type of the function
  */
 
 public record SqlTemporalAddFunction<T>(
@@ -39,6 +46,10 @@ public record SqlTemporalAddFunction<T>(
 	@NonNull SqlType<T> type
 ) implements SqlTemporalFunction<T> {
 	
+	/**
+	 * Constructs a new temporal add function with the given summands, temporal part and sql type.<br>
+	 * @throws NullPointerException If the first summand, temporal part, second summand or sql type is null
+	 */
 	public SqlTemporalAddFunction {
 		Objects.requireNonNull(firstSummand, "Sql first summand expression must not be null");
 		Objects.requireNonNull(part, "Sql temporal part must not be null");
