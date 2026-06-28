@@ -16,32 +16,26 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.definition;
+package net.luis.utils.io.token.lexer.rules.matchers;
 
-import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
+import net.luis.utils.io.token.lexer.rules.NegatableCharRule;
 
 /**
- * Token definition for a single character.<br>
- * This token definition matches a string that is equal to the token character.<br>
+ * A character rule that matches a single specific character.<br>
+ * This rule is useful for matching exact characters such as operators or delimiters.<br>
+ *
+ * @see NegatableCharRule
  *
  * @author Luis-St
  *
- * @param token The token character
+ * @param character The character to match against
  */
-public record CharTokenDefinition(
-	char token
-) implements TokenDefinition {
+public record LiteralCharRule(
+	char character
+) implements NegatableCharRule {
 	
 	@Override
-	public boolean matches(@NonNull String word) {
-		Objects.requireNonNull(word, "Word must not be null");
-		return word.length() == 1 && word.charAt(0) == this.token;
-	}
-	
-	@Override
-	public @NonNull String toString() {
-		return "CharTokenDefinition[token=" + ("" + this.token).replace("\t", "\\t").replace("\n", "\\n") + "]";
+	public boolean match(char c) {
+		return c == this.character;
 	}
 }

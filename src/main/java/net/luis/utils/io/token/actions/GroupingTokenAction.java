@@ -29,24 +29,39 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 
 /**
- * Token action that groups the tokens into a single token group.<br>
+ * Token action that groups the tokens into a single labeled token group.<br>
  * The grouping behavior depends on the specified {@link GroupingMode}.<br>
+ * The produced {@link TokenGroup} carries the label, which becomes the abstract syntax tree node kind.<br>
  *
  * @author Luis-St
  *
+ * @param label The label of the produced group, or an empty string for an unlabeled group
  * @param mode The grouping mode to use
  */
 public record GroupingTokenAction(
+	@NonNull String label,
 	@NonNull GroupingMode mode
 ) implements TokenAction {
 	
 	/**
-	 * Constructs a new grouping token action with the given mode.<br>
+	 * Constructs a new unlabeled grouping token action with the given mode.<br>
 	 *
 	 * @param mode The grouping mode to use
 	 * @throws NullPointerException If the mode is null
 	 */
+	public GroupingTokenAction(@NonNull GroupingMode mode) {
+		this("", mode);
+	}
+	
+	/**
+	 * Constructs a new grouping token action with the given label and mode.<br>
+	 *
+	 * @param label The label of the produced group, or an empty string for an unlabeled group
+	 * @param mode The grouping mode to use
+	 * @throws NullPointerException If the label or the mode is null
+	 */
 	public GroupingTokenAction {
+		Objects.requireNonNull(label, "Label must not be null");
 		Objects.requireNonNull(mode, "Grouping mode must not be null");
 	}
 	
@@ -62,6 +77,6 @@ public record GroupingTokenAction(
 				yield allTokens.subList(match.startIndex(), match.endIndex());
 			}
 		};
-		return Collections.singletonList(new TokenGroup(tokens));
+		return Collections.singletonList(new TokenGroup(this.label, tokens));
 	}
 }

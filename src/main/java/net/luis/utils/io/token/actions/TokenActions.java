@@ -73,6 +73,22 @@ public final class TokenActions {
 	}
 	
 	/**
+	 * Creates a token action that groups the tokens into a single labeled token group.<br>
+	 * The grouping behavior depends on the specified {@link GroupingMode}.<br>
+	 * The produced group carries the given label, which becomes the abstract syntax tree node kind.<br>
+	 *
+	 * @param label The label of the produced group, or an empty string for an unlabeled group
+	 * @param mode The grouping mode to use
+	 * @return The created grouping token action
+	 * @throws NullPointerException If the label or the mode is null
+	 * @see GroupingTokenAction
+	 * @see GroupingMode
+	 */
+	public static @NonNull TokenAction grouping(@NonNull String label, @NonNull GroupingMode mode) {
+		return new GroupingTokenAction(label, mode);
+	}
+	
+	/**
 	 * Creates a token action that annotates tokens with the given metadata.<br>
 	 * Each token is wrapped in an {@link net.luis.utils.io.token.tokens.AnnotatedToken} with the provided metadata.<br>
 	 * If a token is already annotated, the metadata is merged (new metadata takes precedence).<br>

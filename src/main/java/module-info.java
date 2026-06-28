@@ -87,7 +87,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.types.temporal.local;
 	exports net.luis.utils.io.codec.types.temporal.offset;
 	exports net.luis.utils.io.codec.types.temporal.zoned;
-
+	
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;
 	exports net.luis.utils.io.data.ini;
@@ -126,8 +126,14 @@ module net.luis.utils {
 	exports net.luis.utils.io.token.actions.filters;
 	exports net.luis.utils.io.token.actions.transformers;
 	exports net.luis.utils.io.token.context;
-	exports net.luis.utils.io.token.definition;
-	exports net.luis.utils.io.token.grammar;
+	exports net.luis.utils.io.token.lexer;
+	exports net.luis.utils.io.token.lexer.rules;
+	exports net.luis.utils.io.token.lexer.rules.anchors;
+	exports net.luis.utils.io.token.lexer.rules.combinators;
+	exports net.luis.utils.io.token.lexer.rules.matchers;
+	exports net.luis.utils.io.token.lexer.rules.quantifiers;
+	exports net.luis.utils.io.token.lexer.stream;
+	exports net.luis.utils.io.token.parser;
 	exports net.luis.utils.io.token.rules;
 	exports net.luis.utils.io.token.rules.assertions;
 	exports net.luis.utils.io.token.rules.assertions.anchors;
@@ -138,7 +144,6 @@ module net.luis.utils {
 	exports net.luis.utils.io.token.stream;
 	exports net.luis.utils.io.token.tokens;
 	exports net.luis.utils.io.token.type;
-	exports net.luis.utils.io.token.type.classifier;
 	
 	exports net.luis.utils.lang;
 	exports net.luis.utils.lang.concurrent;

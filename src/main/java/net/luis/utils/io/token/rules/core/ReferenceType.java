@@ -45,5 +45,5 @@ public enum ReferenceType {
 	 *     If the context contains only a list of tokens under the specified key, the {@link ReferenceTokenRule} will behave as if the reference type is {@link #TOKENS}.
 	 * </p>
 	 */
-	DYNAMIC;
+	DYNAMIC
 }
