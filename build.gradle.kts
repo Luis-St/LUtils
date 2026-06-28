@@ -4,6 +4,7 @@ import java.time.Year
 val googleGuava: String by project
 val log4jAPI: String by project
 val log4jCore: String by project
+val jackson: String by project
 val apacheLang: String by project
 val hikaricp: String by project
 val postgresql: String by project
@@ -43,6 +44,7 @@ dependencies {
 	// Apache
 	implementation("org.apache.logging.log4j:log4j-api:${log4jAPI}") // Logging
 	implementation("org.apache.logging.log4j:log4j-core:${log4jCore}") // Logging
+	runtimeOnly("com.fasterxml.jackson.core:jackson-databind:${jackson}") // JSON logging configuration support
 	implementation("org.apache.commons:commons-lang3:${apacheLang}") // Utility
 	// Database
 	implementation("com.zaxxer:HikariCP:${hikaricp}") // Connection Pool
@@ -103,6 +105,8 @@ tasks.register<JavaExec>("run") {
 	classpath = files()
 	jvmArgs = listOf(
 		"--module-path", sourceSets["main"].runtimeClasspath.asPath,
+		"--add-modules", "com.fasterxml.jackson.databind", // Required so Log4j2 can read the JSON configuration
+		"-Dlog4j2.configurationFile=${sourceSets["main"].output.resourcesDir}/log4j2.json", // Resources are not visible on the module path
 		"--module", "net.luis.utils/net.luis.utils.Main"
 	)
 }

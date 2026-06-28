@@ -1,0 +1,95 @@
+{
+	"Configuration": {
+		"name": "RuntimeConfiguration",
+		"status": "ERROR",
+		"Appenders": {
+			"Console": [
+				{
+					"name": "ConsoleTrace",
+					"target": "SYSTEM_OUT",
+					"PatternLayout": {
+						"pattern": "%replace{[%d{HH:mm:ss}] [%t] [%marker] [%C:%line/%level{TRACE=Trace, DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal}] %msg%n%throwable}{] \\[]}{]}"
+					},
+					"LevelMatchFilter": {
+						"level": "TRACE",
+						"onMatch": "ACCEPT",
+						"onMismatch": "DENY"
+					}
+				},
+				{
+					"name": "ConsoleDebug",
+					"target": "SYSTEM_OUT",
+					"PatternLayout": {
+						"pattern": "%replace{[%d{HH:mm:ss}] [%t] [%marker] [%C{1}:%line/%level{TRACE=Trace, DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal}] %msg%n%throwable}{] \\[]}{]}"
+					},
+					"LevelMatchFilter": {
+						"level": "DEBUG",
+						"onMatch": "ACCEPT",
+						"onMismatch": "DENY"
+					}
+				},
+				{
+					"name": "ConsoleInfo",
+					"target": "SYSTEM_OUT",
+					"PatternLayout": {
+						"pattern": "%replace{[%d{HH:mm:ss}] [%t] [%marker] [%C{1}/%level{TRACE=Trace, DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal}] %msg%n%throwable}{] \\[]}{]}"
+					},
+					"LevelMatchFilter": {
+						"level": "INFO",
+						"onMatch": "ACCEPT",
+						"onMismatch": "DENY"
+					}
+				},
+				{
+					"name": "ConsoleWarn",
+					"target": "SYSTEM_OUT",
+					"PatternLayout": {
+						"pattern": "%replace{[%d{HH:mm:ss}] [%t] [%marker] [%C{1}/%level{TRACE=Trace, DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal}] %msg%n%throwable}{] \\[]}{]}"
+					},
+					"LevelMatchFilter": {
+						"level": "WARN",
+						"onMatch": "ACCEPT",
+						"onMismatch": "DENY"
+					}
+				},
+				{
+					"name": "ConsoleError",
+					"target": "SYSTEM_OUT",
+					"PatternLayout": {
+						"pattern": "%replace{[%d{HH:mm:ss}] [%t] [%marker] [%C{1}/%level{TRACE=Trace, DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal}] %msg%n%throwable}{] \\[]}{]}"
+					},
+					"LevelMatchFilter": {
+						"level": "ERROR",
+						"onMatch": "ACCEPT",
+						"onMismatch": "DENY"
+					}
+				},
+				{
+					"name": "ConsoleFatal",
+					"target": "SYSTEM_OUT",
+					"PatternLayout": {
+						"pattern": "%replace{[%d{HH:mm:ss}] [%t] [%marker] [%C{1}/%level{TRACE=Trace, DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal}] %msg%n%throwable}{] \\[]}{]}"
+					},
+					"LevelMatchFilter": {
+						"level": "FATAL",
+						"onMatch": "ACCEPT",
+						"onMismatch": "DENY"
+					}
+				}
+			]
+		},
+		"Loggers": {
+			"Root": {
+				"level": "ALL",
+				"AppenderRef": [
+					{ "ref": "ConsoleTrace" },
+					{ "ref": "ConsoleDebug" },
+					{ "ref": "ConsoleInfo" },
+					{ "ref": "ConsoleWarn" },
+					{ "ref": "ConsoleError" },
+					{ "ref": "ConsoleFatal" }
+				]
+			}
+		}
+	}
+}
