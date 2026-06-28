@@ -1,0 +1,48 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.database.condition.conditions.string;
+
+import net.luis.utils.io.database.condition.conditions.SqlStringCondition;
+import net.luis.utils.io.database.expression.SqlExpression;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+
+/**
+ * A condition that checks whether a string value ends with the given suffix.<br>
+ *
+ * @author Luis-St
+ *
+ * @param value The expression to check
+ * @param suffix The suffix to test for
+ */
+public record SqlEndsWithCondition(
+	@NonNull SqlExpression<?> value,
+	@NonNull SqlExpression<?> suffix
+) implements SqlStringCondition {
+	
+	/**
+	 * Constructs a new ends-with condition with the given value and suffix expressions.<br>
+	 * @throws NullPointerException If the value or suffix expression is null
+	 */
+	public SqlEndsWithCondition {
+		Objects.requireNonNull(value, "Sql value expression must not be null");
+		Objects.requireNonNull(suffix, "Sql suffix expression must not be null");
+	}
+}

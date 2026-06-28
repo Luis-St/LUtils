@@ -1,0 +1,62 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.database.function.functions.string;
+
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.functions.SqlStringFunction;
+import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.SqlTypes;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+
+/**
+ * Represents the SQL {@code HEX} function.<br>
+ * Returns the hexadecimal string representation of the given expression.<br>
+ *
+ * @author Luis-St
+ *
+ * @param expression The expression to convert to a hexadecimal string
+ * @param type The string result type of the function
+ */
+
+public record SqlHexFunction(
+	@NonNull SqlExpression<?> expression,
+	@NonNull SqlType<String> type
+) implements SqlStringFunction<String> {
+	
+	/**
+	 * Constructs a new hex function with the given expression and a {@link SqlTypes#TEXT} result type.<br>
+	 *
+	 * @param expression The expression to convert to a hexadecimal string
+	 * @throws NullPointerException If the expression is null
+	 */
+	public SqlHexFunction(@NonNull SqlExpression<?> expression) {
+		this(expression, SqlTypes.TEXT);
+	}
+	
+	/**
+	 * Constructs a new hex function with the given expression and result type.<br>
+	 * @throws NullPointerException If the expression or type is null
+	 */
+	public SqlHexFunction {
+		Objects.requireNonNull(expression, "Sql expression must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
+	}
+}

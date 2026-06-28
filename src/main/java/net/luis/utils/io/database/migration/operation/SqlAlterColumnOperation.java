@@ -1,0 +1,48 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.database.migration.operation;
+
+import net.luis.utils.io.database.table.SqlColumn;
+import org.jspecify.annotations.NonNull;
+
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Migration operation that applies a list of alterations to an existing column.<br>
+ *
+ * @author Luis-St
+ *
+ * @param column The column to alter
+ * @param alterations The alterations to apply to the column
+ */
+public record SqlAlterColumnOperation(
+	@NonNull SqlColumn<?, ?> column,
+	@NonNull List<SqlColumnAlteration> alterations
+) implements SqlMigrationOperation {
+	
+	/**
+	 * Constructs a new alter column operation with the given column and alterations.<br>
+	 * @throws NullPointerException If the column or alterations are null
+	 */
+	public SqlAlterColumnOperation {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		Objects.requireNonNull(alterations, "Sql column alterations must not be null");
+	}
+}

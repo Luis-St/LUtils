@@ -1,0 +1,56 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.database.function.functions.window;
+
+import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.function.functions.SqlWindowFunction;
+import net.luis.utils.io.database.function.window.SqlWindowClause;
+import net.luis.utils.io.database.type.SqlType;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+
+/**
+ * Represents the SQL {@code NTILE} window function.<br>
+ * It distributes the rows of each window partition into the given number of buckets and<br>
+ * returns the bucket number assigned to each row.<br>
+ *
+ * @author Luis-St
+ *
+ * @param buckets The expression defining the number of buckets to distribute the rows into
+ * @param over The window clause defining the partitioning and ordering
+ * @param type The type of the resulting value
+ * @param <T> The numeric type of the resulting value
+ */
+public record SqlTileBucketFunction<T extends Number>(
+	@NonNull SqlExpression<? extends Number> buckets,
+	@NonNull SqlWindowClause over,
+	@NonNull SqlType<T> type
+) implements SqlWindowFunction<T> {
+	
+	/**
+	 * Constructs a new sql tile bucket function with the given buckets expression, window clause and type.<br>
+	 * @throws NullPointerException If the buckets expression, window clause or type is null
+	 */
+	public SqlTileBucketFunction {
+		Objects.requireNonNull(buckets, "Sql buckets expression must not be null");
+		Objects.requireNonNull(over, "Sql window clause must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
+	}
+}

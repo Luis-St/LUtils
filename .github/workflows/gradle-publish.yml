@@ -56,8 +56,19 @@ jobs:
         run: chmod +x gradlew
       - name: 'Setup Gradle'
         uses: gradle/actions/setup-gradle@v4.4.3
+      - name: 'Verify Docker is available for Testcontainers'
+        run: docker info
       - name: 'Test with Gradle'
         run: ./gradlew test
+      - name: 'Upload test results'
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            build/reports/tests/test
+            build/test-results/test
+          retention-days: 30
   build-docs:
     needs: test
     runs-on: ubuntu-latest
