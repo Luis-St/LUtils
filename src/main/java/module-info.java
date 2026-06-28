@@ -143,9 +143,6 @@ module net.luis.utils {
 	exports net.luis.utils.lang;
 	exports net.luis.utils.lang.concurrent;
 	
-	exports net.luis.utils.logging;
-	exports net.luis.utils.logging.factory;
-	
 	exports net.luis.utils.math;
 	exports net.luis.utils.math.algorithm;
 	
