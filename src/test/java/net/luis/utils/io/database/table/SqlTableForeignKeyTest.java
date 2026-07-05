@@ -43,9 +43,9 @@ class SqlTableForeignKeyTest {
 		SqlForeignKey<Object> foreignKey = sampleForeignKey();
 		SqlColumn<Object, Integer> referencing = integerColumn();
 		SqlTableForeignKey<Object, Object> tableForeignKey = new SqlTableForeignKey<>(List.of(referencing), foreignKey);
-		assertEquals(1, tableForeignKey.getReferencingColumns().size());
-		assertSame(referencing, tableForeignKey.getReferencingColumns().get(0));
-		assertSame(foreignKey, tableForeignKey.getForeignKey());
+		assertEquals(1, tableForeignKey.referencingColumns().size());
+		assertSame(referencing, tableForeignKey.referencingColumns().get(0));
+		assertSame(foreignKey, tableForeignKey.foreignKey());
 	}
 	
 	@Test
@@ -68,7 +68,7 @@ class SqlTableForeignKeyTest {
 	@Test
 	void constructWithNonEmptyReferencingColumns() {
 		SqlTableForeignKey<Object, Object> tableForeignKey = new SqlTableForeignKey<>(List.of(integerColumn()), sampleForeignKey());
-		assertEquals(1, tableForeignKey.getReferencingColumns().size());
+		assertEquals(1, tableForeignKey.referencingColumns().size());
 	}
 	
 	@Test
@@ -76,14 +76,14 @@ class SqlTableForeignKeyTest {
 		SqlForeignKey<Object> foreignKey = sampleForeignKey();
 		SqlColumn<Object, Integer> referencing = integerColumn();
 		SqlTableForeignKey<Object, Object> tableForeignKey = new SqlTableForeignKey<>(List.of(referencing), foreignKey);
-		assertSame(referencing, tableForeignKey.getReferencingColumns().get(0));
-		assertSame(foreignKey, tableForeignKey.getForeignKey());
+		assertSame(referencing, tableForeignKey.referencingColumns().get(0));
+		assertSame(foreignKey, tableForeignKey.foreignKey());
 	}
 	
 	@Test
 	void referencingColumnsAreUnmodifiable() {
 		SqlTableForeignKey<Object, Object> tableForeignKey = new SqlTableForeignKey<>(List.of(integerColumn()), sampleForeignKey());
-		assertThrows(UnsupportedOperationException.class, () -> tableForeignKey.getReferencingColumns().add(stringColumn()));
+		assertThrows(UnsupportedOperationException.class, () -> tableForeignKey.referencingColumns().add(stringColumn()));
 	}
 	
 	@Test
@@ -91,9 +91,9 @@ class SqlTableForeignKeyTest {
 		SqlColumn<Object, Integer> first = integerColumn();
 		SqlColumn<Object, String> second = stringColumn();
 		SqlTableForeignKey<Object, Object> tableForeignKey = new SqlTableForeignKey<>(List.of(first, second), sampleForeignKey());
-		assertEquals(2, tableForeignKey.getReferencingColumns().size());
-		assertSame(first, tableForeignKey.getReferencingColumns().get(0));
-		assertSame(second, tableForeignKey.getReferencingColumns().get(1));
+		assertEquals(2, tableForeignKey.referencingColumns().size());
+		assertSame(first, tableForeignKey.referencingColumns().get(0));
+		assertSame(second, tableForeignKey.referencingColumns().get(1));
 	}
 	
 	@Test

@@ -450,8 +450,8 @@ class SqlTableTest {
 		table.foreignKey(List.of(column), ref, List.of(refColumn), SqlReferentialAction.CASCADE, SqlReferentialAction.SET_NULL);
 		
 		assertEquals(2, table.foreignKeys().size());
-		assertEquals(SqlReferentialAction.CASCADE, table.foreignKeys().get(1).getForeignKey().onUpdate());
-		assertEquals(SqlReferentialAction.SET_NULL, table.foreignKeys().get(1).getForeignKey().onDelete());
+		assertEquals(SqlReferentialAction.CASCADE, table.foreignKeys().get(1).foreignKey().onUpdate());
+		assertEquals(SqlReferentialAction.SET_NULL, table.foreignKeys().get(1).foreignKey().onDelete());
 	}
 	
 	@Test

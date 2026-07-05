@@ -281,7 +281,7 @@ public class SqlTable<E> {
 	 * @param <T> The type of the entity the referenced table maps to
 	 */
 	private <T> @NonNull SqlTableForeignKey<E, T> addForeignKey(@NonNull SqlTableForeignKey<E, T> foreignKey) {
-		for (SqlColumn<E, ?> column : foreignKey.getReferencingColumns()) {
+		for (SqlColumn<E, ?> column : foreignKey.referencingColumns()) {
 			Objects.requireNonNull(column, "Sql referencing column must not be null");
 			
 			if (!this.columns.containsKey(column.name())) {
