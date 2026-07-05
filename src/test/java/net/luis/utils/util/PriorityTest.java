@@ -35,6 +35,25 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class) // Required because some tests will create new Priority instances that affect the return values of lowest() and highest()
 class PriorityTest {
 	
+	private static List<Priority> originalPriorities;
+	
+	@BeforeAll
+	static void setup() {
+		originalPriorities = Priority.VALUES;
+		Priority.VALUES.clear();
+		Priority.VALUES.add(Priority.LOWEST);
+		Priority.VALUES.add(Priority.LOW);
+		Priority.VALUES.add(Priority.NORMAL);
+		Priority.VALUES.add(Priority.HIGH);
+		Priority.VALUES.add(Priority.HIGHEST);
+	}
+	
+	@AfterAll
+	static void teardown() {
+		Priority.VALUES.clear();
+		Priority.VALUES.addAll(originalPriorities);
+	}
+	
 	@Test
 	void constructorWithValidParameters() {
 		assertDoesNotThrow(() -> new Priority("test", 0));
