@@ -60,7 +60,7 @@ public record Priority(
 	 * Required for the {@link EnumLike} interface.<br>
 	 */
 	@ReflectiveUsage
-	private static final List<Priority> VALUES = Lists.newLinkedList();
+	static final List<Priority> VALUES = Lists.newLinkedList();
 	//endregion
 	
 	/**

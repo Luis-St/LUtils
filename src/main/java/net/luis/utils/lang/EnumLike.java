@@ -50,6 +50,7 @@ import java.util.function.Predicate;
  * public class Example implements EnumLike<Example> {
  *
  *   // Required field, must be exactly declared like this
+ *   // private is optional, but recommended (do only omit it for testing)
  *   @ReflectiveUsage
  *   private static final List<Example> VALUES = Lists.newLinkedList();
  *
@@ -132,6 +133,8 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	 *     The 'VALUES' field is required and must be exactly declared like this:
 	 * </p>
 	 * <pre>{@code
+	 * // private is optional, but recommended (do only omit it for testing)
+	 * @ReflectiveUsage
 	 * private static final List<Example> VALUES = Lists.newLinkedList();
 	 * }</pre>
 	 *
@@ -146,7 +149,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	static <T extends EnumLike<T>> @NonNull List<T> values(@NonNull Class<T> enumType) {
 		Objects.requireNonNull(enumType, "Enum type must not be null");
 		
-		Predicate<Field> isConstant = field -> field.isAnnotationPresent(ReflectiveUsage.class) && Modifier.isPrivate(field.getModifiers()) && isConstant(field);
+		Predicate<Field> isConstant = field -> field.isAnnotationPresent(ReflectiveUsage.class) && isConstant(field);
 		if (ReflectionHelper.hasField(enumType, "VALUES", isConstant)) {
 			return List.copyOf((List<T>) ReflectionHelper.get(enumType, "VALUES", null).orElseThrow());
 		}
