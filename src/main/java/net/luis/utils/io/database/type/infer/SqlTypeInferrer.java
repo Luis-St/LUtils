@@ -62,6 +62,7 @@ public interface SqlTypeInferrer {
 	 * @return The sql type matching the value
 	 * @throws NullPointerException If the value is null
 	 * @throws SqlTypeNotFoundException If no sql type can be inferred for the value
+	 * @param <T> The java type of the value
 	 */
 	<T> @NonNull SqlType<T> inferType(@NonNull T value) throws SqlTypeNotFoundException;
 }

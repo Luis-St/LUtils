@@ -134,6 +134,11 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 		.register(SqlTypes.IP_NETWORK, "CIDR", (statement, index, value) -> statement.setObject(index, value == null ? null : value.toString(), Types.OTHER))
 		.build();
 	
+	/**
+	 * Constructs a new PostgreSQL dialect.<br>
+	 */
+	public PostgresSqlDialect() {}
+	
 	@Override
 	public @NonNull String name() {
 		return "PostgreSQL";

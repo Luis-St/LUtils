@@ -462,6 +462,12 @@ public class SqlTransactionManager {
 		private static final ExecutorService INSTANCE = create();
 		
 		/**
+		 * Private constructor to prevent instantiation.<br>
+		 * This is a static holder class.<br>
+		 */
+		private AcquireExecutorHolder() {}
+		
+		/**
 		 * Creates the shared connection acquisition executor backed by daemon threads.<br>
 		 * A shutdown hook is registered to stop the executor when the runtime shuts down.<br>
 		 *

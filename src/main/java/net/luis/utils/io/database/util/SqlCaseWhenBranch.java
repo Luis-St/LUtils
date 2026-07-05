@@ -33,6 +33,8 @@ import java.util.Objects;
  *
  * @author Luis-St
  *
+ * @param condition The condition that acts as the {@code WHEN} predicate of the branch
+ * @param expression The expression that acts as the {@code THEN} result of the branch
  * @param <T> The type of the value the branch expression evaluates to
  */
 public record SqlCaseWhenBranch<T>(
