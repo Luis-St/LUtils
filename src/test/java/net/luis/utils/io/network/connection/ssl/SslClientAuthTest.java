@@ -23,27 +23,27 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link SSLClientAuth}.<br>
+ * Test class for {@link SslClientAuth}.<br>
  *
  * @author Luis-St
  */
-class SSLClientAuthTest {
+class SslClientAuthTest {
 	
 	@Test
 	void valuesContainsAllModes() {
-		assertEquals(3, SSLClientAuth.values().length);
-		assertArrayEquals(new SSLClientAuth[] { SSLClientAuth.NONE, SSLClientAuth.REQUESTED, SSLClientAuth.REQUIRED }, SSLClientAuth.values());
+		assertEquals(3, SslClientAuth.values().length);
+		assertArrayEquals(new SslClientAuth[] { SslClientAuth.NONE, SslClientAuth.REQUESTED, SslClientAuth.REQUIRED }, SslClientAuth.values());
 	}
 	
 	@Test
 	void valueOfReturnsMatchingConstant() {
-		assertEquals(SSLClientAuth.NONE, SSLClientAuth.valueOf("NONE"));
-		assertEquals(SSLClientAuth.REQUESTED, SSLClientAuth.valueOf("REQUESTED"));
-		assertEquals(SSLClientAuth.REQUIRED, SSLClientAuth.valueOf("REQUIRED"));
+		assertEquals(SslClientAuth.NONE, SslClientAuth.valueOf("NONE"));
+		assertEquals(SslClientAuth.REQUESTED, SslClientAuth.valueOf("REQUESTED"));
+		assertEquals(SslClientAuth.REQUIRED, SslClientAuth.valueOf("REQUIRED"));
 	}
 	
 	@Test
 	void valueOfWithUnknownNameThrows() {
-		assertThrows(IllegalArgumentException.class, () -> SSLClientAuth.valueOf("MUTUAL"));
+		assertThrows(IllegalArgumentException.class, () -> SslClientAuth.valueOf("MUTUAL"));
 	}
 }

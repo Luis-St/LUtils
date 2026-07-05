@@ -18,6 +18,8 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
+import org.jspecify.annotations.NonNull;
+
 import javax.net.ssl.*;
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -33,14 +35,14 @@ import java.security.KeyStore;
  *
  * @author Luis-St
  */
-final class SSLTestContext {
+final class SslTestContext {
 	
 	/**
 	 * The password protecting the test keystore and its key entry.<br>
 	 */
 	static final String PASSWORD = "changeit";
 	
-	private SSLTestContext() {}
+	private SslTestContext() {}
 	
 	/**
 	 * Loads the bundled test keystore from the classpath.<br>
@@ -48,15 +50,16 @@ final class SSLTestContext {
 	 * @return The loaded keystore
 	 * @throws Exception If the keystore cannot be loaded
 	 */
-	static KeyStore loadKeyStore() throws Exception {
+	static @NonNull KeyStore loadKeyStore() throws Exception {
 		KeyStore keyStore = KeyStore.getInstance("PKCS12");
-		try (InputStream stream = SSLTestContext.class.getResourceAsStream("/ssl/keystore.p12")) {
+		try (InputStream stream = SslTestContext.class.getResourceAsStream("/ssl/keystore.p12")) {
 			if (stream == null) {
 				throw new IllegalStateException("Test keystore /ssl/keystore.p12 not found on the classpath");
 			}
+			
 			keyStore.load(stream, PASSWORD.toCharArray());
+			return keyStore;
 		}
-		return keyStore;
 	}
 	
 	/**
@@ -66,7 +69,7 @@ final class SSLTestContext {
 	 * @return A server SSL context
 	 * @throws Exception If the context cannot be created
 	 */
-	static SSLContext serverContext() throws Exception {
+	static @NonNull SSLContext serverContext() throws Exception {
 		return createContext(true, true);
 	}
 	
@@ -77,7 +80,7 @@ final class SSLTestContext {
 	 * @return A client SSL context
 	 * @throws Exception If the context cannot be created
 	 */
-	static SSLContext clientContext() throws Exception {
+	static @NonNull SSLContext clientContext() throws Exception {
 		return createContext(true, true);
 	}
 	
@@ -88,7 +91,7 @@ final class SSLTestContext {
 	 * @return A trust-only client SSL context
 	 * @throws Exception If the context cannot be created
 	 */
-	static SSLContext trustOnlyClientContext() throws Exception {
+	static @NonNull SSLContext trustOnlyClientContext() throws Exception {
 		return createContext(false, true);
 	}
 	
@@ -100,7 +103,7 @@ final class SSLTestContext {
 	 * @return The initialized SSL context
 	 * @throws Exception If the context cannot be created
 	 */
-	private static SSLContext createContext(boolean withKeyManager, boolean withTrustManager) throws Exception {
+	private static @NonNull SSLContext createContext(boolean withKeyManager, boolean withTrustManager) throws Exception {
 		KeyStore keyStore = loadKeyStore();
 		
 		KeyManager[] keyManagers = null;

@@ -30,10 +30,10 @@ import java.time.Duration;
 import java.util.Objects;
 
 /**
- * Represents an active SSL/TLS connection from a client to an {@link SSLServer}.<br>
+ * Represents an active SSL/TLS connection from a client to an {@link SslServer}.<br>
  * This class wraps an {@link SSLSocket} and provides convenient send/receive operations.<br>
  * <p>
- *     Instances of this class are created by {@link SSLServer} when clients connect and are passed to the message handler for processing.
+ *     Instances of this class are created by {@link SslServer} when clients connect and are passed to the message handler for processing.
  * </p>
  * <p>
  *     Example usage in a message handler:
@@ -47,12 +47,12 @@ import java.util.Objects;
  *     .build();
  * }</pre>
  *
- * @see SSLServer
- * @see SSLServerConfig
+ * @see SslServer
+ * @see SslServerConfig
  *
  * @author Luis-St
  */
-public final class SSLConnection implements AutoCloseable {
+public final class SslConnection implements AutoCloseable {
 	
 	/**
 	 * The underlying client SSL socket.<br>
@@ -75,7 +75,7 @@ public final class SSLConnection implements AutoCloseable {
 	 * @param readTimeout The read timeout
 	 * @throws NullPointerException If socket or read timeout is null
 	 */
-	SSLConnection(@NonNull SSLSocket socket, int bufferSize, @NonNull Duration readTimeout) {
+	SslConnection(@NonNull SSLSocket socket, int bufferSize, @NonNull Duration readTimeout) {
 		this.socket = Objects.requireNonNull(socket, "Socket must not be null");
 		this.bufferSize = bufferSize;
 		this.readTimeout = Objects.requireNonNull(readTimeout, "Read timeout must not be null");

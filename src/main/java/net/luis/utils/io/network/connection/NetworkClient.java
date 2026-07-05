@@ -19,7 +19,7 @@
 package net.luis.utils.io.network.connection;
 
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.connection.ssl.SSLClient;
+import net.luis.utils.io.network.connection.ssl.SslClient;
 import net.luis.utils.io.network.connection.tcp.TcpClient;
 import net.luis.utils.io.network.connection.udp.UdpClient;
 import org.jspecify.annotations.NonNull;
@@ -30,7 +30,7 @@ import java.util.Optional;
  * Base interface for network clients.<br>
  * This sealed interface provides common operations for TCP, SSL, and UDP clients.
  * <p>
- *     This interface is sealed and permits only {@link TcpClient}, {@link SSLClient}, and {@link UdpClient}<br>
+ *     This interface is sealed and permits only {@link TcpClient}, {@link SslClient}, and {@link UdpClient}<br>
  *     as implementations, ensuring type safety when working with network clients polymorphically.
  * </p>
  * <p>
@@ -55,12 +55,12 @@ import java.util.Optional;
  * }</pre>
  *
  * @see TcpClient
- * @see SSLClient
+ * @see SslClient
  * @see UdpClient
  *
  * @author Luis-St
  */
-public sealed interface NetworkClient extends AutoCloseable permits TcpClient, SSLClient, UdpClient {
+public sealed interface NetworkClient extends AutoCloseable permits TcpClient, SslClient, UdpClient {
 	
 	/**
 	 * Returns whether this client is currently active (connected or bound).<br>

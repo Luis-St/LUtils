@@ -60,7 +60,7 @@ import java.util.Optional;
  *
  * @author Luis-St
  */
-public final class SSLClient implements NetworkClient {
+public final class SslClient implements NetworkClient {
 	
 	/**
 	 * The configuration for this client.<br>
@@ -78,7 +78,7 @@ public final class SSLClient implements NetworkClient {
 	/**
 	 * Constructs a new SSL client with default configuration.<br>
 	 */
-	public SSLClient() {
+	public SslClient() {
 		this(SSLClientConfig.DEFAULT);
 	}
 	
@@ -88,7 +88,7 @@ public final class SSLClient implements NetworkClient {
 	 * @param config The client configuration
 	 * @throws NullPointerException If config is null
 	 */
-	public SSLClient(@NonNull SSLClientConfig config) {
+	public SslClient(@NonNull SSLClientConfig config) {
 		this.config = Objects.requireNonNull(config, "Config must not be null");
 	}
 	

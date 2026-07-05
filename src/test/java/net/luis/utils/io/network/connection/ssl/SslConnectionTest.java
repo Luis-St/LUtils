@@ -33,20 +33,20 @@ import java.util.concurrent.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link SSLConnection}.<br>
+ * Test class for {@link SslConnection}.<br>
  *
  * @author Luis-St
  */
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
-class SSLConnectionTest {
+class SslConnectionTest {
 	
 	private static SSLContext serverContext;
 	private static SSLContext clientContext;
 	
 	@BeforeAll
 	static void setUp() throws Exception {
-		serverContext = SSLTestContext.serverContext();
-		clientContext = SSLTestContext.clientContext();
+		serverContext = SslTestContext.serverContext();
+		clientContext = SslTestContext.clientContext();
 	}
 	
 	@Test
@@ -229,7 +229,7 @@ class SSLConnectionTest {
 	//region Helper methods
 	
 	/**
-	 * Opens a fully handshaked {@link SSLSocket} pair, wraps the server side in an {@link SSLConnection},
+	 * Opens a fully handshaked {@link SSLSocket} pair, wraps the server side in an {@link SslConnection},
 	 * runs the given test body, and closes everything afterwards.<br>
 	 */
 	private void withPair(int bufferSize, PairConsumer body) throws Exception {
@@ -247,7 +247,7 @@ class SSLConnectionTest {
 			try (SSLSocket client = (SSLSocket) clientContext.getSocketFactory().createSocket("127.0.0.1", port)) {
 				client.startHandshake();
 				SSLSocket serverSide = serverFuture.get(15, TimeUnit.SECONDS);
-				SSLConnection connection = new SSLConnection(serverSide, bufferSize, Duration.ofSeconds(5));
+				SslConnection connection = new SslConnection(serverSide, bufferSize, Duration.ofSeconds(5));
 				try {
 					body.accept(client, connection);
 				} finally {
@@ -265,7 +265,7 @@ class SSLConnectionTest {
 	@FunctionalInterface
 	private interface PairConsumer {
 		
-		void accept(SSLSocket client, SSLConnection connection) throws Exception;
+		void accept(SSLSocket client, SslConnection connection) throws Exception;
 	}
 	//endregion
 }

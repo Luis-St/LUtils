@@ -21,15 +21,15 @@ package net.luis.utils.io.network.connection.ssl;
 import javax.net.ssl.SSLServerSocket;
 
 /**
- * Defines how an {@link SSLServer} handles client certificate authentication during the TLS handshake.<br>
+ * Defines how an {@link SslServer} handles client certificate authentication during the TLS handshake.<br>
  * This controls mutual TLS (mTLS) behavior, where the server may request or require a certificate from the client.<br>
  *
- * @see SSLServer
- * @see SSLServerConfig
+ * @see SslServer
+ * @see SslServerConfig
  *
  * @author Luis-St
  */
-public enum SSLClientAuth {
+public enum SslClientAuth {
 	
 	/**
 	 * The server does not request a client certificate.<br>

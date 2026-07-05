@@ -29,11 +29,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link SSLServerConfigBuilder}.<br>
+ * Test class for {@link SslServerConfigBuilder}.<br>
  *
  * @author Luis-St
  */
-class SSLServerConfigBuilderTest {
+class SslServerConfigBuilderTest {
 	
 	private static SSLContext context;
 	
@@ -44,7 +44,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void builderDefaultValues() {
-		SSLServerConfig config = SSLServerConfig.builder(context).build();
+		SslServerConfig config = SslServerConfig.builder(context).build();
 		
 		assertEquals(50, config.backlog());
 		assertEquals(8192, config.clientBufferSize());
@@ -54,7 +54,7 @@ class SSLServerConfigBuilderTest {
 		assertSame(context, config.sslContext());
 		assertTrue(config.enabledProtocols().isEmpty());
 		assertTrue(config.enabledCipherSuites().isEmpty());
-		assertEquals(SSLClientAuth.NONE, config.clientAuth());
+		assertEquals(SslClientAuth.NONE, config.clientAuth());
 		assertNotNull(config.executorStrategy());
 		assertNull(config.onClientConnect());
 		assertNull(config.onClientDisconnect());
@@ -64,7 +64,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void backlogWithValidValue() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.backlog(100)
 			.build();
 		assertEquals(100, config.backlog());
@@ -72,7 +72,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void clientBufferSizeWithValidValue() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.clientBufferSize(4096)
 			.build();
 		assertEquals(4096, config.clientBufferSize());
@@ -80,7 +80,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void clientReadTimeoutWithValidDuration() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.clientReadTimeout(Duration.ofSeconds(30))
 			.build();
 		assertEquals(Duration.ofSeconds(30), config.clientReadTimeout());
@@ -88,7 +88,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void tcpNoDelayFalse() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.tcpNoDelay(false)
 			.build();
 		assertFalse(config.tcpNoDelay());
@@ -96,7 +96,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void keepAliveFalse() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.keepAlive(false)
 			.build();
 		assertFalse(config.keepAlive());
@@ -104,7 +104,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void enabledProtocolsWithValue() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.enabledProtocols(List.of("TLSv1.3", "TLSv1.2"))
 			.build();
 		assertEquals(List.of("TLSv1.3", "TLSv1.2"), config.enabledProtocols());
@@ -112,13 +112,13 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void enabledProtocolsWithNullThrows() {
-		SSLServerConfigBuilder builder = SSLServerConfig.builder(context);
+		SslServerConfigBuilder builder = SslServerConfig.builder(context);
 		assertThrows(NullPointerException.class, () -> builder.enabledProtocols(null));
 	}
 	
 	@Test
 	void enabledCipherSuitesWithValue() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
 			.build();
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
@@ -126,28 +126,28 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void enabledCipherSuitesWithNullThrows() {
-		SSLServerConfigBuilder builder = SSLServerConfig.builder(context);
+		SslServerConfigBuilder builder = SslServerConfig.builder(context);
 		assertThrows(NullPointerException.class, () -> builder.enabledCipherSuites(null));
 	}
 	
 	@Test
 	void clientAuthWithValue() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
-			.clientAuth(SSLClientAuth.REQUESTED)
+		SslServerConfig config = SslServerConfig.builder(context)
+			.clientAuth(SslClientAuth.REQUESTED)
 			.build();
-		assertEquals(SSLClientAuth.REQUESTED, config.clientAuth());
+		assertEquals(SslClientAuth.REQUESTED, config.clientAuth());
 	}
 	
 	@Test
 	void clientAuthWithNullThrows() {
-		SSLServerConfigBuilder builder = SSLServerConfig.builder(context);
+		SslServerConfigBuilder builder = SslServerConfig.builder(context);
 		assertThrows(NullPointerException.class, () -> builder.clientAuth(null));
 	}
 	
 	@Test
 	void executorStrategyWithFixedPool() {
 		ClientExecutorStrategy strategy = ClientExecutorStrategy.fixedPool(10);
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.executorStrategy(strategy)
 			.build();
 		assertSame(strategy, config.executorStrategy());
@@ -155,7 +155,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void onClientConnectWithHandler() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.onClientConnect(event -> {})
 			.build();
 		assertNotNull(config.onClientConnect());
@@ -163,7 +163,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void onClientConnectWithNull() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.onClientConnect(null)
 			.build();
 		assertNull(config.onClientConnect());
@@ -171,7 +171,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void onClientDisconnectWithHandler() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.onClientDisconnect(event -> {})
 			.build();
 		assertNotNull(config.onClientDisconnect());
@@ -179,7 +179,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void onMessageWithHandler() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.onMessage((server, conn, data) -> {})
 			.build();
 		assertNotNull(config.onMessage());
@@ -187,7 +187,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void onMessageWithNull() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.onMessage(null)
 			.build();
 		assertNull(config.onMessage());
@@ -195,7 +195,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void onErrorWithHandler() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.onError((type, msg, cause) -> {})
 			.build();
 		assertNotNull(config.onError());
@@ -203,7 +203,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void methodChainingConsistency() {
-		SSLServerConfigBuilder builder = SSLServerConfig.builder(context);
+		SslServerConfigBuilder builder = SslServerConfig.builder(context);
 		assertSame(builder, builder.backlog(100));
 		assertSame(builder, builder.clientBufferSize(4096));
 		assertSame(builder, builder.clientReadTimeout(Duration.ofSeconds(30)));
@@ -211,7 +211,7 @@ class SSLServerConfigBuilderTest {
 		assertSame(builder, builder.keepAlive(true));
 		assertSame(builder, builder.enabledProtocols(List.of("TLSv1.3")));
 		assertSame(builder, builder.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384")));
-		assertSame(builder, builder.clientAuth(SSLClientAuth.NONE));
+		assertSame(builder, builder.clientAuth(SslClientAuth.NONE));
 		assertSame(builder, builder.executorStrategy(ClientExecutorStrategy.virtualThreads()));
 		assertSame(builder, builder.onClientConnect(event -> {}));
 		assertSame(builder, builder.onClientDisconnect(event -> {}));
@@ -222,7 +222,7 @@ class SSLServerConfigBuilderTest {
 	@Test
 	void builderSetsAllValues() {
 		ClientExecutorStrategy strategy = ClientExecutorStrategy.fixedPool(5);
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.backlog(200)
 			.clientBufferSize(16384)
 			.clientReadTimeout(Duration.ofSeconds(60))
@@ -230,7 +230,7 @@ class SSLServerConfigBuilderTest {
 			.keepAlive(false)
 			.enabledProtocols(List.of("TLSv1.3"))
 			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
-			.clientAuth(SSLClientAuth.REQUIRED)
+			.clientAuth(SslClientAuth.REQUIRED)
 			.executorStrategy(strategy)
 			.onClientConnect(event -> {})
 			.onClientDisconnect(event -> {})
@@ -245,7 +245,7 @@ class SSLServerConfigBuilderTest {
 		assertFalse(config.keepAlive());
 		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
-		assertEquals(SSLClientAuth.REQUIRED, config.clientAuth());
+		assertEquals(SslClientAuth.REQUIRED, config.clientAuth());
 		assertSame(strategy, config.executorStrategy());
 		assertNotNull(config.onClientConnect());
 		assertNotNull(config.onClientDisconnect());
@@ -255,14 +255,14 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void builderReuseAfterBuild() {
-		SSLServerConfigBuilder builder = SSLServerConfig.builder(context)
+		SslServerConfigBuilder builder = SslServerConfig.builder(context)
 			.backlog(100);
 		
-		SSLServerConfig first = builder.build();
+		SslServerConfig first = builder.build();
 		assertEquals(100, first.backlog());
 		
 		builder.backlog(200);
-		SSLServerConfig second = builder.build();
+		SslServerConfig second = builder.build();
 		assertEquals(200, second.backlog());
 		
 		assertEquals(100, first.backlog());
@@ -270,10 +270,10 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void builderMultipleBuilds() {
-		SSLServerConfigBuilder builder = SSLServerConfig.builder(context);
+		SslServerConfigBuilder builder = SslServerConfig.builder(context);
 		
-		SSLServerConfig config1 = builder.build();
-		SSLServerConfig config2 = builder.build();
+		SslServerConfig config1 = builder.build();
+		SslServerConfig config2 = builder.build();
 		
 		assertEquals(config1, config2);
 		assertNotSame(config1, config2);
@@ -281,7 +281,7 @@ class SSLServerConfigBuilderTest {
 	
 	@Test
 	void builderOverwriteValues() {
-		SSLServerConfig config = SSLServerConfig.builder(context)
+		SslServerConfig config = SslServerConfig.builder(context)
 			.backlog(100)
 			.backlog(200)
 			.build();
