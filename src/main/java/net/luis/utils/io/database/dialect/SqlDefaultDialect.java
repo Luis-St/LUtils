@@ -42,6 +42,11 @@ public class SqlDefaultDialect extends AbstractSqlDialect {
 		SqlFeature.ADD_CONSTRAINT
 	);
 	
+	/**
+	 * Constructs a new default sql dialect.<br>
+	 */
+	public SqlDefaultDialect() {}
+	
 	@Override
 	public @NonNull String name() {
 		return "Default";

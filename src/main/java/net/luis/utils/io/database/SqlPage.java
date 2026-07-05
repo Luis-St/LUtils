@@ -30,6 +30,11 @@ import java.util.Objects;
  *
  * @author Luis-St
  *
+ * @param content The elements contained in this page
+ * @param page The zero-based index of this page
+ * @param pageSize The maximum number of elements per page
+ * @param hasNext Whether a following page exists
+ * @param hasPrevious Whether a preceding page exists
  * @param <T> The type of the elements contained in the page
  */
 public record SqlPage<T>(

@@ -37,6 +37,10 @@ import java.util.Objects;
  *
  * @author Luis-St
  *
+ * @param referencedTable The table that is referenced by this foreign key
+ * @param referencedColumns The columns of the referenced table that are referenced
+ * @param onUpdate The action to apply when a referenced row is updated
+ * @param onDelete The action to apply when a referenced row is deleted
  * @param <T> The type of the entity the referenced table maps to
  */
 public record SqlForeignKey<T>(

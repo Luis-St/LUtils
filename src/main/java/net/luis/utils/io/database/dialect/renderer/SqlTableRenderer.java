@@ -329,9 +329,9 @@ public class SqlTableRenderer {
 			}
 			
 			renderer.foreign().key().openingBracket();
-			SqlRenderingHelper.renderList(renderer, tableFk.getReferencingColumns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.name())));
+			SqlRenderingHelper.renderList(renderer, tableFk.referencingColumns(), (r, column) -> r.literal(this.dialect.quoteIdentifier(column.name())));
 			renderer.closingBracket().references();
-			this.renderForeignKey(renderer, tableFk.getForeignKey());
+			this.renderForeignKey(renderer, tableFk.foreignKey());
 			
 			first = false;
 		}

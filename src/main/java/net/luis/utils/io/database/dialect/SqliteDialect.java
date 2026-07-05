@@ -76,6 +76,11 @@ public class SqliteDialect extends AbstractSqlDialect {
 		SqlFeature.TABLE_REBUILD
 	);
 	
+	/**
+	 * Constructs a new SQLite dialect.<br>
+	 */
+	public SqliteDialect() {}
+	
 	@Override
 	public @NonNull String name() {
 		return "SQLite";

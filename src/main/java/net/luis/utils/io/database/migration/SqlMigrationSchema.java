@@ -668,6 +668,21 @@ public final class SqlMigrationSchema {
 		return uniqueColumns;
 	}
 	
+	/**
+	 * Builds a phantom column that reconstructs a column from database metadata on the given entity-less table.<br>
+	 * The column is created with a getter that always returns {@code null} and the given constraints applied.<br>
+	 *
+	 * @param table The entity-less table the phantom column is attached to
+	 * @param name The name of the column
+	 * @param type The sql type of the column
+	 * @param nullable Whether the column is nullable
+	 * @param autoIncrement Whether the column is auto-incremented
+	 * @param primaryKey Whether the column is a primary key
+	 * @param unique Whether the column is unique
+	 * @return The reconstructed phantom column
+	 * @throws NullPointerException If the table, name or type is null
+	 * @param <C> The Java type of the column
+	 */
 	@SuppressWarnings({ "unchecked", "ReturnOfNull" })
 	private static <C> @NonNull SqlColumn<Void, C> buildPhantomColumn(
 		@NonNull SqlTable<Void> table,
@@ -812,6 +827,7 @@ public final class SqlMigrationSchema {
 	 * @return The typed column with the given name
 	 * @throws NullPointerException If the table name, column name or type is null
 	 * @throws SqlSchemaObjectNotFoundException If the table or column does not exist or its Java type does not match the requested type
+	 * @param <C> The Java type of the column
 	 */
 	@SuppressWarnings("unchecked")
 	public <C> @NonNull SqlColumn<Void, C> column(@NonNull String tableName, @NonNull String columnName, @NonNull Class<C> type) throws SqlSchemaObjectNotFoundException {

@@ -97,6 +97,13 @@ public enum NetworkErrorType {
 	ALREADY_CONNECTED,
 	
 	/**
+	 * The TLS/SSL handshake failed.<br>
+	 * The secure connection could not be established, for example due to certificate
+	 * validation failure, an untrusted peer, or no common protocol or cipher suite.<br>
+	 */
+	HANDSHAKE_FAILED,
+
+	/**
 	 * A general I/O error occurred.<br>
 	 * An unspecified I/O error occurred during the operation.<br>
 	 */

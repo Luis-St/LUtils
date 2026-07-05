@@ -34,31 +34,33 @@ import java.util.Objects;
  *
  * @author Luis-St
  *
+ * @param referencingColumns The local columns of the owning table that reference the foreign key
+ * @param foreignKey The foreign key describing the referenced table and columns
  * @param <E> The type of the entity the owning table maps to
  * @param <T> The type of the entity the referenced table maps to
  */
 public record SqlTableForeignKey<E, T>(
-	@NonNull @Unmodifiable List<SqlColumn<E, ?>> getReferencingColumns,
-	@NonNull SqlForeignKey<T> getForeignKey
+	@NonNull @Unmodifiable List<SqlColumn<E, ?>> referencingColumns,
+	@NonNull SqlForeignKey<T> foreignKey
 ) {
 	
 	/**
 	 * Constructs a new table foreign key with the given referencing columns and foreign key.<br>
 	 * The referencing columns are copied into an unmodifiable list.<br>
 	 *
-	 * @param getReferencingColumns The local columns of the owning table that reference the foreign key
-	 * @param getForeignKey The foreign key describing the referenced table and columns
+	 * @param referencingColumns The local columns of the owning table that reference the foreign key
+	 * @param foreignKey The foreign key describing the referenced table and columns
 	 * @throws NullPointerException If the referencing columns or the foreign key is null
 	 * @throws IllegalArgumentException If the referencing columns are empty
 	 */
 	public SqlTableForeignKey {
-		Objects.requireNonNull(getReferencingColumns, "Sql referencing columns must not be null");
-		Objects.requireNonNull(getForeignKey, "Sql foreign key must not be null");
+		Objects.requireNonNull(referencingColumns, "Sql referencing columns must not be null");
+		Objects.requireNonNull(foreignKey, "Sql foreign key must not be null");
 		
-		if (getReferencingColumns.isEmpty()) {
+		if (referencingColumns.isEmpty()) {
 			throw new IllegalArgumentException("Sql referencing columns must not be empty");
 		}
 		
-		getReferencingColumns = List.copyOf(getReferencingColumns);
+		referencingColumns = List.copyOf(referencingColumns);
 	}
 }

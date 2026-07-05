@@ -138,6 +138,7 @@ public class SqlTable<E> {
 	 * @return The newly created table
 	 * @throws NullPointerException If the type or name is null
 	 * @throws IllegalArgumentException If the name is blank
+	 * @param <T> The entity type the table maps to
 	 */
 	public static <T> @NonNull SqlTable<T> create(@NonNull Class<T> type, @NonNull String name) {
 		return create(type, name, "public");
@@ -152,6 +153,7 @@ public class SqlTable<E> {
 	 * @return The newly created table
 	 * @throws NullPointerException If the type, name or schema is null
 	 * @throws IllegalArgumentException If the name or schema is blank
+	 * @param <T> The entity type the table maps to
 	 */
 	public static <T> @NonNull SqlTable<T> create(@NonNull Class<T> type, @NonNull String name, @NonNull String schema) {
 		return new SqlTable<>(type, name, schema, null);
@@ -166,6 +168,7 @@ public class SqlTable<E> {
 	 * @return The newly created audited table
 	 * @throws NullPointerException If the type or name is null
 	 * @throws IllegalArgumentException If the name is blank
+	 * @param <T> The entity type the table maps to
 	 */
 	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name) {
 		return audited(type, name, "public", SqlAuditConfig.DEFAULT);
@@ -181,6 +184,7 @@ public class SqlTable<E> {
 	 * @return The newly created audited table
 	 * @throws NullPointerException If the type, name or schema is null
 	 * @throws IllegalArgumentException If the name or schema is blank
+	 * @param <T> The entity type the table maps to
 	 */
 	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull String schema) {
 		return audited(type, name, schema, SqlAuditConfig.DEFAULT);
@@ -195,6 +199,7 @@ public class SqlTable<E> {
 	 * @return The newly created audited table
 	 * @throws NullPointerException If the type, name or config is null
 	 * @throws IllegalArgumentException If the name is blank
+	 * @param <T> The entity type the table maps to
 	 */
 	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull SqlAuditConfig config) {
 		return audited(type, name, "public", config);
@@ -210,6 +215,7 @@ public class SqlTable<E> {
 	 * @return The newly created audited table
 	 * @throws NullPointerException If the type, name, schema or config is null
 	 * @throws IllegalArgumentException If the name or schema is blank
+	 * @param <T> The entity type the table maps to
 	 */
 	public static <T> @NonNull SqlTable<T> audited(@NonNull Class<T> type, @NonNull String name, @NonNull String schema, @NonNull SqlAuditConfig config) {
 		Objects.requireNonNull(config, "Sql audit config must not be null");
@@ -272,9 +278,10 @@ public class SqlTable<E> {
 	 * @return The foreign key that was added
 	 * @throws NullPointerException If the foreign key or any of its referencing columns is null
 	 * @throws IllegalArgumentException If a referencing column does not belong to this table
+	 * @param <T> The type of the entity the referenced table maps to
 	 */
 	private <T> @NonNull SqlTableForeignKey<E, T> addForeignKey(@NonNull SqlTableForeignKey<E, T> foreignKey) {
-		for (SqlColumn<E, ?> column : foreignKey.getReferencingColumns()) {
+		for (SqlColumn<E, ?> column : foreignKey.referencingColumns()) {
 			Objects.requireNonNull(column, "Sql referencing column must not be null");
 			
 			if (!this.columns.containsKey(column.name())) {
@@ -299,6 +306,7 @@ public class SqlTable<E> {
 	 * @return The newly created and registered column
 	 * @throws NullPointerException If the name, type or getter is null
 	 * @throws IllegalStateException If a composite primary key is already defined, a column with the same name already exists, or the column name collides with a reserved audit column name
+	 * @param <C> The Java type of the column value
 	 */
 	public <C> @NonNull SqlColumn<E, C> column(@NonNull String name, @NonNull SqlType<C> type, @NonNull Function<E, C> getter) {
 		return this.column(name, type, getter, UnaryOperator.identity());
@@ -316,6 +324,7 @@ public class SqlTable<E> {
 	 * @return The newly created and registered column
 	 * @throws NullPointerException If the name, type, getter or action is null
 	 * @throws IllegalStateException If a composite primary key is already defined, a column with the same name already exists, or the column name collides with a reserved audit column name
+	 * @param <C> The Java type of the column value
 	 */
 	public <C> @NonNull SqlColumn<E, C> column(@NonNull String name, @NonNull SqlType<C> type, @NonNull Function<E, C> getter, @NonNull UnaryOperator<SqlColumnBuilder<E, C>> action) {
 		Objects.requireNonNull(action, "Sql column configuration action must not be null");
@@ -412,6 +421,7 @@ public class SqlTable<E> {
 	 * @return The newly created and registered foreign key
 	 * @throws NullPointerException If the referencing columns, referenced table or referenced column is null
 	 * @throws IllegalArgumentException If the referencing columns are empty, a referencing column does not belong to this table, or the referenced column does not belong to the referenced table
+	 * @param <T> The type of the entity the referenced table maps to
 	 */
 	public <T> @NonNull SqlTableForeignKey<E, T> foreignKey(@NonNull List<SqlColumn<E, ?>> referencingColumns, @NonNull SqlTable<T> referencedTable, @NonNull SqlColumn<T, ?> referencedColumn) {
 		Objects.requireNonNull(referencedColumn, "Sql referenced column must not be null");
@@ -428,6 +438,7 @@ public class SqlTable<E> {
 	 * @return The newly created and registered foreign key
 	 * @throws NullPointerException If the referencing columns, referenced table or referenced columns is null
 	 * @throws IllegalArgumentException If the referencing or referenced columns are empty, a referencing column does not belong to this table, or a referenced column does not belong to the referenced table
+	 * @param <T> The type of the entity the referenced table maps to
 	 */
 	public <T> @NonNull SqlTableForeignKey<E, T> foreignKey(@NonNull List<SqlColumn<E, ?>> referencingColumns, @NonNull SqlTable<T> referencedTable, @NonNull List<SqlColumn<T, ?>> referencedColumns) {
 		return this.addForeignKey(new SqlTableForeignKey<>(referencingColumns, SqlForeignKey.of(referencedTable, referencedColumns, SqlReferentialAction.NO_ACTION, SqlReferentialAction.NO_ACTION)));
@@ -444,6 +455,7 @@ public class SqlTable<E> {
 	 * @return The newly created and registered foreign key
 	 * @throws NullPointerException If the referencing columns, referenced table, referenced columns, on-update action or on-delete action is null
 	 * @throws IllegalArgumentException If the referencing or referenced columns are empty, a referencing column does not belong to this table, or a referenced column does not belong to the referenced table
+	 * @param <T> The type of the entity the referenced table maps to
 	 */
 	public <T> @NonNull SqlTableForeignKey<E, T> foreignKey(
 		@NonNull List<SqlColumn<E, ?>> referencingColumns,

@@ -71,6 +71,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	 * @param entities The entities to insert
 	 * @throws NullPointerException If any of the arguments is null
 	 * @throws IllegalArgumentException If the entities list is empty
+	 * @throws SqlStatementBuilderException If the insert statement could not be built for the given arguments
 	 */
 	public SqlInsertQuery(
 		@NonNull SqlTable<E> table,
@@ -96,6 +97,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	 * @param auditUserProvider The provider that resolves the audit user, or {@code null} for no audit user
 	 * @throws NullPointerException If any argument except the audit user provider is null
 	 * @throws IllegalArgumentException If the entities list is empty
+	 * @throws SqlStatementBuilderException If the insert statement could not be built for the given arguments
 	 */
 	public SqlInsertQuery(
 		@NonNull SqlTable<E> table,
@@ -165,6 +167,7 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	 * @return The newly created upsert query
 	 * @throws NullPointerException If any of the arguments is null
 	 * @throws IllegalArgumentException If the entities list is empty
+	 * @throws SqlStatementBuilderException If the conflict column is null
 	 */
 	public static <E> @NonNull SqlInsertQuery<E> upsert(
 		@NonNull SqlTable<E> table,
