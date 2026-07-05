@@ -51,7 +51,7 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public final class SSLClientConfigBuilder {
+public final class SslClientConfigBuilder {
 	
 	/**
 	 * The maximum time to wait for connection establishment.<br>
@@ -109,7 +109,7 @@ public final class SSLClientConfigBuilder {
 	/**
 	 * Constructs a new builder with default values.<br>
 	 */
-	SSLClientConfigBuilder() {}
+	SslClientConfigBuilder() {}
 	
 	/**
 	 * Sets the maximum time to wait for connection establishment.<br>
@@ -118,7 +118,7 @@ public final class SSLClientConfigBuilder {
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the connect timeout is null
 	 */
-	public @NonNull SSLClientConfigBuilder connectTimeout(@NonNull Duration connectTimeout) {
+	public @NonNull SslClientConfigBuilder connectTimeout(@NonNull Duration connectTimeout) {
 		this.connectTimeout = Objects.requireNonNull(connectTimeout, "Connect timeout must not be null");
 		return this;
 	}
@@ -131,7 +131,7 @@ public final class SSLClientConfigBuilder {
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the read timeout is null
 	 */
-	public @NonNull SSLClientConfigBuilder readTimeout(@NonNull Duration readTimeout) {
+	public @NonNull SslClientConfigBuilder readTimeout(@NonNull Duration readTimeout) {
 		this.readTimeout = Objects.requireNonNull(readTimeout, "Read timeout must not be null");
 		return this;
 	}
@@ -144,7 +144,7 @@ public final class SSLClientConfigBuilder {
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the write timeout is null
 	 */
-	public @NonNull SSLClientConfigBuilder writeTimeout(@NonNull Duration writeTimeout) {
+	public @NonNull SslClientConfigBuilder writeTimeout(@NonNull Duration writeTimeout) {
 		this.writeTimeout = Objects.requireNonNull(writeTimeout, "Write timeout must not be null");
 		return this;
 	}
@@ -155,7 +155,7 @@ public final class SSLClientConfigBuilder {
 	 * @param bufferSize The buffer size (must be at least 1)
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLClientConfigBuilder bufferSize(int bufferSize) {
+	public @NonNull SslClientConfigBuilder bufferSize(int bufferSize) {
 		this.bufferSize = bufferSize;
 		return this;
 	}
@@ -167,7 +167,7 @@ public final class SSLClientConfigBuilder {
 	 * @param tcpNoDelay True to disable Nagle's algorithm
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLClientConfigBuilder tcpNoDelay(boolean tcpNoDelay) {
+	public @NonNull SslClientConfigBuilder tcpNoDelay(boolean tcpNoDelay) {
 		this.tcpNoDelay = tcpNoDelay;
 		return this;
 	}
@@ -178,7 +178,7 @@ public final class SSLClientConfigBuilder {
 	 * @param keepAlive True to enable keep-alive
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLClientConfigBuilder keepAlive(boolean keepAlive) {
+	public @NonNull SslClientConfigBuilder keepAlive(boolean keepAlive) {
 		this.keepAlive = keepAlive;
 		return this;
 	}
@@ -190,7 +190,7 @@ public final class SSLClientConfigBuilder {
 	 * @param sslContext The SSL context, or null to use the JVM default
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLClientConfigBuilder sslContext(@Nullable SSLContext sslContext) {
+	public @NonNull SslClientConfigBuilder sslContext(@Nullable SSLContext sslContext) {
 		this.sslContext = sslContext;
 		return this;
 	}
@@ -203,7 +203,7 @@ public final class SSLClientConfigBuilder {
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the enabled protocols list is null
 	 */
-	public @NonNull SSLClientConfigBuilder enabledProtocols(@NonNull List<String> enabledProtocols) {
+	public @NonNull SslClientConfigBuilder enabledProtocols(@NonNull List<String> enabledProtocols) {
 		this.enabledProtocols = Objects.requireNonNull(enabledProtocols, "Enabled protocols must not be null");
 		return this;
 	}
@@ -216,7 +216,7 @@ public final class SSLClientConfigBuilder {
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the enabled cipher suites list is null
 	 */
-	public @NonNull SSLClientConfigBuilder enabledCipherSuites(@NonNull List<String> enabledCipherSuites) {
+	public @NonNull SslClientConfigBuilder enabledCipherSuites(@NonNull List<String> enabledCipherSuites) {
 		this.enabledCipherSuites = Objects.requireNonNull(enabledCipherSuites, "Enabled cipher suites must not be null");
 		return this;
 	}
@@ -228,7 +228,7 @@ public final class SSLClientConfigBuilder {
 	 * @param verifyHostname True to enable hostname verification
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLClientConfigBuilder verifyHostname(boolean verifyHostname) {
+	public @NonNull SslClientConfigBuilder verifyHostname(boolean verifyHostname) {
 		this.verifyHostname = verifyHostname;
 		return this;
 	}
@@ -239,7 +239,7 @@ public final class SSLClientConfigBuilder {
 	 * @param onConnect The connection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLClientConfigBuilder onConnect(@Nullable ConnectionEventHandler onConnect) {
+	public @NonNull SslClientConfigBuilder onConnect(@Nullable ConnectionEventHandler onConnect) {
 		this.onConnect = onConnect;
 		return this;
 	}
@@ -250,7 +250,7 @@ public final class SSLClientConfigBuilder {
 	 * @param onDisconnect The disconnection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLClientConfigBuilder onDisconnect(@Nullable ConnectionEventHandler onDisconnect) {
+	public @NonNull SslClientConfigBuilder onDisconnect(@Nullable ConnectionEventHandler onDisconnect) {
 		this.onDisconnect = onDisconnect;
 		return this;
 	}
@@ -261,7 +261,7 @@ public final class SSLClientConfigBuilder {
 	 * @param onError The error handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLClientConfigBuilder onError(@Nullable ErrorEventHandler onError) {
+	public @NonNull SslClientConfigBuilder onError(@Nullable ErrorEventHandler onError) {
 		this.onError = onError;
 		return this;
 	}

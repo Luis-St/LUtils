@@ -65,12 +65,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * }
  * }</pre>
  *
- * @see SSLServerConfig
- * @see SSLConnection
+ * @see SslServerConfig
+ * @see SslConnection
  *
  * @author Luis-St
  */
-public final class SSLServer implements NetworkServer {
+public final class SslServer implements NetworkServer {
 	
 	/**
 	 * The endpoint to bind the server to.<br>
@@ -79,7 +79,7 @@ public final class SSLServer implements NetworkServer {
 	/**
 	 * The configuration for this server.<br>
 	 */
-	private final @NonNull SSLServerConfig config;
+	private final @NonNull SslServerConfig config;
 	/**
 	 * Whether the server is currently running.<br>
 	 */
@@ -87,7 +87,7 @@ public final class SSLServer implements NetworkServer {
 	/**
 	 * The set of currently active client connections.<br>
 	 */
-	private final Set<SSLConnection> connections = ConcurrentHashMap.newKeySet();
+	private final Set<SslConnection> connections = ConcurrentHashMap.newKeySet();
 	/**
 	 * The underlying SSL server socket for accepting connections.<br>
 	 */
@@ -108,7 +108,7 @@ public final class SSLServer implements NetworkServer {
 	 * @param config The server configuration
 	 * @throws NullPointerException If bind endpoint or config is null
 	 */
-	public SSLServer(@NonNull IpEndpoint bindEndpoint, @NonNull SSLServerConfig config) {
+	public SslServer(@NonNull IpEndpoint bindEndpoint, @NonNull SslServerConfig config) {
 		this.bindEndpoint = Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
 		this.config = Objects.requireNonNull(config, "Config must not be null");
 	}
@@ -158,7 +158,7 @@ public final class SSLServer implements NetworkServer {
 			return;
 		}
 		
-		for (SSLConnection connection : this.connections) {
+		for (SslConnection connection : this.connections) {
 			connection.close();
 		}
 		this.connections.clear();
@@ -207,7 +207,7 @@ public final class SSLServer implements NetworkServer {
 	public void broadcast(byte @NonNull [] data) {
 		Objects.requireNonNull(data, "Data must not be null");
 		
-		for (SSLConnection connection : this.connections) {
+		for (SslConnection connection : this.connections) {
 			if (connection.isActive()) {
 				try {
 					connection.send(data);
@@ -240,7 +240,7 @@ public final class SSLServer implements NetworkServer {
 					clientSocket.setSoTimeout((int) this.config.clientReadTimeout().toMillis());
 				}
 				
-				SSLConnection connection = new SSLConnection(clientSocket, this.config.clientBufferSize(), this.config.clientReadTimeout());
+				SslConnection connection = new SslConnection(clientSocket, this.config.clientBufferSize(), this.config.clientReadTimeout());
 				this.connections.add(connection);
 				
 				if (this.isRunning()) {
@@ -270,7 +270,7 @@ public final class SSLServer implements NetworkServer {
 	 * @param connection The client connection to handle
 	 * @throws NullPointerException If connection is null
 	 */
-	private void handleClient(@NonNull SSLConnection connection) {
+	private void handleClient(@NonNull SslConnection connection) {
 		Objects.requireNonNull(connection, "Connection must not be null");
 		
 		boolean connected = false;

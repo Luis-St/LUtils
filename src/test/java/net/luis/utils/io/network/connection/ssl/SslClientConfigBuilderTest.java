@@ -28,11 +28,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link SSLClientConfigBuilder}.<br>
+ * Test class for {@link SslClientConfigBuilder}.<br>
  *
  * @author Luis-St
  */
-class SSLClientConfigBuilderTest {
+class SslClientConfigBuilderTest {
 	
 	private static SSLContext context;
 	
@@ -70,7 +70,7 @@ class SSLClientConfigBuilderTest {
 	
 	@Test
 	void connectTimeoutWithNullThrows() {
-		SSLClientConfigBuilder builder = SSLClientConfig.builder();
+		SslClientConfigBuilder builder = SSLClientConfig.builder();
 		assertThrows(NullPointerException.class, () -> builder.connectTimeout(null));
 	}
 	
@@ -84,7 +84,7 @@ class SSLClientConfigBuilderTest {
 	
 	@Test
 	void readTimeoutWithNullThrows() {
-		SSLClientConfigBuilder builder = SSLClientConfig.builder();
+		SslClientConfigBuilder builder = SSLClientConfig.builder();
 		assertThrows(NullPointerException.class, () -> builder.readTimeout(null));
 	}
 	
@@ -98,7 +98,7 @@ class SSLClientConfigBuilderTest {
 	
 	@Test
 	void writeTimeoutWithNullThrows() {
-		SSLClientConfigBuilder builder = SSLClientConfig.builder();
+		SslClientConfigBuilder builder = SSLClientConfig.builder();
 		assertThrows(NullPointerException.class, () -> builder.writeTimeout(null));
 	}
 	
@@ -152,7 +152,7 @@ class SSLClientConfigBuilderTest {
 	
 	@Test
 	void enabledProtocolsWithNullThrows() {
-		SSLClientConfigBuilder builder = SSLClientConfig.builder();
+		SslClientConfigBuilder builder = SSLClientConfig.builder();
 		assertThrows(NullPointerException.class, () -> builder.enabledProtocols(null));
 	}
 	
@@ -166,7 +166,7 @@ class SSLClientConfigBuilderTest {
 	
 	@Test
 	void enabledCipherSuitesWithNullThrows() {
-		SSLClientConfigBuilder builder = SSLClientConfig.builder();
+		SslClientConfigBuilder builder = SSLClientConfig.builder();
 		assertThrows(NullPointerException.class, () -> builder.enabledCipherSuites(null));
 	}
 	
@@ -220,7 +220,7 @@ class SSLClientConfigBuilderTest {
 	
 	@Test
 	void methodChainingConsistency() {
-		SSLClientConfigBuilder builder = SSLClientConfig.builder();
+		SslClientConfigBuilder builder = SSLClientConfig.builder();
 		assertSame(builder, builder.connectTimeout(Duration.ofSeconds(10)));
 		assertSame(builder, builder.readTimeout(Duration.ofSeconds(5)));
 		assertSame(builder, builder.writeTimeout(Duration.ofSeconds(5)));
@@ -271,7 +271,7 @@ class SSLClientConfigBuilderTest {
 	
 	@Test
 	void builderReuseAfterBuild() {
-		SSLClientConfigBuilder builder = SSLClientConfig.builder()
+		SslClientConfigBuilder builder = SSLClientConfig.builder()
 			.connectTimeout(Duration.ofSeconds(10));
 		
 		SSLClientConfig first = builder.build();
@@ -286,7 +286,7 @@ class SSLClientConfigBuilderTest {
 	
 	@Test
 	void builderMultipleBuilds() {
-		SSLClientConfigBuilder builder = SSLClientConfig.builder();
+		SslClientConfigBuilder builder = SSLClientConfig.builder();
 		
 		SSLClientConfig config1 = builder.build();
 		SSLClientConfig config2 = builder.build();

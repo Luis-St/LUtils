@@ -19,7 +19,7 @@
 package net.luis.utils.io.network.connection;
 
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.connection.ssl.SSLServer;
+import net.luis.utils.io.network.connection.ssl.SslServer;
 import net.luis.utils.io.network.connection.tcp.TcpServer;
 import net.luis.utils.io.network.connection.udp.UdpServer;
 import org.jspecify.annotations.NonNull;
@@ -28,7 +28,7 @@ import org.jspecify.annotations.NonNull;
  * Base interface for network servers.<br>
  * This sealed interface provides common operations for TCP, SSL, and UDP servers.<br>
  * <p>
- *     This interface is sealed and permits only {@link TcpServer}, {@link SSLServer}, and {@link UdpServer}<br>
+ *     This interface is sealed and permits only {@link TcpServer}, {@link SslServer}, and {@link UdpServer}<br>
  *     as implementations, ensuring type safety when working with network servers polymorphically.
  * </p>
  * <p>
@@ -53,12 +53,12 @@ import org.jspecify.annotations.NonNull;
  * }</pre>
  *
  * @see TcpServer
- * @see SSLServer
+ * @see SslServer
  * @see UdpServer
  *
  * @author Luis-St
  */
-public sealed interface NetworkServer extends AutoCloseable permits TcpServer, SSLServer, UdpServer {
+public sealed interface NetworkServer extends AutoCloseable permits TcpServer, SslServer, UdpServer {
 	
 	/**
 	 * Returns whether this server is currently running.<br>

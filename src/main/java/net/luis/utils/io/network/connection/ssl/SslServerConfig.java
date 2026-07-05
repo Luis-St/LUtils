@@ -53,8 +53,8 @@ import java.util.Objects;
  * }
  * }</pre>
  *
- * @see SSLServerConfigBuilder
- * @see SSLServer
+ * @see SslServerConfigBuilder
+ * @see SslServer
  *
  * @author Luis-St
  *
@@ -73,7 +73,7 @@ import java.util.Objects;
  * @param onMessage Handler called when a message is received from a client
  * @param onError Handler called when an error occurs
  */
-public record SSLServerConfig(
+public record SslServerConfig(
 	int backlog,
 	int clientBufferSize,
 	@NonNull Duration clientReadTimeout,
@@ -82,11 +82,11 @@ public record SSLServerConfig(
 	@NonNull SSLContext sslContext,
 	@NonNull List<String> enabledProtocols,
 	@NonNull List<String> enabledCipherSuites,
-	@NonNull SSLClientAuth clientAuth,
+	@NonNull SslClientAuth clientAuth,
 	@NonNull ClientExecutorStrategy executorStrategy,
 	@Nullable ConnectionEventHandler onClientConnect,
 	@Nullable ConnectionEventHandler onClientDisconnect,
-	@Nullable MessageEventHandler<SSLServer, SSLConnection> onMessage,
+	@Nullable MessageEventHandler<SslServer, SslConnection> onMessage,
 	@Nullable ErrorEventHandler onError
 ) {
 	
@@ -111,7 +111,7 @@ public record SSLServerConfig(
 	 * @throws NullPointerException If clientReadTimeout, sslContext, enabledProtocols, enabledCipherSuites, clientAuth, or executorStrategy is null
 	 * @throws IllegalArgumentException If backlog or clientBufferSize is less than 1
 	 */
-	public SSLServerConfig {
+	public SslServerConfig {
 		Objects.requireNonNull(clientReadTimeout, "Client read timeout must not be null");
 		Objects.requireNonNull(sslContext, "SSL context must not be null");
 		Objects.requireNonNull(enabledProtocols, "Enabled protocols must not be null");
@@ -137,7 +137,7 @@ public record SSLServerConfig(
 	 * @return A new builder with default values
 	 * @throws NullPointerException If sslContext is null
 	 */
-	public static @NonNull SSLServerConfigBuilder builder(@NonNull SSLContext sslContext) {
-		return new SSLServerConfigBuilder(sslContext);
+	public static @NonNull SslServerConfigBuilder builder(@NonNull SSLContext sslContext) {
+		return new SslServerConfigBuilder(sslContext);
 	}
 }

@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
-class SSLClientConfigTest {
+class SslClientConfigTest {
 	
 	private static SSLContext context;
 	

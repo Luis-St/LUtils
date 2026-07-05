@@ -33,7 +33,7 @@ import java.util.Objects;
  * Provides a fluent API for setting individual configuration options.<br>
  * <p>
  *     The {@link SSLContext} is required and must be supplied when the builder is created.
- *     All other options default to sensible values (see {@link SSLServer}).
+ *     All other options default to sensible values (see {@link SslServer}).
  * </p>
  * <p>
  *     Example usage:
@@ -48,11 +48,11 @@ import java.util.Objects;
  *     .build();
  * }</pre>
  *
- * @see SSLServerConfig
+ * @see SslServerConfig
  *
  * @author Luis-St
  */
-public final class SSLServerConfigBuilder {
+public final class SslServerConfigBuilder {
 	
 	/**
 	 * The SSL context holding the server certificate and private key.<br>
@@ -89,7 +89,7 @@ public final class SSLServerConfigBuilder {
 	/**
 	 * How to handle client certificate authentication.<br>
 	 */
-	private SSLClientAuth clientAuth = SSLClientAuth.NONE;
+	private SslClientAuth clientAuth = SslClientAuth.NONE;
 	/**
 	 * The executor strategy for handling concurrent client connections.<br>
 	 */
@@ -105,7 +105,7 @@ public final class SSLServerConfigBuilder {
 	/**
 	 * The handler called when a message is received from a client.<br>
 	 */
-	private @Nullable MessageEventHandler<SSLServer, SSLConnection> onMessage;
+	private @Nullable MessageEventHandler<SslServer, SslConnection> onMessage;
 	/**
 	 * The handler called when an error occurs.<br>
 	 */
@@ -117,7 +117,7 @@ public final class SSLServerConfigBuilder {
 	 * @param sslContext The SSL context holding the server certificate and private key
 	 * @throws NullPointerException If sslContext is null
 	 */
-	SSLServerConfigBuilder(@NonNull SSLContext sslContext) {
+	SslServerConfigBuilder(@NonNull SSLContext sslContext) {
 		this.sslContext = Objects.requireNonNull(sslContext, "SSL context must not be null");
 	}
 	
@@ -127,7 +127,7 @@ public final class SSLServerConfigBuilder {
 	 * @param backlog The backlog size (must be at least 1)
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLServerConfigBuilder backlog(int backlog) {
+	public @NonNull SslServerConfigBuilder backlog(int backlog) {
 		this.backlog = backlog;
 		return this;
 	}
@@ -138,7 +138,7 @@ public final class SSLServerConfigBuilder {
 	 * @param clientBufferSize The buffer size (must be at least 1)
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLServerConfigBuilder clientBufferSize(int clientBufferSize) {
+	public @NonNull SslServerConfigBuilder clientBufferSize(int clientBufferSize) {
 		this.clientBufferSize = clientBufferSize;
 		return this;
 	}
@@ -150,7 +150,7 @@ public final class SSLServerConfigBuilder {
 	 * @param clientReadTimeout The read timeout
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLServerConfigBuilder clientReadTimeout(@NonNull Duration clientReadTimeout) {
+	public @NonNull SslServerConfigBuilder clientReadTimeout(@NonNull Duration clientReadTimeout) {
 		this.clientReadTimeout = clientReadTimeout;
 		return this;
 	}
@@ -161,7 +161,7 @@ public final class SSLServerConfigBuilder {
 	 * @param tcpNoDelay True to disable Nagle's algorithm
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLServerConfigBuilder tcpNoDelay(boolean tcpNoDelay) {
+	public @NonNull SslServerConfigBuilder tcpNoDelay(boolean tcpNoDelay) {
 		this.tcpNoDelay = tcpNoDelay;
 		return this;
 	}
@@ -172,7 +172,7 @@ public final class SSLServerConfigBuilder {
 	 * @param keepAlive True to enable keep-alive
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLServerConfigBuilder keepAlive(boolean keepAlive) {
+	public @NonNull SslServerConfigBuilder keepAlive(boolean keepAlive) {
 		this.keepAlive = keepAlive;
 		return this;
 	}
@@ -185,7 +185,7 @@ public final class SSLServerConfigBuilder {
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the enabled protocols list is null
 	 */
-	public @NonNull SSLServerConfigBuilder enabledProtocols(@NonNull List<String> enabledProtocols) {
+	public @NonNull SslServerConfigBuilder enabledProtocols(@NonNull List<String> enabledProtocols) {
 		this.enabledProtocols = Objects.requireNonNull(enabledProtocols, "Enabled protocols must not be null");
 		return this;
 	}
@@ -198,7 +198,7 @@ public final class SSLServerConfigBuilder {
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the enabled cipher suites list is null
 	 */
-	public @NonNull SSLServerConfigBuilder enabledCipherSuites(@NonNull List<String> enabledCipherSuites) {
+	public @NonNull SslServerConfigBuilder enabledCipherSuites(@NonNull List<String> enabledCipherSuites) {
 		this.enabledCipherSuites = Objects.requireNonNull(enabledCipherSuites, "Enabled cipher suites must not be null");
 		return this;
 	}
@@ -210,7 +210,7 @@ public final class SSLServerConfigBuilder {
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the client auth mode is null
 	 */
-	public @NonNull SSLServerConfigBuilder clientAuth(@NonNull SSLClientAuth clientAuth) {
+	public @NonNull SslServerConfigBuilder clientAuth(@NonNull SslClientAuth clientAuth) {
 		this.clientAuth = Objects.requireNonNull(clientAuth, "Client auth must not be null");
 		return this;
 	}
@@ -221,7 +221,7 @@ public final class SSLServerConfigBuilder {
 	 * @param executorStrategy The executor strategy
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLServerConfigBuilder executorStrategy(@NonNull ClientExecutorStrategy executorStrategy) {
+	public @NonNull SslServerConfigBuilder executorStrategy(@NonNull ClientExecutorStrategy executorStrategy) {
 		this.executorStrategy = executorStrategy;
 		return this;
 	}
@@ -232,7 +232,7 @@ public final class SSLServerConfigBuilder {
 	 * @param onClientConnect The connection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLServerConfigBuilder onClientConnect(@Nullable ConnectionEventHandler onClientConnect) {
+	public @NonNull SslServerConfigBuilder onClientConnect(@Nullable ConnectionEventHandler onClientConnect) {
 		this.onClientConnect = onClientConnect;
 		return this;
 	}
@@ -243,7 +243,7 @@ public final class SSLServerConfigBuilder {
 	 * @param onClientDisconnect The disconnection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLServerConfigBuilder onClientDisconnect(@Nullable ConnectionEventHandler onClientDisconnect) {
+	public @NonNull SslServerConfigBuilder onClientDisconnect(@Nullable ConnectionEventHandler onClientDisconnect) {
 		this.onClientDisconnect = onClientDisconnect;
 		return this;
 	}
@@ -254,7 +254,7 @@ public final class SSLServerConfigBuilder {
 	 * @param onMessage The message handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLServerConfigBuilder onMessage(@Nullable MessageEventHandler<SSLServer, SSLConnection> onMessage) {
+	public @NonNull SslServerConfigBuilder onMessage(@Nullable MessageEventHandler<SslServer, SslConnection> onMessage) {
 		this.onMessage = onMessage;
 		return this;
 	}
@@ -265,7 +265,7 @@ public final class SSLServerConfigBuilder {
 	 * @param onError The error handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SSLServerConfigBuilder onError(@Nullable ErrorEventHandler onError) {
+	public @NonNull SslServerConfigBuilder onError(@Nullable ErrorEventHandler onError) {
 		this.onError = onError;
 		return this;
 	}
@@ -274,7 +274,7 @@ public final class SSLServerConfigBuilder {
 	 * Builds a new SSL server configuration with the configured values.<br>
 	 * @return A new configuration instance
 	 */
-	public @NonNull SSLServerConfig build() {
-		return new SSLServerConfig(this.backlog, this.clientBufferSize, this.clientReadTimeout, this.tcpNoDelay, this.keepAlive, this.sslContext, this.enabledProtocols, this.enabledCipherSuites, this.clientAuth, this.executorStrategy, this.onClientConnect, this.onClientDisconnect, this.onMessage, this.onError);
+	public @NonNull SslServerConfig build() {
+		return new SslServerConfig(this.backlog, this.clientBufferSize, this.clientReadTimeout, this.tcpNoDelay, this.keepAlive, this.sslContext, this.enabledProtocols, this.enabledCipherSuites, this.clientAuth, this.executorStrategy, this.onClientConnect, this.onClientDisconnect, this.onMessage, this.onError);
 	}
 }

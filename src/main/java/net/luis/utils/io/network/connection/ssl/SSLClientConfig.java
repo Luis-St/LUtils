@@ -49,8 +49,8 @@ import java.util.Objects;
  * }
  * }</pre>
  *
- * @see SSLClientConfigBuilder
- * @see SSLClient
+ * @see SslClientConfigBuilder
+ * @see SslClient
  *
  * @author Luis-St
  *
@@ -141,8 +141,8 @@ public record SSLClientConfig(
 	 * Creates a new builder for constructing SSL client configuration.<br>
 	 * @return A new builder with default values
 	 */
-	public static @NonNull SSLClientConfigBuilder builder() {
-		return new SSLClientConfigBuilder();
+	public static @NonNull SslClientConfigBuilder builder() {
+		return new SslClientConfigBuilder();
 	}
 	
 	/**
