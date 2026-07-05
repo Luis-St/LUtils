@@ -649,6 +649,12 @@ public final class SqlMigrationRunner {
 	 */
 	private record SqlDatabaseMigrationContext(@NonNull SqlDatabase database) implements SqlMigrationContext {
 		
+		/**
+		 * Constructs a new database migration context with the given database.<br>
+		 *
+		 * @param database The database backing this migration context
+		 * @throws NullPointerException If the database is null
+		 */
 		private SqlDatabaseMigrationContext {
 			Objects.requireNonNull(database, "Sql database must not be null");
 		}

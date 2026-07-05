@@ -90,6 +90,11 @@ public class MySqlDialect extends AbstractSqlDialect {
 		.register(SqlTypes.JSON, "JSON")
 		.build();
 	
+	/**
+	 * Constructs a new MySQL dialect.<br>
+	 */
+	public MySqlDialect() {}
+	
 	@Override
 	public @NonNull String name() {
 		return "MySQL";

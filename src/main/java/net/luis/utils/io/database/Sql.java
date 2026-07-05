@@ -63,6 +63,12 @@ import java.util.*;
 public class Sql {
 	
 	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private Sql() {}
+	
+	/**
 	 * Creates a value expression wrapping the given value, inferring its sql type from the runtime type of the value.<br>
 	 *
 	 * @param value The constant value to wrap

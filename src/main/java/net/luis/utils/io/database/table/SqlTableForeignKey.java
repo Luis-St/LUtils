@@ -34,6 +34,8 @@ import java.util.Objects;
  *
  * @author Luis-St
  *
+ * @param getReferencingColumns The local columns of the owning table that reference the foreign key
+ * @param getForeignKey The foreign key describing the referenced table and columns
  * @param <E> The type of the entity the owning table maps to
  * @param <T> The type of the entity the referenced table maps to
  */

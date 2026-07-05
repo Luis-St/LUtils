@@ -41,6 +41,11 @@ public class SqlTypeRegistryBuilder {
 	private final Map<SqlType<?>, SqlTypeMapping> mappings = Maps.newHashMap();
 	
 	/**
+	 * Constructs a new sql type registry builder.<br>
+	 */
+	SqlTypeRegistryBuilder() {}
+	
+	/**
 	 * Registers the given native type name for the given sql type using the default value handling.<br>
 	 *
 	 * @param type The sql type to register the mapping for

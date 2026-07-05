@@ -68,6 +68,11 @@ public class MariaDbDialect extends MySqlDialect {
 		.register(SqlTypes.UUID, "UUID")
 		.build();
 	
+	/**
+	 * Constructs a new MariaDB dialect.<br>
+	 */
+	public MariaDbDialect() {}
+	
 	@Override
 	public @NonNull String name() {
 		return "MariaDB";

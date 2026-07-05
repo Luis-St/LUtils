@@ -109,6 +109,11 @@ public class SqlServerDialect extends AbstractSqlDialect {
 		}, (resultSet, index) -> readXmlElement(resultSet.getSQLXML(index)))
 		.build();
 	
+	/**
+	 * Constructs a new SQL Server dialect.<br>
+	 */
+	public SqlServerDialect() {}
+	
 	@Override
 	public @NonNull String name() {
 		return "SQL Server";

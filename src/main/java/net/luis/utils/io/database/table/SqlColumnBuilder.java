@@ -180,6 +180,7 @@ public class SqlColumnBuilder<E, C> {
 	 * @return This builder
 	 * @throws NullPointerException If the referenced table is null
 	 * @see SqlForeignKey#of(SqlTable)
+	 * @param <T> The type of the entity the referenced table maps to
 	 */
 	public <T> @NonNull SqlColumnBuilder<E, C> foreignKey(@NonNull SqlTable<T> referencedTable) {
 		this.foreignKey = Optional.of(SqlForeignKey.of(referencedTable));
@@ -194,6 +195,7 @@ public class SqlColumnBuilder<E, C> {
 	 * @return This builder
 	 * @throws NullPointerException If the referenced table or column is null
 	 * @see SqlForeignKey#of(SqlTable, SqlColumn)
+	 * @param <T> The type of the entity the referenced table maps to
 	 */
 	public <T> @NonNull SqlColumnBuilder<E, C> foreignKey(@NonNull SqlTable<T> referencedTable, @NonNull SqlColumn<T, ?> referencedColumn) {
 		this.foreignKey = Optional.of(SqlForeignKey.of(referencedTable, referencedColumn));

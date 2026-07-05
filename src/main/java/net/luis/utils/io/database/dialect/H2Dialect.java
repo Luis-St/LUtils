@@ -93,6 +93,11 @@ public class H2Dialect extends AbstractSqlDialect {
 		.register(SqlTypes.JSON, "JSON")
 		.build();
 	
+	/**
+	 * Constructs a new H2 dialect.<br>
+	 */
+	public H2Dialect() {}
+	
 	@Override
 	public @NonNull String name() {
 		return "H2";

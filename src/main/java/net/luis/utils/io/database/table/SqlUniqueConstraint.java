@@ -33,6 +33,7 @@ import java.util.Objects;
  *
  * @author Luis-St
  *
+ * @param columns The columns that the unique constraint spans
  * @param <E> The type of the entity the owning table maps to
  */
 public record SqlUniqueConstraint<E>(
