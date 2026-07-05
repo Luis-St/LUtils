@@ -31,7 +31,7 @@ class NetworkErrorTypeTest {
 	
 	@Test
 	void valuesCount() {
-		assertEquals(15, NetworkErrorType.values().length);
+		assertEquals(16, NetworkErrorType.values().length);
 	}
 	
 	@Test
@@ -48,6 +48,7 @@ class NetworkErrorTypeTest {
 		assertEquals(NetworkErrorType.SOCKET_CLOSED, NetworkErrorType.valueOf("SOCKET_CLOSED"));
 		assertEquals(NetworkErrorType.NOT_CONNECTED, NetworkErrorType.valueOf("NOT_CONNECTED"));
 		assertEquals(NetworkErrorType.ALREADY_CONNECTED, NetworkErrorType.valueOf("ALREADY_CONNECTED"));
+		assertEquals(NetworkErrorType.HANDSHAKE_FAILED, NetworkErrorType.valueOf("HANDSHAKE_FAILED"));
 		assertEquals(NetworkErrorType.IO_ERROR, NetworkErrorType.valueOf("IO_ERROR"));
 		assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, NetworkErrorType.valueOf("MESSAGE_TOO_LARGE"));
 		assertEquals(NetworkErrorType.UNKNOWN, NetworkErrorType.valueOf("UNKNOWN"));
