@@ -20,6 +20,7 @@ package net.luis.utils.io.network.connection.ssl;
 
 import net.luis.utils.io.network.connection.event.*;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
+import net.luis.utils.io.network.connection.tcp.TcpServerConfig;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -33,22 +34,21 @@ import java.util.Objects;
  * This record extends the plain TCP server settings with TLS-specific options such as the required
  * {@link SSLContext}, the enabled protocols and cipher suites, and the client certificate authentication mode.<br>
  * <p>
- *     Unlike {@link net.luis.utils.io.network.connection.tcp.TcpServerConfig}, there is no shared default
- *     instance because a server always requires an {@link SSLContext} holding its certificate and private key.
+ *     Unlike {@link TcpServerConfig}, there is no shared default instance because a server always requires an {@link SSLContext} holding its certificate and private key.<br>
  *     Use {@link #builder(SSLContext)} to construct a configuration.
  * </p>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
- * SSLServerConfig config = SSLServerConfig.builder(sslContext)
+ * SslServerConfig config = SslServerConfig.builder(sslContext)
  *     .backlog(100)
  *     .clientAuth(SSLClientAuth.REQUIRED)
  *     .executorStrategy(ClientExecutorStrategy.virtualThreads())
  *     .onMessage((server, conn, data) -> conn.send(("Echo: " + new String(data)).getBytes()))
  *     .build();
  *
- * try (SSLServer server = new SSLServer(bindEndpoint, config)) {
+ * try (SslServer server = new SslServer(bindEndpoint, config)) {
  *     server.start();
  * }
  * }</pre>

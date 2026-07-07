@@ -32,14 +32,14 @@ import java.util.Objects;
  * Builder class for constructing SSL server configuration.<br>
  * Provides a fluent API for setting individual configuration options.<br>
  * <p>
- *     The {@link SSLContext} is required and must be supplied when the builder is created.
+ *     The {@link SSLContext} is required and must be supplied when the builder is created.<br>
  *     All other options default to sensible values (see {@link SslServer}).
  * </p>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
- * SSLServerConfig config = SSLServerConfig.builder(sslContext)
+ * SslServerConfigBuilder config = SslServerConfigBuilder.builder(sslContext)
  *     .backlog(100)
  *     .clientBufferSize(4096)
  *     .clientAuth(SSLClientAuth.REQUESTED)

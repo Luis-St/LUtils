@@ -35,20 +35,20 @@ import java.util.Optional;
 
 /**
  * A blocking SSL/TLS client for establishing secure connections to remote servers.<br>
- * This class provides a simple blocking API for TLS communication, mirroring the plain TCP client
- * but performing a TLS handshake and optional hostname verification on connect.<br>
+ * This class provides a simple blocking API for TLS communication,<br>
+ * mirroring the plain TCP client but performing a TLS handshake and optional hostname verification on connect.<br>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
  * IpEndpoint server = new IpEndpoint(Ipv4Address.LOOPBACK, 8443);
- * SSLClientConfig config = SSLClientConfig.builder()
+ * SslClientConfig config = SslClientConfig.builder()
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .verifyHostname(true)
  *     .onConnect(event -> System.out.println("Secure connection established!"))
  *     .build();
  *
- * try (SSLClient client = new SSLClient(config)) {
+ * try (SslClient client = new SslClient(config)) {
  *     client.connect(server);
  *     client.send("Hello, Server!".getBytes());
  *     byte[] response = client.receive();
@@ -56,7 +56,7 @@ import java.util.Optional;
  * }
  * }</pre>
  *
- * @see SSLClientConfig
+ * @see SslClientConfig
  *
  * @author Luis-St
  */
@@ -65,7 +65,7 @@ public final class SslClient implements NetworkClient {
 	/**
 	 * The configuration for this client.<br>
 	 */
-	private final SSLClientConfig config;
+	private final SslClientConfig config;
 	/**
 	 * The underlying SSL socket for communication.<br>
 	 */
@@ -79,7 +79,7 @@ public final class SslClient implements NetworkClient {
 	 * Constructs a new SSL client with default configuration.<br>
 	 */
 	public SslClient() {
-		this(SSLClientConfig.DEFAULT);
+		this(SslClientConfig.DEFAULT);
 	}
 	
 	/**
@@ -88,7 +88,7 @@ public final class SslClient implements NetworkClient {
 	 * @param config The client configuration
 	 * @throws NullPointerException If config is null
 	 */
-	public SslClient(@NonNull SSLClientConfig config) {
+	public SslClient(@NonNull SslClientConfig config) {
 		this.config = Objects.requireNonNull(config, "Config must not be null");
 	}
 	
