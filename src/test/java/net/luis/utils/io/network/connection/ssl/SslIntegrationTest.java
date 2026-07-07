@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
-class SSLIntegrationTest {
+class SslIntegrationTest {
 	
 	private static SSLContext serverContext;
 	private static SSLContext clientContext;
@@ -119,7 +119,7 @@ class SSLIntegrationTest {
 	void clientConnectToNonExistentServerThrows() {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 59998);
 		
-		SSLClientConfig config = this.clientConfig().connectTimeout(Duration.ofSeconds(2)).build();
+		SslClientConfig config = this.clientConfig().connectTimeout(Duration.ofSeconds(2)).build();
 		
 		try (SslClient client = new SslClient(config)) {
 			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect(endpoint));
@@ -344,7 +344,7 @@ class SSLIntegrationTest {
 			server.start();
 			IpEndpoint serverEndpoint = server.boundEndpoint();
 			
-			SSLClientConfig config = this.clientConfig()
+			SslClientConfig config = this.clientConfig()
 				.onConnect(event -> connectLatch.countDown())
 				.onDisconnect(event -> disconnectLatch.countDown())
 				.build();
@@ -473,7 +473,7 @@ class SSLIntegrationTest {
 		try (SslServer server = new SslServer(endpoint, SslServerConfig.builder(serverContext).build())) {
 			server.start();
 			
-			SSLClientConfig config = SSLClientConfig.builder()
+			SslClientConfig config = SslClientConfig.builder()
 				.sslContext(clientContext)
 				.verifyHostname(true)
 				.build();
@@ -491,7 +491,7 @@ class SSLIntegrationTest {
 		try (SslServer server = new SslServer(endpoint, SslServerConfig.builder(serverContext).build())) {
 			server.start();
 			
-			SSLClientConfig config = SSLClientConfig.builder()
+			SslClientConfig config = SslClientConfig.builder()
 				.verifyHostname(false)
 				.build();
 			
@@ -542,7 +542,7 @@ class SSLIntegrationTest {
 		try (SslServer server = new SslServer(endpoint, config)) {
 			server.start();
 			
-			SSLClientConfig clientConfig = SSLClientConfig.builder()
+			SslClientConfig clientConfig = SslClientConfig.builder()
 				.sslContext(trustOnly)
 				.enabledProtocols(List.of("TLSv1.2"))
 				.verifyHostname(false)
@@ -563,7 +563,7 @@ class SSLIntegrationTest {
 	 * Returns a client config builder that trusts the test server certificate and skips hostname verification.<br>
 	 */
 	private SslClientConfigBuilder clientConfig() {
-		return SSLClientConfig.builder().sslContext(clientContext).verifyHostname(false);
+		return SslClientConfig.builder().sslContext(clientContext).verifyHostname(false);
 	}
 	//endregion
 }

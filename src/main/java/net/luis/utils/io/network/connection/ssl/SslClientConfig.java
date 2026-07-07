@@ -31,20 +31,20 @@ import java.util.Objects;
 
 /**
  * Configuration options for SSL/TLS clients.<br>
- * This record extends the plain TCP settings with TLS-specific options such as the {@link SSLContext},
+ * This record extends the plain TCP settings with TLS-specific options such as the {@link SSLContext},<br>
  * the enabled protocols and cipher suites, and hostname verification.<br>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
- * SSLClientConfig config = SSLClientConfig.builder()
+ * SslClientConfig config = SslClientConfig.builder()
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .enabledProtocols(List.of("TLSv1.3", "TLSv1.2"))
  *     .verifyHostname(true)
  *     .onConnect(event -> System.out.println("Secure connection established!"))
  *     .build();
  *
- * try (SSLClient client = new SSLClient(config)) {
+ * try (SslClient client = new SslClient(config)) {
  *     client.connect(serverEndpoint);
  * }
  * }</pre>
@@ -68,7 +68,7 @@ import java.util.Objects;
  * @param onDisconnect Handler called when the connection is closed
  * @param onError Handler called when an error occurs
  */
-public record SSLClientConfig(
+public record SslClientConfig(
 	@NonNull Duration connectTimeout,
 	@NonNull Duration readTimeout,
 	@NonNull Duration writeTimeout,
@@ -100,7 +100,7 @@ public record SSLClientConfig(
 	 *     <li>All handlers = {@code null}</li>
 	 * </ul>
 	 */
-	public static final SSLClientConfig DEFAULT = new SSLClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, null, List.of(), List.of(), true, null, null, null);
+	public static final SslClientConfig DEFAULT = new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, null, List.of(), List.of(), true, null, null, null);
 	
 	/**
 	 * Constructs a new SSL client configuration.<br>
@@ -122,7 +122,7 @@ public record SSLClientConfig(
 	 * @throws NullPointerException If connect timeout, read timeout, write timeout, enabled protocols, or enabled cipher suites is null
 	 * @throws IllegalArgumentException If bufferSize is less than 1
 	 */
-	public SSLClientConfig {
+	public SslClientConfig {
 		Objects.requireNonNull(connectTimeout, "Connect timeout must not be null");
 		Objects.requireNonNull(readTimeout, "Read timeout must not be null");
 		Objects.requireNonNull(writeTimeout, "Write timeout must not be null");

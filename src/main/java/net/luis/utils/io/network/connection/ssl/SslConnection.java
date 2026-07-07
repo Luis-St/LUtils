@@ -39,7 +39,7 @@ import java.util.Objects;
  *     Example usage in a message handler:
  * </p>
  * <pre>{@code
- * SSLServerConfig config = SSLServerConfig.builder(sslContext)
+ * SslServerConfig config = SslServerConfig.builder(sslContext)
  *     .onMessage((server, connection, data) -> {
  *         System.out.println("From " + connection.remoteEndpoint() + ": " + new String(data));
  *         connection.send("Response".getBytes());
@@ -113,8 +113,7 @@ public final class SslConnection implements AutoCloseable {
 	 * @return The remote endpoint
 	 */
 	public @NonNull IpEndpoint remoteEndpoint() {
-		InetSocketAddress address = (InetSocketAddress) this.socket.getRemoteSocketAddress();
-		return IpEndpoint.from(address);
+		return IpEndpoint.from((InetSocketAddress) this.socket.getRemoteSocketAddress());
 	}
 	
 	/**
@@ -122,8 +121,7 @@ public final class SslConnection implements AutoCloseable {
 	 * @return The local endpoint
 	 */
 	public @NonNull IpEndpoint localEndpoint() {
-		InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
-		return IpEndpoint.from(address);
+		return IpEndpoint.from((InetSocketAddress) this.socket.getLocalSocketAddress());
 	}
 	
 	/**
