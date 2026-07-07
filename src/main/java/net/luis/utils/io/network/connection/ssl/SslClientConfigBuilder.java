@@ -32,13 +32,13 @@ import java.util.Objects;
  * Builder class for constructing SSL client configuration.<br>
  * Provides a fluent API for setting individual configuration options.<br>
  * <p>
- *     All options default to values matching {@link SSLClientConfig#DEFAULT}.
+ *     All options default to values matching {@link SslClientConfig#DEFAULT}.
  * </p>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
- * SSLClientConfig config = SSLClientConfig.builder()
+ * SslClientConfig config = SslClientConfig.builder()
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .sslContext(myContext)
  *     .enabledProtocols(List.of("TLSv1.3"))
@@ -47,7 +47,7 @@ import java.util.Objects;
  *     .build();
  * }</pre>
  *
- * @see SSLClientConfig
+ * @see SslClientConfig
  *
  * @author Luis-St
  */
@@ -270,7 +270,7 @@ public final class SslClientConfigBuilder {
 	 * Builds a new SSL client configuration with the configured values.<br>
 	 * @return A new configuration instance
 	 */
-	public @NonNull SSLClientConfig build() {
-		return new SSLClientConfig(this.connectTimeout, this.readTimeout, this.writeTimeout, this.bufferSize, this.tcpNoDelay, this.keepAlive, this.sslContext, this.enabledProtocols, this.enabledCipherSuites, this.verifyHostname, this.onConnect, this.onDisconnect, this.onError);
+	public @NonNull SslClientConfig build() {
+		return new SslClientConfig(this.connectTimeout, this.readTimeout, this.writeTimeout, this.bufferSize, this.tcpNoDelay, this.keepAlive, this.sslContext, this.enabledProtocols, this.enabledCipherSuites, this.verifyHostname, this.onConnect, this.onDisconnect, this.onError);
 	}
 }

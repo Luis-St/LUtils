@@ -38,19 +38,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A blocking SSL/TLS server that accepts secure client connections.<br>
- * This class mirrors the plain TCP server but wraps every accepted connection in a TLS session
- * negotiated from the configured {@link SSLContext}.<br>
+ * This class mirrors the plain TCP server but wraps every accepted connection in a TLS session negotiated from the configured {@link SSLContext}.<br>
  * <p>
- *     The TLS handshake for each client is performed on the client's worker thread (not the accept
- *     thread), so a slow or failing handshake does not block other incoming connections. The
- *     {@code onClientConnect} handler is only invoked after a successful handshake.
+ *     The TLS handshake for each client is performed on the client's worker thread (not the accept thread),<br>
+ *     so a slow or failing handshake does not block other incoming connections.<br>
+ *     The {@code onClientConnect} handler is only invoked after a successful handshake.
  * </p>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
  * IpEndpoint bindAddress = new IpEndpoint(Ipv4Address.ANY, 8443);
- * SSLServerConfig config = SSLServerConfig.builder(sslContext)
+ * SslServerConfig config = SslServerConfig.builder(sslContext)
  *     .executorStrategy(ClientExecutorStrategy.virtualThreads())
  *     .onClientConnect(event -> System.out.println("Client connected: " + event.remoteEndpoint()))
  *     .onMessage((server, connection, data) -> {
@@ -59,7 +58,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     })
  *     .build();
  *
- * try (SSLServer server = new SSLServer(bindAddress, config)) {
+ * try (SslServer server = new SslServer(bindAddress, config)) {
  *     server.start();
  *     // Server runs until stopped or closed
  * }
