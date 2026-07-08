@@ -120,6 +120,8 @@ module net.luis.utils {
 	exports net.luis.utils.io.network.connection.ssl;
 	exports net.luis.utils.io.network.connection.tcp;
 	exports net.luis.utils.io.network.connection.udp;
+	exports net.luis.utils.io.network.mail;
+	exports net.luis.utils.io.network.mail.message;
 	
 	exports net.luis.utils.io.token;
 	exports net.luis.utils.io.token.actions;

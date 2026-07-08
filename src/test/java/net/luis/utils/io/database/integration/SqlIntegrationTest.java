@@ -52,6 +52,8 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -107,7 +109,10 @@ class SqlIntegrationTest {
 	@BeforeAll
 	static void startEngines() throws IOException {
 		assumeTrue(DockerClientFactory.instance().isDockerAvailable(), "Docker is required for the container database integration tests");
-		
+
+		// Silence the SQL Server JDBC driver's prelogin retry warnings emitted while the container is still booting
+		Logger.getLogger("com.microsoft.sqlserver.jdbc").setLevel(Level.SEVERE);
+
 		CONTAINERS.parallelStream().forEach(JdbcDatabaseContainer::start);
 		
 		ENGINES.add(new Engine("PostgreSQL", fromContainer(POSTGRES, SqlDialects.POSTGRESQL)));
