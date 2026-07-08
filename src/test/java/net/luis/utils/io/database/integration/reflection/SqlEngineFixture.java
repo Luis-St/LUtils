@@ -35,6 +35,8 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -61,6 +63,9 @@ public final class SqlEngineFixture {
 	private SqlEngineFixture() {}
 	
 	public static @NonNull List<Engine> startEngines() throws IOException {
+		// Silence the SQL Server JDBC driver's prelogin retry warnings emitted while the container is still booting
+		Logger.getLogger("com.microsoft.sqlserver.jdbc").setLevel(Level.SEVERE);
+
 		PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 		MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.4");
 		MariaDBContainer<?> mariadb = new MariaDBContainer<>("mariadb:11.4");
