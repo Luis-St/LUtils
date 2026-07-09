@@ -93,6 +93,44 @@ public final class SslClient implements NetworkClient {
 	}
 	
 	/**
+	 * Creates a new SSL client with default configuration and connects it to the specified remote endpoint.<br>
+	 *
+	 * @param endpoint The remote endpoint to connect to
+	 * @return The connected client
+	 * @throws NullPointerException If endpoint is null
+	 * @throws NetworkConnectionException If connection or the TLS handshake fails
+	 * @throws NetworkTimeoutException If connection times out
+	 */
+	public static @NonNull SslClient connectTo(@NonNull IpEndpoint endpoint) throws NetworkConnectionException {
+		return connectTo(endpoint, SslClientConfig.DEFAULT);
+	}
+	
+	/**
+	 * Creates a new SSL client with the specified configuration and connects it to the specified remote endpoint.<br>
+	 * If the connection fails, the client is closed before the exception is propagated.<br>
+	 *
+	 * @param endpoint The remote endpoint to connect to
+	 * @param config The client configuration
+	 * @return The connected client
+	 * @throws NullPointerException If endpoint or config is null
+	 * @throws NetworkConnectionException If connection or the TLS handshake fails
+	 * @throws NetworkTimeoutException If connection times out
+	 */
+	public static @NonNull SslClient connectTo(@NonNull IpEndpoint endpoint, @NonNull SslClientConfig config) throws NetworkConnectionException {
+		Objects.requireNonNull(endpoint, "Endpoint must not be null");
+		Objects.requireNonNull(config, "Config must not be null");
+		
+		SslClient client = new SslClient(config);
+		try {
+			client.connect(endpoint);
+			return client;
+		} catch (NetworkConnectionException e) {
+			client.close();
+			throw e;
+		}
+	}
+	
+	/**
 	 * Connects to the specified remote endpoint and performs the TLS handshake.<br>
 	 *
 	 * @param endpoint The remote endpoint to connect to

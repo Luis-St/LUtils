@@ -85,6 +85,42 @@ public final class UdpClient implements NetworkClient {
 	}
 	
 	/**
+	 * Creates a new UDP client with default configuration and binds it to the specified local endpoint.<br>
+	 *
+	 * @param localEndpoint The local endpoint to bind to
+	 * @return The bound client
+	 * @throws NullPointerException If local endpoint is null
+	 * @throws NetworkConnectionException If binding fails
+	 */
+	public static @NonNull UdpClient bindTo(@NonNull IpEndpoint localEndpoint) throws NetworkConnectionException {
+		return bindTo(localEndpoint, UdpClientConfig.DEFAULT);
+	}
+	
+	/**
+	 * Creates a new UDP client with the specified configuration and binds it to the specified local endpoint.<br>
+	 * If the binding fails, the client is closed before the exception is propagated.<br>
+	 *
+	 * @param localEndpoint The local endpoint to bind to
+	 * @param config The client configuration
+	 * @return The bound client
+	 * @throws NullPointerException If local endpoint or config is null
+	 * @throws NetworkConnectionException If binding fails
+	 */
+	public static @NonNull UdpClient bindTo(@NonNull IpEndpoint localEndpoint, @NonNull UdpClientConfig config) throws NetworkConnectionException {
+		Objects.requireNonNull(localEndpoint, "Local endpoint must not be null");
+		Objects.requireNonNull(config, "Config must not be null");
+		
+		UdpClient client = new UdpClient(config);
+		try {
+			client.bind(localEndpoint);
+			return client;
+		} catch (NetworkConnectionException e) {
+			client.close();
+			throw e;
+		}
+	}
+	
+	/**
 	 * Binds the client to a local endpoint.<br>
 	 * This must be called before receiving datagrams.<br>
 	 *

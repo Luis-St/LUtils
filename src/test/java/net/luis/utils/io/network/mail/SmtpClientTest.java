@@ -179,9 +179,10 @@ class SmtpClientTest {
 	}
 	
 	@Test
-	void closeOnUnconnectedClientThrows() {
+	void closeOnUnconnectedClientDoesNothing() {
 		SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()));
-		assertThrows(NullPointerException.class, client::close);
+		assertDoesNotThrow(client::close);
+		assertFalse(client.isConnected());
 	}
 	
 	@Test
