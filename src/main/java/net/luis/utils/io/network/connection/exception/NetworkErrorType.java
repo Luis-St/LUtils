@@ -102,7 +102,7 @@ public enum NetworkErrorType {
 	 * validation failure, an untrusted peer, or no common protocol or cipher suite.<br>
 	 */
 	HANDSHAKE_FAILED,
-
+	
 	/**
 	 * A general I/O error occurred.<br>
 	 * An unspecified I/O error occurred during the operation.<br>
@@ -114,19 +114,19 @@ public enum NetworkErrorType {
 	 * The data to send is larger than the configured buffer size allows.<br>
 	 */
 	MESSAGE_TOO_LARGE,
-
+	
 	/**
 	 * Authentication with the remote server failed.<br>
 	 * The provided credentials were rejected, for example during an SMTP {@code AUTH} exchange.<br>
 	 */
 	AUTHENTICATION_FAILED,
-
+	
 	/**
 	 * The remote server violated the expected application protocol.<br>
 	 * An unexpected or malformed reply was received, for example an unexpected SMTP reply code.<br>
 	 */
 	PROTOCOL_ERROR,
-
+	
 	/**
 	 * An unknown or unclassified error occurred.<br>
 	 * This is used when the error does not fit any other category.<br>

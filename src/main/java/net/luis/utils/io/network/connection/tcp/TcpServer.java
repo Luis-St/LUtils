@@ -116,6 +116,40 @@ public final class TcpServer implements NetworkServer {
 		this.config = Objects.requireNonNull(config, "Config must not be null");
 	}
 	
+	/**
+	 * Creates a new TCP server with default configuration and starts it on the specified bind endpoint.<br>
+	 *
+	 * @param bindEndpoint The endpoint to bind to
+	 * @return The started server
+	 * @throws NullPointerException If bind endpoint is null
+	 */
+	public static @NonNull TcpServer startOn(@NonNull IpEndpoint bindEndpoint) {
+		return startOn(bindEndpoint, TcpServerConfig.DEFAULT);
+	}
+	
+	/**
+	 * Creates a new TCP server with the specified configuration and starts it on the specified bind endpoint.<br>
+	 * Startup failures are reported to the configured error handler, use {@link #isRunning()} to check whether the server came up.<br>
+	 *
+	 * @param bindEndpoint The endpoint to bind to
+	 * @param config The server configuration
+	 * @return The started server
+	 * @throws NullPointerException If bind endpoint or config is null
+	 */
+	public static @NonNull TcpServer startOn(@NonNull IpEndpoint bindEndpoint, @NonNull TcpServerConfig config) {
+		Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
+		Objects.requireNonNull(config, "Config must not be null");
+		
+		TcpServer server = new TcpServer(bindEndpoint, config);
+		try {
+			server.start();
+			return server;
+		} catch (Throwable e) {
+			server.close();
+			throw e;
+		}
+	}
+	
 	@Override
 	public void start() {
 		if (this.running.getAndSet(true)) {
@@ -139,30 +173,6 @@ public final class TcpServer implements NetworkServer {
 			this.running.set(false);
 			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to start server on " + this.bindEndpoint, e);
 		}
-	}
-	
-	@Override
-	public void stop() {
-		if (!this.running.getAndSet(false)) {
-			return;
-		}
-		
-		for (TcpConnection connection : this.connections) {
-			connection.close();
-		}
-		this.connections.clear();
-		
-		if (this.serverSocket != null && !this.serverSocket.isClosed()) {
-			try {
-				this.serverSocket.close();
-			} catch (IOException _) {}
-		}
-		
-		if (this.acceptThread != null) {
-			this.acceptThread.interrupt();
-		}
-		
-		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
 	}
 	
 	@Override
@@ -205,6 +215,30 @@ public final class TcpServer implements NetworkServer {
 				}
 			}
 		}
+	}
+	
+	@Override
+	public void stop() {
+		if (!this.running.getAndSet(false)) {
+			return;
+		}
+		
+		for (TcpConnection connection : this.connections) {
+			connection.close();
+		}
+		this.connections.clear();
+		
+		if (this.serverSocket != null && !this.serverSocket.isClosed()) {
+			try {
+				this.serverSocket.close();
+			} catch (IOException _) {}
+		}
+		
+		if (this.acceptThread != null) {
+			this.acceptThread.interrupt();
+		}
+		
+		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
 	}
 	
 	@Override

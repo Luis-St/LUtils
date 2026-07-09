@@ -89,6 +89,44 @@ public final class TcpClient implements NetworkClient {
 	}
 	
 	/**
+	 * Creates a new TCP client with default configuration and connects it to the specified remote endpoint.<br>
+	 *
+	 * @param endpoint The remote endpoint to connect to
+	 * @return The connected client
+	 * @throws NullPointerException If endpoint is null
+	 * @throws NetworkConnectionException If connection fails
+	 * @throws NetworkTimeoutException If connection times out
+	 */
+	public static @NonNull TcpClient connectTo(@NonNull IpEndpoint endpoint) throws NetworkConnectionException {
+		return connectTo(endpoint, TcpClientConfig.DEFAULT);
+	}
+	
+	/**
+	 * Creates a new TCP client with the specified configuration and connects it to the specified remote endpoint.<br>
+	 * If the connection fails, the client is closed before the exception is propagated.<br>
+	 *
+	 * @param endpoint The remote endpoint to connect to
+	 * @param config The client configuration
+	 * @return The connected client
+	 * @throws NullPointerException If endpoint or config is null
+	 * @throws NetworkConnectionException If connection fails
+	 * @throws NetworkTimeoutException If connection times out
+	 */
+	public static @NonNull TcpClient connectTo(@NonNull IpEndpoint endpoint, @NonNull TcpClientConfig config) throws NetworkConnectionException {
+		Objects.requireNonNull(endpoint, "Endpoint must not be null");
+		Objects.requireNonNull(config, "Config must not be null");
+		
+		TcpClient client = new TcpClient(config);
+		try {
+			client.connect(endpoint);
+			return client;
+		} catch (NetworkConnectionException e) {
+			client.close();
+			throw e;
+		}
+	}
+	
+	/**
 	 * Connects to the specified remote endpoint.<br>
 	 *
 	 * @param endpoint The remote endpoint to connect to

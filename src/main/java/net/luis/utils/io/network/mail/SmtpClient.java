@@ -118,10 +118,53 @@ public final class SmtpClient implements AutoCloseable {
 	}
 	
 	/**
+	 * Creates a new SMTP client with default configuration and connects it to the specified server.<br>
+	 *
+	 * @param host The server host to connect to
+	 * @param port The server port to connect to
+	 * @return The connected client
+	 * @throws NullPointerException If host is null
+	 * @throws NetworkConnectionException If the connection, TLS handshake, or SMTP handshake fails
+	 * @throws NetworkTimeoutException If the connection times out
+	 * @throws SmtpException If the server returns an unexpected reply or authentication fails
+	 */
+	public static @NonNull SmtpClient connectTo(@NonNull String host, int port) throws NetworkConnectionException {
+		return connectTo(host, port, SmtpClientConfig.DEFAULT);
+	}
+	
+	/**
+	 * Creates a new SMTP client with the specified configuration and connects it to the specified server.<br>
+	 * If the connection or handshake fails, the client is closed before the exception is propagated.<br>
+	 *
+	 * @param host The server host to connect to
+	 * @param port The server port to connect to
+	 * @param config The client configuration
+	 * @return The connected client
+	 * @throws NullPointerException If host or config is null
+	 * @throws NetworkConnectionException If the connection, TLS handshake, or SMTP handshake fails
+	 * @throws NetworkTimeoutException If the connection times out
+	 * @throws SmtpException If the server returns an unexpected reply or authentication fails
+	 */
+	public static @NonNull SmtpClient connectTo(@NonNull String host, int port, @NonNull SmtpClientConfig config) throws NetworkConnectionException {
+		Objects.requireNonNull(host, "Host must not be null");
+		Objects.requireNonNull(config, "Config must not be null");
+		
+		SmtpClient client = new SmtpClient(config);
+		try {
+			client.connect(host, port);
+			return client;
+		} catch (NetworkConnectionException e) {
+			client.close();
+			throw e;
+		}
+	}
+	
+	//region Static helper methods
+	
+	/**
 	 * Returns whether the given capability lines advertise the named capability.<br>
 	 *
 	 * @param capabilities The advertised capability lines
-	 *
 	 * @return True if the capability is advertised
 	 */
 	private static boolean hasCapability(@NonNull List<String> capabilities) {
@@ -162,8 +205,6 @@ public final class SmtpClient implements AutoCloseable {
 		return result;
 	}
 	
-	//region Helper methods
-	
 	/**
 	 * Applies SMTP dot-stuffing to the given message data.<br>
 	 * Any line beginning with a dot has an extra dot prepended (RFC 5321 section 4.5.2).<br>
@@ -187,10 +228,11 @@ public final class SmtpClient implements AutoCloseable {
 		}
 		return sb.toString();
 	}
+	//endregion
 	
 	/**
-	 * Connects to the specified SMTP server and performs the greeting, EHLO, optional STARTTLS
-	 * upgrade, and authentication handshake according to the configured security mode.<br>
+	 * Connects to the specified SMTP server and performs the greeting, EHLO, optional STARTTLS upgrade,<br>
+	 * and authentication handshake according to the configured security mode.<br>
 	 *
 	 * @param host The server host to connect to
 	 * @param port The server port to connect to
@@ -274,9 +316,8 @@ public final class SmtpClient implements AutoCloseable {
 	
 	/**
 	 * Sends the given message as a single mail transaction.<br>
-	 * Every recipient, including blind carbon-copy recipients, is submitted with {@code RCPT TO},
-	 * and the serialized message is written with SMTP dot-stuffing applied and terminated by
-	 * {@code CRLF.CRLF}.<br>
+	 * Every recipient, including blind carbon-copy recipients, is submitted with {@code RCPT TO},<br>
+	 * and the serialized message is written with SMTP dot-stuffing applied and terminated by {@code CRLF.CRLF}.<br>
 	 *
 	 * @param message The message to send
 	 * @throws NullPointerException If message is null
@@ -315,19 +356,22 @@ public final class SmtpClient implements AutoCloseable {
 	 */
 	@Override
 	public void close() {
-		if (!this.socket.isClosed()) {
+		if (this.socket != null && !this.socket.isClosed()) {
 			if (this.connected) {
 				try {
 					this.sendCommand("QUIT");
 					this.readReply();
 				} catch (NetworkConnectionException _) {}
 			}
+			
 			try {
 				this.socket.close();
 			} catch (IOException _) {}
 		}
 		this.connected = false;
 	}
+	
+	//region Helper methods
 	
 	/**
 	 * Initializes the buffered reader and output stream from the current socket.<br>
@@ -444,10 +488,12 @@ public final class SmtpClient implements AutoCloseable {
 		byte[] passwordBytes = toBytes(auth.password(), this.config.defaultCharset());
 		byte[] token = new byte[1 + userBytes.length + 1 + passwordBytes.length];
 		int pos = 0;
+		
 		token[pos++] = 0;
 		System.arraycopy(userBytes, 0, token, pos, userBytes.length);
 		pos += userBytes.length;
 		token[pos++] = 0;
+		
 		System.arraycopy(passwordBytes, 0, token, pos, passwordBytes.length);
 		byte[] command = concat("AUTH PLAIN ".getBytes(StandardCharsets.US_ASCII), Base64.getEncoder().encode(token));
 		this.writeLine(command);
@@ -482,9 +528,11 @@ public final class SmtpClient implements AutoCloseable {
 		byte[] tokenBytes = toBytes(auth.token(), this.config.defaultCharset());
 		byte[] tail = "\u0001\u0001".getBytes(StandardCharsets.US_ASCII);
 		byte[] payload = new byte[head.length + tokenBytes.length + tail.length];
+		
 		System.arraycopy(head, 0, payload, 0, head.length);
 		System.arraycopy(tokenBytes, 0, payload, head.length, tokenBytes.length);
 		System.arraycopy(tail, 0, payload, head.length + tokenBytes.length, tail.length);
+		
 		byte[] command = concat("AUTH XOAUTH2 ".getBytes(StandardCharsets.US_ASCII), Base64.getEncoder().encode(payload));
 		this.writeLine(command);
 		this.expect(this.readReply(), NetworkErrorType.AUTHENTICATION_FAILED, 235);
@@ -501,6 +549,7 @@ public final class SmtpClient implements AutoCloseable {
 		try {
 			List<String> lines = new ArrayList<>();
 			int code = -1;
+			
 			while (true) {
 				String line = this.reader.readLine();
 				if (line == null) {
@@ -509,11 +558,13 @@ public final class SmtpClient implements AutoCloseable {
 				if (line.length() < 3) {
 					throw new NetworkConnectionException("Malformed SMTP reply: " + line, NetworkErrorType.PROTOCOL_ERROR);
 				}
+				
 				try {
 					code = Integer.parseInt(line.substring(0, 3));
 				} catch (NumberFormatException e) {
 					throw new NetworkConnectionException("Malformed SMTP reply: " + line, e, NetworkErrorType.PROTOCOL_ERROR);
 				}
+				
 				lines.add(line.length() > 4 ? line.substring(4) : "");
 				char separator = line.length() > 3 ? line.charAt(3) : ' ';
 				if (separator != '-') {
@@ -573,6 +624,7 @@ public final class SmtpClient implements AutoCloseable {
 				this.output.write('\r');
 				this.output.write('\n');
 			}
+			
 			this.output.write('.');
 			this.output.write('\r');
 			this.output.write('\n');
@@ -608,6 +660,7 @@ public final class SmtpClient implements AutoCloseable {
 				return;
 			}
 		}
+		
 		String message = "Unexpected SMTP reply " + reply.code() + ": " + reply.message();
 		SmtpException exception = new SmtpException(message, reply, errorType, null);
 		NetworkUtils.handleError(this.config.onError(), errorType, message, exception);
