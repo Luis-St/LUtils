@@ -18,17 +18,33 @@
 
 package net.luis.utils.logging.filter;
 
-import net.luis.utils.logging.LogEvent;
-import org.jspecify.annotations.NonNull;
-
 /**
  *
  * @author Luis-St
  *
  */
 
-@FunctionalInterface
-public interface LogFilter {
+public enum LogFilterResult {
 	
-	@NonNull LogFilterResult filter(@NonNull LogEvent event);
+	/**
+	 * Indicates that the log event should be passed to the appenders.<br>
+	 * No further filters will be evaluated.
+	 */
+	ACCEPT,
+	/**
+	 * Indicates that the log event should be rejected and not passed to the appenders.<br>
+	 * No further filters will be evaluated.
+	 */
+	REJECT,
+	/**
+	 * Indicates that the log event should be passed to the next filter in the chain.<br>
+	 * If there are no more filters, the log event will be passed to the appenders.<br>
+	 * This is the default behavior.
+	 */
+	NEXT_OR_ACCEPT,
+	/**
+	 * Indicates that the log event should be passed to the next filter in the chain.<br>
+	 * If there are no more filters, the log event will be rejected and not passed to the appenders.
+	 */
+	NEXT_OR_REJECT
 }

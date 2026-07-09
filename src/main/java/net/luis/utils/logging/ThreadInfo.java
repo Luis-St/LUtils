@@ -18,12 +18,8 @@
 
 package net.luis.utils.logging;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
-import java.util.List;
 
 /**
  *
@@ -31,13 +27,14 @@ import java.util.List;
  *
  */
 
-public interface LogMessage {
+public record ThreadInfo(
+	@NonNull String name,
+	long id,
+	@Nullable ThreadGroup group,
+	int priority,
+	boolean isDaemon,
+	@NonNull String state
+) {
 	
-	@NotNull String getMessage();
-	
-	@NonNull
-	@Unmodifiable
-	List<@NotNull Object> getParameters();
-	
-	@Nullable Throwable getThrowable();
+	public ThreadInfo {}
 }

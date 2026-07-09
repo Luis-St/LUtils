@@ -19,7 +19,9 @@
 package net.luis.utils.logging;
 
 import net.luis.utils.logging.context.LogContext;
+import net.luis.utils.logging.marker.LogMarker;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
 
@@ -31,27 +33,263 @@ import java.time.Instant;
 
 public interface Logger {
 	
+	@NonNull Logger childLogger(@NonNull String name);
+	
+	@NonNull Logger childLogger(@NonNull String name, @NonNull LogMarker marker);
+	
+	@NonNull Logger childLogger(@NonNull String name, @NonNull LogContext context);
+	
+	@NonNull Logger childLogger(@NonNull String name, @NonNull LogMarker marker, @NonNull LogContext context);
+	
+	// --- log ---
+	
+	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1);
+	
+	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
+	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
+	void log(@NonNull LogLevel level, @NonNull String message, Object @NonNull ... parameters);
+	
 	void log(@NonNull LogLevel level, @NonNull LogMessage message);
+	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull LogMessage message);
 	
 	void log(@NonNull LogLevel level, @NonNull LogMessage message, @NonNull LogContext context);
 	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context);
+	
 	void log(@NonNull LogLevel level, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
 	
 	void log(@NonNull LogEvent event);
 	
-	void trace();
+	// --- trace ---
 	
-	void debug();
+	void trace(@NonNull String message, @Nullable Object p1);
 	
-	void info();
+	void trace(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
 	
-	void notice();
+	void trace(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
 	
-	void warn();
+	void trace(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
 	
-	void error();
+	void trace(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
 	
-	void critical();
+	void trace(@NonNull String message, Object @NonNull ... parameters);
 	
-	void fatal();
+	void trace(@NonNull LogMessage message);
+	
+	void trace(@NonNull LogMarker marker, @NonNull LogMessage message);
+	
+	void trace(@NonNull LogMessage message, @NonNull LogContext context);
+	
+	void trace(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context);
+	
+	void trace(@NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void trace(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void trace(@NonNull LogEvent event);
+	
+	// -- debug ---
+	
+	void debug(@NonNull String message, @Nullable Object p1);
+	
+	void debug(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void debug(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
+	void debug(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void debug(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
+	void debug(@NonNull String message, Object @NonNull ... parameters);
+	
+	void debug(@NonNull LogMessage message);
+	
+	void debug(@NonNull LogMarker marker, @NonNull LogMessage message);
+	
+	void debug(@NonNull LogMessage message, @NonNull LogContext context);
+	
+	void debug(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context);
+	
+	void debug(@NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void debug(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void debug(@NonNull LogEvent event);
+	
+	// --- info ---
+	
+	void info(@NonNull String message, @Nullable Object p1);
+	
+	void info(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void info(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
+	void info(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void info(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
+	void info(@NonNull String message, Object @NonNull ... parameters);
+	
+	void info(@NonNull LogMessage message);
+	
+	void info(@NonNull LogMarker marker, @NonNull LogMessage message);
+	
+	void info(@NonNull LogMessage message, @NonNull LogContext context);
+	
+	void info(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context);
+	
+	void info(@NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void info(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void info(@NonNull LogEvent event);
+	
+	// --- notice ---
+	
+	void notice(@NonNull String message, @Nullable Object p1);
+	
+	void notice(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void notice(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
+	void notice(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void notice(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
+	void notice(@NonNull String message, Object @NonNull ... parameters);
+	
+	void notice(@NonNull LogMessage message);
+	
+	void notice(@NonNull LogMarker marker, @NonNull LogMessage message);
+	
+	void notice(@NonNull LogMessage message, @NonNull LogContext context);
+	
+	void notice(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context);
+	
+	void notice(@NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void notice(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void notice(@NonNull LogEvent event);
+	
+	// --- warn ---
+	
+	void warn(@NonNull String message, @Nullable Object p1);
+	
+	void warn(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void warn(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
+	void warn(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void warn(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
+	void warn(@NonNull String message, Object @NonNull ... parameters);
+	
+	void warn(@NonNull LogMessage message);
+	
+	void warn(@NonNull LogMarker marker, @NonNull LogMessage message);
+	
+	void warn(@NonNull LogMessage message, @NonNull LogContext context);
+	
+	void warn(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context);
+	
+	void warn(@NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void warn(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void warn(@NonNull LogEvent event);
+	
+	// --- error ---
+	
+	void error(@NonNull String message, @Nullable Object p1);
+	
+	void error(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void error(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
+	void error(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void error(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
+	void error(@NonNull String message, Object @NonNull ... parameters);
+	
+	void error(@NonNull LogMessage message);
+	
+	void error(@NonNull LogMarker marker, @NonNull LogMessage message);
+	
+	void error(@NonNull LogMessage message, @NonNull LogContext context);
+	
+	void error(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context);
+	
+	void error(@NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void error(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void error(@NonNull LogEvent event);
+	
+	// --- critical ---
+	
+	void critical(@NonNull String message, @Nullable Object p1);
+	
+	void critical(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void critical(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
+	void critical(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void critical(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
+	void critical(@NonNull String message, Object @NonNull ... parameters);
+	
+	void critical(@NonNull LogMessage message);
+	
+	void critical(@NonNull LogMarker marker, @NonNull LogMessage message);
+	
+	void critical(@NonNull LogMessage message, @NonNull LogContext context);
+	
+	void critical(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context);
+	
+	void critical(@NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void critical(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void critical(@NonNull LogEvent event);
+	
+	// --- fatal ---
+	
+	void fatal(@NonNull String message, @Nullable Object p1);
+	
+	void fatal(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void fatal(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
+	void fatal(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void fatal(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
+	void fatal(@NonNull String message, Object @NonNull ... parameters);
+	
+	void fatal(@NonNull LogMessage message);
+	
+	void fatal(@NonNull LogMarker marker, @NonNull LogMessage message);
+	
+	void fatal(@NonNull LogMessage message, @NonNull LogContext context);
+	
+	void fatal(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context);
+	
+	void fatal(@NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void fatal(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void fatal(@NonNull LogEvent event);
 }

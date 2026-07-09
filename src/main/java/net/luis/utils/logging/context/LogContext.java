@@ -18,11 +18,29 @@
 
 package net.luis.utils.logging.context;
 
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Iterator;
+import java.util.List;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public interface LogContext {
+public interface LogContext extends Iterable<String> {
+	
+	@NonNull LogContext with(@NonNull String key, @Nullable Object value);
+	
+	@NonNull
+	@Unmodifiable
+	List<String> getKeys();
+	
+	@Override
+	default @NonNull @Unmodifiable Iterator<String> iterator() {
+		return this.getKeys().iterator();
+	}
 }

@@ -19,6 +19,8 @@
 package net.luis.utils.logging;
 
 import net.luis.utils.logging.context.LogContext;
+import net.luis.utils.logging.marker.LogMarker;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Instant;
@@ -33,6 +35,8 @@ public interface LogEvent {
 	
 	@NonNull LogLevel getLevel();
 	
+	@NotNull LogMarker getMarker();
+	
 	@NonNull LogMessage getMessage();
 	
 	@NonNull LogContext getContext();
@@ -41,7 +45,5 @@ public interface LogEvent {
 	
 	@NonNull StackTraceElement getSource();
 	
-	@NonNull String getThreadName();
-	
-	long getThreadId();
+	@NonNull ThreadInfo getThread();
 }

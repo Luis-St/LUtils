@@ -27,8 +27,11 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-@FunctionalInterface
 public interface LogAppender {
+	
+	void enable();
+	
+	void disable();
 	
 	void append(@NonNull LogEvent event);
 }

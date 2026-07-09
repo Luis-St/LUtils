@@ -16,14 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging;
+package net.luis.utils.logging.exception;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
-import java.util.List;
 
 /**
  *
@@ -31,13 +26,19 @@ import java.util.List;
  *
  */
 
-public interface LogMessage {
+public class LoggingException extends RuntimeException {
 	
-	@NotNull String getMessage();
+	public LoggingException() {}
 	
-	@NonNull
-	@Unmodifiable
-	List<@NotNull Object> getParameters();
+	public LoggingException(@Nullable String message) {
+		super(message);
+	}
 	
-	@Nullable Throwable getThrowable();
+	public LoggingException(@Nullable String message, @Nullable Throwable cause) {
+		super(message, cause);
+	}
+	
+	public LoggingException(@Nullable Throwable cause) {
+		super(cause);
+	}
 }
