@@ -30,5 +30,5 @@ import org.jspecify.annotations.NonNull;
 @FunctionalInterface
 public interface LogFormatter {
 
-	@NonNull LogEvent format(@NonNull LogEvent event);
+	@NonNull String format(@NonNull LogEvent event);
 }
