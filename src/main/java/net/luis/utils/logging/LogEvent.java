@@ -18,7 +18,6 @@
 
 package net.luis.utils.logging;
 
-import net.luis.utils.logging.context.LogContext;
 import net.luis.utils.logging.marker.LogMarker;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
