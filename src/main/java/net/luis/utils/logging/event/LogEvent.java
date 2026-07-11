@@ -16,10 +16,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.filter;
+package net.luis.utils.logging.event;
 
-import net.luis.utils.logging.event.LogEvent;
+import net.luis.utils.logging.*;
+import net.luis.utils.logging.context.LogContext;
+import net.luis.utils.logging.marker.LogMarker;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
+
+import java.time.Instant;
 
 /**
  *
@@ -27,8 +32,19 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-@FunctionalInterface
-public interface LogFilter {
+public interface LogEvent {
 	
-	@NonNull LogFilterResult filter(@NonNull LogEvent event);
+	@NonNull LogLevel level();
+	
+	@NotNull LogMarker marker();
+	
+	@NonNull LogMessage message();
+	
+	@NonNull LogContext context();
+	
+	@NonNull Instant timestamp();
+	
+	@NonNull StackTraceElement source();
+	
+	@NonNull ThreadInfo threadInfo();
 }

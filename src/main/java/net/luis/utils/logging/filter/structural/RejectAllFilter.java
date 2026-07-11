@@ -1,6 +1,6 @@
 package net.luis.utils.logging.filter.structural;
 
-import net.luis.utils.logging.LogEvent;
+import net.luis.utils.logging.filter.LogFilter;
 
 /**
  *
@@ -9,4 +9,4 @@ import net.luis.utils.logging.LogEvent;
  */
 
 // Idea: Create a filter that rejects all log messages.
-public abstract class RejectAllFilter implements LogEvent {}
+public abstract class RejectAllFilter implements LogFilter {}

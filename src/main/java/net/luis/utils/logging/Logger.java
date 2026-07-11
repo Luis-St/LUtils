@@ -18,6 +18,8 @@
 
 package net.luis.utils.logging;
 
+import net.luis.utils.logging.context.LogContext;
+import net.luis.utils.logging.event.LogEvent;
 import net.luis.utils.logging.marker.LogMarker;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -42,13 +44,29 @@ public interface Logger {
 	
 	@NonNull Logger childLogger(@NonNull String name, @NonNull LogMarker marker, @NonNull LogContext context);
 	
+	// --- scope ---
+	
+	@NonNull LogScope createScope();
+	
+	@NonNull LogScope createScope(int capacity);
+	
+	@NonNull LogScope createScope(int capacity, @NonNull LogMarker marker);
+	
+	@NonNull LogScope createScope(int capacity, @NonNull LogMarker marker, @NonNull LogContext context);
+	
 	// --- buffered ---
+	
+	@NonNull Logger buffered();
 	
 	@NonNull Logger buffered(@NonNull LogScope scope);
 	
 	void flushBuffer();
 	
+	void flushBuffer(@NonNull LogScope scope);
+	
 	void clearBuffer();
+	
+	void clearBuffer(@NonNull LogScope scope);
 	
 	// --- enabled ---
 	

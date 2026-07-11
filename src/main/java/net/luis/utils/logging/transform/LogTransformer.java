@@ -1,6 +1,6 @@
 package net.luis.utils.logging.transform;
 
-import net.luis.utils.logging.LogEvent;
+import net.luis.utils.logging.event.LogEvent;
 import org.jspecify.annotations.NonNull;
 
 /**

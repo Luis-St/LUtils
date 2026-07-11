@@ -16,13 +16,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging;
+package net.luis.utils.logging.event;
 
+import net.luis.utils.logging.*;
+import net.luis.utils.logging.context.LogContext;
 import net.luis.utils.logging.marker.LogMarker;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Instant;
+import java.util.Objects;
 
 /**
  *
@@ -30,19 +33,23 @@ import java.time.Instant;
  *
  */
 
-public interface LogEvent {
+public record LogEventRecord(
+	@NonNull LogLevel level,
+	@NotNull LogMarker marker,
+	@NonNull LogMessage message,
+	@NonNull LogContext context,
+	@NonNull Instant timestamp,
+	@NonNull StackTraceElement source,
+	@NonNull ThreadInfo threadInfo
+) implements LogEvent {
 	
-	@NonNull LogLevel getLevel();
-	
-	@NotNull LogMarker getMarker();
-	
-	@NonNull LogMessage getMessage();
-	
-	@NonNull LogContext getContext();
-	
-	@NonNull Instant getTimestamp();
-	
-	@NonNull StackTraceElement getSource();
-	
-	@NonNull ThreadInfo getThread();
+	public LogEventRecord {
+		Objects.requireNonNull(level, "Level must not be null");
+		Objects.requireNonNull(marker, "Marker must not be null");
+		Objects.requireNonNull(message, "Message must not be null");
+		Objects.requireNonNull(context, "Context must not be null");
+		Objects.requireNonNull(timestamp, "Timestamp must not be null");
+		Objects.requireNonNull(source, "Source must not be null");
+		Objects.requireNonNull(threadInfo, "Thread info must not be null");
+	}
 }

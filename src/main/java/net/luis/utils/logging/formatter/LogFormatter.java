@@ -18,7 +18,7 @@
 
 package net.luis.utils.logging.formatter;
 
-import net.luis.utils.logging.LogEvent;
+import net.luis.utils.logging.event.LogEvent;
 import org.jspecify.annotations.NonNull;
 
 /**
