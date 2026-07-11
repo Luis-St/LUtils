@@ -16,10 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.appender;
+package net.luis.utils.logging.event;
 
-import net.luis.utils.logging.event.FormattedLogEvent;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -27,11 +28,13 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface LogAppender {
+public record FormattedLogEventRecord(
+	@NonNull LogEvent rawEvent,
+	@NonNull String formattedMessage
+) implements FormattedLogEvent {
 	
-	void enable();
-	
-	void disable();
-	
-	void append(@NonNull FormattedLogEvent event);
+	public FormattedLogEventRecord {
+		Objects.requireNonNull(rawEvent, "Raw event must not be null");
+		Objects.requireNonNull(formattedMessage, "Formatted message must not be null");
+	}
 }

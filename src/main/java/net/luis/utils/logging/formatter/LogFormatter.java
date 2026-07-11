@@ -18,6 +18,7 @@
 
 package net.luis.utils.logging.formatter;
 
+import net.luis.utils.logging.event.FormattedLogEvent;
 import net.luis.utils.logging.event.LogEvent;
 import org.jspecify.annotations.NonNull;
 
@@ -30,5 +31,5 @@ import org.jspecify.annotations.NonNull;
 @FunctionalInterface
 public interface LogFormatter {
 
-	@NonNull String format(@NonNull LogEvent event);
+	@NonNull FormattedLogEvent format(@NonNull LogEvent event);
 }

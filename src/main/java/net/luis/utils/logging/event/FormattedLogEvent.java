@@ -16,9 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.appender;
+package net.luis.utils.logging.event;
 
-import net.luis.utils.logging.event.FormattedLogEvent;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -27,11 +26,9 @@ import org.jspecify.annotations.NonNull;
  *
  */
 
-public interface LogAppender {
+public interface FormattedLogEvent {
 	
-	void enable();
+	@NonNull LogEvent rawEvent();
 	
-	void disable();
-	
-	void append(@NonNull FormattedLogEvent event);
+	@NonNull String formattedMessage();
 }
