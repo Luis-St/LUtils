@@ -88,10 +88,15 @@ public class StructuredConcurrency implements AutoCloseable {
 	private final AtomicReference<State> state = new AtomicReference<>(State.OPEN);
 	
 	/**
-	 * Creates a new StructuredConcurrency instance using the common ForkJoinPool.
+	 * Creates a new StructuredConcurrency instance using a dedicated virtual-thread-per-task executor.<br>
+	 * <p>
+	 *     The executor is owned by this instance and is shut down when this instance is closed.<br>
+	 *     A dedicated executor is used instead of the shared {@link ForkJoinPool#commonPool() common pool}<br>
+	 *     so that forked (potentially blocking) tasks cannot be starved by unrelated work running on the common pool.
+	 * </p>
 	 */
 	public StructuredConcurrency() {
-		this(ForkJoinPool.commonPool(), false);
+		this(Executors.newVirtualThreadPerTaskExecutor(), true);
 	}
 	
 	/**

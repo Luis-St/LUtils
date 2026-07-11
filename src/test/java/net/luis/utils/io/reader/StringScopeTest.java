@@ -18,8 +18,11 @@
 
 package net.luis.utils.io.reader;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.parallel.ResourceLock;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,6 +33,19 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ResourceLock("net.luis.utils.io.reader.StringScope.SCOPE_REGISTRY")
 public class StringScopeTest {
+	
+	private static Map<Character, Character> originalScopes;
+	
+	@BeforeAll
+	static void setup() {
+		originalScopes = new HashMap<>(StringScope.SCOPE_REGISTRY);
+	}
+	
+	@AfterAll
+	static void teardown() {
+		StringScope.SCOPE_REGISTRY.clear();
+		StringScope.SCOPE_REGISTRY.putAll(originalScopes);
+	}
 	
 	@Test
 	void constructorWithNullCharacters() {
