@@ -18,7 +18,6 @@
 
 package net.luis.utils.logging;
 
-import net.luis.utils.logging.context.LogContext;
 import net.luis.utils.logging.marker.LogMarker;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -33,6 +32,8 @@ import java.time.Instant;
 
 public interface Logger {
 	
+	// --- child logger ---
+	
 	@NonNull Logger childLogger(@NonNull String name);
 	
 	@NonNull Logger childLogger(@NonNull String name, @NonNull LogMarker marker);
@@ -41,33 +42,51 @@ public interface Logger {
 	
 	@NonNull Logger childLogger(@NonNull String name, @NonNull LogMarker marker, @NonNull LogContext context);
 	
-	// --- log ---
+	// --- buffered ---
 	
-	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1);
+	@NonNull Logger buffered(@NonNull LogScope scope);
 	
-	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	void flushBuffer();
 	
-	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	void clearBuffer();
 	
-	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	// --- enabled ---
 	
-	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	boolean isTraceEnabled();
 	
-	void log(@NonNull LogLevel level, @NonNull String message, Object @NonNull ... parameters);
+	boolean isTraceEnabled(@NonNull LogMarker marker);
 	
-	void log(@NonNull LogLevel level, @NonNull LogMessage message);
+	boolean isDebugEnabled();
 	
-	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull LogMessage message);
+	boolean isDebugEnabled(@NonNull LogMarker marker);
 	
-	void log(@NonNull LogLevel level, @NonNull LogMessage message, @NonNull LogContext context);
+	boolean isInfoEnabled();
 	
-	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context);
+	boolean isInfoEnabled(@NonNull LogMarker marker);
 	
-	void log(@NonNull LogLevel level, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	boolean isNoticeEnabled();
 	
-	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	boolean isNoticeEnabled(@NonNull LogMarker marker);
 	
-	void log(@NonNull LogEvent event);
+	boolean isWarnEnabled();
+	
+	boolean isWarnEnabled(@NonNull LogMarker marker);
+	
+	boolean isErrorEnabled();
+	
+	boolean isErrorEnabled(@NonNull LogMarker marker);
+	
+	boolean isCriticalEnabled();
+	
+	boolean isCriticalEnabled(@NonNull LogMarker marker);
+	
+	boolean isFatalEnabled();
+	
+	boolean isFatalEnabled(@NonNull LogMarker marker);
+	
+	boolean isEnabled(@NonNull LogLevel level);
+	
+	boolean isEnabled(@NonNull LogLevel level, @NonNull LogMarker marker);
 	
 	// --- trace ---
 	
@@ -292,4 +311,32 @@ public interface Logger {
 	void fatal(@NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
 	
 	void fatal(@NonNull LogEvent event);
+	
+	// --- log ---
+	
+	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1);
+	
+	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
+	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
+	void log(@NonNull LogLevel level, @NonNull String message, Object @NonNull ... parameters);
+	
+	void log(@NonNull LogLevel level, @NonNull LogMessage message);
+	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull LogMessage message);
+	
+	void log(@NonNull LogLevel level, @NonNull LogMessage message, @NonNull LogContext context);
+	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context);
+	
+	void log(@NonNull LogLevel level, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull LogMessage message, @NonNull LogContext context, @NonNull Instant timestamp);
+	
+	void log(@NonNull LogEvent event);
 }
