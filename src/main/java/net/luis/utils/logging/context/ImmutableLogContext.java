@@ -16,14 +16,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging;
+package net.luis.utils.logging.context;
 
-import org.jetbrains.annotations.NotNull;
+import com.google.common.collect.Maps;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -31,13 +32,27 @@ import java.util.List;
  *
  */
 
-public interface LogMessage {
+public class ImmutableLogContext implements LogContext {
 	
-	@NotNull String message();
+	private final Map<String, Object> context;
 	
-	@NonNull
-	@Unmodifiable
-	List<@NotNull Object> parameters();
+	public ImmutableLogContext() {
+		this.context = Map.of();
+	}
 	
-	@Nullable Throwable throwable();
+	public ImmutableLogContext(@NonNull Map<String, Object> context) {
+		this.context = Map.copyOf(context);
+	}
+	
+	@Override
+	public @NonNull LogContext with(@NonNull String key, @Nullable Object value) {
+		Map<String, Object> newContext = Maps.newHashMap(this.context);
+		newContext.put(key, value);
+		return new ImmutableLogContext(newContext);
+	}
+	
+	@Override
+	public @NonNull @Unmodifiable List<String> getKeys() {
+		return List.copyOf(this.context.keySet());
+	}
 }

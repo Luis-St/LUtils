@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging;
+package net.luis.utils.logging.context;
 
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
