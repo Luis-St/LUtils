@@ -18,6 +18,8 @@
 
 package net.luis.utils.io.reader;
 
+import com.google.common.collect.Maps;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,8 +36,13 @@ public record StringScope(char open, char close) {
 	/**
 	 * A map that stores all created scopes.<br>
 	 * The key is the opening character and the value is the closing character.<br>
+	 * <p>
+	 *     This registry is internal and package-private on purpose.<br>
+	 *     It is mutated by every constructed scope and read by {@link ScopedStringReader} while parsing,<br>
+	 *     so it must not be exposed for external mutation.
+	 * </p>
 	 */
-	public static final Map<Character, Character> SCOPE_REGISTRY = new HashMap<>();
+	static final Map<Character, Character> SCOPE_REGISTRY = Maps.newHashMap();
 	/**
 	 * Constant string scope for parentheses.<br>
 	 */
