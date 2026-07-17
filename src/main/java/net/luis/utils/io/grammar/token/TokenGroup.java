@@ -1,0 +1,132 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.grammar.token;
+
+import net.luis.utils.io.grammar.token.type.TokenType;
+import org.jspecify.annotations.NonNull;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Token implementation for a labeled group of tokens.<br>
+ * A token group is a sequence of tokens that have been grouped together under a label.<br>
+ * The token group must contain at least one token.<br>
+ * <p>
+ *     The label is the kind of the abstract syntax tree node, typically the name of the producing parser rule.<br>
+ *     It is an empty string for plain, unlabeled groups (e.g., groups produced purely for grouping).<br>
+ *     The contained tokens are the children of the node; children may themselves be token groups, so nesting forms the tree.
+ * </p>
+ *
+ * @author Luis-St
+ *
+ * @param label The label of the group (the abstract syntax tree node kind), or an empty string for an unlabeled group
+ * @param tokens The list of child tokens in the group
+ */
+public record TokenGroup(
+	@NonNull String label,
+	@NonNull List<Token> tokens
+) implements Token {
+	
+	/**
+	 * Constructs a new unlabeled token group for a list of tokens.<br>
+	 *
+	 * @param tokens The list of tokens in the group
+	 * @throws NullPointerException If the list of tokens, or any of the tokens are null
+	 * @throws IllegalArgumentException If the list of tokens is empty
+	 */
+	public TokenGroup(@NonNull List<Token> tokens) {
+		this("", tokens);
+	}
+	
+	/**
+	 * Constructs a new token group for a label and a list of tokens.<br>
+	 *
+	 * @param label The label of the group, or an empty string for an unlabeled group
+	 * @param tokens The list of tokens in the group
+	 * @throws NullPointerException If the label, the list of tokens, or any of the tokens are null
+	 * @throws IllegalArgumentException If the list of tokens is empty
+	 */
+	public TokenGroup {
+		Objects.requireNonNull(label, "Label must not be null");
+		Objects.requireNonNull(tokens, "Token list must not be null");
+		
+		for (Token token : tokens) {
+			Objects.requireNonNull(token, "Token list must not be contain a null element");
+		}
+		if (tokens.isEmpty()) {
+			throw new IllegalArgumentException("Token list must not be empty");
+		}
+		
+		tokens = List.copyOf(tokens);
+	}
+	
+	/**
+	 * Returns the value of the token group.<br>
+	 * The value is the concatenation of all token values in the group.<br>
+	 *
+	 * @return The concatenated values
+	 */
+	@Override
+	public @NonNull String value() {
+		return this.tokens.stream().map(Token::value).collect(Collectors.joining());
+	}
+	
+	/**
+	 * Returns the start position of the token group.<br>
+	 * The start position is the start position of the first token in the group.<br>
+	 *
+	 * @return The start position
+	 */
+	@Override
+	public @NonNull TokenPosition position() {
+		return this.tokens.getFirst().position();
+	}
+	
+	/**
+	 * Returns the token types of all tokens in the group.<br>
+	 * The types are collected into a set to avoid duplicates.<br>
+	 *
+	 * @return The set of token types
+	 */
+	@Override
+	public @NonNull Set<TokenType> types() {
+		return this.tokens.stream().flatMap(token -> token.types().stream()).collect(Collectors.toSet());
+	}
+	
+	/**
+	 * Returns the children of this token group.<br>
+	 * This is an alias for {@link #tokens()} that reads more naturally when the group is treated as an abstract syntax tree node.<br>
+	 *
+	 * @return The list of child tokens
+	 */
+	public @NonNull List<Token> children() {
+		return this.tokens;
+	}
+	
+	/**
+	 * Checks if this token group is a leaf node.<br>
+	 * A token group is a leaf if none of its children is itself a token group.<br>
+	 *
+	 * @return True if this group has no child groups, false otherwise
+	 */
+	public boolean isLeaf() {
+		return this.tokens.stream().noneMatch(TokenGroup.class::isInstance);
+	}
+}
