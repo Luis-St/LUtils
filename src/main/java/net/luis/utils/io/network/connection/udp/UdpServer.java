@@ -107,6 +107,40 @@ public final class UdpServer implements NetworkServer {
 		this.config = Objects.requireNonNull(config, "Config must not be null");
 	}
 	
+	/**
+	 * Creates a new UDP server with default configuration and starts it on the specified bind endpoint.<br>
+	 *
+	 * @param bindEndpoint The endpoint to bind to
+	 * @return The started server
+	 * @throws NullPointerException If bind endpoint is null
+	 */
+	public static @NonNull UdpServer startOn(@NonNull IpEndpoint bindEndpoint) {
+		return startOn(bindEndpoint, UdpServerConfig.DEFAULT);
+	}
+	
+	/**
+	 * Creates a new UDP server with the specified configuration and starts it on the specified bind endpoint.<br>
+	 * Startup failures are reported to the configured error handler, use {@link #isRunning()} to check whether the server came up.<br>
+	 *
+	 * @param bindEndpoint The endpoint to bind to
+	 * @param config The server configuration
+	 * @return The started server
+	 * @throws NullPointerException If bind endpoint or config is null
+	 */
+	public static @NonNull UdpServer startOn(@NonNull IpEndpoint bindEndpoint, @NonNull UdpServerConfig config) {
+		Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
+		Objects.requireNonNull(config, "Config must not be null");
+		
+		UdpServer server = new UdpServer(bindEndpoint, config);
+		try {
+			server.start();
+			return server;
+		} catch (Throwable e) {
+			server.close();
+			throw e;
+		}
+	}
+	
 	@Override
 	public void start() {
 		if (this.running.getAndSet(true)) {

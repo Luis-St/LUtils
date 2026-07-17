@@ -83,7 +83,7 @@ public record IpEndpoint(@NonNull IpAddress<?> address, int port) {
 	}
 	
 	/**
-	 * Creates an  from a {@link InetSocketAddress}.<br>
+	 * Creates an IP endpoint from a {@link InetSocketAddress}.<br>
 	 * This method provides a convenient way to convert from the standard Java networking API to an .<br>
 	 * <p>
 	 *     The method automatically detects whether the address is IPv4 or IPv6 and creates the appropriate {@link IpAddress} type.

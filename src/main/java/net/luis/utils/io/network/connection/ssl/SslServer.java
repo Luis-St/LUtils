@@ -112,6 +112,29 @@ public final class SslServer implements NetworkServer {
 		this.config = Objects.requireNonNull(config, "Config must not be null");
 	}
 	
+	/**
+	 * Creates a new SSL server with the specified configuration and starts it on the specified bind endpoint.<br>
+	 * Startup failures are reported to the configured error handler, use {@link #isRunning()} to check whether the server came up.<br>
+	 *
+	 * @param bindEndpoint The endpoint to bind to
+	 * @param config The server configuration
+	 * @return The started server
+	 * @throws NullPointerException If bind endpoint or config is null
+	 */
+	public static @NonNull SslServer startOn(@NonNull IpEndpoint bindEndpoint, @NonNull SslServerConfig config) {
+		Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
+		Objects.requireNonNull(config, "Config must not be null");
+		
+		SslServer server = new SslServer(bindEndpoint, config);
+		try {
+			server.start();
+			return server;
+		} catch (Throwable e) {
+			server.close();
+			throw e;
+		}
+	}
+	
 	@Override
 	public void start() {
 		if (this.running.getAndSet(true)) {

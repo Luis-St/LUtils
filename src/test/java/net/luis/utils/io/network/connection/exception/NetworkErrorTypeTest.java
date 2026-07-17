@@ -31,7 +31,7 @@ class NetworkErrorTypeTest {
 	
 	@Test
 	void valuesCount() {
-		assertEquals(16, NetworkErrorType.values().length);
+		assertEquals(18, NetworkErrorType.values().length);
 	}
 	
 	@Test
@@ -51,6 +51,8 @@ class NetworkErrorTypeTest {
 		assertEquals(NetworkErrorType.HANDSHAKE_FAILED, NetworkErrorType.valueOf("HANDSHAKE_FAILED"));
 		assertEquals(NetworkErrorType.IO_ERROR, NetworkErrorType.valueOf("IO_ERROR"));
 		assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, NetworkErrorType.valueOf("MESSAGE_TOO_LARGE"));
+		assertEquals(NetworkErrorType.AUTHENTICATION_FAILED, NetworkErrorType.valueOf("AUTHENTICATION_FAILED"));
+		assertEquals(NetworkErrorType.PROTOCOL_ERROR, NetworkErrorType.valueOf("PROTOCOL_ERROR"));
 		assertEquals(NetworkErrorType.UNKNOWN, NetworkErrorType.valueOf("UNKNOWN"));
 	}
 	
