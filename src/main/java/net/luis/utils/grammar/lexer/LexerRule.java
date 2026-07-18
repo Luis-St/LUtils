@@ -20,7 +20,7 @@ package net.luis.utils.grammar.lexer;
 
 import net.luis.utils.grammar.token.*;
 import net.luis.utils.grammar.lexer.rule.CharRule;
-import net.luis.utils.io.grammar.token.*;
+import net.luis.utils.grammar.token.*;
 import net.luis.utils.grammar.token.type.TokenType;
 import org.jspecify.annotations.NonNull;
 

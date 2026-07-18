@@ -23,7 +23,7 @@ import net.luis.utils.grammar.lexer.rule.anchors.StartCharRule;
 import net.luis.utils.grammar.lexer.rule.combinators.CharAnyOfRule;
 import net.luis.utils.grammar.lexer.rule.combinators.CharSequenceRule;
 import net.luis.utils.grammar.lexer.rule.matchers.*;
-import net.luis.utils.io.grammar.lexer.rule.matchers.*;
+import net.luis.utils.grammar.lexer.rule.matchers.*;
 import net.luis.utils.grammar.lexer.rule.quantifiers.CharOptionalRule;
 import net.luis.utils.grammar.lexer.rule.quantifiers.CharRepeatedRule;
 import net.luis.utils.grammar.token.EscapedToken;

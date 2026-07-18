@@ -24,7 +24,7 @@ import net.luis.utils.grammar.parser.action.TokenAction;
 import net.luis.utils.grammar.parser.action.core.GroupingMode;
 import net.luis.utils.grammar.parser.context.TokenRuleContext;
 import net.luis.utils.grammar.parser.rule.*;
-import net.luis.utils.io.grammar.parser.rule.*;
+import net.luis.utils.grammar.parser.rule.*;
 import net.luis.utils.grammar.parser.rule.combinators.AnyOfTokenRule;
 import net.luis.utils.grammar.token.TokenGroup;
 import org.jspecify.annotations.NonNull;

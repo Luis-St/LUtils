@@ -23,7 +23,7 @@ import net.luis.utils.grammar.token.*;
 import net.luis.utils.grammar.parser.TokenRuleMatch;
 import net.luis.utils.grammar.parser.action.TokenAction;
 import net.luis.utils.grammar.parser.context.TokenActionContext;
-import net.luis.utils.io.grammar.token.*;
+import net.luis.utils.grammar.token.*;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
