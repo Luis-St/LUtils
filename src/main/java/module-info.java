@@ -43,6 +43,31 @@ module net.luis.utils {
 	exports net.luis.utils.function;
 	exports net.luis.utils.function.throwable;
 	
+	exports net.luis.utils.grammar.parser.action;
+	exports net.luis.utils.grammar.parser.action.core;
+	exports net.luis.utils.grammar.parser.action.enhancers;
+	exports net.luis.utils.grammar.parser.action.filters;
+	exports net.luis.utils.grammar.parser.action.transformers;
+	exports net.luis.utils.grammar.parser.context;
+	exports net.luis.utils.grammar.lexer;
+	exports net.luis.utils.grammar.lexer.rule;
+	exports net.luis.utils.grammar.lexer.rule.anchors;
+	exports net.luis.utils.grammar.lexer.rule.combinators;
+	exports net.luis.utils.grammar.lexer.rule.matchers;
+	exports net.luis.utils.grammar.lexer.rule.quantifiers;
+	exports net.luis.utils.grammar.lexer.stream;
+	exports net.luis.utils.grammar.parser;
+	exports net.luis.utils.grammar.parser.rule;
+	exports net.luis.utils.grammar.parser.rule.assertions;
+	exports net.luis.utils.grammar.parser.rule.assertions.anchors;
+	exports net.luis.utils.grammar.parser.rule.combinators;
+	exports net.luis.utils.grammar.parser.rule.core;
+	exports net.luis.utils.grammar.parser.rule.matchers;
+	exports net.luis.utils.grammar.parser.rule.quantifiers;
+	exports net.luis.utils.grammar.parser.stream;
+	exports net.luis.utils.grammar.token;
+	exports net.luis.utils.grammar.token.type;
+	
 	exports net.luis.utils.io;
 	exports net.luis.utils.io.exception;
 	exports net.luis.utils.io.reader;
@@ -88,7 +113,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.types.temporal.local;
 	exports net.luis.utils.io.codec.types.temporal.offset;
 	exports net.luis.utils.io.codec.types.temporal.zoned;
-
+	
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;
 	exports net.luis.utils.io.data.ini;
@@ -175,27 +200,6 @@ module net.luis.utils {
 	exports net.luis.utils.io.network.connection.udp;
 	exports net.luis.utils.io.network.mail;
 	exports net.luis.utils.io.network.mail.message;
-	
-	exports net.luis.utils.io.token;
-	exports net.luis.utils.io.token.actions;
-	exports net.luis.utils.io.token.actions.core;
-	exports net.luis.utils.io.token.actions.enhancers;
-	exports net.luis.utils.io.token.actions.filters;
-	exports net.luis.utils.io.token.actions.transformers;
-	exports net.luis.utils.io.token.context;
-	exports net.luis.utils.io.token.definition;
-	exports net.luis.utils.io.token.grammar;
-	exports net.luis.utils.io.token.rules;
-	exports net.luis.utils.io.token.rules.assertions;
-	exports net.luis.utils.io.token.rules.assertions.anchors;
-	exports net.luis.utils.io.token.rules.combinators;
-	exports net.luis.utils.io.token.rules.core;
-	exports net.luis.utils.io.token.rules.matchers;
-	exports net.luis.utils.io.token.rules.quantifiers;
-	exports net.luis.utils.io.token.stream;
-	exports net.luis.utils.io.token.tokens;
-	exports net.luis.utils.io.token.type;
-	exports net.luis.utils.io.token.type.classifier;
 	
 	exports net.luis.utils.lang;
 	exports net.luis.utils.lang.concurrent;

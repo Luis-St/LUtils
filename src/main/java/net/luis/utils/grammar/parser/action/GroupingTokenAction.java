@@ -1,0 +1,82 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.grammar.parser.action;
+
+import net.luis.utils.grammar.parser.TokenRuleMatch;
+import net.luis.utils.grammar.parser.action.core.GroupingMode;
+import net.luis.utils.grammar.parser.context.TokenActionContext;
+import net.luis.utils.grammar.token.Token;
+import net.luis.utils.grammar.token.TokenGroup;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+
+import java.util.*;
+
+/**
+ * Token action that groups the tokens into a single labeled token group.<br>
+ * The grouping behavior depends on the specified {@link GroupingMode}.<br>
+ * The produced {@link TokenGroup} carries the label, which becomes the abstract syntax tree node kind.<br>
+ *
+ * @author Luis-St
+ *
+ * @param label The label of the produced group, or an empty string for an unlabeled group
+ * @param mode The grouping mode to use
+ */
+public record GroupingTokenAction(
+	@NonNull String label,
+	@NonNull GroupingMode mode
+) implements TokenAction {
+	
+	/**
+	 * Constructs a new unlabeled grouping token action with the given mode.<br>
+	 *
+	 * @param mode The grouping mode to use
+	 * @throws NullPointerException If the mode is null
+	 */
+	public GroupingTokenAction(@NonNull GroupingMode mode) {
+		this("", mode);
+	}
+	
+	/**
+	 * Constructs a new grouping token action with the given label and mode.<br>
+	 *
+	 * @param label The label of the produced group, or an empty string for an unlabeled group
+	 * @param mode The grouping mode to use
+	 * @throws NullPointerException If the label or the mode is null
+	 */
+	public GroupingTokenAction {
+		Objects.requireNonNull(label, "Label must not be null");
+		Objects.requireNonNull(mode, "Grouping mode must not be null");
+	}
+	
+	@Override
+	public @NonNull @Unmodifiable List<Token> apply(@NonNull TokenRuleMatch match, @NonNull TokenActionContext ctx) {
+		Objects.requireNonNull(match, "Token rule match must not be null");
+		Objects.requireNonNull(ctx, "Token action context must not be null");
+		
+		List<Token> tokens = switch (this.mode) {
+			case MATCHED -> match.matchedTokens();
+			case ALL -> {
+				List<Token> allTokens = ctx.stream().getAllTokens();
+				yield allTokens.subList(match.startIndex(), match.endIndex());
+			}
+		};
+		return Collections.singletonList(new TokenGroup(this.label, tokens));
+	}
+}
