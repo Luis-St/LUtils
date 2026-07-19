@@ -21,7 +21,8 @@ package net.luis.utils.io.network.connection.tcp;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.NetworkClient;
 import net.luis.utils.io.network.connection.NetworkUtils;
-import net.luis.utils.io.network.connection.event.ConnectionEvent;
+import net.luis.utils.io.network.connection.event.ConnectEvent;
+import net.luis.utils.io.network.connection.event.DisconnectEvent;
 import net.luis.utils.io.network.connection.exception.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
@@ -153,7 +154,7 @@ public final class TcpClient implements NetworkClient {
 			this.connected = true;
 			
 			if (this.config.onConnect() != null) {
-				ConnectionEvent event = ConnectionEvent.now(this.localEndpoint().orElse(endpoint), endpoint);
+				ConnectEvent event = ConnectEvent.now(null, this.localEndpoint().orElse(endpoint), endpoint);
 				this.config.onConnect().handle(event);
 			}
 		} catch (SocketTimeoutException e) {
@@ -353,7 +354,7 @@ public final class TcpClient implements NetworkClient {
 				IpEndpoint local = this.localEndpoint().orElse(null);
 				IpEndpoint remote = this.remoteEndpoint().orElse(null);
 				if (local != null && remote != null) {
-					ConnectionEvent event = ConnectionEvent.now(local, remote);
+					DisconnectEvent event = DisconnectEvent.now(null, local, remote);
 					this.config.onDisconnect().handle(event);
 				}
 			} catch (Exception _) {}

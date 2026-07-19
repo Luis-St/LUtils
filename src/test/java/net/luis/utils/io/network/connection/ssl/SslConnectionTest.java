@@ -19,6 +19,7 @@
 package net.luis.utils.io.network.connection.ssl;
 
 import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.connection.Connection;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.junit.jupiter.api.*;
@@ -224,6 +225,11 @@ class SslConnectionTest {
 			});
 			assertFalse(connection.isActive());
 		});
+	}
+	
+	@Test
+	void implementsConnectionInterface() throws Exception {
+		this.withPair(8192, (client, connection) -> assertInstanceOf(Connection.class, connection));
 	}
 	
 	//region Helper methods

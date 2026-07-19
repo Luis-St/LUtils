@@ -21,31 +21,31 @@ package net.luis.utils.io.network.connection.event;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Handler for connection lifecycle events (connect/disconnect).<br>
- * This functional interface is used to handle connection and disconnection events for both TCP clients and servers.<br>
+ * Handler for connection termination events.<br>
+ * This functional interface is used to handle disconnection events for both TCP/SSL clients and servers.<br>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
- * ConnectionEventHandler onConnect = event -> {
- *     System.out.println("Connected to " + event.remoteEndpoint());
+ * DisconnectEventHandler onDisconnect = event -> {
+ *     System.out.println("Disconnected from " + event.remoteEndpoint());
  * };
  *
  * TcpClientConfig config = TcpClientConfig.builder()
- *     .onConnect(onConnect)
+ *     .onDisconnect(onDisconnect)
  *     .build();
  * }</pre>
  *
- * @see ConnectionEvent
+ * @see DisconnectEvent
  *
  * @author Luis-St
  */
 @FunctionalInterface
-public interface ConnectionEventHandler {
+public interface DisconnectEventHandler {
 	
 	/**
-	 * Called when a connection event occurs.<br>
-	 * @param event The connection event context
+	 * Called when a disconnect event occurs.<br>
+	 * @param event The disconnect event context
 	 */
-	void handle(@NonNull ConnectionEvent event);
+	void handle(@NonNull DisconnectEvent event);
 }

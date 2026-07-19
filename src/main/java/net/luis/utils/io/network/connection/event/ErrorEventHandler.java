@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.connection.event;
 
+import net.luis.utils.io.network.connection.Connection;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -56,4 +57,18 @@ public interface ErrorEventHandler {
 	 * @param cause The underlying exception, if any
 	 */
 	void handle(@NonNull NetworkErrorType errorType, @NonNull String message, @Nullable Throwable cause);
+	
+	/**
+	 * Called when a network error occurs within the scope of a specific connection.<br>
+	 * The default implementation ignores the connection and delegates to {@link #handle(NetworkErrorType, String, Throwable)},
+	 * so existing handlers keep working unchanged. Override this method to access the connection context.<br>
+	 *
+	 * @param connection The connection the error occurred on, or null if not available
+	 * @param errorType The type/category of the error
+	 * @param message A human-readable error message
+	 * @param cause The underlying exception, if any
+	 */
+	default void handle(@Nullable Connection connection, @NonNull NetworkErrorType errorType, @NonNull String message, @Nullable Throwable cause) {
+		this.handle(errorType, message, cause);
+	}
 }

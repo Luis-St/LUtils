@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
-import net.luis.utils.io.network.connection.event.ConnectionEventHandler;
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
+import net.luis.utils.io.network.connection.event.*;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -96,11 +95,11 @@ public final class SslClientConfigBuilder {
 	/**
 	 * The handler called when the connection is established.<br>
 	 */
-	private @Nullable ConnectionEventHandler onConnect;
+	private @Nullable ConnectEventHandler onConnect;
 	/**
 	 * The handler called when the connection is closed.<br>
 	 */
-	private @Nullable ConnectionEventHandler onDisconnect;
+	private @Nullable DisconnectEventHandler onDisconnect;
 	/**
 	 * The handler called when an error occurs.<br>
 	 */
@@ -239,7 +238,7 @@ public final class SslClientConfigBuilder {
 	 * @param onConnect The connection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SslClientConfigBuilder onConnect(@Nullable ConnectionEventHandler onConnect) {
+	public @NonNull SslClientConfigBuilder onConnect(@Nullable ConnectEventHandler onConnect) {
 		this.onConnect = onConnect;
 		return this;
 	}
@@ -250,7 +249,7 @@ public final class SslClientConfigBuilder {
 	 * @param onDisconnect The disconnection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SslClientConfigBuilder onDisconnect(@Nullable ConnectionEventHandler onDisconnect) {
+	public @NonNull SslClientConfigBuilder onDisconnect(@Nullable DisconnectEventHandler onDisconnect) {
 		this.onDisconnect = onDisconnect;
 		return this;
 	}

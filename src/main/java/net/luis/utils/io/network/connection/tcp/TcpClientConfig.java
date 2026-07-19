@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import net.luis.utils.io.network.connection.event.ConnectionEventHandler;
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
+import net.luis.utils.io.network.connection.event.*;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -67,8 +66,8 @@ public record TcpClientConfig(
 	int bufferSize,
 	boolean tcpNoDelay,
 	boolean keepAlive,
-	@Nullable ConnectionEventHandler onConnect,
-	@Nullable ConnectionEventHandler onDisconnect,
+	@Nullable ConnectEventHandler onConnect,
+	@Nullable DisconnectEventHandler onDisconnect,
 	@Nullable ErrorEventHandler onError
 ) {
 	

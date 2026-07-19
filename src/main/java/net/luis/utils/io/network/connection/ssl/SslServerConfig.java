@@ -84,8 +84,8 @@ public record SslServerConfig(
 	@NonNull List<String> enabledCipherSuites,
 	@NonNull SslClientAuth clientAuth,
 	@NonNull ClientExecutorStrategy executorStrategy,
-	@Nullable ConnectionEventHandler onClientConnect,
-	@Nullable ConnectionEventHandler onClientDisconnect,
+	@Nullable ConnectEventHandler onClientConnect,
+	@Nullable DisconnectEventHandler onClientDisconnect,
 	@Nullable MessageEventHandler<SslServer, SslConnection> onMessage,
 	@Nullable ErrorEventHandler onError
 ) {

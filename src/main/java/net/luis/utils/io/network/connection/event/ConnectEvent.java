@@ -19,60 +19,70 @@
 package net.luis.utils.io.network.connection.event;
 
 import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.connection.Connection;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Event context for connection lifecycle events.<br>
- * This record contains information about a connection event such as connect or disconnect.<br>
+ * Event context for connection establishment.<br>
+ * <p>
+ *     The {@link #connection} is only available where the connection is already wrapped in a {@link Connection}
+ *     at the time the event fires (e.g. server-side {@code onClientConnect}). Client-side {@code onConnect}
+ *     handlers do not have a {@link Connection} instance to offer and receive {@code null} instead.
+ * </p>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
- * ConnectionEventHandler handler = event -> {
+ * ConnectEventHandler handler = event -> {
  *     System.out.println("Connection from " + event.remoteEndpoint() + " at " + event.timestamp());
  * };
  * }</pre>
  *
- * @see ConnectionEventHandler
+ * @see ConnectEventHandler
  *
  * @author Luis-St
  *
+ * @param connection The connection that was established, or null if not available
  * @param localEndpoint The local endpoint of the connection
  * @param remoteEndpoint The remote endpoint of the connection
  * @param timestamp When the event occurred
  */
-public record ConnectionEvent(
+public record ConnectEvent(
+	@Nullable Connection connection,
 	@NonNull IpEndpoint localEndpoint,
 	@NonNull IpEndpoint remoteEndpoint,
 	@NonNull Instant timestamp
 ) {
 	
 	/**
-	 * Constructs a new connection event.<br>
+	 * Constructs a new connect event.<br>
 	 *
+	 * @param connection The connection that was established, or null if not available
 	 * @param localEndpoint The local endpoint of the connection
 	 * @param remoteEndpoint The remote endpoint of the connection
 	 * @param timestamp When the event occurred
-	 * @throws NullPointerException If any parameter is null
+	 * @throws NullPointerException If the local endpoint, remote endpoint, or timestamp is null
 	 */
-	public ConnectionEvent {
+	public ConnectEvent {
 		Objects.requireNonNull(localEndpoint, "Local endpoint must not be null");
 		Objects.requireNonNull(remoteEndpoint, "Remote endpoint must not be null");
 		Objects.requireNonNull(timestamp, "Timestamp must not be null");
 	}
 	
 	/**
-	 * Creates a connection event with the current timestamp.<br>
+	 * Creates a connect event with the current timestamp.<br>
 	 *
+	 * @param connection The connection that was established, or null if not available
 	 * @param localEndpoint The local endpoint of the connection
 	 * @param remoteEndpoint The remote endpoint of the connection
-	 * @return A new connection event with the current timestamp
-	 * @throws NullPointerException If any parameter is null
+	 * @return A new connect event with the current timestamp
+	 * @throws NullPointerException If the local endpoint or remote endpoint is null
 	 */
-	public static @NonNull ConnectionEvent now(@NonNull IpEndpoint localEndpoint, @NonNull IpEndpoint remoteEndpoint) {
-		return new ConnectionEvent(localEndpoint, remoteEndpoint, Instant.now());
+	public static @NonNull ConnectEvent now(@Nullable Connection connection, @NonNull IpEndpoint localEndpoint, @NonNull IpEndpoint remoteEndpoint) {
+		return new ConnectEvent(connection, localEndpoint, remoteEndpoint, Instant.now());
 	}
 }

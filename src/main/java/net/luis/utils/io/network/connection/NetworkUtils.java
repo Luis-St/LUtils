@@ -56,12 +56,27 @@ public final class NetworkUtils {
 	 * @throws NullPointerException If the error type, message, or cause is null
 	 */
 	public static void handleError(@Nullable ErrorEventHandler handler, @NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
+		handleError(handler, null, errorType, message, cause);
+	}
+	
+	/**
+	 * Handles an error that occurred within the scope of a specific connection by notifying the configured error handler if present.<br>
+	 * This method safely invokes the error handler without throwing exceptions.<br>
+	 *
+	 * @param handler The error handler to notify, or null if no handler is configured
+	 * @param connection The connection the error occurred on, or null if not available
+	 * @param errorType The type of error that occurred
+	 * @param message A human-readable error message
+	 * @param cause The underlying exception
+	 * @throws NullPointerException If the error type, message, or cause is null
+	 */
+	public static void handleError(@Nullable ErrorEventHandler handler, @Nullable Connection connection, @NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
 		Objects.requireNonNull(errorType, "Error type must not be null");
 		Objects.requireNonNull(message, "Message must not be null");
 		Objects.requireNonNull(cause, "Cause must not be null");
 		
 		if (handler != null) {
-			handler.handle(errorType, message, cause);
+			handler.handle(connection, errorType, message, cause);
 		}
 	}
 	

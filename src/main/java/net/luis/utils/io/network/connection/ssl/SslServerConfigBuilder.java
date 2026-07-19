@@ -97,11 +97,11 @@ public final class SslServerConfigBuilder {
 	/**
 	 * The handler called when a client connects.<br>
 	 */
-	private @Nullable ConnectionEventHandler onClientConnect;
+	private @Nullable ConnectEventHandler onClientConnect;
 	/**
 	 * The handler called when a client disconnects.<br>
 	 */
-	private @Nullable ConnectionEventHandler onClientDisconnect;
+	private @Nullable DisconnectEventHandler onClientDisconnect;
 	/**
 	 * The handler called when a message is received from a client.<br>
 	 */
@@ -232,7 +232,7 @@ public final class SslServerConfigBuilder {
 	 * @param onClientConnect The connection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SslServerConfigBuilder onClientConnect(@Nullable ConnectionEventHandler onClientConnect) {
+	public @NonNull SslServerConfigBuilder onClientConnect(@Nullable ConnectEventHandler onClientConnect) {
 		this.onClientConnect = onClientConnect;
 		return this;
 	}
@@ -243,7 +243,7 @@ public final class SslServerConfigBuilder {
 	 * @param onClientDisconnect The disconnection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SslServerConfigBuilder onClientDisconnect(@Nullable ConnectionEventHandler onClientDisconnect) {
+	public @NonNull SslServerConfigBuilder onClientDisconnect(@Nullable DisconnectEventHandler onClientDisconnect) {
 		this.onClientDisconnect = onClientDisconnect;
 		return this;
 	}

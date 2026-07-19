@@ -18,9 +18,15 @@
 
 package net.luis.utils.io.network.connection;
 
+import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.address.ipv4.Ipv4Address;
+import net.luis.utils.io.network.connection.event.ErrorEventHandler;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,6 +80,100 @@ class NetworkUtilsTest {
 	}
 	
 	@Test
+	void handleErrorWithConnectionAndNullErrorType() {
+		assertThrows(NullPointerException.class, () -> NetworkUtils.handleError(null, new StubConnection(), null, "message", new RuntimeException()));
+	}
+	
+	@Test
+	void handleErrorWithConnectionAndNullMessage() {
+		assertThrows(NullPointerException.class, () -> NetworkUtils.handleError(null, new StubConnection(), NetworkErrorType.IO_ERROR, null, new RuntimeException()));
+	}
+	
+	@Test
+	void handleErrorWithConnectionAndNullCause() {
+		assertThrows(NullPointerException.class, () -> NetworkUtils.handleError(null, new StubConnection(), NetworkErrorType.IO_ERROR, "message", null));
+	}
+	
+	@Test
+	void handleErrorWithNullHandlerAndConnection() {
+		assertDoesNotThrow(() -> NetworkUtils.handleError(null, new StubConnection(), NetworkErrorType.IO_ERROR, "message", new RuntimeException()));
+	}
+	
+	@Test
+	void handleErrorWithConnectionInvokesHandlerWithConnection() {
+		AtomicReference<Connection> capturedConnection = new AtomicReference<>();
+		AtomicReference<NetworkErrorType> capturedType = new AtomicReference<>();
+		AtomicReference<String> capturedMessage = new AtomicReference<>();
+		AtomicReference<Throwable> capturedCause = new AtomicReference<>();
+		
+		Connection connection = new StubConnection();
+		RuntimeException cause = new RuntimeException("test");
+		ErrorEventHandler handler = new ErrorEventHandler() {
+			@Override
+			public void handle(NetworkErrorType errorType, String message, Throwable c) {}
+			
+			@Override
+			public void handle(Connection conn, NetworkErrorType errorType, String message, Throwable c) {
+				capturedConnection.set(conn);
+				capturedType.set(errorType);
+				capturedMessage.set(message);
+				capturedCause.set(c);
+			}
+		};
+		
+		NetworkUtils.handleError(handler, connection, NetworkErrorType.CONNECTION_REFUSED, "Connection failed", cause);
+		
+		assertSame(connection, capturedConnection.get());
+		assertEquals(NetworkErrorType.CONNECTION_REFUSED, capturedType.get());
+		assertEquals("Connection failed", capturedMessage.get());
+		assertSame(cause, capturedCause.get());
+	}
+	
+	@Test
+	void handleErrorWithNullConnectionInvokesHandler() {
+		AtomicReference<Connection> capturedConnection = new AtomicReference<>();
+		AtomicBoolean handlerInvoked = new AtomicBoolean(false);
+		
+		ErrorEventHandler handler = new ErrorEventHandler() {
+			@Override
+			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
+			
+			@Override
+			public void handle(Connection conn, NetworkErrorType errorType, String message, Throwable cause) {
+				capturedConnection.set(conn);
+				handlerInvoked.set(true);
+			}
+		};
+		
+		NetworkUtils.handleError(handler, null, NetworkErrorType.IO_ERROR, "message", new RuntimeException());
+		
+		assertTrue(handlerInvoked.get());
+		assertNull(capturedConnection.get());
+	}
+	
+	@Test
+	void handleErrorFourArgOverloadPassesNullConnection() {
+		AtomicReference<Connection> capturedConnection = new AtomicReference<>();
+		AtomicBoolean handlerInvoked = new AtomicBoolean(false);
+		
+		ErrorEventHandler handler = new ErrorEventHandler() {
+			@Override
+			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
+			
+			@Override
+			public void handle(Connection conn, NetworkErrorType errorType, String message, Throwable cause) {
+				capturedConnection.set(conn);
+				handlerInvoked.set(true);
+			}
+		};
+		
+		NetworkUtils.handleError(handler, NetworkErrorType.IO_ERROR, "msg", new RuntimeException());
+		
+		assertTrue(handlerInvoked.get());
+		assertNull(capturedConnection.get());
+	}
+	
+	@Test
 	void shutdownExecutorWithNullExecutor() {
 		assertDoesNotThrow(() -> NetworkUtils.shutdownExecutor(null, true));
 	}
@@ -110,5 +210,49 @@ class NetworkUtilsTest {
 		NetworkUtils.shutdownExecutor(executor, true);
 		assertTrue(executor.isShutdown());
 		assertTrue(taskCompleted.get());
+	}
+	
+	private static final class StubConnection implements Connection {
+		
+		@Override
+		public @NonNull IpEndpoint remoteEndpoint() {
+			return new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
+		}
+		
+		@Override
+		public @NonNull IpEndpoint localEndpoint() {
+			return new IpEndpoint(Ipv4Address.LOOPBACK, 12345);
+		}
+		
+		@Override
+		public void send(byte @NonNull [] data) {}
+		
+		@Override
+		public byte @NonNull [] receive() {
+			return new byte[0];
+		}
+		
+		@Override
+		public byte @NonNull [] receive(int maxBytes) {
+			return new byte[0];
+		}
+		
+		@Override
+		public @NonNull InputStream getInputStream() {
+			return InputStream.nullInputStream();
+		}
+		
+		@Override
+		public @NonNull OutputStream getOutputStream() {
+			return OutputStream.nullOutputStream();
+		}
+		
+		@Override
+		public boolean isActive() {
+			return true;
+		}
+		
+		@Override
+		public void close() {}
 	}
 }

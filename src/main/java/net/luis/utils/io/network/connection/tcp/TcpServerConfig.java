@@ -70,8 +70,8 @@ public record TcpServerConfig(
 	boolean tcpNoDelay,
 	boolean keepAlive,
 	@NonNull ClientExecutorStrategy executorStrategy,
-	@Nullable ConnectionEventHandler onClientConnect,
-	@Nullable ConnectionEventHandler onClientDisconnect,
+	@Nullable ConnectEventHandler onClientConnect,
+	@Nullable DisconnectEventHandler onClientDisconnect,
 	@Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage,
 	@Nullable ErrorEventHandler onError
 ) {

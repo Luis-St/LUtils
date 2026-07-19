@@ -19,6 +19,7 @@
 package net.luis.utils.io.network.connection.tcp;
 
 import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.connection.Connection;
 import net.luis.utils.io.network.connection.exception.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
@@ -51,7 +52,7 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public final class TcpConnection implements AutoCloseable {
+public final class TcpConnection implements Connection {
 	
 	/**
 	 * The underlying client socket.<br>
@@ -84,6 +85,7 @@ public final class TcpConnection implements AutoCloseable {
 	 * Returns the remote endpoint of this connection.<br>
 	 * @return The remote endpoint
 	 */
+	@Override
 	public @NonNull IpEndpoint remoteEndpoint() {
 		InetSocketAddress address = (InetSocketAddress) this.socket.getRemoteSocketAddress();
 		return IpEndpoint.from(address);
@@ -93,6 +95,7 @@ public final class TcpConnection implements AutoCloseable {
 	 * Returns the local endpoint of this connection.<br>
 	 * @return The local endpoint
 	 */
+	@Override
 	public @NonNull IpEndpoint localEndpoint() {
 		InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
 		return IpEndpoint.from(address);
@@ -105,6 +108,7 @@ public final class TcpConnection implements AutoCloseable {
 	 * @throws NullPointerException If data is null
 	 * @throws NetworkConnectionException If sending fails or data exceeds buffer size
 	 */
+	@Override
 	public void send(byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(data, "Data must not be null");
 		this.validateMessageSize(data);
@@ -131,6 +135,7 @@ public final class TcpConnection implements AutoCloseable {
 	 * @throws NetworkConnectionException If receiving fails
 	 * @throws NetworkTimeoutException If the receive times out
 	 */
+	@Override
 	public byte @NonNull [] receive() throws NetworkConnectionException {
 		return this.receive(this.bufferSize);
 	}
@@ -144,6 +149,7 @@ public final class TcpConnection implements AutoCloseable {
 	 * @throws NetworkConnectionException If receiving fails
 	 * @throws NetworkTimeoutException If the receive times out
 	 */
+	@Override
 	public byte @NonNull [] receive(int maxBytes) throws NetworkConnectionException {
 		if (maxBytes < 1) {
 			throw new IllegalArgumentException("Max bytes must be at least 1: " + maxBytes);
@@ -180,6 +186,7 @@ public final class TcpConnection implements AutoCloseable {
 	 * @return The input stream
 	 * @throws NetworkConnectionException If the stream cannot be obtained
 	 */
+	@Override
 	public @NonNull InputStream getInputStream() throws NetworkConnectionException {
 		if (!this.isActive()) {
 			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED);
@@ -198,6 +205,7 @@ public final class TcpConnection implements AutoCloseable {
 	 * @return The output stream
 	 * @throws NetworkConnectionException If the stream cannot be obtained
 	 */
+	@Override
 	public @NonNull OutputStream getOutputStream() throws NetworkConnectionException {
 		if (!this.isActive()) {
 			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED);
@@ -214,6 +222,7 @@ public final class TcpConnection implements AutoCloseable {
 	 * Returns whether this connection is still active.<br>
 	 * @return True if the connection is active
 	 */
+	@Override
 	public boolean isActive() {
 		return !this.socket.isClosed() && this.socket.isConnected();
 	}
