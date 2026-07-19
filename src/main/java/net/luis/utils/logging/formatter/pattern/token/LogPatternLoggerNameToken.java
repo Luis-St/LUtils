@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern;
+package net.luis.utils.logging.formatter.pattern.token;
 
 /**
  *
@@ -24,6 +24,5 @@ package net.luis.utils.logging.formatter.pattern;
  *
  */
 
-// Full layout, containing multiple pattern tokens
-public class LogPatternLayout {
+public class LogPatternLoggerNameToken {
 }

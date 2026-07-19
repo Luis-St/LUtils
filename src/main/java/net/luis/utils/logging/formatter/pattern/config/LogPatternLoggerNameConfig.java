@@ -16,7 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern;
+package net.luis.utils.logging.formatter.pattern.config;
+
+import net.luis.utils.logging.formatter.pattern.util.Embedded;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
 
 /**
  *
@@ -24,6 +29,17 @@ package net.luis.utils.logging.formatter.pattern;
  *
  */
 
-// Full layout, containing multiple pattern tokens
-public class LogPatternLayout {
+public record LogPatternLoggerNameConfig(
+	@NotNull OptionalInt segments,
+	@NotNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
+) {
+	
+	public LogPatternLoggerNameConfig {
+		Objects.requireNonNull(segments, "Segments must not be null");
+		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
+		
+		if (segments.isPresent() && segments.getAsInt() < 0) {
+			throw new IllegalArgumentException("Segments must not be negative");
+		}
+	}
 }

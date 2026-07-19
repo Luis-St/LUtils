@@ -1,4 +1,24 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package net.luis.utils.logging.formatter.pattern;
+
+import net.luis.utils.logging.formatter.pattern.util.*;
 
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -19,14 +39,6 @@ import java.util.*;
 public final class LogTokenConfigs {
 	
 	private LogTokenConfigs() {}
-	
-	/* ---------------- shared enums ---------------- */
-	
-	public enum Casing { NONE, UPPER, LOWER }
-	public enum Align { LEFT, RIGHT }
-	public enum TruncateFrom { START, END }
-	public enum LineEnding { LF, CRLF, SYSTEM }
-	public enum ThreadField { NAME, ID, GROUP, PRIORITY, VIRTUAL }
 	
 	/* ---------------- universal layout options ---------------- */
 	
@@ -88,8 +100,9 @@ public final class LogTokenConfigs {
 	 */
 	public record TimestampConfig(String format, ZoneId timezone, Locale locale) {
 		
-		public static final Set<String> PRESETS =
-			Set.of("ISO8601", "ISO8601_LOCAL", "UNIX_MILLIS", "UNIX_SECONDS");
+		public static final Set<String> PRESETS = Set.of(
+			"ISO8601", "ISO8601_LOCAL", "UNIX_MILLIS", "UNIX_SECONDS", "RFC_2822", "RFC_1123"
+		);
 		
 		public TimestampConfig {
 			if (format == null) format = "ISO8601";
@@ -115,26 +128,6 @@ public final class LogTokenConfigs {
 			if (casing == null) casing = Casing.NONE;
 			if (length != null && length < 1)
 				throw new PatternException("length must be >= 1");
-		}
-	}
-	
-	/**
-	 * Exactly one abbreviation strategy may be set:
-	 *   maxLength - abbreviate package segments until the name fits;
-	 *               the class name itself is never abbreviated (Logback semantics).
-	 *   segments  - keep only the last N dot-separated segments
-	 *               (segments=1 renders just the class name).
-	 * Neither set: full name. Logger names are bounded and interned, so the
-	 * abbreviated form can be cached per logger at first use.
-	 */
-	public record LoggerNameConfig(Integer maxLength, Integer segments) {
-		public LoggerNameConfig {
-			if (maxLength != null && segments != null)
-				throw new PatternException("maxLength and segments are mutually exclusive");
-			if (maxLength != null && maxLength < 1)
-				throw new PatternException("maxLength must be >= 1");
-			if (segments != null && segments < 1)
-				throw new PatternException("segments must be >= 1");
 		}
 	}
 	
@@ -193,71 +186,6 @@ public final class LogTokenConfigs {
 				throw new PatternException("depth must be >= 0");
 			if (maxCauseDepth != null && maxCauseDepth < 1)
 				throw new PatternException("maxCauseDepth must be >= 1");
-		}
-	}
-	
-	/**
-	 * key is REQUIRED - note that required-ness needs no binder mechanism,
-	 * the compact constructor simply rejects its absence.
-	 *
-	 * prefix/suffix are emitted only when a value is actually rendered:
-	 *   %Context{key=requestId,prefix='[req=',suffix=']'}
-	 * prints nothing at all when requestId is absent.
-	 *
-	 * defaultValue semantics: null means "absent stays absent" (prefix/suffix
-	 * suppressed); a non-null defaultValue is rendered like a real value,
-	 * prefix/suffix included.
-	 */
-	public record ContextConfig(String key, String defaultValue, String prefix, String suffix) {
-		public ContextConfig {
-			if (key == null || key.isBlank())
-				throw new PatternException("%Context requires option 'key'");
-			if (prefix == null) prefix = "";
-			if (suffix == null) suffix = "";
-		}
-	}
-	
-	/**
-	 * include doubles as render order. Without include, keys are sorted:
-	 * context maps have no stable iteration order, and nondeterministic
-	 * field order across lines makes logs needlessly diff-hostile.
-	 * prefix/suffix wrap the whole rendering, only when the map is non-empty.
-	 */
-	public record ContextMapConfig(
-		List<String> include,
-		List<String> exclude,
-		String kvSeparator,      // default "="
-		String entrySeparator,   // default ", "
-		String prefix,
-		String suffix
-	) {
-		public ContextMapConfig {
-			if (include != null && exclude != null)
-				throw new PatternException("include and exclude are mutually exclusive");
-			if (include != null) include = List.copyOf(include);
-			if (exclude != null) exclude = List.copyOf(exclude);
-			if (kvSeparator == null) kvSeparator = "=";
-			if (entrySeparator == null) entrySeparator = ", ";
-			if (prefix == null) prefix = "";
-			if (suffix == null) suffix = "";
-		}
-	}
-	
-	/* ---------------- fast-follow tokens ---------------- */
-	
-	/**
-	 * Markers are optional per event - same render-only-when-present
-	 * prefix/suffix treatment as %Context. path=true renders the full
-	 * hierarchy joined by separator ("Background/Backup"); false renders
-	 * the leaf name. Both forms are precomputable and cacheable on the
-	 * marker itself, since markers are interned and bounded.
-	 */
-	public record MarkerConfig(Boolean path, String separator, String prefix, String suffix) {
-		public MarkerConfig {
-			if (path == null) path = false;
-			if (separator == null) separator = "/";
-			if (prefix == null) prefix = "";
-			if (suffix == null) suffix = "";
 		}
 	}
 	

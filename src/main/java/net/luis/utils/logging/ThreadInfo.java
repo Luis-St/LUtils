@@ -27,11 +27,13 @@ import org.jspecify.annotations.Nullable;
  *
  */
 
+// ToDo: Move to root util package
 public record ThreadInfo(
 	@NonNull String name,
 	long id,
 	@Nullable ThreadGroup group,
 	int priority,
+	boolean isVirtual,
 	boolean isDaemon,
 	@NonNull String state
 ) {

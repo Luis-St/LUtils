@@ -24,6 +24,5 @@ package net.luis.utils.logging.formatter.pattern;
  *
  */
 
-// Full layout, containing multiple pattern tokens
-public class LogPatternLayout {
+public class LogPatternLayoutParser {
 }
