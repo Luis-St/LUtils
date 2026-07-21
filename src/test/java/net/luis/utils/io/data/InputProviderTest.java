@@ -119,7 +119,7 @@ class InputProviderTest {
 		}
 		
 		try (FileInputStream fis = new FileInputStream("InputProvider/InputProvider.json");
-			 InputProvider provider2 = new InputProvider(fis)) {
+		     InputProvider provider2 = new InputProvider(fis)) {
 			assertNotNull(provider2.getStream());
 		} catch (IOException e) {
 			fail("Should not throw IOException for valid file");
