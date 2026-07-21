@@ -314,8 +314,8 @@ class SslIntegrationTest {
 		CountDownLatch disconnectLatch = new CountDownLatch(1);
 		
 		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onClientConnect(event -> connectLatch.countDown())
-			.onClientDisconnect(event -> disconnectLatch.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> connectLatch.countDown())
+			.onClientDisconnect((connection, local, remote, timestamp) -> disconnectLatch.countDown())
 			.build();
 		
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -345,8 +345,8 @@ class SslIntegrationTest {
 			IpEndpoint serverEndpoint = server.boundEndpoint();
 			
 			SslClientConfig config = this.clientConfig()
-				.onConnect(event -> connectLatch.countDown())
-				.onDisconnect(event -> disconnectLatch.countDown())
+				.onConnect((connection, local, remote, timestamp) -> connectLatch.countDown())
+				.onDisconnect((connection, local, remote, timestamp) -> disconnectLatch.countDown())
 				.build();
 			
 			try (SslClient client = new SslClient(config)) {
@@ -366,7 +366,7 @@ class SslIntegrationTest {
 		Set<String> receivedMessages = Collections.synchronizedSet(new HashSet<>());
 		
 		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onClientConnect(event -> allConnected.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> allConnected.countDown())
 			.onMessage((server, conn, data) -> {
 				receivedMessages.add(new String(data));
 				allMessagesReceived.countDown();
@@ -408,7 +408,7 @@ class SslIntegrationTest {
 		CountDownLatch messagesReceived = new CountDownLatch(2);
 		
 		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onClientConnect(event -> clientsConnected.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> clientsConnected.countDown())
 			.build();
 		
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -561,8 +561,8 @@ class SslIntegrationTest {
 		AtomicReference<Connection> connectionRef = new AtomicReference<>();
 		
 		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onClientConnect(event -> {
-				connectionRef.set(event.connection());
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectionRef.set(connection);
 				latch.countDown();
 			})
 			.build();
@@ -590,12 +590,12 @@ class SslIntegrationTest {
 		AtomicReference<Connection> disconnectRef = new AtomicReference<>();
 		
 		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onClientConnect(event -> {
-				connectRef.set(event.connection());
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectRef.set(connection);
 				connectLatch.countDown();
 			})
-			.onClientDisconnect(event -> {
-				disconnectRef.set(event.connection());
+			.onClientDisconnect((connection, local, remote, timestamp) -> {
+				disconnectRef.set(connection);
 				disconnectLatch.countDown();
 			})
 			.build();
@@ -627,8 +627,8 @@ class SslIntegrationTest {
 			IpEndpoint serverEndpoint = server.boundEndpoint();
 			
 			SslClientConfig config = this.clientConfig()
-				.onConnect(event -> {
-					connectionRef.set(event.connection());
+				.onConnect((connection, local, remote, timestamp) -> {
+					connectionRef.set(connection);
 					connectLatch.countDown();
 				})
 				.build();
@@ -654,9 +654,9 @@ class SslIntegrationTest {
 			IpEndpoint serverEndpoint = server.boundEndpoint();
 			
 			SslClientConfig config = this.clientConfig()
-				.onConnect(event -> connectLatch.countDown())
-				.onDisconnect(event -> {
-					connectionRef.set(event.connection());
+				.onConnect((connection, local, remote, timestamp) -> connectLatch.countDown())
+				.onDisconnect((connection, local, remote, timestamp) -> {
+					connectionRef.set(connection);
 					disconnectLatch.countDown();
 				})
 				.build();
@@ -678,21 +678,15 @@ class SslIntegrationTest {
 		AtomicReference<Connection> connectedConnection = new AtomicReference<>();
 		AtomicReference<Connection> errorConnection = new AtomicReference<>();
 		
-		ErrorEventHandler onError = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
-			
-			@Override
-			public void handle(Connection connection, NetworkErrorType errorType, String message, Throwable cause) {
-				errorConnection.set(connection);
-				errorLatch.countDown();
-			}
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
 		};
 		
 		SslServerConfig config = SslServerConfig.builder(serverContext)
 			.clientBufferSize(50)
-			.onClientConnect(event -> {
-				connectedConnection.set(event.connection());
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectedConnection.set(connection);
 				clientConnected.countDown();
 			})
 			.onError(onError)
@@ -720,15 +714,9 @@ class SslIntegrationTest {
 		CountDownLatch errorLatch = new CountDownLatch(1);
 		AtomicReference<Connection> errorConnection = new AtomicReference<>();
 		
-		ErrorEventHandler onError = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
-			
-			@Override
-			public void handle(Connection connection, NetworkErrorType errorType, String message, Throwable cause) {
-				errorConnection.set(connection);
-				errorLatch.countDown();
-			}
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
 		};
 		
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 59997);
@@ -753,20 +741,14 @@ class SslIntegrationTest {
 		AtomicReference<Connection> connectedConnection = new AtomicReference<>();
 		AtomicReference<Connection> errorConnection = new AtomicReference<>();
 		
-		ErrorEventHandler onError = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
-			
-			@Override
-			public void handle(Connection connection, NetworkErrorType errorType, String message, Throwable cause) {
-				errorConnection.set(connection);
-				errorLatch.countDown();
-			}
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
 		};
 		
 		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onClientConnect(event -> {
-				connectedConnection.set(event.connection());
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectedConnection.set(connection);
 				clientConnected.countDown();
 			})
 			.onMessage((server, conn, data) -> {
@@ -799,20 +781,14 @@ class SslIntegrationTest {
 		AtomicReference<Connection> connectedConnection = new AtomicReference<>();
 		AtomicReference<Connection> errorConnection = new AtomicReference<>();
 		
-		ErrorEventHandler onError = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
-			
-			@Override
-			public void handle(Connection connection, NetworkErrorType errorType, String message, Throwable cause) {
-				errorConnection.set(connection);
-				errorLatch.countDown();
-			}
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
 		};
 		
 		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onClientConnect(event -> {
-				connectedConnection.set(event.connection());
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectedConnection.set(connection);
 				clientConnected.countDown();
 			})
 			.onError(onError)

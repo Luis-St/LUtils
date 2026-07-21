@@ -160,9 +160,9 @@ class SslClientConfigTest {
 	@Test
 	void builderWithHandlers() {
 		SslClientConfig config = SslClientConfig.builder()
-			.onConnect(event -> {})
-			.onDisconnect(event -> {})
-			.onError((type, msg, cause) -> {})
+			.onConnect((connection, local, remote, timestamp) -> {})
+			.onDisconnect((connection, local, remote, timestamp) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
 		assertNotNull(config.onConnect());

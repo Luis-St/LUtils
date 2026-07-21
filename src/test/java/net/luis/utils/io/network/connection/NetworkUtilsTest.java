@@ -68,7 +68,7 @@ class NetworkUtilsTest {
 		AtomicReference<Throwable> capturedCause = new AtomicReference<>();
 		
 		RuntimeException cause = new RuntimeException("test");
-		NetworkUtils.handleError((type, msg, c) -> {
+		NetworkUtils.handleError((conn, type, msg, c) -> {
 			capturedType.set(type);
 			capturedMessage.set(msg);
 			capturedCause.set(c);
@@ -108,17 +108,11 @@ class NetworkUtilsTest {
 		
 		Connection connection = new StubConnection();
 		RuntimeException cause = new RuntimeException("test");
-		ErrorEventHandler handler = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable c) {}
-			
-			@Override
-			public void handle(Connection conn, NetworkErrorType errorType, String message, Throwable c) {
-				capturedConnection.set(conn);
-				capturedType.set(errorType);
-				capturedMessage.set(message);
-				capturedCause.set(c);
-			}
+		ErrorEventHandler handler = (conn, errorType, message, c) -> {
+			capturedConnection.set(conn);
+			capturedType.set(errorType);
+			capturedMessage.set(message);
+			capturedCause.set(c);
 		};
 		
 		NetworkUtils.handleError(handler, connection, NetworkErrorType.CONNECTION_REFUSED, "Connection failed", cause);
@@ -134,15 +128,9 @@ class NetworkUtilsTest {
 		AtomicReference<Connection> capturedConnection = new AtomicReference<>();
 		AtomicBoolean handlerInvoked = new AtomicBoolean(false);
 		
-		ErrorEventHandler handler = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
-			
-			@Override
-			public void handle(Connection conn, NetworkErrorType errorType, String message, Throwable cause) {
-				capturedConnection.set(conn);
-				handlerInvoked.set(true);
-			}
+		ErrorEventHandler handler = (conn, errorType, message, cause) -> {
+			capturedConnection.set(conn);
+			handlerInvoked.set(true);
 		};
 		
 		NetworkUtils.handleError(handler, null, NetworkErrorType.IO_ERROR, "message", new RuntimeException());
@@ -156,15 +144,9 @@ class NetworkUtilsTest {
 		AtomicReference<Connection> capturedConnection = new AtomicReference<>();
 		AtomicBoolean handlerInvoked = new AtomicBoolean(false);
 		
-		ErrorEventHandler handler = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
-			
-			@Override
-			public void handle(Connection conn, NetworkErrorType errorType, String message, Throwable cause) {
-				capturedConnection.set(conn);
-				handlerInvoked.set(true);
-			}
+		ErrorEventHandler handler = (conn, errorType, message, cause) -> {
+			capturedConnection.set(conn);
+			handlerInvoked.set(true);
 		};
 		
 		NetworkUtils.handleError(handler, NetworkErrorType.IO_ERROR, "msg", new RuntimeException());

@@ -42,7 +42,7 @@ import java.util.Objects;
  *     .sslContext(myContext)
  *     .enabledProtocols(List.of("TLSv1.3"))
  *     .verifyHostname(true)
- *     .onConnect(event -> System.out.println("Connected to " + event.remoteEndpoint()))
+ *     .onConnect((connection, local, remote, timestamp) -> System.out.println("Connected to " + remote))
  *     .build();
  * }</pre>
  *

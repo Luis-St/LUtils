@@ -21,8 +21,6 @@ package net.luis.utils.io.network.connection.ssl;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.NetworkServer;
 import net.luis.utils.io.network.connection.NetworkUtils;
-import net.luis.utils.io.network.connection.event.ConnectEvent;
-import net.luis.utils.io.network.connection.event.DisconnectEvent;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.apache.commons.lang3.ArrayUtils;
@@ -31,6 +29,7 @@ import org.jspecify.annotations.NonNull;
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.*;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -302,8 +301,7 @@ public final class SslServer implements NetworkServer {
 			connected = true;
 			
 			if (this.config.onClientConnect() != null) {
-				ConnectEvent event = ConnectEvent.now(connection, connection.localEndpoint(), connection.remoteEndpoint());
-				this.config.onClientConnect().handle(event);
+				this.config.onClientConnect().handle(connection, connection.localEndpoint(), connection.remoteEndpoint(), Instant.now());
 			}
 			
 			while (this.running.get() && connection.isActive()) {
@@ -328,8 +326,7 @@ public final class SslServer implements NetworkServer {
 		} finally {
 			if (connected && this.config.onClientDisconnect() != null && connection.isActive()) {
 				try {
-					DisconnectEvent event = DisconnectEvent.now(connection, connection.localEndpoint(), connection.remoteEndpoint());
-					this.config.onClientDisconnect().handle(event);
+					this.config.onClientDisconnect().handle(connection, connection.localEndpoint(), connection.remoteEndpoint(), Instant.now());
 				} catch (Exception _) {}
 			}
 			

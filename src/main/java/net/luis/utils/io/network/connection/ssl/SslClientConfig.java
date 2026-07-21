@@ -40,7 +40,7 @@ import java.util.Objects;
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .enabledProtocols(List.of("TLSv1.3", "TLSv1.2"))
  *     .verifyHostname(true)
- *     .onConnect(event -> System.out.println("Secure connection established!"))
+ *     .onConnect((connection, local, remote, timestamp) -> System.out.println("Secure connection established!"))
  *     .build();
  *
  * try (SslClient client = new SslClient(config)) {

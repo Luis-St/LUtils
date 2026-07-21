@@ -405,7 +405,7 @@ class SmtpClientTest {
 	void readReplyIoErrorMapsToIoError() throws Exception {
 		AtomicReference<NetworkErrorType> errorRef = new AtomicReference<>();
 		try (FakeSmtpServer server = new FakeSmtpServer(false, Session::abort)) {
-			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).onError((type, _, _) -> errorRef.set(type)).build();
+			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).onError((_, type, _, _) -> errorRef.set(type)).build();
 			
 			try (SmtpClient client = new SmtpClient(config)) {
 				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect(HOST, server.port()));
@@ -422,7 +422,7 @@ class SmtpClientTest {
 			handshakeNone(session);
 			session.abort();
 		})) {
-			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).onError((type, _, _) -> errorRef.set(type)).build();
+			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).onError((_, type, _, _) -> errorRef.set(type)).build();
 			
 			try (SmtpClient client = new SmtpClient(config)) {
 				client.connect(HOST, server.port());

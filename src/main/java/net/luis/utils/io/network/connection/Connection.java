@@ -19,7 +19,7 @@
 package net.luis.utils.io.network.connection;
 
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.connection.event.ConnectEvent;
+import net.luis.utils.io.network.connection.event.ConnectEventHandler;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import org.jspecify.annotations.NonNull;
 
@@ -29,7 +29,7 @@ import java.io.OutputStream;
 /**
  * Represents an active network connection between a local and a remote endpoint.<br>
  * This interface is implemented by the protocol-specific connection classes (e.g. {@code TcpConnection}, {@code SslConnection})<br>
- * so that events such as {@link ConnectEvent} can reference the connection that triggered them without depending on a specific protocol.<br>
+ * so that events such as {@link ConnectEventHandler} can reference the connection that triggered them without depending on a specific protocol.<br>
  *
  * @author Luis-St
  */

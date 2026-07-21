@@ -39,8 +39,8 @@ import java.util.Objects;
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .readTimeout(Duration.ofSeconds(30))
  *     .tcpNoDelay(true)
- *     .onConnect(event -> System.out.println("Connected to " + event.remoteEndpoint()))
- *     .onDisconnect(event -> System.out.println("Disconnected"))
+ *     .onConnect((connection, local, remote, timestamp) -> System.out.println("Connected to " + remote))
+ *     .onDisconnect((connection, local, remote, timestamp) -> System.out.println("Disconnected"))
  *     .build();
  * }</pre>
  *

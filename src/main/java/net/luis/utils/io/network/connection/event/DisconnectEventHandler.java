@@ -18,25 +18,37 @@
 
 package net.luis.utils.io.network.connection.event;
 
+import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.connection.Connection;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.time.Instant;
 
 /**
  * Handler for connection termination events.<br>
  * This functional interface is used to handle disconnection events for both TCP/SSL clients and servers.<br>
  * <p>
+ *     The {@code connection} is only available where the connection is already wrapped in a {@link Connection}
+ *     at the time the event fires (e.g. server-side {@code onClientDisconnect}). Client-side {@code onDisconnect}
+ *     handlers do not have a {@link Connection} instance to offer and receive {@code null} instead. Where present,
+ *     the connection is still active at the time the handler runs and is closed only after the handler returns,
+ *     so it can be used to send a final message (e.g. a graceful shutdown notice) before the connection is torn
+ *     down. Calling {@link Connection#receive()} from the handler should be avoided, since it blocks synchronously
+ *     and the peer is not guaranteed to send anything further.
+ * </p>
+ * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
- * DisconnectEventHandler onDisconnect = event -> {
- *     System.out.println("Disconnected from " + event.remoteEndpoint());
+ * DisconnectEventHandler onDisconnect = (connection, localEndpoint, remoteEndpoint, timestamp) -> {
+ *     System.out.println("Disconnected from " + remoteEndpoint + " at " + timestamp);
  * };
  *
  * TcpClientConfig config = TcpClientConfig.builder()
  *     .onDisconnect(onDisconnect)
  *     .build();
  * }</pre>
- *
- * @see DisconnectEvent
  *
  * @author Luis-St
  */
@@ -45,7 +57,11 @@ public interface DisconnectEventHandler {
 	
 	/**
 	 * Called when a disconnect event occurs.<br>
-	 * @param event The disconnect event context
+	 *
+	 * @param connection The connection that was closed, or null if not available
+	 * @param localEndpoint The local endpoint of the connection
+	 * @param remoteEndpoint The remote endpoint of the connection
+	 * @param timestamp When the event occurred
 	 */
-	void handle(@NonNull DisconnectEvent event);
+	void handle(@Nullable Connection connection, @NonNull IpEndpoint localEndpoint, @NonNull IpEndpoint remoteEndpoint, @NonNull Instant timestamp);
 }

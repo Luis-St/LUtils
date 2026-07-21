@@ -21,14 +21,13 @@ package net.luis.utils.io.network.connection.tcp;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.NetworkServer;
 import net.luis.utils.io.network.connection.NetworkUtils;
-import net.luis.utils.io.network.connection.event.ConnectEvent;
-import net.luis.utils.io.network.connection.event.DisconnectEvent;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.net.*;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -268,8 +267,7 @@ public final class TcpServer implements NetworkServer {
 				this.connections.add(connection);
 				
 				if (this.config.onClientConnect() != null) {
-					ConnectEvent event = ConnectEvent.now(connection, connection.localEndpoint(), connection.remoteEndpoint());
-					this.config.onClientConnect().handle(event);
+					this.config.onClientConnect().handle(connection, connection.localEndpoint(), connection.remoteEndpoint(), Instant.now());
 				}
 				
 				if (this.isRunning()) {
@@ -325,8 +323,7 @@ public final class TcpServer implements NetworkServer {
 		} finally {
 			if (this.config.onClientDisconnect() != null && connection.isActive()) {
 				try {
-					DisconnectEvent event = DisconnectEvent.now(connection, connection.localEndpoint(), connection.remoteEndpoint());
-					this.config.onClientDisconnect().handle(event);
+					this.config.onClientDisconnect().handle(connection, connection.localEndpoint(), connection.remoteEndpoint(), Instant.now());
 				} catch (Exception _) {}
 			}
 			

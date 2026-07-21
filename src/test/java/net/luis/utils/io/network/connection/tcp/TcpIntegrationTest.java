@@ -482,7 +482,7 @@ class TcpIntegrationTest {
 		AtomicReference<TcpConnection> connectionRef = new AtomicReference<>();
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> clientConnected.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> clientConnected.countDown())
 			.onMessage((server, conn, data) -> connectionRef.set(conn))
 			.build();
 		
@@ -516,7 +516,7 @@ class TcpIntegrationTest {
 		CountDownLatch errorLatch = new CountDownLatch(1);
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onError((errorType, message, cause) -> errorLatch.countDown())
+			.onError((connection, errorType, message, cause) -> errorLatch.countDown())
 			.build();
 		
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -542,7 +542,7 @@ class TcpIntegrationTest {
 		Set<String> receivedMessages = Collections.synchronizedSet(new HashSet<>());
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> allConnected.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> allConnected.countDown())
 			.onMessage((server, conn, data) -> {
 				receivedMessages.add(new String(data));
 				allMessagesReceived.countDown();
@@ -584,7 +584,7 @@ class TcpIntegrationTest {
 		CountDownLatch messagesReceived = new CountDownLatch(2);
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> clientsConnected.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> clientsConnected.countDown())
 			.build();
 		
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -691,7 +691,7 @@ class TcpIntegrationTest {
 		
 		TcpServerConfig config = TcpServerConfig.builder()
 			.clientBufferSize(100)
-			.onClientConnect(event -> clientConnected.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> clientConnected.countDown())
 			.onMessage((server, conn, data) -> {
 				try {
 					byte[] oversizedData = new byte[150];
@@ -725,8 +725,8 @@ class TcpIntegrationTest {
 		CountDownLatch disconnectLatch = new CountDownLatch(1);
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> connectLatch.countDown())
-			.onClientDisconnect(event -> disconnectLatch.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> connectLatch.countDown())
+			.onClientDisconnect((connection, local, remote, timestamp) -> disconnectLatch.countDown())
 			.build();
 		
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -756,8 +756,8 @@ class TcpIntegrationTest {
 			IpEndpoint serverEndpoint = server.boundEndpoint();
 			
 			TcpClientConfig config = TcpClientConfig.builder()
-				.onConnect(event -> connectLatch.countDown())
-				.onDisconnect(event -> disconnectLatch.countDown())
+				.onConnect((connection, local, remote, timestamp) -> connectLatch.countDown())
+				.onDisconnect((connection, local, remote, timestamp) -> disconnectLatch.countDown())
 				.build();
 			
 			try (TcpClient client = new TcpClient(config)) {
@@ -775,8 +775,8 @@ class TcpIntegrationTest {
 		AtomicReference<Connection> connectionRef = new AtomicReference<>();
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> {
-				connectionRef.set(event.connection());
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectionRef.set(connection);
 				latch.countDown();
 			})
 			.build();
@@ -804,12 +804,12 @@ class TcpIntegrationTest {
 		AtomicReference<Connection> disconnectRef = new AtomicReference<>();
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> {
-				connectRef.set(event.connection());
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectRef.set(connection);
 				connectLatch.countDown();
 			})
-			.onClientDisconnect(event -> {
-				disconnectRef.set(event.connection());
+			.onClientDisconnect((connection, local, remote, timestamp) -> {
+				disconnectRef.set(connection);
 				disconnectLatch.countDown();
 			})
 			.build();
@@ -841,8 +841,8 @@ class TcpIntegrationTest {
 			IpEndpoint serverEndpoint = server.boundEndpoint();
 			
 			TcpClientConfig config = TcpClientConfig.builder()
-				.onConnect(event -> {
-					connectionRef.set(event.connection());
+				.onConnect((connection, local, remote, timestamp) -> {
+					connectionRef.set(connection);
 					connectLatch.countDown();
 				})
 				.build();
@@ -868,9 +868,9 @@ class TcpIntegrationTest {
 			IpEndpoint serverEndpoint = server.boundEndpoint();
 			
 			TcpClientConfig config = TcpClientConfig.builder()
-				.onConnect(event -> connectLatch.countDown())
-				.onDisconnect(event -> {
-					connectionRef.set(event.connection());
+				.onConnect((connection, local, remote, timestamp) -> connectLatch.countDown())
+				.onDisconnect((connection, local, remote, timestamp) -> {
+					connectionRef.set(connection);
 					disconnectLatch.countDown();
 				})
 				.build();
@@ -892,21 +892,15 @@ class TcpIntegrationTest {
 		AtomicReference<Connection> connectedConnection = new AtomicReference<>();
 		AtomicReference<Connection> errorConnection = new AtomicReference<>();
 		
-		ErrorEventHandler onError = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
-			
-			@Override
-			public void handle(Connection connection, NetworkErrorType errorType, String message, Throwable cause) {
-				errorConnection.set(connection);
-				errorLatch.countDown();
-			}
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
 		};
 		
 		TcpServerConfig config = TcpServerConfig.builder()
 			.clientBufferSize(50)
-			.onClientConnect(event -> {
-				connectedConnection.set(event.connection());
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectedConnection.set(connection);
 				clientConnected.countDown();
 			})
 			.onError(onError)
@@ -934,15 +928,9 @@ class TcpIntegrationTest {
 		CountDownLatch errorLatch = new CountDownLatch(1);
 		AtomicReference<Connection> errorConnection = new AtomicReference<>();
 		
-		ErrorEventHandler onError = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
-			
-			@Override
-			public void handle(Connection connection, NetworkErrorType errorType, String message, Throwable cause) {
-				errorConnection.set(connection);
-				errorLatch.countDown();
-			}
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
 		};
 		
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 59998);
@@ -967,20 +955,14 @@ class TcpIntegrationTest {
 		AtomicReference<Connection> connectedConnection = new AtomicReference<>();
 		AtomicReference<Connection> errorConnection = new AtomicReference<>();
 		
-		ErrorEventHandler onError = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
-			
-			@Override
-			public void handle(Connection connection, NetworkErrorType errorType, String message, Throwable cause) {
-				errorConnection.set(connection);
-				errorLatch.countDown();
-			}
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
 		};
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> {
-				connectedConnection.set(event.connection());
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectedConnection.set(connection);
 				clientConnected.countDown();
 			})
 			.onMessage((server, conn, data) -> {
@@ -1013,20 +995,14 @@ class TcpIntegrationTest {
 		AtomicReference<Connection> connectedConnection = new AtomicReference<>();
 		AtomicReference<Connection> errorConnection = new AtomicReference<>();
 		
-		ErrorEventHandler onError = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {}
-			
-			@Override
-			public void handle(Connection connection, NetworkErrorType errorType, String message, Throwable cause) {
-				errorConnection.set(connection);
-				errorLatch.countDown();
-			}
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
 		};
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> {
-				connectedConnection.set(event.connection());
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectedConnection.set(connection);
 				clientConnected.countDown();
 			})
 			.onError(onError)

@@ -189,7 +189,7 @@ class SslClientConfigBuilderTest {
 	@Test
 	void onConnectWithHandler() {
 		SslClientConfig config = SslClientConfig.builder()
-			.onConnect(event -> {})
+			.onConnect((connection, local, remote, timestamp) -> {})
 			.build();
 		assertNotNull(config.onConnect());
 	}
@@ -205,7 +205,7 @@ class SslClientConfigBuilderTest {
 	@Test
 	void onDisconnectWithHandler() {
 		SslClientConfig config = SslClientConfig.builder()
-			.onDisconnect(event -> {})
+			.onDisconnect((connection, local, remote, timestamp) -> {})
 			.build();
 		assertNotNull(config.onDisconnect());
 	}
@@ -213,7 +213,7 @@ class SslClientConfigBuilderTest {
 	@Test
 	void onErrorWithHandler() {
 		SslClientConfig config = SslClientConfig.builder()
-			.onError((type, msg, cause) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		assertNotNull(config.onError());
 	}
@@ -231,9 +231,9 @@ class SslClientConfigBuilderTest {
 		assertSame(builder, builder.enabledProtocols(List.of("TLSv1.3")));
 		assertSame(builder, builder.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384")));
 		assertSame(builder, builder.verifyHostname(true));
-		assertSame(builder, builder.onConnect(event -> {}));
-		assertSame(builder, builder.onDisconnect(event -> {}));
-		assertSame(builder, builder.onError((type, msg, cause) -> {}));
+		assertSame(builder, builder.onConnect((connection, local, remote, timestamp) -> {}));
+		assertSame(builder, builder.onDisconnect((connection, local, remote, timestamp) -> {}));
+		assertSame(builder, builder.onError((connection, type, msg, cause) -> {}));
 	}
 	
 	@Test
@@ -249,9 +249,9 @@ class SslClientConfigBuilderTest {
 			.enabledProtocols(List.of("TLSv1.3"))
 			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
 			.verifyHostname(false)
-			.onConnect(event -> {})
-			.onDisconnect(event -> {})
-			.onError((type, msg, cause) -> {})
+			.onConnect((connection, local, remote, timestamp) -> {})
+			.onDisconnect((connection, local, remote, timestamp) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
 		assertEquals(Duration.ofSeconds(15), config.connectTimeout());

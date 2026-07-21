@@ -92,10 +92,10 @@ class TcpServerConfigTest {
 	@Test
 	void builderWithHandlers() {
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> {})
-			.onClientDisconnect(event -> {})
+			.onClientConnect((connection, local, remote, timestamp) -> {})
+			.onClientDisconnect((connection, local, remote, timestamp) -> {})
 			.onMessage((server, conn, data) -> {})
-			.onError((type, msg, cause) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
 		assertNotNull(config.onClientConnect());

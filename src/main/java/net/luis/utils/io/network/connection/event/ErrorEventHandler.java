@@ -30,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  *     Example usage:
  * </p>
  * <pre>{@code
- * ErrorEventHandler onError = (errorType, message, cause) -> {
+ * ErrorEventHandler onError = (connection, errorType, message, cause) -> {
  *     System.err.println("Error [" + errorType + "]: " + message);
  *     if (cause != null) {
  *         cause.printStackTrace();
@@ -52,23 +52,10 @@ public interface ErrorEventHandler {
 	/**
 	 * Called when a network error occurs.<br>
 	 *
-	 * @param errorType The type/category of the error
-	 * @param message A human-readable error message
-	 * @param cause The underlying exception, if any
-	 */
-	void handle(@NonNull NetworkErrorType errorType, @NonNull String message, @Nullable Throwable cause);
-	
-	/**
-	 * Called when a network error occurs within the scope of a specific connection.<br>
-	 * The default implementation ignores the connection and delegates to {@link #handle(NetworkErrorType, String, Throwable)},
-	 * so existing handlers keep working unchanged. Override this method to access the connection context.<br>
-	 *
 	 * @param connection The connection the error occurred on, or null if not available
 	 * @param errorType The type/category of the error
 	 * @param message A human-readable error message
 	 * @param cause The underlying exception, if any
 	 */
-	default void handle(@Nullable Connection connection, @NonNull NetworkErrorType errorType, @NonNull String message, @Nullable Throwable cause) {
-		this.handle(errorType, message, cause);
-	}
+	void handle(@Nullable Connection connection, @NonNull NetworkErrorType errorType, @NonNull String message, @Nullable Throwable cause);
 }

@@ -133,7 +133,7 @@ class TcpServerConfigBuilderTest {
 	@Test
 	void onClientConnectWithHandler() {
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> {})
+			.onClientConnect((connection, local, remote, timestamp) -> {})
 			.build();
 		assertNotNull(config.onClientConnect());
 	}
@@ -149,7 +149,7 @@ class TcpServerConfigBuilderTest {
 	@Test
 	void onClientDisconnectWithHandler() {
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientDisconnect(event -> {})
+			.onClientDisconnect((connection, local, remote, timestamp) -> {})
 			.build();
 		assertNotNull(config.onClientDisconnect());
 	}
@@ -181,7 +181,7 @@ class TcpServerConfigBuilderTest {
 	@Test
 	void onErrorWithHandler() {
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onError((type, msg, cause) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		assertNotNull(config.onError());
 	}
@@ -203,10 +203,10 @@ class TcpServerConfigBuilderTest {
 		assertSame(builder, builder.tcpNoDelay(true));
 		assertSame(builder, builder.keepAlive(true));
 		assertSame(builder, builder.executorStrategy(ClientExecutorStrategy.virtualThreads()));
-		assertSame(builder, builder.onClientConnect(event -> {}));
-		assertSame(builder, builder.onClientDisconnect(event -> {}));
+		assertSame(builder, builder.onClientConnect((connection, local, remote, timestamp) -> {}));
+		assertSame(builder, builder.onClientDisconnect((connection, local, remote, timestamp) -> {}));
 		assertSame(builder, builder.onMessage((server, conn, data) -> {}));
-		assertSame(builder, builder.onError((type, msg, cause) -> {}));
+		assertSame(builder, builder.onError((connection, type, msg, cause) -> {}));
 	}
 	
 	@Test
@@ -219,10 +219,10 @@ class TcpServerConfigBuilderTest {
 			.tcpNoDelay(false)
 			.keepAlive(false)
 			.executorStrategy(strategy)
-			.onClientConnect(event -> {})
-			.onClientDisconnect(event -> {})
+			.onClientConnect((connection, local, remote, timestamp) -> {})
+			.onClientDisconnect((connection, local, remote, timestamp) -> {})
 			.onMessage((server, conn, data) -> {})
-			.onError((type, msg, cause) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
 		assertEquals(200, config.backlog());

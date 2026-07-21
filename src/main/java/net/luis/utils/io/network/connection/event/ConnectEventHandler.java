@@ -18,25 +18,33 @@
 
 package net.luis.utils.io.network.connection.event;
 
+import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.connection.Connection;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.time.Instant;
 
 /**
  * Handler for connection establishment events.<br>
  * This functional interface is used to handle connection events for both TCP/SSL clients and servers.<br>
  * <p>
+ *     The {@code connection} is only available where the connection is already wrapped in a {@link Connection}
+ *     at the time the event fires (e.g. server-side {@code onClientConnect}). Client-side {@code onConnect}
+ *     handlers do not have a {@link Connection} instance to offer and receive {@code null} instead.
+ * </p>
+ * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
- * ConnectEventHandler onConnect = event -> {
- *     System.out.println("Connected to " + event.remoteEndpoint());
+ * ConnectEventHandler onConnect = (connection, localEndpoint, remoteEndpoint, timestamp) -> {
+ *     System.out.println("Connected to " + remoteEndpoint + " at " + timestamp);
  * };
  *
  * TcpClientConfig config = TcpClientConfig.builder()
  *     .onConnect(onConnect)
  *     .build();
  * }</pre>
- *
- * @see ConnectEvent
  *
  * @author Luis-St
  */
@@ -45,7 +53,11 @@ public interface ConnectEventHandler {
 	
 	/**
 	 * Called when a connect event occurs.<br>
-	 * @param event The connect event context
+	 *
+	 * @param connection The connection that was established, or null if not available
+	 * @param localEndpoint The local endpoint of the connection
+	 * @param remoteEndpoint The remote endpoint of the connection
+	 * @param timestamp When the event occurred
 	 */
-	void handle(@NonNull ConnectEvent event);
+	void handle(@Nullable Connection connection, @NonNull IpEndpoint localEndpoint, @NonNull IpEndpoint remoteEndpoint, @NonNull Instant timestamp);
 }

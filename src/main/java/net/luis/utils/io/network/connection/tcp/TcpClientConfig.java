@@ -36,7 +36,7 @@ import java.util.Objects;
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .readTimeout(Duration.ofSeconds(30))
  *     .tcpNoDelay(true)
- *     .onConnect(event -> System.out.println("Connected!"))
+ *     .onConnect((connection, local, remote, timestamp) -> System.out.println("Connected!"))
  *     .build();
  *
  * try (TcpClient client = new TcpClient(config)) {

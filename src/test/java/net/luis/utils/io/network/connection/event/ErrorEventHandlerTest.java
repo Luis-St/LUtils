@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,90 +39,49 @@ import static org.junit.jupiter.api.Assertions.*;
 class ErrorEventHandlerTest {
 	
 	@Test
-	void defaultHandleDelegatesToThreeArgHandle() {
-		AtomicReference<NetworkErrorType> capturedType = new AtomicReference<>();
-		AtomicReference<String> capturedMessage = new AtomicReference<>();
-		AtomicReference<Throwable> capturedCause = new AtomicReference<>();
-		RuntimeException cause = new RuntimeException("test");
-		
-		ErrorEventHandler handler = (errorType, message, c) -> {
-			capturedType.set(errorType);
-			capturedMessage.set(message);
-			capturedCause.set(c);
-		};
-		
-		handler.handle(new StubConnection(), NetworkErrorType.IO_ERROR, "msg", cause);
-		
-		assertEquals(NetworkErrorType.IO_ERROR, capturedType.get());
-		assertEquals("msg", capturedMessage.get());
-		assertSame(cause, capturedCause.get());
-	}
-	
-	@Test
-	void defaultHandleWithNullConnectionDelegates() {
-		AtomicReference<NetworkErrorType> capturedType = new AtomicReference<>();
-		AtomicReference<String> capturedMessage = new AtomicReference<>();
-		AtomicReference<Throwable> capturedCause = new AtomicReference<>();
-		RuntimeException cause = new RuntimeException("test");
-		
-		ErrorEventHandler handler = (errorType, message, c) -> {
-			capturedType.set(errorType);
-			capturedMessage.set(message);
-			capturedCause.set(c);
-		};
-		
-		assertDoesNotThrow(() -> handler.handle(null, NetworkErrorType.IO_ERROR, "msg", cause));
-		
-		assertEquals(NetworkErrorType.IO_ERROR, capturedType.get());
-		assertEquals("msg", capturedMessage.get());
-		assertSame(cause, capturedCause.get());
-	}
-	
-	@Test
-	void overriddenHandleReceivesConnection() {
+	void handleReceivesConnectionErrorTypeMessageAndCause() {
 		AtomicReference<Connection> capturedConnection = new AtomicReference<>();
-		AtomicBoolean threeArgCalled = new AtomicBoolean(false);
+		AtomicReference<NetworkErrorType> capturedType = new AtomicReference<>();
+		AtomicReference<String> capturedMessage = new AtomicReference<>();
+		AtomicReference<Throwable> capturedCause = new AtomicReference<>();
 		Connection connection = new StubConnection();
+		RuntimeException cause = new RuntimeException("test");
 		
-		ErrorEventHandler handler = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {
-				threeArgCalled.set(true);
-			}
-			
-			@Override
-			public void handle(Connection conn, NetworkErrorType errorType, String message, Throwable cause) {
-				capturedConnection.set(conn);
-			}
+		ErrorEventHandler handler = (conn, errorType, message, c) -> {
+			capturedConnection.set(conn);
+			capturedType.set(errorType);
+			capturedMessage.set(message);
+			capturedCause.set(c);
 		};
 		
-		handler.handle(connection, NetworkErrorType.IO_ERROR, "msg", new RuntimeException("test"));
+		handler.handle(connection, NetworkErrorType.IO_ERROR, "msg", cause);
 		
 		assertSame(connection, capturedConnection.get());
-		assertFalse(threeArgCalled.get());
+		assertEquals(NetworkErrorType.IO_ERROR, capturedType.get());
+		assertEquals("msg", capturedMessage.get());
+		assertSame(cause, capturedCause.get());
 	}
 	
 	@Test
-	void overriddenHandleReceivesNullConnectionWhenNotAvailable() {
+	void handleAcceptsNullConnectionWhenNotAvailable() {
 		AtomicReference<Connection> capturedConnection = new AtomicReference<>();
-		AtomicBoolean threeArgCalled = new AtomicBoolean(false);
 		
-		ErrorEventHandler handler = new ErrorEventHandler() {
-			@Override
-			public void handle(NetworkErrorType errorType, String message, Throwable cause) {
-				threeArgCalled.set(true);
-			}
-			
-			@Override
-			public void handle(Connection conn, NetworkErrorType errorType, String message, Throwable cause) {
-				capturedConnection.set(conn);
-			}
-		};
+		ErrorEventHandler handler = (conn, errorType, message, c) -> capturedConnection.set(conn);
 		
-		handler.handle(null, NetworkErrorType.IO_ERROR, "msg", new RuntimeException("test"));
+		assertDoesNotThrow(() -> handler.handle(null, NetworkErrorType.IO_ERROR, "msg", new RuntimeException("test")));
 		
 		assertNull(capturedConnection.get());
-		assertFalse(threeArgCalled.get());
+	}
+	
+	@Test
+	void handleAcceptsNullCause() {
+		AtomicReference<Throwable> capturedCause = new AtomicReference<>();
+		
+		ErrorEventHandler handler = (conn, errorType, message, c) -> capturedCause.set(c);
+		
+		assertDoesNotThrow(() -> handler.handle(null, NetworkErrorType.IO_ERROR, "msg", null));
+		
+		assertNull(capturedCause.get());
 	}
 	
 	private static final class StubConnection implements Connection {
