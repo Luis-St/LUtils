@@ -27,6 +27,8 @@ import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.junit.jupiter.api.*;
 
 import javax.net.ssl.*;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.*;
@@ -468,6 +470,143 @@ class SslIntegrationTest {
 	}
 	
 	@Test
+	void clientReceiveWithMaxBytesSmallerThanFrameThrows() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext)
+			.onMessage((server, conn, data) -> {
+				try {
+					conn.send("Hello World".getBytes());
+				} catch (NetworkConnectionException e) {
+					fail("Failed to send response: " + e.getMessage());
+				}
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, config)) {
+			server.start();
+			
+			try (SslClient client = new SslClient(this.clientConfig().readTimeout(Duration.ofSeconds(5)).build())) {
+				client.connect(server.boundEndpoint());
+				client.send("trigger".getBytes());
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.receive(5));
+				assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void clientReceiveThrowsOnServerCloseMidFrame() throws Exception {
+		CountDownLatch clientConnected = new CountDownLatch(1);
+		AtomicReference<Connection> connectionRef = new AtomicReference<>();
+		
+		SslServerConfig config = SslServerConfig.builder(serverContext)
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectionRef.set(connection);
+				clientConnected.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, config)) {
+			server.start();
+			
+			try (SslClient client = new SslClient(this.clientConfig().readTimeout(Duration.ofSeconds(5)).build())) {
+				client.connect(server.boundEndpoint());
+				assertTrue(clientConnected.await(5, TimeUnit.SECONDS));
+				
+				Connection serverSideConnection = connectionRef.get();
+				OutputStream out = serverSideConnection.getOutputStream();
+				out.write(new byte[] { 0, 0, 0, 10, 1, 2, 3 });
+				out.flush();
+				serverSideConnection.close();
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, client::receive);
+				assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void clientReceiveEmptyMessageDoesNotDisconnect() throws Exception {
+		CountDownLatch clientConnected = new CountDownLatch(1);
+		CountDownLatch disconnectLatch = new CountDownLatch(1);
+		AtomicReference<Connection> connectionRef = new AtomicReference<>();
+		
+		SslServerConfig config = SslServerConfig.builder(serverContext)
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectionRef.set(connection);
+				clientConnected.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, config)) {
+			server.start();
+			
+			SslClientConfig clientConfig = this.clientConfig()
+				.readTimeout(Duration.ofSeconds(5))
+				.onDisconnect((connection, local, remote, timestamp) -> disconnectLatch.countDown())
+				.build();
+			
+			try (SslClient client = new SslClient(clientConfig)) {
+				client.connect(server.boundEndpoint());
+				assertTrue(clientConnected.await(5, TimeUnit.SECONDS));
+				
+				connectionRef.get().send(new byte[0]);
+				
+				byte[] received = client.receive();
+				assertNotNull(received);
+				assertEquals(0, received.length);
+				assertTrue(client.isActive());
+				assertEquals(1, disconnectLatch.getCount());
+				
+				byte[] second = "Still Alive".getBytes();
+				connectionRef.get().send(second);
+				assertArrayEquals(second, client.receive());
+			}
+		}
+	}
+	
+	@Test
+	void sendAndReceiveMessageDeliveredInFragmentedWrites() throws Exception {
+		CountDownLatch messageLatch = new CountDownLatch(1);
+		AtomicReference<byte[]> receivedData = new AtomicReference<>();
+		
+		SslServerConfig config = SslServerConfig.builder(serverContext)
+			.onMessage((server, conn, data) -> {
+				receivedData.set(data);
+				messageLatch.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, config)) {
+			server.start();
+			
+			try (SslClient client = new SslClient(this.clientConfig().build())) {
+				client.connect(server.boundEndpoint());
+				
+				byte[] payload = "Fragmented End To End".getBytes();
+				ByteArrayOutputStream frameBytes = new ByteArrayOutputStream();
+				NetworkUtils.writeFrame(frameBytes, payload);
+				byte[] frame = frameBytes.toByteArray();
+				
+				OutputStream out = client.getOutputStream();
+				for (int i = 0; i < frame.length; i += 3) {
+					int end = Math.min(i + 3, frame.length);
+					out.write(frame, i, end - i);
+					out.flush();
+					Thread.sleep(10);
+				}
+				
+				assertTrue(messageLatch.await(5, TimeUnit.SECONDS));
+				assertArrayEquals(payload, receivedData.get());
+			}
+		}
+	}
+	
+	@Test
 	void hostnameVerificationSucceedsForLoopback() throws Exception {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
 		try (SslServer server = new SslServer(endpoint, SslServerConfig.builder(serverContext).build())) {
@@ -818,9 +957,6 @@ class SslIntegrationTest {
 	
 	//region Helper methods
 	
-	/**
-	 * Returns a client config builder that trusts the test server certificate and skips hostname verification.<br>
-	 */
 	private SslClientConfigBuilder clientConfig() {
 		return SslClientConfig.builder().sslContext(clientContext).verifyHostname(false);
 	}

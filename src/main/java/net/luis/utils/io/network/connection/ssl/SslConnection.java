@@ -20,6 +20,7 @@ package net.luis.utils.io.network.connection.ssl;
 
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.Connection;
+import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
@@ -144,8 +145,7 @@ public final class SslConnection implements Connection {
 		
 		try {
 			OutputStream out = this.socket.getOutputStream();
-			out.write(data);
-			out.flush();
+			NetworkUtils.writeFrame(out, data);
 		} catch (SocketException e) {
 			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET, this.remoteEndpoint());
 		} catch (IOException e) {
@@ -187,16 +187,12 @@ public final class SslConnection implements Connection {
 		
 		try {
 			InputStream in = this.socket.getInputStream();
-			byte[] buffer = new byte[maxBytes];
-			int bytesRead = in.read(buffer);
-			
-			if (bytesRead == -1) {
-				return ArrayUtils.EMPTY_BYTE_ARRAY;
-			}
-			
-			byte[] data = new byte[bytesRead];
-			System.arraycopy(buffer, 0, data, 0, bytesRead);
-			return data;
+			byte[] data = NetworkUtils.readFrame(in, maxBytes);
+			return data != null ? data : ArrayUtils.EMPTY_BYTE_ARRAY;
+		} catch (FrameTooLargeException e) {
+			throw new NetworkConnectionException(e.getMessage(), e, NetworkErrorType.MESSAGE_TOO_LARGE, this.remoteEndpoint());
+		} catch (EOFException e) {
+			throw new NetworkConnectionException("Connection reset while receiving data", e, NetworkErrorType.CONNECTION_RESET, this.remoteEndpoint());
 		} catch (SocketTimeoutException e) {
 			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, this.readTimeout, this.remoteEndpoint());
 		} catch (SocketException e) {

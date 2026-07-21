@@ -184,8 +184,7 @@ public final class TcpClient implements NetworkClient {
 		
 		try {
 			OutputStream out = this.socket.getOutputStream();
-			out.write(data);
-			out.flush();
+			NetworkUtils.writeFrame(out, data);
 		} catch (SocketException e) {
 			this.handleDisconnect();
 			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET);
@@ -224,17 +223,19 @@ public final class TcpClient implements NetworkClient {
 		
 		try {
 			InputStream in = this.socket.getInputStream();
-			byte[] buffer = new byte[maxBytes];
-			int bytesRead = in.read(buffer);
+			byte[] data = NetworkUtils.readFrame(in, maxBytes);
 			
-			if (bytesRead == -1) {
+			if (data == null) {
 				this.handleDisconnect();
 				return ArrayUtils.EMPTY_BYTE_ARRAY;
 			}
 			
-			byte[] data = new byte[bytesRead];
-			System.arraycopy(buffer, 0, data, 0, bytesRead);
 			return data;
+		} catch (FrameTooLargeException e) {
+			throw new NetworkConnectionException(e.getMessage(), e, NetworkErrorType.MESSAGE_TOO_LARGE);
+		} catch (EOFException e) {
+			this.handleDisconnect();
+			throw new NetworkConnectionException("Connection reset while receiving data", e, NetworkErrorType.CONNECTION_RESET);
 		} catch (SocketTimeoutException e) {
 			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, this.config.readTimeout());
 		} catch (SocketException e) {
