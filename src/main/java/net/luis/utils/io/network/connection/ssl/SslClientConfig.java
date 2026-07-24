@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
-import net.luis.utils.io.network.connection.event.ConnectionEventHandler;
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
+import net.luis.utils.io.network.connection.event.*;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -41,7 +40,7 @@ import java.util.Objects;
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .enabledProtocols(List.of("TLSv1.3", "TLSv1.2"))
  *     .verifyHostname(true)
- *     .onConnect(event -> System.out.println("Secure connection established!"))
+ *     .onConnect((connection, local, remote, timestamp) -> System.out.println("Secure connection established!"))
  *     .build();
  *
  * try (SslClient client = new SslClient(config)) {
@@ -79,8 +78,8 @@ public record SslClientConfig(
 	@NonNull List<String> enabledProtocols,
 	@NonNull List<String> enabledCipherSuites,
 	boolean verifyHostname,
-	@Nullable ConnectionEventHandler onConnect,
-	@Nullable ConnectionEventHandler onDisconnect,
+	@Nullable ConnectEventHandler onConnect,
+	@Nullable DisconnectEventHandler onDisconnect,
 	@Nullable ErrorEventHandler onError
 ) {
 	

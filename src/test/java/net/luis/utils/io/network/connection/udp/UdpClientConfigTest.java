@@ -71,7 +71,7 @@ class UdpClientConfigTest {
 	@Test
 	void builderWithErrorHandler() {
 		UdpClientConfig config = UdpClientConfig.builder()
-			.onError((type, msg, cause) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
 		assertNotNull(config.onError());

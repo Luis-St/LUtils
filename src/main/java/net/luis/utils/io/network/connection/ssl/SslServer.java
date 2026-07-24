@@ -21,7 +21,6 @@ package net.luis.utils.io.network.connection.ssl;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.NetworkServer;
 import net.luis.utils.io.network.connection.NetworkUtils;
-import net.luis.utils.io.network.connection.event.ConnectionEvent;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.apache.commons.lang3.ArrayUtils;
@@ -30,6 +29,7 @@ import org.jspecify.annotations.NonNull;
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.*;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -234,7 +234,7 @@ public final class SslServer implements NetworkServer {
 				try {
 					connection.send(data);
 				} catch (NetworkConnectionException e) {
-					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to broadcast to " + connection.remoteEndpoint(), e);
+					NetworkUtils.handleError(this.config.onError(), connection, NetworkErrorType.IO_ERROR, "Failed to broadcast to " + connection.remoteEndpoint(), e);
 				}
 			}
 		}
@@ -301,8 +301,7 @@ public final class SslServer implements NetworkServer {
 			connected = true;
 			
 			if (this.config.onClientConnect() != null) {
-				ConnectionEvent event = ConnectionEvent.now(connection.localEndpoint(), connection.remoteEndpoint());
-				this.config.onClientConnect().handle(event);
+				this.config.onClientConnect().handle(connection, connection.localEndpoint(), connection.remoteEndpoint(), Instant.now());
 			}
 			
 			while (this.running.get() && connection.isActive()) {
@@ -316,19 +315,18 @@ public final class SslServer implements NetworkServer {
 					try {
 						this.config.onMessage().handle(this, connection, data);
 					} catch (Exception e) {
-						NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Error in message handler", e);
+						NetworkUtils.handleError(this.config.onError(), connection, NetworkErrorType.IO_ERROR, "Error in message handler", e);
 					}
 				}
 			}
 		} catch (NetworkConnectionException e) {
 			if (e.errorType() != NetworkErrorType.READ_TIMEOUT) {
-				NetworkUtils.handleError(this.config.onError(), e.errorType(), "Client error: " + e.getMessage(), e);
+				NetworkUtils.handleError(this.config.onError(), connection, e.errorType(), "Client error: " + e.getMessage(), e);
 			}
 		} finally {
 			if (connected && this.config.onClientDisconnect() != null && connection.isActive()) {
 				try {
-					ConnectionEvent event = ConnectionEvent.now(connection.localEndpoint(), connection.remoteEndpoint());
-					this.config.onClientDisconnect().handle(event);
+					this.config.onClientDisconnect().handle(connection, connection.localEndpoint(), connection.remoteEndpoint(), Instant.now());
 				} catch (Exception _) {}
 			}
 			

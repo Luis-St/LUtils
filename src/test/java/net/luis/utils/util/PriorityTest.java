@@ -153,7 +153,7 @@ class PriorityTest {
 	@Test
 	void lowestWithNullOrEmpty() {
 		assertEquals(Priority.getNearest(Long.MIN_VALUE), Priority.lowest((Priority[]) null));
-		assertEquals(Priority.getNearest(Long.MIN_VALUE), Priority.lowest(new Priority[0]));
+		assertEquals(Priority.getNearest(Long.MIN_VALUE), Priority.lowest());
 	}
 	
 	@Test
@@ -175,7 +175,7 @@ class PriorityTest {
 	@Test
 	void highestWithNullOrEmpty() {
 		assertEquals(Priority.getNearest(Long.MAX_VALUE), Priority.highest((Priority[]) null));
-		assertEquals(Priority.getNearest(Long.MAX_VALUE), Priority.highest(new Priority[0]));
+		assertEquals(Priority.getNearest(Long.MAX_VALUE), Priority.highest());
 	}
 	
 	@Test

@@ -22,6 +22,7 @@ import net.luis.utils.io.database.dialect.*;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.exception.database.SqlResultMappingException;
 import net.luis.utils.io.database.exception.database.statement.SqlStatementBindException;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.rowset.CachedRowSet;
@@ -40,6 +41,54 @@ import static org.junit.jupiter.api.Assertions.*;
 class SqlArrayTypeTest {
 	
 	private static final PostgresSqlDialect POSTGRES = new PostgresSqlDialect();
+	
+	private static @NonNull Array fakeArray(Object[] data, boolean[] freed) {
+		return (Array) Proxy.newProxyInstance(
+			Array.class.getClassLoader(),
+			new Class<?>[] { Array.class },
+			(proxy, method, args) -> switch (method.getName()) {
+				case "getArray" -> data;
+				case "free" -> {
+					freed[0] = true;
+					yield null;
+				}
+				case "toString" -> "FakeArray";
+				default -> throw new UnsupportedOperationException("Array method '" + method.getName() + "' must not be invoked in tests");
+			}
+		);
+	}
+	
+	private static @NonNull ResultSet arrayResultSet(Array array) {
+		return (ResultSet) Proxy.newProxyInstance(
+			ResultSet.class.getClassLoader(),
+			new Class<?>[] { ResultSet.class },
+			(proxy, method, args) -> {
+				if ("getArray".equals(method.getName())) {
+					return array;
+				}
+				if ("toString".equals(method.getName())) {
+					return "ArrayResultSet";
+				}
+				throw new UnsupportedOperationException("Result set method '" + method.getName() + "' must not be invoked in tests");
+			}
+		);
+	}
+	
+	private static @NonNull ResultSet throwingArrayResultSet() {
+		return (ResultSet) Proxy.newProxyInstance(
+			ResultSet.class.getClassLoader(),
+			new Class<?>[] { ResultSet.class },
+			(proxy, method, args) -> {
+				if ("getArray".equals(method.getName())) {
+					throw new SQLException("Array retrieval failed in tests");
+				}
+				if ("toString".equals(method.getName())) {
+					return "ThrowingArrayResultSet";
+				}
+				throw new UnsupportedOperationException("Result set method '" + method.getName() + "' must not be invoked in tests");
+			}
+		);
+	}
 	
 	@Test
 	void constructWithElementType() {
@@ -293,54 +342,6 @@ class SqlArrayTypeTest {
 		
 		assertEquals(1, statement.createArrayElements.length);
 		assertNull(statement.createArrayElements[0]);
-	}
-	
-	private static @org.jspecify.annotations.NonNull Array fakeArray(Object[] data, boolean[] freed) {
-		return (Array) Proxy.newProxyInstance(
-			Array.class.getClassLoader(),
-			new Class<?>[] { Array.class },
-			(proxy, method, args) -> switch (method.getName()) {
-				case "getArray" -> data;
-				case "free" -> {
-					freed[0] = true;
-					yield null;
-				}
-				case "toString" -> "FakeArray";
-				default -> throw new UnsupportedOperationException("Array method '" + method.getName() + "' must not be invoked in tests");
-			}
-		);
-	}
-	
-	private static @org.jspecify.annotations.NonNull ResultSet arrayResultSet(Array array) {
-		return (ResultSet) Proxy.newProxyInstance(
-			ResultSet.class.getClassLoader(),
-			new Class<?>[] { ResultSet.class },
-			(proxy, method, args) -> {
-				if ("getArray".equals(method.getName())) {
-					return array;
-				}
-				if ("toString".equals(method.getName())) {
-					return "ArrayResultSet";
-				}
-				throw new UnsupportedOperationException("Result set method '" + method.getName() + "' must not be invoked in tests");
-			}
-		);
-	}
-	
-	private static @org.jspecify.annotations.NonNull ResultSet throwingArrayResultSet() {
-		return (ResultSet) Proxy.newProxyInstance(
-			ResultSet.class.getClassLoader(),
-			new Class<?>[] { ResultSet.class },
-			(proxy, method, args) -> {
-				if ("getArray".equals(method.getName())) {
-					throw new SQLException("Array retrieval failed in tests");
-				}
-				if ("toString".equals(method.getName())) {
-					return "ThrowingArrayResultSet";
-				}
-				throw new UnsupportedOperationException("Result set method '" + method.getName() + "' must not be invoked in tests");
-			}
-		);
 	}
 	
 	private static final class RecordingStatement extends FakePreparedStatement {

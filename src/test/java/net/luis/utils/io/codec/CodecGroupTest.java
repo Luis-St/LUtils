@@ -26,7 +26,8 @@ import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;

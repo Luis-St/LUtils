@@ -21,7 +21,6 @@ package net.luis.utils.io.network.connection.ssl;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.NetworkClient;
 import net.luis.utils.io.network.connection.NetworkUtils;
-import net.luis.utils.io.network.connection.event.ConnectionEvent;
 import net.luis.utils.io.network.connection.exception.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
@@ -30,6 +29,7 @@ import javax.net.ssl.*;
 import java.io.*;
 import java.net.*;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -171,8 +171,7 @@ public final class SslClient implements NetworkClient {
 			this.connected = true;
 			
 			if (this.config.onConnect() != null) {
-				ConnectionEvent event = ConnectionEvent.now(this.localEndpoint().orElse(endpoint), endpoint);
-				this.config.onConnect().handle(event);
+				this.config.onConnect().handle(null, this.localEndpoint().orElse(endpoint), endpoint, Instant.now());
 			}
 		} catch (SocketTimeoutException e) {
 			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_TIMEOUT, "Connection timed out to " + endpoint, e);
@@ -221,8 +220,7 @@ public final class SslClient implements NetworkClient {
 		
 		try {
 			OutputStream out = this.socket.getOutputStream();
-			out.write(data);
-			out.flush();
+			NetworkUtils.writeFrame(out, data);
 		} catch (SocketException e) {
 			this.handleDisconnect();
 			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET);
@@ -261,17 +259,19 @@ public final class SslClient implements NetworkClient {
 		
 		try {
 			InputStream in = this.socket.getInputStream();
-			byte[] buffer = new byte[maxBytes];
-			int bytesRead = in.read(buffer);
+			byte[] data = NetworkUtils.readFrame(in, maxBytes);
 			
-			if (bytesRead == -1) {
+			if (data == null) {
 				this.handleDisconnect();
 				return ArrayUtils.EMPTY_BYTE_ARRAY;
 			}
 			
-			byte[] data = new byte[bytesRead];
-			System.arraycopy(buffer, 0, data, 0, bytesRead);
 			return data;
+		} catch (FrameTooLargeException e) {
+			throw new NetworkConnectionException(e.getMessage(), e, NetworkErrorType.MESSAGE_TOO_LARGE);
+		} catch (EOFException e) {
+			this.handleDisconnect();
+			throw new NetworkConnectionException("Connection reset while receiving data", e, NetworkErrorType.CONNECTION_RESET);
 		} catch (SocketTimeoutException e) {
 			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, this.config.readTimeout());
 		} catch (SocketException e) {
@@ -389,8 +389,7 @@ public final class SslClient implements NetworkClient {
 				IpEndpoint local = this.localEndpoint().orElse(null);
 				IpEndpoint remote = this.remoteEndpoint().orElse(null);
 				if (local != null && remote != null) {
-					ConnectionEvent event = ConnectionEvent.now(local, remote);
-					this.config.onDisconnect().handle(event);
+					this.config.onDisconnect().handle(null, local, remote, Instant.now());
 				}
 			} catch (Exception _) {}
 		}

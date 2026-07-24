@@ -20,14 +20,17 @@ package net.luis.utils.io.network.connection.tcp;
 
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
-import net.luis.utils.io.network.connection.NetworkClient;
-import net.luis.utils.io.network.connection.NetworkServer;
+import net.luis.utils.io.network.connection.*;
+import net.luis.utils.io.network.connection.event.ErrorEventHandler;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
@@ -481,7 +484,7 @@ class TcpIntegrationTest {
 		AtomicReference<TcpConnection> connectionRef = new AtomicReference<>();
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> clientConnected.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> clientConnected.countDown())
 			.onMessage((server, conn, data) -> connectionRef.set(conn))
 			.build();
 		
@@ -510,12 +513,157 @@ class TcpIntegrationTest {
 		}
 	}
 	
+	@Test
+	void clientReceiveWithMaxBytesSmallerThanFrameThrows() throws Exception {
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onMessage((server, conn, data) -> {
+				try {
+					conn.send("Hello World".getBytes());
+				} catch (NetworkConnectionException e) {
+					fail("Failed to send response: " + e.getMessage());
+				}
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			TcpClientConfig clientConfig = TcpClientConfig.builder()
+				.readTimeout(Duration.ofSeconds(5))
+				.build();
+			
+			try (TcpClient client = new TcpClient(clientConfig)) {
+				client.connect(server.boundEndpoint());
+				client.send("trigger".getBytes());
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.receive(5));
+				assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void clientReceiveThrowsOnServerCloseMidFrame() throws Exception {
+		CountDownLatch clientConnected = new CountDownLatch(1);
+		AtomicReference<Connection> connectionRef = new AtomicReference<>();
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectionRef.set(connection);
+				clientConnected.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			TcpClientConfig clientConfig = TcpClientConfig.builder()
+				.readTimeout(Duration.ofSeconds(5))
+				.build();
+			
+			try (TcpClient client = new TcpClient(clientConfig)) {
+				client.connect(server.boundEndpoint());
+				assertTrue(clientConnected.await(5, TimeUnit.SECONDS));
+				
+				Connection serverSideConnection = connectionRef.get();
+				OutputStream out = serverSideConnection.getOutputStream();
+				out.write(new byte[] { 0, 0, 0, 10, 1, 2, 3 });
+				out.flush();
+				serverSideConnection.close();
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, client::receive);
+				assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void clientReceiveEmptyMessageDoesNotDisconnect() throws Exception {
+		CountDownLatch clientConnected = new CountDownLatch(1);
+		CountDownLatch disconnectLatch = new CountDownLatch(1);
+		AtomicReference<Connection> connectionRef = new AtomicReference<>();
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectionRef.set(connection);
+				clientConnected.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			TcpClientConfig clientConfig = TcpClientConfig.builder()
+				.readTimeout(Duration.ofSeconds(5))
+				.onDisconnect((connection, local, remote, timestamp) -> disconnectLatch.countDown())
+				.build();
+			
+			try (TcpClient client = new TcpClient(clientConfig)) {
+				client.connect(server.boundEndpoint());
+				assertTrue(clientConnected.await(5, TimeUnit.SECONDS));
+				
+				connectionRef.get().send(new byte[0]);
+				
+				byte[] received = client.receive();
+				assertNotNull(received);
+				assertEquals(0, received.length);
+				assertTrue(client.isActive());
+				assertEquals(1, disconnectLatch.getCount());
+				
+				byte[] second = "Still Alive".getBytes();
+				connectionRef.get().send(second);
+				assertArrayEquals(second, client.receive());
+			}
+		}
+	}
+	
+	@Test
+	void sendAndReceiveMessageDeliveredInFragmentedWrites() throws Exception {
+		CountDownLatch messageLatch = new CountDownLatch(1);
+		AtomicReference<byte[]> receivedData = new AtomicReference<>();
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onMessage((server, conn, data) -> {
+				receivedData.set(data);
+				messageLatch.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			try (TcpClient client = new TcpClient()) {
+				client.connect(server.boundEndpoint());
+				
+				byte[] payload = "Fragmented End To End".getBytes();
+				ByteArrayOutputStream frameBytes = new ByteArrayOutputStream();
+				NetworkUtils.writeFrame(frameBytes, payload);
+				byte[] frame = frameBytes.toByteArray();
+				
+				OutputStream out = client.getOutputStream();
+				for (int i = 0; i < frame.length; i += 3) {
+					int end = Math.min(i + 3, frame.length);
+					out.write(frame, i, end - i);
+					out.flush();
+					Thread.sleep(10);
+				}
+				
+				assertTrue(messageLatch.await(5, TimeUnit.SECONDS));
+				assertArrayEquals(payload, receivedData.get());
+			}
+		}
+	}
+	
 	@RepeatedTest(2)
 	void errorHandlerDoesNotReceiveIOError() throws Exception {
 		CountDownLatch errorLatch = new CountDownLatch(1);
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onError((errorType, message, cause) -> errorLatch.countDown())
+			.onError((connection, errorType, message, cause) -> errorLatch.countDown())
 			.build();
 		
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -541,7 +689,7 @@ class TcpIntegrationTest {
 		Set<String> receivedMessages = Collections.synchronizedSet(new HashSet<>());
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> allConnected.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> allConnected.countDown())
 			.onMessage((server, conn, data) -> {
 				receivedMessages.add(new String(data));
 				allMessagesReceived.countDown();
@@ -583,7 +731,7 @@ class TcpIntegrationTest {
 		CountDownLatch messagesReceived = new CountDownLatch(2);
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> clientsConnected.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> clientsConnected.countDown())
 			.build();
 		
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -596,7 +744,7 @@ class TcpIntegrationTest {
 				.build();
 			
 			try (TcpClient client1 = new TcpClient(clientConfig);
-				 TcpClient client2 = new TcpClient(clientConfig)) {
+			     TcpClient client2 = new TcpClient(clientConfig)) {
 				
 				client1.connect(serverEndpoint);
 				client2.connect(serverEndpoint);
@@ -690,7 +838,7 @@ class TcpIntegrationTest {
 		
 		TcpServerConfig config = TcpServerConfig.builder()
 			.clientBufferSize(100)
-			.onClientConnect(event -> clientConnected.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> clientConnected.countDown())
 			.onMessage((server, conn, data) -> {
 				try {
 					byte[] oversizedData = new byte[150];
@@ -724,8 +872,8 @@ class TcpIntegrationTest {
 		CountDownLatch disconnectLatch = new CountDownLatch(1);
 		
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> connectLatch.countDown())
-			.onClientDisconnect(event -> disconnectLatch.countDown())
+			.onClientConnect((connection, local, remote, timestamp) -> connectLatch.countDown())
+			.onClientDisconnect((connection, local, remote, timestamp) -> disconnectLatch.countDown())
 			.build();
 		
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -755,8 +903,8 @@ class TcpIntegrationTest {
 			IpEndpoint serverEndpoint = server.boundEndpoint();
 			
 			TcpClientConfig config = TcpClientConfig.builder()
-				.onConnect(event -> connectLatch.countDown())
-				.onDisconnect(event -> disconnectLatch.countDown())
+				.onConnect((connection, local, remote, timestamp) -> connectLatch.countDown())
+				.onDisconnect((connection, local, remote, timestamp) -> disconnectLatch.countDown())
 				.build();
 			
 			try (TcpClient client = new TcpClient(config)) {
@@ -765,6 +913,263 @@ class TcpIntegrationTest {
 			}
 			
 			assertTrue(disconnectLatch.await(5, TimeUnit.SECONDS));
+		}
+	}
+	
+	@Test
+	void serverClientConnectEventProvidesConnection() throws Exception {
+		CountDownLatch latch = new CountDownLatch(1);
+		AtomicReference<Connection> connectionRef = new AtomicReference<>();
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectionRef.set(connection);
+				latch.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			try (TcpClient client = new TcpClient()) {
+				client.connect(server.boundEndpoint());
+				assertTrue(latch.await(5, TimeUnit.SECONDS));
+				
+				assertNotNull(connectionRef.get());
+				assertInstanceOf(TcpConnection.class, connectionRef.get());
+				assertTrue(connectionRef.get().isActive());
+			}
+		}
+	}
+	
+	@Test
+	void serverClientDisconnectEventProvidesConnection() throws Exception {
+		CountDownLatch connectLatch = new CountDownLatch(1);
+		CountDownLatch disconnectLatch = new CountDownLatch(1);
+		AtomicReference<Connection> connectRef = new AtomicReference<>();
+		AtomicReference<Connection> disconnectRef = new AtomicReference<>();
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectRef.set(connection);
+				connectLatch.countDown();
+			})
+			.onClientDisconnect((connection, local, remote, timestamp) -> {
+				disconnectRef.set(connection);
+				disconnectLatch.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			TcpClient client = new TcpClient();
+			client.connect(server.boundEndpoint());
+			assertTrue(connectLatch.await(5, TimeUnit.SECONDS));
+			
+			client.close();
+			assertTrue(disconnectLatch.await(5, TimeUnit.SECONDS));
+			
+			assertNotNull(disconnectRef.get());
+			assertSame(connectRef.get(), disconnectRef.get());
+		}
+	}
+	
+	@Test
+	void clientConnectEventConnectionIsNull() throws Exception {
+		CountDownLatch connectLatch = new CountDownLatch(1);
+		AtomicReference<Connection> connectionRef = new AtomicReference<>();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			server.start();
+			IpEndpoint serverEndpoint = server.boundEndpoint();
+			
+			TcpClientConfig config = TcpClientConfig.builder()
+				.onConnect((connection, local, remote, timestamp) -> {
+					connectionRef.set(connection);
+					connectLatch.countDown();
+				})
+				.build();
+			
+			try (TcpClient client = new TcpClient(config)) {
+				client.connect(serverEndpoint);
+				assertTrue(connectLatch.await(5, TimeUnit.SECONDS));
+				
+				assertNull(connectionRef.get());
+			}
+		}
+	}
+	
+	@Test
+	void clientDisconnectEventConnectionIsNull() throws Exception {
+		CountDownLatch connectLatch = new CountDownLatch(1);
+		CountDownLatch disconnectLatch = new CountDownLatch(1);
+		AtomicReference<Connection> connectionRef = new AtomicReference<>();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			server.start();
+			IpEndpoint serverEndpoint = server.boundEndpoint();
+			
+			TcpClientConfig config = TcpClientConfig.builder()
+				.onConnect((connection, local, remote, timestamp) -> connectLatch.countDown())
+				.onDisconnect((connection, local, remote, timestamp) -> {
+					connectionRef.set(connection);
+					disconnectLatch.countDown();
+				})
+				.build();
+			
+			try (TcpClient client = new TcpClient(config)) {
+				client.connect(serverEndpoint);
+				assertTrue(connectLatch.await(5, TimeUnit.SECONDS));
+			}
+			
+			assertTrue(disconnectLatch.await(5, TimeUnit.SECONDS));
+			assertNull(connectionRef.get());
+		}
+	}
+	
+	@Test
+	void serverBroadcastErrorProvidesConnection() throws Exception {
+		CountDownLatch clientConnected = new CountDownLatch(1);
+		CountDownLatch errorLatch = new CountDownLatch(1);
+		AtomicReference<Connection> connectedConnection = new AtomicReference<>();
+		AtomicReference<Connection> errorConnection = new AtomicReference<>();
+		
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
+		};
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.clientBufferSize(50)
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectedConnection.set(connection);
+				clientConnected.countDown();
+			})
+			.onError(onError)
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			try (TcpClient client = new TcpClient()) {
+				client.connect(server.boundEndpoint());
+				assertTrue(clientConnected.await(5, TimeUnit.SECONDS));
+				
+				server.broadcast(new byte[100]);
+				
+				assertTrue(errorLatch.await(5, TimeUnit.SECONDS));
+				assertNotNull(errorConnection.get());
+				assertSame(connectedConnection.get(), errorConnection.get());
+			}
+		}
+	}
+	
+	@Test
+	void clientConnectErrorProvidesNullConnection() throws Exception {
+		CountDownLatch errorLatch = new CountDownLatch(1);
+		AtomicReference<Connection> errorConnection = new AtomicReference<>();
+		
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
+		};
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 59998);
+		TcpClientConfig config = TcpClientConfig.builder()
+			.connectTimeout(Duration.ofSeconds(2))
+			.onError(onError)
+			.build();
+		
+		try (TcpClient client = new TcpClient(config)) {
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect(endpoint));
+			assertEquals(NetworkErrorType.CONNECTION_REFUSED, exception.errorType());
+		}
+		
+		assertTrue(errorLatch.await(5, TimeUnit.SECONDS));
+		assertNull(errorConnection.get());
+	}
+	
+	@Test
+	void serverMessageHandlerErrorProvidesConnection() throws Exception {
+		CountDownLatch clientConnected = new CountDownLatch(1);
+		CountDownLatch errorLatch = new CountDownLatch(1);
+		AtomicReference<Connection> connectedConnection = new AtomicReference<>();
+		AtomicReference<Connection> errorConnection = new AtomicReference<>();
+		
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
+		};
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectedConnection.set(connection);
+				clientConnected.countDown();
+			})
+			.onMessage((server, conn, data) -> {
+				throw new RuntimeException("boom");
+			})
+			.onError(onError)
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			try (TcpClient client = new TcpClient()) {
+				client.connect(server.boundEndpoint());
+				assertTrue(clientConnected.await(5, TimeUnit.SECONDS));
+				
+				client.send("trigger".getBytes());
+				
+				assertTrue(errorLatch.await(5, TimeUnit.SECONDS));
+				assertNotNull(errorConnection.get());
+				assertSame(connectedConnection.get(), errorConnection.get());
+			}
+		}
+	}
+	
+	@Test
+	void serverClientErrorProvidesConnection() throws Exception {
+		CountDownLatch clientConnected = new CountDownLatch(1);
+		CountDownLatch errorLatch = new CountDownLatch(1);
+		AtomicReference<Connection> connectedConnection = new AtomicReference<>();
+		AtomicReference<Connection> errorConnection = new AtomicReference<>();
+		
+		ErrorEventHandler onError = (connection, errorType, message, cause) -> {
+			errorConnection.set(connection);
+			errorLatch.countDown();
+		};
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectedConnection.set(connection);
+				clientConnected.countDown();
+			})
+			.onError(onError)
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			try (Socket rawSocket = new Socket()) {
+				rawSocket.connect(server.boundEndpoint().toInetSocketAddress());
+				assertTrue(clientConnected.await(5, TimeUnit.SECONDS));
+				
+				rawSocket.setSoLinger(true, 0);
+				rawSocket.close();
+				
+				assertTrue(errorLatch.await(5, TimeUnit.SECONDS));
+				assertNotNull(errorConnection.get());
+				assertSame(connectedConnection.get(), errorConnection.get());
+			}
 		}
 	}
 }

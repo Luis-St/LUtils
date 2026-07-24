@@ -344,7 +344,7 @@ class UtilsTest {
 		
 		assertEquals(Optional.of(42), Utils.getRandomSafe(rng, singleElement));
 		assertEquals(Optional.empty(), Utils.getRandomSafe(rng, (Integer[]) null));
-		assertEquals(Optional.empty(), Utils.getRandomSafe(rng, new Integer[] {}));
+		assertEquals(Optional.empty(), Utils.getRandomSafe(rng));
 		
 		for (int i = 0; i < 100; i++) {
 			Optional<Integer> result = Utils.getRandomSafe(rng, multipleElements);

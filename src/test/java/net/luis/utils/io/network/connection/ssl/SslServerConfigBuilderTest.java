@@ -156,7 +156,7 @@ class SslServerConfigBuilderTest {
 	@Test
 	void onClientConnectWithHandler() {
 		SslServerConfig config = SslServerConfig.builder(context)
-			.onClientConnect(event -> {})
+			.onClientConnect((connection, local, remote, timestamp) -> {})
 			.build();
 		assertNotNull(config.onClientConnect());
 	}
@@ -172,7 +172,7 @@ class SslServerConfigBuilderTest {
 	@Test
 	void onClientDisconnectWithHandler() {
 		SslServerConfig config = SslServerConfig.builder(context)
-			.onClientDisconnect(event -> {})
+			.onClientDisconnect((connection, local, remote, timestamp) -> {})
 			.build();
 		assertNotNull(config.onClientDisconnect());
 	}
@@ -196,7 +196,7 @@ class SslServerConfigBuilderTest {
 	@Test
 	void onErrorWithHandler() {
 		SslServerConfig config = SslServerConfig.builder(context)
-			.onError((type, msg, cause) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		assertNotNull(config.onError());
 	}
@@ -213,10 +213,10 @@ class SslServerConfigBuilderTest {
 		assertSame(builder, builder.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384")));
 		assertSame(builder, builder.clientAuth(SslClientAuth.NONE));
 		assertSame(builder, builder.executorStrategy(ClientExecutorStrategy.virtualThreads()));
-		assertSame(builder, builder.onClientConnect(event -> {}));
-		assertSame(builder, builder.onClientDisconnect(event -> {}));
+		assertSame(builder, builder.onClientConnect((connection, local, remote, timestamp) -> {}));
+		assertSame(builder, builder.onClientDisconnect((connection, local, remote, timestamp) -> {}));
 		assertSame(builder, builder.onMessage((server, conn, data) -> {}));
-		assertSame(builder, builder.onError((type, msg, cause) -> {}));
+		assertSame(builder, builder.onError((connection, type, msg, cause) -> {}));
 	}
 	
 	@Test
@@ -232,10 +232,10 @@ class SslServerConfigBuilderTest {
 			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
 			.clientAuth(SslClientAuth.REQUIRED)
 			.executorStrategy(strategy)
-			.onClientConnect(event -> {})
-			.onClientDisconnect(event -> {})
+			.onClientConnect((connection, local, remote, timestamp) -> {})
+			.onClientDisconnect((connection, local, remote, timestamp) -> {})
 			.onMessage((server, conn, data) -> {})
-			.onError((type, msg, cause) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
 		assertEquals(200, config.backlog());

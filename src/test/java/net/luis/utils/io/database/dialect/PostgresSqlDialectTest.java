@@ -49,6 +49,70 @@ class PostgresSqlDialectTest {
 	
 	private static final PostgresSqlDialect DIALECT = new PostgresSqlDialect();
 	
+	private static PreparedStatement recordingStatement(Captured captured, SQLXML xmlToCreate) {
+		return (PreparedStatement) Proxy.newProxyInstance(
+			PreparedStatement.class.getClassLoader(),
+			new Class<?>[] { PreparedStatement.class },
+			(proxy, method, args) -> {
+				switch (method.getName()) {
+					case "setObject" -> {
+						if (args.length == 3) {
+							captured.objectIndex = (Integer) args[0];
+							captured.objectValue = args[1];
+							captured.objectSqlType = (Integer) args[2];
+						}
+					}
+					case "setNull" -> {
+						captured.nullIndex = (Integer) args[0];
+						captured.nullSqlType = (Integer) args[1];
+					}
+					case "setSQLXML" -> {
+						captured.sqlXmlIndex = (Integer) args[0];
+						captured.sqlXmlValue = (SQLXML) args[1];
+					}
+					case "getConnection" -> {
+						return connectionReturning(xmlToCreate);
+					}
+				}
+				return null;
+			}
+		);
+	}
+	
+	private static Connection connectionReturning(SQLXML xml) {
+		return (Connection) Proxy.newProxyInstance(
+			Connection.class.getClassLoader(),
+			new Class<?>[] { Connection.class },
+			(proxy, method, args) -> "createSQLXML".equals(method.getName()) ? xml : null
+		);
+	}
+	
+	private static SQLXML fakeSqlXml(String[] content) {
+		return (SQLXML) Proxy.newProxyInstance(
+			SQLXML.class.getClassLoader(),
+			new Class<?>[] { SQLXML.class },
+			(proxy, method, args) -> {
+				if ("setString".equals(method.getName())) {
+					content[0] = (String) args[0];
+					return null;
+				}
+				return "getString".equals(method.getName()) ? content[0] : null;
+			}
+		);
+	}
+	
+	private static ResultSet readerResultSet(String stringValue, SQLXML xmlValue) {
+		return (ResultSet) Proxy.newProxyInstance(
+			ResultSet.class.getClassLoader(),
+			new Class<?>[] { ResultSet.class },
+			(proxy, method, args) -> switch (method.getName()) {
+				case "getString" -> stringValue;
+				case "getSQLXML" -> xmlValue;
+				default -> null;
+			}
+		);
+	}
+	
 	@Test
 	void isTypeSupportedNullType() {
 		assertThrows(NullPointerException.class, () -> DIALECT.isTypeSupported(null));
@@ -366,70 +430,6 @@ class PostgresSqlDialectTest {
 		SQLXML xml = fakeSqlXml(new String[] { element.toString(XmlConfig.DEFAULT) });
 		Object result = DIALECT.readingOverride(SqlTypes.XML).orElseThrow().read(readerResultSet(null, xml), 1);
 		assertEquals(element, result);
-	}
-	
-	private static PreparedStatement recordingStatement(Captured captured, SQLXML xmlToCreate) {
-		return (PreparedStatement) Proxy.newProxyInstance(
-			PreparedStatement.class.getClassLoader(),
-			new Class<?>[] { PreparedStatement.class },
-			(proxy, method, args) -> {
-				switch (method.getName()) {
-					case "setObject" -> {
-						if (args.length == 3) {
-							captured.objectIndex = (Integer) args[0];
-							captured.objectValue = args[1];
-							captured.objectSqlType = (Integer) args[2];
-						}
-					}
-					case "setNull" -> {
-						captured.nullIndex = (Integer) args[0];
-						captured.nullSqlType = (Integer) args[1];
-					}
-					case "setSQLXML" -> {
-						captured.sqlXmlIndex = (Integer) args[0];
-						captured.sqlXmlValue = (SQLXML) args[1];
-					}
-					case "getConnection" -> {
-						return connectionReturning(xmlToCreate);
-					}
-				}
-				return null;
-			}
-		);
-	}
-	
-	private static Connection connectionReturning(SQLXML xml) {
-		return (Connection) Proxy.newProxyInstance(
-			Connection.class.getClassLoader(),
-			new Class<?>[] { Connection.class },
-			(proxy, method, args) -> "createSQLXML".equals(method.getName()) ? xml : null
-		);
-	}
-	
-	private static SQLXML fakeSqlXml(String[] content) {
-		return (SQLXML) Proxy.newProxyInstance(
-			SQLXML.class.getClassLoader(),
-			new Class<?>[] { SQLXML.class },
-			(proxy, method, args) -> {
-				if ("setString".equals(method.getName())) {
-					content[0] = (String) args[0];
-					return null;
-				}
-				return "getString".equals(method.getName()) ? content[0] : null;
-			}
-		);
-	}
-	
-	private static ResultSet readerResultSet(String stringValue, SQLXML xmlValue) {
-		return (ResultSet) Proxy.newProxyInstance(
-			ResultSet.class.getClassLoader(),
-			new Class<?>[] { ResultSet.class },
-			(proxy, method, args) -> switch (method.getName()) {
-				case "getString" -> stringValue;
-				case "getSQLXML" -> xmlValue;
-				default -> null;
-			}
-		);
 	}
 	
 	private static final class Captured {

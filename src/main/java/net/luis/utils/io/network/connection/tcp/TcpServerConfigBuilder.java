@@ -79,11 +79,11 @@ public final class TcpServerConfigBuilder {
 	/**
 	 * The handler called when a client connects.<br>
 	 */
-	private @Nullable ConnectionEventHandler onClientConnect;
+	private @Nullable ConnectEventHandler onClientConnect;
 	/**
 	 * The handler called when a client disconnects.<br>
 	 */
-	private @Nullable ConnectionEventHandler onClientDisconnect;
+	private @Nullable DisconnectEventHandler onClientDisconnect;
 	/**
 	 * The handler called when a message is received from a client.<br>
 	 */
@@ -171,7 +171,7 @@ public final class TcpServerConfigBuilder {
 	 * @param onClientConnect The connection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull TcpServerConfigBuilder onClientConnect(@Nullable ConnectionEventHandler onClientConnect) {
+	public @NonNull TcpServerConfigBuilder onClientConnect(@Nullable ConnectEventHandler onClientConnect) {
 		this.onClientConnect = onClientConnect;
 		return this;
 	}
@@ -182,7 +182,7 @@ public final class TcpServerConfigBuilder {
 	 * @param onClientDisconnect The disconnection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull TcpServerConfigBuilder onClientDisconnect(@Nullable ConnectionEventHandler onClientDisconnect) {
+	public @NonNull TcpServerConfigBuilder onClientDisconnect(@Nullable DisconnectEventHandler onClientDisconnect) {
 		this.onClientDisconnect = onClientDisconnect;
 		return this;
 	}

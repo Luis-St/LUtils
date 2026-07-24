@@ -47,6 +47,57 @@ class SqlServerDialectTest {
 	
 	private static final SqlServerDialect DIALECT = new SqlServerDialect();
 	
+	private static SQLXML recordingXml(AtomicReference<String> setStringCapture, String document) {
+		return (SQLXML) Proxy.newProxyInstance(
+			SQLXML.class.getClassLoader(),
+			new Class<?>[] { SQLXML.class },
+			(proxy, method, args) -> switch (method.getName()) {
+				case "setString" -> {
+					setStringCapture.set((String) args[0]);
+					yield null;
+				}
+				case "getString" -> document;
+				case "toString" -> "FakeSqlXml";
+				default -> null;
+			}
+		);
+	}
+	
+	private static PreparedStatement bindingStatement(SQLXML createdXml, AtomicReference<SQLXML> boundXml, AtomicInteger capturedIndex, AtomicInteger nullType, AtomicBoolean sqlXmlBound) {
+		Connection connection = (Connection) Proxy.newProxyInstance(
+			Connection.class.getClassLoader(),
+			new Class<?>[] { Connection.class },
+			(proxy, method, args) -> "createSQLXML".equals(method.getName()) ? createdXml : null
+		);
+		return (PreparedStatement) Proxy.newProxyInstance(
+			PreparedStatement.class.getClassLoader(),
+			new Class<?>[] { PreparedStatement.class },
+			(proxy, method, args) -> switch (method.getName()) {
+				case "getConnection" -> connection;
+				case "setSQLXML" -> {
+					sqlXmlBound.set(true);
+					capturedIndex.set((Integer) args[0]);
+					boundXml.set((SQLXML) args[1]);
+					yield null;
+				}
+				case "setNull" -> {
+					capturedIndex.set((Integer) args[0]);
+					nullType.set((Integer) args[1]);
+					yield null;
+				}
+				default -> null;
+			}
+		);
+	}
+	
+	private static ResultSet readingResultSet(SQLXML xml) {
+		return (ResultSet) Proxy.newProxyInstance(
+			ResultSet.class.getClassLoader(),
+			new Class<?>[] { ResultSet.class },
+			(proxy, method, args) -> "getSQLXML".equals(method.getName()) ? xml : null
+		);
+	}
+	
 	@Test
 	void isFeatureSupportedNullFeature() {
 		assertThrows(NullPointerException.class, () -> DIALECT.isFeatureSupported(null));
@@ -386,56 +437,5 @@ class SqlServerDialectTest {
 	void uuidHasNoBindingOverride() {
 		assertTrue(DIALECT.bindingOverride(SqlTypes.UUID).isEmpty());
 		assertTrue(DIALECT.readingOverride(SqlTypes.UUID).isEmpty());
-	}
-	
-	private static SQLXML recordingXml(AtomicReference<String> setStringCapture, String document) {
-		return (SQLXML) Proxy.newProxyInstance(
-			SQLXML.class.getClassLoader(),
-			new Class<?>[] { SQLXML.class },
-			(proxy, method, args) -> switch (method.getName()) {
-				case "setString" -> {
-					setStringCapture.set((String) args[0]);
-					yield null;
-				}
-				case "getString" -> document;
-				case "toString" -> "FakeSqlXml";
-				default -> null;
-			}
-		);
-	}
-	
-	private static PreparedStatement bindingStatement(SQLXML createdXml, AtomicReference<SQLXML> boundXml, AtomicInteger capturedIndex, AtomicInteger nullType, AtomicBoolean sqlXmlBound) {
-		Connection connection = (Connection) Proxy.newProxyInstance(
-			Connection.class.getClassLoader(),
-			new Class<?>[] { Connection.class },
-			(proxy, method, args) -> "createSQLXML".equals(method.getName()) ? createdXml : null
-		);
-		return (PreparedStatement) Proxy.newProxyInstance(
-			PreparedStatement.class.getClassLoader(),
-			new Class<?>[] { PreparedStatement.class },
-			(proxy, method, args) -> switch (method.getName()) {
-				case "getConnection" -> connection;
-				case "setSQLXML" -> {
-					sqlXmlBound.set(true);
-					capturedIndex.set((Integer) args[0]);
-					boundXml.set((SQLXML) args[1]);
-					yield null;
-				}
-				case "setNull" -> {
-					capturedIndex.set((Integer) args[0]);
-					nullType.set((Integer) args[1]);
-					yield null;
-				}
-				default -> null;
-			}
-		);
-	}
-	
-	private static ResultSet readingResultSet(SQLXML xml) {
-		return (ResultSet) Proxy.newProxyInstance(
-			ResultSet.class.getClassLoader(),
-			new Class<?>[] { ResultSet.class },
-			(proxy, method, args) -> "getSQLXML".equals(method.getName()) ? xml : null
-		);
 	}
 }

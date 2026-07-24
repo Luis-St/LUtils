@@ -36,7 +36,7 @@ import java.util.Objects;
  * TcpServerConfig config = TcpServerConfig.builder()
  *     .backlog(100)
  *     .executorStrategy(ClientExecutorStrategy.virtualThreads())
- *     .onClientConnect(event -> System.out.println("Client connected: " + event.remoteEndpoint()))
+ *     .onClientConnect((connection, local, remote, timestamp) -> System.out.println("Client connected: " + remote))
  *     .onMessage((server, conn, data) -> {
  *         conn.send(("Echo: " + new String(data)).getBytes());
  *     })
@@ -70,8 +70,8 @@ public record TcpServerConfig(
 	boolean tcpNoDelay,
 	boolean keepAlive,
 	@NonNull ClientExecutorStrategy executorStrategy,
-	@Nullable ConnectionEventHandler onClientConnect,
-	@Nullable ConnectionEventHandler onClientDisconnect,
+	@Nullable ConnectEventHandler onClientConnect,
+	@Nullable DisconnectEventHandler onClientDisconnect,
 	@Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage,
 	@Nullable ErrorEventHandler onError
 ) {
