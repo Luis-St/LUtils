@@ -104,6 +104,14 @@ class SqlIntegrationTest {
 	private static final SqlColumn<TypeRow, Double> T_RATIO = TYPES.column("ratio", SqlTypes.DOUBLE, TypeRow::ratio, SqlColumnBuilder::notNull);
 	private static final SqlColumn<TypeRow, BigDecimal> T_AMOUNT = TYPES.column("amount", SqlTypes.DECIMAL.configure(SqlParameter.precision(10, 2)), TypeRow::amount, SqlColumnBuilder::notNull);
 	private static final SqlColumn<TypeRow, LocalDate> T_DATE = TYPES.column("at", SqlTypes.LOCAL_DATE, TypeRow::date, SqlColumnBuilder::notNull);
+	private static final SqlTable<UuidRow> UUID_ROW = SqlTable.create(UuidRow.class, "it_uuid_row");
+	private static final SqlColumn<UuidRow, UUID> U_ID = UUID_ROW.column("id", SqlTypes.UUID, UuidRow::id, col -> col.primaryKey().notNull());
+	private static final SqlColumn<UuidRow, String> U_LABEL = UUID_ROW.column("label", SqlTypes.STRING.configure(SqlParameter.length(64)), UuidRow::label, SqlColumnBuilder::notNull);
+	private static final SqlTable<BinaryRow> BINARY = SqlTable.create(BinaryRow.class, "it_binary_row");
+	private static final SqlColumn<BinaryRow, Integer> B_ID = BINARY.column("id", SqlTypes.INTEGER, BinaryRow::id, col -> col.primaryKey().notNull());
+	private static final SqlColumn<BinaryRow, byte[]> B_FIXED = BINARY.column("fixed", SqlTypes.FIXED_BYTES.configure(SqlParameter.length(16)), BinaryRow::fixed, SqlColumnBuilder::notNull);
+	private static final SqlColumn<BinaryRow, byte[]> B_DATA = BINARY.column("data", SqlTypes.BYTES.configure(SqlParameter.length(64)), BinaryRow::data, SqlColumnBuilder::notNull);
+	private static final SqlColumn<BinaryRow, byte[]> B_PAYLOAD = BINARY.column("payload", SqlTypes.LARGE_BYTES, BinaryRow::payload, SqlColumnBuilder::notNull);
 	private static Path sqliteFile;
 	
 	@BeforeAll
@@ -202,7 +210,11 @@ class SqlIntegrationTest {
 	}
 	
 	private static void resetMigrationState(@NonNull SqlDatabase database) throws SqlException {
-		database.table(MIG).dropIfExists();
+		resetMigrationState(database, MIG);
+	}
+	
+	private static void resetMigrationState(@NonNull SqlDatabase database, @NonNull SqlTable<?> table) throws SqlException {
+		database.table(table).dropIfExists();
 		database.table(SqlTable.create(Void.class, "_sql_migrations")).dropIfExists();
 		database.table(SqlTable.create(Void.class, "_sql_schema_columns")).dropIfExists();
 		database.table(SqlTable.create(Void.class, "_sql_schema_check_constraints")).dropIfExists();
@@ -269,6 +281,76 @@ class SqlIntegrationTest {
 			@Override
 			public void down(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) {
 				builder.dropIndex(MIG, "idx_it_mig_name");
+			}
+		};
+	}
+	
+	private static @NonNull SqlMigration createUuidTableMigration() {
+		return new SqlMigration() {
+			
+			@Override
+			public boolean allowsNonAtomicExecution() {
+				return true; // MySQL/MariaDB implicitly commit on DDL, so atomic execution is not possible
+			}
+			
+			@Override
+			public @NonNull Version version() {
+				return Version.of(0, 1);
+			}
+			
+			@Override
+			public @NonNull String description() {
+				return "Create uuid_row table";
+			}
+			
+			@Override
+			public void up(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) {
+				builder.createTable(UUID_ROW, table -> {
+					table.column(U_ID, SqlTypes.UUID, SqlMigrationColumnBuilder::notNull);
+					table.column(U_LABEL, SqlTypes.STRING.configure(SqlParameter.length(64)), SqlMigrationColumnBuilder::notNull);
+					table.primaryKey(U_ID);
+				});
+			}
+			
+			@Override
+			public void down(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) {
+				builder.dropTable(UUID_ROW);
+			}
+		};
+	}
+	
+	private static @NonNull SqlMigration createBinaryTableMigration() {
+		return new SqlMigration() {
+			
+			@Override
+			public boolean allowsNonAtomicExecution() {
+				return true;
+			}
+			
+			@Override
+			public @NonNull Version version() {
+				return Version.of(0, 1);
+			}
+			
+			@Override
+			public @NonNull String description() {
+				return "Create binary_row table";
+			}
+			
+			@Override
+			public void up(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) {
+				builder.createTable(BINARY, table -> {
+					table.column(B_ID, SqlTypes.INTEGER, SqlMigrationColumnBuilder::notNull);
+					table.column(B_FIXED, SqlTypes.FIXED_BYTES.configure(SqlParameter.length(16)), SqlMigrationColumnBuilder::notNull);
+					table.column(B_DATA, SqlTypes.BYTES.configure(SqlParameter.length(64)), SqlMigrationColumnBuilder::notNull);
+					table.column(B_PAYLOAD, SqlTypes.LARGE_BYTES, SqlMigrationColumnBuilder::notNull);
+					table.primaryKey(B_ID);
+				});
+			}
+			
+			@Override
+			public void down(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) {
+				builder.dropTable(BINARY);
 			}
 		};
 	}
@@ -1183,6 +1265,68 @@ class SqlIntegrationTest {
 	
 	@MethodSource("engines")
 	@ParameterizedTest(name = "{0}")
+	void migrationWithUuidColumnApplies(@NonNull Engine engine) throws SqlException {
+		SqlDatabase database = engine.database();
+		resetMigrationState(database, UUID_ROW);
+		
+		SqlMigrationRunner runner = SqlMigrationRunner.of(database);
+		runner.register(List.of(createUuidTableMigration()));
+		
+		try {
+			assertDoesNotThrow(runner::migrate);
+			assertTrue(database.table(UUID_ROW).exists());
+			
+			UUID id = UUID.fromString("11111111-2222-3333-4444-555555555555");
+			database.from(UUID_ROW).insert(new UuidRow(id, "alpha")).execute();
+			assertEquals(id, database.from(UUID_ROW).select(U_ID).fetchOne());
+		} finally {
+			resetMigrationState(database, UUID_ROW);
+		}
+	}
+	
+	@MethodSource("engines")
+	@ParameterizedTest(name = "{0}")
+	void binaryColumnsCreateAndRoundTripValues(@NonNull Engine engine) throws SqlException {
+		SqlDatabase database = engine.database();
+		database.table(BINARY).dropIfExists();
+		
+		try {
+			assertDoesNotThrow(() -> database.table(BINARY).create());
+			
+			byte[] fixed = new byte[16];
+			Arrays.fill(fixed, (byte) 0x7F);
+			byte[] data = { 1, 2, 3, 4, 5 };
+			byte[] payload = { 9, 8, 7 };
+			database.from(BINARY).insert(new BinaryRow(1, fixed, data, payload)).execute();
+			
+			BinaryRow fetched = database.from(BINARY).select().where(Sql.equalTo(B_ID, 1)).fetchOne();
+			assertArrayEquals(fixed, fetched.fixed());
+			assertArrayEquals(data, fetched.data());
+			assertArrayEquals(payload, fetched.payload());
+		} finally {
+			database.table(BINARY).dropIfExists();
+		}
+	}
+	
+	@MethodSource("engines")
+	@ParameterizedTest(name = "{0}")
+	void migrationWithBinaryColumnsApplies(@NonNull Engine engine) throws SqlException {
+		SqlDatabase database = engine.database();
+		resetMigrationState(database, BINARY);
+		
+		SqlMigrationRunner runner = SqlMigrationRunner.of(database);
+		runner.register(List.of(createBinaryTableMigration()));
+		
+		try {
+			assertDoesNotThrow(runner::migrate);
+			assertTrue(database.table(BINARY).exists());
+		} finally {
+			resetMigrationState(database, BINARY);
+		}
+	}
+	
+	@MethodSource("engines")
+	@ParameterizedTest(name = "{0}")
 	void healthAndPingReportLiveConnection(@NonNull Engine engine) {
 		SqlDatabase database = engine.database();
 		assertTrue(database.health());
@@ -1216,4 +1360,8 @@ class SqlIntegrationTest {
 	private record TypeRow(int id, long big, double ratio, @NonNull BigDecimal amount, @NonNull LocalDate date) {}
 	
 	private record IdName(int id, @NonNull String name) {}
+	
+	private record UuidRow(@NonNull UUID id, @NonNull String label) {}
+	
+	private record BinaryRow(int id, byte @NonNull [] fixed, byte @NonNull [] data, byte @NonNull [] payload) {}
 }

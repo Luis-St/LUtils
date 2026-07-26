@@ -19,13 +19,18 @@
 package net.luis.utils.io.database.type;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.database.dialect.SqlDialects;
 import net.luis.utils.io.database.exception.SqlClientException;
+import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.database.statement.SqlStatementBindException;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.rowset.CachedRowSet;
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 import static net.luis.utils.io.database.SqlTestFixtures.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -228,6 +233,121 @@ class MappedSqlTypeTest {
 		outer.set(SqlTypeInternalAccess.INSTANCE, DIALECT, statement, 1, "42");
 		assertEquals("42", statement.capturedValue);
 		assertEquals(1, statement.capturedIndex);
+	}
+	
+	@Test
+	void constructWithIdentifier() {
+		SqlType<Integer> type = SOURCE.map("test_id", Integer.class, TO_SOURCE, TO_TARGET);
+		assertInstanceOf(MappedSqlType.class, type);
+		assertEquals("test_id", ((MappedSqlType<?, ?>) type).identifier());
+		assertEquals(SOURCE.jdbcType(), type.jdbcType());
+		assertEquals(Integer.class, type.javaType());
+	}
+	
+	@Test
+	void constructWithoutIdentifier() {
+		MappedSqlType<String, Integer> type = new MappedSqlType<>(SOURCE, Integer.class, TO_SOURCE, TO_TARGET);
+		assertNull(type.identifier());
+		assertEquals(Integer.class, type.javaType());
+	}
+	
+	@Test
+	void constructIdentifiedWithNullSourceType() {
+		assertThrows(NullPointerException.class, () -> new MappedSqlType<>("id", null, Integer.class, TO_SOURCE, TO_TARGET));
+	}
+	
+	@Test
+	void constructIdentifiedWithNullJavaType() {
+		assertThrows(NullPointerException.class, () -> new MappedSqlType<>("id", SOURCE, null, TO_SOURCE, TO_TARGET));
+	}
+	
+	@Test
+	void constructIdentifiedWithNullFromTargetToSource() {
+		assertThrows(NullPointerException.class, () -> new MappedSqlType<>("id", SOURCE, Integer.class, null, TO_TARGET));
+	}
+	
+	@Test
+	void constructIdentifiedWithNullFromSourceToTarget() {
+		assertThrows(NullPointerException.class, () -> new MappedSqlType<>("id", SOURCE, Integer.class, TO_SOURCE, null));
+	}
+	
+	@Test
+	void equalsWithSameIdentifier() {
+		SqlType<Integer> first = SOURCE.map("uuid", Integer.class, TO_SOURCE, TO_TARGET);
+		SqlType<Integer> second = SOURCE.map("uuid", Integer.class, TO_SOURCE_OTHER, TO_TARGET_OTHER);
+		assertEquals(first, second);
+		assertEquals(first.hashCode(), second.hashCode());
+	}
+	
+	@Test
+	void equalsWithDifferentIdentifier() {
+		SqlType<Integer> first = SOURCE.map("uuid", Integer.class, TO_SOURCE, TO_TARGET);
+		SqlType<Integer> second = SOURCE.map("guid", Integer.class, TO_SOURCE, TO_TARGET);
+		assertNotEquals(first, second);
+	}
+	
+	@Test
+	void equalsIdentifiedAgainstAnonymous() {
+		SqlType<java.util.UUID> anonymous = SqlTypes.FIXED_STRING.configure(SqlParameter.length(36))
+			.map(java.util.UUID.class, value -> value == null ? null : value.toString(), java.util.UUID::fromString);
+		assertNotEquals(SqlTypes.UUID, anonymous);
+		assertNotEquals(anonymous, SqlTypes.UUID);
+	}
+	
+	@Test
+	void equalsAnonymousWithSameSourceAndJavaType() {
+		MappedSqlType<String, Integer> first = new MappedSqlType<>(SOURCE, Integer.class, TO_SOURCE, TO_TARGET);
+		MappedSqlType<String, Integer> second = new MappedSqlType<>(SOURCE, Integer.class, TO_SOURCE_OTHER, TO_TARGET_OTHER);
+		assertEquals(first, second);
+	}
+	
+	@Test
+	void hashCodeDiffersForDifferentIdentifier() {
+		SqlType<Integer> first = SOURCE.map("uuid", Integer.class, TO_SOURCE, TO_TARGET);
+		SqlType<Integer> second = SOURCE.map("guid", Integer.class, TO_SOURCE, TO_TARGET);
+		assertNotEquals(first.hashCode(), second.hashCode());
+	}
+	
+	@Test
+	void toStringContainsIdentifier() {
+		String string = SOURCE.map("uuid", Integer.class, TO_SOURCE, TO_TARGET).toString();
+		assertTrue(string.contains("identifier=uuid"));
+		assertTrue(string.contains("java.lang.Integer"));
+	}
+	
+	@Test
+	void toStringForAnonymousType() {
+		String string = new MappedSqlType<>(SOURCE, Integer.class, TO_SOURCE, TO_TARGET).toString();
+		assertTrue(string.contains("identifier=null"));
+	}
+	
+	@Test
+	void identifiedTypeResolvesInRegistryWhileAnonymousDoesNot() {
+		SqlTypeRegistry registry = SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID").build();
+		SqlType<java.util.UUID> anonymous = SqlTypes.FIXED_STRING.configure(SqlParameter.length(36))
+			.map(java.util.UUID.class, value -> value == null ? null : value.toString(), java.util.UUID::fromString);
+		assertTrue(registry.resolve(SqlTypes.UUID).isPresent());
+		assertTrue(registry.resolve(anonymous).isEmpty());
+	}
+	
+	@Test
+	void identifiedTypeRendersDialectNameWhileAnonymousRendersBaseType() throws SqlException {
+		SqlType<java.util.UUID> anonymous = SqlTypes.FIXED_STRING.configure(SqlParameter.length(36))
+			.map(java.util.UUID.class, value -> value == null ? null : value.toString(), java.util.UUID::fromString);
+		assertEquals("UUID", SqlDialects.POSTGRESQL.getTypeName(SqlTypes.UUID));
+		assertEquals("CHAR(36)", SqlDialects.POSTGRESQL.getTypeName(anonymous));
+	}
+	
+	@Test
+	void identifiedTypeUsedAsMapKey() {
+		SqlType<java.util.UUID> anonymous = SqlTypes.FIXED_STRING.configure(SqlParameter.length(36))
+			.map(java.util.UUID.class, value -> value == null ? null : value.toString(), java.util.UUID::fromString);
+		Map<SqlType<?>, String> map = new HashMap<>();
+		map.put(SqlTypes.UUID, "identified");
+		map.put(anonymous, "anonymous");
+		assertEquals(2, map.size());
+		assertEquals("identified", map.get(SqlTypes.UUID));
+		assertEquals("anonymous", map.get(anonymous));
 	}
 	
 	private static final class RecordingStatement extends FakePreparedStatement {

@@ -25,12 +25,13 @@ import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateFunction;
 import net.luis.utils.io.database.function.functions.temporal.SqlNowFunction;
 import net.luis.utils.io.database.query.SqlLockMode;
-import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Types;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -200,5 +201,56 @@ class SqliteDialectTest {
 	@Test
 	void temporalNowRoutesThroughSqliteRenderer() throws SqlException {
 		assertEquals("datetime('now')", DIALECT.renderFunction(new SqlNowFunction<>(SqlTypes.LOCAL_DATE)).sql());
+	}
+	
+	@Test
+	void resolveNativeTypeWithNullNativeType() {
+		assertThrows(NullPointerException.class, () -> DIALECT.resolveType(null));
+	}
+	
+	@Test
+	void resolveNativeTypeForBlob() {
+		assertEquals(Optional.of(SqlTypes.LARGE_BYTES), DIALECT.resolveType(new SqlNativeType(Types.VARCHAR, "BLOB", 2000000000, 0)));
+	}
+	
+	@Test
+	void resolveNativeTypeForText() {
+		assertEquals(Optional.of(SqlTypes.TEXT), DIALECT.resolveType(new SqlNativeType(Types.VARCHAR, "TEXT", 2000000000, 0)));
+	}
+	
+	@Test
+	void resolveNativeTypeForOtherNameDelegatesToSuper() {
+		assertEquals(Optional.of(SqlTypes.INTEGER), DIALECT.resolveType(new SqlNativeType(Types.INTEGER, "INTEGER", 2000000000, 0)));
+	}
+	
+	@Test
+	void resolveNativeTypeIgnoresCase() {
+		assertEquals(Optional.of(SqlTypes.LARGE_BYTES), DIALECT.resolveType(new SqlNativeType(Types.VARCHAR, "blob", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.LARGE_BYTES), DIALECT.resolveType(new SqlNativeType(Types.VARCHAR, "Blob", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.LARGE_BYTES), DIALECT.resolveType(new SqlNativeType(Types.VARCHAR, "BLOB", 0, 0)));
+	}
+	
+	@Test
+	void getTypeNameForBinaryTypesRendersBlob() throws SqlException {
+		assertEquals("BLOB", DIALECT.getTypeName(SqlTypes.FIXED_BYTES.configure(SqlParameter.length(16))));
+		assertEquals("BLOB", DIALECT.getTypeName(SqlTypes.BYTES.configure(SqlParameter.length(64))));
+		assertEquals("BLOB", DIALECT.getTypeName(SqlTypes.LARGE_BYTES));
+		assertEquals("BLOB", DIALECT.getTypeName(SqlTypes.BLOB));
+	}
+	
+	@Test
+	void blobRoundTripsThroughResolveType() throws SqlException {
+		String rendered = DIALECT.getTypeName(SqlTypes.BYTES.configure(SqlParameter.length(64)));
+		SqlType<?> resolved = DIALECT.resolveType(new SqlNativeType(Types.VARCHAR, rendered, 2000000000, 0)).orElseThrow();
+		assertEquals(rendered, DIALECT.getTypeName(resolved));
+	}
+	
+	@Test
+	void textRoundTripsThroughResolveType() throws SqlException {
+		String rendered = DIALECT.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(64)));
+		assertEquals("TEXT", rendered);
+		SqlType<?> resolved = DIALECT.resolveType(new SqlNativeType(Types.VARCHAR, rendered, 2000000000, 0)).orElseThrow();
+		assertSame(SqlTypes.TEXT, resolved);
+		assertEquals(rendered, DIALECT.getTypeName(resolved));
 	}
 }

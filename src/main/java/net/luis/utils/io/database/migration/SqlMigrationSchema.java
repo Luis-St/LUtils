@@ -27,8 +27,7 @@ import net.luis.utils.io.database.exception.client.SqlSchemaObjectNotFoundExcept
 import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.migration.operation.*;
 import net.luis.utils.io.database.table.*;
-import net.luis.utils.io.database.type.ParameterizedSqlType;
-import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
@@ -191,6 +190,7 @@ public final class SqlMigrationSchema {
 					while (colRs.next()) {
 						String colName = colRs.getString("COLUMN_NAME");
 						int dataType = colRs.getInt("DATA_TYPE");
+						String typeName = Objects.requireNonNullElse(colRs.getString("TYPE_NAME"), "");
 						int colSize = colRs.getInt("COLUMN_SIZE");
 						int decDigits = colRs.getInt("DECIMAL_DIGITS");
 						int nullable = colRs.getInt("NULLABLE");
@@ -201,7 +201,10 @@ public final class SqlMigrationSchema {
 						boolean isNullable = nullable == DatabaseMetaData.columnNullable;
 						boolean isAutoIncrement = "YES".equals(isAutoInc);
 						
-						SqlType<?> sqlType = SqlJdbcTypeMapper.mapJdbcType(dataType, colSize, decDigits);
+						SqlNativeType nativeType = new SqlNativeType(dataType, typeName, colSize, decDigits);
+						SqlType<?> sqlType = dialect.resolveType(nativeType).orElseThrow(
+							() -> new SqlSchemaIntrospectionException("Unsupported column type " + typeName + " (jdbc type code " + dataType + ") of column " + colName + " in table " + tableName + " for dialect " + dialect.name())
+						);
 						SqlColumn<Void, ?> column = buildPhantomColumn(table, colName, sqlType, isNullable, isAutoIncrement, isPrimaryKey, isUnique);
 						tableColumns.put(colName, column);
 					}
@@ -294,7 +297,7 @@ public final class SqlMigrationSchema {
 			
 			int primaryKeyCount = 0;
 			for (SqlSchemaColumnInfo info : tableColumnInfos) {
-				SqlType<?> sqlType = SqlJdbcTypeMapper.reconstructType(info.jdbcType(), info.parameter());
+				SqlType<?> sqlType = SqlJdbcTypeMapper.reconstructType(info.jdbcType(), info.parameter(), info.typeIdentifier());
 				SqlColumn<Void, ?> column = buildPhantomColumn(table, info.columnName(), sqlType, info.nullable(), info.autoIncrement(), info.primaryKey(), info.unique());
 				tableColumns.put(info.columnName(), column);
 				if (info.primaryKey()) {
@@ -729,6 +732,7 @@ public final class SqlMigrationSchema {
 			for (Map.Entry<String, SqlColumn<Void, ?>> colEntry : tableEntry.getValue().entrySet()) {
 				SqlColumn<Void, ?> column = colEntry.getValue();
 				SqlParameter parameter = column.type().baseType() instanceof ParameterizedSqlType<?, ?> parameterized ? parameterized.parameter() : null;
+				String typeIdentifier = column.type() instanceof MappedSqlType<?, ?> mapped ? mapped.identifier() : null;
 				
 				infos.add(new SqlSchemaColumnInfo(
 					tableName,
@@ -739,7 +743,8 @@ public final class SqlMigrationSchema {
 					column.autoIncrement(),
 					column.primaryKey(),
 					column.unique(),
-					ordinal++
+					ordinal++,
+					typeIdentifier
 				));
 			}
 		}

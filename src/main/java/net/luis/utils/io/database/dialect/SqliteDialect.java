@@ -41,7 +41,7 @@ import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
-import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
@@ -99,6 +99,17 @@ public class SqliteDialect extends AbstractSqlDialect {
 			.columnRenderer(new SqliteColumnRenderer(this))
 			.migrationRenderer(new SqliteMigrationOperationRenderer(this))
 			.build();
+	}
+	
+	@Override
+	protected @NonNull Optional<SqlType<?>> resolveNativeType(@NonNull SqlNativeType nativeType) {
+		Objects.requireNonNull(nativeType, "Sql native type must not be null");
+		
+		return switch (nativeType.normalizedTypeName()) {
+			case "blob" -> Optional.of(SqlTypes.LARGE_BYTES);
+			case "text" -> Optional.of(SqlTypes.TEXT);
+			default -> super.resolveNativeType(nativeType);
+		};
 	}
 	
 	@Override

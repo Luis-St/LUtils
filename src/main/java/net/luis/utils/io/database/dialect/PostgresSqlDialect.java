@@ -178,6 +178,17 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	protected @NonNull Optional<SqlType<?>> resolveNativeType(@NonNull SqlNativeType nativeType) {
+		Objects.requireNonNull(nativeType, "Sql native type must not be null");
+		
+		return switch (nativeType.normalizedTypeName()) {
+			case "bytea" -> Optional.of(SqlTypes.LARGE_BYTES);
+			case "text" -> Optional.of(SqlTypes.TEXT);
+			default -> super.resolveNativeType(nativeType);
+		};
+	}
+	
+	@Override
 	protected @NonNull Optional<String> getScalarTypeName(int jdbcType) {
 		return switch (jdbcType) {
 			case Types.LONGVARBINARY, Types.BLOB -> Optional.of("BYTEA");
@@ -191,6 +202,7 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 		return switch (jdbcType) {
 			case Types.NCHAR -> Optional.of("CHAR(" + length.length() + ")");
 			case Types.NVARCHAR -> Optional.of("VARCHAR(" + length.length() + ")");
+			case Types.BINARY, Types.VARBINARY -> Optional.of("BYTEA");
 			default -> super.getLengthParameterizedTypeName(jdbcType, length);
 		};
 	}

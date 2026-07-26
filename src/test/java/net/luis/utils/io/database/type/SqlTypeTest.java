@@ -410,4 +410,71 @@ class SqlTypeTest {
 		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.VARCHAR, null);
 		assertEquals("fixed", SqlType.getValue(STRING_TYPE, dialect, rowSet, 1));
 	}
+	
+	@Test
+	void mapIdentifiedWithNullIdentifier() {
+		assertThrows(NullPointerException.class, () -> SqlTypes.TEXT.map(null, String.class, value -> value, value -> value));
+	}
+	
+	@Test
+	void mapIdentifiedWithNullTargetType() {
+		assertThrows(NullPointerException.class, () -> SqlTypes.TEXT.map("id", null, value -> value, value -> value));
+	}
+	
+	@Test
+	void mapIdentifiedWithNullFromTargetToSource() {
+		assertThrows(NullPointerException.class, () -> SqlTypes.TEXT.map("id", String.class, null, value -> value));
+	}
+	
+	@Test
+	void mapIdentifiedWithNullFromSourceToTarget() {
+		assertThrows(NullPointerException.class, () -> SqlTypes.TEXT.map("id", String.class, value -> value, null));
+	}
+	
+	@Test
+	void mapIdentifiedReturnsIdentifiedType() {
+		SqlType<String> mapped = SqlTypes.INTEGER.map("id", String.class, Integer::parseInt, value -> Integer.toString(value));
+		assertInstanceOf(MappedSqlType.class, mapped);
+		assertEquals("id", ((MappedSqlType<?, ?>) mapped).identifier());
+	}
+	
+	@Test
+	void mapAnonymousReturnsUnidentifiedType() {
+		SqlType<String> mapped = SqlTypes.INTEGER.map(String.class, Integer::parseInt, value -> Integer.toString(value));
+		assertInstanceOf(MappedSqlType.class, mapped);
+		assertNull(((MappedSqlType<?, ?>) mapped).identifier());
+	}
+	
+	@Test
+	void mapIdentifiedPreservesJdbcAndBaseType() {
+		SqlType<String> mapped = SqlTypes.INTEGER.map("counter", String.class, Integer::parseInt, value -> Integer.toString(value));
+		assertEquals(Types.INTEGER, mapped.jdbcType());
+		assertSame(SqlTypes.INTEGER, mapped.baseType());
+	}
+	
+	@Test
+	void mapIdentifiedConvertsValuesBothWays() throws Exception {
+		MappedSqlType<Integer, String> mapped = new MappedSqlType<>("counter", SqlTypes.INTEGER, String.class, Integer::parseInt, value -> Integer.toString(value));
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.INTEGER, 42);
+		assertEquals("42", SqlType.getValue(mapped, DIALECT, rowSet, 1));
+		assertEquals(42, mapped.fromTargetToSource().apply("42"));
+	}
+	
+	@Test
+	void mapIdentifiedOnAlreadyMappedType() {
+		SqlType<String> mapped = SqlTypes.UUID.map("wrapped", String.class, java.util.UUID::fromString, java.util.UUID::toString);
+		assertEquals("wrapped", ((MappedSqlType<?, ?>) mapped).identifier());
+		assertEquals(SqlTypes.FIXED_STRING.configure(SqlParameter.length(36)), mapped.baseType());
+	}
+	
+	@Test
+	void mapIdentifiedTypesWithSameIdentifierAreInterchangeable() {
+		SqlType<String> first = SqlTypes.INTEGER.map("counter", String.class, Integer::parseInt, value -> Integer.toString(value));
+		SqlType<String> second = SqlTypes.INTEGER.map("counter", String.class, Integer::parseInt, String::valueOf);
+		assertEquals(first, second);
+		assertEquals(first.hashCode(), second.hashCode());
+		
+		SqlTypeRegistry registry = SqlTypeRegistry.builder().register(first, "COUNTER").build();
+		assertTrue(registry.resolve(second).isPresent());
+	}
 }

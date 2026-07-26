@@ -31,8 +31,7 @@ import net.luis.utils.io.database.query.SqlSetOperation;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.type.SqlType;
-import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -41,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import java.io.*;
 import java.sql.*;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -744,7 +744,7 @@ class AbstractSqlDialectTest {
 	void getInsertSchemaColumnSqlPlaceholders() {
 		String sql = DIALECT.getInsertSchemaColumnSql();
 		assertTrue(sql.startsWith("INSERT INTO"));
-		assertTrue(sql.endsWith("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+		assertTrue(sql.endsWith("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
 	}
 	
 	@Test
@@ -783,6 +783,164 @@ class AbstractSqlDialectTest {
 	//endregion
 	
 	//region Test fixtures
+	@Test
+	void resolveTypeWithNullNativeType() {
+		assertThrows(NullPointerException.class, () -> DIALECT.resolveType(null));
+	}
+	
+	@Test
+	void resolveNativeTypeWithNullNativeType() {
+		HookDialect dialect = new HookDialect();
+		assertThrows(NullPointerException.class, () -> dialect.resolveNativeType(null));
+	}
+	
+	@Test
+	void resolveTypeFromRegistry() {
+		assertEquals(Optional.of(SqlTypes.UUID), new RegistryDialect().resolveType(new SqlNativeType(Types.OTHER, "uuid", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeFromRegistryIgnoringCaseAndArguments() {
+		RegistryDialect dialect = new RegistryDialect();
+		assertEquals(Optional.of(SqlTypes.UUID), dialect.resolveType(new SqlNativeType(Types.OTHER, "UUID", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.UUID), dialect.resolveType(new SqlNativeType(Types.OTHER, "uuid", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.UUID), dialect.resolveType(new SqlNativeType(Types.OTHER, "UUID(0)", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeFromDialectHook() {
+		assertEquals(Optional.of(SqlTypes.TEXT), new HookDialect().resolveType(new SqlNativeType(Types.OTHER, "custom", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeFallsBackToPortableMapper() {
+		assertEquals(Optional.of(SqlTypes.INTEGER), DIALECT.resolveType(new SqlNativeType(Types.INTEGER, "int4", 10, 0)));
+	}
+	
+	@Test
+	void resolveTypeReturnsEmptyForUnknownNativeType() {
+		assertEquals(Optional.empty(), assertDoesNotThrow(() -> DIALECT.resolveType(new SqlNativeType(Types.OTHER, "geometry", 0, 0))));
+	}
+	
+	@Test
+	void resolveTypePrefersRegistryOverHook() {
+		assertEquals(Optional.of(SqlTypes.UUID), new ShadowingDialect().resolveType(new SqlNativeType(Types.OTHER, "custom", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeFromRegistryIgnoresJdbcTypeCode() {
+		assertEquals(Optional.of(SqlTypes.UUID), new RegistryDialect().resolveType(new SqlNativeType(Types.INTEGER, "uuid", 10, 0)));
+	}
+	
+	@Test
+	void resolveTypePrefersHookOverPortableMapper() {
+		assertEquals(Optional.of(SqlTypes.TEXT), new HookDialect().resolveType(new SqlNativeType(Types.VARCHAR, "text", Integer.MAX_VALUE, 0)));
+	}
+	
+	@Test
+	void resolveNativeTypeReturnsEmptyByDefault() {
+		TestDialect dialect = new TestDialect();
+		assertEquals(Optional.empty(), dialect.resolveNativeType(new SqlNativeType(Types.OTHER, "uuid", 0, 0)));
+		assertEquals(Optional.empty(), dialect.resolveNativeType(new SqlNativeType(Types.INTEGER, "int4", 10, 0)));
+	}
+	
+	@Test
+	void getCreateSchemaColumnsTableSqlContainsTypeIdentifier() throws SqlException {
+		String sql = DIALECT.getCreateSchemaColumnsTableSql();
+		assertTrue(sql.contains("type_identifier"));
+		assertFalse(sql.contains("type_identifier\" VARCHAR(64) NOT NULL"));
+	}
+	
+	@Test
+	void getInsertSchemaColumnSqlColumnOrderMatchesPlaceholders() {
+		String sql = DIALECT.getInsertSchemaColumnSql();
+		String columns = sql.substring(sql.indexOf('(') + 1, sql.indexOf(')'));
+		String placeholders = sql.substring(sql.lastIndexOf('(') + 1, sql.lastIndexOf(')'));
+		assertEquals(columns.split(",").length, placeholders.split(",").length);
+		assertTrue(columns.contains("ordinal_position"));
+		assertTrue(columns.trim().endsWith("type_identifier\""));
+	}
+	
+	@Test
+	void resolveTypeInvertsGetTypeNameForRegisteredTypes() throws SqlException {
+		RegistryDialect dialect = new RegistryDialect();
+		String rendered = dialect.getTypeName(SqlTypes.UUID);
+		assertEquals("UUID", rendered);
+		assertEquals(Optional.of(SqlTypes.UUID), dialect.resolveType(new SqlNativeType(Types.OTHER, rendered, 0, 0)));
+	}
+	
+	@Test
+	void schemaColumnsTableSqlAndInsertSqlAgreeOnColumns() throws SqlException {
+		String createSql = DIALECT.getCreateSchemaColumnsTableSql();
+		String insertSql = DIALECT.getInsertSchemaColumnSql();
+		String columns = insertSql.substring(insertSql.indexOf('(') + 1, insertSql.indexOf(')'));
+		for (String column : columns.split(",")) {
+			assertTrue(createSql.contains(column.trim()), "Created table is missing " + column.trim());
+		}
+	}
+	
+	private static final class RegistryDialect extends AbstractSqlDialect {
+		
+		@Override
+		public @NonNull String name() {
+			return "Registry";
+		}
+		
+		@Override
+		protected @NonNull SqlTypeRegistry createTypeRegistry() {
+			return SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID").build();
+		}
+		
+		@Override
+		protected @Nullable String getCheckConstraintsQueryString() {
+			return null;
+		}
+	}
+	
+	private static final class HookDialect extends AbstractSqlDialect {
+		
+		@Override
+		public @NonNull String name() {
+			return "Hook";
+		}
+		
+		@Override
+		protected @NonNull Optional<SqlType<?>> resolveNativeType(@NonNull SqlNativeType nativeType) {
+			return switch (nativeType.normalizedTypeName()) {
+				case "custom", "text" -> Optional.of(SqlTypes.TEXT);
+				default -> super.resolveNativeType(nativeType);
+			};
+		}
+		
+		@Override
+		protected @Nullable String getCheckConstraintsQueryString() {
+			return null;
+		}
+	}
+	
+	private static final class ShadowingDialect extends AbstractSqlDialect {
+		
+		@Override
+		public @NonNull String name() {
+			return "Shadowing";
+		}
+		
+		@Override
+		protected @NonNull SqlTypeRegistry createTypeRegistry() {
+			return SqlTypeRegistry.builder().register(SqlTypes.UUID, "CUSTOM").build();
+		}
+		
+		@Override
+		protected @NonNull Optional<SqlType<?>> resolveNativeType(@NonNull SqlNativeType nativeType) {
+			return "custom".equals(nativeType.normalizedTypeName()) ? Optional.of(SqlTypes.TEXT) : super.resolveNativeType(nativeType);
+		}
+		
+		@Override
+		protected @Nullable String getCheckConstraintsQueryString() {
+			return null;
+		}
+	}
+	
 	private static final class TestDialect extends AbstractSqlDialect {
 		
 		private final String checkQuery;

@@ -26,14 +26,14 @@ import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureExce
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
-import net.luis.utils.io.database.type.SqlType;
-import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -437,5 +437,63 @@ class SqlServerDialectTest {
 	void uuidHasNoBindingOverride() {
 		assertTrue(DIALECT.bindingOverride(SqlTypes.UUID).isEmpty());
 		assertTrue(DIALECT.readingOverride(SqlTypes.UUID).isEmpty());
+	}
+	
+	@Test
+	void resolveNativeTypeWithNullNativeType() {
+		assertThrows(NullPointerException.class, () -> DIALECT.resolveType(null));
+	}
+	
+	@Test
+	void resolveNativeTypeForDatetimeOffset() {
+		SqlType<?> expected = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		assertEquals(Optional.of(expected), DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset", 33, 6)));
+	}
+	
+	@Test
+	void resolveNativeTypeForOtherNameDelegatesToSuper() {
+		assertEquals(Optional.of(SqlTypes.STRING.configure(SqlParameter.length(64))), DIALECT.resolveType(new SqlNativeType(Types.VARCHAR, "varchar", 64, 0)));
+	}
+	
+	@Test
+	void resolveNativeTypeForDatetimeOffsetWithNegativeDecimalDigits() {
+		SqlType<?> expected = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(0));
+		assertEquals(Optional.of(expected), assertDoesNotThrow(() -> DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset", 33, -1))));
+	}
+	
+	@Test
+	void resolveNativeTypeForDatetimeOffsetIgnoresCase() {
+		SqlType<?> expected = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		assertEquals(Optional.of(expected), DIALECT.resolveType(new SqlNativeType(-155, "DATETIMEOFFSET", 33, 6)));
+		assertEquals(Optional.of(expected), DIALECT.resolveType(new SqlNativeType(-155, "DateTimeOffset", 33, 6)));
+		assertEquals(Optional.of(expected), DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset(6)", 33, 6)));
+	}
+	
+	@Test
+	void resolveTypeForRegisteredNativeTypes() {
+		assertEquals(Optional.of(SqlTypes.UUID), DIALECT.resolveType(new SqlNativeType(Types.CHAR, "uniqueidentifier", 36, 0)));
+		assertEquals(Optional.of(SqlTypes.XML), DIALECT.resolveType(new SqlNativeType(-16, "xml", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeForDatetimeOffsetWasPreviouslyUnsupported() {
+		assertTrue(DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset", 33, 6)).isPresent());
+		assertTrue(DIALECT.resolveType(new SqlNativeType(-155, "geography", 0, 0)).isEmpty());
+	}
+	
+	@Test
+	void datetimeOffsetRoundTripsThroughResolveType() throws SqlException {
+		String rendered = DIALECT.getTypeName(SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6)));
+		assertEquals("DATETIMEOFFSET(6)", rendered);
+		SqlType<?> resolved = DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset", 33, 6)).orElseThrow();
+		assertEquals(rendered, DIALECT.getTypeName(resolved));
+	}
+	
+	@Test
+	void resolveTypePreservesFractionalDigits() throws SqlException {
+		for (int digits : new int[] { 0, 3, 6, 7 }) {
+			SqlType<?> resolved = DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset", 33, digits)).orElseThrow();
+			assertEquals("DATETIMEOFFSET(" + digits + ")", DIALECT.getTypeName(resolved));
+		}
 	}
 }

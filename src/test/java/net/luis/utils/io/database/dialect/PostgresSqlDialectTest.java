@@ -28,15 +28,14 @@ import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateFunction;
 import net.luis.utils.io.database.index.SqlIndexMethod;
-import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import net.luis.utils.io.network.address.*;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
 import java.sql.*;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -430,6 +429,87 @@ class PostgresSqlDialectTest {
 		SQLXML xml = fakeSqlXml(new String[] { element.toString(XmlConfig.DEFAULT) });
 		Object result = DIALECT.readingOverride(SqlTypes.XML).orElseThrow().read(readerResultSet(null, xml), 1);
 		assertEquals(element, result);
+	}
+	
+	@Test
+	void resolveNativeTypeWithNullNativeType() {
+		assertThrows(NullPointerException.class, () -> DIALECT.resolveType(null));
+	}
+	
+	@Test
+	void getTypeNameForFixedBytesRendersBytea() throws SqlException {
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.FIXED_BYTES.configure(SqlParameter.length(16))));
+	}
+	
+	@Test
+	void getTypeNameForBytesRendersBytea() throws SqlException {
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.BYTES.configure(SqlParameter.length(64))));
+	}
+	
+	@Test
+	void getTypeNameForLengthTypesUnaffected() throws SqlException {
+		assertEquals("VARCHAR(64)", DIALECT.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(64))));
+		assertEquals("CHAR(36)", DIALECT.getTypeName(SqlTypes.FIXED_STRING.configure(SqlParameter.length(36))));
+		assertEquals("VARCHAR(64)", DIALECT.getTypeName(SqlTypes.UNICODE_STRING.configure(SqlParameter.length(64))));
+	}
+	
+	@Test
+	void getTypeNameForLargeBytesRendersBytea() throws SqlException {
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.LARGE_BYTES));
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.BLOB));
+	}
+	
+	@Test
+	void resolveNativeTypeForBytea() {
+		assertEquals(Optional.of(SqlTypes.LARGE_BYTES), DIALECT.resolveType(new SqlNativeType(Types.BINARY, "bytea", Integer.MAX_VALUE, 0)));
+	}
+	
+	@Test
+	void resolveNativeTypeForText() {
+		assertEquals(Optional.of(SqlTypes.TEXT), DIALECT.resolveType(new SqlNativeType(Types.VARCHAR, "text", Integer.MAX_VALUE, 0)));
+	}
+	
+	@Test
+	void resolveNativeTypeForUnknownNameDelegatesToSuper() {
+		assertEquals(Optional.of(SqlTypes.INTEGER), DIALECT.resolveType(new SqlNativeType(Types.INTEGER, "int4", 10, 0)));
+	}
+	
+	@Test
+	void resolveTypeForRegisteredNativeTypes() {
+		assertEquals(Optional.of(SqlTypes.UUID), DIALECT.resolveType(new SqlNativeType(Types.OTHER, "uuid", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.JSON), DIALECT.resolveType(new SqlNativeType(Types.OTHER, "jsonb", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.IP_ADDRESS), DIALECT.resolveType(new SqlNativeType(Types.OTHER, "inet", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.IP_NETWORK), DIALECT.resolveType(new SqlNativeType(Types.OTHER, "cidr", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.XML), DIALECT.resolveType(new SqlNativeType(Types.SQLXML, "xml", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeForUuidWasPreviouslyUnsupported() {
+		assertTrue(DIALECT.resolveType(new SqlNativeType(Types.OTHER, "uuid", 0, 0)).isPresent());
+		assertTrue(DIALECT.resolveType(new SqlNativeType(Types.OTHER, "geometry", 0, 0)).isEmpty());
+	}
+	
+	@Test
+	void binaryTypesAllRenderBytea() throws SqlException {
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.FIXED_BYTES.configure(SqlParameter.length(16))));
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.BYTES.configure(SqlParameter.length(64))));
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.LARGE_BYTES));
+	}
+	
+	@Test
+	void byteaRoundTripsThroughResolveType() throws SqlException {
+		String rendered = DIALECT.getTypeName(SqlTypes.BYTES.configure(SqlParameter.length(64)));
+		SqlType<?> resolved = DIALECT.resolveType(new SqlNativeType(Types.BINARY, rendered, Integer.MAX_VALUE, 0)).orElseThrow();
+		assertEquals(rendered, DIALECT.getTypeName(resolved));
+	}
+	
+	@Test
+	void resolveTypeInvertsGetTypeNameForRegisteredTypes() throws SqlException {
+		List<SqlType<?>> types = List.of(SqlTypes.UUID, SqlTypes.JSON, SqlTypes.XML, SqlTypes.IP_ADDRESS, SqlTypes.IP_NETWORK);
+		for (SqlType<?> type : types) {
+			String rendered = DIALECT.getTypeName(type);
+			assertEquals(Optional.of(type), DIALECT.resolveType(new SqlNativeType(Types.OTHER, rendered, 0, 0)), "No inverse for " + rendered);
+		}
 	}
 	
 	private static final class Captured {

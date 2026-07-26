@@ -63,11 +63,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	/**
 	 * The name of the internal table used to store schema column metadata.
 	 */
-	private static final String SCHEMA_COLUMNS_TABLE = "_sql_schema_columns";
+	private static final String SCHEMA_COLUMNS_TABLE = SqlDialect.SCHEMA_COLUMNS_TABLE;
 	/**
 	 * The name of the internal table used to store schema check constraint metadata.
 	 */
-	private static final String SCHEMA_CHECK_CONSTRAINTS_TABLE = "_sql_schema_check_constraints";
+	private static final String SCHEMA_CHECK_CONSTRAINTS_TABLE = SqlDialect.SCHEMA_CHECK_CONSTRAINTS_TABLE;
 	/**
 	 * The type registry holding the dialect-specific type mappings.
 	 */
@@ -186,6 +186,36 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case ParameterizedSqlType<?, ?> parameterized -> this.getParameterizedTypeName(parameterized.jdbcType(), parameterized.parameter());
 			default -> Optional.empty();
 		};
+	}
+	
+	@Override
+	public @NonNull Optional<SqlType<?>> resolveType(@NonNull SqlNativeType nativeType) {
+		Objects.requireNonNull(nativeType, "Sql native type must not be null");
+		
+		Optional<SqlType<?>> registered = this.typeRegistry.resolveNative(nativeType.typeName());
+		if (registered.isPresent()) {
+			return registered;
+		}
+		
+		Optional<SqlType<?>> dialectSpecific = this.resolveNativeType(nativeType);
+		if (dialectSpecific.isPresent()) {
+			return dialectSpecific;
+		}
+		return SqlNativeTypeMapper.mapNativeType(nativeType);
+	}
+	
+	/**
+	 * Resolves the sql type for a native column type that is specific to this dialect but not part of its {@link SqlTypeRegistry type registry}.<br>
+	 * This hook covers native types a driver reports under a name or jdbc type code that the portable {@link SqlNativeTypeMapper} cannot resolve, concrete dialects may override it, the default
+	 * implementation resolves nothing.<br>
+	 *
+	 * @param nativeType The native column type to resolve
+	 * @return An optional containing the resolved sql type or an empty optional if the native type is not known to this dialect
+	 * @throws NullPointerException If the native type is null
+	 */
+	protected @NonNull Optional<SqlType<?>> resolveNativeType(@NonNull SqlNativeType nativeType) {
+		Objects.requireNonNull(nativeType, "Sql native type must not be null");
+		return Optional.empty();
 	}
 	
 	@Override
@@ -671,6 +701,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		table.column("is_primary_key", SqlTypes.BOOLEAN, v -> null, col -> col.notNull());
 		table.column("is_unique", SqlTypes.BOOLEAN, v -> null, col -> col.notNull());
 		table.column("ordinal_position", SqlTypes.INTEGER, v -> null, col -> col.notNull());
+		table.column("type_identifier", SqlTypes.STRING.configure(SqlParameter.length(64)), v -> null);
 		table.compositePrimaryKey(version, tableName, columnName);
 		return this.tableRenderer().renderCreateTable(table, true).sql();
 	}
@@ -702,13 +733,14 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		String isPrimaryKey = this.quoteIdentifier("is_primary_key");
 		String isUnique = this.quoteIdentifier("is_unique");
 		String ordinalPosition = this.quoteIdentifier("ordinal_position");
+		String typeIdentifier = this.quoteIdentifier("type_identifier");
 		
 		return "INSERT INTO " + table + " (" +
 			version + ", " + tableName + ", " + columnName + ", " +
 			jdbcType + ", " + length + ", " + precision + ", " + scale + ", " + fractional + ", " +
 			isNullable + ", " + isAutoIncrement + ", " + isPrimaryKey + ", " + isUnique + ", " +
-			ordinalPosition +
-			") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			ordinalPosition + ", " + typeIdentifier +
+			") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	}
 	
 	@Override

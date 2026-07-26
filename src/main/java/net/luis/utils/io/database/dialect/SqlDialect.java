@@ -52,6 +52,15 @@ import java.util.Optional;
 public interface SqlDialect {
 	
 	/**
+	 * The name of the table the schema snapshots of the migration system are stored in.<br>
+	 */
+	String SCHEMA_COLUMNS_TABLE = "_sql_schema_columns";
+	/**
+	 * The name of the table the check constraints of the schema snapshots of the migration system are stored in.<br>
+	 */
+	String SCHEMA_CHECK_CONSTRAINTS_TABLE = "_sql_schema_check_constraints";
+	
+	/**
 	 * Returns the name of this dialect.<br>
 	 * @return The dialect name
 	 */
@@ -117,6 +126,20 @@ public interface SqlDialect {
 	 */
 	default @NonNull String getCastTypeName(@NonNull SqlType<?> type) throws SqlException {
 		return this.getTypeName(type);
+	}
+	
+	/**
+	 * Resolves the sql type for the given native column type as reported by a jdbc driver.<br>
+	 * This is the inverse of {@link #getTypeName(SqlType)} and is used while introspecting an existing schema,<br>
+	 * dialects that render types under a dialect specific native name are expected to recognize that name again here.<br>
+	 * By default, this only resolves the portable jdbc type codes handled by {@link SqlNativeTypeMapper}.<br>
+	 *
+	 * @param nativeType The native column type to resolve
+	 * @return An optional containing the resolved sql type or an empty optional if the native type is not supported
+	 * @throws NullPointerException If the native type is null
+	 */
+	default @NonNull Optional<SqlType<?>> resolveType(@NonNull SqlNativeType nativeType) {
+		return SqlNativeTypeMapper.mapNativeType(nativeType);
 	}
 	
 	/**

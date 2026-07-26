@@ -34,13 +34,15 @@ import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
-import net.luis.utils.io.database.type.SqlType;
-import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.*;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
+import java.sql.Types;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -64,6 +66,51 @@ class SqlDialectTest {
 	@Test
 	void maxBindParametersDefaultValue() {
 		assertEquals(65535, new StubDialect().maxBindParameters());
+	}
+	
+	@Test
+	void resolveTypeWithNullNativeType() {
+		StubDialect dialect = new StubDialect();
+		assertThrows(NullPointerException.class, () -> dialect.resolveType(null));
+	}
+	
+	@Test
+	void resolveTypeReturnsPortableType() {
+		assertEquals(Optional.of(SqlTypes.INTEGER), new StubDialect().resolveType(new SqlNativeType(Types.INTEGER, "int4", 10, 0)));
+	}
+	
+	@Test
+	void resolveTypeReturnsEmptyForUnsupportedType() {
+		assertEquals(Optional.empty(), new StubDialect().resolveType(new SqlNativeType(Types.OTHER, "uuid", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeIgnoresTypeNameByDefault() {
+		StubDialect dialect = new StubDialect();
+		Optional<SqlType<?>> first = dialect.resolveType(new SqlNativeType(Types.VARCHAR, "text", 64, 0));
+		Optional<SqlType<?>> second = dialect.resolveType(new SqlNativeType(Types.VARCHAR, "varchar", 64, 0));
+		assertEquals(Optional.of(SqlTypes.STRING.configure(SqlParameter.length(64))), first);
+		assertEquals(first, second);
+	}
+	
+	@Test
+	void schemaTableConstantsHaveExpectedNames() {
+		assertEquals("_sql_schema_columns", SqlDialect.SCHEMA_COLUMNS_TABLE);
+		assertEquals("_sql_schema_check_constraints", SqlDialect.SCHEMA_CHECK_CONSTRAINTS_TABLE);
+	}
+	
+	@Test
+	void resolveTypeMatchesAbstractDialectForPortableTypes() {
+		StubDialect stub = new StubDialect();
+		List<SqlNativeType> nativeTypes = List.of(
+			new SqlNativeType(Types.INTEGER, "int", 10, 0),
+			new SqlNativeType(Types.VARCHAR, "varchar", 64, 0),
+			new SqlNativeType(Types.TIMESTAMP, "timestamp", 26, 6),
+			new SqlNativeType(Types.LONGVARBINARY, "longblob", 0, 0)
+		);
+		for (SqlNativeType nativeType : nativeTypes) {
+			assertEquals(stub.resolveType(nativeType), SqlDialects.H2.resolveType(nativeType), "Mismatch for " + nativeType);
+		}
 	}
 	
 	/**

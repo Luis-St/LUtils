@@ -42,16 +42,29 @@ public final class SqlTypeRegistry {
 	 * The immutable mappings from sql type to its type mapping.
 	 */
 	private final Map<SqlType<?>, SqlTypeMapping> mappings;
+	/**
+	 * The immutable reverse mappings from the normalized native type name to the sql type it was registered for.
+	 */
+	private final Map<String, SqlType<?>> nativeTypes;
 	
 	/**
 	 * Constructs a new sql type registry with the given mappings.<br>
-	 * The mappings are copied into an immutable map.<br>
+	 * The mappings are copied into an immutable map, the reverse mappings used to resolve a native type name back to its sql type are derived from them.<br>
+	 * If several types are registered under the same native type name, the type registered first wins.<br>
 	 *
 	 * @param mappings The mappings from sql type to its type mapping
 	 * @throws NullPointerException If the mappings are null
 	 */
 	SqlTypeRegistry(@NonNull Map<SqlType<?>, SqlTypeMapping> mappings) {
-		this.mappings = Map.copyOf(Objects.requireNonNull(mappings, "Sql type mappings must not be null"));
+		Objects.requireNonNull(mappings, "Sql type mappings must not be null");
+		
+		Map<String, SqlType<?>> nativeTypes = new LinkedHashMap<>();
+		for (Map.Entry<SqlType<?>, SqlTypeMapping> entry : mappings.entrySet()) {
+			nativeTypes.putIfAbsent(SqlNativeType.normalize(entry.getValue().nativeTypeName()), entry.getKey());
+		}
+		
+		this.mappings = Map.copyOf(mappings);
+		this.nativeTypes = Map.copyOf(nativeTypes);
 	}
 	
 	/**
@@ -80,6 +93,20 @@ public final class SqlTypeRegistry {
 	public @NonNull Optional<SqlTypeMapping> resolve(@NonNull SqlType<?> type) {
 		Objects.requireNonNull(type, "Sql type must not be null");
 		return Optional.ofNullable(this.mappings.get(type));
+	}
+	
+	/**
+	 * Resolves the sql type that was registered for the given native type name.<br>
+	 * This is the inverse of {@link #resolve(SqlType)}, it allows a type registered with a dialect specific native name to be recognized again when it is read back from the database metadata.<br>
+	 * The given name is {@link SqlNativeType#normalize(String) normalized} before it is looked up.<br>
+	 *
+	 * @param nativeTypeName The native type name to resolve the sql type for
+	 * @return An optional containing the registered sql type or an empty optional if no type is registered for the name
+	 * @throws NullPointerException If the native type name is null
+	 */
+	public @NonNull Optional<SqlType<?>> resolveNative(@NonNull String nativeTypeName) {
+		Objects.requireNonNull(nativeTypeName, "Sql native type name must not be null");
+		return Optional.ofNullable(this.nativeTypes.get(SqlNativeType.normalize(nativeTypeName)));
 	}
 	
 	//region Object overrides

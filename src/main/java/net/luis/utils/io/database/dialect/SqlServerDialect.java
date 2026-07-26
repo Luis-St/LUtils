@@ -155,6 +155,16 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	protected @NonNull Optional<SqlType<?>> resolveNativeType(@NonNull SqlNativeType nativeType) {
+		Objects.requireNonNull(nativeType, "Sql native type must not be null");
+		
+		if ("datetimeoffset".equals(nativeType.normalizedTypeName())) {
+			return Optional.of(SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(Math.max(nativeType.decimalDigits(), 0))));
+		}
+		return super.resolveNativeType(nativeType);
+	}
+	
+	@Override
 	protected @NonNull Optional<String> getParameterizedTypeName(int jdbcType, @NonNull SqlParameter parameter) {
 		Objects.requireNonNull(parameter, "Sql parameter must not be null");
 		

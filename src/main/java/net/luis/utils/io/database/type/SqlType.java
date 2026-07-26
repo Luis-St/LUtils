@@ -358,4 +358,39 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		
 		return new MappedSqlType<>(this, targetType, fromTargetToSource, fromSourceToTarget);
 	}
+	
+	/**
+	 * Creates a new identified sql type that maps this type to a different target java type.<br>
+	 * The identifier makes the resulting type distinguishable from a structurally identical but anonymous type created by {@link #map(Class, ThrowableFunction, ThrowableFunction)}, which is what allows a
+	 * dialect to register a native type for a library type without capturing every user defined type that happens to map the same java type onto the same source type.<br>
+	 * <p>
+	 *     Warning: identifiers share a single namespace with the identified types of {@link SqlTypes}, and a dialect resolves its native type registrations through that identifier.<br>
+	 *     Passing an identifier that is already used by the library, for example {@code uuid} or {@code json}, therefore makes the resulting type indistinguishable from the library type and lets a<br>
+	 *     dialect render and bind it as its own native type, which is exactly what an anonymous type created by {@link #map(Class, ThrowableFunction, ThrowableFunction)} avoids.<br>
+	 *     Identifiers are also persisted in schema snapshots, so renaming one invalidates every snapshot that was written with it, and an identifier that {@link SqlTypes#byIdentifier(String)} does not<br>
+	 *     know is not restored as the mapped type when a snapshot is read back.<br>
+	 *     Unless the type is meant to be recognized as a library type, prefer {@link #map(Class, ThrowableFunction, ThrowableFunction)}.
+	 * </p>
+	 *
+	 * @param identifier The stable identifier of the resulting type
+	 * @param targetType The target java type to map to
+	 * @param fromTargetToSource The function converting a target value into a value of this type when binding
+	 * @param fromSourceToTarget The function converting a value of this type into a target value when reading
+	 * @return The mapped sql type
+	 * @throws NullPointerException If the identifier, target type or either function is null
+	 * @param <O> The target java type to map to
+	 */
+	default <O> @NonNull SqlType<O> map(
+		@NonNull String identifier,
+		@NonNull Class<O> targetType,
+		@NonNull ThrowableFunction<@Nullable O, @Nullable T, SqlStatementBindException> fromTargetToSource,
+		@NonNull ThrowableFunction<@NonNull T, @Nullable O, SqlClientException> fromSourceToTarget
+	) {
+		Objects.requireNonNull(identifier, "Identifier must not be null");
+		Objects.requireNonNull(targetType, "Target type must not be null");
+		Objects.requireNonNull(fromTargetToSource, "Getter function must not be null");
+		Objects.requireNonNull(fromSourceToTarget, "Setter function must not be null");
+		
+		return new MappedSqlType<>(identifier, this, targetType, fromTargetToSource, fromSourceToTarget);
+	}
 }

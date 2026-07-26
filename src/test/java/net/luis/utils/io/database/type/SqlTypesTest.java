@@ -30,7 +30,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.time.*;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -258,6 +258,103 @@ class SqlTypesTest {
 		IpAddress<?> value = IpAddresses.parse("127.0.0.1");
 		String encoded = type.fromTargetToSource().apply(value);
 		assertEquals(value, type.fromSourceToTarget().apply(encoded));
+	}
+	
+	@Test
+	void byIdentifierWithNullIdentifier() {
+		assertThrows(NullPointerException.class, () -> SqlTypes.byIdentifier(null));
+	}
+	
+	@Test
+	void byIdentifierReturnsTypeWhenKnown() {
+		Optional<SqlType<?>> resolved = SqlTypes.byIdentifier("uuid");
+		assertTrue(resolved.isPresent());
+		assertSame(SqlTypes.UUID, resolved.get());
+	}
+	
+	@Test
+	void byIdentifierReturnsEmptyWhenUnknown() {
+		assertEquals(Optional.empty(), assertDoesNotThrow(() -> SqlTypes.byIdentifier("not_a_type")));
+		assertEquals(Optional.empty(), assertDoesNotThrow(() -> SqlTypes.byIdentifier("")));
+	}
+	
+	@Test
+	void byIdentifierIsCaseSensitive() {
+		assertEquals(Optional.empty(), SqlTypes.byIdentifier("UUID"));
+		assertEquals(Optional.empty(), SqlTypes.byIdentifier("Json"));
+	}
+	
+	@Test
+	void byIdentifierResolvesEveryIdentifiedType() {
+		assertSame(SqlTypes.CHARACTER, SqlTypes.byIdentifier("character").orElseThrow());
+		assertSame(SqlTypes.YEAR, SqlTypes.byIdentifier("year").orElseThrow());
+		assertSame(SqlTypes.MONTH, SqlTypes.byIdentifier("month").orElseThrow());
+		assertSame(SqlTypes.DAY_OF_WEEK, SqlTypes.byIdentifier("day_of_week").orElseThrow());
+		assertSame(SqlTypes.DURATION, SqlTypes.byIdentifier("duration").orElseThrow());
+		assertSame(SqlTypes.UUID, SqlTypes.byIdentifier("uuid").orElseThrow());
+		assertSame(SqlTypes.JSON, SqlTypes.byIdentifier("json").orElseThrow());
+		assertSame(SqlTypes.XML, SqlTypes.byIdentifier("xml").orElseThrow());
+		assertSame(SqlTypes.IP_ADDRESS, SqlTypes.byIdentifier("ip_address").orElseThrow());
+		assertSame(SqlTypes.IP_NETWORK, SqlTypes.byIdentifier("ip_network").orElseThrow());
+	}
+	
+	@Test
+	void identifiedConstantsCarryTheirIdentifier() {
+		Map<String, SqlType<?>> expected = Map.of(
+			"character", SqlTypes.CHARACTER, "year", SqlTypes.YEAR, "month", SqlTypes.MONTH,
+			"day_of_week", SqlTypes.DAY_OF_WEEK, "duration", SqlTypes.DURATION, "uuid", SqlTypes.UUID,
+			"json", SqlTypes.JSON, "xml", SqlTypes.XML, "ip_address", SqlTypes.IP_ADDRESS, "ip_network", SqlTypes.IP_NETWORK
+		);
+		for (Map.Entry<String, SqlType<?>> entry : expected.entrySet()) {
+			MappedSqlType<?, ?> mapped = assertInstanceOf(MappedSqlType.class, entry.getValue());
+			assertEquals(entry.getKey(), mapped.identifier());
+		}
+	}
+	
+	@Test
+	void unidentifiedMappedConstantsHaveNoIdentifier() {
+		assertEquals(Optional.empty(), SqlTypes.byIdentifier("instant"));
+		assertEquals(Optional.empty(), SqlTypes.byIdentifier("zoned_date_time"));
+	}
+	
+	@Test
+	void byIdentifierRoundTripsEveryIdentifiedConstant() {
+		List<SqlType<?>> constants = List.of(
+			SqlTypes.CHARACTER, SqlTypes.YEAR, SqlTypes.MONTH, SqlTypes.DAY_OF_WEEK, SqlTypes.DURATION,
+			SqlTypes.UUID, SqlTypes.JSON, SqlTypes.XML, SqlTypes.IP_ADDRESS, SqlTypes.IP_NETWORK
+		);
+		for (SqlType<?> constant : constants) {
+			String identifier = assertInstanceOf(MappedSqlType.class, constant).identifier();
+			assertNotNull(identifier, "Constant without identifier: " + constant);
+			assertSame(constant, SqlTypes.byIdentifier(identifier).orElseThrow(), "Identifier not registered: " + identifier);
+		}
+	}
+	
+	@Test
+	void identifiedConstantsHaveUniqueIdentifiers() {
+		List<SqlType<?>> constants = List.of(
+			SqlTypes.CHARACTER, SqlTypes.YEAR, SqlTypes.MONTH, SqlTypes.DAY_OF_WEEK, SqlTypes.DURATION,
+			SqlTypes.UUID, SqlTypes.JSON, SqlTypes.XML, SqlTypes.IP_ADDRESS, SqlTypes.IP_NETWORK
+		);
+		Set<String> identifiers = new HashSet<>();
+		for (SqlType<?> constant : constants) {
+			identifiers.add(assertInstanceOf(MappedSqlType.class, constant).identifier());
+		}
+		assertEquals(constants.size(), identifiers.size());
+	}
+	
+	@Test
+	void identifiedConstantsPreserveTheirBaseType() {
+		assertEquals(SqlTypes.FIXED_STRING.configure(SqlParameter.length(36)), SqlTypes.UUID.baseType());
+		assertEquals(SqlTypes.FIXED_STRING.configure(SqlParameter.length(1)), SqlTypes.CHARACTER.baseType());
+		assertSame(SqlTypes.TEXT, SqlTypes.JSON.baseType());
+		assertSame(SqlTypes.TEXT, SqlTypes.XML.baseType());
+		assertEquals(SqlTypes.STRING.configure(SqlParameter.length(64)), SqlTypes.IP_ADDRESS.baseType());
+		assertEquals(SqlTypes.STRING.configure(SqlParameter.length(64)), SqlTypes.IP_NETWORK.baseType());
+		assertSame(SqlTypes.INTEGER, SqlTypes.YEAR.baseType());
+		assertSame(SqlTypes.INTEGER, SqlTypes.MONTH.baseType());
+		assertSame(SqlTypes.INTEGER, SqlTypes.DAY_OF_WEEK.baseType());
+		assertSame(SqlTypes.LONG, SqlTypes.DURATION.baseType());
 	}
 	
 	private enum TestEnum {
