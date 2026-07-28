@@ -32,6 +32,7 @@ import net.luis.utils.io.database.function.functions.string.SqlConcatFunction;
 import net.luis.utils.io.database.function.functions.temporal.*;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.query.util.SqlSetClause;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
@@ -179,21 +180,26 @@ public class MySqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) throws SqlException {
-		Objects.requireNonNull(conflictColumn, "Sql conflict column must not be null");
-		Objects.requireNonNull(updateColumns, "Sql update columns must not be null");
+	public @NonNull SqlRendered renderUpsertClause(@NonNull List<SqlColumn<?, ?>> conflictColumns, @NonNull List<SqlSetClause<?, ?>> updateClauses) throws SqlException {
+		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
+		Objects.requireNonNull(updateClauses, "Sql update clauses must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.on().literal("DUPLICATE").key().update();
 		
-		for (int i = 0; i < updateColumns.size(); i++) {
+		for (int i = 0; i < updateClauses.size(); i++) {
 			if (i > 0) {
 				renderer.comma();
 			}
-			String quotedName = this.quoteIdentifier(updateColumns.get(i).name());
-			renderer.literal(quotedName).literal("=").literal("VALUES(" + quotedName + ")");
+			renderer.rendered(updateClauses.get(i).toSql(this));
 		}
 		return renderer.toSql();
+	}
+	
+	@Override
+	public @NonNull SqlExpression<?> upsertExcludedValue(@NonNull SqlColumn<?, ?> column) throws SqlException {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		return new MySqlValuesExpression<>(column);
 	}
 	
 	@Override

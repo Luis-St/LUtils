@@ -34,6 +34,7 @@ import net.luis.utils.io.database.function.functions.string.*;
 import net.luis.utils.io.database.function.functions.temporal.*;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
+import net.luis.utils.io.database.query.util.SqlSetClause;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
@@ -174,15 +175,15 @@ public class H2Dialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) throws SqlException {
+	public @NonNull SqlRendered renderUpsertClause(@NonNull List<SqlColumn<?, ?>> conflictColumns, @NonNull List<SqlSetClause<?, ?>> updateClauses) throws SqlException {
 		throw new SqlDialectFeatureException(SqlFeature.UPSERT, this);
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull SqlColumn<?, ?> conflictColumn, @NonNull SqlRendered valueTuples) throws SqlException {
+	public @NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull List<SqlColumn<?, ?>> conflictColumns, @NonNull SqlRendered valueTuples) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(columns, "Sql columns must not be null");
-		Objects.requireNonNull(conflictColumn, "Sql conflict column must not be null");
+		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
 		Objects.requireNonNull(valueTuples, "Sql value tuples must not be null");
 		
 		List<String> allColumns = new ArrayList<>();
@@ -201,7 +202,14 @@ public class H2Dialect extends AbstractSqlDialect {
 		}
 		
 		renderer.closingBracket();
-		renderer.keyword("KEY").openingBracket().literal(this.quoteIdentifier(conflictColumn.name())).closingBracket();
+		renderer.keyword("KEY").openingBracket();
+		for (int i = 0; i < conflictColumns.size(); i++) {
+			if (i > 0) {
+				renderer.comma();
+			}
+			renderer.literal(this.quoteIdentifier(conflictColumns.get(i).name()));
+		}
+		renderer.closingBracket();
 		renderer.values().rendered(valueTuples);
 		return renderer.toSql();
 	}

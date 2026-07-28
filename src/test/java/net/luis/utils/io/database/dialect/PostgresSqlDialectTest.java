@@ -27,6 +27,7 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateFunction;
+import net.luis.utils.io.database.function.functions.temporal.SqlDateInZoneFunction;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
@@ -35,6 +36,8 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -303,6 +306,22 @@ class PostgresSqlDialectTest {
 	void truncateRoutesThroughPostgresNumericRenderer() throws SqlException {
 		SqlNumericTruncateFunction<?> function = new SqlNumericTruncateFunction<>(new SqlValueExpression<>(5));
 		assertTrue(DIALECT.renderFunction(function).sql().contains("TRUNC("));
+	}
+	
+	@Test
+	void dateInZoneRoutesThroughPostgresRenderer() throws SqlException {
+		SqlValueExpression<LocalDateTime> expression = new SqlValueExpression<>(LocalDateTime.of(2024, 1, 1, 0, 0), SqlTypes.LOCAL_DATE_TIME.configure(SqlParameter.fractional(0)));
+		SqlValueExpression<String> zoneId = new SqlValueExpression<>("UTC", SqlTypes.STRING.configure(SqlParameter.length(64)));
+		SqlDateInZoneFunction<LocalDate> function = new SqlDateInZoneFunction<>(expression, zoneId, SqlTypes.LOCAL_DATE);
+		String sql = DIALECT.renderFunction(function).sql();
+		assertTrue(sql.contains("CAST("));
+		assertTrue(sql.contains("AT TIME ZONE"));
+		assertTrue(sql.contains("AS DATE"));
+	}
+	
+	@Test
+	void renderDateInZoneNullFunction() {
+		assertThrows(NullPointerException.class, () -> DIALECT.renderFunction(null));
 	}
 	
 	@Test

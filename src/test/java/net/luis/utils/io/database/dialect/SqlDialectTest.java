@@ -30,6 +30,7 @@ import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.migration.SqlCheckConstraintInfo;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.query.SqlSetOperation;
+import net.luis.utils.io.database.query.util.SqlSetClause;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
@@ -255,12 +256,17 @@ class SqlDialectTest {
 		}
 		
 		@Override
-		public @NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) {
+		public @NonNull SqlRendered renderUpsertClause(@NonNull List<SqlColumn<?, ?>> conflictColumns, @NonNull List<SqlSetClause<?, ?>> updateClauses) {
 			throw new UnsupportedOperationException();
 		}
 		
 		@Override
-		public @NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull SqlColumn<?, ?> conflictColumn, @NonNull SqlRendered valueTuples) {
+		public @NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull List<SqlColumn<?, ?>> conflictColumns, @NonNull SqlRendered valueTuples) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public @NonNull SqlExpression<?> upsertExcludedValue(@NonNull SqlColumn<?, ?> column) {
 			throw new UnsupportedOperationException();
 		}
 		

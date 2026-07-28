@@ -407,6 +407,17 @@ class PostgresSqlTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 	}
 	
 	@Override
+	protected @NonNull SqlRendered renderDateInZone(@NonNull SqlDateInZoneFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.cast().openingBracket().openingBracket().rendered(function.expression().toSql(this.dialect));
+		renderer.literal("AT").literal("TIME").literal("ZONE").rendered(function.zoneId().toSql(this.dialect));
+		renderer.closingBracket().as().literal("DATE").closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
 	protected @NonNull SqlRendered renderMakeDate(@NonNull SqlMakeDateFunction<?> function) throws SqlException {
 		Objects.requireNonNull(function, "Sql function must not be null");
 		

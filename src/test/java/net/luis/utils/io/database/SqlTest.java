@@ -1648,6 +1648,26 @@ class SqlTest {
 	}
 	
 	@Test
+	void dateInZoneWithNullExpression() {
+		assertThrows(NullPointerException.class, () -> Sql.dateInZone(null, STR, SqlTypes.LOCAL_DATE));
+	}
+	
+	@Test
+	void dateInZoneWithNullZoneId() {
+		assertThrows(NullPointerException.class, () -> Sql.dateInZone(TS, (SqlExpression<String>) null, SqlTypes.LOCAL_DATE));
+	}
+	
+	@Test
+	void dateInZoneWithNullType() {
+		assertThrows(NullPointerException.class, () -> Sql.dateInZone(TS, STR, (SqlType<LocalDate>) null));
+	}
+	
+	@Test
+	void dateInZoneWithNullStringZoneId() {
+		assertThrows(NullPointerException.class, () -> Sql.dateInZone(TS, (String) null));
+	}
+	
+	@Test
 	void overWithNullAggregateThrows() {
 		assertThrows(NullPointerException.class, () -> Sql.over(null, OVER));
 	}
@@ -2874,6 +2894,26 @@ class SqlTest {
 	@Test
 	void toTimeBuildsFunction() {
 		assertInstanceOf(SqlToTimeFunction.class, Sql.toTime(TS, LOCAL_TIME_TYPE));
+	}
+	
+	@Test
+	void dateInZoneCreatesFunction() {
+		assertInstanceOf(SqlDateInZoneFunction.class, Sql.dateInZone(TS, STR, SqlTypes.LOCAL_DATE));
+	}
+	
+	@Test
+	void dateInZoneWithZoneIdUsesLocalDateType() {
+		SqlExpression<LocalDate> result = Sql.dateInZone(TS, STR);
+		assertInstanceOf(SqlDateInZoneFunction.class, result);
+		assertEquals(SqlTypes.LOCAL_DATE, ((SqlDateInZoneFunction<LocalDate>) result).type());
+	}
+	
+	@Test
+	void dateInZoneWithStringZoneIdCreatesFunction() throws SqlTypeNotFoundException {
+		SqlExpression<LocalDate> result = Sql.dateInZone(TS, "UTC");
+		assertInstanceOf(SqlDateInZoneFunction.class, result);
+		SqlDateInZoneFunction<LocalDate> function = (SqlDateInZoneFunction<LocalDate>) result;
+		assertEquals(Sql.dateInZone(TS, Sql.of("UTC")), function);
 	}
 	
 	@Test

@@ -24,6 +24,7 @@ import net.luis.utils.io.database.*;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.*;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.function.window.SqlWindowClause;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
@@ -31,6 +32,7 @@ import net.luis.utils.io.database.migration.*;
 import net.luis.utils.io.database.query.crud.SqlInsertQuery;
 import net.luis.utils.io.database.query.crud.SqlSelectQuery;
 import net.luis.utils.io.database.query.row.SqlRow2;
+import net.luis.utils.io.database.query.util.*;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.transaction.*;
@@ -180,6 +182,11 @@ class SqlIntegrationTest {
 		} catch (SqlException e) {
 			throw new RuntimeException("Failed to build database for " + dialect, e);
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static <E, V> @NonNull SqlSetClause<E, V> excludedValueOf(@NonNull SqlColumn<E, V> column, @NonNull SqlDialect dialect) throws SqlException {
+		return new SqlSetClause<>(column, (SqlExpression<V>) dialect.upsertExcludedValue(column), SqlSetType.EXPRESSION);
 	}
 	
 	private static void resetSchema(@NonNull SqlDatabase database) throws SqlException {
@@ -992,6 +999,131 @@ class SqlIntegrationTest {
 		assertEquals(1L, database.from(PERSON).select().count());
 		assertEquals("Alice Updated", database.from(PERSON).select(P_NAME).where(Sql.equalTo(P_ID, 1)).fetchOne());
 		assertEquals(31, database.from(PERSON).select(P_AGE).where(Sql.equalTo(P_ID, 1)).fetchOne());
+	}
+	
+	@MethodSource("engines")
+	@ParameterizedTest(name = "{0}")
+	void upsertWithCustomUpdateClausesUpdatesOnlyGivenColumns(@NonNull Engine engine) throws SqlException {
+		assumeTrue(engine.supports(SqlFeature.UPSERT_SUFFIX), "Custom upsert update clauses require an upsert suffix, not supported by " + engine.name());
+		SqlDatabase database = engine.database();
+		resetSchema(database);
+		SqlDialect dialect = database.getDialect();
+		SqlConnectionSource source = SqlConnectionSource.pooled(database.getDataSource());
+		
+		database.from(PERSON).insert(new Person(1, "Alice", "alice@example.com", 30, true)).execute();
+		SqlInsertQuery.upsert(
+			PERSON, dialect, source, Duration.ofSeconds(30), resultSet -> null,
+			List.of(new Person(1, "Alice Updated", "alice.updated@example.com", 99, false)), List.of(P_ID),
+			List.of(excludedValueOf(P_NAME, dialect))
+		).execute();
+		
+		assertEquals(1L, database.from(PERSON).select().count());
+		assertEquals("Alice Updated", database.from(PERSON).select(P_NAME).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals("alice@example.com", database.from(PERSON).select(P_EMAIL).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals(30, database.from(PERSON).select(P_AGE).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals(true, database.from(PERSON).select(P_ACTIVE).where(Sql.equalTo(P_ID, 1)).fetchOne());
+	}
+	
+	@MethodSource("engines")
+	@ParameterizedTest(name = "{0}")
+	void insertOmittingColumnFallsBackToDatabaseDefault(@NonNull Engine engine) throws SqlException {
+		SqlDatabase database = engine.database();
+		resetSchema(database);
+		
+		database.from(PERSON).insert(new Person(1, "Alice", "alice@example.com", 30, false)).omitting(P_ACTIVE).execute();
+		
+		assertEquals(true, database.from(PERSON).select(P_ACTIVE).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals("Alice", database.from(PERSON).select(P_NAME).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals("alice@example.com", database.from(PERSON).select(P_EMAIL).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals(30, database.from(PERSON).select(P_AGE).where(Sql.equalTo(P_ID, 1)).fetchOne());
+	}
+	
+	@MethodSource("engines")
+	@ParameterizedTest(name = "{0}")
+	void insertOmittingColumnAppliesToEveryRowOfBatch(@NonNull Engine engine) throws SqlException {
+		SqlDatabase database = engine.database();
+		resetSchema(database);
+		
+		database.from(PERSON).insert(List.of(
+			new Person(1, "Alice", "alice@example.com", 30, false),
+			new Person(2, "Bob", "bob@example.com", 25, false),
+			new Person(3, "Charlie", "charlie@example.com", 40, false)
+		)).omitting(P_ACTIVE).execute();
+		
+		assertEquals(3L, database.from(PERSON).select().where(Sql.equalTo(P_ACTIVE, true)).count());
+		assertEquals("Bob", database.from(PERSON).select(P_NAME).where(Sql.equalTo(P_ID, 2)).fetchOne());
+		assertEquals("charlie@example.com", database.from(PERSON).select(P_EMAIL).where(Sql.equalTo(P_ID, 3)).fetchOne());
+		assertEquals(40, database.from(PERSON).select(P_AGE).where(Sql.equalTo(P_ID, 3)).fetchOne());
+	}
+	
+	@MethodSource("engines")
+	@ParameterizedTest(name = "{0}")
+	void insertOverridingColumnUsesExpressionInsteadOfEntityValue(@NonNull Engine engine) throws SqlException {
+		SqlDatabase database = engine.database();
+		resetSchema(database);
+		
+		database.from(PERSON).insert(new Person(1, "alice", "alice@example.com", 30, true)).override(P_NAME, Sql.upper(Sql.of("alice"))).execute();
+		
+		assertEquals("ALICE", database.from(PERSON).select(P_NAME).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals("alice@example.com", database.from(PERSON).select(P_EMAIL).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals(30, database.from(PERSON).select(P_AGE).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals(true, database.from(PERSON).select(P_ACTIVE).where(Sql.equalTo(P_ID, 1)).fetchOne());
+	}
+	
+	@MethodSource("engines")
+	@ParameterizedTest(name = "{0}")
+	void insertOverridingAndOmittingCombineAcrossBatch(@NonNull Engine engine) throws SqlException {
+		SqlDatabase database = engine.database();
+		resetSchema(database);
+		
+		database.from(PERSON).insert(List.of(
+			new Person(1, "alice", "alice@example.com", 30, false),
+			new Person(2, "bob", "bob@example.com", 25, false)
+		)).override(P_NAME, Sql.of("Overridden")).omitting(P_ACTIVE).execute();
+		
+		assertEquals(2L, database.from(PERSON).select().where(Sql.equalTo(P_NAME, "Overridden")).count());
+		assertEquals(2L, database.from(PERSON).select().where(Sql.equalTo(P_ACTIVE, true)).count());
+		assertEquals("alice@example.com", database.from(PERSON).select(P_EMAIL).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals("bob@example.com", database.from(PERSON).select(P_EMAIL).where(Sql.equalTo(P_ID, 2)).fetchOne());
+		assertEquals(25, database.from(PERSON).select(P_AGE).where(Sql.equalTo(P_ID, 2)).fetchOne());
+	}
+	
+	@MethodSource("engines")
+	@ParameterizedTest(name = "{0}")
+	void insertColumnsInsertsPartialRowsWithoutEntity(@NonNull Engine engine) throws SqlException {
+		SqlDatabase database = engine.database();
+		resetSchema(database);
+		SqlConnectionSource source = SqlConnectionSource.pooled(database.getDataSource());
+		
+		int affected = SqlInsertQuery.columns(PERSON, database.getDialect(), source, Duration.ofSeconds(30), resultSet -> null, P_ID, P_NAME, P_EMAIL, P_AGE)
+			.row(1, "Alice", "alice@example.com", 30)
+			.row(2, "Bob", "bob@example.com", 25)
+			.execute();
+		
+		assertEquals(2, affected);
+		assertEquals(2L, database.from(PERSON).select().count());
+		assertEquals("Alice", database.from(PERSON).select(P_NAME).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals(25, database.from(PERSON).select(P_AGE).where(Sql.equalTo(P_ID, 2)).fetchOne());
+		assertEquals(2L, database.from(PERSON).select().where(Sql.equalTo(P_ACTIVE, true)).count());
+	}
+	
+	@MethodSource("engines")
+	@ParameterizedTest(name = "{0}")
+	void insertColumnsBuilderInsertsUntypedPartialRows(@NonNull Engine engine) throws SqlException {
+		SqlDatabase database = engine.database();
+		resetSchema(database);
+		SqlConnectionSource source = SqlConnectionSource.pooled(database.getDataSource());
+		
+		int affected = SqlInsertQuery.insertColumns(PERSON, database.getDialect(), source, Duration.ofSeconds(30), resultSet -> null)
+			.row(SqlColumnValue.of(P_ID, 1), SqlColumnValue.of(P_NAME, Sql.upper(Sql.of("alice"))), SqlColumnValue.of(P_EMAIL, "alice@example.com"), SqlColumnValue.of(P_AGE, 30))
+			.row(SqlColumnValue.of(P_ID, 2), SqlColumnValue.of(P_NAME, Sql.upper(Sql.of("bob"))), SqlColumnValue.of(P_EMAIL, "bob@example.com"), SqlColumnValue.of(P_AGE, 25))
+			.execute();
+		
+		assertEquals(2, affected);
+		assertEquals("ALICE", database.from(PERSON).select(P_NAME).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals("BOB", database.from(PERSON).select(P_NAME).where(Sql.equalTo(P_ID, 2)).fetchOne());
+		assertEquals(30, database.from(PERSON).select(P_AGE).where(Sql.equalTo(P_ID, 1)).fetchOne());
+		assertEquals(2L, database.from(PERSON).select().where(Sql.equalTo(P_ACTIVE, true)).count());
 	}
 	
 	@MethodSource("engines")

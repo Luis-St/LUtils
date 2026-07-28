@@ -23,6 +23,9 @@ import net.luis.utils.io.data.xml.XmlElement;
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
+import net.luis.utils.io.database.query.SqlAlias;
+import net.luis.utils.io.database.query.util.SqlSetClause;
+import net.luis.utils.io.database.query.util.SqlSetType;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
@@ -130,7 +133,14 @@ class SqlServerDialectTest {
 	
 	@Test
 	void renderUpsertClauseUnsupported() {
-		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), List.of()));
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of()));
+	}
+	
+	@Test
+	void renderUpsertClauseUnsupportedWithSetClauses() {
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		SqlSetClause<Object, String> updateClause = new SqlSetClause<>(stringColumn, stringColumn.of(SqlAlias.EXCLUDED), SqlSetType.EXPRESSION);
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of(updateClause)));
 	}
 	
 	@Test
@@ -140,12 +150,12 @@ class SqlServerDialectTest {
 	
 	@Test
 	void renderUpsertStatementNullTable() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(null, List.of(), SqlTestFixtures.integerColumn(), SqlRendered.of("")));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(null, List.of(), List.of(SqlTestFixtures.integerColumn()), SqlRendered.of("")));
 	}
 	
 	@Test
 	void renderUpsertStatementNullColumns() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), null, SqlTestFixtures.integerColumn(), SqlRendered.of("")));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), null, List.of(SqlTestFixtures.integerColumn()), SqlRendered.of("")));
 	}
 	
 	@Test
@@ -155,7 +165,7 @@ class SqlServerDialectTest {
 	
 	@Test
 	void renderUpsertStatementNullValueTuples() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), SqlTestFixtures.integerColumn(), null));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), List.of(SqlTestFixtures.integerColumn()), null));
 	}
 	
 	@Test
@@ -335,7 +345,7 @@ class SqlServerDialectTest {
 		SqlColumn<Object, String> email = table.column("email", SqlTestFixtures.STRING_TYPE, object -> "test");
 		List<SqlColumn<?, ?>> columns = List.of(id, name, email);
 		
-		String sql = DIALECT.renderUpsertStatement(table, columns, id, SqlRendered.of("(?, ?, ?)")).sql();
+		String sql = DIALECT.renderUpsertStatement(table, columns, List.of(id), SqlRendered.of("(?, ?, ?)")).sql();
 		assertTrue(sql.contains("MERGE"));
 		assertTrue(sql.contains("INTO"));
 		assertTrue(sql.contains("USING"));
@@ -353,7 +363,7 @@ class SqlServerDialectTest {
 		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
 		List<SqlColumn<?, ?>> columns = List.of(id, name);
 		
-		String sql = DIALECT.renderUpsertStatement(table, columns, id, SqlRendered.of("(?, ?)")).sql();
+		String sql = DIALECT.renderUpsertStatement(table, columns, List.of(id), SqlRendered.of("(?, ?)")).sql();
 		String setClause = sql.substring(sql.indexOf("UPDATE SET") + "UPDATE SET".length(), sql.indexOf("WHEN NOT MATCHED"));
 		assertTrue(setClause.contains("target.[name]"));
 		assertFalse(setClause.contains("[id]"));
@@ -365,10 +375,53 @@ class SqlServerDialectTest {
 		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
 		List<SqlColumn<?, ?>> columns = List.of(id);
 		
-		String sql = DIALECT.renderUpsertStatement(table, columns, id, SqlRendered.of("(?)")).sql();
+		String sql = DIALECT.renderUpsertStatement(table, columns, List.of(id), SqlRendered.of("(?)")).sql();
 		String setClause = sql.substring(sql.indexOf("UPDATE SET") + "UPDATE SET".length(), sql.indexOf("WHEN NOT MATCHED"));
 		assertTrue(setClause.contains("target.[id]"));
 		assertTrue(setClause.contains("source.[id]"));
+	}
+	
+	@Test
+	void renderUpsertStatementAllColumnsConflictMultiColumnFallback() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
+		List<SqlColumn<?, ?>> columns = List.of(id, name);
+		
+		String sql = DIALECT.renderUpsertStatement(table, columns, columns, SqlRendered.of("(?, ?)")).sql();
+		String setClause = sql.substring(sql.indexOf("UPDATE SET") + "UPDATE SET".length(), sql.indexOf("WHEN NOT MATCHED"));
+		assertTrue(setClause.contains("target.[id]"));
+		assertTrue(setClause.contains("source.[id]"));
+		assertFalse(setClause.contains("[name]"));
+	}
+	
+	@Test
+	void renderUpsertStatementCompositeConflictColumnsBuildsAndedOnClause() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
+		List<SqlColumn<?, ?>> columns = List.of(id, name);
+		
+		String sql = DIALECT.renderUpsertStatement(table, columns, columns, SqlRendered.of("(?, ?)")).sql();
+		String onClause = sql.substring(sql.indexOf("ON target"), sql.indexOf("WHEN MATCHED"));
+		assertTrue(onClause.contains("target.[id] = source.[id]"));
+		assertTrue(onClause.contains("target.[name] = source.[name]"));
+		assertTrue(onClause.contains("AND"));
+	}
+	
+	@Test
+	void renderUpsertStatementCompositeConflictColumnsExcludedFromSetClause() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
+		SqlColumn<Object, String> email = table.column("email", SqlTestFixtures.STRING_TYPE, object -> "test");
+		List<SqlColumn<?, ?>> columns = List.of(id, name, email);
+		
+		String sql = DIALECT.renderUpsertStatement(table, columns, List.of(id, name), SqlRendered.of("(?, ?, ?)")).sql();
+		String setClause = sql.substring(sql.indexOf("UPDATE SET") + "UPDATE SET".length(), sql.indexOf("WHEN NOT MATCHED"));
+		assertTrue(setClause.contains("target.[email]"));
+		assertFalse(setClause.contains("[id]"));
+		assertFalse(setClause.contains("[name]"));
 	}
 	
 	@Test
@@ -378,7 +431,7 @@ class SqlServerDialectTest {
 		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
 		List<SqlColumn<?, ?>> columns = List.of(id, name);
 		
-		String sql = DIALECT.renderUpsertStatement(table, columns, id, SqlRendered.of("(?, ?)")).sql();
+		String sql = DIALECT.renderUpsertStatement(table, columns, List.of(id), SqlRendered.of("(?, ?)")).sql();
 		String auditColumn = table.auditConfig().orElseThrow().columnNames().getFirst();
 		assertTrue(sql.contains(auditColumn));
 	}
@@ -390,7 +443,7 @@ class SqlServerDialectTest {
 		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
 		List<SqlColumn<?, ?>> columns = List.of(id, name);
 		
-		assertTrue(DIALECT.renderUpsertStatement(table, columns, id, SqlRendered.of("(?, ?)")).sql().contains("MERGE"));
+		assertTrue(DIALECT.renderUpsertStatement(table, columns, List.of(id), SqlRendered.of("(?, ?)")).sql().contains("MERGE"));
 	}
 	
 	@Test

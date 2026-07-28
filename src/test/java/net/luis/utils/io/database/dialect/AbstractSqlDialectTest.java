@@ -26,8 +26,9 @@ import net.luis.utils.io.database.exception.client.dialect.*;
 import net.luis.utils.io.database.expression.orderable.*;
 import net.luis.utils.io.database.function.window.*;
 import net.luis.utils.io.database.index.SqlIndexMethod;
-import net.luis.utils.io.database.query.SqlLockMode;
-import net.luis.utils.io.database.query.SqlSetOperation;
+import net.luis.utils.io.database.query.*;
+import net.luis.utils.io.database.query.util.SqlSetClause;
+import net.luis.utils.io.database.query.util.SqlSetType;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
@@ -63,9 +64,7 @@ class AbstractSqlDialectTest {
 		DIALECT.renderReferentialAction(renderer, action);
 		return sql(renderer.toSql());
 	}
-	//endregion
 	
-	//region Tier 1 - Constructors
 	@Test
 	void constructInitializesRegistryAndRenderer() {
 		TestDialect dialect = new TestDialect();
@@ -76,7 +75,6 @@ class AbstractSqlDialectTest {
 		assertNotNull(dialect.schemaRenderer());
 	}
 	
-	//region Tier 2 - Exceptions
 	@Test
 	void isTypeSupportedNullType() {
 		assertThrows(NullPointerException.class, () -> DIALECT.isTypeSupported(null));
@@ -246,7 +244,12 @@ class AbstractSqlDialectTest {
 	
 	@Test
 	void renderUpsertClauseNullUpdateColumns() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), null));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), null));
+	}
+	
+	@Test
+	void upsertExcludedValueNullColumn() {
+		assertThrows(NullPointerException.class, () -> DIALECT.upsertExcludedValue(null));
 	}
 	
 	@Test
@@ -281,21 +284,25 @@ class AbstractSqlDialectTest {
 	
 	@Test
 	void renderUpsertStatementUnsupportedByDefault() {
-		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), SqlTestFixtures.integerColumn(), SqlRendered.of("")));
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), List.of(SqlTestFixtures.integerColumn()), SqlRendered.of("")));
+	}
+	
+	@Test
+	void renderUpsertStatementMultipleConflictColumnsUnsupportedByDefault() {
+		List<SqlColumn<?, ?>> conflictColumns = List.of(SqlTestFixtures.integerColumn(), SqlTestFixtures.stringColumn());
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), conflictColumns, SqlRendered.of("")));
 	}
 	
 	@Test
 	void renderInsertOrIgnoreModifierUnsupportedByDefault() {
 		assertThrows(SqlDialectFeatureException.class, DIALECT::renderInsertOrIgnoreModifier);
 	}
-	//endregion
 	
 	@Test
 	void renderOrderingItemUnknownOrderableThrows() {
 		assertThrows(SqlDialectException.class, () -> DIALECT.renderOrderingItem(SqlRenderer.empty(), new DummyOrderable()));
 	}
 	
-	//region Tier 3 - Branch coverage
 	@Test
 	void isTypeSupportedResolvableType() {
 		assertTrue(DIALECT.isTypeSupported(SqlTypes.INTEGER));
@@ -624,26 +631,66 @@ class AbstractSqlDialectTest {
 	
 	@Test
 	void renderUpsertClauseSingleColumn() throws SqlException {
-		String sql = sql(DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), List.of(SqlTestFixtures.stringColumn())));
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		SqlSetClause<Object, String> updateClause = new SqlSetClause<>(stringColumn, stringColumn.of(SqlAlias.EXCLUDED), SqlSetType.EXPRESSION);
+		String sql = sql(DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of(updateClause)));
 		assertTrue(sql.contains("CONFLICT"));
-		assertTrue(sql.contains("EXCLUDED.\"name\""));
+		assertTrue(sql.contains("excluded"));
+		assertTrue(sql.contains("\"name\""));
 		assertFalse(sql.contains(","));
 	}
 	
 	@Test
 	void renderUpsertClauseMultipleColumns() throws SqlException {
-		List<SqlColumn<?, ?>> updates = List.of(SqlTestFixtures.integerColumn(), SqlTestFixtures.stringColumn());
-		String sql = sql(DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), updates));
+		SqlColumn<Object, Integer> integerColumn = SqlTestFixtures.integerColumn();
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		List<SqlSetClause<?, ?>> updates = List.of(
+			new SqlSetClause<>(integerColumn, integerColumn.of(SqlAlias.EXCLUDED), SqlSetType.EXPRESSION),
+			new SqlSetClause<>(stringColumn, stringColumn.of(SqlAlias.EXCLUDED), SqlSetType.EXPRESSION)
+		);
+		String sql = sql(DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), updates));
 		assertTrue(sql.contains(","));
-		assertTrue(sql.contains("EXCLUDED.\"id\""));
-		assertTrue(sql.contains("EXCLUDED.\"name\""));
+		assertTrue(sql.contains("excluded"));
+		assertTrue(sql.contains("\"id\""));
+		assertTrue(sql.contains("\"name\""));
 	}
 	
 	@Test
 	void renderUpsertClauseEmptyColumns() throws SqlException {
-		String sql = sql(DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), List.of()));
+		String sql = sql(DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of()));
 		assertTrue(sql.contains("DO"));
 		assertFalse(sql.contains("EXCLUDED."));
+	}
+	
+	@Test
+	void renderUpsertClauseCompositeConflictColumns() throws SqlException {
+		List<SqlColumn<?, ?>> conflictColumns = List.of(SqlTestFixtures.integerColumn(), SqlTestFixtures.stringColumn());
+		String sql = sql(DIALECT.renderUpsertClause(conflictColumns, List.of()));
+		assertTrue(sql.contains("CONFLICT"));
+		assertTrue(sql.contains("\"id\""));
+		assertTrue(sql.contains("\"name\""));
+		assertTrue(sql.contains(","));
+	}
+	
+	@Test
+	void renderUpsertClauseMultipleSetClausesWithCustomExpressions() throws SqlException {
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		SqlColumn<Object, Integer> integerColumn = SqlTestFixtures.integerColumn();
+		List<SqlSetClause<?, ?>> updates = List.of(
+			new SqlSetClause<>(stringColumn, SqlTestFixtures.stringExpression(), SqlSetType.EXPRESSION),
+			new SqlSetClause<>(integerColumn, null, SqlSetType.NULL)
+		);
+		String sql = sql(DIALECT.renderUpsertClause(List.of(integerColumn), updates));
+		assertTrue(sql.contains(","));
+		assertTrue(sql.contains("\"name\""));
+		assertTrue(sql.contains("\"id\""));
+		assertFalse(sql.contains("EXCLUDED."));
+	}
+	
+	@Test
+	void upsertExcludedValueReturnsColumnOfExcluded() throws SqlException {
+		SqlColumn<Object, Integer> column = SqlTestFixtures.integerColumn();
+		assertEquals(column.of(SqlAlias.EXCLUDED), DIALECT.upsertExcludedValue(column));
 	}
 	
 	@Test
@@ -673,9 +720,7 @@ class AbstractSqlDialectTest {
 	void getCheckConstraintsNullQueryReturnsEmpty() throws SqlException {
 		assertTrue(DIALECT.getCheckConstraints(SqlTestFixtures.placeholderConnection(), "public", "test_table").isEmpty());
 	}
-	//endregion
 	
-	//region Tier 4 - Simple inputs
 	@Test
 	void readXmlElementNullReturnsNull() throws SQLException {
 		assertNull(AbstractSqlDialect.readXmlElement(null));
@@ -717,9 +762,7 @@ class AbstractSqlDialectTest {
 		SqlRendered rendered = DIALECT.renderCondition(SqlTestFixtures.alwaysCondition());
 		assertNotNull(rendered);
 	}
-	//endregion
 	
-	//region Tier 5 - Complex inputs
 	@Test
 	void getCreateSchemaColumnsTableSqlStructure() throws SqlException {
 		String sql = DIALECT.getCreateSchemaColumnsTableSql();
@@ -780,9 +823,7 @@ class AbstractSqlDialectTest {
 		assertTrue(sql.startsWith("DELETE FROM"));
 		assertTrue(sql.contains("WHERE \"version\" = ?"));
 	}
-	//endregion
 	
-	//region Test fixtures
 	@Test
 	void resolveTypeWithNullNativeType() {
 		assertThrows(NullPointerException.class, () -> DIALECT.resolveType(null));
@@ -879,6 +920,7 @@ class AbstractSqlDialectTest {
 		}
 	}
 	
+	//region Helper classes
 	private static final class RegistryDialect extends AbstractSqlDialect {
 		
 		@Override

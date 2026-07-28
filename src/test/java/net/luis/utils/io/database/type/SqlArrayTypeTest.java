@@ -222,7 +222,7 @@ class SqlArrayTypeTest {
 	void setUnsupportedElementTypeThrows() {
 		SqlDialect unsupporting = new SqlDefaultDialect() {
 			@Override
-			public boolean isTypeSupported(SqlType<?> type) {
+			public boolean isTypeSupported(@NonNull SqlType<?> type) {
 				return false;
 			}
 		};

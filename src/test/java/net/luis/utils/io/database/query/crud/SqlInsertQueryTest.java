@@ -22,6 +22,9 @@ import net.luis.utils.io.database.audit.SqlAuditUserProvider;
 import net.luis.utils.io.database.dialect.SqlDialects;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
+import net.luis.utils.io.database.query.SqlAlias;
+import net.luis.utils.io.database.query.util.SqlSetClause;
+import net.luis.utils.io.database.query.util.SqlSetType;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import org.junit.jupiter.api.Test;
@@ -147,6 +150,76 @@ class SqlInsertQueryTest {
 	}
 	
 	@Test
+	void omittingWithNullColumnsThrows() throws SqlException {
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(oneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		assertThrows(NullPointerException.class, () -> query.omitting((SqlColumn<Object, ?>[]) null));
+	}
+	
+	@Test
+	void overrideWithNullColumnThrows() throws SqlException {
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(oneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		assertThrows(NullPointerException.class, () -> query.override(null, integerExpression()));
+	}
+	
+	@Test
+	void overrideWithNullExpressionThrows() throws SqlException {
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(oneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		assertThrows(NullPointerException.class, () -> query.override(integerColumn(), null));
+	}
+	
+	@Test
+	void upsertWithCompositeConflictColumnsCreatesQuery() throws SqlException {
+		SqlTable<Object> table = oneColumnTable();
+		SqlColumn<Object, Integer> a = table.column("a", INTEGER_TYPE, object -> 0);
+		SqlColumn<Object, Integer> b = table.column("b", INTEGER_TYPE, object -> 0);
+		assertNotNull(SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), List.of(a, b)));
+	}
+	
+	@Test
+	void upsertWithEmptyConflictColumnsThrows() {
+		assertThrows(SqlStatementBuilderException.class, () -> SqlInsertQuery.upsert(oneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), List.of()));
+	}
+	
+	@Test
+	void upsertWithNullConflictColumnsThrows() {
+		assertThrows(NullPointerException.class, () -> SqlInsertQuery.upsert(oneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), (List<SqlColumn<Object, ?>>) null));
+	}
+	
+	@Test
+	void upsertSingleColumnOverloadWithNullConflictColumnThrows() {
+		SqlTable<Object> table = oneColumnTable();
+		assertThrows(NullPointerException.class, () -> SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), (SqlColumn<Object, ?>) null));
+	}
+	
+	@Test
+	void upsertWithUpdateClausesCreatesQuery() throws SqlException {
+		SqlTable<Object> table = oneColumnTable();
+		SqlColumn<Object, Integer> conflict = table.column("conflict", INTEGER_TYPE, object -> 0);
+		SqlSetClause<Object, Integer> clause = new SqlSetClause<>(conflict, integerExpression(), SqlSetType.EXPRESSION);
+		assertNotNull(SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), List.of(conflict), List.of(clause)));
+	}
+	
+	@Test
+	void upsertWithNullUpdateClausesThrows() {
+		SqlTable<Object> table = oneColumnTable();
+		SqlColumn<Object, Integer> conflict = table.column("conflict", INTEGER_TYPE, object -> 0);
+		assertThrows(NullPointerException.class, () -> SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), List.of(conflict), null));
+	}
+	
+	@Test
+	void upsertWithUpdateClausesNullEntitiesThrows() {
+		SqlTable<Object> table = oneColumnTable();
+		SqlColumn<Object, Integer> conflict = table.column("conflict", INTEGER_TYPE, object -> 0);
+		assertThrows(NullPointerException.class, () -> SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, null, List.of(conflict), List.of()));
+	}
+	
+	@Test
+	void upsertWithUpdateClausesNullConflictColumnsThrows() {
+		SqlTable<Object> table = oneColumnTable();
+		assertThrows(NullPointerException.class, () -> SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), null, List.of()));
+	}
+	
+	@Test
 	void constructWithNullConfig() {
 		assertThrows(NullPointerException.class, () -> new SqlInsertQuery<>(null));
 	}
@@ -220,6 +293,106 @@ class SqlInsertQueryTest {
 		SqlColumn<Object, Integer> id = table.column("conflict", INTEGER_TYPE, object -> 0);
 		SqlInsertQuery<Object> query = SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object(), new Object()), id);
 		assertTrue(query.toSql(SqlDialects.SQL_SERVER).sql().contains("MERGE"));
+	}
+	
+	@Test
+	void omittingExcludesColumnFromRenderedInsert() throws SqlException {
+		SqlTable<Object> table = oneColumnTable();
+		SqlColumn<Object, String> name = table.column("name", STRING_TYPE, object -> "x");
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object())).omitting(name);
+		String sql = query.toSql(DIALECT).sql();
+		assertFalse(sql.contains("\"name\""));
+		assertEquals(1, markerCount(sql));
+	}
+	
+	@Test
+	void omittingDoesNotExcludeConflictColumn() throws SqlException {
+		SqlTable<Object> table = oneColumnTable();
+		SqlColumn<Object, Integer> conflict = table.column("conflict", INTEGER_TYPE, object -> 0);
+		SqlInsertQuery<Object> query = SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), conflict).omitting(conflict);
+		String sql = query.toSql(SqlDialects.POSTGRESQL).sql();
+		assertTrue(sql.contains("\"conflict\""));
+		assertEquals(2, markerCount(sql));
+	}
+	
+	@Test
+	void overrideRendersExpressionInsteadOfBindParameter() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "t");
+		SqlColumn<Object, Integer> id = table.column("id", INTEGER_TYPE, object -> 0);
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object())).override(id, id.of(SqlAlias.EXCLUDED));
+		String sql = query.toSql(DIALECT).sql();
+		assertTrue(sql.contains("excluded"));
+		assertEquals(0, markerCount(sql));
+	}
+	
+	@Test
+	void overrideCalledTwiceForSameColumnReplacesFirst() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "t");
+		SqlColumn<Object, Integer> id = table.column("id", INTEGER_TYPE, object -> 0);
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()))
+			.override(id, id.of(SqlAlias.of("FIRST")))
+			.override(id, id.of(SqlAlias.of("SECOND")));
+		String sql = query.toSql(DIALECT).sql();
+		assertTrue(sql.contains("SECOND"));
+		assertFalse(sql.contains("FIRST"));
+	}
+	
+	@Test
+	void toSqlUpsertCompositeConflictColumnsRendersAllColumns() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "t");
+		SqlColumn<Object, Integer> a = table.column("a", INTEGER_TYPE, object -> 0);
+		SqlColumn<Object, Integer> b = table.column("b", INTEGER_TYPE, object -> 0);
+		SqlInsertQuery<Object> query = SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), List.of(a, b));
+		String sql = query.toSql(SqlDialects.POSTGRESQL).sql();
+		assertTrue(sql.contains("ON CONFLICT"));
+		assertTrue(sql.contains("\"a\""));
+		assertTrue(sql.contains("\"b\""));
+	}
+	
+	@Test
+	void toSqlUpsertAutoIncrementConflictColumnStillRenderedInValueTuple() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "t");
+		SqlColumn<Object, Integer> id = table.column("id", INTEGER_TYPE, object -> 0, builder -> builder.autoIncrement());
+		SqlInsertQuery<Object> query = SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), id);
+		String sql = query.toSql(SqlDialects.POSTGRESQL).sql();
+		assertTrue(sql.contains("\"id\""));
+		assertEquals(1, markerCount(sql));
+	}
+	
+	@Test
+	void toSqlUpsertWithCustomUpdateClauseRendersCustomExpression() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "t");
+		SqlColumn<Object, Integer> conflict = table.column("conflict", INTEGER_TYPE, object -> 0);
+		SqlColumn<Object, Integer> value = table.column("value", INTEGER_TYPE, object -> 0);
+		SqlSetClause<Object, Integer> clause = new SqlSetClause<>(value, value.of(SqlAlias.EXCLUDED), SqlSetType.INCREMENT);
+		SqlInsertQuery<Object> query = SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), List.of(conflict), List.of(clause));
+		String sql = query.toSql(SqlDialects.POSTGRESQL).sql();
+		assertTrue(sql.contains("+"));
+		assertTrue(sql.contains("excluded"));
+	}
+	
+	@Test
+	void toSqlUpsertWithoutUpdateClausesUsesDefaultPerColumnAssignment() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "t");
+		SqlColumn<Object, Integer> id = table.column("id", INTEGER_TYPE, object -> 0);
+		table.column("name", STRING_TYPE, object -> "x");
+		SqlInsertQuery<Object> query = SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), id);
+		String sql = query.toSql(SqlDialects.POSTGRESQL).sql();
+		assertTrue(sql.contains("\"name\" = \"excluded\".\"name\""));
+		// The conflict column itself is not excluded from the default SET-clause loop, so it is also assigned from excluded.
+		assertTrue(sql.contains("\"id\" = \"excluded\".\"id\""));
+	}
+	
+	@Test
+	void toSqlPlainInsertOmitsAutoIncrementColumn() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "t");
+		table.column("id", INTEGER_TYPE, object -> 0, builder -> builder.autoIncrement());
+		table.column("name", STRING_TYPE, object -> "x");
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		String sql = query.toSql(DIALECT).sql();
+		assertFalse(sql.contains("\"id\""));
+		assertTrue(sql.contains("\"name\""));
+		assertEquals(1, markerCount(sql));
 	}
 	
 	@Test

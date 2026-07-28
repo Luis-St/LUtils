@@ -2277,6 +2277,50 @@ public class Sql {
 	}
 	
 	/**
+	 * Creates an expression that converts the given temporal expression into a date within the given time zone, using the given
+	 * temporal result type.<br>
+	 * On Postgres this renders as {@code CAST((expression AT TIME ZONE zoneId) AS DATE)}.<br>
+	 *
+	 * @param expression The temporal expression to convert
+	 * @param zoneId The expression evaluating to the time zone identifier to convert into
+	 * @param type The sql type of the result
+	 * @return An expression evaluating to the date within the given time zone
+	 * @throws NullPointerException If the expression, zone id or type is null
+	 * @param <T> The temporal type of the result
+	 */
+	public static <T extends Temporal> @NonNull SqlExpression<T> dateInZone(@NonNull SqlExpression<?> expression, @NonNull SqlExpression<String> zoneId, @NonNull SqlType<T> type) {
+		return new SqlDateInZoneFunction<>(expression, zoneId, type);
+	}
+	
+	/**
+	 * Creates an expression that converts the given temporal expression into a {@link LocalDate} within the given time zone.<br>
+	 * On Postgres this renders as {@code CAST((expression AT TIME ZONE zoneId) AS DATE)}.<br>
+	 *
+	 * @param expression The temporal expression to convert
+	 * @param zoneId The expression evaluating to the time zone identifier to convert into
+	 * @return An expression evaluating to the date within the given time zone
+	 * @throws NullPointerException If the expression or zone id is null
+	 */
+	public static @NonNull SqlExpression<LocalDate> dateInZone(@NonNull SqlExpression<?> expression, @NonNull SqlExpression<String> zoneId) {
+		return dateInZone(expression, zoneId, SqlTypes.LOCAL_DATE);
+	}
+	
+	/**
+	 * Creates an expression that converts the given temporal expression into a {@link LocalDate} within the given time zone.<br>
+	 * The zone id is wrapped in a string value expression.<br>
+	 * On Postgres this renders as {@code CAST((expression AT TIME ZONE zoneId) AS DATE)}.<br>
+	 *
+	 * @param expression The temporal expression to convert
+	 * @param zoneId The time zone identifier to convert into
+	 * @return An expression evaluating to the date within the given time zone
+	 * @throws NullPointerException If the expression or zone id is null
+	 */
+	public static @NonNull SqlExpression<LocalDate> dateInZone(@NonNull SqlExpression<?> expression, @NonNull String zoneId) throws SqlTypeNotFoundException {
+		Objects.requireNonNull(zoneId, "Zone id must not be null");
+		return dateInZone(expression, of(zoneId));
+	}
+	
+	/**
 	 * Creates an expression that converts the given expression into a time value of the given temporal type.<br>
 	 *
 	 * @param expression The expression to convert

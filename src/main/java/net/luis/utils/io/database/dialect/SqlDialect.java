@@ -31,6 +31,7 @@ import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.migration.SqlCheckConstraintInfo;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.query.SqlSetOperation;
+import net.luis.utils.io.database.query.util.SqlSetClause;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
@@ -380,28 +381,39 @@ public interface SqlDialect {
 	@NonNull SqlRendered renderOrdering(@NonNull SqlOrdering ordering, @NonNull SqlNullOrdering nullOrdering) throws SqlException;
 	
 	/**
-	 * Renders the upsert clause for the given conflict and update columns.<br>
+	 * Renders the upsert clause for the given conflict columns and update clauses.<br>
 	 *
-	 * @param conflictColumn The column that triggers the conflict
-	 * @param updateColumns The columns to update on conflict
+	 * @param conflictColumns The columns that trigger the conflict
+	 * @param updateClauses The set clauses to apply on conflict
 	 * @return The rendered upsert clause
-	 * @throws NullPointerException If the conflict column or update columns is null
+	 * @throws NullPointerException If the conflict columns or update clauses is null
 	 * @throws SqlException If the upsert clause cannot be rendered by this dialect
 	 */
-	@NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) throws SqlException;
+	@NonNull SqlRendered renderUpsertClause(@NonNull List<SqlColumn<?, ?>> conflictColumns, @NonNull List<SqlSetClause<?, ?>> updateClauses) throws SqlException;
 	
 	/**
 	 * Renders a complete upsert statement for the given table, columns and values.<br>
 	 *
 	 * @param table The table to upsert into
 	 * @param columns The columns to insert values for
-	 * @param conflictColumn The column that triggers the conflict
+	 * @param conflictColumns The columns that trigger the conflict
 	 * @param valueTuples The rendered value tuples to insert
 	 * @return The rendered upsert statement
-	 * @throws NullPointerException If the table, columns, conflict column or value tuples is null
+	 * @throws NullPointerException If the table, columns, conflict columns or value tuples is null
 	 * @throws SqlException If the upsert statement cannot be rendered by this dialect
 	 */
-	@NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull SqlColumn<?, ?> conflictColumn, @NonNull SqlRendered valueTuples) throws SqlException;
+	@NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull List<SqlColumn<?, ?>> conflictColumns, @NonNull SqlRendered valueTuples) throws SqlException;
+	
+	/**
+	 * Returns the expression referencing the given column's value from the proposed/excluded row of an upsert.<br>
+	 * Used to build the default {@code column = <proposed value>} update clauses when no custom update clauses are supplied.<br>
+	 *
+	 * @param column The column to reference from the proposed row
+	 * @return An expression evaluating to the proposed value of the column
+	 * @throws NullPointerException If the column is null
+	 * @throws SqlException If the dialect does not support referencing the proposed row this way
+	 */
+	@NonNull SqlExpression<?> upsertExcludedValue(@NonNull SqlColumn<?, ?> column) throws SqlException;
 	
 	/**
 	 * Renders the insert-or-ignore modifier for this dialect.<br>

@@ -32,6 +32,13 @@ import java.util.function.Supplier;
 public class SqlAlias implements Supplier<String> {
 	
 	/**
+	 * The implicit alias referencing the proposed/excluded row within an upsert's {@code DO UPDATE} clause.<br>
+	 * Lowercase to match the case-sensitive quoted identifier dialects (e.g. PostgreSQL) expect for their
+	 * built-in {@code excluded} pseudo-relation.<br>
+	 */
+	public static final SqlAlias EXCLUDED = new SqlAlias("excluded");
+	
+	/**
 	 * The alias string this instance wraps.
 	 */
 	private final String alias;

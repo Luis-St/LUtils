@@ -24,7 +24,10 @@ import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureExce
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.temporal.SqlFromEpochFunction;
 import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.query.SqlLockMode;
+import net.luis.utils.io.database.query.util.SqlSetClause;
+import net.luis.utils.io.database.query.util.SqlSetType;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
@@ -83,17 +86,24 @@ class H2DialectTest {
 	
 	@Test
 	void renderUpsertClauseUnsupported() {
-		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), List.of()));
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of()));
+	}
+	
+	@Test
+	void renderUpsertClauseUnsupportedWithSetClauses() {
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		SqlSetClause<Object, String> updateClause = new SqlSetClause<>(stringColumn, stringColumn.of(SqlAlias.EXCLUDED), SqlSetType.EXPRESSION);
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of(updateClause)));
 	}
 	
 	@Test
 	void renderUpsertStatementNullTable() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(null, List.of(), SqlTestFixtures.integerColumn(), SqlRendered.of("(?)")));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(null, List.of(), List.of(SqlTestFixtures.integerColumn()), SqlRendered.of("(?)")));
 	}
 	
 	@Test
 	void renderUpsertStatementNullColumns() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), null, SqlTestFixtures.integerColumn(), SqlRendered.of("(?)")));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), null, List.of(SqlTestFixtures.integerColumn()), SqlRendered.of("(?)")));
 	}
 	
 	@Test
@@ -103,7 +113,7 @@ class H2DialectTest {
 	
 	@Test
 	void renderUpsertStatementNullValueTuples() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), SqlTestFixtures.integerColumn(), null));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), List.of(SqlTestFixtures.integerColumn()), null));
 	}
 	
 	@Test
@@ -195,7 +205,7 @@ class H2DialectTest {
 	
 	@Test
 	void renderUpsertStatementSingleColumn() throws SqlException {
-		String sql = DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(SqlTestFixtures.integerColumn()), SqlTestFixtures.integerColumn(), SqlRendered.of("(?)")).sql();
+		String sql = DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(SqlTestFixtures.integerColumn()), List.of(SqlTestFixtures.integerColumn()), SqlRendered.of("(?)")).sql();
 		assertTrue(sql.contains("MERGE INTO"));
 		assertTrue(sql.contains("KEY"));
 		assertTrue(sql.contains("VALUES"));
@@ -207,17 +217,30 @@ class H2DialectTest {
 	@Test
 	void renderUpsertStatementMultipleColumns() throws SqlException {
 		List<SqlColumn<?, ?>> columns = List.of(SqlTestFixtures.integerColumn(), SqlTestFixtures.stringColumn());
-		String sql = DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), columns, SqlTestFixtures.integerColumn(), SqlRendered.of("(?)")).sql();
+		String sql = DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), columns, List.of(SqlTestFixtures.integerColumn()), SqlRendered.of("(?)")).sql();
 		assertTrue(sql.contains("MERGE INTO"));
 		assertTrue(sql.contains(","));
 		assertTrue(sql.contains("KEY"));
 	}
 	
 	@Test
+	void renderUpsertStatementCompositeConflictColumnsBuildsKeyClause() throws SqlException {
+		SqlColumn<Object, Integer> integerColumn = SqlTestFixtures.integerColumn();
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		List<SqlColumn<?, ?>> conflictColumns = List.of(integerColumn, stringColumn);
+		String sql = DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(integerColumn, stringColumn), conflictColumns, SqlRendered.of("(?,?)")).sql();
+		assertTrue(sql.contains("KEY"));
+		assertTrue(sql.contains(DIALECT.quoteIdentifier("id")));
+		assertTrue(sql.contains(DIALECT.quoteIdentifier("name")));
+		int keyIndex = sql.indexOf("KEY");
+		assertTrue(sql.substring(keyIndex).contains(","));
+	}
+	
+	@Test
 	void renderUpsertStatementWithAuditConfig() throws SqlException {
 		SqlTable<Object> table = SqlTestFixtures.auditedTable();
 		List<String> auditColumns = table.auditConfig().orElseThrow().columnNames();
-		String sql = DIALECT.renderUpsertStatement(table, List.of(SqlTestFixtures.integerColumn()), SqlTestFixtures.integerColumn(), SqlRendered.of("(?)")).sql();
+		String sql = DIALECT.renderUpsertStatement(table, List.of(SqlTestFixtures.integerColumn()), List.of(SqlTestFixtures.integerColumn()), SqlRendered.of("(?)")).sql();
 		assertTrue(sql.contains("MERGE INTO"));
 		assertTrue(sql.contains(DIALECT.quoteIdentifier(auditColumns.getFirst())));
 	}

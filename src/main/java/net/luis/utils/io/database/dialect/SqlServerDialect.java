@@ -40,6 +40,7 @@ import net.luis.utils.io.database.function.functions.window.SqlValueAtFunction;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.SqlLockMode;
+import net.luis.utils.io.database.query.util.SqlSetClause;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
@@ -249,15 +250,15 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) throws SqlException {
+	public @NonNull SqlRendered renderUpsertClause(@NonNull List<SqlColumn<?, ?>> conflictColumns, @NonNull List<SqlSetClause<?, ?>> updateClauses) throws SqlException {
 		throw new SqlDialectFeatureException(SqlFeature.UPSERT_SUFFIX, this);
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull SqlColumn<?, ?> conflictColumn, @NonNull SqlRendered valueTuples) throws SqlException {
+	public @NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull List<SqlColumn<?, ?>> conflictColumns, @NonNull SqlRendered valueTuples) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		Objects.requireNonNull(columns, "Sql columns must not be null");
-		Objects.requireNonNull(conflictColumn, "Sql conflict column must not be null");
+		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
 		Objects.requireNonNull(valueTuples, "Sql value tuples must not be null");
 		
 		List<String> auditColumns = table.auditConfig().map(SqlAuditConfig::columnNames).orElse(List.of());
@@ -266,6 +267,11 @@ public class SqlServerDialect extends AbstractSqlDialect {
 			allColumns.add(column.name());
 		}
 		allColumns.addAll(auditColumns);
+		
+		Set<String> conflictNames = new LinkedHashSet<>();
+		for (SqlColumn<?, ?> conflictColumn : conflictColumns) {
+			conflictNames.add(conflictColumn.name());
+		}
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.keyword("MERGE").into().literal(this.quoteIdentifier(table.name())).as().literal("target");
@@ -280,13 +286,19 @@ public class SqlServerDialect extends AbstractSqlDialect {
 		}
 		renderer.closingBracket();
 		
-		String conflictName = this.quoteIdentifier(conflictColumn.name());
-		renderer.on().literal("target." + conflictName).literal("=").literal("source." + conflictName);
+		renderer.on();
+		for (int i = 0; i < conflictColumns.size(); i++) {
+			if (i > 0) {
+				renderer.and();
+			}
+			String conflictName = this.quoteIdentifier(conflictColumns.get(i).name());
+			renderer.literal("target." + conflictName).literal("=").literal("source." + conflictName);
+		}
 		
 		renderer.when().keyword("MATCHED").then().update().set();
 		boolean firstSet = true;
 		for (SqlColumn<?, ?> column : columns) {
-			if (column.name().equals(conflictColumn.name())) {
+			if (conflictNames.contains(column.name())) {
 				continue;
 			}
 			
@@ -299,7 +311,8 @@ public class SqlServerDialect extends AbstractSqlDialect {
 			renderer.literal("target." + name).literal("=").literal("source." + name);
 		}
 		if (firstSet) {
-			renderer.literal("target." + conflictName).literal("=").literal("source." + conflictName);
+			String firstConflictName = this.quoteIdentifier(conflictColumns.getFirst().name());
+			renderer.literal("target." + firstConflictName).literal("=").literal("source." + firstConflictName);
 		}
 		
 		renderer.when().not().keyword("MATCHED").then().insert().openingBracket();
