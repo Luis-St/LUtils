@@ -139,6 +139,16 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 	 */
 	public PostgresSqlDialect() {}
 	
+	/**
+	 * Constructs a new PostgreSQL dialect that additionally knows the type mappings of the given registry.<br>
+	 *
+	 * @param additionalTypes The type mappings the dialect should know in addition to its own
+	 * @throws NullPointerException If the additional type mappings are null
+	 */
+	public PostgresSqlDialect(@NonNull SqlTypeRegistry additionalTypes) {
+		super(additionalTypes);
+	}
+	
 	@Override
 	public @NonNull String name() {
 		return "PostgreSQL";
@@ -175,6 +185,20 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 			return this.getTypeName(arrayType.elementType()) + "[]";
 		}
 		return super.getTypeName(type);
+	}
+	
+	@Override
+	public @NonNull String renderValueLiteral(@NonNull Object value) throws SqlException {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		if (value instanceof Object[] elements) {
+			StringJoiner joiner = new StringJoiner(", ", "ARRAY[", "]");
+			for (Object element : elements) {
+				joiner.add(element == null ? "NULL" : this.renderValueLiteral(element));
+			}
+			return joiner.toString();
+		}
+		return super.renderValueLiteral(value);
 	}
 	
 	@Override
@@ -348,15 +372,6 @@ class PostgresSqlTableRenderer extends SqlTableRenderer {
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
 		renderer.keyword("GENERATED").keyword("BY").default_().as().keyword("IDENTITY");
-	}
-	
-	@Override
-	public @NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table) throws SqlException {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.truncate().table().literal(this.dialect.quoteIdentifier(table.name())).cascade();
-		return renderer.toSql();
 	}
 }
 

@@ -118,6 +118,23 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 	}
 	
 	/**
+	 * Builds the sql statement used to overwrite an existing migration record.<br>
+	 * This is used to re-record a version that is already present, for example when a rolled back migration is applied again.<br>
+	 *
+	 * @return The rendered update sql statement
+	 */
+	private @NonNull String buildOverwriteSql() {
+		String table = this.dialect.quoteIdentifier(TABLE_NAME);
+		String version = this.dialect.quoteIdentifier("version");
+		String description = this.dialect.quoteIdentifier("description");
+		String status = this.dialect.quoteIdentifier("status");
+		String appliedAt = this.dialect.quoteIdentifier("applied_at");
+		String checksum = this.dialect.quoteIdentifier("checksum");
+		
+		return "UPDATE " + table + " SET " + description + " = ?, " + status + " = ?, " + appliedAt + " = ?, " + checksum + " = ? WHERE " + version + " = ?";
+	}
+	
+	/**
 	 * Builds the sql statement used to update the status and applied time of a migration record.<br>
 	 * @return The rendered update sql statement
 	 */
@@ -183,6 +200,20 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 	public void save(@NonNull Connection connection, @NonNull SqlMigrationInfo info) throws SqlException {
 		Objects.requireNonNull(connection, "Connection must not be null");
 		Objects.requireNonNull(info, "Sql migration info must not be null");
+		
+		try (PreparedStatement overwrite = connection.prepareStatement(this.buildOverwriteSql())) {
+			overwrite.setString(1, info.description());
+			overwrite.setString(2, info.status().name());
+			overwrite.setObject(3, info.appliedAt() != null ? info.appliedAt().toEpochMilli() : null);
+			overwrite.setString(4, info.checksum());
+			overwrite.setString(5, info.version().toString());
+			
+			if (overwrite.executeUpdate() > 0) {
+				return;
+			}
+		} catch (SQLException e) {
+			throw new SqlMigrationExecutionException("Failed to save migration info for version " + info.version(), e);
+		}
 		
 		try (PreparedStatement statement = connection.prepareStatement(this.buildSaveSql())) {
 			statement.setString(1, info.version().toString());

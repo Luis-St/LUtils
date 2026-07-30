@@ -253,4 +253,28 @@ class SqliteDialectTest {
 		assertSame(SqlTypes.TEXT, resolved);
 		assertEquals(rendered, DIALECT.getTypeName(resolved));
 	}
+	
+	@Test
+	void constructWithAdditionalTypes() throws SqlException {
+		SqliteDialect dialect = new SqliteDialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "MY_UUID").build());
+		assertEquals("SQLite", dialect.name());
+		assertEquals("MY_UUID", dialect.getTypeName(SqlTypes.UUID));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesOverridingOwnMapping() throws SqlException {
+		SqliteDialect dialect = new SqliteDialect(SqlTypeRegistry.builder().register(SqlTypes.TEXT, "CLOB").build());
+		assertEquals("TEXT", DIALECT.getTypeName(SqlTypes.TEXT));
+		assertEquals("CLOB", dialect.getTypeName(SqlTypes.TEXT));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new SqliteDialect(null));
+	}
+	
+	@Test
+	void supportsOffsetTemporalTypesReturnsFalse() {
+		assertFalse(DIALECT.supportsOffsetTemporalTypes());
+	}
 }

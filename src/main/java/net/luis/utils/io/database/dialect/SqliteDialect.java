@@ -81,6 +81,16 @@ public class SqliteDialect extends AbstractSqlDialect {
 	 */
 	public SqliteDialect() {}
 	
+	/**
+	 * Constructs a new SQLite dialect that additionally knows the type mappings of the given registry.<br>
+	 *
+	 * @param additionalTypes The type mappings the dialect should know in addition to its own
+	 * @throws NullPointerException If the additional type mappings are null
+	 */
+	public SqliteDialect(@NonNull SqlTypeRegistry additionalTypes) {
+		super(additionalTypes);
+	}
+	
 	@Override
 	public @NonNull String name() {
 		return "SQLite";
@@ -137,6 +147,11 @@ public class SqliteDialect extends AbstractSqlDialect {
 	public boolean isFeatureSupported(@NonNull SqlFeature feature) {
 		Objects.requireNonNull(feature, "Sql feature must not be null");
 		return SUPPORTED_FEATURES.contains(feature);
+	}
+	
+	@Override
+	public boolean supportsOffsetTemporalTypes() {
+		return false;
 	}
 	
 	@Override
@@ -400,7 +415,7 @@ class SqliteIndexRenderer extends SqlIndexRenderer {
 		renderer.closingBracket();
 		
 		if (index.whereCondition() != null) {
-			renderer.where().rendered(index.whereCondition().toSql(this.dialect));
+			renderer.where().rendered(this.dialect.renderConditionInline(index.whereCondition()));
 		}
 		return renderer.toSql();
 	}

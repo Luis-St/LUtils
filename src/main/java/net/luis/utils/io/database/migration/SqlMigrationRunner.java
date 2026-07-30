@@ -697,6 +697,13 @@ public final class SqlMigrationRunner {
 					continue;
 				}
 				
+				if (!rendered.parameters().isEmpty()) {
+					throw new SqlMigrationConflictException(
+						"Migration statement '" + sql + "' carries " + rendered.parameters().size() + " bind parameter(s), but ddl is part of the schema definition and no engine accepts placeholders there. " +
+							"Every value of a migration statement must be rendered as a literal."
+					);
+				}
+				
 				try (PreparedStatement statement = connection.prepareStatement(sql)) {
 					List<Pair<SqlType<?>, Object>> params = rendered.parameters();
 					for (int i = 0; i < params.size(); i++) {
@@ -721,10 +728,7 @@ public final class SqlMigrationRunner {
 					this.executeStatements(connection, statements);
 					store.save(connection, info);
 					
-					String introspectionSchema = connection.getSchema();
-					if (introspectionSchema == null || introspectionSchema.isBlank()) {
-						introspectionSchema = "public";
-					}
+					String introspectionSchema = this.database.getDialect().defaultSchema(connection);
 					SqlMigrationSchema schema = SqlMigrationSchema.load(connection, this.database.getDialect(), introspectionSchema);
 					schemaStore.save(connection, info.version(), schema.extractColumnInfos(), schema.extractCheckConstraints());
 					

@@ -22,6 +22,8 @@ import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.renderer.*;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.orderable.SqlNullOrdering;
 import net.luis.utils.io.database.expression.orderable.SqlOrdering;
@@ -37,11 +39,12 @@ import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.*;
+import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
-import java.sql.Connection;
-import java.util.List;
-import java.util.Optional;
+import java.sql.*;
+import java.util.*;
 
 /**
  * Represents a database-specific sql dialect.<br>
@@ -196,6 +199,108 @@ public interface SqlDialect {
 	 * @throws SqlException If the condition cannot be rendered by this dialect
 	 */
 	@NonNull SqlRendered renderCondition(@NonNull SqlCondition condition) throws SqlException;
+	
+	/**
+	 * Renders the given sql condition into a rendered sql fragment that carries no bind parameters.<br>
+	 * Every value of the condition is emitted as a dialect-specific literal instead of a {@code ?} placeholder,
+	 * the returned fragment therefore has an empty {@link SqlRendered#parameters() parameter list}.<br>
+	 * <p>
+	 *     This is required wherever a condition becomes part of a schema definition rather than of a statement execution,<br>
+	 *     such as a {@code CHECK} constraint or the {@code WHERE} clause of a partial index.<br>
+	 *     A placeholder has nothing to be bound to in ddl, no engine accepts one there.
+	 * </p>
+	 * <p>
+	 *     Because the values end up in the statement text, this must only be used for conditions that originate from a schema definition,<br>
+	 *     never for conditions built from user input.
+	 * </p>
+	 *
+	 * @param condition The condition to render
+	 * @return The rendered sql fragment without any bind parameters
+	 * @throws NullPointerException If the condition is null
+	 * @throws SqlException If the condition cannot be rendered by this dialect, or if one of its values cannot be rendered as a literal
+	 */
+	default @NonNull SqlRendered renderConditionInline(@NonNull SqlCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
+		SqlRendered rendered = this.renderCondition(condition);
+		List<Pair<SqlType<?>, Object>> parameters = rendered.parameters();
+		if (parameters.isEmpty()) {
+			return rendered;
+		}
+		
+		List<String> statements = new ArrayList<>();
+		int index = 0;
+		for (String token : rendered.statements()) {
+			if (!"?".equals(token)) {
+				statements.add(token);
+				continue;
+			}
+			
+			if (index >= parameters.size()) {
+				throw new SqlDialectUnsupportedRenderingException("Sql condition '" + rendered.sql() + "' has more placeholders than parameters, it cannot be rendered without bind parameters by dialect " + this.name());
+			}
+			
+			Object value = parameters.get(index++).getSecond();
+			statements.add(value == null ? "NULL" : this.renderValueLiteral(value));
+		}
+		
+		if (index != parameters.size()) {
+			throw new SqlDialectUnsupportedRenderingException("Sql condition '" + rendered.sql() + "' has more parameters than placeholders, it cannot be rendered without bind parameters by dialect " + this.name());
+		}
+		return new SqlRendered(statements, List.of());
+	}
+	
+	/**
+	 * Renders the given sql condition into a rendered sql fragment that becomes the body of a {@code CHECK} constraint.<br>
+	 * Like {@link #renderConditionInline(SqlCondition)} every value is emitted as a literal,<br>
+	 * additionally every column is emitted without its table qualifier because a check constraint may only reference<br>
+	 * the columns of the table it belongs to and engines such as SQLite reject a qualified column name there.<br>
+	 *
+	 * @param condition The condition to render
+	 * @return The rendered sql fragment without any bind parameters and without qualified column names
+	 * @throws NullPointerException If the condition is null
+	 * @throws SqlException If the condition cannot be rendered by this dialect, or if one of its values cannot be rendered as a literal
+	 */
+	default @NonNull SqlRendered renderCheckCondition(@NonNull SqlCondition condition) throws SqlException {
+		Objects.requireNonNull(condition, "Sql condition must not be null");
+		
+		SqlRendered rendered = this.renderConditionInline(condition);
+		List<String> statements = new ArrayList<>();
+		for (String token : rendered.statements()) {
+			statements.add(this.unqualifyIdentifier(token));
+		}
+		return new SqlRendered(statements, List.of());
+	}
+	
+	/**
+	 * Strips the table qualifier from the given rendered token if it is a qualified identifier.<br>
+	 * A condition that becomes the body of a {@code CHECK} constraint may only reference the columns of the table it belongs to,<br>
+	 * several engines reject a qualified column name there.<br>
+	 * Tokens that are not a qualified identifier, such as keywords, operators and literals, are returned unchanged.<br>
+	 *
+	 * @param token The rendered token to strip the qualifier from
+	 * @return The token without its qualifier, or the unchanged token if it carries none
+	 * @throws NullPointerException If the token is null
+	 */
+	private @NonNull String unqualifyIdentifier(@NonNull String token) {
+		Objects.requireNonNull(token, "Sql token must not be null");
+		
+		String quoted = this.quoteIdentifier("x");
+		if (quoted.length() < 3) {
+			return token;
+		}
+		
+		char open = quoted.charAt(0);
+		char close = quoted.charAt(quoted.length() - 1);
+		
+		int separator = token.lastIndexOf("" + close + '.' + open);
+		if (separator < 0) {
+			return token;
+		}
+		
+		String name = token.substring(separator + 2);
+		return name.charAt(name.length() - 1) == close ? name : token;
+	}
 	
 	/**
 	 * Renders the given window clause into a rendered sql fragment.<br>
@@ -454,6 +559,111 @@ public interface SqlDialect {
 	 * @throws SqlException If the check constraints cannot be retrieved
 	 */
 	@NonNull List<SqlCheckConstraintInfo> getCheckConstraints(@NonNull Connection connection, @NonNull String schema, @NonNull String tableName) throws SqlException;
+	
+	/**
+	 * Checks whether this dialect has a temporal type that carries the offset of a value.<br>
+	 * Dialects without such a type map {@link Types#TIMESTAMP_WITH_TIMEZONE} and {@link Types#TIME_WITH_TIMEZONE} onto a plain timestamp or time,<br>
+	 * their drivers reject those jdbc type codes when a value is bound, so such a value is bound and read back as an utc timestamp or time instead.<br>
+	 * By default {@code true} is returned.<br>
+	 *
+	 * @return {@code true} if the dialect has an offset carrying temporal type, {@code false} otherwise
+	 */
+	default boolean supportsOffsetTemporalTypes() {
+		return true;
+	}
+	
+	/**
+	 * Checks whether a recursive common table expression is introduced with the {@code RECURSIVE} keyword.<br>
+	 * T-SQL has no such keyword, it spells a recursive common table expression as a plain {@code WITH}.<br>
+	 * By default {@code true} is returned.<br>
+	 *
+	 * @return {@code true} if the recursive keyword is used, {@code false} otherwise
+	 */
+	default boolean usesRecursiveCteKeyword() {
+		return true;
+	}
+	
+	/**
+	 * Checks whether a recursive common table expression must declare its column names explicitly.<br>
+	 * H2 rejects a recursive common table expression that does not list its columns.<br>
+	 * By default {@code false} is returned.<br>
+	 *
+	 * @return {@code true} if the column names must be declared, {@code false} otherwise
+	 */
+	default boolean requiresRecursiveCteColumnList() {
+		return false;
+	}
+	
+	/**
+	 * Checks whether a delete statement that carries joins must name its target table before the {@code FROM} clause.<br>
+	 * MySQL and MariaDB spell a joined delete as {@code DELETE t FROM t INNER JOIN ...}, while the standard form is {@code DELETE FROM t INNER JOIN ...}.<br>
+	 * By default {@code false} is returned.<br>
+	 *
+	 * @return {@code true} if the target table must be named before the from clause, {@code false} otherwise
+	 */
+	default boolean requiresJoinedDeleteTarget() {
+		return false;
+	}
+	
+	/**
+	 * Returns the name of the schema the given connection is currently working in.<br>
+	 * This is the schema that introspection targets when no schema is given explicitly, it is {@code public} on PostgreSQL,
+	 * {@code PUBLIC} on H2, {@code dbo} on SQL Server and the name of the connected database on MySQL and MariaDB.<br>
+	 * The default implementation asks the connection for its schema and falls back to its catalog and finally to {@code public}.<br>
+	 *
+	 * @param connection The connection to resolve the default schema of
+	 * @return The name of the default schema of the connection
+	 * @throws NullPointerException If the connection is null
+	 * @throws SqlException If the default schema could not be resolved
+	 */
+	default @NonNull String defaultSchema(@NonNull Connection connection) throws SqlException {
+		Objects.requireNonNull(connection, "Connection must not be null");
+		
+		try {
+			String schema = connection.getSchema();
+			if (schema != null && !schema.isBlank()) {
+				return schema;
+			}
+			
+			String catalog = connection.getCatalog();
+			if (catalog != null && !catalog.isBlank()) {
+				return catalog;
+			}
+		} catch (SQLException e) {
+			throw new SqlSchemaIntrospectionException("Failed to resolve the default schema for dialect " + this.name(), e);
+		}
+		return "public";
+	}
+	
+	/**
+	 * Returns the catalog that {@link DatabaseMetaData} lookups must be restricted to for the given schema.<br>
+	 * Dialects that model a schema as a catalog, such as MySQL and MariaDB, return the schema name here so that metadata<br>
+	 * lookups are limited to the connected database.<br>
+	 *
+	 * @param schema The schema to introspect
+	 * @return The catalog to restrict metadata lookups to, or {@code null} if the dialect does not use catalogs
+	 * @throws NullPointerException If the schema is null
+	 * @see #introspectionSchema(String)
+	 */
+	default @Nullable String introspectionCatalog(@NonNull String schema) {
+		Objects.requireNonNull(schema, "Sql schema must not be null");
+		return null;
+	}
+	
+	/**
+	 * Returns the schema pattern that {@link DatabaseMetaData} lookups must be restricted to for the given schema.<br>
+	 * Dialects that model a schema as a catalog, such as MySQL and MariaDB, return {@code null} here because their drivers<br>
+	 * ignore the schema pattern and match on the catalog instead.<br>
+	 *
+	 * @param schema The schema to introspect
+	 * @return The schema pattern to restrict metadata lookups to, or {@code null} if the dialect does not use schemas
+	 * @throws NullPointerException If the schema is null
+	 * @see #introspectionCatalog(String)
+	 */
+	default @Nullable String introspectionSchema(@NonNull String schema) {
+		Objects.requireNonNull(schema, "Sql schema must not be null");
+		return schema;
+	}
 	
 	/**
 	 * Returns the sql used to create the schema columns metadata table.<br>

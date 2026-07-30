@@ -113,7 +113,7 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 				throw new SqlResultMappingException("Reading override for column index " + columnIndex + " returned a value of incompatible type " + value.getClass().getName(), e, type.javaType());
 			}
 		}
-		return type.get(SqlTypeInternalAccess.INSTANCE, resultSet, columnIndex);
+		return type.get(SqlTypeInternalAccess.INSTANCE, dialect, resultSet, columnIndex);
 	}
 	
 	/**
@@ -252,6 +252,49 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 	}
 	
 	/**
+	 * Reads the value of this sql type from the result set at the specified column index using the given dialect.<br>
+	 * A dialect without an offset carrying temporal type stores such a value as a plain utc timestamp or time,<br>
+	 * it is read back accordingly, every other value is read by {@link #get(SqlTypeInternalAccess, ResultSet, int)}.<br>
+	 * This method is intended for internal use only and must be called with the package-private access token,<br>
+	 * external callers should use {@link #getValue(SqlType, SqlDialect, ResultSet, int)} instead.<br>
+	 *
+	 * @param access The internal access token used to restrict the caller to this package
+	 * @param dialect The sql dialect used to read the value
+	 * @param resultSet The result set to read the value from
+	 * @param columnIndex The one-based column index to read the value from
+	 * @return The read value or {@code null} if the column value is sql null
+	 * @throws IllegalCallerException If the access token is null
+	 * @throws NullPointerException If the dialect or result set is null
+	 * @throws SqlException If the value could not be read from the result set
+	 */
+	@ApiStatus.Internal
+	default @Nullable T get(@NonNull SqlTypeInternalAccess access, @NonNull SqlDialect dialect, @NonNull ResultSet resultSet, int columnIndex) throws SqlException {
+		if (access == null) {
+			throw new IllegalCallerException("SqlType#get should only be called from inside the net.luis.utils.io.database.type package, external callers should use SqlType#getValue");
+		}
+		
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(resultSet, "Result set must not be null");
+		if (dialect.supportsOffsetTemporalTypes()) {
+			return this.get(access, resultSet, columnIndex);
+		}
+		
+		try {
+			if (this.javaType() == OffsetDateTime.class && this.jdbcType() == Types.TIMESTAMP_WITH_TIMEZONE) {
+				LocalDateTime value = resultSet.getObject(columnIndex, LocalDateTime.class);
+				return value == null ? null : this.javaType().cast(value.atOffset(ZoneOffset.UTC));
+			}
+			if (this.javaType() == OffsetTime.class && this.jdbcType() == Types.TIME_WITH_TIMEZONE) {
+				LocalTime value = resultSet.getObject(columnIndex, LocalTime.class);
+				return value == null ? null : this.javaType().cast(value.atOffset(ZoneOffset.UTC));
+			}
+		} catch (SQLException e) {
+			throw new SqlResultMappingException("Failed to retrieve value from result set at column index " + columnIndex, e, this.javaType(), null);
+		}
+		return this.get(access, resultSet, columnIndex);
+	}
+	
+	/**
 	 * Reads the value of this sql type from the result set at the specified column index.<br>
 	 * This method is intended for internal use only and must be called with the package-private access token, external callers should use {@link #getValue(SqlType, SqlDialect, ResultSet, int)} instead.<br>
 	 *
@@ -330,6 +373,19 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		}
 		
 		try {
+			if (!dialect.supportsOffsetTemporalTypes()) {
+				if (this.jdbcType() == Types.TIMESTAMP_WITH_TIMEZONE && (value == null || value instanceof OffsetDateTime)) {
+					OffsetDateTime dateTime = (OffsetDateTime) value;
+					preparedStatement.setObject(columnIndex, dateTime == null ? null : dateTime.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime(), Types.TIMESTAMP);
+					return;
+				}
+				if (this.jdbcType() == Types.TIME_WITH_TIMEZONE && (value == null || value instanceof OffsetTime)) {
+					OffsetTime time = (OffsetTime) value;
+					preparedStatement.setObject(columnIndex, time == null ? null : time.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime(), Types.TIME);
+					return;
+				}
+			}
+			
 			preparedStatement.setObject(columnIndex, value, this.jdbcType());
 		} catch (SQLException e) {
 			throw new SqlStatementBindException("Failed to bind value to prepared statement at column index " + columnIndex, e, columnIndex);

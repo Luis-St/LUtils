@@ -170,6 +170,16 @@ public final class MappedSqlType<S, T> implements SqlType<T> {
 	
 	@Override
 	@ApiStatus.Internal
+	public @Nullable T get(@NonNull SqlTypeInternalAccess access, @NonNull SqlDialect dialect, @NonNull ResultSet resultSet, int columnIndex) throws SqlException {
+		S source = this.sourceType.get(access, dialect, resultSet, columnIndex);
+		if (source == null) {
+			return null;
+		}
+		return this.fromSourceToTarget.apply(source);
+	}
+	
+	@Override
+	@ApiStatus.Internal
 	public void set(@NonNull SqlTypeInternalAccess access, @NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, @Nullable T value) throws SqlException {
 		this.sourceType.set(access, dialect, preparedStatement, columnIndex, this.fromTargetToSource.apply(value));
 	}

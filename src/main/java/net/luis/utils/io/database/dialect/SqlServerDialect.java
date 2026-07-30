@@ -21,7 +21,7 @@ package net.luis.utils.io.database.dialect;
 import net.luis.utils.io.data.xml.XmlConfig;
 import net.luis.utils.io.data.xml.XmlElement;
 import net.luis.utils.io.database.Sql;
-import net.luis.utils.io.database.audit.SqlAuditConfig;
+import net.luis.utils.io.database.audit.*;
 import net.luis.utils.io.database.condition.conditions.comparison.SqlIsDistinctFromCondition;
 import net.luis.utils.io.database.condition.conditions.numeric.SqlModEqualsCondition;
 import net.luis.utils.io.database.dialect.renderer.*;
@@ -39,6 +39,7 @@ import net.luis.utils.io.database.function.functions.temporal.*;
 import net.luis.utils.io.database.function.functions.window.SqlValueAtFunction;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.migration.operation.SqlColumnOptions;
 import net.luis.utils.io.database.query.SqlLockMode;
 import net.luis.utils.io.database.query.util.SqlSetClause;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -115,6 +116,16 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	 */
 	public SqlServerDialect() {}
 	
+	/**
+	 * Constructs a new SQL Server dialect that additionally knows the type mappings of the given registry.<br>
+	 *
+	 * @param additionalTypes The type mappings the dialect should know in addition to its own
+	 * @throws NullPointerException If the additional type mappings are null
+	 */
+	public SqlServerDialect(@NonNull SqlTypeRegistry additionalTypes) {
+		super(additionalTypes);
+	}
+	
 	@Override
 	public @NonNull String name() {
 		return "SQL Server";
@@ -187,6 +198,11 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	public boolean usesRecursiveCteKeyword() {
+		return false;
+	}
+	
+	@Override
 	public int maxBindParameters() {
 		return 2100;
 	}
@@ -201,6 +217,54 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	public @NonNull String quoteIdentifier(@NonNull String identifier) {
 		Objects.requireNonNull(identifier, "Identifier must not be null");
 		return "[" + identifier.replace("]", "]]") + "]";
+	}
+	
+	/**
+	 * Returns the name used for the default constraint of the given column.<br>
+	 * T-SQL models a column default as a named table constraint, this name makes the constraint of a column predictable.<br>
+	 *
+	 * @param column The column to name the default constraint of
+	 * @return The name of the default constraint of the column
+	 * @throws NullPointerException If the column is null
+	 */
+	static @NonNull String defaultConstraintName(@NonNull SqlColumn<?, ?> column) {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		return "DF_" + column.owningTable().name() + "_" + column.name();
+	}
+	
+	/**
+	 * Quotes the given value as a t-sql string literal.<br>
+	 *
+	 * @param value The value to quote
+	 * @return The quoted string literal
+	 * @throws NullPointerException If the value is null
+	 */
+	static @NonNull String quoteStringLiteral(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		return "'" + value.replace("'", "''") + "'";
+	}
+	
+	/**
+	 * Renders a statement that drops the default constraint of the given column if the column has one.<br>
+	 * The constraint may carry a generated name, so it is looked up in the system catalog before it is dropped.<br>
+	 *
+	 * @param dialect The dialect used to quote the identifiers
+	 * @param tableName The name of the table the column belongs to
+	 * @param columnName The name of the column to drop the default constraint of
+	 * @return The rendered statement
+	 * @throws NullPointerException If the dialect, table name or column name is null
+	 */
+	static @NonNull SqlRendered renderDropDefaultConstraint(@NonNull SqlDialect dialect, @NonNull String tableName, @NonNull String columnName) {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(columnName, "Sql column name must not be null");
+		
+		return SqlRendered.of(
+			"DECLARE @constraint sysname = (SELECT dc.name FROM sys.default_constraints dc " +
+				"INNER JOIN sys.columns c ON c.object_id = dc.parent_object_id AND c.column_id = dc.parent_column_id " +
+				"WHERE dc.parent_object_id = OBJECT_ID(N" + quoteStringLiteral(tableName) + ") AND c.name = N" + quoteStringLiteral(columnName) + "); " +
+				"IF @constraint IS NOT NULL EXEC('ALTER TABLE " + dialect.quoteIdentifier(tableName) + " DROP CONSTRAINT [' + @constraint + ']')"
+		);
 	}
 	
 	@Override
@@ -381,7 +445,12 @@ class SqlServerTableRenderer extends SqlTableRenderer {
 		Objects.requireNonNull(renderer, "Sql renderer must not be null");
 		Objects.requireNonNull(column, "Sql column must not be null");
 		
-		renderer.keyword("IDENTITY").openingBracket().literal("1").comma().literal("1").closingBracket();
+		renderer.rendered(this.renderAutoIncrementKeyword());
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAutoIncrementKeyword() throws SqlException {
+		return SqlRenderer.empty().keyword("IDENTITY").openingBracket().literal("1").comma().literal("1").closingBracket().toSql();
 	}
 }
 
@@ -427,7 +496,7 @@ class SqlServerIndexRenderer extends SqlIndexRenderer {
 		renderer.closingBracket();
 		
 		if (index.whereCondition() != null) {
-			renderer.where().rendered(index.whereCondition().toSql(this.dialect));
+			renderer.where().rendered(this.dialect.renderConditionInline(index.whereCondition()));
 		}
 		return renderer.toSql();
 	}
@@ -488,6 +557,25 @@ class SqlServerColumnRenderer extends SqlColumnRenderer {
 			return renderer.not().null_().toSql();
 		}
 	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnSetDefault(@NonNull SqlColumn<?, ?> column, @NonNull String renderedDefault) throws SqlException {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		Objects.requireNonNull(renderedDefault, "Sql rendered default value must not be null");
+		
+		String tableName = column.owningTable().name();
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.alter().table().literal(this.dialect.quoteIdentifier(tableName)).add().constraint().literal(this.dialect.quoteIdentifier(SqlServerDialect.defaultConstraintName(column)));
+		renderer.default_().literal(renderedDefault).for_().literal(this.dialect.quoteIdentifier(column.name())); // T-SQL has no SET DEFAULT, a default is a named constraint
+		return renderer.toSql();
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnDropDefault(@NonNull SqlColumn<?, ?> column) throws SqlException {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		
+		return SqlServerDialect.renderDropDefaultConstraint(this.dialect, column.owningTable().name(), column.name());
+	}
 }
 
 /**
@@ -507,6 +595,71 @@ class SqlServerMigrationOperationRenderer extends SqlMigrationOperationRenderer 
 	 */
 	SqlServerMigrationOperationRenderer(@NonNull SqlDialect dialect) {
 		super(dialect);
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAddColumn(@NonNull SqlTable<?> table, @NonNull SqlColumn<?, ?> column, @NonNull SqlType<?> type, @NonNull SqlColumnOptions options) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(column, "Sql column must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
+		Objects.requireNonNull(options, "Sql column options must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.alter().table().literal(this.dialect.quoteIdentifier(table.name())).add(); // T-SQL adds a column without the COLUMN keyword
+		renderer.literal(this.dialect.quoteIdentifier(column.name())).literal(this.dialect.getTypeName(type));
+		
+		if (options.notNull()) {
+			renderer.not().null_();
+		}
+		if (options.autoIncrement()) {
+			renderer.rendered(this.dialect.tableRenderer().renderAutoIncrementKeyword());
+		}
+		if (options.defaultValue().isPresent()) {
+			renderer.constraint().literal(this.dialect.quoteIdentifier(SqlServerDialect.defaultConstraintName(column)));
+			renderer.default_().literal(this.dialect.renderValueLiteral(options.defaultValue().get()));
+		}
+		if (options.unique()) {
+			renderer.unique();
+		}
+		if (options.referencesTable() != null) {
+			renderer.references().literal(this.dialect.quoteIdentifier(options.referencesTable().name()));
+		}
+		if (options.check() != null) {
+			renderer.check().openingBracket().rendered(this.dialect.renderCheckCondition(options.check())).closingBracket();
+		}
+		return renderer.toSql();
+	}
+	
+	@Override
+	public @NonNull List<SqlRendered> renderEnableAuditing(@NonNull SqlTable<?> table, @NonNull SqlAuditConfig config) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(config, "Sql audit config must not be null");
+		
+		List<SqlRendered> results = new ArrayList<>();
+		for (SqlAuditColumn column : config.auditColumns()) {
+			SqlRenderer renderer = SqlRenderer.empty();
+			renderer.alter().table().literal(this.dialect.quoteIdentifier(table.name())).add(); // T-SQL adds a column without the COLUMN keyword
+			renderer.literal(this.dialect.quoteIdentifier(column.name())).literal(this.dialect.getTypeName(column.type()));
+			
+			if (column.role() == SqlAuditRole.VERSION) {
+				renderer.constraint().literal(this.dialect.quoteIdentifier("DF_" + table.name() + "_" + column.name())).default_().literal("0").not().null_();
+			}
+			results.add(renderer.toSql());
+		}
+		return List.copyOf(results);
+	}
+	
+	@Override
+	public @NonNull List<SqlRendered> renderDisableAuditing(@NonNull SqlTable<?> table, @NonNull SqlAuditConfig config) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(config, "Sql audit config must not be null");
+		
+		List<SqlRendered> results = new ArrayList<>();
+		for (SqlAuditColumn column : config.auditColumns()) {
+			results.add(SqlServerDialect.renderDropDefaultConstraint(this.dialect, table.name(), column.name())); // T-SQL refuses to drop a column that a default constraint still references
+			results.add(SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(table.name())).drop().column().literal(this.dialect.quoteIdentifier(column.name())).toSql());
+		}
+		return List.copyOf(results);
 	}
 	
 	@Override

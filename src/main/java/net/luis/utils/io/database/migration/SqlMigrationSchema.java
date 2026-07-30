@@ -91,7 +91,7 @@ public final class SqlMigrationSchema {
 	}
 	
 	/**
-	 * Loads the schema snapshot from the given database using the default schema {@code public}.<br>
+	 * Loads the schema snapshot from the given database using the {@link SqlDialect#defaultSchema(Connection) default schema} of the dialect.<br>
 	 *
 	 * @param database The database to load the schema from
 	 * @return The loaded schema snapshot
@@ -100,7 +100,7 @@ public final class SqlMigrationSchema {
 	 */
 	public static @NonNull SqlMigrationSchema load(@NonNull SqlDatabase database) throws SqlException {
 		Objects.requireNonNull(database, "Sql database must not be null");
-		return load(database.getDataSource(), database.getDialect(), "public");
+		return load(database.getDataSource(), database.getDialect());
 	}
 	
 	/**
@@ -118,7 +118,7 @@ public final class SqlMigrationSchema {
 	}
 	
 	/**
-	 * Loads the schema snapshot from the given data source using the given dialect and the default schema {@code public}.<br>
+	 * Loads the schema snapshot from the given data source using the {@link SqlDialect#defaultSchema(Connection) default schema} of the given dialect.<br>
 	 *
 	 * @param dataSource The data source to obtain a connection from
 	 * @param dialect The dialect used to introspect dialect specific metadata
@@ -127,7 +127,14 @@ public final class SqlMigrationSchema {
 	 * @throws SqlException If the schema metadata could not be loaded
 	 */
 	public static @NonNull SqlMigrationSchema load(@NonNull DataSource dataSource, @NonNull SqlDialect dialect) throws SqlException {
-		return load(dataSource, dialect, "public");
+		Objects.requireNonNull(dataSource, "Data source must not be null");
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		
+		try (Connection connection = dataSource.getConnection()) {
+			return load(connection, dialect, dialect.defaultSchema(connection));
+		} catch (SQLException e) {
+			throw new SqlSchemaIntrospectionException("Failed to load schema metadata for the default schema", e);
+		}
 	}
 	
 	/**
@@ -177,16 +184,16 @@ public final class SqlMigrationSchema {
 		try {
 			DatabaseMetaData meta = connection.getMetaData();
 			
-			List<String> tableNames = discoverTableNames(meta, schema);
+			List<String> tableNames = discoverTableNames(meta, dialect, schema);
 			
 			for (String tableName : tableNames) {
-				Set<String> primaryKeyColumns = loadPrimaryKeyColumns(meta, schema, tableName);
-				Set<String> uniqueColumns = loadUniqueColumns(meta, schema, tableName);
+				Set<String> primaryKeyColumns = loadPrimaryKeyColumns(meta, dialect, schema, tableName);
+				Set<String> uniqueColumns = loadUniqueColumns(meta, dialect, schema, tableName);
 				
 				SqlTable<Void> table = SqlTable.create(Void.class, tableName, schema);
 				Map<String, SqlColumn<Void, ?>> tableColumns = Maps.newLinkedHashMap();
 				
-				try (ResultSet colRs = meta.getColumns(null, schema, tableName, "%")) {
+				try (ResultSet colRs = meta.getColumns(dialect.introspectionCatalog(schema), dialect.introspectionSchema(schema), tableName, "%")) {
 					while (colRs.next()) {
 						String colName = colRs.getString("COLUMN_NAME");
 						int dataType = colRs.getInt("DATA_TYPE");
@@ -598,13 +605,14 @@ public final class SqlMigrationSchema {
 	 * Discovers the names of all tables of the given schema from the given database metadata.<br>
 	 *
 	 * @param meta The database metadata to read the table names from
+	 * @param dialect The dialect used to restrict the lookup to the catalog or schema of the connected database
 	 * @param schema The name of the schema to discover the tables of
 	 * @return The names of all tables of the schema
-	 * @throws NullPointerException If the metadata or schema is null
+	 * @throws NullPointerException If the metadata, dialect or schema is null
 	 * @throws SQLException If the table names could not be read from the metadata
 	 */
-	private static @NonNull List<String> discoverTableNames(@NonNull DatabaseMetaData meta, @NonNull String schema) throws SQLException {
-		try (ResultSet rs = meta.getTables(null, schema, "%", new String[] { "TABLE" })) {
+	private static @NonNull List<String> discoverTableNames(@NonNull DatabaseMetaData meta, @NonNull SqlDialect dialect, @NonNull String schema) throws SQLException {
+		try (ResultSet rs = meta.getTables(dialect.introspectionCatalog(schema), dialect.introspectionSchema(schema), "%", new String[] { "TABLE" })) {
 			List<String> tableNames = Lists.newArrayList();
 			
 			while (rs.next()) {
@@ -619,14 +627,15 @@ public final class SqlMigrationSchema {
 	 * Loads the names of the primary key columns of the given table from the given database metadata.<br>
 	 *
 	 * @param meta The database metadata to read the primary key columns from
+	 * @param dialect The dialect used to restrict the lookup to the catalog or schema of the connected database
 	 * @param schema The name of the schema the table belongs to
 	 * @param tableName The name of the table to load the primary key columns of
 	 * @return The names of the primary key columns of the table
-	 * @throws NullPointerException If the metadata, schema or table name is null
+	 * @throws NullPointerException If the metadata, dialect, schema or table name is null
 	 * @throws SQLException If the primary key columns could not be read from the metadata
 	 */
-	private static @NonNull Set<String> loadPrimaryKeyColumns(@NonNull DatabaseMetaData meta, @NonNull String schema, @NonNull String tableName) throws SQLException {
-		try (ResultSet pkRs = meta.getPrimaryKeys(null, schema, tableName)) {
+	private static @NonNull Set<String> loadPrimaryKeyColumns(@NonNull DatabaseMetaData meta, @NonNull SqlDialect dialect, @NonNull String schema, @NonNull String tableName) throws SQLException {
+		try (ResultSet pkRs = meta.getPrimaryKeys(dialect.introspectionCatalog(schema), dialect.introspectionSchema(schema), tableName)) {
 			Set<String> pkColumns = new LinkedHashSet<>();
 			
 			while (pkRs.next()) {
@@ -642,17 +651,18 @@ public final class SqlMigrationSchema {
 	 * Only single column unique indexes are considered, multi column unique indexes are ignored.<br>
 	 *
 	 * @param meta The database metadata to read the unique indexes from
+	 * @param dialect The dialect used to restrict the lookup to the catalog or schema of the connected database
 	 * @param schema The name of the schema the table belongs to
 	 * @param tableName The name of the table to load the unique columns of
 	 * @return The names of the columns that are covered by a single column unique index
-	 * @throws NullPointerException If the metadata, schema or table name is null
+	 * @throws NullPointerException If the metadata, dialect, schema or table name is null
 	 * @throws SQLException If the unique indexes could not be read from the metadata
 	 */
-	private static @NonNull Set<String> loadUniqueColumns(@NonNull DatabaseMetaData meta, @NonNull String schema, @NonNull String tableName) throws SQLException {
+	private static @NonNull Set<String> loadUniqueColumns(@NonNull DatabaseMetaData meta, @NonNull SqlDialect dialect, @NonNull String schema, @NonNull String tableName) throws SQLException {
 		Set<String> uniqueColumns = new LinkedHashSet<>();
 		Map<String, List<String>> indexColumns = Maps.newLinkedHashMap();
 		
-		try (ResultSet idxRs = meta.getIndexInfo(null, schema, tableName, true, false)) {
+		try (ResultSet idxRs = meta.getIndexInfo(dialect.introspectionCatalog(schema), dialect.introspectionSchema(schema), tableName, true, false)) {
 			while (idxRs.next()) {
 				String indexName = idxRs.getString("INDEX_NAME");
 				String colName = idxRs.getString("COLUMN_NAME");

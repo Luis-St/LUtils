@@ -41,6 +41,14 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class SqlInsertColumns3Test {
 	
+	private static SqlTable<Object> table() {
+		return SqlTable.create(Object.class, "test_table");
+	}
+	
+	private static SqlInsertColumnsBuilder<Object> emptyBuilder(SqlTable<Object> table) {
+		return new SqlInsertColumnsBuilder<>(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, null, List.of());
+	}
+	
 	@Test
 	void constructWithValidBuilderAndColumns() {
 		SqlTable<Object> table = table();
@@ -243,13 +251,5 @@ class SqlInsertColumns3Test {
 		new SqlInsertColumns3<>(withoutProviderBuilder, column1, column2, column3).row(1, 1, 1).execute();
 		
 		assertNotEquals(withProviderSource.executedSql().getFirst(), withoutProviderSource.executedSql().getFirst());
-	}
-	
-	private static SqlTable<Object> table() {
-		return SqlTable.create(Object.class, "test_table");
-	}
-	
-	private static SqlInsertColumnsBuilder<Object> emptyBuilder(SqlTable<Object> table) {
-		return new SqlInsertColumnsBuilder<>(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, null, List.of());
 	}
 }

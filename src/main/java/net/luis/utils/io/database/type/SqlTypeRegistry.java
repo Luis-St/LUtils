@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.type;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -25,6 +26,13 @@ import java.util.*;
 /**
  * An immutable registry that maps {@link SqlType}s to their corresponding {@link SqlTypeMapping}.<br>
  * It is used by a dialect to resolve the native type name, binder and reader for a given type.<br>
+ * <p>
+ *     A registry built through {@link #builder()} is handed to a dialect through its constructor,<br>
+ *     such as {@code new PostgresSqlDialect(registry)}, that dialect can then be passed to<br>
+ *     {@code SqlDatabase.builder(dataSource, dialect)} to make the mappings known to a database.<br>
+ *     A type that only needs a different java representation does not require a registry,<br>
+ *     it can be derived from an existing type through {@link SqlType#map(Class, ThrowableFunction, ThrowableFunction)}.
+ * </p>
  *
  * @see SqlTypeMapping
  * @see SqlTypeRegistryBuilder
@@ -81,6 +89,29 @@ public final class SqlTypeRegistry {
 	 */
 	public static @NonNull SqlTypeRegistryBuilder builder() {
 		return new SqlTypeRegistryBuilder();
+	}
+	
+	/**
+	 * Returns a registry that holds the mappings of this registry and the mappings of the given registry.<br>
+	 * A mapping of the given registry replaces the mapping this registry holds for the same type,<br>
+	 * which allows a caller to extend or override the type mappings a dialect ships with.<br>
+	 *
+	 * @param other The registry whose mappings are added to the mappings of this registry
+	 * @return A registry holding the mappings of both registries
+	 * @throws NullPointerException If the other registry is null
+	 */
+	public @NonNull SqlTypeRegistry with(@NonNull SqlTypeRegistry other) {
+		Objects.requireNonNull(other, "Sql type registry must not be null");
+		if (other.mappings.isEmpty()) {
+			return this;
+		}
+		if (this.mappings.isEmpty()) {
+			return other;
+		}
+		
+		Map<SqlType<?>, SqlTypeMapping> merged = new LinkedHashMap<>(this.mappings);
+		merged.putAll(other.mappings);
+		return new SqlTypeRegistry(merged);
 	}
 	
 	/**

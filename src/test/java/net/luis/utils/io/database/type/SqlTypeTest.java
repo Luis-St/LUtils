@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.database.type;
 
-import net.luis.utils.io.database.dialect.SqlDefaultDialect;
-import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.dialect.*;
 import net.luis.utils.io.database.exception.database.SqlResultMappingException;
 import net.luis.utils.io.database.exception.database.statement.SqlStatementBindException;
 import net.luis.utils.io.database.type.infer.SqlTypeInferrer;
@@ -476,5 +475,244 @@ class SqlTypeTest {
 		
 		SqlTypeRegistry registry = SqlTypeRegistry.builder().register(first, "COUNTER").build();
 		assertTrue(registry.resolve(second).isPresent());
+	}
+	
+	@Test
+	void getWithDialectAndNullAccess() {
+		ResultSet resultSet = resultRow(42);
+		assertThrows(IllegalCallerException.class, () -> SqlTypes.INTEGER.get(null, DIALECT, resultSet, 1));
+	}
+	
+	@Test
+	void getWithDialectAndNullDialect() {
+		ResultSet resultSet = resultRow(42);
+		assertThrows(NullPointerException.class, () -> SqlTypes.INTEGER.get(SqlTypeInternalAccess.INSTANCE, null, resultSet, 1));
+	}
+	
+	@Test
+	void getWithDialectAndNullResultSet() {
+		assertThrows(NullPointerException.class, () -> SqlTypes.INTEGER.get(SqlTypeInternalAccess.INSTANCE, DIALECT, null, 1));
+	}
+	
+	@Test
+	void getWithDialectAndFailingResultSet() {
+		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		CachedRowSet rowSet = SqlRowSets.singleColumn(Types.TIMESTAMP, Timestamp.valueOf("2020-01-15 10:15:30"));
+		SqlResultMappingException exception = assertThrows(SqlResultMappingException.class, () -> type.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, rowSet, 1));
+		assertEquals(Optional.of(OffsetDateTime.class), exception.targetType());
+	}
+	
+	@Test
+	void getWithOffsetSupportingDialectDelegatesToPlainGet() throws Exception {
+		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		CachedRowSet plainSource = SqlRowSets.singleColumn(Types.TIMESTAMP, Timestamp.valueOf("2020-01-15 10:15:30"));
+		CachedRowSet dialectSource = SqlRowSets.singleColumn(Types.TIMESTAMP, Timestamp.valueOf("2020-01-15 10:15:30"));
+		OffsetDateTime expected = type.get(SqlTypeInternalAccess.INSTANCE, plainSource, 1);
+		assertEquals(expected, type.get(SqlTypeInternalAccess.INSTANCE, DIALECT, dialectSource, 1));
+	}
+	
+	@Test
+	void getOffsetDateTimeWithNonOffsetDialectReadsUtcTimestamp() throws Exception {
+		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		OffsetDateTime value = type.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow(LocalDateTime.of(2020, 1, 15, 10, 15, 30)), 1);
+		assertNotNull(value);
+		assertEquals(ZoneOffset.UTC, value.getOffset());
+		assertEquals(LocalDateTime.of(2020, 1, 15, 10, 15, 30), value.toLocalDateTime());
+	}
+	
+	@Test
+	void getOffsetDateTimeWithNonOffsetDialectReturnsNullForNullColumn() throws Exception {
+		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		assertNull(type.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow((Object) null), 1));
+	}
+	
+	@Test
+	void getOffsetTimeWithNonOffsetDialectReadsUtcTime() throws Exception {
+		SqlType<OffsetTime> type = SqlTypes.OFFSET_TIME.configure(SqlParameter.fractional(6));
+		OffsetTime value = type.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow(LocalTime.of(10, 15, 30)), 1);
+		assertNotNull(value);
+		assertEquals(ZoneOffset.UTC, value.getOffset());
+		assertEquals(LocalTime.of(10, 15, 30), value.toLocalTime());
+	}
+	
+	@Test
+	void getOffsetTimeWithNonOffsetDialectReturnsNullForNullColumn() throws Exception {
+		SqlType<OffsetTime> type = SqlTypes.OFFSET_TIME.configure(SqlParameter.fractional(6));
+		assertNull(type.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow((Object) null), 1));
+	}
+	
+	@Test
+	void getNonTemporalTypeWithNonOffsetDialectDelegatesToPlainGet() throws Exception {
+		assertEquals(42, SqlTypes.INTEGER.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow(42), 1));
+	}
+	
+	@Test
+	void getOffsetDateTimeTypeWithMismatchedJdbcTypeDelegatesToPlainGet() throws Exception {
+		SqlType<OffsetDateTime> type = new SqlScalarType<>(Types.TIMESTAMP, OffsetDateTime.class);
+		OffsetDateTime stored = OffsetDateTime.of(2020, 1, 15, 10, 15, 30, 0, ZoneOffset.ofHours(2));
+		OffsetDateTime value = type.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow(stored), 1);
+		assertEquals(stored, value);
+		assertEquals(ZoneOffset.ofHours(2), value.getOffset());
+	}
+	
+	@Test
+	void getOffsetTimeTypeWithMismatchedJdbcTypeDelegatesToPlainGet() throws Exception {
+		SqlType<OffsetTime> type = new SqlScalarType<>(Types.TIME, OffsetTime.class);
+		OffsetTime stored = OffsetTime.of(10, 15, 30, 0, ZoneOffset.ofHours(2));
+		OffsetTime value = type.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow(stored), 1);
+		assertEquals(stored, value);
+		assertEquals(ZoneOffset.ofHours(2), value.getOffset());
+	}
+	
+	@Test
+	void getWithTimezoneJdbcTypeButForeignJavaTypeDelegatesToPlainGet() throws Exception {
+		SqlType<String> dateTimeType = new SqlScalarType<>(Types.TIMESTAMP_WITH_TIMEZONE, String.class);
+		SqlType<String> timeType = new SqlScalarType<>(Types.TIME_WITH_TIMEZONE, String.class);
+		assertEquals("2020-01-15T10:15:30Z", dateTimeType.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow("2020-01-15T10:15:30Z"), 1));
+		assertEquals("10:15:30Z", timeType.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow("10:15:30Z"), 1));
+	}
+	
+	@Test
+	void setWithNonOffsetDialectBindsOffsetDateTimeAsUtcTimestamp() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		type.set(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, statement, 1, OffsetDateTime.of(2020, 1, 15, 10, 15, 30, 0, ZoneOffset.UTC));
+		assertEquals(LocalDateTime.of(2020, 1, 15, 10, 15, 30), statement.value());
+		assertEquals(Types.TIMESTAMP, statement.targetType());
+	}
+	
+	@Test
+	void setWithNonOffsetDialectBindsNullTimestampWithTimezone() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		type.set(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, statement, 1, null);
+		assertNull(statement.value());
+		assertEquals(Types.TIMESTAMP, statement.targetType());
+	}
+	
+	@Test
+	void setWithNonOffsetDialectBindsOffsetTimeAsUtcTime() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlType<OffsetTime> type = SqlTypes.OFFSET_TIME.configure(SqlParameter.fractional(6));
+		type.set(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, statement, 1, OffsetTime.of(10, 15, 30, 0, ZoneOffset.UTC));
+		assertEquals(LocalTime.of(10, 15, 30), statement.value());
+		assertEquals(Types.TIME, statement.targetType());
+	}
+	
+	@Test
+	void setWithNonOffsetDialectBindsNullTimeWithTimezone() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlType<OffsetTime> type = SqlTypes.OFFSET_TIME.configure(SqlParameter.fractional(6));
+		type.set(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, statement, 1, null);
+		assertNull(statement.value());
+		assertEquals(Types.TIME, statement.targetType());
+	}
+	
+	@Test
+	void setWithNonOffsetDialectAndForeignValueTypeFallsThrough() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlType<Object> type = new SqlScalarType<>(Types.TIMESTAMP_WITH_TIMEZONE, Object.class);
+		type.set(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, statement, 1, "not-a-date-time");
+		assertEquals("not-a-date-time", statement.value());
+		assertEquals(Types.TIMESTAMP_WITH_TIMEZONE, statement.targetType());
+	}
+	
+	@Test
+	void setWithNonOffsetDialectAndForeignValueTypeForTimeWithTimezoneFallsThrough() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlType<Object> type = new SqlScalarType<>(Types.TIME_WITH_TIMEZONE, Object.class);
+		type.set(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, statement, 1, "not-a-time");
+		assertEquals("not-a-time", statement.value());
+		assertEquals(Types.TIME_WITH_TIMEZONE, statement.targetType());
+	}
+	
+	@Test
+	void setWithOffsetSupportingDialectBindsUnchanged() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		OffsetDateTime value = OffsetDateTime.of(2020, 1, 15, 10, 15, 30, 0, ZoneOffset.ofHours(2));
+		type.set(SqlTypeInternalAccess.INSTANCE, DIALECT, statement, 1, value);
+		assertEquals(value, statement.value());
+		assertEquals(Types.TIMESTAMP_WITH_TIMEZONE, statement.targetType());
+	}
+	
+	@Test
+	void setWithNonOffsetDialectAndNonTemporalTypeBindsUnchanged() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlTypes.INTEGER.set(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, statement, 1, 42);
+		assertEquals(42, statement.value());
+		assertEquals(Types.INTEGER, statement.targetType());
+	}
+	
+	@Test
+	void getWithDialectConvertsNonUtcOffsetToUtc() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		type.set(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, statement, 1, OffsetDateTime.of(2020, 1, 15, 10, 15, 30, 0, ZoneOffset.ofHours(2)));
+		OffsetDateTime value = type.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow(statement.value()), 1);
+		assertNotNull(value);
+		assertEquals(LocalDateTime.of(2020, 1, 15, 8, 15, 30), value.toLocalDateTime());
+	}
+	
+	@Test
+	void setWithNonOffsetDialectNormalizesNonUtcOffset() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		type.set(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, statement, 1, OffsetDateTime.of(2020, 1, 15, 10, 15, 30, 0, ZoneOffset.ofHours(2)));
+		assertEquals(LocalDateTime.of(2020, 1, 15, 8, 15, 30), statement.value());
+		assertEquals(Types.TIMESTAMP, statement.targetType());
+	}
+	
+	@Test
+	void offsetDateTimeRoundTripsThroughNonOffsetDialect() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		OffsetDateTime original = OffsetDateTime.of(2020, 1, 15, 10, 15, 30, 0, ZoneOffset.ofHours(2));
+		type.set(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, statement, 1, original);
+		OffsetDateTime read = type.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow(statement.value()), 1);
+		assertNotNull(read);
+		assertEquals(ZoneOffset.UTC, read.getOffset());
+		assertEquals(original.toInstant(), read.toInstant());
+	}
+	
+	@Test
+	void offsetTimeRoundTripsThroughNonOffsetDialect() throws Exception {
+		RecordingStatement statement = new RecordingStatement();
+		SqlType<OffsetTime> type = SqlTypes.OFFSET_TIME.configure(SqlParameter.fractional(6));
+		OffsetTime original = OffsetTime.of(10, 15, 30, 0, ZoneOffset.ofHours(2));
+		type.set(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, statement, 1, original);
+		OffsetTime read = type.get(SqlTypeInternalAccess.INSTANCE, SqlDialects.SQLITE, resultRow(statement.value()), 1);
+		assertNotNull(read);
+		assertEquals(ZoneOffset.UTC, read.getOffset());
+		assertEquals(original.withOffsetSameInstant(ZoneOffset.UTC), read);
+	}
+	
+	@Test
+	void getValueRoutesThroughDialectAwareGet() throws Exception {
+		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		OffsetDateTime value = SqlType.getValue(type, SqlDialects.SQLITE, resultRow(LocalDateTime.of(2020, 1, 15, 10, 15, 30)), 1);
+		assertNotNull(value);
+		assertEquals(ZoneOffset.UTC, value.getOffset());
+		assertEquals(LocalDateTime.of(2020, 1, 15, 10, 15, 30), value.toLocalDateTime());
+	}
+	
+	private static final class RecordingStatement extends FakePreparedStatement {
+		
+		private Object value;
+		private int targetType;
+		
+		@Override
+		public void setObject(int index, Object value, int targetSqlType) {
+			this.value = value;
+			this.targetType = targetSqlType;
+		}
+		
+		private Object value() {
+			return this.value;
+		}
+		
+		private int targetType() {
+			return this.targetType;
+		}
 	}
 }

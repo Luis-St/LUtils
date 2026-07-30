@@ -31,6 +31,7 @@ import net.luis.utils.io.database.query.util.SqlSetType;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.SqlTypeRegistry;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.junit.jupiter.api.Test;
@@ -162,7 +163,6 @@ class H2DialectTest {
 		assertTrue(DIALECT.isFeatureSupported(SqlFeature.FOR_UPDATE));
 		assertTrue(DIALECT.isFeatureSupported(SqlFeature.IS_DISTINCT_FROM));
 		assertTrue(DIALECT.isFeatureSupported(SqlFeature.UPSERT));
-		assertTrue(DIALECT.isFeatureSupported(SqlFeature.TRANSACTIONAL_DDL));
 		assertTrue(DIALECT.isFeatureSupported(SqlFeature.ROW_LOCKING));
 		assertTrue(DIALECT.isFeatureSupported(SqlFeature.RENAME_INDEX));
 		assertTrue(DIALECT.isFeatureSupported(SqlFeature.ALTER_COLUMN));
@@ -179,6 +179,7 @@ class H2DialectTest {
 		assertFalse(DIALECT.isFeatureSupported(SqlFeature.SKIP_LOCKED));
 		assertFalse(DIALECT.isFeatureSupported(SqlFeature.NO_WAIT));
 		assertFalse(DIALECT.isFeatureSupported(SqlFeature.TRUNCATE_CASCADE));
+		assertFalse(DIALECT.isFeatureSupported(SqlFeature.TRANSACTIONAL_DDL));
 		assertFalse(DIALECT.isFeatureSupported(SqlFeature.UPSERT_SUFFIX));
 		assertFalse(DIALECT.isFeatureSupported(SqlFeature.INSERT_OR_IGNORE));
 		assertFalse(DIALECT.isFeatureSupported(SqlFeature.ARRAY_TYPE));
@@ -282,5 +283,37 @@ class H2DialectTest {
 		String sql = DIALECT.renderFunction(function).sql();
 		assertTrue(sql.contains("DATEADD"));
 		assertTrue(sql.contains("TIMESTAMP '1970-01-01 00:00:00'"));
+	}
+	
+	@Test
+	void constructWithAdditionalTypes() throws SqlException {
+		H2Dialect dialect = new H2Dialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "MY_UUID").build());
+		assertEquals("H2", dialect.name());
+		assertEquals("MY_UUID", dialect.getTypeName(SqlTypes.UUID));
+	}
+	
+	@Test
+	void constructWithEmptyAdditionalTypesMatchesDefault() throws SqlException {
+		H2Dialect dialect = new H2Dialect(SqlTypeRegistry.empty());
+		assertEquals(DIALECT.getTypeName(SqlTypes.UUID), dialect.getTypeName(SqlTypes.UUID));
+		assertEquals(DIALECT.getTypeName(SqlTypes.JSON), dialect.getTypeName(SqlTypes.JSON));
+		assertEquals(DIALECT.getTypeName(SqlTypes.INTEGER), dialect.getTypeName(SqlTypes.INTEGER));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new H2Dialect(null));
+	}
+	
+	@Test
+	void requiresRecursiveCteColumnListReturnsTrue() {
+		assertTrue(DIALECT.requiresRecursiveCteColumnList());
+	}
+	
+	@Test
+	void constructWithAdditionalTypesKeepsOtherTypesUnchanged() throws SqlException {
+		H2Dialect dialect = new H2Dialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "MY_UUID").build());
+		assertEquals("JSON", dialect.getTypeName(SqlTypes.JSON));
+		assertEquals(DIALECT.getTypeName(SqlTypes.INTEGER), dialect.getTypeName(SqlTypes.INTEGER));
 	}
 }

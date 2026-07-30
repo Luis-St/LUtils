@@ -27,6 +27,8 @@ import net.luis.utils.util.Version;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
+import java.lang.reflect.Proxy;
+import java.sql.*;
 import java.time.Instant;
 import java.util.*;
 
@@ -278,6 +280,106 @@ class SqlMigrationTableStoreTest {
 	}
 	
 	@Test
+	void saveWithConnectionWrapsOverwriteSqlException() {
+		RecordingConnection recorder = new RecordingConnection(new int[0], "UPDATE", null);
+		SqlMigrationExecutionException thrown = assertThrows(SqlMigrationExecutionException.class, () -> store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.APPLIED, APPLIED_AT, "abc")));
+		assertTrue(thrown.getMessage().contains(Version.of(1, 0, 0).toString()));
+		assertInstanceOf(SQLException.class, thrown.getCause());
+		assertTrue(recorder.prepared.stream().noneMatch(sql -> sql.startsWith("INSERT")));
+	}
+	
+	@Test
+	void saveWithConnectionWrapsOverwriteExecuteException() {
+		RecordingConnection recorder = new RecordingConnection(new int[0], null, "UPDATE");
+		SqlMigrationExecutionException thrown = assertThrows(SqlMigrationExecutionException.class, () -> store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.APPLIED, APPLIED_AT, "abc")));
+		assertTrue(thrown.getMessage().contains(Version.of(1, 0, 0).toString()));
+		assertTrue(recorder.prepared.stream().noneMatch(sql -> sql.startsWith("INSERT")));
+	}
+	
+	@Test
+	void saveWithConnectionOverwritesExistingRow() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 1 }, null, null);
+		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.APPLIED, APPLIED_AT, "abc"));
+		
+		assertEquals(1, recorder.prepared.size());
+		assertTrue(recorder.prepared.getFirst().startsWith("UPDATE"), recorder.prepared.getFirst());
+		assertTrue(recorder.prepared.getFirst().contains("WHERE \"version\" = ?"), recorder.prepared.getFirst());
+	}
+	
+	@Test
+	void saveWithConnectionInsertsWhenNoRowUpdated() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 0, 0 }, null, null);
+		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.APPLIED, APPLIED_AT, "abc"));
+		
+		assertEquals(2, recorder.prepared.size());
+		assertTrue(recorder.prepared.get(0).startsWith("UPDATE"), recorder.prepared.get(0));
+		assertTrue(recorder.prepared.get(1).startsWith("INSERT INTO"), recorder.prepared.get(1));
+		assertEquals(Arrays.asList(Version.of(1, 0, 0).toString(), "init", "APPLIED", APPLIED_AT_MILLIS, "abc"), recorder.parameters.get(1));
+	}
+	
+	@Test
+	void saveWithConnectionOverwriteWithNullAppliedAt() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 1 }, null, null);
+		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.PENDING, null, "abc"));
+		assertNull(recorder.parameters.getFirst().get(2));
+	}
+	
+	@Test
+	void saveWithConnectionOverwriteWithAppliedAt() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 1 }, null, null);
+		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.APPLIED, APPLIED_AT, "abc"));
+		assertEquals(APPLIED_AT_MILLIS, recorder.parameters.getFirst().get(2));
+	}
+	
+	@Test
+	void saveWithConnectionOverwriteBindsParametersInOrder() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 1 }, null, null);
+		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.APPLIED, APPLIED_AT, "abc"));
+		assertEquals(Arrays.asList("init", "APPLIED", APPLIED_AT_MILLIS, "abc", Version.of(1, 0, 0).toString()), recorder.parameters.getFirst());
+	}
+	
+	@Test
+	void saveWithConnectionOverwriteQuotesIdentifiers() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 1 }, null, null);
+		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.APPLIED, APPLIED_AT, "abc"));
+		
+		String sql = recorder.prepared.getFirst();
+		for (String identifier : List.of("_sql_migrations", "description", "status", "applied_at", "checksum", "version")) {
+			assertTrue(sql.contains("\"" + identifier + "\""), sql);
+		}
+	}
+	
+	@Test
+	void saveWithConnectionOverwriteWithNullChecksum() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 1 }, null, null);
+		assertDoesNotThrow(() -> store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.PENDING, null, null)));
+		assertNull(recorder.parameters.getFirst().get(3));
+	}
+	
+	@Test
+	void saveTwiceForSameVersionUpdatesSecondTime() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 0, 0, 1 }, null, null);
+		SqlMigrationTableStore store = store(SqlTestFixtures.failingDataSource());
+		store.save(recorder.connection(), info(SqlMigrationStatus.PENDING, null, "abc"));
+		store.save(recorder.connection(), info(SqlMigrationStatus.APPLIED, APPLIED_AT, "abc"));
+		
+		assertEquals(3, recorder.prepared.size());
+		assertEquals(1, recorder.prepared.stream().filter(sql -> sql.startsWith("INSERT INTO")).count());
+		assertTrue(recorder.prepared.get(2).startsWith("UPDATE"), recorder.prepared.get(2));
+	}
+	
+	@Test
+	void saveWithChangedStatusOverwritesStatusAndAppliedAt() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 1 }, null, null);
+		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.ROLLED_BACK, null, "abc"));
+		
+		List<Object> parameters = recorder.parameters.getFirst();
+		assertEquals("ROLLED_BACK", parameters.get(1));
+		assertNull(parameters.get(2));
+		assertEquals(Version.of(1, 0, 0).toString(), parameters.get(4));
+	}
+	
+	@Test
 	void saveWithNullChecksum() {
 		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
 		assertDoesNotThrow(() -> store(dataSource).save(dataSource.getConnection(), info(SqlMigrationStatus.PENDING, null, null)));
@@ -314,5 +416,62 @@ class SqlMigrationTableStoreTest {
 		assertEquals(APPLIED_AT, result.get(0).appliedAt());
 		assertNull(result.get(1).appliedAt());
 		assertNull(result.get(2).appliedAt());
+	}
+	
+	/**
+	 * Hand-written {@link Connection} stub that records every prepared statement with its bound parameters and lets a
+	 * test decide, per statement, how many rows {@code executeUpdate} reports — which is what selects the overwrite
+	 * branch of {@code save(Connection, SqlMigrationInfo)}.<br>
+	 */
+	private static final class RecordingConnection {
+		
+		private final List<String> prepared = new ArrayList<>();
+		private final List<List<Object>> parameters = new ArrayList<>();
+		private final int[] updateCounts;
+		private final String failingPrepareFragment;
+		private final String failingExecuteFragment;
+		
+		private RecordingConnection(int[] updateCounts, String failingPrepareFragment, String failingExecuteFragment) {
+			this.updateCounts = updateCounts.clone();
+			this.failingPrepareFragment = failingPrepareFragment;
+			this.failingExecuteFragment = failingExecuteFragment;
+		}
+		
+		private Connection connection() {
+			return (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(), new Class<?>[] { Connection.class }, (proxy, method, args) -> {
+				if (!"prepareStatement".equals(method.getName())) {
+					return "toString".equals(method.getName()) ? "RecordingConnection" : null;
+				}
+				String sql = (String) args[0];
+				if (this.failingPrepareFragment != null && sql.startsWith(this.failingPrepareFragment)) {
+					throw new SQLException("Prepare failed in tests");
+				}
+				this.prepared.add(sql);
+				this.parameters.add(new ArrayList<>());
+				return this.statement(sql, this.prepared.size() - 1);
+			});
+		}
+		
+		private Object statement(String sql, int index) {
+			return Proxy.newProxyInstance(PreparedStatement.class.getClassLoader(), new Class<?>[] { PreparedStatement.class }, (proxy, method, args) -> switch (method.getName()) {
+				case "setString", "setObject" -> {
+					List<Object> bound = this.parameters.get(index);
+					int position = (Integer) args[0] - 1;
+					while (bound.size() <= position) {
+						bound.add(null);
+					}
+					bound.set(position, args[1]);
+					yield null;
+				}
+				case "executeUpdate" -> {
+					if (this.failingExecuteFragment != null && sql.startsWith(this.failingExecuteFragment)) {
+						throw new SQLException("Execute failed in tests");
+					}
+					yield index < this.updateCounts.length ? this.updateCounts[index] : 0;
+				}
+				case "toString" -> "RecordingStatement";
+				default -> null;
+			});
+		}
 	}
 }

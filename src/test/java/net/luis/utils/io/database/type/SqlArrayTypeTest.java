@@ -22,11 +22,13 @@ import net.luis.utils.io.database.dialect.*;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.exception.database.SqlResultMappingException;
 import net.luis.utils.io.database.exception.database.statement.SqlStatementBindException;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.rowset.CachedRowSet;
 import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
 
@@ -342,6 +344,68 @@ class SqlArrayTypeTest {
 		
 		assertEquals(1, statement.createArrayElements.length);
 		assertNull(statement.createArrayElements[0]);
+	}
+	
+	@Test
+	void setArrayValueWithParameterizedElementTypeUsesBareTypeName() throws Exception {
+		SqlType<String> parameterized = SqlTypes.STRING.configure(SqlParameter.length(16));
+		RecordingStatement statement = new RecordingStatement(false);
+		parameterized.array().set(SqlTypeInternalAccess.INSTANCE, POSTGRES, statement, 1, new String[] { "A", "B" });
+		
+		assertEquals("VARCHAR", statement.createArrayTypeName);
+		assertFalse(statement.createArrayTypeName.contains("("));
+		assertArrayEquals(new Object[] { "A", "B" }, statement.createArrayElements);
+		assertEquals(1, statement.setArrayIndex);
+	}
+	
+	@Test
+	void setArrayValueWithScalarElementTypeUsesTypeNameUnchanged() throws Exception {
+		RecordingStatement statement = new RecordingStatement(false);
+		SqlTypes.INTEGER.array().set(SqlTypeInternalAccess.INSTANCE, POSTGRES, statement, 1, new Integer[] { 1 });
+		
+		assertEquals(POSTGRES.getTypeName(SqlTypes.INTEGER), statement.createArrayTypeName);
+	}
+	
+	@Test
+	void setArrayValueWithPrecisionElementTypeStripsAllParameters() throws Exception {
+		SqlType<BigDecimal> parameterized = SqlTypes.DECIMAL.configure(SqlParameter.precision(10, 2));
+		RecordingStatement statement = new RecordingStatement(false);
+		parameterized.array().set(SqlTypeInternalAccess.INSTANCE, POSTGRES, statement, 1, new BigDecimal[] { new BigDecimal("12.34") });
+		
+		assertFalse(statement.createArrayTypeName.contains("("));
+		assertFalse(statement.createArrayTypeName.contains(","));
+		assertFalse(statement.createArrayTypeName.endsWith("10"));
+	}
+	
+	@Test
+	void setArrayValueWithParameterizedElementTypeAndSingleElement() throws Exception {
+		SqlType<String> parameterized = SqlTypes.STRING.configure(SqlParameter.length(32));
+		RecordingStatement statement = new RecordingStatement(false);
+		parameterized.array().set(SqlTypeInternalAccess.INSTANCE, POSTGRES, statement, 1, new String[] { "only" });
+		
+		assertEquals("VARCHAR", statement.createArrayTypeName);
+		assertEquals(1, statement.createArrayElements.length);
+	}
+	
+	@Test
+	void setArrayValueWithParameterizedElementTypeAndEmptyArray() throws Exception {
+		SqlType<String> parameterized = SqlTypes.STRING.configure(SqlParameter.length(16));
+		RecordingStatement statement = new RecordingStatement(false);
+		parameterized.array().set(SqlTypeInternalAccess.INSTANCE, POSTGRES, statement, 1, new String[0]);
+		
+		assertEquals("VARCHAR", statement.createArrayTypeName);
+		assertEquals(0, statement.createArrayElements.length);
+	}
+	
+	@Test
+	void setArrayValueWithParameterizedMappedElementType() throws Exception {
+		SqlType<String> parameterized = SqlTypes.STRING.configure(SqlParameter.length(16));
+		SqlType<Integer> mapped = parameterized.map(Integer.class, String::valueOf, Integer::parseInt);
+		RecordingStatement statement = new RecordingStatement(false);
+		mapped.array().set(SqlTypeInternalAccess.INSTANCE, POSTGRES, statement, 1, new Integer[] { 7 });
+		
+		assertEquals("VARCHAR", statement.createArrayTypeName);
+		assertArrayEquals(new Object[] { "7" }, statement.createArrayElements);
 	}
 	
 	private static final class RecordingStatement extends FakePreparedStatement {

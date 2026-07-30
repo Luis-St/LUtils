@@ -21,14 +21,19 @@ package net.luis.utils.io.database.dialect;
 import net.luis.utils.io.data.json.JsonConfig;
 import net.luis.utils.io.data.json.JsonObject;
 import net.luis.utils.io.data.xml.*;
+import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.condition.conditions.comparison.SqlInListCondition;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateFunction;
 import net.luis.utils.io.database.function.functions.temporal.SqlDateInZoneFunction;
 import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import net.luis.utils.io.network.address.*;
@@ -529,6 +534,115 @@ class PostgresSqlDialectTest {
 			String rendered = DIALECT.getTypeName(type);
 			assertEquals(Optional.of(type), DIALECT.resolveType(new SqlNativeType(Types.OTHER, rendered, 0, 0)), "No inverse for " + rendered);
 		}
+	}
+	
+	@Test
+	void renderValueLiteralWithNull() {
+		assertThrows(NullPointerException.class, () -> DIALECT.renderValueLiteral(null));
+	}
+	
+	@Test
+	void renderValueLiteralWithByteArrayThrows() {
+		assertThrows(SqlDialectUnsupportedRenderingException.class, () -> DIALECT.renderValueLiteral(new byte[] { 1, 2 }));
+	}
+	
+	@Test
+	void renderValueLiteralWithSingleElementArray() throws SqlException {
+		assertEquals("ARRAY['A']", DIALECT.renderValueLiteral(new String[] { "A" }));
+	}
+	
+	@Test
+	void renderValueLiteralWithMultipleElementArray() throws SqlException {
+		assertEquals("ARRAY['A', 'B']", DIALECT.renderValueLiteral(new String[] { "A", "B" }));
+	}
+	
+	@Test
+	void renderValueLiteralWithEmptyArray() throws SqlException {
+		assertEquals("ARRAY[]", DIALECT.renderValueLiteral(new String[0]));
+	}
+	
+	@Test
+	void renderValueLiteralWithNullElementInArray() throws SqlException {
+		assertEquals("ARRAY['A', NULL]", DIALECT.renderValueLiteral(new String[] { "A", null }));
+	}
+	
+	@Test
+	void renderValueLiteralWithNumericArray() throws SqlException {
+		assertEquals("ARRAY[1, 2]", DIALECT.renderValueLiteral(new Integer[] { 1, 2 }));
+	}
+	
+	@Test
+	void renderValueLiteralWithStringDelegatesToSuper() throws SqlException {
+		assertEquals("'A'", DIALECT.renderValueLiteral("A"));
+	}
+	
+	@Test
+	void renderValueLiteralWithNumberDelegatesToSuper() throws SqlException {
+		assertEquals("42", DIALECT.renderValueLiteral(42));
+	}
+	
+	@Test
+	void renderValueLiteralWithArrayContainingQuotedString() throws SqlException {
+		assertEquals("ARRAY['O''Brien']", DIALECT.renderValueLiteral(new String[] { "O'Brien" }));
+	}
+	
+	@Test
+	void renderValueLiteralWithBooleanArray() throws SqlException {
+		assertEquals("ARRAY[TRUE, FALSE]", DIALECT.renderValueLiteral(new Boolean[] { true, false }));
+	}
+	
+	@Test
+	void renderValueLiteralWithNestedArray() throws SqlException {
+		assertEquals("ARRAY[ARRAY['A'], ARRAY['B']]", DIALECT.renderValueLiteral(new String[][] { { "A" }, { "B" } }));
+	}
+	
+	@Test
+	void renderValueLiteralWithArrayOfOnlyNullElements() throws SqlException {
+		assertEquals("ARRAY[NULL, NULL]", DIALECT.renderValueLiteral(new String[] { null, null }));
+	}
+	
+	@Test
+	void renderConditionInlineWithInListProducesAnyArray() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "t");
+		SqlColumn<Object, String> kind = table.column("kind", SqlTypes.TEXT, object -> "");
+		SqlRendered rendered = DIALECT.renderConditionInline(Sql.in(kind, "A", "B"));
+		assertEquals("\"t\".\"kind\" = ANY(ARRAY['A', 'B'])", rendered.sql());
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void constructWithAdditionalTypes() throws SqlException {
+		PostgresSqlDialect dialect = new PostgresSqlDialect(SqlTypeRegistry.builder().register(SqlTypes.DURATION, "MACADDR").build());
+		assertEquals("PostgreSQL", dialect.name());
+		assertEquals("MACADDR", dialect.getTypeName(SqlTypes.DURATION));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesOverridingOwnMapping() throws SqlException {
+		PostgresSqlDialect dialect = new PostgresSqlDialect(SqlTypeRegistry.builder().register(SqlTypes.JSON, "JSON").build());
+		assertEquals("JSONB", DIALECT.getTypeName(SqlTypes.JSON));
+		assertEquals("JSON", dialect.getTypeName(SqlTypes.JSON));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new PostgresSqlDialect(null));
+	}
+	
+	@Test
+	void truncateTableWithoutCascadeOmitsCascade() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlRendered rendered = DIALECT.tableRenderer().renderTruncateTable(table);
+		assertEquals("TRUNCATE TABLE \"users\"", rendered.sql());
+		assertFalse(rendered.sql().contains("CASCADE"));
+	}
+	
+	@Test
+	void truncateTableWithCascadeAppendsCascade() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlRendered rendered = DIALECT.tableRenderer().renderTruncateTable(table, true);
+		assertTrue(rendered.sql().endsWith("CASCADE"));
+		assertTrue(rendered.sql().startsWith("TRUNCATE TABLE \"users\""));
 	}
 	
 	private static final class Captured {

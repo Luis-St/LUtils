@@ -96,6 +96,16 @@ public class MySqlDialect extends AbstractSqlDialect {
 	 */
 	public MySqlDialect() {}
 	
+	/**
+	 * Constructs a new MySQL dialect that additionally knows the type mappings of the given registry.<br>
+	 *
+	 * @param additionalTypes The type mappings the dialect should know in addition to its own
+	 * @throws NullPointerException If the additional type mappings are null
+	 */
+	public MySqlDialect(@NonNull SqlTypeRegistry additionalTypes) {
+		super(additionalTypes);
+	}
+	
 	@Override
 	public @NonNull String name() {
 		return "MySQL";
@@ -218,6 +228,28 @@ public class MySqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	public boolean supportsOffsetTemporalTypes() {
+		return false;
+	}
+	
+	@Override
+	public boolean requiresJoinedDeleteTarget() {
+		return true;
+	}
+	
+	@Override
+	public @Nullable String introspectionCatalog(@NonNull String schema) {
+		Objects.requireNonNull(schema, "Sql schema must not be null");
+		return schema;
+	}
+	
+	@Override
+	public @Nullable String introspectionSchema(@NonNull String schema) {
+		Objects.requireNonNull(schema, "Sql schema must not be null");
+		return null;
+	}
+	
+	@Override
 	protected @NonNull String getCheckConstraintsQueryString() {
 		return "SELECT cc.CONSTRAINT_NAME, cc.CHECK_CLAUSE FROM information_schema.CHECK_CONSTRAINTS cc " +
 			"JOIN information_schema.TABLE_CONSTRAINTS tc ON tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME " +
@@ -296,7 +328,7 @@ class MySqlIndexRenderer extends SqlIndexRenderer {
 		renderer.using().literal(this.dialect.getIndexMethodName(index.method()));
 		
 		if (index.whereCondition() != null) {
-			renderer.where().rendered(index.whereCondition().toSql(this.dialect));
+			renderer.where().rendered(this.dialect.renderConditionInline(index.whereCondition()));
 		}
 		return renderer.toSql();
 	}
@@ -360,6 +392,18 @@ class MySqlColumnRenderer extends SqlColumnRenderer {
 		} else {
 			return renderer.not().null_().toSql();
 		}
+	}
+	
+	@Override
+	public @NonNull SqlRendered renderAlterColumnDropDefault(@NonNull SqlColumn<?, ?> column) throws SqlException {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		if (!column.nullable()) {
+			return super.renderAlterColumnDropDefault(column);
+		}
+		
+		String tableName = column.owningTable().name();
+		String columnName = column.name();
+		return SqlRenderer.empty().alter().table().literal(this.dialect.quoteIdentifier(tableName)).alter().column().literal(this.dialect.quoteIdentifier(columnName)).set().default_().null_().toSql();
 	}
 }
 

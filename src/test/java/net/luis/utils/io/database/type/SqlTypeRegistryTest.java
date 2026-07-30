@@ -243,4 +243,92 @@ class SqlTypeRegistryTest {
 		assertEquals(second, first);
 		assertEquals(first.hashCode(), second.hashCode());
 	}
+	
+	@Test
+	void withNullRegistry() {
+		SqlTypeRegistry registry = SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID").build();
+		assertThrows(NullPointerException.class, () -> registry.with(null));
+	}
+	
+	@Test
+	void withEmptyRegistryReturnsSameInstance() {
+		SqlTypeRegistry registry = SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID").build();
+		assertSame(registry, registry.with(SqlTypeRegistry.empty()));
+	}
+	
+	@Test
+	void withRegistryOnEmptyReturnsOtherInstance() {
+		SqlTypeRegistry other = SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID").build();
+		assertSame(other, SqlTypeRegistry.empty().with(other));
+	}
+	
+	@Test
+	void withBothEmptyReturnsSameInstance() {
+		SqlTypeRegistry empty = SqlTypeRegistry.empty();
+		assertSame(empty, empty.with(SqlTypeRegistry.empty()));
+	}
+	
+	@Test
+	void withNonEmptyRegistriesMergesMappings() {
+		SqlTypeRegistry first = SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID").build();
+		SqlTypeRegistry second = SqlTypeRegistry.builder().register(SqlTypes.JSON, "JSONB").build();
+		SqlTypeRegistry merged = first.with(second);
+		
+		assertEquals(Optional.of(new SqlTypeMapping("UUID")), merged.resolve(SqlTypes.UUID));
+		assertEquals(Optional.of(new SqlTypeMapping("JSONB")), merged.resolve(SqlTypes.JSON));
+		assertEquals(Optional.of(SqlTypes.JSON), merged.resolveNative("jsonb"));
+		assertTrue(first.resolve(SqlTypes.JSON).isEmpty());
+		assertTrue(second.resolve(SqlTypes.UUID).isEmpty());
+	}
+	
+	@Test
+	void withOverlappingMappingsPrefersOtherRegistry() {
+		SqlTypeRegistry first = SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID").build();
+		SqlTypeRegistry second = SqlTypeRegistry.builder().register(SqlTypes.UUID, "CUSTOM").build();
+		SqlTypeRegistry merged = first.with(second);
+		
+		assertEquals(Optional.of(new SqlTypeMapping("CUSTOM")), merged.resolve(SqlTypes.UUID));
+		assertEquals(Optional.of(SqlTypes.UUID), merged.resolveNative("custom"));
+		assertEquals(Optional.empty(), merged.resolveNative("uuid"));
+	}
+	
+	@Test
+	void withReturnsNewInstanceOnMerge() {
+		SqlTypeRegistry first = SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID").build();
+		SqlTypeRegistry second = SqlTypeRegistry.builder().register(SqlTypes.JSON, "JSONB").build();
+		SqlTypeRegistry merged = first.with(second);
+		assertNotSame(first, merged);
+		assertNotSame(second, merged);
+	}
+	
+	@Test
+	void withDoesNotMutateSourceRegistries() {
+		SqlTypeRegistry first = SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID").build();
+		SqlTypeRegistry second = SqlTypeRegistry.builder().register(SqlTypes.UUID, "CUSTOM").build();
+		first.with(second);
+		
+		assertEquals(Optional.of(new SqlTypeMapping("UUID")), first.resolve(SqlTypes.UUID));
+		assertEquals(Optional.of(new SqlTypeMapping("CUSTOM")), second.resolve(SqlTypes.UUID));
+	}
+	
+	@Test
+	void withMultipleMergesAppliesLastWins() {
+		SqlTypeRegistry first = SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID").register(SqlTypes.XML, "XML").build();
+		SqlTypeRegistry second = SqlTypeRegistry.builder().register(SqlTypes.UUID, "CUSTOM").register(SqlTypes.JSON, "JSONB").build();
+		SqlTypeRegistry third = SqlTypeRegistry.builder().register(SqlTypes.UUID, "FINAL").build();
+		SqlTypeRegistry merged = first.with(second).with(third);
+		
+		assertEquals(Optional.of(new SqlTypeMapping("FINAL")), merged.resolve(SqlTypes.UUID));
+		assertEquals(Optional.of(new SqlTypeMapping("XML")), merged.resolve(SqlTypes.XML));
+		assertEquals(Optional.of(new SqlTypeMapping("JSONB")), merged.resolve(SqlTypes.JSON));
+	}
+	
+	@Test
+	void withPreservesInsertionOrderOfMappings() {
+		SqlTypeRegistry first = SqlTypeRegistry.builder().register(SqlTypes.JSON, "SHARED").build();
+		SqlTypeRegistry second = SqlTypeRegistry.builder().register(SqlTypes.XML, "SHARED").build();
+		
+		assertEquals(Optional.of(SqlTypes.JSON), first.with(second).resolveNative("shared"));
+		assertEquals(Optional.of(SqlTypes.XML), second.with(first).resolveNative("shared"));
+	}
 }

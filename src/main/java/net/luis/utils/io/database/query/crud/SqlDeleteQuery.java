@@ -183,8 +183,14 @@ public class SqlDeleteQuery<E> implements SqlJoinableQuery<E> {
 			throw new SqlDialectFeatureException(SqlFeature.JOINED_DML, dialect);
 		}
 		
+		String tableName = dialect.quoteIdentifier(this.config.table().name());
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.delete().from().literal(dialect.quoteIdentifier(this.config.table().name()));
+		renderer.delete();
+		if (!this.config.joins().isEmpty() && dialect.requiresJoinedDeleteTarget()) {
+			renderer.literal(tableName);
+		}
+		
+		renderer.from().literal(tableName);
 		for (SqlJoinClause join : this.config.joins()) {
 			renderer.rendered(join.toSql(dialect));
 		}

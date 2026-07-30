@@ -29,6 +29,7 @@ import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.query.util.SqlSetClause;
 import net.luis.utils.io.database.query.util.SqlSetType;
 import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.type.SqlTypeRegistry;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.junit.jupiter.api.Test;
@@ -329,5 +330,65 @@ class MySqlDialectTest {
 	@Test
 	void randomFunctionRoutesThroughMySqlRenderer() throws SqlException {
 		assertEquals("RAND()", DIALECT.renderFunction(new SqlRandomFunction()).sql());
+	}
+	
+	@Test
+	void constructWithAdditionalTypes() throws SqlException {
+		MySqlDialect dialect = new MySqlDialect(SqlTypeRegistry.builder().register(SqlTypes.IP_ADDRESS, "INET6").build());
+		assertEquals("MySQL", dialect.name());
+		assertEquals("INET6", dialect.getTypeName(SqlTypes.IP_ADDRESS));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesOverridingOwnMapping() throws SqlException {
+		MySqlDialect dialect = new MySqlDialect(SqlTypeRegistry.builder().register(SqlTypes.JSON, "MY_JSON").build());
+		assertEquals("JSON", DIALECT.getTypeName(SqlTypes.JSON));
+		assertEquals("MY_JSON", dialect.getTypeName(SqlTypes.JSON));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new MySqlDialect(null));
+	}
+	
+	@Test
+	void introspectionCatalogWithNullSchema() {
+		assertThrows(NullPointerException.class, () -> DIALECT.introspectionCatalog(null));
+	}
+	
+	@Test
+	void introspectionSchemaWithNullSchema() {
+		assertThrows(NullPointerException.class, () -> DIALECT.introspectionSchema(null));
+	}
+	
+	@Test
+	void supportsOffsetTemporalTypesReturnsFalse() {
+		assertFalse(DIALECT.supportsOffsetTemporalTypes());
+	}
+	
+	@Test
+	void requiresJoinedDeleteTargetReturnsTrue() {
+		assertTrue(DIALECT.requiresJoinedDeleteTarget());
+	}
+	
+	@Test
+	void introspectionCatalogReturnsSchema() {
+		assertEquals("app", DIALECT.introspectionCatalog("app"));
+	}
+	
+	@Test
+	void introspectionSchemaReturnsNull() {
+		assertNull(DIALECT.introspectionSchema("app"));
+	}
+	
+	@Test
+	void introspectionCatalogAndSchemaAreComplementary() {
+		assertNotNull(DIALECT.introspectionCatalog("app"));
+		assertNull(DIALECT.introspectionSchema("app"));
+	}
+	
+	@Test
+	void introspectionCatalogWithEmptySchema() {
+		assertEquals("", DIALECT.introspectionCatalog(""));
 	}
 }

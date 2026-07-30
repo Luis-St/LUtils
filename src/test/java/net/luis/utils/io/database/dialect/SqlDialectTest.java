@@ -18,9 +18,13 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.renderer.*;
+import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
+import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.orderable.SqlNullOrdering;
 import net.luis.utils.io.database.expression.orderable.SqlOrdering;
@@ -38,12 +42,12 @@ import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Connection;
-import java.sql.Types;
-import java.util.List;
-import java.util.Optional;
+import java.lang.reflect.Proxy;
+import java.sql.*;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -53,6 +57,63 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class SqlDialectTest {
+	
+	/**
+	 * Builds a {@link Connection} stub reporting the given schema and catalog, every other method is rejected.
+	 *
+	 * @param schema The schema {@code getSchema()} reports
+	 * @param catalog The catalog {@code getCatalog()} reports
+	 * @return The connection stub
+	 */
+	private static @NonNull Connection stubConnection(@Nullable String schema, @Nullable String catalog) {
+		return (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(), new Class<?>[] { Connection.class }, (proxy, method, args) -> switch (method.getName()) {
+			case "getSchema" -> schema;
+			case "getCatalog" -> catalog;
+			case "toString" -> "StubConnection";
+			default -> throw new UnsupportedOperationException(method.getName());
+		});
+	}
+	
+	/**
+	 * Builds a {@link Connection} stub that throws a {@link SQLException} from one of the two schema getters.
+	 *
+	 * @param failOnSchema {@code true} to fail in {@code getSchema()}, {@code false} to report no schema and fail in {@code getCatalog()}
+	 * @return The connection stub
+	 */
+	private static @NonNull Connection failingConnection(boolean failOnSchema) {
+		return (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(), new Class<?>[] { Connection.class }, (proxy, method, args) -> switch (method.getName()) {
+			case "getSchema" -> {
+				if (failOnSchema) {
+					throw new SQLException("Schema lookup failed in tests");
+				}
+				yield null;
+			}
+			case "getCatalog" -> throw new SQLException("Catalog lookup failed in tests");
+			case "toString" -> "FailingStubConnection";
+			default -> throw new UnsupportedOperationException(method.getName());
+		});
+	}
+	
+	/**
+	 * Builds a rendered fragment carrying a single integer parameter, used to source parameter lists.
+	 *
+	 * @param value The parameter value
+	 * @return The rendered fragment
+	 */
+	private static @NonNull SqlRendered single(int value) {
+		return SqlRenderer.empty().parameter(SqlTypes.INTEGER, value).toSql();
+	}
+	
+	/**
+	 * Builds a rendered fragment carrying two integer parameters, used to source parameter lists.
+	 *
+	 * @param first The first parameter value
+	 * @param second The second parameter value
+	 * @return The rendered fragment
+	 */
+	private static @NonNull SqlRendered pair(int first, int second) {
+		return SqlRenderer.empty().parameter(SqlTypes.INTEGER, first).parameter(SqlTypes.INTEGER, second).toSql();
+	}
 	
 	@Test
 	void bindingOverrideDefaultReturnsEmpty() {
@@ -114,11 +175,346 @@ class SqlDialectTest {
 		}
 	}
 	
-	/**
-	 * Minimal hand-written {@link SqlDialect} that leaves the three interface default methods intact
-	 * so they can be exercised in isolation. All abstract members are stubbed and must not be invoked.
-	 */
-	private static final class StubDialect implements SqlDialect {
+	@Test
+	void renderConditionInlineWithNullCondition() {
+		StubDialect dialect = new StubDialect();
+		assertThrows(NullPointerException.class, () -> dialect.renderConditionInline(null));
+	}
+	
+	@Test
+	void renderConditionInlineWithMorePlaceholdersThanParameters() {
+		SqlRendered rendered = new SqlRendered(List.of("\"count\"", ">=", "?", "?"), single(0).parameters());
+		StubDialect dialect = new StubDialect(rendered);
+		SqlDialectUnsupportedRenderingException thrown = assertThrows(SqlDialectUnsupportedRenderingException.class, () -> dialect.renderConditionInline(SqlCondition.always()));
+		assertTrue(thrown.getMessage().contains("Stub"));
+		assertTrue(thrown.getMessage().contains("more placeholders than parameters"));
+	}
+	
+	@Test
+	void renderConditionInlineWithMoreParametersThanPlaceholders() {
+		SqlRendered rendered = new SqlRendered(List.of("\"count\"", ">=", "?"), pair(1, 2).parameters());
+		StubDialect dialect = new StubDialect(rendered);
+		SqlDialectUnsupportedRenderingException thrown = assertThrows(SqlDialectUnsupportedRenderingException.class, () -> dialect.renderConditionInline(SqlCondition.always()));
+		assertTrue(thrown.getMessage().contains("more parameters than placeholders"));
+	}
+	
+	@Test
+	void renderConditionInlineWithUnrenderableValue() {
+		SqlRendered rendered = SqlRenderer.empty().literal("\"kind\"").literal("=").parameter(SqlTypes.LARGE_BYTES, new byte[] { 1, 2 }).toSql();
+		StubDialect dialect = new StubDialect(rendered);
+		assertThrows(SqlDialectUnsupportedRenderingException.class, () -> dialect.renderConditionInline(SqlCondition.always()));
+	}
+	
+	@Test
+	void renderConditionInlineWithoutParametersReturnsRenderedUnchanged() throws SqlException {
+		SqlRendered rendered = SqlRenderer.empty().literal("\"active\"").literal("IS NOT NULL").toSql();
+		SqlRendered result = new StubDialect(rendered).renderConditionInline(SqlCondition.always());
+		assertSame(rendered, result);
+		assertTrue(result.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderConditionInlineReplacesPlaceholderWithLiteral() throws SqlException {
+		SqlRendered rendered = SqlRenderer.empty().literal("\"count\"").literal(">=").parameter(SqlTypes.INTEGER, 0).toSql();
+		SqlRendered result = new StubDialect(rendered).renderConditionInline(SqlCondition.always());
+		assertEquals("\"count\" >= 0", result.sql());
+		assertFalse(result.sql().contains("?"));
+		assertTrue(result.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderConditionInlineKeepsNonPlaceholderTokens() throws SqlException {
+		SqlRendered rendered = SqlRenderer.empty().literal("\"count\"").literal(">=").parameter(SqlTypes.INTEGER, 7).toSql();
+		SqlRendered result = new StubDialect(rendered).renderConditionInline(SqlCondition.always());
+		assertEquals(List.of("\"count\"", ">=", "7"), result.statements());
+	}
+	
+	@Test
+	void renderConditionInlineWithNullParameterValue() throws SqlException {
+		SqlRendered rendered = SqlRenderer.empty().literal("\"kind\"").literal("=").parameter(SqlTypes.INTEGER, null).toSql();
+		SqlRendered result = new StubDialect(rendered).renderConditionInline(SqlCondition.always());
+		assertEquals("\"kind\" = NULL", result.sql());
+		assertFalse(result.sql().contains("'null'"));
+	}
+	
+	@Test
+	void renderConditionInlineWithEmptyTokenList() {
+		SqlRendered rendered = new SqlRendered(List.of(), single(0).parameters());
+		StubDialect dialect = new StubDialect(rendered);
+		assertThrows(SqlDialectUnsupportedRenderingException.class, () -> dialect.renderConditionInline(SqlCondition.always()));
+	}
+	
+	@Test
+	void renderConditionInlineWithMultiplePlaceholdersPreservesOrder() throws SqlException {
+		SqlRendered rendered = SqlRenderer.empty()
+			.literal("\"a\"").literal("=").parameter(SqlTypes.INTEGER, 1)
+			.literal("AND").literal("\"b\"").literal("=").parameter(SqlTypes.INTEGER, 2)
+			.toSql();
+		SqlRendered result = new StubDialect(rendered).renderConditionInline(SqlCondition.always());
+		assertEquals("\"a\" = 1 AND \"b\" = 2", result.sql());
+	}
+	
+	@Test
+	void renderConditionInlineResultHasNoParameters() throws SqlException {
+		SqlRendered rendered = SqlRenderer.empty().literal("\"count\"").literal(">=").parameter(SqlTypes.INTEGER, 0).toSql();
+		assertEquals(1, rendered.parameters().size());
+		assertTrue(new StubDialect(rendered).renderConditionInline(SqlCondition.always()).parameters().isEmpty());
+	}
+	
+	@Test
+	void renderConditionInlineWithStringValueUsesDialectQuoting() throws SqlException {
+		SqlRendered rendered = SqlRenderer.empty().literal("\"kind\"").literal("=").parameter(SqlTypes.TEXT, "O'Brien").toSql();
+		SqlRendered result = new StubDialect(rendered).renderConditionInline(SqlCondition.always());
+		assertEquals("\"kind\" = 'O''Brien'", result.sql());
+	}
+	
+	@Test
+	void renderConditionInlineWithBooleanValue() throws SqlException {
+		SqlRendered rendered = SqlRenderer.empty().literal("\"active\"").literal("=").parameter(SqlTypes.BOOLEAN, true).toSql();
+		SqlRendered result = new StubDialect(rendered).renderConditionInline(SqlCondition.always());
+		assertEquals("\"active\" = TRUE", result.sql());
+		assertFalse(result.sql().contains("'true'"));
+	}
+	
+	@Test
+	void renderConditionInlineWithMixedNullAndValueParameters() throws SqlException {
+		SqlRendered rendered = SqlRenderer.empty()
+			.parameter(SqlTypes.INTEGER, 1)
+			.parameter(SqlTypes.INTEGER, null)
+			.parameter(SqlTypes.TEXT, "A")
+			.toSql();
+		SqlRendered result = new StubDialect(rendered).renderConditionInline(SqlCondition.always());
+		assertEquals(List.of("1", "NULL", "'A'"), result.statements());
+		assertTrue(result.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderConditionInlineOnRealDialectRendersComparisonWithoutParameters() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		SqlRendered rendered = SqlDialects.H2.renderConditionInline(Sql.greaterThanOrEqualTo(count, 0));
+		assertTrue(rendered.sql().contains(">= 0"));
+		assertFalse(rendered.sql().contains("?"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderConditionInlineWithNestedConditionCombinators() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, String> kind = table.column("kind", SqlTypes.TEXT, object -> "");
+		SqlRendered rendered = SqlDialects.H2.renderConditionInline(SqlCondition.allOf(Sql.greaterThanOrEqualTo(count, 0), Sql.equalTo(kind, "A")));
+		assertTrue(rendered.sql().contains(">= 0"));
+		assertTrue(rendered.sql().contains("'A'"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCheckConditionWithNullCondition() {
+		StubDialect dialect = new StubDialect();
+		assertThrows(NullPointerException.class, () -> dialect.renderCheckCondition(null));
+	}
+	
+	@Test
+	void renderCheckConditionWithMorePlaceholdersThanParameters() {
+		SqlRendered rendered = new SqlRendered(List.of("\"count\"", ">=", "?", "?"), single(0).parameters());
+		StubDialect dialect = new StubDialect(rendered);
+		assertThrows(SqlDialectUnsupportedRenderingException.class, () -> dialect.renderCheckCondition(SqlCondition.always()));
+	}
+	
+	@Test
+	void defaultSchemaWithNullConnection() {
+		StubDialect dialect = new StubDialect();
+		assertThrows(NullPointerException.class, () -> dialect.defaultSchema(null));
+	}
+	
+	@Test
+	void defaultSchemaWithFailingConnection() {
+		StubDialect dialect = new StubDialect();
+		Connection connection = failingConnection(true);
+		SqlSchemaIntrospectionException thrown = assertThrows(SqlSchemaIntrospectionException.class, () -> dialect.defaultSchema(connection));
+		assertInstanceOf(SQLException.class, thrown.getCause());
+		assertTrue(thrown.getMessage().contains("Stub"));
+	}
+	
+	@Test
+	void defaultSchemaWithConnectionFailingOnCatalog() {
+		StubDialect dialect = new StubDialect();
+		Connection connection = failingConnection(false);
+		SqlSchemaIntrospectionException thrown = assertThrows(SqlSchemaIntrospectionException.class, () -> dialect.defaultSchema(connection));
+		assertInstanceOf(SQLException.class, thrown.getCause());
+		assertTrue(thrown.getMessage().contains("Stub"));
+	}
+	
+	@Test
+	void introspectionCatalogWithNullSchema() {
+		StubDialect dialect = new StubDialect();
+		assertThrows(NullPointerException.class, () -> dialect.introspectionCatalog(null));
+	}
+	
+	@Test
+	void introspectionSchemaWithNullSchema() {
+		StubDialect dialect = new StubDialect();
+		assertThrows(NullPointerException.class, () -> dialect.introspectionSchema(null));
+	}
+	
+	@Test
+	void renderCheckConditionStripsTableQualifier() throws SqlException {
+		SqlRendered rendered = new SqlRendered(List.of("\"users\".\"age\"", ">=", "18"), List.of());
+		SqlRendered result = new StubDialect(rendered).renderCheckCondition(SqlCondition.always());
+		assertEquals(List.of("\"age\"", ">=", "18"), result.statements());
+		assertFalse(result.sql().contains("\"users\"."));
+		assertTrue(result.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCheckConditionKeepsUnqualifiedIdentifier() throws SqlException {
+		SqlRendered rendered = new SqlRendered(List.of("\"age\"", ">=", "18"), List.of());
+		SqlRendered result = new StubDialect(rendered).renderCheckCondition(SqlCondition.always());
+		assertEquals(List.of("\"age\"", ">=", "18"), result.statements());
+	}
+	
+	@Test
+	void renderCheckConditionKeepsKeywordsAndOperatorTokens() throws SqlException {
+		SqlRendered rendered = new SqlRendered(List.of(">", "AND", "'A'", "NULL"), List.of());
+		SqlRendered result = new StubDialect(rendered).renderCheckCondition(SqlCondition.always());
+		assertEquals(List.of(">", "AND", "'A'", "NULL"), result.statements());
+	}
+	
+	@Test
+	void renderCheckConditionKeepsTokenWithDotButNoClosingQuote() throws SqlException {
+		SqlRendered rendered = new SqlRendered(List.of("\"a\".\"b"), List.of());
+		SqlRendered result = new StubDialect(rendered).renderCheckCondition(SqlCondition.always());
+		assertEquals(List.of("\"a\".\"b"), result.statements());
+	}
+	
+	@Test
+	void renderCheckConditionWithDialectWithoutQuoting() throws SqlException {
+		SqlRendered rendered = new SqlRendered(List.of("\"users\".\"age\"", ">=", "18"), List.of());
+		SqlRendered result = new StubDialect(rendered, false).renderCheckCondition(SqlCondition.always());
+		assertEquals(List.of("\"users\".\"age\"", ">=", "18"), result.statements());
+	}
+	
+	@Test
+	void renderCheckConditionWithoutParametersReturnsUnqualifiedTokens() throws SqlException {
+		SqlRendered rendered = SqlRenderer.empty().literal("\"users\".\"active\"").literal("IS NOT NULL").toSql();
+		SqlRendered result = new StubDialect(rendered).renderCheckCondition(SqlCondition.always());
+		assertEquals(List.of("\"active\"", "IS NOT NULL"), result.statements());
+		assertTrue(result.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCheckConditionWithParametersRendersLiterals() throws SqlException {
+		SqlRendered rendered = SqlRenderer.empty().literal("\"users\".\"count\"").literal(">=").parameter(SqlTypes.INTEGER, 0).toSql();
+		SqlRendered result = new StubDialect(rendered).renderCheckCondition(SqlCondition.always());
+		assertEquals("\"count\" >= 0", result.sql());
+		assertFalse(result.sql().contains("?"));
+		assertTrue(result.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCheckConditionWithEmptyTokenList() throws SqlException {
+		SqlRendered rendered = new SqlRendered(List.of(), List.of());
+		SqlRendered result = new StubDialect(rendered).renderCheckCondition(SqlCondition.always());
+		assertTrue(result.statements().isEmpty());
+		assertTrue(result.parameters().isEmpty());
+	}
+	
+	@Test
+	void defaultSchemaReturnsConnectionSchema() throws SqlException {
+		assertEquals("app", new StubDialect().defaultSchema(stubConnection("app", "catalog")));
+	}
+	
+	@Test
+	void defaultSchemaFallsBackToCatalogWhenSchemaNull() throws SqlException {
+		assertEquals("catalog", new StubDialect().defaultSchema(stubConnection(null, "catalog")));
+	}
+	
+	@Test
+	void defaultSchemaFallsBackToCatalogWhenSchemaBlank() throws SqlException {
+		assertEquals("catalog", new StubDialect().defaultSchema(stubConnection("   ", "catalog")));
+	}
+	
+	@Test
+	void defaultSchemaFallsBackToPublicWhenSchemaAndCatalogNull() throws SqlException {
+		assertEquals("public", new StubDialect().defaultSchema(stubConnection(null, null)));
+	}
+	
+	@Test
+	void defaultSchemaFallsBackToPublicWhenCatalogBlank() throws SqlException {
+		assertEquals("public", new StubDialect().defaultSchema(stubConnection(null, "   ")));
+	}
+	
+	@Test
+	void supportsOffsetTemporalTypesDefaultsToTrue() {
+		assertTrue(new StubDialect().supportsOffsetTemporalTypes());
+	}
+	
+	@Test
+	void usesRecursiveCteKeywordDefaultsToTrue() {
+		assertTrue(new StubDialect().usesRecursiveCteKeyword());
+	}
+	
+	@Test
+	void requiresRecursiveCteColumnListDefaultsToFalse() {
+		assertFalse(new StubDialect().requiresRecursiveCteColumnList());
+	}
+	
+	@Test
+	void requiresJoinedDeleteTargetDefaultsToFalse() {
+		assertFalse(new StubDialect().requiresJoinedDeleteTarget());
+	}
+	
+	@Test
+	void introspectionCatalogDefaultsToNull() {
+		assertNull(new StubDialect().introspectionCatalog("public"));
+	}
+	
+	@Test
+	void introspectionSchemaDefaultsToGivenSchema() {
+		assertEquals("public", new StubDialect().introspectionSchema("public"));
+	}
+	
+	@Test
+	void renderCheckConditionWithCombinedQualifiedConditions() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, String> kind = table.column("kind", SqlTypes.TEXT, object -> "");
+		SqlRendered rendered = SqlDialects.H2.renderCheckCondition(SqlCondition.allOf(Sql.greaterThanOrEqualTo(count, 0), Sql.equalTo(kind, "A")));
+		
+		assertFalse(rendered.sql().contains("\"items\"."));
+		assertFalse(rendered.sql().contains("?"));
+		assertTrue(rendered.parameters().isEmpty());
+		assertTrue(rendered.sql().indexOf("\"count\"") < rendered.sql().indexOf("\"kind\""));
+	}
+	
+	@Test
+	void renderCheckConditionIsUsableAsCreateTableCheckBody() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		assertNotNull(table.column("limit", SqlTypes.INTEGER, object -> 0, builder -> builder.addConstraint(Sql.greaterThanOrEqualTo(count, 0))));
+		SqlRendered body = SqlDialects.H2.renderCheckCondition(Sql.greaterThanOrEqualTo(count, 0));
+		SqlRendered createTable = SqlDialects.H2.tableRenderer().renderCreateTable(table, false);
+		
+		assertTrue(createTable.sql().contains("CHECK"), createTable.sql());
+		assertTrue(createTable.sql().contains(body.sql()), createTable.sql());
+		assertFalse(createTable.sql().contains("\"items\".\"count\" >="));
+	}
+	
+	private record StubDialect(SqlRendered conditionRendered, boolean quoting) implements SqlDialect {
+		
+		private StubDialect() {
+			this(null);
+		}
+		
+		private StubDialect(@Nullable SqlRendered conditionRendered) {
+			this(conditionRendered, true);
+		}
+		
+		private StubDialect(@Nullable SqlRendered conditionRendered, boolean quoting) {
+			this.conditionRendered = conditionRendered;
+			this.quoting = quoting;
+		}
 		
 		@Override
 		public @NonNull String name() {
@@ -172,7 +568,11 @@ class SqlDialectTest {
 		
 		@Override
 		public @NonNull SqlRendered renderCondition(@NonNull SqlCondition condition) {
-			throw new UnsupportedOperationException();
+			Objects.requireNonNull(condition, "Sql condition must not be null");
+			if (this.conditionRendered == null) {
+				throw new UnsupportedOperationException();
+			}
+			return this.conditionRendered;
 		}
 		
 		@Override
@@ -206,13 +606,23 @@ class SqlDialectTest {
 		}
 		
 		@Override
-		public @NonNull String renderValueLiteral(@NonNull Object value) {
-			throw new UnsupportedOperationException();
+		public @NonNull String renderValueLiteral(@NonNull Object value) throws SqlException {
+			Objects.requireNonNull(value, "Value must not be null");
+			if (value instanceof Number) {
+				return value.toString();
+			}
+			if (value instanceof Boolean bool) {
+				return bool ? "TRUE" : "FALSE";
+			}
+			if (value.getClass().isArray()) {
+				throw new SqlDialectUnsupportedRenderingException("Array literals are not supported by dialect " + this.name());
+			}
+			return "'" + value.toString().replace("'", "''") + "'";
 		}
 		
 		@Override
 		public @NonNull String quoteIdentifier(@NonNull String identifier) {
-			throw new UnsupportedOperationException();
+			return this.quoting ? "\"" + identifier + "\"" : identifier;
 		}
 		
 		@Override

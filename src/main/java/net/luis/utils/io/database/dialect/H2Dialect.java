@@ -59,7 +59,7 @@ import java.util.*;
 public class H2Dialect extends AbstractSqlDialect {
 	
 	/**
-	 * The set of SQL features supported by this dialect.
+	 * The set of SQL features supported by this dialect.<br>
 	 */
 	private static final Set<SqlFeature> SUPPORTED_FEATURES = Set.of(
 		SqlFeature.CTE,
@@ -70,7 +70,6 @@ public class H2Dialect extends AbstractSqlDialect {
 		SqlFeature.FOR_UPDATE,
 		SqlFeature.IS_DISTINCT_FROM,
 		SqlFeature.UPSERT,
-		SqlFeature.TRANSACTIONAL_DDL,
 		SqlFeature.ROW_LOCKING,
 		SqlFeature.RENAME_INDEX,
 		SqlFeature.ALTER_COLUMN,
@@ -98,6 +97,16 @@ public class H2Dialect extends AbstractSqlDialect {
 	 * Constructs a new H2 dialect.<br>
 	 */
 	public H2Dialect() {}
+	
+	/**
+	 * Constructs a new H2 dialect that additionally knows the type mappings of the given registry.<br>
+	 *
+	 * @param additionalTypes The type mappings the dialect should know in addition to its own
+	 * @throws NullPointerException If the additional type mappings are null
+	 */
+	public H2Dialect(@NonNull SqlTypeRegistry additionalTypes) {
+		super(additionalTypes);
+	}
 	
 	@Override
 	public @NonNull String name() {
@@ -153,6 +162,11 @@ public class H2Dialect extends AbstractSqlDialect {
 	public boolean isIndexMethodSupported(@NonNull SqlIndexMethod method) {
 		Objects.requireNonNull(method, "Sql index method must not be null");
 		return SUPPORTED_INDEX_METHODS.contains(method);
+	}
+	
+	@Override
+	public boolean requiresRecursiveCteColumnList() {
+		return true;
 	}
 	
 	@Override

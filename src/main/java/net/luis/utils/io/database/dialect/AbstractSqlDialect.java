@@ -82,7 +82,21 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	 * The type registry and renderer are created using {@link #createTypeRegistry()} and {@link #createRenderer()}.<br>
 	 */
 	protected AbstractSqlDialect() {
-		this.typeRegistry = this.createTypeRegistry();
+		this(SqlTypeRegistry.empty());
+	}
+	
+	/**
+	 * Constructs a new abstract sql dialect that additionally knows the type mappings of the given registry.<br>
+	 * The given mappings are added to the registry created by {@link #createTypeRegistry()} and replace the mappings the dialect ships with for the same type,<br>
+	 * which allows a caller to teach the dialect a native type name, binder and reader for an own type.<br>
+	 *
+	 * @param additionalTypes The type mappings the dialect should know in addition to its own
+	 * @throws NullPointerException If the additional type mappings are null
+	 */
+	protected AbstractSqlDialect(@NonNull SqlTypeRegistry additionalTypes) {
+		Objects.requireNonNull(additionalTypes, "Additional sql type registry must not be null");
+		
+		this.typeRegistry = this.createTypeRegistry().with(additionalTypes);
 		this.renderer = this.createRenderer();
 	}
 	
@@ -463,6 +477,8 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			return value.toString();
 		} else if (value instanceof Boolean b) {
 			return this.renderBooleanLiteral(b).sql();
+		} else if (value.getClass().isArray()) {
+			throw new SqlDialectUnsupportedRenderingException("Value of array type " + value.getClass().getSimpleName() + " cannot be rendered as a sql literal by dialect " + this.name());
 		} else {
 			return "'" + value.toString().replace("'", "''") + "'";
 		}

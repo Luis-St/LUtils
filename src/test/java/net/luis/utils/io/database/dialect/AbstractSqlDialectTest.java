@@ -32,6 +32,7 @@ import net.luis.utils.io.database.query.util.SqlSetType;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
@@ -39,9 +40,12 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.sql.*;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -920,8 +924,145 @@ class AbstractSqlDialectTest {
 		}
 	}
 	
+	@Test
+	void constructWithAdditionalTypesKeepsOwnMappings() throws SqlException {
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.builder().register(SqlTypes.JSON, "JSONB").build());
+		assertEquals("UUID", dialect.getTypeName(SqlTypes.UUID));
+		assertEquals("JSONB", dialect.getTypeName(SqlTypes.JSON));
+	}
+	
+	@Test
+	void constructWithEmptyAdditionalTypesMatchesNoArgConstructor() throws SqlException {
+		RegistryDialect plain = new RegistryDialect();
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.empty());
+		assertEquals(plain.getTypeName(SqlTypes.UUID), dialect.getTypeName(SqlTypes.UUID));
+		assertEquals(plain.getTypeName(SqlTypes.INTEGER), dialect.getTypeName(SqlTypes.INTEGER));
+		assertEquals(plain.getTypeName(SqlTypes.BOOLEAN), dialect.getTypeName(SqlTypes.BOOLEAN));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new RegistryDialect(null));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesUnknownTypeStillThrows() {
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.builder().register(SqlTypes.JSON, "JSONB").build());
+		assertThrows(SqlDialectUnsupportedRenderingException.class, () -> dialect.getTypeName(UNSUPPORTED_TYPE));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesOverridingOwnMapping() throws SqlException {
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "CUSTOM").build());
+		assertEquals("UUID", new RegistryDialect().getTypeName(SqlTypes.UUID));
+		assertEquals("CUSTOM", dialect.getTypeName(SqlTypes.UUID));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesAddingNewMapping() throws SqlException {
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.builder().register(SqlTypes.XML, "XML").build());
+		assertTrue(dialect.isTypeSupported(SqlTypes.UUID));
+		assertTrue(dialect.isTypeSupported(SqlTypes.XML));
+		assertEquals("UUID", dialect.getTypeName(SqlTypes.UUID));
+		assertEquals("XML", dialect.getTypeName(SqlTypes.XML));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesUsesCustomBinderAndReader() throws Exception {
+		AtomicReference<Object> bound = new AtomicReference<>();
+		SqlTypeRegistry additional = SqlTypeRegistry.builder()
+			.register(SqlTypes.XML, "XML", (statement, index, value) -> bound.set(value), (resultSet, index) -> "read")
+			.build();
+		RegistryDialect dialect = new RegistryDialect(additional);
+		
+		assertEquals("XML", dialect.getTypeName(SqlTypes.XML));
+		dialect.bindingOverride(SqlTypes.XML).orElseThrow().bind(null, 1, "value");
+		assertEquals("value", bound.get());
+		assertEquals("read", dialect.readingOverride(SqlTypes.XML).orElseThrow().read(null, 1));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesAffectsRendererOutput() throws SqlException {
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "CUSTOM_UUID").build());
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		assertNotNull(table.column("id", SqlTypes.UUID, object -> null));
+		
+		String sql = dialect.tableRenderer().renderCreateTable(table, false).sql();
+		assertTrue(sql.contains("CUSTOM_UUID"), sql);
+		assertFalse(sql.contains("CHAR(36)"), sql);
+	}
+	
+	@Test
+	void renderValueLiteralWithNegativeNumber() throws SqlException {
+		assertEquals("-1", DIALECT.renderValueLiteral(-1));
+	}
+	
+	@Test
+	void renderValueLiteralWithDecimalNumber() throws SqlException {
+		assertEquals("12.34", DIALECT.renderValueLiteral(new BigDecimal("12.34")));
+	}
+	
+	@Test
+	void renderValueLiteralWithBooleanFalse() throws SqlException {
+		assertEquals("FALSE", DIALECT.renderValueLiteral(false));
+	}
+	
+	@Test
+	void renderValueLiteralWithEmptyString() throws SqlException {
+		assertEquals("''", DIALECT.renderValueLiteral(""));
+	}
+	
+	@Test
+	void renderValueLiteralWithStringOfOnlyQuotes() throws SqlException {
+		assertEquals("''''''", DIALECT.renderValueLiteral("''"));
+	}
+	
+	@Test
+	void renderValueLiteralWithObjectArrayThrows() {
+		SqlDialectUnsupportedRenderingException thrown = assertThrows(SqlDialectUnsupportedRenderingException.class, () -> DIALECT.renderValueLiteral(new String[] { "A", "B" }));
+		assertTrue(thrown.getMessage().contains("String[]"));
+	}
+	
+	@Test
+	void renderValueLiteralWithByteArrayThrows() {
+		SqlDialectUnsupportedRenderingException thrown = assertThrows(SqlDialectUnsupportedRenderingException.class, () -> DIALECT.renderValueLiteral(new byte[] { 1, 2 }));
+		assertTrue(thrown.getMessage().contains("byte[]"));
+	}
+	
+	@Test
+	void renderValueLiteralWithEmptyArrayThrows() {
+		assertThrows(SqlDialectUnsupportedRenderingException.class, () -> DIALECT.renderValueLiteral(new String[0]));
+	}
+	
+	@Test
+	void renderValueLiteralWithUuid() throws SqlException {
+		UUID id = UUID.fromString("11111111-2222-3333-4444-555555555555");
+		assertEquals("'11111111-2222-3333-4444-555555555555'", DIALECT.renderValueLiteral(id));
+	}
+	
+	@Test
+	void renderValueLiteralWithLocalDate() throws SqlException {
+		assertEquals("'2024-01-15'", DIALECT.renderValueLiteral(LocalDate.of(2024, 1, 15)));
+	}
+	
+	@Test
+	void renderValueLiteralWithEnumValue() throws SqlException {
+		assertEquals("'BTREE'", DIALECT.renderValueLiteral(SqlIndexMethod.BTREE));
+	}
+	
+	@Test
+	void renderValueLiteralWithLocalDateTime() throws SqlException {
+		assertEquals("'2024-01-15T10:00'", DIALECT.renderValueLiteral(LocalDateTime.of(2024, 1, 15, 10, 0)));
+	}
+	
 	//region Helper classes
 	private static final class RegistryDialect extends AbstractSqlDialect {
+		
+		private RegistryDialect() {}
+		
+		private RegistryDialect(@NonNull SqlTypeRegistry additionalTypes) {
+			super(additionalTypes);
+		}
 		
 		@Override
 		public @NonNull String name() {

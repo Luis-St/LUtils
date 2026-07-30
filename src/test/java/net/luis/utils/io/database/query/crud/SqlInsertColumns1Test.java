@@ -19,7 +19,7 @@
 package net.luis.utils.io.database.query.crud;
 
 import net.luis.utils.io.database.SqlConnectionSource;
-import net.luis.utils.io.database.SqlTestFixtures.RecordingDataSource;
+import net.luis.utils.io.database.SqlTestFixtures.*;
 import net.luis.utils.io.database.audit.SqlAuditUserProvider;
 import net.luis.utils.io.database.dialect.SqlDialects;
 import net.luis.utils.io.database.exception.SqlException;
@@ -40,6 +40,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class SqlInsertColumns1Test {
+	
+	private static SqlTable<Object> table() {
+		return SqlTable.create(Object.class, "test_table");
+	}
+	
+	private static SqlInsertColumnsBuilder<Object> emptyBuilder(SqlTable<Object> table) {
+		return new SqlInsertColumnsBuilder<>(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, null, List.of());
+	}
 	
 	@Test
 	void constructWithValidBuilderAndColumns() {
@@ -178,13 +186,5 @@ class SqlInsertColumns1Test {
 		new SqlInsertColumns1<>(withoutProviderBuilder, column1).row(1).execute();
 		
 		assertNotEquals(withProviderSource.executedSql().getFirst(), withoutProviderSource.executedSql().getFirst());
-	}
-	
-	private static SqlTable<Object> table() {
-		return SqlTable.create(Object.class, "test_table");
-	}
-	
-	private static SqlInsertColumnsBuilder<Object> emptyBuilder(SqlTable<Object> table) {
-		return new SqlInsertColumnsBuilder<>(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, null, List.of());
 	}
 }

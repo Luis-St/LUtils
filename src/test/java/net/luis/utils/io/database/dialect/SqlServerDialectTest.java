@@ -549,4 +549,110 @@ class SqlServerDialectTest {
 			assertEquals("DATETIMEOFFSET(" + digits + ")", DIALECT.getTypeName(resolved));
 		}
 	}
+	
+	@Test
+	void constructWithAdditionalTypes() throws SqlException {
+		SqlServerDialect dialect = new SqlServerDialect(SqlTypeRegistry.builder().register(SqlTypes.JSON, "NVARCHAR(MAX)").build());
+		assertEquals("SQL Server", dialect.name());
+		assertEquals("NVARCHAR(MAX)", dialect.getTypeName(SqlTypes.JSON));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesOverridingOwnMapping() throws SqlException {
+		SqlServerDialect dialect = new SqlServerDialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "MY_GUID").build());
+		assertEquals("UNIQUEIDENTIFIER", DIALECT.getTypeName(SqlTypes.UUID));
+		assertEquals("MY_GUID", dialect.getTypeName(SqlTypes.UUID));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new SqlServerDialect(null));
+	}
+	
+	@Test
+	void defaultConstraintNameWithNullColumn() {
+		assertThrows(NullPointerException.class, () -> SqlServerDialect.defaultConstraintName(null));
+	}
+	
+	@Test
+	void quoteStringLiteralWithNullValue() {
+		assertThrows(NullPointerException.class, () -> SqlServerDialect.quoteStringLiteral(null));
+	}
+	
+	@Test
+	void renderDropDefaultConstraintWithNullDialect() {
+		assertThrows(NullPointerException.class, () -> SqlServerDialect.renderDropDefaultConstraint(null, "users", "age"));
+	}
+	
+	@Test
+	void renderDropDefaultConstraintWithNullTableName() {
+		assertThrows(NullPointerException.class, () -> SqlServerDialect.renderDropDefaultConstraint(DIALECT, null, "age"));
+	}
+	
+	@Test
+	void renderDropDefaultConstraintWithNullColumnName() {
+		assertThrows(NullPointerException.class, () -> SqlServerDialect.renderDropDefaultConstraint(DIALECT, "users", null));
+	}
+	
+	@Test
+	void usesRecursiveCteKeywordReturnsFalse() {
+		assertFalse(DIALECT.usesRecursiveCteKeyword());
+	}
+	
+	@Test
+	void quoteStringLiteralWithoutQuotesWrapsValue() {
+		assertEquals("'users'", SqlServerDialect.quoteStringLiteral("users"));
+	}
+	
+	@Test
+	void quoteStringLiteralWithQuotesDoublesThem() {
+		assertEquals("'it''s'", SqlServerDialect.quoteStringLiteral("it's"));
+	}
+	
+	@Test
+	void quoteStringLiteralWithEmptyValue() {
+		assertEquals("''", SqlServerDialect.quoteStringLiteral(""));
+	}
+	
+	@Test
+	void quoteStringLiteralWithOnlyQuotes() {
+		assertEquals("''''''", SqlServerDialect.quoteStringLiteral("''"));
+	}
+	
+	@Test
+	void defaultConstraintNameCombinesTableAndColumn() {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> age = table.column("age", SqlTypes.INTEGER, object -> 0);
+		assertEquals("DF_users_age", SqlServerDialect.defaultConstraintName(age));
+	}
+	
+	@Test
+	void renderDropDefaultConstraintProducesLookupAndDrop() {
+		SqlRendered rendered = SqlServerDialect.renderDropDefaultConstraint(DIALECT, "users", "age");
+		String sql = rendered.sql();
+		
+		assertTrue(sql.contains("DECLARE @constraint sysname"), sql);
+		assertTrue(sql.contains("sys.default_constraints"), sql);
+		assertTrue(sql.contains("sys.columns"), sql);
+		assertTrue(sql.contains("OBJECT_ID(N'users')"), sql);
+		assertTrue(sql.contains("c.name = N'age'"), sql);
+		assertTrue(sql.contains("IF @constraint IS NOT NULL EXEC("), sql);
+		assertTrue(sql.contains("ALTER TABLE [users] DROP CONSTRAINT"), sql);
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderDropDefaultConstraintEscapesIdentifiersAndLiterals() {
+		String sql = SqlServerDialect.renderDropDefaultConstraint(DIALECT, "us'ers", "a]ge").sql();
+		assertTrue(sql.contains("OBJECT_ID(N'us''ers')"), sql);
+		assertTrue(sql.contains("c.name = N'a]ge'"), sql);
+		assertTrue(sql.contains("ALTER TABLE [us'ers] DROP CONSTRAINT"), sql);
+	}
+	
+	@Test
+	void defaultConstraintNameWithUnderscoredNames() {
+		SqlTable<Object> table = SqlTable.create(Object.class, "user_accounts");
+		SqlColumn<Object, Integer> column = table.column("login_count", SqlTypes.INTEGER, object -> 0);
+		assertEquals("DF_user_accounts_login_count", SqlServerDialect.defaultConstraintName(column));
+	}
 }

@@ -1654,7 +1654,7 @@ class SqlTest {
 	
 	@Test
 	void dateInZoneWithNullZoneId() {
-		assertThrows(NullPointerException.class, () -> Sql.dateInZone(TS, (SqlExpression<String>) null, SqlTypes.LOCAL_DATE));
+		assertThrows(NullPointerException.class, () -> Sql.dateInZone(TS, null, SqlTypes.LOCAL_DATE));
 	}
 	
 	@Test
@@ -2905,7 +2905,7 @@ class SqlTest {
 	void dateInZoneWithZoneIdUsesLocalDateType() {
 		SqlExpression<LocalDate> result = Sql.dateInZone(TS, STR);
 		assertInstanceOf(SqlDateInZoneFunction.class, result);
-		assertEquals(SqlTypes.LOCAL_DATE, ((SqlDateInZoneFunction<LocalDate>) result).type());
+		assertEquals(SqlTypes.LOCAL_DATE, result.type());
 	}
 	
 	@Test
