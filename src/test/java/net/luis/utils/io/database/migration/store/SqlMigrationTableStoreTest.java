@@ -165,9 +165,180 @@ class SqlMigrationTableStoreTest {
 		store(dataSource).initialize();
 		
 		List<String> executed = dataSource.executedSql();
-		assertEquals(1, executed.size());
+		assertEquals(2, executed.size());
 		assertTrue(executed.get(0).contains("CREATE TABLE IF NOT EXISTS"));
 		assertTrue(executed.get(0).contains("_sql_migrations"));
+		assertTrue(executed.get(1).contains("WHERE 1 = 0"));
+	}
+	
+	@Test
+	void initializeExecutesUpgradeProbe() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		store(dataSource).initialize();
+		
+		assertTrue(recorded(dataSource, "WHERE 1 = 0"));
+		assertTrue(recorded(dataSource, "SELECT *"));
+	}
+	
+	@Test
+	void initializeCreateTableDeclaresStatementsColumn() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		store(dataSource).initialize();
+		
+		assertTrue(dataSource.executedSql().getFirst().contains("statements"));
+	}
+	
+	@Test
+	void initializeSkipsAddColumnWhenMetadataUnavailable() throws Exception {
+		ProbingDataSource probe = new ProbingDataSource(null);
+		new SqlMigrationTableStore(probe.dataSource(), SqlTestFixtures.DIALECT).initialize();
+		
+		assertTrue(probe.executed.stream().noneMatch(sql -> sql.contains("ADD COLUMN")));
+	}
+	
+	@Test
+	void initializeSkipsAddColumnWhenStatementsPresent() throws Exception {
+		ProbingDataSource probe = new ProbingDataSource(new ArrayList<>(List.of("version", "description", "status", "applied_at", "checksum", "statements")));
+		new SqlMigrationTableStore(probe.dataSource(), SqlTestFixtures.DIALECT).initialize();
+		
+		assertTrue(probe.executed.stream().noneMatch(sql -> sql.contains("ADD COLUMN")));
+	}
+	
+	@Test
+	void initializeAddsStatementsColumnWhenMissing() throws Exception {
+		ProbingDataSource probe = new ProbingDataSource(new ArrayList<>(List.of("version", "description", "status", "applied_at", "checksum")));
+		new SqlMigrationTableStore(probe.dataSource(), SqlTestFixtures.DIALECT).initialize();
+		
+		String altered = probe.executed.stream().filter(sql -> sql.contains("ADD COLUMN")).findFirst().orElseThrow();
+		assertTrue(altered.contains("ALTER TABLE"));
+		assertTrue(altered.contains("_sql_migrations"));
+		assertTrue(altered.contains("statements"));
+	}
+	
+	@Test
+	void initializeAddsStatementsColumnWithEmptyMetadata() throws Exception {
+		ProbingDataSource probe = new ProbingDataSource(new ArrayList<>());
+		new SqlMigrationTableStore(probe.dataSource(), SqlTestFixtures.DIALECT).initialize();
+		
+		assertTrue(probe.executed.stream().anyMatch(sql -> sql.contains("ADD COLUMN")));
+	}
+	
+	@Test
+	void initializeMatchesStatementsColumnCaseInsensitively() throws Exception {
+		ProbingDataSource probe = new ProbingDataSource(new ArrayList<>(List.of("VERSION", "STATEMENTS")));
+		new SqlMigrationTableStore(probe.dataSource(), SqlTestFixtures.DIALECT).initialize();
+		
+		assertTrue(probe.executed.stream().noneMatch(sql -> sql.contains("ADD COLUMN")));
+	}
+	
+	@Test
+	void initializeIsIdempotent() throws Exception {
+		ProbingDataSource probe = new ProbingDataSource(new ArrayList<>(List.of("version", "description", "status", "applied_at", "checksum")));
+		SqlMigrationTableStore store = new SqlMigrationTableStore(probe.dataSource(), SqlTestFixtures.DIALECT);
+		
+		store.initialize();
+		store.initialize();
+		
+		assertEquals(1, probe.executed.stream().filter(sql -> sql.contains("ADD COLUMN")).count());
+	}
+	
+	@Test
+	void initializeWithUpgradeProbeFailure() {
+		ProbingDataSource probe = new ProbingDataSource(new ArrayList<>());
+		probe.failProbe = true;
+		
+		SqlMigrationTableStore store = new SqlMigrationTableStore(probe.dataSource(), SqlTestFixtures.DIALECT);
+		SqlMigrationExecutionException exception = assertThrows(SqlMigrationExecutionException.class, store::initialize);
+		assertTrue(exception.getMessage().contains("upgrade the migration table"));
+	}
+	
+	@Test
+	void loadAllSelectsStatementsColumn() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		store(dataSource).loadAll();
+		
+		assertTrue(recorded(dataSource, "statements"));
+		assertTrue(recorded(dataSource, "SELECT"));
+	}
+	
+	@Test
+	void loadAllReadsStatements() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		Map<String, Object> row = migrationRow("1.0.0", "APPLIED", APPLIED_AT_MILLIS);
+		row.put("statements", "CREATE TABLE a;\nCREATE TABLE b");
+		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(row)));
+		
+		List<SqlMigrationInfo> result = store(dataSource).loadAll();
+		assertEquals(1, result.size());
+		assertEquals("CREATE TABLE a;\nCREATE TABLE b", result.getFirst().statements());
+	}
+	
+	@Test
+	void loadAllWithNullStatements() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(migrationRow("1.0.0", "APPLIED", APPLIED_AT_MILLIS))));
+		
+		List<SqlMigrationInfo> result = store(dataSource).loadAll();
+		assertEquals(1, result.size());
+		assertNull(result.getFirst().statements());
+		assertEquals(SqlMigrationStatus.APPLIED, result.getFirst().status());
+	}
+	
+	@Test
+	void saveInsertBindsSixParameters() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 0, 0 }, null, null);
+		SqlMigrationInfo info = new SqlMigrationInfo(Version.of(1, 0, 0), "init", SqlMigrationStatus.APPLIED, APPLIED_AT, "s1:abc", "CREATE TABLE a");
+		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info);
+		
+		assertTrue(recorder.prepared.get(1).startsWith("INSERT INTO"));
+		assertEquals(6, recorder.prepared.get(1).chars().filter(c -> c == '?').count());
+		assertEquals(Arrays.asList(Version.of(1, 0, 0).toString(), "init", "APPLIED", APPLIED_AT_MILLIS, "s1:abc", "CREATE TABLE a"), recorder.parameters.get(1));
+	}
+	
+	@Test
+	void saveOverwriteBindsStatementsBeforeVersion() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 1 }, null, null);
+		SqlMigrationInfo info = new SqlMigrationInfo(Version.of(1, 0, 0), "init", SqlMigrationStatus.APPLIED, APPLIED_AT, "s1:abc", "CREATE TABLE a");
+		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info);
+		
+		assertEquals(Arrays.asList("init", "APPLIED", APPLIED_AT_MILLIS, "s1:abc", "CREATE TABLE a", Version.of(1, 0, 0).toString()), recorder.parameters.getFirst());
+	}
+	
+	@Test
+	void saveWithNullStatements() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 1 }, null, null);
+		assertDoesNotThrow(() -> store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.APPLIED, APPLIED_AT, "s1:abc")));
+		
+		assertNull(recorder.parameters.getFirst().get(4));
+	}
+	
+	@Test
+	void saveWithMultiStatementText() throws Exception {
+		String statements = "ALTER TABLE \"a\" ADD COLUMN \"b\" TEXT;\nCREATE INDEX \"i\" ON \"a\" (\"b\")";
+		RecordingConnection recorder = new RecordingConnection(new int[] { 1 }, null, null);
+		SqlMigrationInfo info = new SqlMigrationInfo(Version.of(1, 0, 0), "init", SqlMigrationStatus.APPLIED, APPLIED_AT, "s1:abc", statements);
+		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info);
+		
+		assertEquals(statements, recorder.parameters.getFirst().get(4));
+	}
+	
+	@Test
+	void saveRoundTripWithStatements() throws Exception {
+		RecordingConnection recorder = new RecordingConnection(new int[] { 0, 0 }, null, null);
+		SqlMigrationInfo saved = new SqlMigrationInfo(Version.of(1, 0, 0), "desc", SqlMigrationStatus.APPLIED, APPLIED_AT, "s1:abc", "CREATE TABLE a");
+		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), saved);
+		
+		List<Object> bound = recorder.parameters.get(1);
+		Map<String, Object> row = migrationRow((String) bound.get(0), (String) bound.get(2), bound.get(3));
+		row.put("checksum", bound.get(4));
+		row.put("statements", bound.get(5));
+		
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(row)));
+		SqlMigrationInfo loaded = store(dataSource).loadAll().getFirst();
+		assertEquals(saved.version(), loaded.version());
+		assertEquals(saved.checksum(), loaded.checksum());
+		assertEquals(saved.statements(), loaded.statements());
 	}
 	
 	@Test
@@ -314,7 +485,7 @@ class SqlMigrationTableStoreTest {
 		assertEquals(2, recorder.prepared.size());
 		assertTrue(recorder.prepared.get(0).startsWith("UPDATE"), recorder.prepared.get(0));
 		assertTrue(recorder.prepared.get(1).startsWith("INSERT INTO"), recorder.prepared.get(1));
-		assertEquals(Arrays.asList(Version.of(1, 0, 0).toString(), "init", "APPLIED", APPLIED_AT_MILLIS, "abc"), recorder.parameters.get(1));
+		assertEquals(Arrays.asList(Version.of(1, 0, 0).toString(), "init", "APPLIED", APPLIED_AT_MILLIS, "abc", null), recorder.parameters.get(1));
 	}
 	
 	@Test
@@ -335,7 +506,7 @@ class SqlMigrationTableStoreTest {
 	void saveWithConnectionOverwriteBindsParametersInOrder() throws Exception {
 		RecordingConnection recorder = new RecordingConnection(new int[] { 1 }, null, null);
 		store(SqlTestFixtures.failingDataSource()).save(recorder.connection(), info(SqlMigrationStatus.APPLIED, APPLIED_AT, "abc"));
-		assertEquals(Arrays.asList("init", "APPLIED", APPLIED_AT_MILLIS, "abc", Version.of(1, 0, 0).toString()), recorder.parameters.getFirst());
+		assertEquals(Arrays.asList("init", "APPLIED", APPLIED_AT_MILLIS, "abc", null, Version.of(1, 0, 0).toString()), recorder.parameters.getFirst());
 	}
 	
 	@Test
@@ -376,7 +547,7 @@ class SqlMigrationTableStoreTest {
 		List<Object> parameters = recorder.parameters.getFirst();
 		assertEquals("ROLLED_BACK", parameters.get(1));
 		assertNull(parameters.get(2));
-		assertEquals(Version.of(1, 0, 0).toString(), parameters.get(4));
+		assertEquals(Version.of(1, 0, 0).toString(), parameters.get(5));
 	}
 	
 	@Test
@@ -423,6 +594,71 @@ class SqlMigrationTableStoreTest {
 	 * test decide, per statement, how many rows {@code executeUpdate} reports — which is what selects the overwrite
 	 * branch of {@code save(Connection, SqlMigrationInfo)}.<br>
 	 */
+	/**
+	 * A data source whose upgrade probe reports the given column labels, which is what drives the conditional
+	 * {@code ADD COLUMN}. A null column list makes {@code getMetaData()} return null, the case in which the store must
+	 * assume the column is present rather than altering blindly.
+	 */
+	private static final class ProbingDataSource {
+		
+		private final List<String> executed = new ArrayList<>();
+		private final List<String> columns;
+		private boolean failProbe;
+		
+		private ProbingDataSource(List<String> columns) {
+			this.columns = columns;
+		}
+		
+		private DataSource dataSource() {
+			return (DataSource) Proxy.newProxyInstance(DataSource.class.getClassLoader(), new Class<?>[] { DataSource.class }, (proxy, method, args) ->
+				"getConnection".equals(method.getName()) ? this.connection() : null
+			);
+		}
+		
+		private Connection connection() {
+			return (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(), new Class<?>[] { Connection.class }, (proxy, method, args) ->
+				"createStatement".equals(method.getName()) ? this.statement() : null
+			);
+		}
+		
+		private Object statement() {
+			return Proxy.newProxyInstance(Statement.class.getClassLoader(), new Class<?>[] { Statement.class }, (proxy, method, args) -> switch (method.getName()) {
+				case "execute" -> {
+					String sql = (String) args[0];
+					this.executed.add(sql);
+					if (sql.contains("ADD COLUMN") && this.columns != null) {
+						this.columns.add("statements");
+					}
+					yield true;
+				}
+				case "executeQuery" -> {
+					if (this.failProbe) {
+						throw new SQLException("Probe failed in tests");
+					}
+					this.executed.add((String) args[0]);
+					yield this.resultSet();
+				}
+				default -> null;
+			});
+		}
+		
+		private Object resultSet() {
+			return Proxy.newProxyInstance(ResultSet.class.getClassLoader(), new Class<?>[] { ResultSet.class }, (proxy, method, args) -> switch (method.getName()) {
+				case "getMetaData" -> this.columns == null ? null : this.metaData();
+				case "next" -> false;
+				default -> null;
+			});
+		}
+		
+		private Object metaData() {
+			return Proxy.newProxyInstance(ResultSetMetaData.class.getClassLoader(), new Class<?>[] { ResultSetMetaData.class }, (proxy, method, args) -> switch (method.getName()) {
+				case "getColumnCount" -> this.columns.size();
+				case "getColumnLabel" -> this.columns.get((Integer) args[0] - 1);
+				default -> null;
+			});
+		}
+	}
+	
 	private static final class RecordingConnection {
 		
 		private final List<String> prepared = new ArrayList<>();
