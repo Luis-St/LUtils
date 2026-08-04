@@ -24,14 +24,14 @@ import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import javax.net.ssl.*;
 import java.io.*;
 import java.net.*;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * A blocking SSL/TLS client for establishing secure connections to remote servers.<br>
@@ -74,6 +74,11 @@ public final class SslClient implements NetworkClient {
 	 * Whether this client is currently connected.<br>
 	 */
 	private volatile boolean connected;
+	/**
+	 * The reusable scratch buffer for read operations.<br>
+	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
+	 */
+	private byte @Nullable [] readBuffer;
 	
 	/**
 	 * Constructs a new SSL client with default configuration.<br>
@@ -260,17 +265,15 @@ public final class SslClient implements NetworkClient {
 		
 		try {
 			InputStream in = this.socket.getInputStream();
-			byte[] buffer = new byte[maxBytes];
-			int bytesRead = in.read(buffer);
+			byte[] buffer = this.readBuffer(maxBytes);
+			int bytesRead = in.read(buffer, 0, maxBytes);
 			
 			if (bytesRead == -1) {
 				this.handleDisconnect();
 				return ArrayUtils.EMPTY_BYTE_ARRAY;
 			}
 			
-			byte[] data = new byte[bytesRead];
-			System.arraycopy(buffer, 0, data, 0, bytesRead);
-			return data;
+			return Arrays.copyOf(buffer, bytesRead);
 		} catch (SocketTimeoutException e) {
 			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, this.config.readTimeout());
 		} catch (SocketException e) {
@@ -355,6 +358,25 @@ public final class SslClient implements NetworkClient {
 	}
 	
 	//region Helper methods
+	
+	/**
+	 * Returns a scratch buffer of at least the given size for a read operation.<br>
+	 * The buffer is cached and reused across calls, and only reallocated when a larger one is requested.<br>
+	 * <p>
+	 *     The returned buffer may be larger than requested, so reads must be bounded to the requested length.
+	 * </p>
+	 *
+	 * @param maxBytes The minimum required buffer size
+	 * @return The reusable buffer
+	 */
+	private byte @NonNull [] readBuffer(int maxBytes) {
+		byte[] buffer = this.readBuffer;
+		if (buffer == null || buffer.length < maxBytes) {
+			buffer = new byte[maxBytes];
+			this.readBuffer = buffer;
+		}
+		return buffer;
+	}
 	
 	/**
 	 * Validates that the message size does not exceed the configured buffer size.<br>

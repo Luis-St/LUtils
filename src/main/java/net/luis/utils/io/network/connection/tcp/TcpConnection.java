@@ -23,10 +23,12 @@ import net.luis.utils.io.network.connection.Connection;
 import net.luis.utils.io.network.connection.exception.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.net.*;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -66,6 +68,11 @@ public final class TcpConnection implements Connection {
 	 * The read timeout for blocking operations.<br>
 	 */
 	private final Duration readTimeout;
+	/**
+	 * The reusable scratch buffer for read operations.<br>
+	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
+	 */
+	private byte @Nullable [] readBuffer;
 	
 	/**
 	 * Constructs a new TCP connection wrapping the given socket.<br>
@@ -161,16 +168,14 @@ public final class TcpConnection implements Connection {
 		
 		try {
 			InputStream in = this.socket.getInputStream();
-			byte[] buffer = new byte[maxBytes];
-			int bytesRead = in.read(buffer);
+			byte[] buffer = this.readBuffer(maxBytes);
+			int bytesRead = in.read(buffer, 0, maxBytes);
 			
 			if (bytesRead == -1) {
 				return ArrayUtils.EMPTY_BYTE_ARRAY;
 			}
 			
-			byte[] data = new byte[bytesRead];
-			System.arraycopy(buffer, 0, data, 0, bytesRead);
-			return data;
+			return Arrays.copyOf(buffer, bytesRead);
 		} catch (SocketTimeoutException e) {
 			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, this.readTimeout, this.remoteEndpoint());
 		} catch (SocketException e) {
@@ -237,6 +242,25 @@ public final class TcpConnection implements Connection {
 	}
 	
 	//region Helper methods
+	
+	/**
+	 * Returns a scratch buffer of at least the given size for a read operation.<br>
+	 * The buffer is cached and reused across calls, and only reallocated when a larger one is requested.<br>
+	 * <p>
+	 *     The returned buffer may be larger than requested, so reads must be bounded to the requested length.
+	 * </p>
+	 *
+	 * @param maxBytes The minimum required buffer size
+	 * @return The reusable buffer
+	 */
+	private byte @NonNull [] readBuffer(int maxBytes) {
+		byte[] buffer = this.readBuffer;
+		if (buffer == null || buffer.length < maxBytes) {
+			buffer = new byte[maxBytes];
+			this.readBuffer = buffer;
+		}
+		return buffer;
+	}
 	
 	/**
 	 * Validates that the message size does not exceed the configured buffer size.<br>
