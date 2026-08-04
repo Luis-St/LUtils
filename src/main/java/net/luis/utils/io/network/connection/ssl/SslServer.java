@@ -136,6 +136,20 @@ public final class SslServer implements NetworkServer {
 	}
 	
 	@Override
+	public boolean isRunning() {
+		return this.running.get() && this.serverSocket != null && !this.serverSocket.isClosed();
+	}
+	
+	@Override
+	public @NonNull IpEndpoint boundEndpoint() {
+		if (this.serverSocket != null && this.serverSocket.isBound()) {
+			InetSocketAddress address = (InetSocketAddress) this.serverSocket.getLocalSocketAddress();
+			return IpEndpoint.from(address);
+		}
+		return this.bindEndpoint;
+	}
+	
+	@Override
 	public void start() {
 		if (this.running.getAndSet(true)) {
 			return;
@@ -196,20 +210,6 @@ public final class SslServer implements NetworkServer {
 		}
 		
 		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
-	}
-	
-	@Override
-	public boolean isRunning() {
-		return this.running.get() && this.serverSocket != null && !this.serverSocket.isClosed();
-	}
-	
-	@Override
-	public @NonNull IpEndpoint boundEndpoint() {
-		if (this.serverSocket != null && this.serverSocket.isBound()) {
-			InetSocketAddress address = (InetSocketAddress) this.serverSocket.getLocalSocketAddress();
-			return IpEndpoint.from(address);
-		}
-		return this.bindEndpoint;
 	}
 	
 	/**

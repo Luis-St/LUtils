@@ -18,10 +18,14 @@
 
 package net.luis.utils.io.network.connection;
 
+import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
+import net.luis.utils.io.network.connection.exception.NetworkTimeoutException;
 import net.luis.utils.io.network.connection.ssl.SslClient;
 import net.luis.utils.io.network.connection.tcp.TcpClient;
 import net.luis.utils.io.network.connection.udp.UdpClient;
+import net.luis.utils.io.network.connection.udp.UdpDatagram;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
@@ -40,14 +44,13 @@ import java.util.Optional;
  *     Example usage:
  * </p>
  * <pre>{@code
- * NetworkClient client = ...; // TcpClient or UdpClient
+ * NetworkClient<byte[]> client = ...; // TcpClient or SslClient
  * try (client) {
- *     if (client.isActive()) {
- *         System.out.println("Local: " + client.localEndpoint());
- *     }
+ *     client.send("Hello".getBytes());
+ *     byte[] response = client.receive();
  * }
  *
- * // Pattern matching
+ * // Pattern matching, for the operations that stay protocol specific
  * switch (client) {
  *     case TcpClient tcp -> tcp.connect(endpoint);
  *     case UdpClient udp -> udp.bind(endpoint);
@@ -59,8 +62,10 @@ import java.util.Optional;
  * @see UdpClient
  *
  * @author Luis-St
+ *
+ * @param <M> The type of message this client sends and receives, which is {@code byte[]} for the stream based clients and {@link UdpDatagram} for the datagram based client
  */
-public sealed interface NetworkClient extends AutoCloseable permits TcpClient, SslClient, UdpClient {
+public sealed interface NetworkClient<M> extends AutoCloseable permits TcpClient, SslClient, UdpClient {
 	
 	/**
 	 * Returns whether this client is currently active (connected or bound).<br>
@@ -75,9 +80,53 @@ public sealed interface NetworkClient extends AutoCloseable permits TcpClient, S
 	
 	/**
 	 * Returns the local endpoint this client is bound to, if any.<br>
+	 * <p>
+	 *     The returned endpoint is observed from the underlying socket, so implementations return<br>
+	 *     an {@link IpEndpoint} with a literal address rather than the endpoint originally passed in.
+	 * </p>
+	 *
 	 * @return The local endpoint, or empty if not bound
 	 */
-	@NonNull Optional<IpEndpoint> localEndpoint();
+	@NonNull Optional<? extends Endpoint> localEndpoint();
+	
+	/**
+	 * Returns the remote endpoint this client is connected to, if any.<br>
+	 * Connectionless clients such as {@link UdpClient} have no single remote peer and always return empty.
+	 *
+	 * @return The remote endpoint, or empty if not connected
+	 */
+	@NonNull Optional<? extends Endpoint> remoteEndpoint();
+	
+	/**
+	 * Sends a message to the remote peer.<br>
+	 * Stream based clients send the raw bytes, while datagram based clients send one datagram that carries its own destination.
+	 *
+	 * @param message The message to send
+	 * @throws NullPointerException If the message is null
+	 * @throws NetworkConnectionException If sending fails or the message exceeds the buffer size
+	 */
+	void send(@NonNull M message) throws NetworkConnectionException;
+	
+	/**
+	 * Receives a message from the remote peer (blocking).<br>
+	 * Uses the buffer size from the configuration.<br>
+	 *
+	 * @return The received message
+	 * @throws NetworkConnectionException If receiving fails
+	 * @throws NetworkTimeoutException If the receive times out
+	 */
+	@NonNull M receive() throws NetworkConnectionException;
+	
+	/**
+	 * Receives a message with a custom buffer size (blocking).<br>
+	 *
+	 * @param maxBytes The maximum number of bytes to receive
+	 * @return The received message
+	 * @throws IllegalArgumentException If maxBytes is less than 1
+	 * @throws NetworkConnectionException If receiving fails
+	 * @throws NetworkTimeoutException If the receive times out
+	 */
+	@NonNull M receive(int maxBytes) throws NetworkConnectionException;
 	
 	@Override
 	void close();

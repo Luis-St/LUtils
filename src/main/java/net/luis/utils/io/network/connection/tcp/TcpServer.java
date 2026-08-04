@@ -151,6 +151,20 @@ public final class TcpServer implements NetworkServer {
 	}
 	
 	@Override
+	public boolean isRunning() {
+		return this.running.get() && this.serverSocket != null && !this.serverSocket.isClosed();
+	}
+	
+	@Override
+	public @NonNull IpEndpoint boundEndpoint() {
+		if (this.serverSocket != null && this.serverSocket.isBound()) {
+			InetSocketAddress address = (InetSocketAddress) this.serverSocket.getLocalSocketAddress();
+			return IpEndpoint.from(address);
+		}
+		return this.bindEndpoint;
+	}
+	
+	@Override
 	public void start() {
 		if (this.running.getAndSet(true)) {
 			return;
@@ -176,17 +190,27 @@ public final class TcpServer implements NetworkServer {
 	}
 	
 	@Override
-	public boolean isRunning() {
-		return this.running.get() && this.serverSocket != null && !this.serverSocket.isClosed();
-	}
-	
-	@Override
-	public @NonNull IpEndpoint boundEndpoint() {
-		if (this.serverSocket != null && this.serverSocket.isBound()) {
-			InetSocketAddress address = (InetSocketAddress) this.serverSocket.getLocalSocketAddress();
-			return IpEndpoint.from(address);
+	public void stop() {
+		if (!this.running.getAndSet(false)) {
+			return;
 		}
-		return this.bindEndpoint;
+		
+		for (TcpConnection connection : this.connections) {
+			connection.close();
+		}
+		this.connections.clear();
+		
+		if (this.serverSocket != null && !this.serverSocket.isClosed()) {
+			try {
+				this.serverSocket.close();
+			} catch (IOException _) {}
+		}
+		
+		if (this.acceptThread != null) {
+			this.acceptThread.interrupt();
+		}
+		
+		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
 	}
 	
 	/**
@@ -215,30 +239,6 @@ public final class TcpServer implements NetworkServer {
 				}
 			}
 		}
-	}
-	
-	@Override
-	public void stop() {
-		if (!this.running.getAndSet(false)) {
-			return;
-		}
-		
-		for (TcpConnection connection : this.connections) {
-			connection.close();
-		}
-		this.connections.clear();
-		
-		if (this.serverSocket != null && !this.serverSocket.isClosed()) {
-			try {
-				this.serverSocket.close();
-			} catch (IOException _) {}
-		}
-		
-		if (this.acceptThread != null) {
-			this.acceptThread.interrupt();
-		}
-		
-		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
 	}
 	
 	@Override

@@ -20,15 +20,15 @@ package net.luis.utils.io.network.connection.tcp;
 
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.Connection;
+import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.*;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -118,20 +118,12 @@ public final class TcpConnection implements Connection {
 	@Override
 	public void send(byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(data, "Data must not be null");
-		this.validateMessageSize(data);
+		NetworkUtils.validateMessageSize(data, this.bufferSize, this.remoteEndpoint());
 		if (!this.isActive()) {
 			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
 		}
 		
-		try {
-			OutputStream out = this.socket.getOutputStream();
-			out.write(data);
-			out.flush();
-		} catch (SocketException e) {
-			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET, this.remoteEndpoint());
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to send data", e, NetworkErrorType.IO_ERROR, this.remoteEndpoint());
-		}
+		NetworkUtils.writeAll(this.socket, data, null, this.remoteEndpoint(), null);
 	}
 	
 	/**
@@ -166,23 +158,8 @@ public final class TcpConnection implements Connection {
 			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
 		}
 		
-		try {
-			InputStream in = this.socket.getInputStream();
-			byte[] buffer = this.readBuffer(maxBytes);
-			int bytesRead = in.read(buffer, 0, maxBytes);
-			
-			if (bytesRead == -1) {
-				return ArrayUtils.EMPTY_BYTE_ARRAY;
-			}
-			
-			return Arrays.copyOf(buffer, bytesRead);
-		} catch (SocketTimeoutException e) {
-			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, this.readTimeout, this.remoteEndpoint());
-		} catch (SocketException e) {
-			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET, this.remoteEndpoint());
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to receive data", e, NetworkErrorType.IO_ERROR, this.remoteEndpoint());
-		}
+		this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
+		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.readTimeout, null, this.remoteEndpoint(), null);
 	}
 	
 	/**
@@ -241,37 +218,4 @@ public final class TcpConnection implements Connection {
 		}
 	}
 	
-	//region Helper methods
-	
-	/**
-	 * Returns a scratch buffer of at least the given size for a read operation.<br>
-	 * The buffer is cached and reused across calls, and only reallocated when a larger one is requested.<br>
-	 * <p>
-	 *     The returned buffer may be larger than requested, so reads must be bounded to the requested length.
-	 * </p>
-	 *
-	 * @param maxBytes The minimum required buffer size
-	 * @return The reusable buffer
-	 */
-	private byte @NonNull [] readBuffer(int maxBytes) {
-		byte[] buffer = this.readBuffer;
-		if (buffer == null || buffer.length < maxBytes) {
-			buffer = new byte[maxBytes];
-			this.readBuffer = buffer;
-		}
-		return buffer;
-	}
-	
-	/**
-	 * Validates that the message size does not exceed the configured buffer size.<br>
-	 *
-	 * @param data The data to validate
-	 * @throws NetworkConnectionException If the data exceeds the buffer size
-	 */
-	private void validateMessageSize(byte @NonNull [] data) throws NetworkConnectionException {
-		if (data.length > this.bufferSize) {
-			throw new NetworkConnectionException("Message size " + data.length + " exceeds buffer size " + this.bufferSize, NetworkErrorType.MESSAGE_TOO_LARGE, this.remoteEndpoint());
-		}
-	}
-	//endregion
 }

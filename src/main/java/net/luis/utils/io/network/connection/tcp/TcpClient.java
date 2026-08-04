@@ -18,18 +18,20 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
+import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.NetworkClient;
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.*;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.time.Instant;
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A blocking TCP client for establishing connections to remote servers.<br>
@@ -56,7 +58,7 @@ import java.util.*;
  *
  * @author Luis-St
  */
-public final class TcpClient implements NetworkClient {
+public final class TcpClient implements NetworkClient<byte[]> {
 	
 	/**
 	 * The configuration for this client.<br>
@@ -102,7 +104,7 @@ public final class TcpClient implements NetworkClient {
 	 * @throws NetworkConnectionException If connection fails
 	 * @throws NetworkTimeoutException If connection times out
 	 */
-	public static @NonNull TcpClient connectTo(@NonNull IpEndpoint endpoint) throws NetworkConnectionException {
+	public static @NonNull TcpClient connectTo(@NonNull Endpoint endpoint) throws NetworkConnectionException {
 		return connectTo(endpoint, TcpClientConfig.DEFAULT);
 	}
 	
@@ -117,7 +119,7 @@ public final class TcpClient implements NetworkClient {
 	 * @throws NetworkConnectionException If connection fails
 	 * @throws NetworkTimeoutException If connection times out
 	 */
-	public static @NonNull TcpClient connectTo(@NonNull IpEndpoint endpoint, @NonNull TcpClientConfig config) throws NetworkConnectionException {
+	public static @NonNull TcpClient connectTo(@NonNull Endpoint endpoint, @NonNull TcpClientConfig config) throws NetworkConnectionException {
 		Objects.requireNonNull(endpoint, "Endpoint must not be null");
 		Objects.requireNonNull(config, "Config must not be null");
 		
@@ -139,7 +141,7 @@ public final class TcpClient implements NetworkClient {
 	 * @throws NetworkConnectionException If connection fails
 	 * @throws NetworkTimeoutException If connection times out
 	 */
-	public void connect(@NonNull IpEndpoint endpoint) throws NetworkConnectionException {
+	public void connect(@NonNull Endpoint endpoint) throws NetworkConnectionException {
 		Objects.requireNonNull(endpoint, "Endpoint must not be null");
 		if (this.connected) {
 			throw new NetworkConnectionException("Client is already connected", NetworkErrorType.ALREADY_CONNECTED, endpoint);
@@ -158,95 +160,64 @@ public final class TcpClient implements NetworkClient {
 			this.connected = true;
 			
 			if (this.config.onConnect() != null) {
-				this.config.onConnect().handle(null, this.localEndpoint().orElse(endpoint), endpoint, Instant.now());
+				IpEndpoint local = this.localEndpoint().orElse(null);
+				IpEndpoint remote = this.remoteEndpoint().orElse(null);
+				
+				this.config.onConnect().handle(null, local != null ? local : endpoint, remote != null ? remote : endpoint, Instant.now());
 			}
-		} catch (SocketTimeoutException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_TIMEOUT, "Connection timed out to " + endpoint, e);
-			throw new NetworkTimeoutException("Connection timed out to " + endpoint, NetworkErrorType.CONNECTION_TIMEOUT, this.config.connectTimeout(), endpoint);
-		} catch (ConnectException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_REFUSED, "Connection refused by " + endpoint, e);
-			throw new NetworkConnectionException("Connection refused by " + endpoint, e, NetworkErrorType.CONNECTION_REFUSED, endpoint);
-		} catch (NoRouteToHostException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.HOST_UNREACHABLE, "Host unreachable: " + endpoint, e);
-			throw new NetworkConnectionException("Host unreachable: " + endpoint, e, NetworkErrorType.HOST_UNREACHABLE, endpoint);
 		} catch (IOException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_FAILED, "Failed to connect to " + endpoint, e);
-			throw new NetworkConnectionException("Failed to connect to " + endpoint, e, NetworkErrorType.CONNECTION_FAILED, endpoint);
+			throw NetworkUtils.mapConnectFailure(e, endpoint, this.config.connectTimeout(), this.config.onError());
 		}
 	}
 	
-	/**
-	 * Sends data to the connected server.<br>
-	 *
-	 * @param data The data to send
-	 * @throws NullPointerException If data is null
-	 * @throws NetworkConnectionException If sending fails or data exceeds buffer size
-	 */
+	@Override
+	public boolean isActive() {
+		return this.connected && this.socket != null && !this.socket.isClosed() && this.socket.isConnected();
+	}
+	
+	@Override
+	public @NonNull Optional<IpEndpoint> localEndpoint() {
+		if (!this.isActive()) {
+			return Optional.empty();
+		}
+		
+		InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
+		return Optional.of(IpEndpoint.from(address));
+	}
+	
+	@Override
+	public @NonNull Optional<IpEndpoint> remoteEndpoint() {
+		if (!this.isActive()) {
+			return Optional.empty();
+		}
+		
+		InetSocketAddress address = (InetSocketAddress) this.socket.getRemoteSocketAddress();
+		return Optional.of(IpEndpoint.from(address));
+	}
+	
+	@Override
 	public void send(byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(data, "Data must not be null");
-		this.validateMessageSize(data);
+		NetworkUtils.validateMessageSize(data, this.config.bufferSize(), null);
 		this.ensureConnected();
 		
-		try {
-			OutputStream out = this.socket.getOutputStream();
-			out.write(data);
-			out.flush();
-		} catch (SocketException e) {
-			this.handleDisconnect();
-			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET);
-		} catch (IOException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to send data", e);
-			throw new NetworkConnectionException("Failed to send data", e, NetworkErrorType.IO_ERROR);
-		}
+		NetworkUtils.writeAll(this.socket, data, this.config.onError(), null, this::handleDisconnect);
 	}
 	
-	/**
-	 * Receives data from the connected server (blocking).<br>
-	 * Uses the buffer size from the configuration.<br>
-	 *
-	 * @return The received data, or an empty array if the connection was closed
-	 * @throws NetworkConnectionException If receiving fails
-	 * @throws NetworkTimeoutException If the receive times out
-	 */
+	@Override
 	public byte @NonNull [] receive() throws NetworkConnectionException {
 		return this.receive(this.config.bufferSize());
 	}
 	
-	/**
-	 * Receives data with a custom buffer size (blocking).<br>
-	 *
-	 * @param maxBytes The maximum number of bytes to receive
-	 * @return The received data, or an empty array if the connection was closed
-	 * @throws IllegalArgumentException If maxBytes is less than 1
-	 * @throws NetworkConnectionException If receiving fails
-	 * @throws NetworkTimeoutException If the receive times out
-	 */
+	@Override
 	public byte @NonNull [] receive(int maxBytes) throws NetworkConnectionException {
 		if (maxBytes < 1) {
 			throw new IllegalArgumentException("Max bytes must be at least 1: " + maxBytes);
 		}
 		this.ensureConnected();
 		
-		try {
-			InputStream in = this.socket.getInputStream();
-			byte[] buffer = this.readBuffer(maxBytes);
-			int bytesRead = in.read(buffer, 0, maxBytes);
-			
-			if (bytesRead == -1) {
-				this.handleDisconnect();
-				return ArrayUtils.EMPTY_BYTE_ARRAY;
-			}
-			
-			return Arrays.copyOf(buffer, bytesRead);
-		} catch (SocketTimeoutException e) {
-			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, this.config.readTimeout());
-		} catch (SocketException e) {
-			this.handleDisconnect();
-			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET);
-		} catch (IOException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to receive data", e);
-			throw new NetworkConnectionException("Failed to receive data", e, NetworkErrorType.IO_ERROR);
-		}
+		this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
+		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
 	}
 	
 	/**
@@ -282,34 +253,6 @@ public final class TcpClient implements NetworkClient {
 	}
 	
 	@Override
-	public boolean isActive() {
-		return this.connected && this.socket != null && !this.socket.isClosed() && this.socket.isConnected();
-	}
-	
-	@Override
-	public @NonNull Optional<IpEndpoint> localEndpoint() {
-		if (!this.isActive()) {
-			return Optional.empty();
-		}
-		
-		InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
-		return Optional.of(IpEndpoint.from(address));
-	}
-	
-	/**
-	 * Returns the remote endpoint this client is connected to.<br>
-	 * @return The remote endpoint, or empty if not connected
-	 */
-	public @NonNull Optional<IpEndpoint> remoteEndpoint() {
-		if (!this.isActive()) {
-			return Optional.empty();
-		}
-		
-		InetSocketAddress address = (InetSocketAddress) this.socket.getRemoteSocketAddress();
-		return Optional.of(IpEndpoint.from(address));
-	}
-	
-	@Override
 	public void close() {
 		if (this.socket != null && !this.socket.isClosed()) {
 			this.handleDisconnect();
@@ -322,37 +265,6 @@ public final class TcpClient implements NetworkClient {
 	}
 	
 	//region Helper methods
-	
-	/**
-	 * Returns a scratch buffer of at least the given size for a read operation.<br>
-	 * The buffer is cached and reused across calls, and only reallocated when a larger one is requested.<br>
-	 * <p>
-	 *     The returned buffer may be larger than requested, so reads must be bounded to the requested length.
-	 * </p>
-	 *
-	 * @param maxBytes The minimum required buffer size
-	 * @return The reusable buffer
-	 */
-	private byte @NonNull [] readBuffer(int maxBytes) {
-		byte[] buffer = this.readBuffer;
-		if (buffer == null || buffer.length < maxBytes) {
-			buffer = new byte[maxBytes];
-			this.readBuffer = buffer;
-		}
-		return buffer;
-	}
-	
-	/**
-	 * Validates that the message size does not exceed the configured buffer size.<br>
-	 *
-	 * @param data The data to validate
-	 * @throws NetworkConnectionException If the data exceeds the buffer size
-	 */
-	private void validateMessageSize(byte @NonNull [] data) throws NetworkConnectionException {
-		if (data.length > this.config.bufferSize()) {
-			throw new NetworkConnectionException("Message size " + data.length + " exceeds buffer size " + this.config.bufferSize(), NetworkErrorType.MESSAGE_TOO_LARGE);
-		}
-	}
 	
 	/**
 	 * Ensures that the client is connected before performing operations.<br>

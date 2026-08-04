@@ -142,6 +142,20 @@ public final class UdpServer implements NetworkServer {
 	}
 	
 	@Override
+	public boolean isRunning() {
+		return this.running.get() && this.socket != null && !this.socket.isClosed();
+	}
+	
+	@Override
+	public @NonNull IpEndpoint boundEndpoint() {
+		if (this.socket != null && this.socket.isBound()) {
+			InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
+			return IpEndpoint.from(address);
+		}
+		return this.bindEndpoint;
+	}
+	
+	@Override
 	public void start() {
 		if (this.running.getAndSet(true)) {
 			return;
@@ -184,20 +198,6 @@ public final class UdpServer implements NetworkServer {
 		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
 	}
 	
-	@Override
-	public boolean isRunning() {
-		return this.running.get() && this.socket != null && !this.socket.isClosed();
-	}
-	
-	@Override
-	public @NonNull IpEndpoint boundEndpoint() {
-		if (this.socket != null && this.socket.isBound()) {
-			InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
-			return IpEndpoint.from(address);
-		}
-		return this.bindEndpoint;
-	}
-	
 	/**
 	 * Sends a datagram to the specified endpoint.<br>
 	 *
@@ -209,7 +209,7 @@ public final class UdpServer implements NetworkServer {
 	public void send(@NonNull IpEndpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(destination, "Destination must not be null");
 		Objects.requireNonNull(data, "Data must not be null");
-		this.validateMessageSize(data, destination);
+		NetworkUtils.validateMessageSize(data, this.config.bufferSize(), destination);
 		
 		if (!this.isRunning()) {
 			throw new NetworkConnectionException("Server is not running", NetworkErrorType.SOCKET_CLOSED);
@@ -242,19 +242,6 @@ public final class UdpServer implements NetworkServer {
 	}
 	
 	//region Helper methods
-	
-	/**
-	 * Validates that the message size does not exceed the configured buffer size.<br>
-	 *
-	 * @param data The data to validate
-	 * @param destination The destination endpoint for error reporting
-	 * @throws NetworkConnectionException If the data exceeds the buffer size
-	 */
-	private void validateMessageSize(byte @NonNull [] data, @NonNull IpEndpoint destination) throws NetworkConnectionException {
-		if (data.length > this.config.bufferSize()) {
-			throw new NetworkConnectionException("Message size " + data.length + " exceeds buffer size " + this.config.bufferSize(), NetworkErrorType.MESSAGE_TOO_LARGE, destination);
-		}
-	}
 	
 	/**
 	 * The main loop that receives incoming datagrams.<br>
