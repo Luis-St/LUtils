@@ -1226,6 +1226,17 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	}
 	
 	/**
+	 * Creates a copy of this insert query that records the user supplied by the given provider in the audit columns.<br>
+	 * Has no effect if the target table is not audited.<br>
+	 *
+	 * @param auditUserProvider The provider that resolves the audit user, or {@code null} for no audit user
+	 * @return A new insert query using the given audit user provider
+	 */
+	public @NonNull SqlInsertQuery<E> auditedBy(@Nullable SqlAuditUserProvider auditUserProvider) {
+		return new SqlInsertQuery<>(this.config.withAuditUserProvider(auditUserProvider));
+	}
+	
+	/**
 	 * Finds the override configured for the given column, if any.<br>
 	 *
 	 * @param column The column to find the override for

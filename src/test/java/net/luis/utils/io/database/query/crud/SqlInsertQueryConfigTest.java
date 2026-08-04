@@ -134,6 +134,86 @@ class SqlInsertQueryConfigTest {
 	}
 	
 	@Test
+	void withAuditUserProviderWithNullDoesNotThrow() {
+		SqlInsertQueryConfig<Object> config = new SqlInsertQueryConfig<>(sampleTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, ENTITIES, null, null, null, List.of(), List.of(), false, false, false, null);
+		SqlInsertQueryConfig<Object> updated = assertDoesNotThrow(() -> config.withAuditUserProvider(null));
+		assertNotNull(updated);
+		assertNull(updated.auditUserProvider());
+	}
+	
+	@Test
+	void withAuditUserProviderReturnsCopyWithNewProvider() {
+		SqlAuditUserProvider provider = () -> Optional.of("tester");
+		SqlInsertQueryConfig<Object> config = new SqlInsertQueryConfig<>(sampleTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, ENTITIES, null, null, null, List.of(), List.of(), false, false, false, null);
+		SqlInsertQueryConfig<Object> updated = config.withAuditUserProvider(provider);
+		assertNotSame(config, updated);
+		assertSame(provider, updated.auditUserProvider());
+		assertNull(config.auditUserProvider());
+	}
+	
+	@Test
+	void withAuditUserProviderClearsExistingProvider() {
+		SqlAuditUserProvider provider = () -> Optional.of("tester");
+		SqlInsertQueryConfig<Object> config = new SqlInsertQueryConfig<>(sampleTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, ENTITIES, null, null, null, List.of(), List.of(), false, false, false, provider);
+		SqlInsertQueryConfig<Object> updated = config.withAuditUserProvider(null);
+		assertNull(updated.auditUserProvider());
+		assertSame(provider, config.auditUserProvider());
+	}
+	
+	@Test
+	void withAuditUserProviderPreservesOtherComponents() {
+		SqlColumn<Object, Integer> column = integerColumn();
+		List<SqlColumn<Object, ?>> conflicts = List.of(column);
+		List<SqlColumn<Object, ?>> omitted = List.of(column);
+		List<SqlColumnValue<Object, ?>> overrides = List.of(SqlColumnValue.of(column, 1));
+		SqlInsertQueryConfig<Object> config = new SqlInsertQueryConfig<>(sampleTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, ENTITIES, null, conflicts, null, omitted, overrides, true, false, false, null);
+		SqlInsertQueryConfig<Object> updated = config.withAuditUserProvider(() -> Optional.of("tester"));
+		assertSame(config.table(), updated.table());
+		assertSame(config.dialect(), updated.dialect());
+		assertEquals(config.entities(), updated.entities());
+		assertEquals(omitted, updated.omittedColumns());
+		assertEquals(overrides, updated.overrides());
+		assertEquals(conflicts, updated.conflictColumns());
+		assertTrue(updated.isUpsert());
+		assertFalse(updated.isInsertOrIgnore());
+		assertFalse(updated.isInsertFromSelect());
+	}
+	
+	@Test
+	void withAuditUserProviderReplacesProvider() {
+		SqlAuditUserProvider first = () -> Optional.of("first");
+		SqlAuditUserProvider second = () -> Optional.of("second");
+		SqlInsertQueryConfig<Object> config = new SqlInsertQueryConfig<>(sampleTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, ENTITIES, null, null, null, List.of(), List.of(), false, false, false, first);
+		assertSame(second, config.withAuditUserProvider(second).auditUserProvider());
+	}
+	
+	@Test
+	void withAuditUserProviderChainedWithOtherCopyMethods() {
+		SqlAuditUserProvider provider = () -> Optional.of("tester");
+		SqlColumn<Object, Integer> column = integerColumn();
+		List<SqlColumn<Object, ?>> omitted = List.of(column);
+		List<SqlColumnValue<Object, ?>> overrides = List.of(SqlColumnValue.of(column, 1));
+		SqlInsertQueryConfig<Object> config = new SqlInsertQueryConfig<>(sampleTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, ENTITIES, null, null, null, List.of(), List.of(), false, false, false, null);
+		SqlInsertQueryConfig<Object> updated = config.withOmittedColumns(omitted).withOverrides(overrides).withAuditUserProvider(provider);
+		assertEquals(omitted, updated.omittedColumns());
+		assertEquals(overrides, updated.overrides());
+		assertSame(provider, updated.auditUserProvider());
+		assertTrue(config.omittedColumns().isEmpty());
+		assertTrue(config.overrides().isEmpty());
+	}
+	
+	@Test
+	void withAuditUserProviderOnUpsertConfigPreservesConflictColumns() throws SqlStatementBuilderException {
+		SqlAuditUserProvider provider = () -> Optional.of("tester");
+		List<SqlColumn<Object, ?>> conflicts = List.of(integerColumn());
+		SqlInsertQueryConfig<Object> config = SqlInsertQueryConfig.create(sampleTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, ENTITIES, null, conflicts, null, true, false, false, null);
+		SqlInsertQueryConfig<Object> updated = config.withAuditUserProvider(provider);
+		assertTrue(updated.isUpsert());
+		assertEquals(conflicts, updated.conflictColumns());
+		assertSame(provider, updated.auditUserProvider());
+	}
+	
+	@Test
 	void createUpsertAndInsertOrIgnoreMutuallyExclusive() {
 		assertThrows(SqlStatementBuilderException.class, () -> SqlInsertQueryConfig.create(sampleTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, ENTITIES, null, List.of(integerColumn()), null, true, true, false, null));
 	}

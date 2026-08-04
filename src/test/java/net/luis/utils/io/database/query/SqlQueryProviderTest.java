@@ -21,17 +21,23 @@ package net.luis.utils.io.database.query;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.SqlSession;
 import net.luis.utils.io.database.audit.SqlAuditUserProvider;
+import net.luis.utils.io.database.dialect.SqlDialects;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.crud.SqlInsertQuery;
 import net.luis.utils.io.database.query.crud.SqlSelectQuery;
 import net.luis.utils.io.database.query.row.SqlRow4;
+import net.luis.utils.io.database.query.util.SqlSetClause;
+import net.luis.utils.io.database.query.util.SqlSetType;
+import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlTypes;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static net.luis.utils.io.database.SqlTestFixtures.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,6 +62,24 @@ class SqlQueryProviderTest {
 	
 	private static long markerCount(String sql) {
 		return sql.chars().filter(character -> character == '?').count();
+	}
+	
+	private static ConflictFixture conflictFixture() {
+		SqlTable<Person> table = SqlTable.create(Person.class, "person");
+		SqlColumn<Person, Integer> id = table.column("id", INTEGER_TYPE, Person::id);
+		SqlColumn<Person, String> name = table.column("name", STRING_TYPE, Person::name);
+		return new ConflictFixture(new SqlQueryProvider<>(table, DIALECT, SOURCE, TIMEOUT), id, name);
+	}
+	
+	private static ConflictFixture auditedFixture(SqlAuditUserProvider userProvider) {
+		SqlTable<Person> table = SqlTable.audited(Person.class, "person");
+		SqlColumn<Person, Integer> id = table.column("id", INTEGER_TYPE, Person::id);
+		SqlColumn<Person, String> name = table.column("name", STRING_TYPE, Person::name);
+		return new ConflictFixture(new SqlQueryProvider<>(table, DIALECT, SOURCE, TIMEOUT, userProvider, null), id, name);
+	}
+	
+	private static boolean bindsUser(SqlRendered rendered, String user) {
+		return rendered.parameters().stream().anyMatch(parameter -> user.equals(parameter.getSecond()));
 	}
 	
 	@Test
@@ -223,6 +247,248 @@ class SqlQueryProviderTest {
 	void insertFromSelectReturnsInsertQuery() throws SqlException {
 		SqlInsertQuery<Person> query = personProvider().insert(sampleSelect());
 		assertTrue(query.toSql(DIALECT).sql().contains("INSERT INTO"));
+	}
+	
+	@Test
+	void insertOrIgnoreEntityWithNullEntity() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().insertOrIgnore((Person) null, List.of(fixture.id())));
+	}
+	
+	@Test
+	void insertOrIgnoreEntityWithNullConflictColumns() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().insertOrIgnore(new Person(1, "a"), (List<SqlColumn<Person, ?>>) null));
+	}
+	
+	@Test
+	void insertOrIgnoreCollectionWithNullEntities() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().insertOrIgnore((List<Person>) null, List.of(fixture.id())));
+	}
+	
+	@Test
+	void insertOrIgnoreCollectionWithNullConflictColumns() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().insertOrIgnore(List.of(new Person(1, "a")), null));
+	}
+	
+	@Test
+	void insertOrIgnoreWithEmptyConflictColumns() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(SqlStatementBuilderException.class, () -> fixture.provider().insertOrIgnore(List.of(new Person(1, "a")), List.of()));
+	}
+	
+	@Test
+	void insertOrIgnoreWithEmptyEntities() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(IllegalArgumentException.class, () -> fixture.provider().insertOrIgnore(List.<Person>of(), List.of(fixture.id())));
+	}
+	
+	@Test
+	void upsertEntityWithNullConflictColumn() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().upsert(new Person(1, "a"), (SqlColumn<Person, ?>) null));
+	}
+	
+	@Test
+	void upsertEntityWithNullEntity() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().upsert((Person) null, List.of(fixture.id())));
+	}
+	
+	@Test
+	void upsertEntityWithClausesWithNullEntity() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().upsert((Person) null, List.of(fixture.id()), List.of()));
+	}
+	
+	@Test
+	void upsertCollectionWithNullConflictColumn() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().upsert(List.of(new Person(1, "a")), (SqlColumn<Person, ?>) null));
+	}
+	
+	@Test
+	void upsertCollectionWithNullEntities() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().upsert((List<Person>) null, List.of(fixture.id())));
+	}
+	
+	@Test
+	void upsertCollectionWithNullConflictColumns() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().upsert(List.of(new Person(1, "a")), (List<SqlColumn<Person, ?>>) null));
+	}
+	
+	@Test
+	void upsertWithClausesWithNullEntities() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().upsert((List<Person>) null, List.of(fixture.id()), List.of()));
+	}
+	
+	@Test
+	void upsertWithClausesWithNullConflictColumns() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().upsert(List.of(new Person(1, "a")), null, List.of()));
+	}
+	
+	@Test
+	void upsertWithClausesWithNullUpdateClauses() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(NullPointerException.class, () -> fixture.provider().upsert(List.of(new Person(1, "a")), List.of(fixture.id()), null));
+	}
+	
+	@Test
+	void upsertWithEmptyConflictColumns() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(SqlStatementBuilderException.class, () -> fixture.provider().upsert(List.of(new Person(1, "a")), List.of()));
+	}
+	
+	@Test
+	void upsertWithEmptyEntities() {
+		ConflictFixture fixture = conflictFixture();
+		assertThrows(IllegalArgumentException.class, () -> fixture.provider().upsert(List.<Person>of(), List.of(fixture.id())));
+	}
+	
+	@Test
+	void insertOrIgnoreEntityRendersOnConflictDoNothing() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		String sql = fixture.provider().insertOrIgnore(new Person(1, "a"), List.of(fixture.id())).toSql(DIALECT).sql();
+		assertTrue(sql.contains("INSERT INTO"));
+		assertTrue(sql.contains("ON CONFLICT"));
+		assertTrue(sql.contains("DO NOTHING"));
+	}
+	
+	@Test
+	void insertOrIgnoreCollectionRendersAllRows() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		String sql = fixture.provider().insertOrIgnore(List.of(new Person(1, "a"), new Person(2, "b")), List.of(fixture.id())).toSql(DIALECT).sql();
+		assertEquals(4, markerCount(sql));
+		assertTrue(sql.contains("DO NOTHING"));
+	}
+	
+	@Test
+	void upsertEntitySingleColumnRendersUpdateClause() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		String sql = fixture.provider().upsert(new Person(1, "a"), fixture.id()).toSql(SqlDialects.POSTGRESQL).sql();
+		assertTrue(sql.contains("ON CONFLICT"));
+		assertTrue(sql.contains("DO UPDATE SET"));
+		assertFalse(sql.contains("DO NOTHING"));
+	}
+	
+	@Test
+	void upsertEntityCompositeConflictColumns() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		String sql = fixture.provider().upsert(new Person(1, "a"), List.of(fixture.id(), fixture.name())).toSql(SqlDialects.POSTGRESQL).sql();
+		assertTrue(sql.contains("ON CONFLICT"));
+		assertTrue(sql.contains(SqlDialects.POSTGRESQL.quoteIdentifier("id")));
+		assertTrue(sql.contains(SqlDialects.POSTGRESQL.quoteIdentifier("name")));
+	}
+	
+	@Test
+	void upsertCollectionSingleColumnRendersUpdateClause() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		String sql = fixture.provider().upsert(List.of(new Person(1, "a"), new Person(2, "b")), fixture.id()).toSql(SqlDialects.POSTGRESQL).sql();
+		assertEquals(4, markerCount(sql));
+		assertTrue(sql.contains("DO UPDATE SET"));
+	}
+	
+	@Test
+	void upsertWithClausesRendersGivenClauses() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		SqlSetClause<Person, String> clause = new SqlSetClause<>(fixture.name(), fixture.name().of(SqlAlias.EXCLUDED), SqlSetType.EXPRESSION);
+		String sql = fixture.provider().upsert(List.of(new Person(1, "a")), List.of(fixture.id()), List.of(clause)).toSql(SqlDialects.POSTGRESQL).sql();
+		String defaulted = fixture.provider().upsert(List.of(new Person(1, "a")), List.of(fixture.id())).toSql(SqlDialects.POSTGRESQL).sql();
+		assertTrue(sql.contains(SqlDialects.POSTGRESQL.quoteIdentifier("name")));
+		assertNotEquals(defaulted, sql);
+	}
+	
+	@Test
+	void insertOrIgnorePropagatesAuditUserProvider() throws SqlException {
+		ConflictFixture fixture = auditedFixture(() -> Optional.of("tester"));
+		SqlRendered rendered = fixture.provider().insertOrIgnore(new Person(1, "a"), List.of(fixture.id())).toSql(DIALECT);
+		assertTrue(bindsUser(rendered, "tester"));
+	}
+	
+	@Test
+	void upsertPropagatesAuditUserProvider() throws SqlException {
+		ConflictFixture fixture = auditedFixture(() -> Optional.of("tester"));
+		SqlRendered rendered = fixture.provider().upsert(new Person(1, "a"), fixture.id()).toSql(SqlDialects.POSTGRESQL);
+		assertTrue(bindsUser(rendered, "tester"));
+	}
+	
+	@Test
+	void upsertWithoutAuditUserProviderBindsNoUser() throws SqlException {
+		ConflictFixture fixture = auditedFixture(null);
+		SqlRendered rendered = assertDoesNotThrow(() -> fixture.provider().upsert(new Person(1, "a"), fixture.id()).toSql(SqlDialects.POSTGRESQL));
+		assertFalse(bindsUser(rendered, "tester"));
+		assertTrue(rendered.sql().contains("NULL"));
+	}
+	
+	@Test
+	void insertWithConflictColumnsPropagatesAuditUserProvider() throws SqlException {
+		ConflictFixture fixture = auditedFixture(() -> Optional.of("tester"));
+		SqlRendered rendered = fixture.provider().insert(new Person(1, "a"), fixture.id()).toSql(DIALECT);
+		assertTrue(bindsUser(rendered, "tester"));
+	}
+	
+	@Test
+	void insertOrIgnoreSingleEntityAndSingleColumn() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		String sql = fixture.provider().insertOrIgnore(new Person(1, "a"), List.of(fixture.id())).toSql(DIALECT).sql();
+		assertTrue(sql.contains("INSERT INTO"));
+		assertEquals(2, markerCount(sql));
+	}
+	
+	@Test
+	void upsertSingleEntityAndSingleColumn() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		String sql = fixture.provider().upsert(new Person(1, "a"), fixture.id()).toSql(SqlDialects.POSTGRESQL).sql();
+		assertTrue(sql.contains("INSERT INTO"));
+		assertEquals(2, markerCount(sql));
+	}
+	
+	@Test
+	void upsertCollectionOfThreeEntities() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		List<Person> people = List.of(new Person(1, "a"), new Person(2, "b"), new Person(3, "c"));
+		assertEquals(6, markerCount(fixture.provider().upsert(people, fixture.id()).toSql(SqlDialects.POSTGRESQL).sql()));
+	}
+	
+	@Test
+	void upsertEntityAndCollectionOverloadsProduceSameSql() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		String entitySql = fixture.provider().upsert(new Person(1, "a"), fixture.id()).toSql(SqlDialects.POSTGRESQL).sql();
+		String collectionSql = fixture.provider().upsert(List.of(new Person(1, "a")), fixture.id()).toSql(SqlDialects.POSTGRESQL).sql();
+		assertEquals(entitySql, collectionSql);
+	}
+	
+	@Test
+	void insertWithConflictColumnsAndInsertOrIgnoreProduceSameSql() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		SqlRendered varargs = fixture.provider().insert(new Person(1, "a"), fixture.id()).toSql(DIALECT);
+		SqlRendered explicit = fixture.provider().insertOrIgnore(List.of(new Person(1, "a")), List.of(fixture.id())).toSql(DIALECT);
+		assertEquals(varargs.sql(), explicit.sql());
+		assertEquals(varargs.parameters(), explicit.parameters());
+	}
+	
+	@Test
+	void upsertChainedWithOmittingKeepsAuditUserProvider() throws SqlException {
+		ConflictFixture fixture = auditedFixture(() -> Optional.of("tester"));
+		SqlRendered rendered = fixture.provider().upsert(new Person(1, "a"), fixture.id()).omitting(fixture.name()).toSql(SqlDialects.POSTGRESQL);
+		assertFalse(rendered.sql().contains(SqlDialects.POSTGRESQL.quoteIdentifier("name") + ","));
+		assertTrue(bindsUser(rendered, "tester"));
+	}
+	
+	@Test
+	void upsertWithClausesOverCompositeConflictKey() throws SqlException {
+		ConflictFixture fixture = conflictFixture();
+		SqlSetClause<Person, String> clause = new SqlSetClause<>(fixture.name(), fixture.name().of(SqlAlias.EXCLUDED), SqlSetType.EXPRESSION);
+		String sql = fixture.provider().upsert(new Person(1, "a"), List.of(fixture.id(), fixture.name()), List.of(clause)).toSql(SqlDialects.POSTGRESQL).sql();
+		assertTrue(sql.contains("ON CONFLICT"));
+		assertTrue(sql.contains(SqlDialects.POSTGRESQL.quoteIdentifier("id")));
+		assertTrue(sql.contains(SqlDialects.POSTGRESQL.quoteIdentifier("name")));
 	}
 	
 	@Test
@@ -441,6 +707,8 @@ class SqlQueryProviderTest {
 	}
 	
 	private record Person(int id, String name) {}
+	
+	private record ConflictFixture(SqlQueryProvider<Person> provider, SqlColumn<Person, Integer> id, SqlColumn<Person, String> name) {}
 	
 	private record Counter(int value) {}
 	

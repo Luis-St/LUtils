@@ -187,4 +187,17 @@ record SqlInsertQueryConfig<E>(
 			this.omittedColumns, overrides, this.isUpsert, this.isInsertOrIgnore, this.isInsertFromSelect, this.auditUserProvider
 		);
 	}
+	
+	/**
+	 * Creates a copy of this configuration with the given audit user provider.<br>
+	 *
+	 * @param auditUserProvider The provider supplying the current user for audit columns, or {@code null} for no audit user
+	 * @return The copied configuration
+	 */
+	@NonNull SqlInsertQueryConfig<E> withAuditUserProvider(@Nullable SqlAuditUserProvider auditUserProvider) {
+		return new SqlInsertQueryConfig<>(
+			this.table, this.dialect, this.connectionSource, this.queryTimeout, this.rowMapper, this.entities, this.fromSelect, this.conflictColumns, this.upsertUpdateClauses,
+			this.omittedColumns, this.overrides, this.isUpsert, this.isInsertOrIgnore, this.isInsertFromSelect, auditUserProvider
+		);
+	}
 }

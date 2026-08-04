@@ -25,6 +25,7 @@ import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.query.util.SqlSetClause;
 import net.luis.utils.io.database.query.util.SqlSetType;
+import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,16 @@ class SqlInsertQueryTest {
 	
 	private static long markerCount(String sql) {
 		return sql.chars().filter(character -> character == '?').count();
+	}
+	
+	private static SqlTable<Object> auditedOneColumnTable() {
+		SqlTable<Object> table = auditedTable();
+		table.column("id", INTEGER_TYPE, object -> 0);
+		return table;
+	}
+	
+	private static boolean bindsUser(SqlRendered rendered, String user) {
+		return rendered.parameters().stream().anyMatch(parameter -> user.equals(parameter.getSecond()));
 	}
 	
 	@Test
@@ -408,5 +419,107 @@ class SqlInsertQueryTest {
 	void toSqlWithAuditCreatedByNullUser() throws SqlException {
 		SqlInsertQuery<Object> query = new SqlInsertQuery<>(auditedTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
 		assertTrue(query.toSql(DIALECT).sql().contains("NULL"));
+	}
+	
+	@Test
+	void auditedByWithNullProvider() throws SqlException {
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(oneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		SqlInsertQuery<Object> audited = assertDoesNotThrow(() -> query.auditedBy(null));
+		assertNotNull(audited);
+		assertTrue(audited.toSql(DIALECT).sql().contains("INSERT INTO"));
+	}
+	
+	@Test
+	void auditedByReturnsNewInstance() throws SqlException {
+		SqlAuditUserProvider provider = () -> Optional.of("tester");
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(oneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		assertNotSame(query, query.auditedBy(provider));
+	}
+	
+	@Test
+	void auditedByBindsUserOnAuditedTable() throws SqlException {
+		SqlAuditUserProvider provider = () -> Optional.of("tester");
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(auditedOneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		assertTrue(bindsUser(query.auditedBy(provider).toSql(DIALECT), "tester"));
+	}
+	
+	@Test
+	void auditedByOnNonAuditedTableHasNoEffect() throws SqlException {
+		SqlAuditUserProvider provider = () -> Optional.of("tester");
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(oneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		SqlRendered plain = query.toSql(DIALECT);
+		SqlRendered audited = query.auditedBy(provider).toSql(DIALECT);
+		assertEquals(plain.sql(), audited.sql());
+		assertEquals(plain.parameters(), audited.parameters());
+	}
+	
+	@Test
+	void auditedByWithNullProviderBindsNullUser() throws SqlException {
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(auditedOneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		SqlRendered rendered = query.auditedBy(null).toSql(DIALECT);
+		assertFalse(bindsUser(rendered, "tester"));
+		assertTrue(rendered.sql().contains("NULL"));
+	}
+	
+	@Test
+	void auditedByLeavesOriginalQueryUnchanged() throws SqlException {
+		SqlAuditUserProvider provider = () -> Optional.of("tester");
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(auditedOneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		SqlInsertQuery<Object> copy = query.auditedBy(provider);
+		assertFalse(bindsUser(query.toSql(DIALECT), "tester"));
+		assertTrue(bindsUser(copy.toSql(DIALECT), "tester"));
+	}
+	
+	@Test
+	void auditedByOverwritesExistingProvider() throws SqlException {
+		SqlAuditUserProvider first = () -> Optional.of("first");
+		SqlAuditUserProvider second = () -> Optional.of("second");
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(auditedOneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), first);
+		SqlRendered rendered = query.auditedBy(second).toSql(DIALECT);
+		assertTrue(bindsUser(rendered, "second"));
+		assertFalse(bindsUser(rendered, "first"));
+	}
+	
+	@Test
+	void auditedByWithEmptyProviderResult() throws SqlException {
+		SqlAuditUserProvider provider = Optional::empty;
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(auditedOneColumnTable(), DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		SqlRendered rendered = query.auditedBy(provider).toSql(DIALECT);
+		assertFalse(bindsUser(rendered, "tester"));
+		assertTrue(rendered.sql().contains("NULL"));
+	}
+	
+	@Test
+	void auditedByChainedWithOmitting() throws SqlException {
+		SqlAuditUserProvider provider = () -> Optional.of("tester");
+		SqlTable<Object> table = auditedOneColumnTable();
+		SqlColumn<Object, String> name = table.column("name", STRING_TYPE, object -> "x");
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		SqlRendered rendered = query.auditedBy(provider).omitting(name).toSql(DIALECT);
+		assertFalse(rendered.sql().contains("\"name\""));
+		assertTrue(bindsUser(rendered, "tester"));
+		assertEquals(rendered.sql(), query.omitting(name).auditedBy(provider).toSql(DIALECT).sql());
+	}
+	
+	@Test
+	void auditedByChainedWithOverride() throws SqlException {
+		SqlAuditUserProvider provider = () -> Optional.of("tester");
+		SqlTable<Object> table = auditedTable();
+		SqlColumn<Object, Integer> id = table.column("id", INTEGER_TYPE, object -> 0);
+		SqlInsertQuery<Object> query = new SqlInsertQuery<>(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()));
+		SqlRendered rendered = query.auditedBy(provider).override(id, id.of(SqlAlias.EXCLUDED)).toSql(DIALECT);
+		assertTrue(rendered.sql().contains("excluded"));
+		assertTrue(bindsUser(rendered, "tester"));
+	}
+	
+	@Test
+	void auditedByOnUpsertQueryBindsUser() throws SqlException {
+		SqlAuditUserProvider provider = () -> Optional.of("tester");
+		SqlTable<Object> table = auditedTable();
+		SqlColumn<Object, Integer> conflict = table.column("conflict", INTEGER_TYPE, object -> 0);
+		SqlInsertQuery<Object> query = SqlInsertQuery.upsert(table, DIALECT, SOURCE, TIMEOUT, resultSet -> null, List.of(new Object()), conflict);
+		SqlRendered rendered = query.auditedBy(provider).toSql(SqlDialects.POSTGRESQL);
+		assertTrue(rendered.sql().contains("ON CONFLICT"));
+		assertTrue(bindsUser(rendered, "tester"));
 	}
 }
