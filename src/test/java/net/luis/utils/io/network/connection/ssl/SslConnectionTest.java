@@ -20,13 +20,13 @@ package net.luis.utils.io.network.connection.ssl;
 
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.Connection;
-import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.junit.jupiter.api.*;
 
 import javax.net.ssl.*;
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.concurrent.*;
@@ -61,12 +61,9 @@ class SslConnectionTest {
 			byte[] data = "Hello".getBytes();
 			assertDoesNotThrow(() -> connection.send(data));
 			
-			InputStream clientIn = client.getInputStream();
-			byte[] header = clientIn.readNBytes(4);
-			int declaredLength = ((header[0] & 0xFF) << 24) | ((header[1] & 0xFF) << 16) | ((header[2] & 0xFF) << 8) | (header[3] & 0xFF);
-			assertEquals(data.length, declaredLength);
-			
-			byte[] received = clientIn.readNBytes(data.length);
+			byte[] received = new byte[data.length];
+			int bytesRead = client.getInputStream().read(received);
+			assertEquals(data.length, bytesRead);
 			assertArrayEquals(data, received);
 		});
 	}
@@ -93,7 +90,8 @@ class SslConnectionTest {
 	void receiveReturnsData() throws Exception {
 		this.withPair(8192, (client, connection) -> {
 			byte[] dataToSend = "Hello World".getBytes();
-			NetworkUtils.writeFrame(client.getOutputStream(), dataToSend);
+			client.getOutputStream().write(dataToSend);
+			client.getOutputStream().flush();
 			
 			byte[] received = connection.receive();
 			assertArrayEquals(dataToSend, received);
@@ -101,35 +99,15 @@ class SslConnectionTest {
 	}
 	
 	@Test
-	void receiveWithMaxBytesSmallerThanFrameThrows() throws Exception {
-		this.withPair(8192, (client, connection) -> {
-			NetworkUtils.writeFrame(client.getOutputStream(), "Hello World".getBytes());
-			
-			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> connection.receive(5));
-			assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
-			assertTrue(exception.getMessage().contains("11"));
-			assertTrue(exception.getMessage().contains("5"));
-		});
-	}
-	
-	@Test
-	void receiveWithMaxBytesLargerThanFrame() throws Exception {
-		this.withPair(8192, (client, connection) -> {
-			NetworkUtils.writeFrame(client.getOutputStream(), "Hello".getBytes());
-			
-			byte[] received = connection.receive(100);
-			assertArrayEquals("Hello".getBytes(), received);
-		});
-	}
-	
-	@Test
-	void receiveWithMaxBytesEqualToFrameLength() throws Exception {
+	void receiveWithCustomMaxBytes() throws Exception {
 		this.withPair(8192, (client, connection) -> {
 			byte[] dataToSend = "Hello World".getBytes();
-			NetworkUtils.writeFrame(client.getOutputStream(), dataToSend);
+			client.getOutputStream().write(dataToSend);
+			client.getOutputStream().flush();
 			
-			byte[] received = connection.receive(dataToSend.length);
-			assertArrayEquals(dataToSend, received);
+			byte[] received = connection.receive(5);
+			assertEquals(5, received.length);
+			assertArrayEquals("Hello".getBytes(), received);
 		});
 	}
 	
@@ -158,67 +136,6 @@ class SslConnectionTest {
 			client.close();
 			byte[] received = connection.receive();
 			assertEquals(0, received.length);
-		});
-	}
-	
-	@Test
-	void receiveThrowsOnPeerCloseMidHeader() throws Exception {
-		this.withPair(8192, (client, connection) -> {
-			client.getOutputStream().write(new byte[] { 0, 0 });
-			client.getOutputStream().flush();
-			client.close();
-			
-			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, connection::receive);
-			assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
-		});
-	}
-	
-	@Test
-	void receiveThrowsOnPeerCloseMidPayload() throws Exception {
-		this.withPair(8192, (client, connection) -> {
-			client.getOutputStream().write(new byte[] { 0, 0, 0, 10, 1, 2, 3, 4 });
-			client.getOutputStream().flush();
-			client.close();
-			
-			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, connection::receive);
-			assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
-		});
-	}
-	
-	@Test
-	void receiveEmptyMessageDoesNotCloseConnection() throws Exception {
-		this.withPair(8192, (client, connection) -> {
-			NetworkUtils.writeFrame(client.getOutputStream(), new byte[0]);
-			byte[] received = connection.receive();
-			assertNotNull(received);
-			assertEquals(0, received.length);
-			assertTrue(connection.isActive());
-			
-			byte[] second = "Still Alive".getBytes();
-			NetworkUtils.writeFrame(client.getOutputStream(), second);
-			byte[] receivedSecond = connection.receive();
-			assertArrayEquals(second, receivedSecond);
-		});
-	}
-	
-	@Test
-	void receiveReassemblesMessageDeliveredInFragmentedWrites() throws Exception {
-		this.withPair(8192, (client, connection) -> {
-			byte[] payload = "Reassembled Across Fragments".getBytes();
-			ByteArrayOutputStream frameBytes = new ByteArrayOutputStream();
-			NetworkUtils.writeFrame(frameBytes, payload);
-			byte[] frame = frameBytes.toByteArray();
-			
-			OutputStream clientOut = client.getOutputStream();
-			for (int i = 0; i < frame.length; i += 3) {
-				int end = Math.min(i + 3, frame.length);
-				clientOut.write(frame, i, end - i);
-				clientOut.flush();
-				Thread.sleep(10);
-			}
-			
-			byte[] received = connection.receive();
-			assertArrayEquals(payload, received);
 		});
 	}
 	
@@ -317,6 +234,10 @@ class SslConnectionTest {
 	
 	//region Helper methods
 	
+	/**
+	 * Opens a fully handshaked {@link SSLSocket} pair, wraps the server side in an {@link SslConnection},
+	 * runs the given test body, and closes everything afterwards.<br>
+	 */
 	private void withPair(int bufferSize, PairConsumer body) throws Exception {
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		try (SSLServerSocket serverSocket = (SSLServerSocket) serverContext.getServerSocketFactory().createServerSocket()) {
@@ -344,6 +265,9 @@ class SslConnectionTest {
 		}
 	}
 	
+	/**
+	 * Callback receiving a handshaked client socket and the server-side connection wrapping its peer.<br>
+	 */
 	@FunctionalInterface
 	private interface PairConsumer {
 		
