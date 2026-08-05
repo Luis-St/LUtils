@@ -36,6 +36,12 @@ import java.io.OutputStream;
 public interface Connection extends AutoCloseable {
 	
 	/**
+	 * Returns whether this connection is still active.<br>
+	 * @return True if the connection is active
+	 */
+	boolean isActive();
+	
+	/**
 	 * Returns the remote endpoint of this connection.<br>
 	 * @return The remote endpoint
 	 */
@@ -90,12 +96,6 @@ public interface Connection extends AutoCloseable {
 	 * @throws NetworkConnectionException If the stream cannot be obtained
 	 */
 	@NonNull OutputStream getOutputStream() throws NetworkConnectionException;
-	
-	/**
-	 * Returns whether this connection is still active.<br>
-	 * @return True if the connection is active
-	 */
-	boolean isActive();
 	
 	@Override
 	void close();

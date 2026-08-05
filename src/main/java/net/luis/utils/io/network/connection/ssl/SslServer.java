@@ -143,8 +143,7 @@ public final class SslServer implements NetworkServer {
 	@Override
 	public @NonNull IpEndpoint boundEndpoint() {
 		if (this.serverSocket != null && this.serverSocket.isBound()) {
-			InetSocketAddress address = (InetSocketAddress) this.serverSocket.getLocalSocketAddress();
-			return IpEndpoint.from(address);
+			return IpEndpoint.from((InetSocketAddress) this.serverSocket.getLocalSocketAddress());
 		}
 		return this.bindEndpoint;
 	}

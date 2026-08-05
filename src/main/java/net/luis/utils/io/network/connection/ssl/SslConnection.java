@@ -106,6 +106,15 @@ public final class SslConnection implements Connection {
 	}
 	
 	/**
+	 * Returns whether this connection is still active.<br>
+	 * @return True if the connection is active
+	 */
+	@Override
+	public boolean isActive() {
+		return !this.socket.isClosed() && this.socket.isConnected();
+	}
+	
+	/**
 	 * Returns the TLS session associated with this connection.<br>
 	 * The session provides details such as the negotiated protocol, cipher suite, and peer certificates.<br>
 	 *
@@ -115,31 +124,16 @@ public final class SslConnection implements Connection {
 		return this.socket.getSession();
 	}
 	
-	/**
-	 * Returns the remote endpoint of this connection.<br>
-	 * @return The remote endpoint
-	 */
 	@Override
 	public @NonNull IpEndpoint remoteEndpoint() {
 		return IpEndpoint.from((InetSocketAddress) this.socket.getRemoteSocketAddress());
 	}
 	
-	/**
-	 * Returns the local endpoint of this connection.<br>
-	 * @return The local endpoint
-	 */
 	@Override
 	public @NonNull IpEndpoint localEndpoint() {
 		return IpEndpoint.from((InetSocketAddress) this.socket.getLocalSocketAddress());
 	}
 	
-	/**
-	 * Sends data to the connected client.<br>
-	 *
-	 * @param data The data to send
-	 * @throws NullPointerException If data is null
-	 * @throws NetworkConnectionException If sending fails or data exceeds buffer size
-	 */
 	@Override
 	public void send(byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(data, "Data must not be null");
@@ -151,28 +145,11 @@ public final class SslConnection implements Connection {
 		NetworkUtils.writeAll(this.socket, data, null, this.remoteEndpoint(), null);
 	}
 	
-	/**
-	 * Receives data from the connected client (blocking).<br>
-	 * Uses the configured buffer size.<br>
-	 *
-	 * @return The received data, or an empty array if the connection was closed
-	 * @throws NetworkConnectionException If receiving fails
-	 * @throws NetworkTimeoutException If the receive times out
-	 */
 	@Override
 	public byte @NonNull [] receive() throws NetworkConnectionException {
 		return this.receive(this.bufferSize);
 	}
 	
-	/**
-	 * Receives data with a custom buffer size (blocking).<br>
-	 *
-	 * @param maxBytes The maximum number of bytes to receive
-	 * @return The received data, or an empty array if the connection was closed
-	 * @throws IllegalArgumentException If maxBytes is less than 1
-	 * @throws NetworkConnectionException If receiving fails
-	 * @throws NetworkTimeoutException If the receive times out
-	 */
 	@Override
 	public byte @NonNull [] receive(int maxBytes) throws NetworkConnectionException {
 		if (maxBytes < 1) {
@@ -187,12 +164,6 @@ public final class SslConnection implements Connection {
 		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.readTimeout, null, this.remoteEndpoint(), null);
 	}
 	
-	/**
-	 * Returns the input stream for advanced reading.<br>
-	 *
-	 * @return The input stream
-	 * @throws NetworkConnectionException If the stream cannot be obtained
-	 */
 	@Override
 	public @NonNull InputStream getInputStream() throws NetworkConnectionException {
 		if (!this.isActive()) {
@@ -206,12 +177,6 @@ public final class SslConnection implements Connection {
 		}
 	}
 	
-	/**
-	 * Returns the output stream for advanced writing.<br>
-	 *
-	 * @return The output stream
-	 * @throws NetworkConnectionException If the stream cannot be obtained
-	 */
 	@Override
 	public @NonNull OutputStream getOutputStream() throws NetworkConnectionException {
 		if (!this.isActive()) {
@@ -225,15 +190,6 @@ public final class SslConnection implements Connection {
 		}
 	}
 	
-	/**
-	 * Returns whether this connection is still active.<br>
-	 * @return True if the connection is active
-	 */
-	@Override
-	public boolean isActive() {
-		return !this.socket.isClosed() && this.socket.isConnected();
-	}
-	
 	@Override
 	public void close() {
 		if (!this.socket.isClosed()) {
@@ -242,5 +198,4 @@ public final class SslConnection implements Connection {
 			} catch (IOException _) {}
 		}
 	}
-	
 }
