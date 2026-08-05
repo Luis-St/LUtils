@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.network.connection.udp;
 
-import net.luis.utils.io.network.Endpoint;
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.*;
 import net.luis.utils.io.network.connection.NetworkClient;
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
@@ -176,21 +175,33 @@ public final class UdpClient implements NetworkClient<UdpDatagram> {
 	
 	/**
 	 * Sends a datagram to the specified endpoint.<br>
+	 * <p>
+	 *     A {@link HostEndpoint} destination is resolved before the datagram is sent,<br>
+	 *     because a datagram carries a literal address rather than a name.<br>
+	 *     Unlike TLS, UDP has no use for the hostname itself, so nothing is lost by resolving it here.
+	 * </p>
 	 *
 	 * @param destination The destination endpoint
 	 * @param data The data to send
 	 * @throws NullPointerException If destination or data is null
-	 * @throws NetworkConnectionException If sending fails or data exceeds buffer size
+	 * @throws NetworkConnectionException If the destination cannot be resolved, if sending fails, or if data exceeds buffer size
 	 */
-	public void send(@NonNull IpEndpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
+	public void send(@NonNull Endpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(destination, "Destination must not be null");
 		Objects.requireNonNull(data, "Data must not be null");
 		NetworkUtils.validateMessageSize(data, this.config.bufferSize(), destination);
 		
 		this.ensureSocketCreated();
 		
+		InetSocketAddress address = destination.toInetSocketAddress();
+		if (address.isUnresolved()) {
+			UnknownHostException cause = new UnknownHostException(address.getHostString());
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.HOST_UNREACHABLE, "Failed to resolve " + destination, cause);
+			throw new NetworkConnectionException("Failed to resolve " + destination, cause, NetworkErrorType.HOST_UNREACHABLE, destination);
+		}
+		
 		try {
-			DatagramPacket packet = new DatagramPacket(data, data.length, destination.toInetSocketAddress());
+			DatagramPacket packet = new DatagramPacket(data, data.length, address);
 			this.socket.send(packet);
 		} catch (IOException e) {
 			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to send datagram to " + destination, e);

@@ -29,11 +29,13 @@ import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -906,7 +908,342 @@ class UdpIntegrationTest {
 		}
 	}
 	
+	@Test
+	void clientSendToUnresolvableHostEndpointThrows() throws Exception {
+		HostEndpoint destination = new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999);
+		
+		try (UdpClient client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0))) {
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.send(destination, "data".getBytes()));
+			
+			assertEquals(NetworkErrorType.HOST_UNREACHABLE, exception.errorType());
+			assertSame(destination, exception.endpoint());
+			assertInstanceOf(UnknownHostException.class, exception.getCause());
+		}
+	}
+	
+	@Test
+	void serverSendToUnresolvableHostEndpointThrows() {
+		HostEndpoint destination = new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999);
+		
+		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0))) {
+			server.start();
+			
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> server.send(destination, "data".getBytes()));
+			
+			assertEquals(NetworkErrorType.HOST_UNREACHABLE, exception.errorType());
+			assertSame(destination, exception.endpoint());
+			assertInstanceOf(UnknownHostException.class, exception.getCause());
+		}
+	}
+	
+	@Test
+	void clientSendToUnresolvableHostNotifiesErrorHandler() throws Exception {
+		AtomicReference<NetworkErrorType> capturedType = new AtomicReference<>();
+		AtomicReference<Throwable> capturedCause = new AtomicReference<>();
+		AtomicBoolean invokedTwice = new AtomicBoolean(false);
+		
+		UdpClientConfig config = UdpClientConfig.builder()
+			.onError((connection, type, message, cause) -> {
+				invokedTwice.set(capturedType.get() != null);
+				capturedType.set(type);
+				capturedCause.set(cause);
+			})
+			.build();
+		
+		try (UdpClient client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config)) {
+			NetworkConnectionException exception = assertThrows(
+				NetworkConnectionException.class,
+				() -> client.send(new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999), "data".getBytes())
+			);
+			
+			assertEquals(NetworkErrorType.HOST_UNREACHABLE, capturedType.get());
+			assertSame(exception.getCause(), capturedCause.get());
+			assertFalse(invokedTwice.get());
+		}
+	}
+	
+	@Test
+	void serverSendToUnresolvableHostNotifiesErrorHandler() {
+		AtomicReference<NetworkErrorType> capturedType = new AtomicReference<>();
+		AtomicReference<Throwable> capturedCause = new AtomicReference<>();
+		
+		UdpServerConfig config = UdpServerConfig.builder()
+			.onError((connection, type, message, cause) -> {
+				capturedType.set(type);
+				capturedCause.set(cause);
+			})
+			.build();
+		
+		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config)) {
+			server.start();
+			
+			NetworkConnectionException exception = assertThrows(
+				NetworkConnectionException.class,
+				() -> server.send(new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999), "data".getBytes())
+			);
+			
+			assertEquals(NetworkErrorType.HOST_UNREACHABLE, capturedType.get());
+			assertSame(exception.getCause(), capturedCause.get());
+		}
+	}
+	
+	@Test
+	void clientSendResolveFailureCauseIdentifiesHost() throws Exception {
+		try (UdpClient client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0))) {
+			NetworkConnectionException exception = assertThrows(
+				NetworkConnectionException.class,
+				() -> client.send(new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999), "data".getBytes())
+			);
+			
+			assertEquals(UNRESOLVABLE_HOSTNAME, exception.getCause().getMessage());
+		}
+	}
+	
+	@Test
+	void serverSendResolveFailureCauseIdentifiesHost() {
+		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0))) {
+			server.start();
+			
+			NetworkConnectionException exception = assertThrows(
+				NetworkConnectionException.class,
+				() -> server.send(new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999), "data".getBytes())
+			);
+			
+			assertEquals(UNRESOLVABLE_HOSTNAME, exception.getCause().getMessage());
+		}
+	}
+	
+	@Test
+	void clientSendToResolvableHostEndpoint() throws Exception {
+		try (UdpServer server = new UdpServer(resolvedLocalhost(0), echoConfig())) {
+			server.start();
+			HostEndpoint destination = new HostEndpoint("localhost", server.boundEndpoint().port());
+			
+			try (UdpClient client = UdpClient.bindTo(resolvedLocalhost(0), receiveTimeoutConfig())) {
+				client.send(destination, "Hello".getBytes());
+				
+				assertArrayEquals("Hello".getBytes(), client.receive().data());
+			}
+		}
+	}
+	
+	@Test
+	void serverSendToResolvableHostEndpoint() throws Exception {
+		AtomicReference<Integer> clientPort = new AtomicReference<>();
+		
+		UdpServerConfig config = UdpServerConfig.builder()
+			.onMessage((server, datagram, data) -> {
+				try {
+					server.send(new HostEndpoint("localhost", clientPort.get()), data);
+				} catch (NetworkConnectionException e) {
+					fail("Reply failed: " + e.getMessage());
+				}
+			})
+			.build();
+		
+		try (UdpServer server = new UdpServer(resolvedLocalhost(0), config)) {
+			server.start();
+			
+			try (UdpClient client = UdpClient.bindTo(resolvedLocalhost(0), receiveTimeoutConfig())) {
+				clientPort.set(client.localEndpoint().orElseThrow().port());
+				client.send(server.boundEndpoint(), "Ping".getBytes());
+				
+				assertArrayEquals("Ping".getBytes(), client.receive().data());
+			}
+		}
+	}
+	
+	@Test
+	void clientSendToIpEndpointStillWorks() throws Exception {
+		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), echoConfig())) {
+			server.start();
+			
+			try (UdpClient client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), receiveTimeoutConfig())) {
+				client.send(server.boundEndpoint(), "Hello".getBytes());
+				
+				assertArrayEquals("Hello".getBytes(), client.receive().data());
+			}
+		}
+	}
+	
+	@Test
+	void serverSendToIpEndpointStillWorks() throws Exception {
+		AtomicReference<IpEndpoint> source = new AtomicReference<>();
+		
+		UdpServerConfig config = UdpServerConfig.builder()
+			.onMessage((server, datagram, data) -> {
+				source.set(datagram.endpoint());
+				try {
+					server.send(datagram.endpoint(), data);
+				} catch (NetworkConnectionException e) {
+					fail("Reply failed: " + e.getMessage());
+				}
+			})
+			.build();
+		
+		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config)) {
+			server.start();
+			
+			try (UdpClient client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), receiveTimeoutConfig())) {
+				client.send(server.boundEndpoint(), "Pong".getBytes());
+				
+				assertArrayEquals("Pong".getBytes(), client.receive().data());
+				assertEquals(client.localEndpoint().orElseThrow().port(), source.get().port());
+			}
+		}
+	}
+	
+	@Test
+	void clientSendOversizedToUnresolvableHostReportsSizeFirst() {
+		UdpClientConfig config = UdpClientConfig.builder().bufferSize(100).build();
+		
+		try (UdpClient client = new UdpClient(config)) {
+			NetworkConnectionException exception = assertThrows(
+				NetworkConnectionException.class,
+				() -> client.send(new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999), new byte[101])
+			);
+			
+			assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
+		}
+	}
+	
+	@Test
+	void serverSendToUnresolvableHostWhenNotRunningReportsStateFirst() {
+		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0))) {
+			NetworkConnectionException exception = assertThrows(
+				NetworkConnectionException.class,
+				() -> server.send(new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999), "data".getBytes())
+			);
+			
+			assertEquals(NetworkErrorType.SOCKET_CLOSED, exception.errorType());
+		}
+	}
+	
+	@Test
+	void clientSendWithNullDataToUnresolvableHostThrows() {
+		HostEndpoint destination = new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999);
+		
+		try (UdpClient client = new UdpClient()) {
+			assertThrows(NullPointerException.class, () -> client.send(destination, null));
+		}
+	}
+	
+	@Test
+	void clientSendCreatesSocketBeforeResolveFailure() {
+		try (UdpClient client = new UdpClient()) {
+			NetworkConnectionException exception = assertThrows(
+				NetworkConnectionException.class,
+				() -> client.send(new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999), "data".getBytes())
+			);
+			
+			assertEquals(NetworkErrorType.HOST_UNREACHABLE, exception.errorType());
+			assertTrue(client.isActive());
+		}
+	}
+	
+	@Test
+	void clientSendDatagramWithIpEndpointStillDelegates() throws Exception {
+		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), echoConfig())) {
+			server.start();
+			
+			try (UdpClient client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), receiveTimeoutConfig())) {
+				client.send(new UdpDatagram(server.boundEndpoint(), "Hello".getBytes()));
+				
+				assertArrayEquals("Hello".getBytes(), client.receive().data());
+			}
+		}
+	}
+	
+	@Test
+	void serverSendDatagramWithIpEndpointStillDelegates() throws Exception {
+		UdpServerConfig config = UdpServerConfig.builder()
+			.onMessage((server, datagram, data) -> {
+				try {
+					server.send(new UdpDatagram(datagram.endpoint(), data));
+				} catch (NetworkConnectionException e) {
+					fail("Reply failed: " + e.getMessage());
+				}
+			})
+			.build();
+		
+		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config)) {
+			server.start();
+			
+			try (UdpClient client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), receiveTimeoutConfig())) {
+				client.send(server.boundEndpoint(), "Echo".getBytes());
+				
+				assertArrayEquals("Echo".getBytes(), client.receive().data());
+			}
+		}
+	}
+	
+	@Test
+	void clientSendMixesHostAndIpDestinations() throws Exception {
+		try (UdpServer server = new UdpServer(resolvedLocalhost(0), echoConfig())) {
+			server.start();
+			int port = server.boundEndpoint().port();
+			HostEndpoint byName = new HostEndpoint("localhost", port);
+			IpEndpoint byAddress = server.boundEndpoint();
+			
+			try (UdpClient client = UdpClient.bindTo(resolvedLocalhost(0), receiveTimeoutConfig())) {
+				for (int i = 0; i < 2; i++) {
+					client.send(byName, "name".getBytes());
+					assertArrayEquals("name".getBytes(), client.receive().data());
+					
+					client.send(byAddress, "addr".getBytes());
+					assertArrayEquals("addr".getBytes(), client.receive().data());
+				}
+			}
+		}
+	}
+	
+	@Test
+	void clientSendRecoversAfterResolveFailure() throws Exception {
+		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), echoConfig())) {
+			server.start();
+			
+			try (UdpClient client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), receiveTimeoutConfig())) {
+				assertThrows(NetworkConnectionException.class, () -> client.send(new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999), "lost".getBytes()));
+				
+				client.send(server.boundEndpoint(), "Hello".getBytes());
+				assertArrayEquals("Hello".getBytes(), client.receive().data());
+			}
+		}
+	}
+	
+	@Test
+	void serverSendRecoversAfterResolveFailure() throws Exception {
+		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0))) {
+			server.start();
+			
+			assertThrows(NetworkConnectionException.class, () -> server.send(new HostEndpoint(UNRESOLVABLE_HOSTNAME, 9999), "lost".getBytes()));
+			assertTrue(server.isRunning());
+			
+			try (UdpClient client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), receiveTimeoutConfig())) {
+				server.send(client.localEndpoint().orElseThrow(), "Hello".getBytes());
+				
+				assertArrayEquals("Hello".getBytes(), client.receive().data());
+			}
+		}
+	}
+	
 	//region Helper methods
+	
+	private static final String UNRESOLVABLE_HOSTNAME = "this-host-does-not-exist.invalid";
+	
+	/**
+	 * Returns the address {@code localhost} actually resolves to, on the given port.<br>
+	 * Binding to this rather than to a hardcoded {@code 127.0.0.1} keeps the address family
+	 * consistent with what a {@code HostEndpoint("localhost", ...)} destination resolves to,
+	 * which matters on dual stack hosts where {@code localhost} may map to the IPv6 loopback.<br>
+	 */
+	private static IpEndpoint resolvedLocalhost(int port) {
+		return new HostEndpoint("localhost", port).resolve().orElseThrow();
+	}
+	
+	private static UdpClientConfig receiveTimeoutConfig() {
+		return UdpClientConfig.builder().receiveTimeout(Duration.ofSeconds(5)).build();
+	}
 	
 	private static UdpServerConfig echoConfig() {
 		return UdpServerConfig.builder()
