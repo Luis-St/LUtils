@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.network.connection.exception;
 
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.*;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
 import org.junit.jupiter.api.Test;
 
@@ -164,5 +164,74 @@ class NetworkConnectionExceptionTest {
 	void extendsIOException() {
 		NetworkConnectionException exception = new NetworkConnectionException();
 		assertInstanceOf(IOException.class, exception);
+	}
+	
+	@Test
+	void constructWithErrorTypeAndHostEndpoint() {
+		HostEndpoint endpoint = new HostEndpoint("example.com", 443);
+		
+		NetworkConnectionException exception = new NetworkConnectionException(NetworkErrorType.CONNECTION_REFUSED, endpoint);
+		assertEquals(NetworkErrorType.CONNECTION_REFUSED, exception.errorType());
+		assertSame(endpoint, exception.endpoint());
+	}
+	
+	@Test
+	void constructWithMessageAndHostEndpoint() {
+		HostEndpoint endpoint = new HostEndpoint("example.com", 443);
+		
+		NetworkConnectionException exception = new NetworkConnectionException("Failed", NetworkErrorType.HOST_UNREACHABLE, endpoint);
+		assertEquals("Failed", exception.getMessage());
+		assertEquals(NetworkErrorType.HOST_UNREACHABLE, exception.errorType());
+		assertSame(endpoint, exception.endpoint());
+	}
+	
+	@Test
+	void constructWithMessageCauseAndHostEndpoint() {
+		HostEndpoint endpoint = new HostEndpoint("example.com", 443);
+		RuntimeException cause = new RuntimeException("cause");
+		
+		NetworkConnectionException exception = new NetworkConnectionException("Failed", cause, NetworkErrorType.IO_ERROR, endpoint);
+		assertEquals("Failed", exception.getMessage());
+		assertSame(cause, exception.getCause());
+		assertEquals(NetworkErrorType.IO_ERROR, exception.errorType());
+		assertSame(endpoint, exception.endpoint());
+	}
+	
+	@Test
+	void endpointAccessorReturnsEndpointSupertype() {
+		Endpoint fromHost = new NetworkConnectionException(NetworkErrorType.IO_ERROR, new HostEndpoint("example.com", 443)).endpoint();
+		Endpoint fromIp = new NetworkConnectionException(NetworkErrorType.IO_ERROR, new IpEndpoint(Ipv4Address.LOOPBACK, 8080)).endpoint();
+		
+		assertNotNull(fromHost);
+		assertNotNull(fromIp);
+		assertEquals(443, fromHost.port());
+		assertEquals(8080, fromIp.port());
+	}
+	
+	@Test
+	void endpointRetainsConcreteTypeForPatternMatching() {
+		NetworkConnectionException hostException = new NetworkConnectionException(NetworkErrorType.IO_ERROR, new HostEndpoint("example.com", 443));
+		NetworkConnectionException ipException = new NetworkConnectionException(NetworkErrorType.IO_ERROR, new IpEndpoint(Ipv4Address.LOOPBACK, 8080));
+		
+		assertEquals("example.com", hostPartOf(hostException));
+		assertEquals("127.0.0.1", hostPartOf(ipException));
+	}
+	
+	@Test
+	void exceptionsWithDifferentEndpointVariantsAreDistinguishable() {
+		Endpoint host = new NetworkConnectionException(NetworkErrorType.IO_ERROR, new HostEndpoint("127.0.0.1", 8080)).endpoint();
+		Endpoint ip = new NetworkConnectionException(NetworkErrorType.IO_ERROR, new IpEndpoint(Ipv4Address.LOOPBACK, 8080)).endpoint();
+		
+		assertEquals("127.0.0.1:8080", String.valueOf(host));
+		assertEquals("127.0.0.1:8080", String.valueOf(ip));
+		assertNotEquals(host, ip);
+	}
+	
+	private static String hostPartOf(NetworkConnectionException exception) {
+		return switch (exception.endpoint()) {
+			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
+			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
+			case null -> "";
+		};
 	}
 }

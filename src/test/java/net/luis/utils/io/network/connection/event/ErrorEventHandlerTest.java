@@ -87,6 +87,11 @@ class ErrorEventHandlerTest {
 	private static final class StubConnection implements Connection {
 		
 		@Override
+		public boolean isActive() {
+			return true;
+		}
+		
+		@Override
 		public @NonNull IpEndpoint remoteEndpoint() {
 			return new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
 		}
@@ -117,11 +122,6 @@ class ErrorEventHandlerTest {
 		@Override
 		public @NonNull OutputStream getOutputStream() {
 			return OutputStream.nullOutputStream();
-		}
-		
-		@Override
-		public boolean isActive() {
-			return true;
 		}
 		
 		@Override

@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.*;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
 import net.luis.utils.io.network.connection.*;
 import net.luis.utils.io.network.connection.event.ErrorEventHandler;
@@ -28,12 +28,16 @@ import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.*;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -1025,4 +1029,444 @@ class TcpIntegrationTest {
 			}
 		}
 	}
+	
+	@Test
+	void constructWithNullConfig() {
+		assertThrows(NullPointerException.class, () -> new TcpClient(null));
+	}
+	
+	@Test
+	void clientConnectWithNullEndpointThrows() {
+		try (TcpClient client = new TcpClient()) {
+			assertThrows(NullPointerException.class, () -> client.connect(null));
+		}
+	}
+	
+	@Test
+	void clientConnectToWithNullEndpointThrows() {
+		assertThrows(NullPointerException.class, () -> TcpClient.connectTo(null));
+		assertThrows(NullPointerException.class, () -> TcpClient.connectTo(null, TcpClientConfig.DEFAULT));
+	}
+	
+	@Test
+	void clientConnectToWithNullConfigThrows() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 59999);
+		assertThrows(NullPointerException.class, () -> TcpClient.connectTo(endpoint, null));
+	}
+	
+	@Test
+	void clientSendWithNullDataThrows() throws Exception {
+		try (TcpClient unconnected = new TcpClient()) {
+			assertThrows(NullPointerException.class, () -> unconnected.send(null));
+		}
+		
+		withEchoServer(client -> assertThrows(NullPointerException.class, () -> client.send(null)));
+	}
+	
+	@Test
+	void clientReceiveWithZeroMaxBytesThrows() {
+		try (TcpClient client = new TcpClient()) {
+			assertThrows(IllegalArgumentException.class, () -> client.receive(0));
+		}
+	}
+	
+	@Test
+	void clientReceiveWithNegativeMaxBytesThrows() {
+		try (TcpClient client = new TcpClient()) {
+			assertThrows(IllegalArgumentException.class, () -> client.receive(-1));
+		}
+	}
+	
+	@Test
+	void clientGetInputStreamWithoutConnectThrows() {
+		try (TcpClient client = new TcpClient()) {
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, client::getInputStream);
+			assertEquals(NetworkErrorType.NOT_CONNECTED, exception.errorType());
+		}
+	}
+	
+	@Test
+	void clientGetOutputStreamWithoutConnectThrows() {
+		try (TcpClient client = new TcpClient()) {
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, client::getOutputStream);
+			assertEquals(NetworkErrorType.NOT_CONNECTED, exception.errorType());
+		}
+	}
+	
+	@Test
+	void clientRemoteEndpointEmptyBeforeConnect() {
+		try (TcpClient client = new TcpClient()) {
+			assertTrue(client.remoteEndpoint().isEmpty());
+		}
+	}
+	
+	@Test
+	void clientRemoteEndpointAfterConnect() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			server.start();
+			
+			try (TcpClient client = new TcpClient()) {
+				client.connect(server.boundEndpoint());
+				
+				assertTrue(client.remoteEndpoint().isPresent());
+				assertEquals(server.boundEndpoint().port(), client.remoteEndpoint().orElseThrow().port());
+				assertTrue(client.remoteEndpoint().orElseThrow().toInetSocketAddress().getAddress().isLoopbackAddress());
+			}
+		}
+	}
+	
+	@Test
+	void clientRemoteEndpointEmptyAfterClose() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			server.start();
+			
+			TcpClient client = new TcpClient();
+			client.connect(server.boundEndpoint());
+			assertTrue(client.remoteEndpoint().isPresent());
+			
+			client.close();
+			assertTrue(client.remoteEndpoint().isEmpty());
+		}
+	}
+	
+	@Test
+	void clientLocalEndpointEmptyBeforeConnect() {
+		try (TcpClient client = new TcpClient()) {
+			assertTrue(client.localEndpoint().isEmpty());
+		}
+	}
+	
+	@Test
+	void clientReceiveReusesBufferAcrossCalls() throws Exception {
+		withEchoServer(client -> {
+			client.send("first".getBytes());
+			assertArrayEquals("first".getBytes(), receiveExactly(client, 5, 1024));
+			
+			client.send("secnd".getBytes());
+			assertArrayEquals("secnd".getBytes(), receiveExactly(client, 5, 1024));
+		});
+	}
+	
+	@Test
+	void clientReceiveGrowsBufferForLargerMaxBytes() throws Exception {
+		withEchoServer(client -> {
+			client.send(new byte[8]);
+			assertEquals(8, receiveExactly(client, 8, 16).length);
+			
+			byte[] large = filled(500, (byte) 0x42);
+			client.send(large);
+			assertArrayEquals(large, receiveExactly(client, 500, 4096));
+		});
+	}
+	
+	@Test
+	void serverBoundEndpointBeforeStartReturnsBindEndpoint() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			assertEquals(endpoint, server.boundEndpoint());
+		}
+	}
+	
+	@Test
+	void serverBoundEndpointAfterStartReturnsActualPort() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			server.start();
+			
+			assertNotEquals(0, server.boundEndpoint().port());
+			assertTrue(server.isRunning());
+		}
+	}
+	
+	@Test
+	void clientConnectToHostEndpoint() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, echoConfig())) {
+			server.start();
+			HostEndpoint target = new HostEndpoint("localhost", server.boundEndpoint().port());
+			
+			try (TcpClient client = new TcpClient(readTimeoutConfig())) {
+				client.connect(target);
+				
+				assertTrue(client.isActive());
+				client.send("Hello".getBytes());
+				assertArrayEquals("Hello".getBytes(), receiveExactly(client, 5, 1024));
+			}
+		}
+	}
+	
+	@Test
+	void clientConnectToWithHostEndpoint() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			server.start();
+			HostEndpoint target = new HostEndpoint("localhost", server.boundEndpoint().port());
+			
+			try (TcpClient client = TcpClient.connectTo(target)) {
+				assertTrue(client.isActive());
+				assertEquals(server.boundEndpoint().port(), client.remoteEndpoint().orElseThrow().port());
+			}
+		}
+	}
+	
+	@Test
+	void clientRemoteEndpointIsAlwaysIpEndpointEvenWhenConnectedByName() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			server.start();
+			
+			try (TcpClient client = TcpClient.connectTo(new HostEndpoint("localhost", server.boundEndpoint().port()))) {
+				assertInstanceOf(IpEndpoint.class, client.remoteEndpoint().orElseThrow());
+				assertInstanceOf(IpEndpoint.class, client.localEndpoint().orElseThrow());
+			}
+		}
+	}
+	
+	@Test
+	void clientConnectToUnresolvableHostEndpointThrows() {
+		HostEndpoint endpoint = new HostEndpoint("this-host-does-not-exist.invalid", 8080);
+		
+		try (TcpClient client = new TcpClient()) {
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect(endpoint));
+			assertEquals(NetworkErrorType.CONNECTION_FAILED, exception.errorType());
+			assertSame(endpoint, exception.endpoint());
+		}
+	}
+	
+	@Test
+	void clientLocalAndRemoteEndpointsDiffer() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			server.start();
+			
+			try (TcpClient client = new TcpClient()) {
+				client.connect(server.boundEndpoint());
+				
+				assertTrue(client.localEndpoint().isPresent());
+				assertTrue(client.remoteEndpoint().isPresent());
+				assertNotEquals(client.localEndpoint().orElseThrow().port(), client.remoteEndpoint().orElseThrow().port());
+			}
+		}
+	}
+	
+	@Test
+	void clientGetInputStreamAfterConnect() throws Exception {
+		withEchoServer(client -> {
+			InputStream stream = client.getInputStream();
+			assertNotNull(stream);
+			
+			client.send("Hi".getBytes());
+			byte[] received = new byte[2];
+			assertEquals(2, stream.read(received));
+			assertArrayEquals("Hi".getBytes(), received);
+		});
+	}
+	
+	@Test
+	void clientGetOutputStreamAfterConnect() throws Exception {
+		withEchoServer(client -> {
+			OutputStream stream = client.getOutputStream();
+			assertNotNull(stream);
+			
+			stream.write("Hi".getBytes());
+			stream.flush();
+			assertArrayEquals("Hi".getBytes(), receiveExactly(client, 2, 1024));
+		});
+	}
+	
+	@Test
+	void connectToClosesClientWhenConnectFails() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 59999);
+		TcpClientConfig config = TcpClientConfig.builder().connectTimeout(Duration.ofSeconds(2)).build();
+		
+		NetworkConnectionException first = assertThrows(NetworkConnectionException.class, () -> TcpClient.connectTo(endpoint, config));
+		assertEquals(NetworkErrorType.CONNECTION_REFUSED, first.errorType());
+		
+		NetworkConnectionException second = assertThrows(NetworkConnectionException.class, () -> TcpClient.connectTo(endpoint, config));
+		assertEquals(NetworkErrorType.CONNECTION_REFUSED, second.errorType());
+	}
+	
+	@Test
+	void clientUsableThroughNetworkClientInterface() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, echoConfig())) {
+			server.start();
+			
+			try (NetworkClient<byte[]> client = TcpClient.connectTo(server.boundEndpoint(), readTimeoutConfig())) {
+				assertTrue(client.isActive());
+				assertTrue(client.localEndpoint().isPresent());
+				assertTrue(client.remoteEndpoint().isPresent());
+				
+				client.send("Hello".getBytes());
+				assertArrayEquals("Hello".getBytes(), client.receive(1024));
+			}
+		}
+	}
+	
+	@Test
+	void clientReceiveDoesNotLeakPreviousResponse() throws Exception {
+		withEchoServer(client -> {
+			byte[] large = filled(200, (byte) 0x41);
+			client.send(large);
+			assertArrayEquals(large, receiveExactly(client, 200, 1024));
+			
+			client.send("abc".getBytes());
+			byte[] second = receiveExactly(client, 3, 1024);
+			assertEquals(3, second.length);
+			assertArrayEquals("abc".getBytes(), second);
+		});
+	}
+	
+	@Test
+	void clientMultipleRoundTripsWithVaryingSizes() throws Exception {
+		withEchoServer(client -> {
+			int[] sizes = { 10, 500, 20, 2000, 5 };
+			for (int size : sizes) {
+				byte[] payload = filled(size, (byte) (size % 128));
+				client.send(payload);
+				assertArrayEquals(payload, receiveExactly(client, size, 4096));
+			}
+		});
+	}
+	
+	@Test
+	void connectEventReceivesSuppliedEndpointOnFallback() throws Exception {
+		AtomicReference<Endpoint> localRef = new AtomicReference<>();
+		AtomicReference<Endpoint> remoteRef = new AtomicReference<>();
+		CountDownLatch latch = new CountDownLatch(1);
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			server.start();
+			
+			TcpClientConfig config = TcpClientConfig.builder()
+				.onConnect((connection, local, remote, timestamp) -> {
+					localRef.set(local);
+					remoteRef.set(remote);
+					latch.countDown();
+				})
+				.build();
+			
+			try (TcpClient client = new TcpClient(config)) {
+				client.connect(server.boundEndpoint());
+				assertTrue(latch.await(5, TimeUnit.SECONDS));
+				
+				assertInstanceOf(IpEndpoint.class, localRef.get());
+				assertInstanceOf(IpEndpoint.class, remoteRef.get());
+			}
+		}
+	}
+	
+	@Test
+	void connectEventHandlerAcceptsEndpointSupertype() throws Exception {
+		AtomicReference<String> hostRef = new AtomicReference<>();
+		CountDownLatch latch = new CountDownLatch(1);
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			server.start();
+			
+			TcpClientConfig config = TcpClientConfig.builder()
+				.onConnect((Connection connection, Endpoint local, Endpoint remote, Instant timestamp) -> {
+					hostRef.set(hostPartOf(remote));
+					latch.countDown();
+				})
+				.build();
+			
+			try (TcpClient client = new TcpClient(config)) {
+				client.connect(server.boundEndpoint());
+				assertTrue(latch.await(5, TimeUnit.SECONDS));
+				assertEquals("127.0.0.1", hostRef.get());
+			}
+		}
+	}
+	
+	@Test
+	void disconnectEventHandlerAcceptsEndpointSupertype() throws Exception {
+		AtomicBoolean bothPresent = new AtomicBoolean(false);
+		CountDownLatch latch = new CountDownLatch(1);
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint)) {
+			server.start();
+			
+			TcpClientConfig config = TcpClientConfig.builder()
+				.onDisconnect((Connection connection, Endpoint local, Endpoint remote, Instant timestamp) -> {
+					bothPresent.set(local != null && remote != null);
+					latch.countDown();
+				})
+				.build();
+			
+			TcpClient client = new TcpClient(config);
+			client.connect(server.boundEndpoint());
+			client.close();
+			
+			assertTrue(latch.await(5, TimeUnit.SECONDS));
+			assertTrue(bothPresent.get());
+		}
+	}
+	
+	//region Helper methods
+	
+	private static String hostPartOf(Endpoint endpoint) {
+		return switch (endpoint) {
+			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
+			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
+		};
+	}
+	
+	private static byte[] filled(int length, byte value) {
+		byte[] data = new byte[length];
+		Arrays.fill(data, value);
+		return data;
+	}
+	
+	private static TcpServerConfig echoConfig() {
+		return TcpServerConfig.builder()
+			.onMessage((server, conn, data) -> {
+				try {
+					conn.send(data);
+				} catch (NetworkConnectionException e) {
+					fail("Echo failed: " + e.getMessage());
+				}
+			})
+			.build();
+	}
+	
+	private static TcpClientConfig readTimeoutConfig() {
+		return TcpClientConfig.builder().readTimeout(Duration.ofSeconds(5)).build();
+	}
+	
+	private static byte[] receiveExactly(TcpClient client, int expected, int maxBytes) throws Exception {
+		java.io.ByteArrayOutputStream accumulated = new java.io.ByteArrayOutputStream();
+		while (accumulated.size() < expected) {
+			byte[] chunk = client.receive(maxBytes);
+			if (chunk.length == 0) {
+				break;
+			}
+			accumulated.write(chunk);
+		}
+		return accumulated.toByteArray();
+	}
+	
+	private static void withEchoServer(ClientConsumer body) throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, echoConfig())) {
+			server.start();
+			
+			try (TcpClient client = new TcpClient(readTimeoutConfig())) {
+				client.connect(server.boundEndpoint());
+				body.accept(client);
+			}
+		}
+	}
+	
+	@FunctionalInterface
+	private interface ClientConsumer {
+		
+		void accept(TcpClient client) throws Exception;
+	}
+	//endregion
 }

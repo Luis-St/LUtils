@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.connection.udp;
 
+import net.luis.utils.io.network.HostEndpoint;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
 import net.luis.utils.io.network.connection.NetworkClient;
@@ -621,4 +622,302 @@ class UdpIntegrationTest {
 			}
 		}
 	}
+	
+	@Test
+	void clientSendWithNullDatagramThrows() {
+		try (UdpClient client = new UdpClient()) {
+			assertThrows(NullPointerException.class, () -> client.send((UdpDatagram) null));
+		}
+	}
+	
+	@Test
+	void constructWithNullConfig() {
+		assertThrows(NullPointerException.class, () -> new UdpClient(null));
+	}
+	
+	@Test
+	void clientBindWithNullEndpointThrows() {
+		try (UdpClient client = new UdpClient()) {
+			assertThrows(NullPointerException.class, () -> client.bind(null));
+		}
+	}
+	
+	@Test
+	void clientBindToWithNullEndpointThrows() {
+		assertThrows(NullPointerException.class, () -> UdpClient.bindTo(null));
+		assertThrows(NullPointerException.class, () -> UdpClient.bindTo(null, UdpClientConfig.DEFAULT));
+	}
+	
+	@Test
+	void clientBindToWithNullConfigThrows() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		assertThrows(NullPointerException.class, () -> UdpClient.bindTo(endpoint, null));
+	}
+	
+	@Test
+	void clientSendWithNullDestinationThrows() {
+		try (UdpClient client = new UdpClient()) {
+			assertThrows(NullPointerException.class, () -> client.send(null, "data".getBytes()));
+		}
+	}
+	
+	@Test
+	void clientSendWithNullDataThrows() {
+		IpEndpoint destination = new IpEndpoint(Ipv4Address.LOOPBACK, 9999);
+		try (UdpClient client = new UdpClient()) {
+			assertThrows(NullPointerException.class, () -> client.send(destination, null));
+		}
+	}
+	
+	@Test
+	void clientReceiveWithZeroMaxBytesThrows() {
+		try (UdpClient client = new UdpClient()) {
+			assertThrows(IllegalArgumentException.class, () -> client.receive(0));
+		}
+	}
+	
+	@Test
+	void clientReceiveWithNegativeMaxBytesThrows() {
+		try (UdpClient client = new UdpClient()) {
+			assertThrows(IllegalArgumentException.class, () -> client.receive(-1));
+		}
+	}
+	
+	@Test
+	void serverSendWithNullDestinationThrows() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (UdpServer server = new UdpServer(endpoint)) {
+			assertThrows(NullPointerException.class, () -> server.send(null, "data".getBytes()));
+		}
+	}
+	
+	@Test
+	void serverSendWithNullDataThrows() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		IpEndpoint destination = new IpEndpoint(Ipv4Address.LOOPBACK, 9999);
+		try (UdpServer server = new UdpServer(endpoint)) {
+			assertThrows(NullPointerException.class, () -> server.send(destination, null));
+		}
+	}
+	
+	@Test
+	void bindToClosesClientWhenBindFails() throws Exception {
+		UdpClientConfig config = UdpClientConfig.builder().reuseAddress(false).build();
+		
+		try (UdpClient occupying = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config)) {
+			IpEndpoint taken = occupying.localEndpoint().orElseThrow();
+			
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> UdpClient.bindTo(taken, config));
+			assertEquals(NetworkErrorType.ADDRESS_IN_USE, exception.errorType());
+			assertEquals(taken, exception.endpoint());
+		}
+	}
+	
+	@Test
+	void clientRemoteEndpointIsAlwaysEmpty() throws Exception {
+		UdpClient client = new UdpClient();
+		assertTrue(client.remoteEndpoint().isEmpty());
+		
+		client.bind(new IpEndpoint(Ipv4Address.LOOPBACK, 0));
+		assertTrue(client.remoteEndpoint().isEmpty());
+		
+		client.close();
+		assertTrue(client.remoteEndpoint().isEmpty());
+	}
+	
+	@Test
+	void serverBoundEndpointBeforeStartReturnsBindEndpoint() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (UdpServer server = new UdpServer(endpoint)) {
+			assertEquals(endpoint, server.boundEndpoint());
+		}
+	}
+	
+	@Test
+	void serverBoundEndpointAfterStartReturnsActualPort() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (UdpServer server = new UdpServer(endpoint)) {
+			server.start();
+			
+			assertNotEquals(0, server.boundEndpoint().port());
+			assertTrue(server.isRunning());
+		}
+	}
+	
+	@Test
+	void clientLocalEndpointEmptyBeforeBind() {
+		try (UdpClient client = new UdpClient()) {
+			assertTrue(client.localEndpoint().isEmpty());
+		}
+	}
+	
+	@Test
+	void clientLocalEndpointEmptyAfterClose() throws Exception {
+		UdpClient client = new UdpClient();
+		client.bind(new IpEndpoint(Ipv4Address.LOOPBACK, 0));
+		assertTrue(client.localEndpoint().isPresent());
+		
+		client.close();
+		assertTrue(client.localEndpoint().isEmpty());
+	}
+	
+	@Test
+	void clientBindToHostEndpoint() throws Exception {
+		try (UdpClient client = new UdpClient()) {
+			client.bind(new HostEndpoint("localhost", 0));
+			
+			assertTrue(client.isActive());
+			assertTrue(client.localEndpoint().isPresent());
+			assertNotEquals(0, client.localEndpoint().orElseThrow().port());
+		}
+	}
+	
+	@Test
+	void clientBindToWithHostEndpoint() throws Exception {
+		try (UdpClient client = UdpClient.bindTo(new HostEndpoint("localhost", 0))) {
+			assertTrue(client.isActive());
+			assertTrue(client.localEndpoint().isPresent());
+		}
+	}
+	
+	@Test
+	void clientLocalEndpointIsIpEndpointWhenBoundByName() throws Exception {
+		try (UdpClient client = UdpClient.bindTo(new HostEndpoint("localhost", 0))) {
+			assertInstanceOf(IpEndpoint.class, client.localEndpoint().orElseThrow());
+		}
+	}
+	
+	@Test
+	void clientSendDatagramDelegatesToEndpointAndData() throws Exception {
+		UdpClientConfig config = UdpClientConfig.builder().receiveTimeout(Duration.ofSeconds(5)).build();
+		
+		try (UdpClient receiver = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config);
+		     UdpClient sender = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config)) {
+			IpEndpoint target = receiver.localEndpoint().orElseThrow();
+			
+			sender.send(new UdpDatagram(target, "Hello".getBytes()));
+			
+			UdpDatagram received = receiver.receive();
+			assertArrayEquals("Hello".getBytes(), received.data());
+			assertEquals(sender.localEndpoint().orElseThrow().port(), received.endpoint().port());
+		}
+	}
+	
+	@Test
+	void clientUsableThroughNetworkClientInterface() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (UdpServer server = new UdpServer(endpoint, echoConfig())) {
+			server.start();
+			UdpClientConfig config = UdpClientConfig.builder().receiveTimeout(Duration.ofSeconds(5)).build();
+			
+			try (NetworkClient<UdpDatagram> client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config)) {
+				assertTrue(client.isActive());
+				assertTrue(client.localEndpoint().isPresent());
+				assertTrue(client.remoteEndpoint().isEmpty());
+				
+				client.send(new UdpDatagram(server.boundEndpoint(), "Hello".getBytes()));
+				assertArrayEquals("Hello".getBytes(), client.receive(1024).data());
+			}
+		}
+	}
+	
+	@Test
+	void datagramRoundTripThroughInterfaceSend() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (UdpServer server = new UdpServer(endpoint, echoConfig())) {
+			server.start();
+			UdpClientConfig config = UdpClientConfig.builder().receiveTimeout(Duration.ofSeconds(5)).build();
+			
+			try (NetworkClient<UdpDatagram> client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config)) {
+				client.send(new UdpDatagram(server.boundEndpoint(), "ping".getBytes()));
+				
+				UdpDatagram response = client.receive();
+				assertArrayEquals("ping".getBytes(), response.data());
+				assertEquals(server.boundEndpoint().port(), response.endpoint().port());
+				
+				client.send(new UdpDatagram(response.endpoint(), response.data()));
+				assertArrayEquals("ping".getBytes(), client.receive().data());
+			}
+		}
+	}
+	
+	@Test
+	void serverSendValidatesMessageSizeThroughNetworkUtils() throws Exception {
+		AtomicReference<NetworkConnectionException> exceptionRef = new AtomicReference<>();
+		AtomicReference<Boolean> atLimitSucceeded = new AtomicReference<>(false);
+		CountDownLatch messageLatch = new CountDownLatch(1);
+		
+		UdpServerConfig config = UdpServerConfig.builder()
+			.bufferSize(100)
+			.onMessage((server, datagram, data) -> {
+				try {
+					server.send(datagram.endpoint(), new byte[101]);
+				} catch (NetworkConnectionException e) {
+					exceptionRef.set(e);
+				}
+				try {
+					server.send(datagram.endpoint(), new byte[100]);
+					atLimitSucceeded.set(true);
+				} catch (NetworkConnectionException e) {
+					fail("At-limit send failed: " + e.getMessage());
+				}
+				messageLatch.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (UdpServer server = new UdpServer(endpoint, config)) {
+			server.start();
+			
+			try (UdpClient client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0))) {
+				IpEndpoint destination = server.boundEndpoint();
+				client.send(destination, "trigger".getBytes());
+				
+				assertTrue(messageLatch.await(5, TimeUnit.SECONDS));
+				assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exceptionRef.get().errorType());
+				assertEquals(client.localEndpoint().orElseThrow(), exceptionRef.get().endpoint());
+				assertTrue(atLimitSucceeded.get());
+			}
+		}
+	}
+	
+	@Test
+	void clientAndServerBoundEndpointsAgree() throws Exception {
+		CountDownLatch messageLatch = new CountDownLatch(1);
+		AtomicReference<IpEndpoint> sourceRef = new AtomicReference<>();
+		
+		UdpServerConfig config = UdpServerConfig.builder()
+			.onMessage((server, datagram, data) -> {
+				sourceRef.set(datagram.endpoint());
+				messageLatch.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (UdpServer server = new UdpServer(endpoint, config)) {
+			server.start();
+			
+			try (UdpClient client = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0))) {
+				client.send(server.boundEndpoint(), "hello".getBytes());
+				
+				assertTrue(messageLatch.await(5, TimeUnit.SECONDS));
+				assertEquals(client.localEndpoint().orElseThrow().port(), sourceRef.get().port());
+			}
+		}
+	}
+	
+	//region Helper methods
+	
+	private static UdpServerConfig echoConfig() {
+		return UdpServerConfig.builder()
+			.onMessage((server, datagram, data) -> {
+				try {
+					server.send(datagram.endpoint(), data);
+				} catch (NetworkConnectionException e) {
+					fail("Echo failed: " + e.getMessage());
+				}
+			})
+			.build();
+	}
+	//endregion
 }

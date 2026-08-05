@@ -25,10 +25,10 @@ import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.junit.jupiter.api.*;
 
 import javax.net.ssl.*;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -232,7 +232,171 @@ class SslConnectionTest {
 		this.withPair(8192, (client, connection) -> assertInstanceOf(Connection.class, connection));
 	}
 	
+	@Test
+	void constructWithSocketBufferSizeAndTimeout() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			assertTrue(connection.isActive());
+			assertEquals(client.getLocalPort(), connection.remoteEndpoint().port());
+			assertEquals(client.getPort(), connection.localEndpoint().port());
+		});
+	}
+	
+	@Test
+	void constructWithNullSocket() {
+		assertThrows(NullPointerException.class, () -> new SslConnection(null, 8192, Duration.ofSeconds(5)));
+	}
+	
+	@Test
+	void constructWithNullReadTimeout() throws Exception {
+		this.withPair(8192, (client, connection) -> assertThrows(NullPointerException.class, () -> new SslConnection(client, 8192, null)));
+	}
+	
+	@Test
+	void receiveReusesBufferAcrossCalls() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			writeAndFlush(client, "first".getBytes());
+			assertArrayEquals("first".getBytes(), receiveExactly(connection, 5, 1024));
+			
+			writeAndFlush(client, "second".getBytes());
+			assertArrayEquals("second".getBytes(), receiveExactly(connection, 6, 1024));
+		});
+	}
+	
+	@Test
+	void receiveGrowsBufferForLargerMaxBytes() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			writeAndFlush(client, new byte[8]);
+			assertEquals(8, receiveExactly(connection, 8, 16).length);
+			
+			byte[] large = filled(500, (byte) 0x42);
+			writeAndFlush(client, large);
+			assertArrayEquals(large, receiveExactly(connection, 500, 4096));
+		});
+	}
+	
+	@Test
+	void receiveWithSmallerMaxBytesAfterLargerReusesBuffer() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			writeAndFlush(client, new byte[10]);
+			assertEquals(10, receiveExactly(connection, 10, 4096).length);
+			
+			writeAndFlush(client, filled(50, (byte) 0x43));
+			byte[] limited = connection.receive(8);
+			assertTrue(limited.length <= 8);
+			assertTrue(limited.length > 0);
+			
+			byte[] rest = receiveExactly(connection, 50 - limited.length, 4096);
+			assertEquals(50, limited.length + rest.length);
+		});
+	}
+	
+	@Test
+	void receiveDoesNotLeakPreviousPayload() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			byte[] first = filled(200, (byte) 0x41);
+			writeAndFlush(client, first);
+			assertArrayEquals(first, receiveExactly(connection, 200, 1024));
+			
+			writeAndFlush(client, "abc".getBytes());
+			byte[] second = receiveExactly(connection, 3, 1024);
+			assertEquals(3, second.length);
+			assertArrayEquals("abc".getBytes(), second);
+		});
+	}
+	
+	@Test
+	void receiveAfterPeerCloseReturnsEmptyArray() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			client.close();
+			assertEquals(0, connection.receive(1024).length);
+		});
+	}
+	
+	@Test
+	void receiveMultipleTimesWithVaryingSizes() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			int[] sizes = { 10, 500, 20, 2000, 5 };
+			for (int size : sizes) {
+				byte[] payload = filled(size, (byte) (size % 128));
+				writeAndFlush(client, payload);
+				assertArrayEquals(payload, receiveExactly(connection, size, 4096));
+			}
+		});
+	}
+	
+	@Test
+	void receiveReturnedArraysAreIndependent() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			writeAndFlush(client, "first".getBytes());
+			byte[] first = receiveExactly(connection, 5, 1024);
+			
+			writeAndFlush(client, "second".getBytes());
+			byte[] second = receiveExactly(connection, 6, 1024);
+			
+			assertArrayEquals("first".getBytes(), first);
+			assertNotSame(first, second);
+		});
+	}
+	
+	@Test
+	void sendAndReceiveRoundTripAfterBufferGrowth() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			byte[] large = filled(2000, (byte) 0x44);
+			writeAndFlush(client, large);
+			assertArrayEquals(large, receiveExactly(connection, 2000, 4096));
+			
+			connection.send(new byte[] { 0x7F });
+			byte[] echoed = new byte[1];
+			assertEquals(1, client.getInputStream().read(echoed));
+			assertEquals(0x7F, echoed[0]);
+			
+			writeAndFlush(client, new byte[] { 0x01 });
+			assertArrayEquals(new byte[] { 0x01 }, receiveExactly(connection, 1, 4096));
+		});
+	}
+	
+	@Test
+	void receiveLargePayloadSpanningMultipleTlsRecords() throws Exception {
+		this.withPair(65536, (client, connection) -> {
+			byte[] payload = filled(65536, (byte) 0x45);
+			Thread writer = new Thread(() -> {
+				try {
+					writeAndFlush(client, payload);
+				} catch (Exception _) {}
+			});
+			writer.start();
+			
+			byte[] received = receiveExactly(connection, payload.length, 65536);
+			writer.join(TimeUnit.SECONDS.toMillis(15));
+			assertArrayEquals(payload, received);
+		});
+	}
+	
+	
 	//region Helper methods
+	
+	private static byte[] filled(int length, byte value) {
+		byte[] data = new byte[length];
+		Arrays.fill(data, value);
+		return data;
+	}
+	
+	private static void writeAndFlush(SSLSocket socket, byte[] data) throws Exception {
+		socket.getOutputStream().write(data);
+		socket.getOutputStream().flush();
+	}
+	
+	private static byte[] receiveExactly(SslConnection connection, int expected, int maxBytes) throws Exception {
+		ByteArrayOutputStream accumulated = new ByteArrayOutputStream();
+		while (accumulated.size() < expected) {
+			byte[] chunk = connection.receive(maxBytes);
+			if (chunk.length == 0) {
+				break;
+			}
+			accumulated.write(chunk);
+		}
+		return accumulated.toByteArray();
+	}
 	
 	/**
 	 * Opens a fully handshaked {@link SSLSocket} pair, wraps the server side in an {@link SslConnection},
