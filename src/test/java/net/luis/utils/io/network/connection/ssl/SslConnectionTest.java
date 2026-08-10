@@ -327,12 +327,12 @@ class SslConnectionTest {
 	
 	@Test
 	void constructWithNullSocket() {
-		assertThrows(NullPointerException.class, () -> new SslConnection(null, 8192, Duration.ofSeconds(5)));
+		assertThrows(NullPointerException.class, () -> new SslConnection(null, 8192, true, Duration.ofSeconds(5)));
 	}
 	
 	@Test
 	void constructWithNullReadTimeout() throws Exception {
-		this.withPair(8192, (client, connection) -> assertThrows(NullPointerException.class, () -> new SslConnection(client, 8192, null)));
+		this.withPair(8192, (client, connection) -> assertThrows(NullPointerException.class, () -> new SslConnection(client, 8192, true, null)));
 	}
 	
 	@Test
@@ -489,7 +489,7 @@ class SslConnectionTest {
 			try (SSLSocket client = (SSLSocket) clientContext.getSocketFactory().createSocket("127.0.0.1", port)) {
 				client.startHandshake();
 				SSLSocket serverSide = serverFuture.get(15, TimeUnit.SECONDS);
-				SslConnection connection = new SslConnection(serverSide, bufferSize, Duration.ofSeconds(5));
+				SslConnection connection = new SslConnection(serverSide, bufferSize, true, Duration.ofSeconds(5));
 				try {
 					body.accept(client, connection);
 				} finally {

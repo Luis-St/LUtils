@@ -24,6 +24,7 @@ import net.luis.utils.io.network.connection.NetworkClient;
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -63,6 +64,11 @@ public final class TcpClient implements NetworkClient<byte[]> {
 	 * The configuration for this client.<br>
 	 */
 	private final TcpClientConfig config;
+	/**
+	 * The reusable scratch buffer for unframed read operations.<br>
+	 * Allocated lazily and grown on demand, and unused while framing is enabled.<br>
+	 */
+	private byte @Nullable [] readBuffer;
 	/**
 	 * The underlying socket for communication.<br>
 	 */
@@ -195,7 +201,7 @@ public final class TcpClient implements NetworkClient<byte[]> {
 		NetworkUtils.validateMessageSize(data, this.config.bufferSize(), null);
 		this.ensureConnected();
 		
-		NetworkUtils.writeAll(this.socket, data, this.config.onError(), null, this::handleDisconnect);
+		NetworkUtils.writeAll(this.socket, data, this.config.framing(), this.config.onError(), null, this::handleDisconnect);
 	}
 	
 	@Override
@@ -210,7 +216,11 @@ public final class TcpClient implements NetworkClient<byte[]> {
 		}
 		this.ensureConnected();
 		
-		return NetworkUtils.readAvailable(this.socket, maxBytes, this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
+		if (!this.config.framing()) {
+			this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
+		}
+		
+		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.config.framing(), this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
 	}
 	
 	/**

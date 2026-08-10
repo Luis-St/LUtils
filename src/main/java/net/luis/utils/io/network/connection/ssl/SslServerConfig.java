@@ -60,6 +60,7 @@ import java.util.Objects;
  *
  * @param backlog Maximum number of pending connections in the queue
  * @param clientBufferSize Buffer size for each client connection in bytes
+ * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
  * @param clientReadTimeout Read timeout for client connections (Duration.ZERO for infinite)
  * @param tcpNoDelay Whether to disable Nagle's algorithm for client connections
  * @param keepAlive Whether to enable TCP keep-alive for client connections
@@ -76,6 +77,7 @@ import java.util.Objects;
 public record SslServerConfig(
 	int backlog,
 	int clientBufferSize,
+	boolean framing,
 	@NonNull Duration clientReadTimeout,
 	boolean tcpNoDelay,
 	boolean keepAlive,
@@ -96,6 +98,7 @@ public record SslServerConfig(
 	 *
 	 * @param backlog Maximum number of pending connections
 	 * @param clientBufferSize Buffer size for client connections
+	 * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
 	 * @param clientReadTimeout Read timeout for client connections
 	 * @param tcpNoDelay Whether to disable Nagle's algorithm
 	 * @param keepAlive Whether to enable TCP keep-alive

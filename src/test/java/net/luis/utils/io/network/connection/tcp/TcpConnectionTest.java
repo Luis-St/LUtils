@@ -49,7 +49,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				assertThrows(NullPointerException.class, () -> connection.send(null));
 			}
 		}
@@ -61,7 +61,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				byte[] data = "Hello".getBytes();
 				
 				assertDoesNotThrow(() -> connection.send(data));
@@ -83,7 +83,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				assertDoesNotThrow(() -> connection.send(new byte[0]));
 			}
 		}
@@ -95,7 +95,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 100, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 100, true, Duration.ofSeconds(5));
 				byte[] largeData = new byte[101];
 				
 				NetworkConnectionException exception = assertThrows(
@@ -113,7 +113,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 100, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 100, true, Duration.ofSeconds(5));
 				byte[] exactData = new byte[100];
 				for (int i = 0; i < 100; i++) {
 					exactData[i] = (byte) i;
@@ -138,7 +138,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				connection.close();
 				
 				NetworkConnectionException exception = assertThrows(
@@ -156,7 +156,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				byte[] dataToSend = "Hello World".getBytes();
 				
 				NetworkUtils.writeFrame(clientSocket.getOutputStream(), dataToSend);
@@ -173,7 +173,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				NetworkUtils.writeFrame(clientSocket.getOutputStream(), "Hello World".getBytes());
 				
 				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> connection.receive(5));
@@ -190,7 +190,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				NetworkUtils.writeFrame(clientSocket.getOutputStream(), "Hello".getBytes());
 				
 				byte[] received = connection.receive(100);
@@ -205,7 +205,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				byte[] dataToSend = "Hello World".getBytes();
 				NetworkUtils.writeFrame(clientSocket.getOutputStream(), dataToSend);
 				
@@ -221,7 +221,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				assertThrows(IllegalArgumentException.class, () -> connection.receive(0));
 			}
 		}
@@ -233,7 +233,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				assertThrows(IllegalArgumentException.class, () -> connection.receive(-1));
 			}
 		}
@@ -245,7 +245,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				connection.close();
 				
 				NetworkConnectionException exception = assertThrows(
@@ -263,7 +263,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			Socket clientSocket = new Socket("127.0.0.1", port);
 			try (Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				
 				clientSocket.close();
 				
@@ -279,7 +279,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			Socket clientSocket = new Socket("127.0.0.1", port);
 			try (Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				
 				clientSocket.getOutputStream().write(new byte[] { 0, 0 });
 				clientSocket.getOutputStream().flush();
@@ -297,7 +297,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			Socket clientSocket = new Socket("127.0.0.1", port);
 			try (Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				
 				clientSocket.getOutputStream().write(new byte[] { 0, 0, 0, 10, 1, 2, 3, 4 });
 				clientSocket.getOutputStream().flush();
@@ -315,7 +315,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				
 				NetworkUtils.writeFrame(clientSocket.getOutputStream(), new byte[0]);
 				byte[] received = connection.receive();
@@ -338,7 +338,7 @@ class TcpConnectionTest {
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
 				clientSocket.setTcpNoDelay(true);
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				
 				byte[] payload = "Reassembled Across Fragments".getBytes();
 				ByteArrayOutputStream frameBytes = new ByteArrayOutputStream();
@@ -365,8 +365,8 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection serverConnection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
-				TcpConnection clientConnection = new TcpConnection(clientSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection serverConnection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
+				TcpConnection clientConnection = new TcpConnection(clientSocket, 8192, true, Duration.ofSeconds(5));
 				
 				byte[] small = "Hello".getBytes();
 				serverConnection.send(small);
@@ -386,7 +386,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				
 				InputStream inputStream = connection.getInputStream();
 				assertNotNull(inputStream);
@@ -400,7 +400,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				connection.close();
 				
 				NetworkConnectionException exception = assertThrows(
@@ -418,7 +418,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				
 				OutputStream outputStream = connection.getOutputStream();
 				assertNotNull(outputStream);
@@ -432,7 +432,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				connection.close();
 				
 				NetworkConnectionException exception = assertThrows(
@@ -450,7 +450,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				assertTrue(connection.isActive());
 			}
 		}
@@ -462,7 +462,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				assertTrue(connection.isActive());
 				connection.close();
 				assertFalse(connection.isActive());
@@ -476,7 +476,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				
 				IpEndpoint localEndpoint = connection.localEndpoint();
 				assertNotNull(localEndpoint);
@@ -491,7 +491,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				
 				IpEndpoint remoteEndpoint = connection.remoteEndpoint();
 				assertNotNull(remoteEndpoint);
@@ -506,7 +506,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				assertTrue(connection.isActive());
 				
 				connection.close();
@@ -522,7 +522,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				
 				assertDoesNotThrow(() -> {
 					connection.close();
@@ -541,7 +541,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				assertInstanceOf(Connection.class, connection);
 			}
 		}
@@ -558,7 +558,7 @@ class TcpConnectionTest {
 	
 	@Test
 	void constructWithNullSocket() {
-		assertThrows(NullPointerException.class, () -> new TcpConnection(null, 8192, Duration.ofSeconds(5)));
+		assertThrows(NullPointerException.class, () -> new TcpConnection(null, 8192, true, Duration.ofSeconds(5)));
 	}
 	
 	@Test
@@ -567,7 +567,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				assertThrows(NullPointerException.class, () -> new TcpConnection(serverSideSocket, 8192, null));
+				assertThrows(NullPointerException.class, () -> new TcpConnection(serverSideSocket, 8192, true, null));
 			}
 		}
 	}
@@ -627,7 +627,7 @@ class TcpConnectionTest {
 		try (ServerSocket serverSocket = new ServerSocket(0)) {
 			int port = serverSocket.getLocalPort();
 			try (Socket serverSideSocket = openPeerAndClose(port, serverSocket)) {
-				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5));
 				assertEquals(0, connection.receive(1024).length);
 			}
 		}
@@ -703,7 +703,7 @@ class TcpConnectionTest {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
-				body.accept(clientSocket, new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5)));
+				body.accept(clientSocket, new TcpConnection(serverSideSocket, 8192, true, Duration.ofSeconds(5)));
 			}
 		}
 	}

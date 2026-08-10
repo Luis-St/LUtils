@@ -429,18 +429,18 @@ class NetworkUtilsTest {
 	
 	@Test
 	void writeAllWithNullSocket() {
-		assertThrows(NullPointerException.class, () -> NetworkUtils.writeAll(null, new byte[1], null, null, null));
+		assertThrows(NullPointerException.class, () -> NetworkUtils.writeAll(null, new byte[1], true, null, null, null));
 	}
 	
 	@Test
 	void writeAllWithNullData() throws Exception {
-		withPair((local, peer) -> assertThrows(NullPointerException.class, () -> NetworkUtils.writeAll(local, null, null, null, null)));
+		withPair((local, peer) -> assertThrows(NullPointerException.class, () -> NetworkUtils.writeAll(local, null, true, null, null, null)));
 	}
 	
 	@Test
 	void writeAllWritesAndFlushesFramedData() throws Exception {
 		withPair((local, peer) -> {
-			NetworkUtils.writeAll(local, "Hello".getBytes(), null, null, null);
+			NetworkUtils.writeAll(local, "Hello".getBytes(), true, null, null, null);
 			
 			byte[] framed = new byte[9];
 			assertEquals(9, peer.getInputStream().read(framed));
@@ -451,7 +451,7 @@ class NetworkUtilsTest {
 	
 	@Test
 	void writeAllWithEmptyData() throws Exception {
-		withPair((local, peer) -> assertDoesNotThrow(() -> NetworkUtils.writeAll(local, new byte[0], null, null, null)));
+		withPair((local, peer) -> assertDoesNotThrow(() -> NetworkUtils.writeAll(local, new byte[0], true, null, null, null)));
 	}
 	
 	@Test
@@ -460,7 +460,7 @@ class NetworkUtilsTest {
 			AtomicBoolean disconnected = new AtomicBoolean(false);
 			local.close();
 			
-			assertThrows(NetworkConnectionException.class, () -> NetworkUtils.writeAll(local, new byte[1], null, null, () -> disconnected.set(true)));
+			assertThrows(NetworkConnectionException.class, () -> NetworkUtils.writeAll(local, new byte[1], true, null, null, () -> disconnected.set(true)));
 			assertTrue(disconnected.get());
 		});
 	}
@@ -469,7 +469,7 @@ class NetworkUtilsTest {
 	void writeAllOnClosedSocketWithNullDisconnect() throws Exception {
 		withPair((local, peer) -> {
 			local.close();
-			assertThrows(NetworkConnectionException.class, () -> NetworkUtils.writeAll(local, new byte[1], null, null, null));
+			assertThrows(NetworkConnectionException.class, () -> NetworkUtils.writeAll(local, new byte[1], true, null, null, null));
 		});
 	}
 	
@@ -479,7 +479,7 @@ class NetworkUtilsTest {
 		
 		NetworkConnectionException exception = assertThrows(
 			NetworkConnectionException.class,
-			() -> NetworkUtils.writeAll(new FailingSocket(), new byte[1], handler, null, null)
+			() -> NetworkUtils.writeAll(new FailingSocket(), new byte[1], true, handler, null, null)
 		);
 		assertEquals(NetworkErrorType.IO_ERROR, exception.errorType());
 		assertEquals(1, handler.errorTypes.size());
@@ -495,7 +495,7 @@ class NetworkUtilsTest {
 			
 			NetworkConnectionException exception = assertThrows(
 				NetworkConnectionException.class,
-				() -> NetworkUtils.writeAll(local, new byte[1], handler, null, () -> disconnected.set(true))
+				() -> NetworkUtils.writeAll(local, new byte[1], true, handler, null, () -> disconnected.set(true))
 			);
 			assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
 			assertTrue(disconnected.get());
@@ -511,7 +511,7 @@ class NetworkUtilsTest {
 			
 			NetworkConnectionException exception = assertThrows(
 				NetworkConnectionException.class,
-				() -> NetworkUtils.writeAll(local, new byte[1], null, endpoint, null)
+				() -> NetworkUtils.writeAll(local, new byte[1], true, null, endpoint, null)
 			);
 			assertSame(endpoint, exception.endpoint());
 		});
@@ -522,12 +522,12 @@ class NetworkUtilsTest {
 	
 	@Test
 	void readAvailableWithNullSocket() {
-		assertThrows(NullPointerException.class, () -> NetworkUtils.readAvailable(null, 16, Duration.ofSeconds(1), null, null, null));
+		assertThrows(NullPointerException.class, () -> NetworkUtils.readAvailable(null, null, 16, true, Duration.ofSeconds(1), null, null, null));
 	}
 	
 	@Test
 	void readAvailableWithNullReadTimeout() throws Exception {
-		withPair((local, peer) -> assertThrows(NullPointerException.class, () -> NetworkUtils.readAvailable(local, 16, null, null, null, null)));
+		withPair((local, peer) -> assertThrows(NullPointerException.class, () -> NetworkUtils.readAvailable(local, null, 16, true, null, null, null, null)));
 	}
 	
 	@Test
@@ -535,7 +535,7 @@ class NetworkUtilsTest {
 		withPair((local, peer) -> {
 			NetworkUtils.writeFrame(peer.getOutputStream(), "Hello".getBytes());
 			
-			byte[] received = NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null);
+			byte[] received = NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, null);
 			assertEquals(5, received.length);
 			assertArrayEquals("Hello".getBytes(), received);
 		});
@@ -546,7 +546,7 @@ class NetworkUtilsTest {
 		withPair((local, peer) -> {
 			NetworkUtils.writeFrame(peer.getOutputStream(), new byte[] { 1, 2, 3 });
 			
-			byte[] received = NetworkUtils.readAvailable(local, 4096, Duration.ofSeconds(5), null, null, null);
+			byte[] received = NetworkUtils.readAvailable(local, null, 4096, true, Duration.ofSeconds(5), null, null, null);
 			assertEquals(3, received.length);
 			assertArrayEquals(new byte[] { 1, 2, 3 }, received);
 		});
@@ -558,7 +558,7 @@ class NetworkUtilsTest {
 			AtomicBoolean disconnected = new AtomicBoolean(false);
 			peer.close();
 			
-			byte[] received = NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, () -> disconnected.set(true));
+			byte[] received = NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, () -> disconnected.set(true));
 			assertEquals(0, received.length);
 			assertTrue(disconnected.get());
 		});
@@ -569,7 +569,7 @@ class NetworkUtilsTest {
 		withPair((local, peer) -> {
 			peer.close();
 			
-			byte[] received = assertDoesNotThrow(() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null));
+			byte[] received = assertDoesNotThrow(() -> NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, null));
 			assertEquals(0, received.length);
 		});
 	}
@@ -582,7 +582,7 @@ class NetworkUtilsTest {
 			
 			NetworkTimeoutException exception = assertThrows(
 				NetworkTimeoutException.class,
-				() -> NetworkUtils.readAvailable(local, 1024, readTimeout, null, null, null)
+				() -> NetworkUtils.readAvailable(local, null, 1024, true, readTimeout, null, null, null)
 			);
 			assertEquals(NetworkErrorType.READ_TIMEOUT, exception.errorType());
 			assertEquals(readTimeout, exception.timeout());
@@ -597,7 +597,7 @@ class NetworkUtilsTest {
 			
 			assertThrows(
 				NetworkTimeoutException.class,
-				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofMillis(100), null, null, () -> disconnected.set(true))
+				() -> NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofMillis(100), null, null, () -> disconnected.set(true))
 			);
 			assertFalse(disconnected.get());
 		});
@@ -611,7 +611,7 @@ class NetworkUtilsTest {
 			
 			assertThrows(
 				NetworkConnectionException.class,
-				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, () -> disconnected.set(true))
+				() -> NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, () -> disconnected.set(true))
 			);
 			assertTrue(disconnected.get());
 		});
@@ -623,7 +623,7 @@ class NetworkUtilsTest {
 			local.close();
 			assertThrows(
 				NetworkConnectionException.class,
-				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null)
+				() -> NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, null)
 			);
 		});
 	}
@@ -637,7 +637,7 @@ class NetworkUtilsTest {
 			
 			NetworkConnectionException exception = assertThrows(
 				NetworkConnectionException.class,
-				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), handler, null, () -> disconnected.set(true))
+				() -> NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), handler, null, () -> disconnected.set(true))
 			);
 			assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
 			assertTrue(disconnected.get());
@@ -651,7 +651,7 @@ class NetworkUtilsTest {
 		
 		NetworkConnectionException exception = assertThrows(
 			NetworkConnectionException.class,
-			() -> NetworkUtils.readAvailable(new FailingSocket(), 16, Duration.ofSeconds(1), handler, null, null)
+			() -> NetworkUtils.readAvailable(new FailingSocket(), null, 16, true, Duration.ofSeconds(1), handler, null, null)
 		);
 		assertEquals(NetworkErrorType.IO_ERROR, exception.errorType());
 		assertEquals(1, handler.errorTypes.size());
@@ -666,7 +666,7 @@ class NetworkUtilsTest {
 			
 			NetworkConnectionException exception = assertThrows(
 				NetworkConnectionException.class,
-				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, endpoint, null)
+				() -> NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, endpoint, null)
 			);
 			assertSame(endpoint, exception.endpoint());
 		});
@@ -681,8 +681,8 @@ class NetworkUtilsTest {
 			NetworkUtils.writeFrame(peer.getOutputStream(), first);
 			NetworkUtils.writeFrame(peer.getOutputStream(), "abcde".getBytes());
 			
-			assertArrayEquals(first, NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null));
-			assertArrayEquals("abcde".getBytes(), NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null));
+			assertArrayEquals(first, NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, null));
+			assertArrayEquals("abcde".getBytes(), NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, null));
 		});
 	}
 	
@@ -693,7 +693,7 @@ class NetworkUtilsTest {
 			
 			NetworkConnectionException exception = assertThrows(
 				NetworkConnectionException.class,
-				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null)
+				() -> NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, null)
 			);
 			assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
 		});
@@ -703,13 +703,67 @@ class NetworkUtilsTest {
 	void writeAllAndReadAvailableRoundTrip() throws Exception {
 		withPair((local, peer) -> {
 			byte[] small = "small".getBytes();
-			NetworkUtils.writeAll(local, small, null, null, null);
+			NetworkUtils.writeAll(local, small, true, null, null, null);
 			assertArrayEquals(small, NetworkUtils.readFrame(peer.getInputStream(), 4096));
 			
 			byte[] large = new byte[2048];
 			Arrays.fill(large, (byte) 0x42);
-			NetworkUtils.writeAll(peer, large, null, null, null);
-			assertArrayEquals(large, NetworkUtils.readAvailable(local, 4096, Duration.ofSeconds(5), null, null, null));
+			NetworkUtils.writeAll(peer, large, true, null, null, null);
+			assertArrayEquals(large, NetworkUtils.readAvailable(local, null, 4096, true, Duration.ofSeconds(5), null, null, null));
+		});
+	}
+	//endregion
+	
+	@Test
+	void readAvailableWithoutFramingRequiresBuffer() throws Exception {
+		withPair((local, peer) -> assertThrows(
+			NullPointerException.class,
+			() -> NetworkUtils.readAvailable(local, null, 1024, false, Duration.ofSeconds(5), null, null, null)
+		));
+	}
+	
+	@Test
+	void readAvailableWithoutFramingReturnsRawBytes() throws Exception {
+		withPair((local, peer) -> {
+			peer.getOutputStream().write("Hello".getBytes());
+			peer.getOutputStream().flush();
+			
+			byte[] received = NetworkUtils.readAvailable(local, new byte[1024], 1024, false, Duration.ofSeconds(5), null, null, null);
+			assertArrayEquals("Hello".getBytes(), received);
+		});
+	}
+	
+	@Test
+	void writeAllWithoutFramingWritesNoHeader() throws Exception {
+		withPair((local, peer) -> {
+			NetworkUtils.writeAll(local, "Hello".getBytes(), false, null, null, null);
+			
+			byte[] received = new byte[5];
+			assertEquals(5, peer.getInputStream().read(received));
+			assertArrayEquals("Hello".getBytes(), received);
+		});
+	}
+	
+	@Test
+	void unframedRoundTripCoalescesAdjacentWrites() throws Exception {
+		withPair((local, peer) -> {
+			NetworkUtils.writeAll(peer, "AAA".getBytes(), false, null, null, null);
+			NetworkUtils.writeAll(peer, "BBB".getBytes(), false, null, null, null);
+			
+			// without framing the two writes may arrive as one read, which is exactly what framing prevents
+			byte[] received = NetworkUtils.readAvailable(local, new byte[1024], 1024, false, Duration.ofSeconds(5), null, null, null);
+			assertTrue(received.length == 3 || received.length == 6);
+		});
+	}
+	
+	@Test
+	void framedRoundTripKeepsAdjacentWritesSeparate() throws Exception {
+		withPair((local, peer) -> {
+			NetworkUtils.writeAll(peer, "AAA".getBytes(), true, null, null, null);
+			NetworkUtils.writeAll(peer, "BBB".getBytes(), true, null, null, null);
+			
+			assertArrayEquals("AAA".getBytes(), NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, null));
+			assertArrayEquals("BBB".getBytes(), NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, null));
 		});
 	}
 	//endregion

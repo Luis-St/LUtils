@@ -57,6 +57,29 @@ public final class NetworkUtils {
 	private NetworkUtils() {}
 	
 	/**
+	 * Returns a scratch buffer of at least the given size for an unframed read operation.<br>
+	 * The given buffer is reused when it is large enough, otherwise a larger one is allocated.<br>
+	 * <p>
+	 *     The returned buffer may be larger than requested, so reads must be bounded to the requested length.<br>
+	 *     Callers are expected to store the returned buffer and pass it back on the next call.
+	 * </p>
+	 * <p>
+	 *     Framed reads allocate an exact sized payload per message and do not need a scratch buffer,
+	 *     so this is only used when framing is disabled.
+	 * </p>
+	 *
+	 * @param current The buffer from the previous call, or null if none was allocated yet
+	 * @param maxBytes The minimum required buffer size
+	 * @return The buffer to read into, which is the given buffer if it was large enough
+	 */
+	public static byte @NonNull [] resizeBuffer(byte @Nullable [] current, int maxBytes) {
+		if (current == null || current.length < maxBytes) {
+			return new byte[maxBytes];
+		}
+		return current;
+	}
+
+	/**
 	 * Validates that the given data does not exceed the configured buffer size.<br>
 	 *
 	 * @param data The data to validate
@@ -73,26 +96,35 @@ public final class NetworkUtils {
 	}
 	
 	/**
-	 * Writes the given data to the socket as a single length-prefixed frame and flushes it.<br>
+	 * Writes the given data to the socket and flushes it.<br>
 	 * This method contains the shared write path of the connection oriented clients and connections.<br>
 	 * <p>
-	 *     The data is framed by {@link #writeFrame(OutputStream, byte[])}, so that the peer receives exactly these bytes as one message.
+	 *     When framing is enabled, the data is written as a single length-prefixed frame by {@link #writeFrame(OutputStream, byte[])},
+	 *     so that the peer receives exactly these bytes as one message. When it is disabled, the bytes are written directly to the
+	 *     stream and message boundaries are not preserved, which requires the peer to delimit messages itself.
 	 * </p>
 	 *
 	 * @param socket The socket to write to
 	 * @param data The data to write
+	 * @param framing Whether to write the data as a length-prefixed frame
 	 * @param onError The handler to notify on an I/O error, or null if none is configured
 	 * @param endpoint The endpoint to attach to thrown exceptions, or null if not available
 	 * @param onDisconnect The action to run when the connection was reset, or null if the caller tracks no connection state
 	 * @throws NullPointerException If socket or data is null
 	 * @throws NetworkConnectionException If writing fails
 	 */
-	public static void writeAll(@NonNull Socket socket, byte @NonNull [] data, @Nullable ErrorEventHandler onError, @Nullable Endpoint endpoint, @Nullable Runnable onDisconnect) throws NetworkConnectionException {
+	public static void writeAll(@NonNull Socket socket, byte @NonNull [] data, boolean framing, @Nullable ErrorEventHandler onError, @Nullable Endpoint endpoint, @Nullable Runnable onDisconnect) throws NetworkConnectionException {
 		Objects.requireNonNull(socket, "Socket must not be null");
 		Objects.requireNonNull(data, "Data must not be null");
 		
 		try {
-			writeFrame(socket.getOutputStream(), data);
+			OutputStream out = socket.getOutputStream();
+			if (framing) {
+				writeFrame(out, data);
+			} else {
+				out.write(data);
+				out.flush();
+			}
 		} catch (SocketException e) {
 			if (onDisconnect != null) {
 				onDisconnect.run();
@@ -105,27 +137,35 @@ public final class NetworkUtils {
 	}
 	
 	/**
-	 * Reads a single complete message from the socket (blocking).<br>
+	 * Reads a single message from the socket (blocking).<br>
 	 * This method contains the shared read path of the connection oriented clients and connections.<br>
 	 * <p>
-	 *     The message is read as one length-prefixed frame by {@link #readFrame(InputStream, int)}, so that exactly the bytes
-	 *     passed to the peers {@link #writeAll} call are returned, regardless of how the stream fragments or coalesces them.
+	 *     When framing is enabled, one complete length-prefixed frame is read by {@link #readFrame(InputStream, int)}, so that exactly
+	 *     the bytes passed to the peers {@link #writeAll} call are returned, regardless of how the stream fragments or coalesces them.
+	 * </p>
+	 * <p>
+	 *     When it is disabled, whatever is currently available is returned instead, up to the given limit. A single read may then hold
+	 *     several messages or only part of one, so the caller has to delimit messages itself.
 	 * </p>
 	 *
 	 * @param socket The socket to read from
+	 * @param buffer The scratch buffer used for unframed reads, which must be at least maxBytes long, or null when framing is enabled
 	 * @param maxBytes The maximum payload length that is accepted
+	 * @param framing Whether to read a single length-prefixed frame
 	 * @param readTimeout The read timeout to report on a timeout
 	 * @param onError The handler to notify on an I/O error, or null if none is configured
 	 * @param endpoint The endpoint to attach to thrown exceptions, or null if not available
 	 * @param onDisconnect The action to run when the connection was closed or reset, or null if the caller tracks no connection state
-	 * @return The received message, or an empty array if the connection was closed cleanly between frames
-	 * @throws NullPointerException If socket or read timeout is null
+	 * @return The received message, or an empty array if the connection was closed cleanly between messages
+	 * @throws NullPointerException If socket or read timeout is null, or if framing is disabled and buffer is null
 	 * @throws NetworkConnectionException If receiving fails, or the declared frame length exceeds maxBytes
 	 * @throws NetworkTimeoutException If the read times out
 	 */
 	public static byte @NonNull [] readAvailable(
 		@NonNull Socket socket,
+		byte @Nullable [] buffer,
 		int maxBytes,
+		boolean framing,
 		@NonNull Duration readTimeout,
 		@Nullable ErrorEventHandler onError,
 		@Nullable Endpoint endpoint,
@@ -133,10 +173,28 @@ public final class NetworkUtils {
 	) throws NetworkConnectionException {
 		Objects.requireNonNull(socket, "Socket must not be null");
 		Objects.requireNonNull(readTimeout, "Read timeout must not be null");
-		
+		if (!framing) {
+			Objects.requireNonNull(buffer, "Buffer must not be null when framing is disabled");
+		}
+
 		try {
-			byte[] data = readFrame(socket.getInputStream(), maxBytes);
-			
+			InputStream in = socket.getInputStream();
+
+			if (!framing) {
+				int bytesRead = in.read(buffer, 0, maxBytes);
+
+				if (bytesRead == -1) {
+					if (onDisconnect != null) {
+						onDisconnect.run();
+					}
+					return ArrayUtils.EMPTY_BYTE_ARRAY;
+				}
+
+				return Arrays.copyOf(buffer, bytesRead);
+			}
+
+			byte[] data = readFrame(in, maxBytes);
+
 			if (data == null) {
 				if (onDisconnect != null) {
 					onDisconnect.run();

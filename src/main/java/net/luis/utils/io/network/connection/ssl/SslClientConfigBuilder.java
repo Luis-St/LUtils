@@ -69,6 +69,11 @@ public final class SslClientConfigBuilder {
 	 */
 	private int bufferSize = 8192;
 	/**
+	 * Whether messages are framed with a length prefix on the wire.<br>
+	 * Enabled by default, so that every send is received as exactly one message.<br>
+	 */
+	private boolean framing = true;
+	/**
 	 * Whether to disable Nagle's algorithm (TCP_NODELAY).<br>
 	 */
 	private boolean tcpNoDelay = true;
@@ -148,6 +153,26 @@ public final class SslClientConfigBuilder {
 		return this;
 	}
 	
+
+	/**
+	 * Sets whether messages are framed with a length prefix on the wire.<br>
+	 * <p>
+	 *     With framing enabled, each send is written as one length-prefixed frame and each receive returns exactly that message,
+	 *     regardless of how TCP fragments or coalesces the stream. This is the default and is required for message oriented protocols.
+	 * </p>
+	 * <p>
+	 *     Disabling it restores the raw byte stream, where a read returns whatever is currently available. This is only useful when
+	 *     talking to a peer that does not understand the frame header, or when the payload carries its own delimiters. Both peers
+	 *     have to agree, since a framed peer and an unframed peer cannot interoperate.
+	 * </p>
+	 *
+	 * @param framing Whether to frame messages with a length prefix
+	 * @return This builder
+	 */
+	public @NonNull SslClientConfigBuilder framing(boolean framing) {
+		this.framing = framing;
+		return this;
+	}
 	/**
 	 * Sets the size of the read/write buffers in bytes.<br>
 	 *
@@ -270,6 +295,6 @@ public final class SslClientConfigBuilder {
 	 * @return A new configuration instance
 	 */
 	public @NonNull SslClientConfig build() {
-		return new SslClientConfig(this.connectTimeout, this.readTimeout, this.writeTimeout, this.bufferSize, this.tcpNoDelay, this.keepAlive, this.sslContext, this.enabledProtocols, this.enabledCipherSuites, this.verifyHostname, this.onConnect, this.onDisconnect, this.onError);
+		return new SslClientConfig(this.connectTimeout, this.readTimeout, this.writeTimeout, this.bufferSize, this.framing, this.tcpNoDelay, this.keepAlive, this.sslContext, this.enabledProtocols, this.enabledCipherSuites, this.verifyHostname, this.onConnect, this.onDisconnect, this.onError);
 	}
 }

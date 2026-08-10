@@ -261,7 +261,7 @@ public final class SslServer implements NetworkServer {
 					clientSocket.setSoTimeout((int) this.config.clientReadTimeout().toMillis());
 				}
 				
-				SslConnection connection = new SslConnection(clientSocket, this.config.clientBufferSize(), this.config.clientReadTimeout());
+				SslConnection connection = new SslConnection(clientSocket, this.config.clientBufferSize(), this.config.framing(), this.config.clientReadTimeout());
 				this.connections.add(connection);
 				
 				if (this.isRunning()) {

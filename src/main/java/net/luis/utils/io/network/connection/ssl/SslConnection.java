@@ -23,6 +23,7 @@ import net.luis.utils.io.network.connection.Connection;
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import javax.net.ssl.*;
 import java.io.*;
@@ -67,18 +68,29 @@ public final class SslConnection implements Connection {
 	 * The read timeout for blocking operations.<br>
 	 */
 	private final Duration readTimeout;
+	/**
+	 * Whether messages are framed with a length prefix on the wire.<br>
+	 */
+	private final boolean framing;
+	/**
+	 * The reusable scratch buffer for unframed read operations.<br>
+	 * Allocated lazily and grown on demand, and unused while framing is enabled.<br>
+	 */
+	private byte @Nullable [] readBuffer;
 	
 	/**
 	 * Constructs a new SSL connection wrapping the given socket.<br>
 	 *
 	 * @param socket The client SSL socket
 	 * @param bufferSize The buffer size for read operations
+	 * @param framing Whether messages are framed with a length prefix on the wire
 	 * @param readTimeout The read timeout
 	 * @throws NullPointerException If socket or read timeout is null
 	 */
-	SslConnection(@NonNull SSLSocket socket, int bufferSize, @NonNull Duration readTimeout) {
+	SslConnection(@NonNull SSLSocket socket, int bufferSize, boolean framing, @NonNull Duration readTimeout) {
 		this.socket = Objects.requireNonNull(socket, "Socket must not be null");
 		this.bufferSize = bufferSize;
+		this.framing = framing;
 		this.readTimeout = Objects.requireNonNull(readTimeout, "Read timeout must not be null");
 	}
 	
@@ -136,7 +148,7 @@ public final class SslConnection implements Connection {
 			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
 		}
 		
-		NetworkUtils.writeAll(this.socket, data, null, this.remoteEndpoint(), null);
+		NetworkUtils.writeAll(this.socket, data, this.framing, null, this.remoteEndpoint(), null);
 	}
 	
 	@Override
@@ -154,7 +166,11 @@ public final class SslConnection implements Connection {
 			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
 		}
 		
-		return NetworkUtils.readAvailable(this.socket, maxBytes, this.readTimeout, null, this.remoteEndpoint(), null);
+		if (!this.framing) {
+			this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
+		}
+		
+		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.framing, this.readTimeout, null, this.remoteEndpoint(), null);
 	}
 	
 	@Override

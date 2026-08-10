@@ -262,7 +262,7 @@ public final class TcpServer implements NetworkServer {
 					clientSocket.setSoTimeout((int) this.config.clientReadTimeout().toMillis());
 				}
 				
-				TcpConnection connection = new TcpConnection(clientSocket, this.config.clientBufferSize(), this.config.clientReadTimeout());
+				TcpConnection connection = new TcpConnection(clientSocket, this.config.clientBufferSize(), this.config.framing(), this.config.clientReadTimeout());
 				this.connections.add(connection);
 				
 				if (this.config.onClientConnect() != null) {

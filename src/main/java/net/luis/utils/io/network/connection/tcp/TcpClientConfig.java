@@ -53,6 +53,7 @@ import java.util.Objects;
  * @param readTimeout Maximum time to wait for read operations (Duration.ZERO for infinite)
  * @param writeTimeout Maximum time to wait for write operations (Duration.ZERO for infinite)
  * @param bufferSize Size of the read/write buffers in bytes
+ * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
  * @param tcpNoDelay Whether to disable Nagle's algorithm (TCP_NODELAY)
  * @param keepAlive Whether to enable TCP keep-alive (SO_KEEPALIVE)
  * @param onConnect Handler called when connection is established
@@ -64,6 +65,7 @@ public record TcpClientConfig(
 	@NonNull Duration readTimeout,
 	@NonNull Duration writeTimeout,
 	int bufferSize,
+	boolean framing,
 	boolean tcpNoDelay,
 	boolean keepAlive,
 	@Nullable ConnectEventHandler onConnect,
@@ -78,12 +80,13 @@ public record TcpClientConfig(
 	 *     <li>{@link #readTimeout} = {@code Duration.ZERO} (infinite)</li>
 	 *     <li>{@link #writeTimeout} = {@code Duration.ZERO} (infinite)</li>
 	 *     <li>{@link #bufferSize} = {@code 8192}</li>
+	 *     <li>{@link #framing} = {@code true}</li>
 	 *     <li>{@link #tcpNoDelay} = {@code true}</li>
 	 *     <li>{@link #keepAlive} = {@code true}</li>
 	 *     <li>All handlers = {@code null}</li>
 	 * </ul>
 	 */
-	public static final TcpClientConfig DEFAULT = new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, null, null, null);
+	public static final TcpClientConfig DEFAULT = new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, null, null);
 	
 	/**
 	 * Constructs a new TCP client configuration.<br>
@@ -92,6 +95,7 @@ public record TcpClientConfig(
 	 * @param readTimeout Maximum time to wait for read operations
 	 * @param writeTimeout Maximum time to wait for write operations
 	 * @param bufferSize Size of the read/write buffers in bytes
+	 * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
 	 * @param tcpNoDelay Whether to disable Nagle's algorithm
 	 * @param keepAlive Whether to enable TCP keep-alive
 	 * @param onConnect Handler called when connection is established
