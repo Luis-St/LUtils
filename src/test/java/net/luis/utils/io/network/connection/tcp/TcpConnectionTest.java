@@ -20,6 +20,7 @@ package net.luis.utils.io.network.connection.tcp;
 
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.Connection;
+import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,9 +66,12 @@ class TcpConnectionTest {
 				
 				assertDoesNotThrow(() -> connection.send(data));
 				
-				byte[] received = new byte[data.length];
-				int bytesRead = clientSocket.getInputStream().read(received);
-				assertEquals(data.length, bytesRead);
+				InputStream clientIn = clientSocket.getInputStream();
+				byte[] header = clientIn.readNBytes(4);
+				int declaredLength = ((header[0] & 0xFF) << 24) | ((header[1] & 0xFF) << 16) | ((header[2] & 0xFF) << 8) | (header[3] & 0xFF);
+				assertEquals(data.length, declaredLength);
+				
+				byte[] received = clientIn.readNBytes(data.length);
 				assertArrayEquals(data, received);
 			}
 		}
@@ -116,9 +121,12 @@ class TcpConnectionTest {
 				
 				assertDoesNotThrow(() -> connection.send(exactData));
 				
-				byte[] received = new byte[100];
-				int bytesRead = clientSocket.getInputStream().read(received);
-				assertEquals(100, bytesRead);
+				InputStream clientIn = clientSocket.getInputStream();
+				byte[] header = clientIn.readNBytes(4);
+				int declaredLength = ((header[0] & 0xFF) << 24) | ((header[1] & 0xFF) << 16) | ((header[2] & 0xFF) << 8) | (header[3] & 0xFF);
+				assertEquals(100, declaredLength);
+				
+				byte[] received = clientIn.readNBytes(100);
 				assertArrayEquals(exactData, received);
 			}
 		}
@@ -151,8 +159,7 @@ class TcpConnectionTest {
 				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
 				byte[] dataToSend = "Hello World".getBytes();
 				
-				clientSocket.getOutputStream().write(dataToSend);
-				clientSocket.getOutputStream().flush();
+				NetworkUtils.writeFrame(clientSocket.getOutputStream(), dataToSend);
 				
 				byte[] received = connection.receive();
 				assertArrayEquals(dataToSend, received);
@@ -161,20 +168,49 @@ class TcpConnectionTest {
 	}
 	
 	@Test
-	void receiveWithCustomMaxBytes() throws Exception {
+	void receiveWithMaxBytesSmallerThanFrameThrows() throws Exception {
+		try (ServerSocket serverSocket = new ServerSocket(0)) {
+			int port = serverSocket.getLocalPort();
+			try (Socket clientSocket = new Socket("127.0.0.1", port);
+			     Socket serverSideSocket = serverSocket.accept()) {
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				NetworkUtils.writeFrame(clientSocket.getOutputStream(), "Hello World".getBytes());
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> connection.receive(5));
+				assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
+				assertTrue(exception.getMessage().contains("11"));
+				assertTrue(exception.getMessage().contains("5"));
+			}
+		}
+	}
+	
+	@Test
+	void receiveWithMaxBytesLargerThanFrame() throws Exception {
+		try (ServerSocket serverSocket = new ServerSocket(0)) {
+			int port = serverSocket.getLocalPort();
+			try (Socket clientSocket = new Socket("127.0.0.1", port);
+			     Socket serverSideSocket = serverSocket.accept()) {
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				NetworkUtils.writeFrame(clientSocket.getOutputStream(), "Hello".getBytes());
+				
+				byte[] received = connection.receive(100);
+				assertArrayEquals("Hello".getBytes(), received);
+			}
+		}
+	}
+	
+	@Test
+	void receiveWithMaxBytesEqualToFrameLength() throws Exception {
 		try (ServerSocket serverSocket = new ServerSocket(0)) {
 			int port = serverSocket.getLocalPort();
 			try (Socket clientSocket = new Socket("127.0.0.1", port);
 			     Socket serverSideSocket = serverSocket.accept()) {
 				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
 				byte[] dataToSend = "Hello World".getBytes();
+				NetworkUtils.writeFrame(clientSocket.getOutputStream(), dataToSend);
 				
-				clientSocket.getOutputStream().write(dataToSend);
-				clientSocket.getOutputStream().flush();
-				
-				byte[] received = connection.receive(5);
-				assertEquals(5, received.length);
-				assertArrayEquals("Hello".getBytes(), received);
+				byte[] received = connection.receive(dataToSend.length);
+				assertArrayEquals(dataToSend, received);
 			}
 		}
 	}
@@ -238,6 +274,113 @@ class TcpConnectionTest {
 	}
 	
 	@Test
+	void receiveThrowsOnPeerCloseMidHeader() throws Exception {
+		try (ServerSocket serverSocket = new ServerSocket(0)) {
+			int port = serverSocket.getLocalPort();
+			Socket clientSocket = new Socket("127.0.0.1", port);
+			try (Socket serverSideSocket = serverSocket.accept()) {
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				
+				clientSocket.getOutputStream().write(new byte[] { 0, 0 });
+				clientSocket.getOutputStream().flush();
+				clientSocket.close();
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, connection::receive);
+				assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void receiveThrowsOnPeerCloseMidPayload() throws Exception {
+		try (ServerSocket serverSocket = new ServerSocket(0)) {
+			int port = serverSocket.getLocalPort();
+			Socket clientSocket = new Socket("127.0.0.1", port);
+			try (Socket serverSideSocket = serverSocket.accept()) {
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				
+				clientSocket.getOutputStream().write(new byte[] { 0, 0, 0, 10, 1, 2, 3, 4 });
+				clientSocket.getOutputStream().flush();
+				clientSocket.close();
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, connection::receive);
+				assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void receiveEmptyMessageDoesNotCloseConnection() throws Exception {
+		try (ServerSocket serverSocket = new ServerSocket(0)) {
+			int port = serverSocket.getLocalPort();
+			try (Socket clientSocket = new Socket("127.0.0.1", port);
+			     Socket serverSideSocket = serverSocket.accept()) {
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				
+				NetworkUtils.writeFrame(clientSocket.getOutputStream(), new byte[0]);
+				byte[] received = connection.receive();
+				assertNotNull(received);
+				assertEquals(0, received.length);
+				assertTrue(connection.isActive());
+				
+				byte[] second = "Still Alive".getBytes();
+				NetworkUtils.writeFrame(clientSocket.getOutputStream(), second);
+				byte[] receivedSecond = connection.receive();
+				assertArrayEquals(second, receivedSecond);
+			}
+		}
+	}
+	
+	@Test
+	void receiveReassemblesMessageDeliveredInFragmentedWrites() throws Exception {
+		try (ServerSocket serverSocket = new ServerSocket(0)) {
+			int port = serverSocket.getLocalPort();
+			try (Socket clientSocket = new Socket("127.0.0.1", port);
+			     Socket serverSideSocket = serverSocket.accept()) {
+				clientSocket.setTcpNoDelay(true);
+				TcpConnection connection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				
+				byte[] payload = "Reassembled Across Fragments".getBytes();
+				ByteArrayOutputStream frameBytes = new ByteArrayOutputStream();
+				NetworkUtils.writeFrame(frameBytes, payload);
+				byte[] frame = frameBytes.toByteArray();
+				
+				OutputStream clientOut = clientSocket.getOutputStream();
+				for (int i = 0; i < frame.length; i += 3) {
+					int end = Math.min(i + 3, frame.length);
+					clientOut.write(frame, i, end - i);
+					clientOut.flush();
+					Thread.sleep(10);
+				}
+				
+				byte[] received = connection.receive();
+				assertArrayEquals(payload, received);
+			}
+		}
+	}
+	
+	@Test
+	void sendAndReceiveRoundTripBetweenTwoConnections() throws Exception {
+		try (ServerSocket serverSocket = new ServerSocket(0)) {
+			int port = serverSocket.getLocalPort();
+			try (Socket clientSocket = new Socket("127.0.0.1", port);
+			     Socket serverSideSocket = serverSocket.accept()) {
+				TcpConnection serverConnection = new TcpConnection(serverSideSocket, 8192, Duration.ofSeconds(5));
+				TcpConnection clientConnection = new TcpConnection(clientSocket, 8192, Duration.ofSeconds(5));
+				
+				byte[] small = "Hello".getBytes();
+				serverConnection.send(small);
+				assertArrayEquals(small, clientConnection.receive());
+				
+				byte[] exactBufferSize = new byte[8192];
+				Arrays.fill(exactBufferSize, (byte) 42);
+				serverConnection.send(exactBufferSize);
+				assertArrayEquals(exactBufferSize, clientConnection.receive());
+			}
+		}
+	}
+	
+	@Test
 	void getInputStreamReturnsStream() throws Exception {
 		try (ServerSocket serverSocket = new ServerSocket(0)) {
 			int port = serverSocket.getLocalPort();
@@ -262,7 +405,7 @@ class TcpConnectionTest {
 				
 				NetworkConnectionException exception = assertThrows(
 					NetworkConnectionException.class,
-					() -> connection.getInputStream()
+					connection::getInputStream
 				);
 				assertEquals(NetworkErrorType.SOCKET_CLOSED, exception.errorType());
 			}
@@ -294,7 +437,7 @@ class TcpConnectionTest {
 				
 				NetworkConnectionException exception = assertThrows(
 					NetworkConnectionException.class,
-					() -> connection.getOutputStream()
+					connection::getOutputStream
 				);
 				assertEquals(NetworkErrorType.SOCKET_CLOSED, exception.errorType());
 			}
@@ -430,49 +573,38 @@ class TcpConnectionTest {
 	}
 	
 	@Test
-	void receiveReusesBufferAcrossCalls() throws Exception {
+	void receiveReadsSequentialFramesAcrossCalls() throws Exception {
 		this.withPair((clientSocket, connection) -> {
-			clientSocket.getOutputStream().write("first".getBytes());
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, "first".getBytes());
 			assertArrayEquals("first".getBytes(), receiveExactly(connection, 5, 1024));
 			
-			clientSocket.getOutputStream().write("second".getBytes());
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, "second".getBytes());
 			assertArrayEquals("second".getBytes(), receiveExactly(connection, 6, 1024));
 		});
 	}
 	
 	@Test
-	void receiveGrowsBufferForLargerMaxBytes() throws Exception {
+	void receiveHandlesIncreasingMaxBytes() throws Exception {
 		this.withPair((clientSocket, connection) -> {
-			clientSocket.getOutputStream().write(new byte[8]);
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, new byte[8]);
 			assertEquals(8, receiveExactly(connection, 8, 16).length);
 			
 			byte[] large = filled(100, (byte) 0x42);
-			clientSocket.getOutputStream().write(large);
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, large);
 			assertArrayEquals(large, receiveExactly(connection, 100, 4096));
 		});
 	}
 	
 	@Test
-	void receiveWithSmallerMaxBytesAfterLargerReusesBuffer() throws Exception {
+	void receiveRejectsFrameLargerThanMaxBytes() throws Exception {
 		this.withPair((clientSocket, connection) -> {
-			clientSocket.getOutputStream().write(new byte[10]);
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, new byte[10]);
 			assertEquals(10, receiveExactly(connection, 10, 4096).length);
 			
-			byte[] payload = filled(50, (byte) 0x43);
-			clientSocket.getOutputStream().write(payload);
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, filled(50, (byte) 0x43));
 			
-			byte[] limited = connection.receive(8);
-			assertTrue(limited.length <= 8);
-			assertTrue(limited.length > 0);
-			
-			byte[] rest = receiveExactly(connection, 50 - limited.length, 4096);
-			assertEquals(50, limited.length + rest.length);
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> connection.receive(8));
+			assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
 		});
 	}
 	
@@ -480,12 +612,10 @@ class TcpConnectionTest {
 	void receiveDoesNotLeakPreviousPayload() throws Exception {
 		this.withPair((clientSocket, connection) -> {
 			byte[] long_ = filled(200, (byte) 0x41);
-			clientSocket.getOutputStream().write(long_);
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, long_);
 			assertArrayEquals(long_, receiveExactly(connection, 200, 1024));
 			
-			clientSocket.getOutputStream().write("abc".getBytes());
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, "abc".getBytes());
 			byte[] second = receiveExactly(connection, 3, 1024);
 			assertEquals(3, second.length);
 			assertArrayEquals("abc".getBytes(), second);
@@ -509,8 +639,7 @@ class TcpConnectionTest {
 			int[] sizes = { 10, 500, 20, 2000, 5 };
 			for (int size : sizes) {
 				byte[] payload = filled(size, (byte) (size % 128));
-				clientSocket.getOutputStream().write(payload);
-				clientSocket.getOutputStream().flush();
+				writeFramed(clientSocket, payload);
 				assertArrayEquals(payload, receiveExactly(connection, size, 4096));
 			}
 		});
@@ -519,12 +648,10 @@ class TcpConnectionTest {
 	@Test
 	void receiveReturnedArraysAreIndependent() throws Exception {
 		this.withPair((clientSocket, connection) -> {
-			clientSocket.getOutputStream().write("first".getBytes());
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, "first".getBytes());
 			byte[] first = receiveExactly(connection, 5, 1024);
 			
-			clientSocket.getOutputStream().write("second".getBytes());
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, "second".getBytes());
 			byte[] second = receiveExactly(connection, 6, 1024);
 			
 			assertArrayEquals("first".getBytes(), first);
@@ -533,20 +660,16 @@ class TcpConnectionTest {
 	}
 	
 	@Test
-	void sendAndReceiveRoundTripAfterBufferGrowth() throws Exception {
+	void sendAndReceiveRoundTripWithVaryingSizes() throws Exception {
 		this.withPair((clientSocket, connection) -> {
 			byte[] large = filled(2000, (byte) 0x44);
-			clientSocket.getOutputStream().write(large);
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, large);
 			assertArrayEquals(large, receiveExactly(connection, 2000, 4096));
 			
 			connection.send(new byte[] { 0x7F });
-			byte[] echoed = new byte[1];
-			assertEquals(1, clientSocket.getInputStream().read(echoed));
-			assertEquals(0x7F, echoed[0]);
+			assertArrayEquals(new byte[] { 0x7F }, NetworkUtils.readFrame(clientSocket.getInputStream(), 4096));
 			
-			clientSocket.getOutputStream().write(new byte[] { 0x01 });
-			clientSocket.getOutputStream().flush();
+			writeFramed(clientSocket, new byte[] { 0x01 });
 			assertArrayEquals(new byte[] { 0x01 }, receiveExactly(connection, 1, 4096));
 		});
 	}
@@ -557,16 +680,14 @@ class TcpConnectionTest {
 		return data;
 	}
 	
+	private static void writeFramed(Socket socket, byte[] data) throws Exception {
+		NetworkUtils.writeFrame(socket.getOutputStream(), data);
+	}
+	
 	private static byte[] receiveExactly(TcpConnection connection, int expected, int maxBytes) throws Exception {
-		ByteArrayOutputStream accumulated = new ByteArrayOutputStream();
-		while (accumulated.size() < expected) {
-			byte[] chunk = connection.receive(maxBytes);
-			if (chunk.length == 0) {
-				break;
-			}
-			accumulated.write(chunk);
-		}
-		return accumulated.toByteArray();
+		byte[] received = connection.receive(maxBytes);
+		assertEquals(expected, received.length);
+		return received;
 	}
 	
 	private static Socket openPeerAndClose(int port, ServerSocket serverSocket) throws Exception {

@@ -23,7 +23,6 @@ import net.luis.utils.io.network.connection.Connection;
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import javax.net.ssl.*;
 import java.io.*;
@@ -68,11 +67,6 @@ public final class SslConnection implements Connection {
 	 * The read timeout for blocking operations.<br>
 	 */
 	private final Duration readTimeout;
-	/**
-	 * The reusable scratch buffer for read operations.<br>
-	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
-	 */
-	private byte @Nullable [] readBuffer;
 	
 	/**
 	 * Constructs a new SSL connection wrapping the given socket.<br>
@@ -160,8 +154,7 @@ public final class SslConnection implements Connection {
 			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
 		}
 		
-		this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
-		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.readTimeout, null, this.remoteEndpoint(), null);
+		return NetworkUtils.readAvailable(this.socket, maxBytes, this.readTimeout, null, this.remoteEndpoint(), null);
 	}
 	
 	@Override

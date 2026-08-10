@@ -197,6 +197,145 @@ class NetworkUtilsTest {
 		assertTrue(taskCompleted.get());
 	}
 	
+	@Test
+	void writeFrameWithNullOutputStreamThrows() {
+		assertThrows(NullPointerException.class, () -> NetworkUtils.writeFrame(null, new byte[0]));
+	}
+	
+	@Test
+	void writeFrameWithNullDataThrows() {
+		OutputStream out = OutputStream.nullOutputStream();
+		assertThrows(NullPointerException.class, () -> NetworkUtils.writeFrame(out, null));
+	}
+	
+	@Test
+	void readFrameWithNullInputStreamThrows() {
+		assertThrows(NullPointerException.class, () -> NetworkUtils.readFrame(null, 10));
+	}
+	
+	@Test
+	void readFrameTruncatedHeaderThrowsEOFException() {
+		InputStream in = new ByteArrayInputStream(new byte[] { 0, 0 });
+		assertThrows(EOFException.class, () -> NetworkUtils.readFrame(in, 100));
+	}
+	
+	@Test
+	void readFrameTruncatedPayloadThrowsEOFException() {
+		InputStream in = new ByteArrayInputStream(new byte[] { 0, 0, 0, 10, 1, 2, 3 });
+		assertThrows(EOFException.class, () -> NetworkUtils.readFrame(in, 100));
+	}
+	
+	@Test
+	void readFrameNegativeLengthThrowsIOException() {
+		InputStream in = new ByteArrayInputStream(new byte[] { -1, -1, -1, -1 });
+		IOException exception = assertThrows(IOException.class, () -> NetworkUtils.readFrame(in, 100));
+		assertFalse(exception instanceof FrameTooLargeException);
+	}
+	
+	@Test
+	void readFrameExceedingMaxBytesThrowsFrameTooLargeException() {
+		InputStream in = new ByteArrayInputStream(new byte[] { 0, 0, 0, 20 });
+		FrameTooLargeException exception = assertThrows(FrameTooLargeException.class, () -> NetworkUtils.readFrame(in, 10));
+		assertEquals(20, exception.frameLength());
+		assertEquals(10, exception.maxBytes());
+		assertTrue(exception.getMessage().contains("20"));
+		assertTrue(exception.getMessage().contains("10"));
+	}
+	
+	@Test
+	void readFrameReturnsNullOnEmptyStream() throws IOException {
+		assertNull(NetworkUtils.readFrame(InputStream.nullInputStream(), 10));
+	}
+	
+	@Test
+	void readFrameAcceptsFrameEqualToMaxBytes() throws IOException {
+		byte[] payload = new byte[10];
+		Arrays.fill(payload, (byte) 7);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		NetworkUtils.writeFrame(out, payload);
+		
+		byte[] received = NetworkUtils.readFrame(new ByteArrayInputStream(out.toByteArray()), 10);
+		assertArrayEquals(payload, received);
+	}
+	
+	@Test
+	void readFrameWithZeroLengthPayloadReturnsEmptyArray() throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		NetworkUtils.writeFrame(out, new byte[0]);
+		
+		byte[] received = NetworkUtils.readFrame(new ByteArrayInputStream(out.toByteArray()), 10);
+		assertNotNull(received);
+		assertEquals(0, received.length);
+	}
+	
+	@Test
+	void writeFrameProducesCorrectHeaderBytes() throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		NetworkUtils.writeFrame(out, new byte[] { 1, 2, 3, 4, 5 });
+		
+		byte[] bytes = out.toByteArray();
+		assertEquals(9, bytes.length);
+		assertArrayEquals(new byte[] { 0, 0, 0, 5 }, Arrays.copyOfRange(bytes, 0, 4));
+		assertArrayEquals(new byte[] { 1, 2, 3, 4, 5 }, Arrays.copyOfRange(bytes, 4, 9));
+	}
+	
+	@Test
+	void writeFrameThenReadFrameRoundTripsSimpleMessage() throws IOException {
+		byte[] data = "Hello".getBytes();
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		NetworkUtils.writeFrame(out, data);
+		
+		byte[] received = NetworkUtils.readFrame(new ByteArrayInputStream(out.toByteArray()), 100);
+		assertArrayEquals(data, received);
+	}
+	
+	@Test
+	void writeFrameWithEmptyArrayRoundTrips() throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		NetworkUtils.writeFrame(out, new byte[0]);
+		
+		byte[] received = NetworkUtils.readFrame(new ByteArrayInputStream(out.toByteArray()), 100);
+		assertNotNull(received);
+		assertEquals(0, received.length);
+	}
+	
+	@Test
+	void readFrameReassemblesFragmentedDelivery() throws IOException {
+		byte[] data = "Fragmented Message Body".getBytes();
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		NetworkUtils.writeFrame(out, data);
+		
+		InputStream fragmented = new FragmentedInputStream(out.toByteArray(), 3);
+		byte[] received = NetworkUtils.readFrame(fragmented, 100);
+		assertArrayEquals(data, received);
+	}
+	
+	@Test
+	void writeFrameThenReadFrameRoundTripsMultipleSequentialMessages() throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		NetworkUtils.writeFrame(out, "First".getBytes());
+		NetworkUtils.writeFrame(out, "Second".getBytes());
+		
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		byte[] first = NetworkUtils.readFrame(in, 100);
+		byte[] second = NetworkUtils.readFrame(in, 100);
+		
+		assertArrayEquals("First".getBytes(), first);
+		assertArrayEquals("Second".getBytes(), second);
+	}
+	
+	@Test
+	void readFrameWithLargeBinaryPayloadRoundTrips() throws IOException {
+		byte[] data = new byte[65536];
+		new Random(42).nextBytes(data);
+		
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		NetworkUtils.writeFrame(out, data);
+		
+		byte[] received = NetworkUtils.readFrame(new ByteArrayInputStream(out.toByteArray()), data.length);
+		assertArrayEquals(data, received);
+	}
+	
 	private static final class StubConnection implements Connection {
 		
 		@Override
@@ -240,70 +379,6 @@ class NetworkUtilsTest {
 		@Override
 		public void close() {}
 	}
-	
-	//region resizeBuffer
-	
-	@Test
-	void resizeBufferWithNullCurrentAllocates() {
-		byte[] resized = NetworkUtils.resizeBuffer(null, 1024);
-		
-		assertNotNull(resized);
-		assertEquals(1024, resized.length);
-	}
-	
-	@Test
-	void resizeBufferWithSmallerCurrentAllocates() {
-		byte[] current = new byte[512];
-		
-		byte[] resized = NetworkUtils.resizeBuffer(current, 1024);
-		assertEquals(1024, resized.length);
-		assertNotSame(current, resized);
-	}
-	
-	@Test
-	void resizeBufferWithEqualCurrentReuses() {
-		byte[] current = new byte[1024];
-		assertSame(current, NetworkUtils.resizeBuffer(current, 1024));
-	}
-	
-	@Test
-	void resizeBufferWithLargerCurrentReuses() {
-		byte[] current = new byte[4096];
-		
-		byte[] resized = NetworkUtils.resizeBuffer(current, 1024);
-		assertSame(current, resized);
-		assertEquals(4096, resized.length);
-	}
-	
-	@Test
-	void resizeBufferWithZeroMaxBytes() {
-		byte[] current = new byte[8];
-		
-		assertEquals(0, NetworkUtils.resizeBuffer(null, 0).length);
-		assertSame(current, NetworkUtils.resizeBuffer(current, 0));
-	}
-	
-	@Test
-	void resizeBufferWithNegativeMaxBytes() {
-		byte[] current = new byte[8];
-		
-		assertThrows(NegativeArraySizeException.class, () -> NetworkUtils.resizeBuffer(null, -1));
-		assertSame(current, NetworkUtils.resizeBuffer(current, -1));
-	}
-	
-	@Test
-	void resizeBufferGrowsAndThenReusesAcrossCalls() {
-		byte[] first = NetworkUtils.resizeBuffer(null, 512);
-		byte[] second = NetworkUtils.resizeBuffer(first, 1024);
-		byte[] third = NetworkUtils.resizeBuffer(second, 256);
-		byte[] fourth = NetworkUtils.resizeBuffer(third, 1024);
-		
-		assertEquals(512, first.length);
-		assertNotSame(first, second);
-		assertSame(second, third);
-		assertSame(second, fourth);
-	}
-	//endregion
 	
 	//region validateMessageSize
 	
@@ -363,13 +438,14 @@ class NetworkUtilsTest {
 	}
 	
 	@Test
-	void writeAllWritesAndFlushesData() throws Exception {
+	void writeAllWritesAndFlushesFramedData() throws Exception {
 		withPair((local, peer) -> {
 			NetworkUtils.writeAll(local, "Hello".getBytes(), null, null, null);
 			
-			byte[] received = new byte[5];
-			assertEquals(5, peer.getInputStream().read(received));
-			assertArrayEquals("Hello".getBytes(), received);
+			byte[] framed = new byte[9];
+			assertEquals(9, peer.getInputStream().read(framed));
+			assertArrayEquals(new byte[] { 0, 0, 0, 5 }, Arrays.copyOfRange(framed, 0, 4));
+			assertArrayEquals("Hello".getBytes(), Arrays.copyOfRange(framed, 4, 9));
 		});
 	}
 	
@@ -446,40 +522,31 @@ class NetworkUtilsTest {
 	
 	@Test
 	void readAvailableWithNullSocket() {
-		assertThrows(NullPointerException.class, () -> NetworkUtils.readAvailable(null, new byte[16], 16, Duration.ofSeconds(1), null, null, null));
-	}
-	
-	@Test
-	void readAvailableWithNullBuffer() throws Exception {
-		withPair((local, peer) -> assertThrows(NullPointerException.class, () -> NetworkUtils.readAvailable(local, null, 16, Duration.ofSeconds(1), null, null, null)));
+		assertThrows(NullPointerException.class, () -> NetworkUtils.readAvailable(null, 16, Duration.ofSeconds(1), null, null, null));
 	}
 	
 	@Test
 	void readAvailableWithNullReadTimeout() throws Exception {
-		withPair((local, peer) -> assertThrows(NullPointerException.class, () -> NetworkUtils.readAvailable(local, new byte[16], 16, null, null, null, null)));
+		withPair((local, peer) -> assertThrows(NullPointerException.class, () -> NetworkUtils.readAvailable(local, 16, null, null, null, null)));
 	}
 	
 	@Test
 	void readAvailableReturnsReceivedData() throws Exception {
 		withPair((local, peer) -> {
-			peer.getOutputStream().write("Hello".getBytes());
-			peer.getOutputStream().flush();
+			NetworkUtils.writeFrame(peer.getOutputStream(), "Hello".getBytes());
 			
-			byte[] received = NetworkUtils.readAvailable(local, new byte[1024], 1024, Duration.ofSeconds(5), null, null, null);
+			byte[] received = NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null);
 			assertEquals(5, received.length);
 			assertArrayEquals("Hello".getBytes(), received);
 		});
 	}
 	
 	@Test
-	void readAvailableReturnsExactLengthFromLargerBuffer() throws Exception {
+	void readAvailableReturnsExactPayloadLength() throws Exception {
 		withPair((local, peer) -> {
-			byte[] buffer = new byte[4096];
-			Arrays.fill(buffer, (byte) 0xFF);
-			peer.getOutputStream().write(new byte[] { 1, 2, 3 });
-			peer.getOutputStream().flush();
+			NetworkUtils.writeFrame(peer.getOutputStream(), new byte[] { 1, 2, 3 });
 			
-			byte[] received = NetworkUtils.readAvailable(local, buffer, 4096, Duration.ofSeconds(5), null, null, null);
+			byte[] received = NetworkUtils.readAvailable(local, 4096, Duration.ofSeconds(5), null, null, null);
 			assertEquals(3, received.length);
 			assertArrayEquals(new byte[] { 1, 2, 3 }, received);
 		});
@@ -491,7 +558,7 @@ class NetworkUtilsTest {
 			AtomicBoolean disconnected = new AtomicBoolean(false);
 			peer.close();
 			
-			byte[] received = NetworkUtils.readAvailable(local, new byte[1024], 1024, Duration.ofSeconds(5), null, null, () -> disconnected.set(true));
+			byte[] received = NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, () -> disconnected.set(true));
 			assertEquals(0, received.length);
 			assertTrue(disconnected.get());
 		});
@@ -502,7 +569,7 @@ class NetworkUtilsTest {
 		withPair((local, peer) -> {
 			peer.close();
 			
-			byte[] received = assertDoesNotThrow(() -> NetworkUtils.readAvailable(local, new byte[1024], 1024, Duration.ofSeconds(5), null, null, null));
+			byte[] received = assertDoesNotThrow(() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null));
 			assertEquals(0, received.length);
 		});
 	}
@@ -515,7 +582,7 @@ class NetworkUtilsTest {
 			
 			NetworkTimeoutException exception = assertThrows(
 				NetworkTimeoutException.class,
-				() -> NetworkUtils.readAvailable(local, new byte[1024], 1024, readTimeout, null, null, null)
+				() -> NetworkUtils.readAvailable(local, 1024, readTimeout, null, null, null)
 			);
 			assertEquals(NetworkErrorType.READ_TIMEOUT, exception.errorType());
 			assertEquals(readTimeout, exception.timeout());
@@ -530,7 +597,7 @@ class NetworkUtilsTest {
 			
 			assertThrows(
 				NetworkTimeoutException.class,
-				() -> NetworkUtils.readAvailable(local, new byte[1024], 1024, Duration.ofMillis(100), null, null, () -> disconnected.set(true))
+				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofMillis(100), null, null, () -> disconnected.set(true))
 			);
 			assertFalse(disconnected.get());
 		});
@@ -544,7 +611,7 @@ class NetworkUtilsTest {
 			
 			assertThrows(
 				NetworkConnectionException.class,
-				() -> NetworkUtils.readAvailable(local, new byte[1024], 1024, Duration.ofSeconds(5), null, null, () -> disconnected.set(true))
+				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, () -> disconnected.set(true))
 			);
 			assertTrue(disconnected.get());
 		});
@@ -556,7 +623,7 @@ class NetworkUtilsTest {
 			local.close();
 			assertThrows(
 				NetworkConnectionException.class,
-				() -> NetworkUtils.readAvailable(local, new byte[1024], 1024, Duration.ofSeconds(5), null, null, null)
+				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null)
 			);
 		});
 	}
@@ -570,7 +637,7 @@ class NetworkUtilsTest {
 			
 			NetworkConnectionException exception = assertThrows(
 				NetworkConnectionException.class,
-				() -> NetworkUtils.readAvailable(local, new byte[1024], 1024, Duration.ofSeconds(5), handler, null, () -> disconnected.set(true))
+				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), handler, null, () -> disconnected.set(true))
 			);
 			assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
 			assertTrue(disconnected.get());
@@ -584,7 +651,7 @@ class NetworkUtilsTest {
 		
 		NetworkConnectionException exception = assertThrows(
 			NetworkConnectionException.class,
-			() -> NetworkUtils.readAvailable(new FailingSocket(), new byte[16], 16, Duration.ofSeconds(1), handler, null, null)
+			() -> NetworkUtils.readAvailable(new FailingSocket(), 16, Duration.ofSeconds(1), handler, null, null)
 		);
 		assertEquals(NetworkErrorType.IO_ERROR, exception.errorType());
 		assertEquals(1, handler.errorTypes.size());
@@ -599,28 +666,36 @@ class NetworkUtilsTest {
 			
 			NetworkConnectionException exception = assertThrows(
 				NetworkConnectionException.class,
-				() -> NetworkUtils.readAvailable(local, new byte[1024], 1024, Duration.ofSeconds(5), null, endpoint, null)
+				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, endpoint, null)
 			);
 			assertSame(endpoint, exception.endpoint());
 		});
 	}
 	
 	@Test
-	void readAvailableWithReusedBufferAcrossReceives() throws Exception {
+	void readAvailableReadsSequentialFramesIndividually() throws Exception {
 		withPair((local, peer) -> {
-			byte[] buffer = NetworkUtils.resizeBuffer(null, 1024);
 			byte[] first = new byte[100];
 			Arrays.fill(first, (byte) 0x41);
 			
-			peer.getOutputStream().write(first);
-			peer.getOutputStream().flush();
-			assertArrayEquals(first, readExactly(local, buffer, 1024, 100));
+			NetworkUtils.writeFrame(peer.getOutputStream(), first);
+			NetworkUtils.writeFrame(peer.getOutputStream(), "abcde".getBytes());
 			
-			peer.getOutputStream().write("abcde".getBytes());
-			peer.getOutputStream().flush();
-			byte[] second = readExactly(local, buffer, 1024, 5);
-			assertEquals(5, second.length);
-			assertArrayEquals("abcde".getBytes(), second);
+			assertArrayEquals(first, NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null));
+			assertArrayEquals("abcde".getBytes(), NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null));
+		});
+	}
+	
+	@Test
+	void readAvailableRejectsFrameLargerThanMaxBytes() throws Exception {
+		withPair((local, peer) -> {
+			NetworkUtils.writeFrame(peer.getOutputStream(), new byte[2048]);
+			
+			NetworkConnectionException exception = assertThrows(
+				NetworkConnectionException.class,
+				() -> NetworkUtils.readAvailable(local, 1024, Duration.ofSeconds(5), null, null, null)
+			);
+			assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
 		});
 	}
 	
@@ -629,16 +704,12 @@ class NetworkUtilsTest {
 		withPair((local, peer) -> {
 			byte[] small = "small".getBytes();
 			NetworkUtils.writeAll(local, small, null, null, null);
-			
-			byte[] receivedSmall = new byte[small.length];
-			assertEquals(small.length, peer.getInputStream().read(receivedSmall));
-			assertArrayEquals(small, receivedSmall);
+			assertArrayEquals(small, NetworkUtils.readFrame(peer.getInputStream(), 4096));
 			
 			byte[] large = new byte[2048];
 			Arrays.fill(large, (byte) 0x42);
-			peer.getOutputStream().write(large);
-			peer.getOutputStream().flush();
-			assertArrayEquals(large, readExactly(local, new byte[4096], 4096, 2048));
+			NetworkUtils.writeAll(peer, large, null, null, null);
+			assertArrayEquals(large, NetworkUtils.readAvailable(local, 4096, Duration.ofSeconds(5), null, null, null));
 		});
 	}
 	//endregion
@@ -834,18 +905,6 @@ class NetworkUtilsTest {
 		}
 	}
 	
-	private static byte[] readExactly(Socket socket, byte[] buffer, int maxBytes, int expected) throws Exception {
-		ByteArrayOutputStream accumulated = new ByteArrayOutputStream();
-		while (accumulated.size() < expected) {
-			byte[] chunk = NetworkUtils.readAvailable(socket, buffer, maxBytes, Duration.ofSeconds(5), null, null, null);
-			if (chunk.length == 0) {
-				break;
-			}
-			accumulated.write(chunk);
-		}
-		return accumulated.toByteArray();
-	}
-	
 	@FunctionalInterface
 	private interface PairConsumer {
 		
@@ -882,6 +941,38 @@ class NetworkUtilsTest {
 		@Override
 		public OutputStream getOutputStream() throws IOException {
 			throw new IOException("stream unavailable");
+		}
+	}
+	
+	private static final class FragmentedInputStream extends InputStream {
+		
+		private final byte[] data;
+		private final int chunkSize;
+		private int position;
+		
+		private FragmentedInputStream(byte[] data, int chunkSize) {
+			this.data = data;
+			this.chunkSize = chunkSize;
+		}
+		
+		@Override
+		public int read() {
+			if (this.position >= this.data.length) {
+				return -1;
+			}
+			return this.data[this.position++] & 0xFF;
+		}
+		
+		@Override
+		public int read(byte @NonNull [] b, int off, int len) {
+			if (this.position >= this.data.length) {
+				return -1;
+			}
+			
+			int toCopy = Math.min(Math.min(len, this.chunkSize), this.data.length - this.position);
+			System.arraycopy(this.data, this.position, b, off, toCopy);
+			this.position += toCopy;
+			return toCopy;
 		}
 	}
 	//endregion

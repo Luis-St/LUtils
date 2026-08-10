@@ -20,6 +20,7 @@ package net.luis.utils.io.network.connection.ssl;
 
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.Connection;
+import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.junit.jupiter.api.*;
@@ -61,9 +62,12 @@ class SslConnectionTest {
 			byte[] data = "Hello".getBytes();
 			assertDoesNotThrow(() -> connection.send(data));
 			
-			byte[] received = new byte[data.length];
-			int bytesRead = client.getInputStream().read(received);
-			assertEquals(data.length, bytesRead);
+			InputStream clientIn = client.getInputStream();
+			byte[] header = clientIn.readNBytes(4);
+			int declaredLength = ((header[0] & 0xFF) << 24) | ((header[1] & 0xFF) << 16) | ((header[2] & 0xFF) << 8) | (header[3] & 0xFF);
+			assertEquals(data.length, declaredLength);
+			
+			byte[] received = clientIn.readNBytes(data.length);
 			assertArrayEquals(data, received);
 		});
 	}
@@ -90,8 +94,7 @@ class SslConnectionTest {
 	void receiveReturnsData() throws Exception {
 		this.withPair(8192, (client, connection) -> {
 			byte[] dataToSend = "Hello World".getBytes();
-			client.getOutputStream().write(dataToSend);
-			client.getOutputStream().flush();
+			NetworkUtils.writeFrame(client.getOutputStream(), dataToSend);
 			
 			byte[] received = connection.receive();
 			assertArrayEquals(dataToSend, received);
@@ -99,15 +102,35 @@ class SslConnectionTest {
 	}
 	
 	@Test
-	void receiveWithCustomMaxBytes() throws Exception {
+	void receiveWithMaxBytesSmallerThanFrameThrows() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			NetworkUtils.writeFrame(client.getOutputStream(), "Hello World".getBytes());
+			
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> connection.receive(5));
+			assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
+			assertTrue(exception.getMessage().contains("11"));
+			assertTrue(exception.getMessage().contains("5"));
+		});
+	}
+	
+	@Test
+	void receiveWithMaxBytesLargerThanFrame() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			NetworkUtils.writeFrame(client.getOutputStream(), "Hello".getBytes());
+			
+			byte[] received = connection.receive(100);
+			assertArrayEquals("Hello".getBytes(), received);
+		});
+	}
+	
+	@Test
+	void receiveWithMaxBytesEqualToFrameLength() throws Exception {
 		this.withPair(8192, (client, connection) -> {
 			byte[] dataToSend = "Hello World".getBytes();
-			client.getOutputStream().write(dataToSend);
-			client.getOutputStream().flush();
+			NetworkUtils.writeFrame(client.getOutputStream(), dataToSend);
 			
-			byte[] received = connection.receive(5);
-			assertEquals(5, received.length);
-			assertArrayEquals("Hello".getBytes(), received);
+			byte[] received = connection.receive(dataToSend.length);
+			assertArrayEquals(dataToSend, received);
 		});
 	}
 	
@@ -136,6 +159,67 @@ class SslConnectionTest {
 			client.close();
 			byte[] received = connection.receive();
 			assertEquals(0, received.length);
+		});
+	}
+	
+	@Test
+	void receiveThrowsOnPeerCloseMidHeader() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			client.getOutputStream().write(new byte[] { 0, 0 });
+			client.getOutputStream().flush();
+			client.close();
+			
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, connection::receive);
+			assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+		});
+	}
+	
+	@Test
+	void receiveThrowsOnPeerCloseMidPayload() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			client.getOutputStream().write(new byte[] { 0, 0, 0, 10, 1, 2, 3, 4 });
+			client.getOutputStream().flush();
+			client.close();
+			
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, connection::receive);
+			assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+		});
+	}
+	
+	@Test
+	void receiveEmptyMessageDoesNotCloseConnection() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			NetworkUtils.writeFrame(client.getOutputStream(), new byte[0]);
+			byte[] received = connection.receive();
+			assertNotNull(received);
+			assertEquals(0, received.length);
+			assertTrue(connection.isActive());
+			
+			byte[] second = "Still Alive".getBytes();
+			NetworkUtils.writeFrame(client.getOutputStream(), second);
+			byte[] receivedSecond = connection.receive();
+			assertArrayEquals(second, receivedSecond);
+		});
+	}
+	
+	@Test
+	void receiveReassemblesMessageDeliveredInFragmentedWrites() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			byte[] payload = "Reassembled Across Fragments".getBytes();
+			ByteArrayOutputStream frameBytes = new ByteArrayOutputStream();
+			NetworkUtils.writeFrame(frameBytes, payload);
+			byte[] frame = frameBytes.toByteArray();
+			
+			OutputStream clientOut = client.getOutputStream();
+			for (int i = 0; i < frame.length; i += 3) {
+				int end = Math.min(i + 3, frame.length);
+				clientOut.write(frame, i, end - i);
+				clientOut.flush();
+				Thread.sleep(10);
+			}
+			
+			byte[] received = connection.receive();
+			assertArrayEquals(payload, received);
 		});
 	}
 	
@@ -252,7 +336,7 @@ class SslConnectionTest {
 	}
 	
 	@Test
-	void receiveReusesBufferAcrossCalls() throws Exception {
+	void receiveReadsSequentialFramesAcrossCalls() throws Exception {
 		this.withPair(8192, (client, connection) -> {
 			writeAndFlush(client, "first".getBytes());
 			assertArrayEquals("first".getBytes(), receiveExactly(connection, 5, 1024));
@@ -263,7 +347,7 @@ class SslConnectionTest {
 	}
 	
 	@Test
-	void receiveGrowsBufferForLargerMaxBytes() throws Exception {
+	void receiveHandlesIncreasingMaxBytes() throws Exception {
 		this.withPair(8192, (client, connection) -> {
 			writeAndFlush(client, new byte[8]);
 			assertEquals(8, receiveExactly(connection, 8, 16).length);
@@ -275,18 +359,15 @@ class SslConnectionTest {
 	}
 	
 	@Test
-	void receiveWithSmallerMaxBytesAfterLargerReusesBuffer() throws Exception {
+	void receiveRejectsFrameLargerThanMaxBytes() throws Exception {
 		this.withPair(8192, (client, connection) -> {
 			writeAndFlush(client, new byte[10]);
 			assertEquals(10, receiveExactly(connection, 10, 4096).length);
 			
 			writeAndFlush(client, filled(50, (byte) 0x43));
-			byte[] limited = connection.receive(8);
-			assertTrue(limited.length <= 8);
-			assertTrue(limited.length > 0);
 			
-			byte[] rest = receiveExactly(connection, 50 - limited.length, 4096);
-			assertEquals(50, limited.length + rest.length);
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> connection.receive(8));
+			assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
 		});
 	}
 	
@@ -339,16 +420,14 @@ class SslConnectionTest {
 	}
 	
 	@Test
-	void sendAndReceiveRoundTripAfterBufferGrowth() throws Exception {
+	void sendAndReceiveRoundTripWithVaryingSizes() throws Exception {
 		this.withPair(8192, (client, connection) -> {
 			byte[] large = filled(2000, (byte) 0x44);
 			writeAndFlush(client, large);
 			assertArrayEquals(large, receiveExactly(connection, 2000, 4096));
 			
 			connection.send(new byte[] { 0x7F });
-			byte[] echoed = new byte[1];
-			assertEquals(1, client.getInputStream().read(echoed));
-			assertEquals(0x7F, echoed[0]);
+			assertArrayEquals(new byte[] { 0x7F }, NetworkUtils.readFrame(client.getInputStream(), 4096));
 			
 			writeAndFlush(client, new byte[] { 0x01 });
 			assertArrayEquals(new byte[] { 0x01 }, receiveExactly(connection, 1, 4096));
@@ -382,20 +461,13 @@ class SslConnectionTest {
 	}
 	
 	private static void writeAndFlush(SSLSocket socket, byte[] data) throws Exception {
-		socket.getOutputStream().write(data);
-		socket.getOutputStream().flush();
+		NetworkUtils.writeFrame(socket.getOutputStream(), data);
 	}
 	
 	private static byte[] receiveExactly(SslConnection connection, int expected, int maxBytes) throws Exception {
-		ByteArrayOutputStream accumulated = new ByteArrayOutputStream();
-		while (accumulated.size() < expected) {
-			byte[] chunk = connection.receive(maxBytes);
-			if (chunk.length == 0) {
-				break;
-			}
-			accumulated.write(chunk);
-		}
-		return accumulated.toByteArray();
+		byte[] received = connection.receive(maxBytes);
+		assertEquals(expected, received.length);
+		return received;
 	}
 	
 	/**
@@ -429,9 +501,6 @@ class SslConnectionTest {
 		}
 	}
 	
-	/**
-	 * Callback receiving a handshaked client socket and the server-side connection wrapping its peer.<br>
-	 */
 	@FunctionalInterface
 	private interface PairConsumer {
 		

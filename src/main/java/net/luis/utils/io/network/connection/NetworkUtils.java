@@ -46,30 +46,15 @@ public final class NetworkUtils {
 	 * The default timeout in seconds for executor shutdown.<br>
 	 */
 	private static final int SHUTDOWN_TIMEOUT_SECONDS = 5;
+	/**
+	 * The size in bytes of the length-prefix header used to frame messages on the wire.<br>
+	 */
+	private static final int FRAME_HEADER_SIZE = Integer.BYTES;
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 */
 	private NetworkUtils() {}
-	
-	/**
-	 * Returns a scratch buffer of at least the given size for a read operation.<br>
-	 * The given buffer is reused when it is large enough, otherwise a larger one is allocated.<br>
-	 * <p>
-	 *     The returned buffer may be larger than requested, so reads must be bounded to the requested length.<br>
-	 *     Callers are expected to store the returned buffer and pass it back on the next call.
-	 * </p>
-	 *
-	 * @param current The buffer from the previous call, or null if none was allocated yet
-	 * @param maxBytes The minimum required buffer size
-	 * @return The buffer to read into, which is the given buffer if it was large enough
-	 */
-	public static byte @NonNull [] resizeBuffer(byte @Nullable [] current, int maxBytes) {
-		if (current == null || current.length < maxBytes) {
-			return new byte[maxBytes];
-		}
-		return current;
-	}
 	
 	/**
 	 * Validates that the given data does not exceed the configured buffer size.<br>
@@ -88,8 +73,11 @@ public final class NetworkUtils {
 	}
 	
 	/**
-	 * Writes the given data to the socket and flushes it.<br>
+	 * Writes the given data to the socket as a single length-prefixed frame and flushes it.<br>
 	 * This method contains the shared write path of the connection oriented clients and connections.<br>
+	 * <p>
+	 *     The data is framed by {@link #writeFrame(OutputStream, byte[])}, so that the peer receives exactly these bytes as one message.
+	 * </p>
 	 *
 	 * @param socket The socket to write to
 	 * @param data The data to write
@@ -104,9 +92,7 @@ public final class NetworkUtils {
 		Objects.requireNonNull(data, "Data must not be null");
 		
 		try {
-			OutputStream out = socket.getOutputStream();
-			out.write(data);
-			out.flush();
+			writeFrame(socket.getOutputStream(), data);
 		} catch (SocketException e) {
 			if (onDisconnect != null) {
 				onDisconnect.run();
@@ -119,24 +105,26 @@ public final class NetworkUtils {
 	}
 	
 	/**
-	 * Reads whatever data is currently available from the socket, up to the given limit (blocking).<br>
+	 * Reads a single complete message from the socket (blocking).<br>
 	 * This method contains the shared read path of the connection oriented clients and connections.<br>
+	 * <p>
+	 *     The message is read as one length-prefixed frame by {@link #readFrame(InputStream, int)}, so that exactly the bytes
+	 *     passed to the peers {@link #writeAll} call are returned, regardless of how the stream fragments or coalesces them.
+	 * </p>
 	 *
 	 * @param socket The socket to read from
-	 * @param buffer The scratch buffer to read into, which must be at least maxBytes long
-	 * @param maxBytes The maximum number of bytes to read
+	 * @param maxBytes The maximum payload length that is accepted
 	 * @param readTimeout The read timeout to report on a timeout
 	 * @param onError The handler to notify on an I/O error, or null if none is configured
 	 * @param endpoint The endpoint to attach to thrown exceptions, or null if not available
 	 * @param onDisconnect The action to run when the connection was closed or reset, or null if the caller tracks no connection state
-	 * @return The received data, or an empty array if the connection was closed
-	 * @throws NullPointerException If socket, buffer, or read timeout is null
-	 * @throws NetworkConnectionException If receiving fails
+	 * @return The received message, or an empty array if the connection was closed cleanly between frames
+	 * @throws NullPointerException If socket or read timeout is null
+	 * @throws NetworkConnectionException If receiving fails, or the declared frame length exceeds maxBytes
 	 * @throws NetworkTimeoutException If the read times out
 	 */
 	public static byte @NonNull [] readAvailable(
 		@NonNull Socket socket,
-		byte @NonNull [] buffer,
 		int maxBytes,
 		@NonNull Duration readTimeout,
 		@Nullable ErrorEventHandler onError,
@@ -144,23 +132,28 @@ public final class NetworkUtils {
 		@Nullable Runnable onDisconnect
 	) throws NetworkConnectionException {
 		Objects.requireNonNull(socket, "Socket must not be null");
-		Objects.requireNonNull(buffer, "Buffer must not be null");
 		Objects.requireNonNull(readTimeout, "Read timeout must not be null");
 		
 		try {
-			InputStream in = socket.getInputStream();
-			int bytesRead = in.read(buffer, 0, maxBytes);
+			byte[] data = readFrame(socket.getInputStream(), maxBytes);
 			
-			if (bytesRead == -1) {
+			if (data == null) {
 				if (onDisconnect != null) {
 					onDisconnect.run();
 				}
 				return ArrayUtils.EMPTY_BYTE_ARRAY;
 			}
-			
-			return Arrays.copyOf(buffer, bytesRead);
+
+			return data;
+		} catch (FrameTooLargeException e) {
+			throw new NetworkConnectionException(e.getMessage(), e, NetworkErrorType.MESSAGE_TOO_LARGE, endpoint);
 		} catch (SocketTimeoutException e) {
 			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, readTimeout, endpoint);
+		} catch (EOFException e) {
+			if (onDisconnect != null) {
+				onDisconnect.run();
+			}
+			throw new NetworkConnectionException("Connection reset while receiving data", e, NetworkErrorType.CONNECTION_RESET, endpoint);
 		} catch (SocketException e) {
 			if (onDisconnect != null) {
 				onDisconnect.run();
@@ -214,6 +207,72 @@ public final class NetworkUtils {
 				yield new NetworkConnectionException("Failed to connect to " + endpoint, cause, NetworkErrorType.CONNECTION_FAILED, endpoint);
 			}
 		};
+	}
+	
+	/**
+	 * Writes a single length-prefixed frame to the given output stream and flushes it.<br>
+	 * The frame consists of a 4-byte big-endian length header followed by the payload bytes,<br>
+	 * so that the receiving side can reassemble exactly the bytes passed to this method regardless of how the stream fragments them.<br>
+	 *
+	 * @param out The output stream to write to
+	 * @param data The payload to send
+	 * @throws NullPointerException If the output stream or data is null
+	 * @throws IOException If an I/O error occurs while writing
+	 */
+	public static void writeFrame(@NonNull OutputStream out, byte @NonNull [] data) throws IOException {
+		Objects.requireNonNull(out, "Output stream must not be null");
+		Objects.requireNonNull(data, "Data must not be null");
+		
+		int length = data.length;
+		byte[] frame = new byte[FRAME_HEADER_SIZE + length];
+		frame[0] = (byte) (length >>> 24);
+		frame[1] = (byte) (length >>> 16);
+		frame[2] = (byte) (length >>> 8);
+		frame[3] = (byte) length;
+		System.arraycopy(data, 0, frame, FRAME_HEADER_SIZE, length);
+		
+		out.write(frame);
+		out.flush();
+	}
+	
+	/**
+	 * Reads a single length-prefixed frame from the given input stream (blocking).<br>
+	 * Reassembles the frame regardless of how many raw reads it takes to arrive, looping until the full header and payload have been read.<br>
+	 *
+	 * @param in The input stream to read from
+	 * @param maxBytes The maximum payload length that is accepted
+	 * @return The payload bytes, or null if the stream ended cleanly before any frame data was read
+	 * @throws NullPointerException If the input stream is null
+	 * @throws EOFException If the stream ends in the middle of a frame
+	 * @throws FrameTooLargeException If the declared frame length exceeds {@code maxBytes}
+	 * @throws IOException If the declared frame length is invalid, or an I/O error occurs while reading
+	 */
+	public static byte @Nullable [] readFrame(@NonNull InputStream in, int maxBytes) throws IOException {
+		Objects.requireNonNull(in, "Input stream must not be null");
+		
+		byte[] header = new byte[FRAME_HEADER_SIZE];
+		int headerRead = in.readNBytes(header, 0, FRAME_HEADER_SIZE);
+		if (headerRead == 0) {
+			return null;
+		}
+		if (headerRead < FRAME_HEADER_SIZE) {
+			throw new EOFException("Connection closed while reading frame header");
+		}
+		
+		int length = ((header[0] & 0xFF) << 24) | ((header[1] & 0xFF) << 16) | ((header[2] & 0xFF) << 8) | (header[3] & 0xFF);
+		if (length < 0) {
+			throw new IOException("Invalid frame length: " + length);
+		}
+		if (length > maxBytes) {
+			throw new FrameTooLargeException(length, maxBytes);
+		}
+		
+		byte[] payload = new byte[length];
+		int payloadRead = in.readNBytes(payload, 0, length);
+		if (payloadRead < length) {
+			throw new EOFException("Connection closed while reading frame payload");
+		}
+		return payload;
 	}
 	
 	/**

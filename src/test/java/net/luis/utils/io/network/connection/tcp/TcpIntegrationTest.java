@@ -28,7 +28,7 @@ import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.*;
 
-import java.io.InputStream;
+import java.io.*;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -511,6 +511,151 @@ class TcpIntegrationTest {
 				}
 				
 				assertArrayEquals(ArrayUtils.EMPTY_BYTE_ARRAY, client.receive());
+			}
+		}
+	}
+	
+	@Test
+	void clientReceiveWithMaxBytesSmallerThanFrameThrows() throws Exception {
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onMessage((server, conn, data) -> {
+				try {
+					conn.send("Hello World".getBytes());
+				} catch (NetworkConnectionException e) {
+					fail("Failed to send response: " + e.getMessage());
+				}
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			TcpClientConfig clientConfig = TcpClientConfig.builder()
+				.readTimeout(Duration.ofSeconds(5))
+				.build();
+			
+			try (TcpClient client = new TcpClient(clientConfig)) {
+				client.connect(server.boundEndpoint());
+				client.send("trigger".getBytes());
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.receive(5));
+				assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void clientReceiveThrowsOnServerCloseMidFrame() throws Exception {
+		CountDownLatch clientConnected = new CountDownLatch(1);
+		AtomicReference<Connection> connectionRef = new AtomicReference<>();
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectionRef.set(connection);
+				clientConnected.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			TcpClientConfig clientConfig = TcpClientConfig.builder()
+				.readTimeout(Duration.ofSeconds(5))
+				.build();
+			
+			try (TcpClient client = new TcpClient(clientConfig)) {
+				client.connect(server.boundEndpoint());
+				assertTrue(clientConnected.await(5, TimeUnit.SECONDS));
+				
+				Connection serverSideConnection = connectionRef.get();
+				OutputStream out = serverSideConnection.getOutputStream();
+				out.write(new byte[] { 0, 0, 0, 10, 1, 2, 3 });
+				out.flush();
+				serverSideConnection.close();
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, client::receive);
+				assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void clientReceiveEmptyMessageDoesNotDisconnect() throws Exception {
+		CountDownLatch clientConnected = new CountDownLatch(1);
+		CountDownLatch disconnectLatch = new CountDownLatch(1);
+		AtomicReference<Connection> connectionRef = new AtomicReference<>();
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				connectionRef.set(connection);
+				clientConnected.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			TcpClientConfig clientConfig = TcpClientConfig.builder()
+				.readTimeout(Duration.ofSeconds(5))
+				.onDisconnect((connection, local, remote, timestamp) -> disconnectLatch.countDown())
+				.build();
+			
+			try (TcpClient client = new TcpClient(clientConfig)) {
+				client.connect(server.boundEndpoint());
+				assertTrue(clientConnected.await(5, TimeUnit.SECONDS));
+				
+				connectionRef.get().send(new byte[0]);
+				
+				byte[] received = client.receive();
+				assertNotNull(received);
+				assertEquals(0, received.length);
+				assertTrue(client.isActive());
+				assertEquals(1, disconnectLatch.getCount());
+				
+				byte[] second = "Still Alive".getBytes();
+				connectionRef.get().send(second);
+				assertArrayEquals(second, client.receive());
+			}
+		}
+	}
+	
+	@Test
+	void sendAndReceiveMessageDeliveredInFragmentedWrites() throws Exception {
+		CountDownLatch messageLatch = new CountDownLatch(1);
+		AtomicReference<byte[]> receivedData = new AtomicReference<>();
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onMessage((server, conn, data) -> {
+				receivedData.set(data);
+				messageLatch.countDown();
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, config)) {
+			server.start();
+			
+			try (TcpClient client = new TcpClient()) {
+				client.connect(server.boundEndpoint());
+				
+				byte[] payload = "Fragmented End To End".getBytes();
+				ByteArrayOutputStream frameBytes = new ByteArrayOutputStream();
+				NetworkUtils.writeFrame(frameBytes, payload);
+				byte[] frame = frameBytes.toByteArray();
+				
+				OutputStream out = client.getOutputStream();
+				for (int i = 0; i < frame.length; i += 3) {
+					int end = Math.min(i + 3, frame.length);
+					out.write(frame, i, end - i);
+					out.flush();
+					Thread.sleep(10);
+				}
+				
+				assertTrue(messageLatch.await(5, TimeUnit.SECONDS));
+				assertArrayEquals(payload, receivedData.get());
 			}
 		}
 	}
@@ -1258,9 +1403,7 @@ class TcpIntegrationTest {
 			assertNotNull(stream);
 			
 			client.send("Hi".getBytes());
-			byte[] received = new byte[2];
-			assertEquals(2, stream.read(received));
-			assertArrayEquals("Hi".getBytes(), received);
+			assertArrayEquals("Hi".getBytes(), NetworkUtils.readFrame(stream, 1024));
 		});
 	}
 	
@@ -1270,8 +1413,7 @@ class TcpIntegrationTest {
 			OutputStream stream = client.getOutputStream();
 			assertNotNull(stream);
 			
-			stream.write("Hi".getBytes());
-			stream.flush();
+			NetworkUtils.writeFrame(stream, "Hi".getBytes());
 			assertArrayEquals("Hi".getBytes(), receiveExactly(client, 2, 1024));
 		});
 	}
@@ -1440,15 +1582,9 @@ class TcpIntegrationTest {
 	}
 	
 	private static byte[] receiveExactly(TcpClient client, int expected, int maxBytes) throws Exception {
-		java.io.ByteArrayOutputStream accumulated = new java.io.ByteArrayOutputStream();
-		while (accumulated.size() < expected) {
-			byte[] chunk = client.receive(maxBytes);
-			if (chunk.length == 0) {
-				break;
-			}
-			accumulated.write(chunk);
-		}
-		return accumulated.toByteArray();
+		byte[] received = client.receive(maxBytes);
+		assertEquals(expected, received.length);
+		return received;
 	}
 	
 	private static void withEchoServer(ClientConsumer body) throws Exception {

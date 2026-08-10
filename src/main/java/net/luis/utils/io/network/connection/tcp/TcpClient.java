@@ -24,7 +24,6 @@ import net.luis.utils.io.network.connection.NetworkClient;
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -72,11 +71,6 @@ public final class TcpClient implements NetworkClient<byte[]> {
 	 * Whether this client is currently connected.<br>
 	 */
 	private volatile boolean connected;
-	/**
-	 * The reusable scratch buffer for read operations.<br>
-	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
-	 */
-	private byte @Nullable [] readBuffer;
 	
 	/**
 	 * Constructs a new TCP client with default configuration.<br>
@@ -216,8 +210,7 @@ public final class TcpClient implements NetworkClient<byte[]> {
 		}
 		this.ensureConnected();
 		
-		this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
-		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
+		return NetworkUtils.readAvailable(this.socket, maxBytes, this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
 	}
 	
 	/**
