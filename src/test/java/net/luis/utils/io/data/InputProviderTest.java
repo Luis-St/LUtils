@@ -111,6 +111,19 @@ class InputProviderTest {
 	}
 	
 	@Test
+	void constructorWithByteArray() throws Exception {
+		assertThrows(NullPointerException.class, () -> new InputProvider((byte[]) null));
+		
+		try (InputProvider provider = new InputProvider(new byte[0])) {
+			assertNotNull(provider.getStream());
+		}
+		
+		try (InputProvider provider = new InputProvider(new byte[]{1, 2, 3})) {
+			assertNotNull(provider.getStream());
+		}
+	}
+	
+	@Test
 	void constructorWithInputStream() throws Exception {
 		assertThrows(NullPointerException.class, () -> new InputProvider((InputStream) null));
 		
