@@ -49,6 +49,7 @@ class SslServerConfigBuilderTest {
 		assertEquals(50, config.backlog());
 		assertEquals(8192, config.clientBufferSize());
 		assertEquals(Duration.ZERO, config.clientReadTimeout());
+		assertTrue(config.framing());
 		assertTrue(config.tcpNoDelay());
 		assertTrue(config.keepAlive());
 		assertSame(context, config.sslContext());
@@ -76,6 +77,76 @@ class SslServerConfigBuilderTest {
 			.clientBufferSize(4096)
 			.build();
 		assertEquals(4096, config.clientBufferSize());
+	}
+	
+	@Test
+	void framingTrue() {
+		SslServerConfig config = SslServerConfig.builder(context)
+			.framing(true)
+			.build();
+		assertTrue(config.framing());
+	}
+	
+	@Test
+	void framingFalse() {
+		SslServerConfig config = SslServerConfig.builder(context)
+			.framing(false)
+			.build();
+		assertFalse(config.framing());
+	}
+	
+	@Test
+	void framingDefaultsToEnabled() {
+		SslServerConfig config = SslServerConfig.builder(context).build();
+		assertTrue(config.framing());
+	}
+	
+	@Test
+	void framingReturnsSameBuilder() {
+		SslServerConfigBuilder builder = SslServerConfig.builder(context);
+		assertSame(builder, builder.framing(false));
+	}
+	
+	@Test
+	void framingSetMultipleTimes() {
+		SslServerConfig config = SslServerConfig.builder(context)
+			.framing(false)
+			.framing(true)
+			.framing(false)
+			.build();
+		assertFalse(config.framing());
+	}
+	
+	@Test
+	void framingSurvivesBuilderReuse() {
+		SslServerConfigBuilder builder = SslServerConfig.builder(context)
+			.framing(false);
+		
+		SslServerConfig first = builder.build();
+		assertFalse(first.framing());
+		
+		builder.framing(true);
+		SslServerConfig second = builder.build();
+		assertTrue(second.framing());
+		
+		assertFalse(first.framing());
+	}
+	
+	@Test
+	void framingCombinedWithOtherOptions() {
+		SslServerConfig config = SslServerConfig.builder(context)
+			.backlog(64)
+			.clientBufferSize(4096)
+			.framing(false)
+			.tcpNoDelay(true)
+			.keepAlive(false)
+			.build();
+		
+		assertEquals(64, config.backlog());
+		assertEquals(4096, config.clientBufferSize());
+		assertFalse(config.framing());
+		assertTrue(config.tcpNoDelay());
+		assertFalse(config.keepAlive());
 	}
 	
 	@Test
@@ -207,6 +278,7 @@ class SslServerConfigBuilderTest {
 		assertSame(builder, builder.backlog(100));
 		assertSame(builder, builder.clientBufferSize(4096));
 		assertSame(builder, builder.clientReadTimeout(Duration.ofSeconds(30)));
+		assertSame(builder, builder.framing(false));
 		assertSame(builder, builder.tcpNoDelay(true));
 		assertSame(builder, builder.keepAlive(true));
 		assertSame(builder, builder.enabledProtocols(List.of("TLSv1.3")));
@@ -225,6 +297,7 @@ class SslServerConfigBuilderTest {
 		SslServerConfig config = SslServerConfig.builder(context)
 			.backlog(200)
 			.clientBufferSize(16384)
+			.framing(false)
 			.clientReadTimeout(Duration.ofSeconds(60))
 			.tcpNoDelay(false)
 			.keepAlive(false)
@@ -241,6 +314,7 @@ class SslServerConfigBuilderTest {
 		assertEquals(200, config.backlog());
 		assertEquals(16384, config.clientBufferSize());
 		assertEquals(Duration.ofSeconds(60), config.clientReadTimeout());
+		assertFalse(config.framing());
 		assertFalse(config.tcpNoDelay());
 		assertFalse(config.keepAlive());
 		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());

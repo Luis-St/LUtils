@@ -34,8 +34,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -420,7 +419,7 @@ class SslIntegrationTest {
 			IpEndpoint serverEndpoint = server.boundEndpoint();
 			
 			try (SslClient client1 = new SslClient(this.clientConfig().readTimeout(Duration.ofSeconds(5)).build());
-			     SslClient client2 = new SslClient(this.clientConfig().readTimeout(Duration.ofSeconds(5)).build())) {
+				 SslClient client2 = new SslClient(this.clientConfig().readTimeout(Duration.ofSeconds(5)).build())) {
 				
 				client1.connect(serverEndpoint);
 				client2.connect(serverEndpoint);
@@ -956,6 +955,207 @@ class SslIntegrationTest {
 		}
 	}
 	
+	@Test
+	void unframedClientSendAndReceive() throws Exception {
+		this.withEchoServer(false, client -> {
+			byte[] payload = "Hello".getBytes();
+			client.send(payload);
+			
+			assertArrayEquals(payload, readUntil(client, payload.length, 8192));
+		});
+	}
+	
+	@Test
+	void framedClientSendAndReceive() throws Exception {
+		this.withEchoServer(true, client -> {
+			byte[] payload = "Hello".getBytes();
+			client.send(payload);
+			
+			byte[] received = client.receive();
+			assertEquals(payload.length, received.length);
+			assertArrayEquals(payload, received);
+		});
+	}
+	
+	@Test
+	void unframedClientReceiveRespectsMaxBytes() throws Exception {
+		this.withEchoServer(false, client -> {
+			client.send(filled(50, (byte) 0x42));
+			
+			byte[] first = client.receive(10);
+			assertTrue(first.length > 0);
+			assertTrue(first.length <= 10);
+			
+			byte[] rest = readUntil(client, 50 - first.length, 8192);
+			assertEquals(50, first.length + rest.length);
+		});
+	}
+	
+	@Test
+	void unframedClientReceiveOnServerCloseReturnsEmpty() throws Exception {
+		AtomicInteger disconnects = new AtomicInteger(0);
+		SslServerConfig serverConfig = SslServerConfig.builder(serverContext)
+			.framing(false)
+			.onMessage((server, conn, data) -> conn.close())
+			.build();
+		SslClientConfig clientConfig = this.clientConfig()
+			.framing(false)
+			.readTimeout(Duration.ofSeconds(5))
+			.onDisconnect((connection, local, remote, timestamp) -> disconnects.incrementAndGet())
+			.build();
+		
+		try (SslServer server = new SslServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), serverConfig)) {
+			server.start();
+			try (SslClient client = new SslClient(clientConfig)) {
+				client.connect(server.boundEndpoint());
+				client.send("Hi".getBytes());
+				
+				assertEquals(0, client.receive().length);
+				assertFalse(client.isActive());
+				assertEquals(1, disconnects.get());
+			}
+		}
+	}
+	
+	@Test
+	void unframedServerReceivesClientMessages() throws Exception {
+		byte[] payload = "Hello".getBytes();
+		ByteArrayOutputStream delivered = new ByteArrayOutputStream();
+		CountDownLatch complete = new CountDownLatch(1);
+		SslServerConfig serverConfig = SslServerConfig.builder(serverContext)
+			.framing(false)
+			.onMessage((server, conn, data) -> {
+				synchronized (delivered) {
+					delivered.writeBytes(data);
+					if (delivered.size() >= payload.length) {
+						complete.countDown();
+					}
+				}
+			})
+			.build();
+		
+		try (SslServer server = new SslServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), serverConfig)) {
+			server.start();
+			try (SslClient client = new SslClient(this.clientConfig().framing(false).readTimeout(Duration.ofSeconds(5)).build())) {
+				client.connect(server.boundEndpoint());
+				client.send(payload);
+				
+				assertTrue(complete.await(10, TimeUnit.SECONDS));
+				synchronized (delivered) {
+					assertArrayEquals(payload, delivered.toByteArray());
+				}
+			}
+		}
+	}
+	
+	@Test
+	void unframedServerNotifiesClientDisconnect() throws Exception {
+		CountDownLatch disconnected = new CountDownLatch(1);
+		SslServerConfig serverConfig = SslServerConfig.builder(serverContext)
+			.framing(false)
+			.onClientDisconnect((connection, local, remote, timestamp) -> disconnected.countDown())
+			.build();
+		
+		try (SslServer server = new SslServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), serverConfig)) {
+			server.start();
+			SslClient client = new SslClient(this.clientConfig().framing(false).readTimeout(Duration.ofSeconds(5)).build());
+			client.connect(server.boundEndpoint());
+			client.close();
+			
+			assertTrue(disconnected.await(10, TimeUnit.SECONDS));
+			assertTrue(awaitClientCount(server, 0));
+		}
+	}
+	
+	@Test
+	void unframedRoundTripLosesMessageBoundaries() throws Exception {
+		this.withEchoServer(false, client -> {
+			client.send("AAA".getBytes());
+			client.send("BBB".getBytes());
+			
+			assertArrayEquals("AAABBB".getBytes(), readUntil(client, 6, 8192));
+		});
+	}
+	
+	@Test
+	void framedRoundTripKeepsMessageBoundaries() throws Exception {
+		this.withEchoServer(true, client -> {
+			client.send("AAA".getBytes());
+			client.send("BBB".getBytes());
+			
+			assertArrayEquals("AAA".getBytes(), client.receive());
+			assertArrayEquals("BBB".getBytes(), client.receive());
+		});
+	}
+	
+	@Test
+	void unframedClientReusesScratchBufferAcrossReceives() throws Exception {
+		this.withEchoServer(false, client -> {
+			client.send(filled(8, (byte) 0x01));
+			assertArrayEquals(filled(8, (byte) 0x01), readUntil(client, 8, 8192));
+			
+			byte[] larger = filled(4096, (byte) 0x02);
+			client.send(larger);
+			assertArrayEquals(larger, readUntil(client, larger.length, 8192));
+			
+			client.send(filled(4, (byte) 0x03));
+			assertArrayEquals(filled(4, (byte) 0x03), readUntil(client, 4, 8192));
+		});
+	}
+	
+	@Test
+	void unframedLargeMessageSpansMultipleTlsRecords() throws Exception {
+		byte[] payload = filled(65536, (byte) 0x42);
+		SslServerConfig serverConfig = SslServerConfig.builder(serverContext)
+			.framing(false)
+			.clientBufferSize(65536)
+			.onMessage((server, conn, data) -> {
+				try {
+					conn.send(data);
+				} catch (NetworkConnectionException e) {
+					fail("Echo failed: " + e.getMessage());
+				}
+			})
+			.build();
+		
+		try (SslServer server = new SslServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), serverConfig)) {
+			server.start();
+			try (SslClient client = new SslClient(this.clientConfig().framing(false).bufferSize(65536).readTimeout(Duration.ofSeconds(10)).build())) {
+				client.connect(server.boundEndpoint());
+				client.send(payload);
+				
+				assertArrayEquals(payload, readUntil(client, payload.length, 65536));
+			}
+		}
+	}
+	
+	@Test
+	void framedServerWithUnframedClientDoesNotInteroperate() throws Exception {
+		byte[] payload = "Hello".getBytes();
+		SslServerConfig serverConfig = SslServerConfig.builder(serverContext)
+			.framing(true)
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				try {
+					connection.send(payload);
+				} catch (NetworkConnectionException e) {
+					fail("Server send failed: " + e.getMessage());
+				}
+			})
+			.build();
+		
+		try (SslServer server = new SslServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), serverConfig)) {
+			server.start();
+			try (SslClient client = new SslClient(this.clientConfig().framing(false).readTimeout(Duration.ofSeconds(5)).build())) {
+				client.connect(server.boundEndpoint());
+				
+				byte[] received = readUntil(client, payload.length + 4, 8192);
+				assertEquals(payload.length + 4, received.length);
+				assertArrayEquals(new byte[] { 0, 0, 0, 5 }, Arrays.copyOf(received, 4));
+				assertFalse(Arrays.equals(payload, received));
+			}
+		}
+	}
+	
 	//region Helper methods
 	
 	@Test
@@ -1386,7 +1586,12 @@ class SslIntegrationTest {
 	}
 	
 	private SslServerConfig echoConfig() {
+		return this.echoConfig(true);
+	}
+	
+	private SslServerConfig echoConfig(boolean framing) {
 		return SslServerConfig.builder(serverContext)
+			.framing(framing)
 			.onMessage((server, conn, data) -> {
 				try {
 					conn.send(data);
@@ -1398,15 +1603,38 @@ class SslIntegrationTest {
 	}
 	
 	private void withEchoServer(ClientConsumer body) throws Exception {
+		this.withEchoServer(true, body);
+	}
+	
+	private void withEchoServer(boolean framing, ClientConsumer body) throws Exception {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
-		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+		try (SslServer server = new SslServer(endpoint, this.echoConfig(framing))) {
 			server.start();
 			
-			try (SslClient client = new SslClient(this.clientConfig().readTimeout(Duration.ofSeconds(5)).build())) {
+			try (SslClient client = new SslClient(this.clientConfig().framing(framing).readTimeout(Duration.ofSeconds(5)).build())) {
 				client.connect(server.boundEndpoint());
 				body.accept(client);
 			}
 		}
+	}
+	
+	private static byte[] readUntil(SslClient client, int expected, int maxBytes) throws Exception {
+		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
+		while (reassembled.size() < expected) {
+			reassembled.writeBytes(client.receive(maxBytes));
+		}
+		return reassembled.toByteArray();
+	}
+	
+	private static boolean awaitClientCount(SslServer server, int expected) throws Exception {
+		long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+		while (System.nanoTime() < deadline) {
+			if (server.getClientCount() == expected) {
+				return true;
+			}
+			Thread.sleep(20);
+		}
+		return false;
 	}
 	
 	@FunctionalInterface

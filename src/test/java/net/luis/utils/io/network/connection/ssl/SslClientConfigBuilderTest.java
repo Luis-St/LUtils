@@ -49,6 +49,7 @@ class SslClientConfigBuilderTest {
 		assertEquals(Duration.ZERO, config.readTimeout());
 		assertEquals(Duration.ZERO, config.writeTimeout());
 		assertEquals(8192, config.bufferSize());
+		assertTrue(config.framing());
 		assertTrue(config.tcpNoDelay());
 		assertTrue(config.keepAlive());
 		assertNull(config.sslContext());
@@ -108,6 +109,76 @@ class SslClientConfigBuilderTest {
 			.bufferSize(4096)
 			.build();
 		assertEquals(4096, config.bufferSize());
+	}
+	
+	@Test
+	void framingTrue() {
+		SslClientConfig config = SslClientConfig.builder()
+			.framing(true)
+			.build();
+		assertTrue(config.framing());
+	}
+	
+	@Test
+	void framingFalse() {
+		SslClientConfig config = SslClientConfig.builder()
+			.framing(false)
+			.build();
+		assertFalse(config.framing());
+	}
+	
+	@Test
+	void framingDefaultsToEnabled() {
+		SslClientConfig config = SslClientConfig.builder().build();
+		assertTrue(config.framing());
+	}
+	
+	@Test
+	void framingReturnsSameBuilder() {
+		SslClientConfigBuilder builder = SslClientConfig.builder();
+		assertSame(builder, builder.framing(false));
+	}
+	
+	@Test
+	void framingSetMultipleTimes() {
+		SslClientConfig config = SslClientConfig.builder()
+			.framing(false)
+			.framing(true)
+			.framing(false)
+			.build();
+		assertFalse(config.framing());
+	}
+	
+	@Test
+	void framingSurvivesBuilderReuse() {
+		SslClientConfigBuilder builder = SslClientConfig.builder()
+			.framing(false);
+		
+		SslClientConfig first = builder.build();
+		assertFalse(first.framing());
+		
+		builder.framing(true);
+		SslClientConfig second = builder.build();
+		assertTrue(second.framing());
+		
+		assertFalse(first.framing());
+	}
+	
+	@Test
+	void framingCombinedWithOtherOptions() {
+		SslClientConfig config = SslClientConfig.builder()
+			.bufferSize(4096)
+			.framing(false)
+			.tcpNoDelay(true)
+			.keepAlive(false)
+			.verifyHostname(true)
+			.build();
+		
+		assertEquals(4096, config.bufferSize());
+		assertFalse(config.framing());
+		assertTrue(config.tcpNoDelay());
+		assertFalse(config.keepAlive());
+		assertTrue(config.verifyHostname());
 	}
 	
 	@Test
@@ -225,6 +296,7 @@ class SslClientConfigBuilderTest {
 		assertSame(builder, builder.readTimeout(Duration.ofSeconds(5)));
 		assertSame(builder, builder.writeTimeout(Duration.ofSeconds(5)));
 		assertSame(builder, builder.bufferSize(4096));
+		assertSame(builder, builder.framing(false));
 		assertSame(builder, builder.tcpNoDelay(true));
 		assertSame(builder, builder.keepAlive(true));
 		assertSame(builder, builder.sslContext(context));
@@ -243,6 +315,7 @@ class SslClientConfigBuilderTest {
 			.readTimeout(Duration.ofSeconds(10))
 			.writeTimeout(Duration.ofSeconds(5))
 			.bufferSize(16384)
+			.framing(false)
 			.tcpNoDelay(false)
 			.keepAlive(false)
 			.sslContext(context)
@@ -258,6 +331,7 @@ class SslClientConfigBuilderTest {
 		assertEquals(Duration.ofSeconds(10), config.readTimeout());
 		assertEquals(Duration.ofSeconds(5), config.writeTimeout());
 		assertEquals(16384, config.bufferSize());
+		assertFalse(config.framing());
 		assertFalse(config.tcpNoDelay());
 		assertFalse(config.keepAlive());
 		assertSame(context, config.sslContext());

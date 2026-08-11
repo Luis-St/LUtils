@@ -21,6 +21,7 @@ package net.luis.utils.io.network.connection.ssl;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.Connection;
 import net.luis.utils.io.network.connection.NetworkUtils;
+import net.luis.utils.io.network.connection.context.ConnectionContext;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.junit.jupiter.api.*;
@@ -31,6 +32,7 @@ import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -451,6 +453,166 @@ class SslConnectionTest {
 		});
 	}
 	
+	@Test
+	void contextIsInitiallyEmpty() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			ConnectionContext context = connection.context();
+			
+			assertNotNull(context);
+			assertTrue(context.isEmpty());
+			assertEquals(0, context.size());
+		});
+	}
+	
+	@Test
+	void contextReturnsSameInstanceOnEveryCall() throws Exception {
+		this.withPair(8192, (client, connection) -> assertSame(connection.context(), connection.context()));
+	}
+	
+	@Test
+	void contextRetainsStoredValues() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			connection.context().set("user", "Luis");
+			
+			assertEquals("Luis", connection.context().getString("user").orElseThrow());
+			assertEquals(1, connection.context().size());
+		});
+	}
+	
+	@Test
+	void contextIsAccessibleAfterClose() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			connection.context().set("user", "Luis");
+			connection.close();
+			
+			assertFalse(connection.isActive());
+			assertEquals("Luis", assertDoesNotThrow(() -> connection.context().getString("user").orElseThrow()));
+		});
+	}
+	
+	@Test
+	void contextIsIndependentPerConnection() throws Exception {
+		AtomicReference<ConnectionContext> firstContext = new AtomicReference<>();
+		this.withPair(8192, (client, connection) -> {
+			connection.context().set("user", "Luis");
+			firstContext.set(connection.context());
+		});
+		
+		this.withPair(8192, (client, connection) -> {
+			assertNotSame(firstContext.get(), connection.context());
+			assertTrue(connection.context().isEmpty());
+			assertFalse(connection.context().contains("user"));
+		});
+	}
+	
+	@Test
+	void contextIsUnaffectedByHandshake() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			connection.context().set("user", "Luis");
+			
+			writeAndFlush(client, "Hello".getBytes());
+			assertArrayEquals("Hello".getBytes(), connection.receive());
+			connection.send("World".getBytes());
+			
+			assertEquals("Luis", connection.context().getString("user").orElseThrow());
+			assertNotNull(connection.getSession());
+		});
+	}
+	
+	@Test
+	void constructWithFramingDisabled() throws Exception {
+		this.withPair(8192, false, (client, connection) -> {
+			assertTrue(connection.isActive());
+			assertNotNull(connection.getSession());
+		});
+	}
+	
+	@Test
+	void sendWithoutFramingWritesRawBytes() throws Exception {
+		this.withPair(8192, false, (client, connection) -> {
+			byte[] data = "Hello".getBytes();
+			connection.send(data);
+			
+			assertArrayEquals(data, client.getInputStream().readNBytes(5));
+		});
+	}
+	
+	@Test
+	void receiveWithoutFramingReturnsAvailableBytes() throws Exception {
+		this.withPair(8192, false, (client, connection) -> {
+			client.getOutputStream().write("Hello".getBytes());
+			client.getOutputStream().flush();
+			
+			assertArrayEquals("Hello".getBytes(), readUntil(connection, 5, 8192));
+		});
+	}
+	
+	@Test
+	void receiveWithFramingKeepsMessageBoundaries() throws Exception {
+		this.withPair(8192, true, (client, connection) -> {
+			writeAndFlush(client, "Hello".getBytes());
+			writeAndFlush(client, "World".getBytes());
+			
+			assertArrayEquals("Hello".getBytes(), connection.receive());
+			assertArrayEquals("World".getBytes(), connection.receive());
+		});
+	}
+	
+	@Test
+	void receiveWithoutFramingReturnsEmptyArrayOnPeerClose() throws Exception {
+		this.withPair(8192, false, (client, connection) -> {
+			client.close();
+			
+			assertEquals(0, connection.receive().length);
+			
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, connection::receive);
+			assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+		});
+	}
+	
+	@Test
+	void receiveWithoutFramingRespectsMaxBytes() throws Exception {
+		this.withPair(8192, false, (client, connection) -> {
+			byte[] payload = filled(50, (byte) 0x42);
+			client.getOutputStream().write(payload);
+			client.getOutputStream().flush();
+			
+			byte[] first = connection.receive(10);
+			assertTrue(first.length > 0);
+			assertTrue(first.length <= 10);
+			
+			byte[] rest = readUntil(connection, 50 - first.length, 8192);
+			assertEquals(50, first.length + rest.length);
+		});
+	}
+	
+	@Test
+	void receiveWithoutFramingReusesScratchBufferAcrossCalls() throws Exception {
+		this.withPair(8192, false, (client, connection) -> {
+			client.getOutputStream().write("AAAA".getBytes());
+			client.getOutputStream().flush();
+			assertArrayEquals("AAAA".getBytes(), readUntil(connection, 4, 4096));
+			
+			client.getOutputStream().write("BB".getBytes());
+			client.getOutputStream().flush();
+			assertArrayEquals("BB".getBytes(), readUntil(connection, 2, 4096));
+			
+			client.getOutputStream().write("CCC".getBytes());
+			client.getOutputStream().flush();
+			assertArrayEquals("CCC".getBytes(), readUntil(connection, 3, 4096));
+		});
+	}
+	
+	@Test
+	void unframedConnectionSurvivesTlsRecordFragmentation() throws Exception {
+		this.withPair(32768, false, (client, connection) -> {
+			byte[] payload = filled(20480, (byte) 0x42);
+			client.getOutputStream().write(payload);
+			client.getOutputStream().flush();
+			
+			assertArrayEquals(payload, readUntil(connection, payload.length, 32768));
+		});
+	}
 	
 	//region Helper methods
 	
@@ -470,11 +632,19 @@ class SslConnectionTest {
 		return received;
 	}
 	
-	/**
-	 * Opens a fully handshaked {@link SSLSocket} pair, wraps the server side in an {@link SslConnection},
-	 * runs the given test body, and closes everything afterwards.<br>
-	 */
+	private static byte[] readUntil(SslConnection connection, int expected, int maxBytes) throws Exception {
+		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
+		while (reassembled.size() < expected) {
+			reassembled.writeBytes(connection.receive(maxBytes));
+		}
+		return reassembled.toByteArray();
+	}
+	
 	private void withPair(int bufferSize, PairConsumer body) throws Exception {
+		this.withPair(bufferSize, true, body);
+	}
+	
+	private void withPair(int bufferSize, boolean framing, PairConsumer body) throws Exception {
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		try (SSLServerSocket serverSocket = (SSLServerSocket) serverContext.getServerSocketFactory().createServerSocket()) {
 			serverSocket.bind(new InetSocketAddress("127.0.0.1", 0));
@@ -489,7 +659,7 @@ class SslConnectionTest {
 			try (SSLSocket client = (SSLSocket) clientContext.getSocketFactory().createSocket("127.0.0.1", port)) {
 				client.startHandshake();
 				SSLSocket serverSide = serverFuture.get(15, TimeUnit.SECONDS);
-				SslConnection connection = new SslConnection(serverSide, bufferSize, true, Duration.ofSeconds(5));
+				SslConnection connection = new SslConnection(serverSide, bufferSize, framing, Duration.ofSeconds(5));
 				try {
 					body.accept(client, connection);
 				} finally {

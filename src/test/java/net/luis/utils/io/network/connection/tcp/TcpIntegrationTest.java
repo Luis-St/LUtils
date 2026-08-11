@@ -29,7 +29,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.*;
 
 import java.io.*;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -37,8 +36,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -746,7 +744,7 @@ class TcpIntegrationTest {
 				.build();
 			
 			try (TcpClient client1 = new TcpClient(clientConfig);
-			     TcpClient client2 = new TcpClient(clientConfig)) {
+				 TcpClient client2 = new TcpClient(clientConfig)) {
 				
 				client1.connect(serverEndpoint);
 				client2.connect(serverEndpoint);
@@ -1550,6 +1548,212 @@ class TcpIntegrationTest {
 		}
 	}
 	
+	@Test
+	void unframedClientSendAndReceive() throws Exception {
+		withEchoServer(false, client -> {
+			byte[] payload = "Hello".getBytes(StandardCharsets.UTF_8);
+			client.send(payload);
+			
+			assertArrayEquals(payload, readUntil(client, payload.length, 8192));
+		});
+	}
+	
+	@Test
+	void framedClientSendAndReceive() throws Exception {
+		withEchoServer(true, client -> {
+			byte[] payload = "Hello".getBytes(StandardCharsets.UTF_8);
+			client.send(payload);
+			
+			byte[] received = client.receive();
+			assertEquals(payload.length, received.length);
+			assertArrayEquals(payload, received);
+		});
+	}
+	
+	@Test
+	void unframedClientReceiveRespectsMaxBytes() throws Exception {
+		withEchoServer(false, client -> {
+			client.send(filled(50, (byte) 0x42));
+			
+			byte[] first = client.receive(10);
+			assertTrue(first.length > 0);
+			assertTrue(first.length <= 10);
+			
+			byte[] rest = readUntil(client, 50 - first.length, 8192);
+			assertEquals(50, first.length + rest.length);
+		});
+	}
+	
+	@Test
+	void unframedClientReceiveOnServerCloseReturnsEmpty() throws Exception {
+		AtomicInteger disconnects = new AtomicInteger(0);
+		TcpServerConfig serverConfig = TcpServerConfig.builder()
+			.framing(false)
+			.onMessage((server, conn, data) -> conn.close())
+			.build();
+		TcpClientConfig clientConfig = TcpClientConfig.builder()
+			.framing(false)
+			.readTimeout(Duration.ofSeconds(5))
+			.onDisconnect((connection, local, remote, timestamp) -> disconnects.incrementAndGet())
+			.build();
+		
+		try (TcpServer server = new TcpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), serverConfig)) {
+			server.start();
+			try (TcpClient client = new TcpClient(clientConfig)) {
+				client.connect(server.boundEndpoint());
+				client.send("Hi".getBytes(StandardCharsets.UTF_8));
+				
+				assertEquals(0, client.receive().length);
+				assertFalse(client.isActive());
+				assertEquals(1, disconnects.get());
+			}
+		}
+	}
+	
+	@Test
+	void unframedServerReceivesClientMessages() throws Exception {
+		byte[] payload = "Hello".getBytes(StandardCharsets.UTF_8);
+		ByteArrayOutputStream delivered = new ByteArrayOutputStream();
+		CountDownLatch complete = new CountDownLatch(1);
+		TcpServerConfig serverConfig = TcpServerConfig.builder()
+			.framing(false)
+			.onMessage((server, conn, data) -> {
+				synchronized (delivered) {
+					delivered.writeBytes(data);
+					if (delivered.size() >= payload.length) {
+						complete.countDown();
+					}
+				}
+			})
+			.build();
+		
+		try (TcpServer server = new TcpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), serverConfig)) {
+			server.start();
+			try (TcpClient client = new TcpClient(unframedClientConfig())) {
+				client.connect(server.boundEndpoint());
+				client.send(payload);
+				
+				assertTrue(complete.await(10, TimeUnit.SECONDS));
+				synchronized (delivered) {
+					assertArrayEquals(payload, delivered.toByteArray());
+				}
+			}
+		}
+	}
+	
+	@Test
+	void unframedServerNotifiesClientDisconnect() throws Exception {
+		CountDownLatch disconnected = new CountDownLatch(1);
+		TcpServerConfig serverConfig = TcpServerConfig.builder()
+			.framing(false)
+			.onClientDisconnect((connection, local, remote, timestamp) -> disconnected.countDown())
+			.build();
+		
+		try (TcpServer server = new TcpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), serverConfig)) {
+			server.start();
+			TcpClient client = new TcpClient(unframedClientConfig());
+			client.connect(server.boundEndpoint());
+			client.close();
+			
+			assertTrue(disconnected.await(10, TimeUnit.SECONDS));
+			assertTrue(awaitClientCount(server, 0));
+		}
+	}
+	
+	@Test
+	void unframedRoundTripLosesMessageBoundaries() throws Exception {
+		withEchoServer(false, client -> {
+			client.send("AAA".getBytes(StandardCharsets.UTF_8));
+			client.send("BBB".getBytes(StandardCharsets.UTF_8));
+			
+			assertArrayEquals("AAABBB".getBytes(StandardCharsets.UTF_8), readUntil(client, 6, 8192));
+		});
+	}
+	
+	@Test
+	void framedRoundTripKeepsMessageBoundaries() throws Exception {
+		withEchoServer(true, client -> {
+			client.send("AAA".getBytes(StandardCharsets.UTF_8));
+			client.send("BBB".getBytes(StandardCharsets.UTF_8));
+			
+			assertArrayEquals("AAA".getBytes(StandardCharsets.UTF_8), client.receive());
+			assertArrayEquals("BBB".getBytes(StandardCharsets.UTF_8), client.receive());
+		});
+	}
+	
+	@Test
+	void unframedClientReusesScratchBufferAcrossReceives() throws Exception {
+		withEchoServer(false, client -> {
+			client.send(filled(8, (byte) 0x01));
+			assertArrayEquals(filled(8, (byte) 0x01), readUntil(client, 8, 8192));
+			
+			byte[] larger = filled(4096, (byte) 0x02);
+			client.send(larger);
+			assertArrayEquals(larger, readUntil(client, larger.length, 8192));
+			
+			client.send(filled(4, (byte) 0x03));
+			assertArrayEquals(filled(4, (byte) 0x03), readUntil(client, 4, 8192));
+		});
+	}
+	
+	@Test
+	void framedServerWithUnframedClientDoesNotInteroperate() throws Exception {
+		byte[] payload = "Hello".getBytes(StandardCharsets.UTF_8);
+		TcpServerConfig serverConfig = TcpServerConfig.builder()
+			.framing(true)
+			.onClientConnect((connection, local, remote, timestamp) -> {
+				try {
+					connection.send(payload);
+				} catch (NetworkConnectionException e) {
+					fail("Server send failed: " + e.getMessage());
+				}
+			})
+			.build();
+		
+		try (TcpServer server = new TcpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), serverConfig)) {
+			server.start();
+			try (TcpClient client = new TcpClient(unframedClientConfig())) {
+				client.connect(server.boundEndpoint());
+				
+				byte[] received = readUntil(client, payload.length + 4, 8192);
+				assertEquals(payload.length + 4, received.length);
+				assertArrayEquals(new byte[] { 0, 0, 0, 5 }, Arrays.copyOf(received, 4));
+				assertFalse(Arrays.equals(payload, received));
+			}
+		}
+	}
+	
+	@Test
+	void unframedLargeMessageRoundTrip() throws Exception {
+		byte[] payload = filled(65536, (byte) 0x42);
+		TcpServerConfig serverConfig = TcpServerConfig.builder()
+			.framing(false)
+			.clientBufferSize(65536)
+			.onMessage((server, conn, data) -> {
+				try {
+					conn.send(data);
+				} catch (NetworkConnectionException e) {
+					fail("Echo failed: " + e.getMessage());
+				}
+			})
+			.build();
+		TcpClientConfig clientConfig = TcpClientConfig.builder()
+			.framing(false)
+			.bufferSize(65536)
+			.readTimeout(Duration.ofSeconds(10))
+			.build();
+		
+		try (TcpServer server = new TcpServer(new IpEndpoint(Ipv4Address.LOOPBACK, 0), serverConfig)) {
+			server.start();
+			try (TcpClient client = new TcpClient(clientConfig)) {
+				client.connect(server.boundEndpoint());
+				client.send(payload);
+				
+				assertArrayEquals(payload, readUntil(client, payload.length, 65536));
+			}
+		}
+	}
+	
 	//region Helper methods
 	
 	private static String hostPartOf(Endpoint endpoint) {
@@ -1566,7 +1770,12 @@ class TcpIntegrationTest {
 	}
 	
 	private static TcpServerConfig echoConfig() {
+		return echoConfig(true);
+	}
+	
+	private static TcpServerConfig echoConfig(boolean framing) {
 		return TcpServerConfig.builder()
+			.framing(framing)
 			.onMessage((server, conn, data) -> {
 				try {
 					conn.send(data);
@@ -1588,15 +1797,42 @@ class TcpIntegrationTest {
 	}
 	
 	private static void withEchoServer(ClientConsumer body) throws Exception {
+		withEchoServer(true, body);
+	}
+	
+	private static void withEchoServer(boolean framing, ClientConsumer body) throws Exception {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
-		try (TcpServer server = new TcpServer(endpoint, echoConfig())) {
+		try (TcpServer server = new TcpServer(endpoint, echoConfig(framing))) {
 			server.start();
 			
-			try (TcpClient client = new TcpClient(readTimeoutConfig())) {
+			try (TcpClient client = new TcpClient(framing ? readTimeoutConfig() : unframedClientConfig())) {
 				client.connect(server.boundEndpoint());
 				body.accept(client);
 			}
 		}
+	}
+	
+	private static TcpClientConfig unframedClientConfig() {
+		return TcpClientConfig.builder().framing(false).readTimeout(Duration.ofSeconds(5)).build();
+	}
+	
+	private static byte[] readUntil(TcpClient client, int expected, int maxBytes) throws Exception {
+		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
+		while (reassembled.size() < expected) {
+			reassembled.writeBytes(client.receive(maxBytes));
+		}
+		return reassembled.toByteArray();
+	}
+	
+	private static boolean awaitClientCount(TcpServer server, int expected) throws Exception {
+		long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+		while (System.nanoTime() < deadline) {
+			if (server.getClientCount() == expected) {
+				return true;
+			}
+			Thread.sleep(20);
+		}
+		return false;
 	}
 	
 	@FunctionalInterface
