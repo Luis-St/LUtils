@@ -19,6 +19,7 @@
 package net.luis.utils.io.network.connection;
 
 import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.connection.context.ConnectionContext;
 import net.luis.utils.io.network.connection.event.ConnectEventHandler;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import org.jspecify.annotations.NonNull;
@@ -40,6 +41,18 @@ public interface Connection extends AutoCloseable {
 	 * @return True if the connection is active
 	 */
 	boolean isActive();
+	
+	/**
+	 * Returns the context of this connection.<br>
+	 * The context stores user data attached to this connection, it is empty until data is stored in it.<br>
+	 * <p>
+	 *     The returned context is bound to this connection, so state stored in it is visible to all event handlers<br>
+	 *     that are invoked for this connection and is discarded together with the connection.
+	 * </p>
+	 *
+	 * @return The context of this connection
+	 */
+	@NonNull ConnectionContext context();
 	
 	/**
 	 * Returns the remote endpoint of this connection.<br>

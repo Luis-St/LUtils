@@ -21,7 +21,9 @@ package net.luis.utils.io.network.connection.tcp;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.Connection;
 import net.luis.utils.io.network.connection.NetworkUtils;
-import net.luis.utils.io.network.connection.exception.*;
+import net.luis.utils.io.network.connection.context.ConnectionContext;
+import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
+import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -75,6 +77,12 @@ public final class TcpConnection implements Connection {
 	/**
 	 * The reusable scratch buffer for unframed read operations.<br>
 	 * Allocated lazily and grown on demand, and unused while framing is enabled.<br>
+	 * The context storing user data attached to this connection.<br>
+	 */
+	private final ConnectionContext context = new ConnectionContext();
+	/**
+	 * The reusable scratch buffer for read operations.<br>
+	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
 	 */
 	private byte @Nullable [] readBuffer;
 	
@@ -97,6 +105,11 @@ public final class TcpConnection implements Connection {
 	@Override
 	public boolean isActive() {
 		return !this.socket.isClosed() && this.socket.isConnected();
+	}
+	
+	@Override
+	public @NonNull ConnectionContext context() {
+		return this.context;
 	}
 	
 	@Override

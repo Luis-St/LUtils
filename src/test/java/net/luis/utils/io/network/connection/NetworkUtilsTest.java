@@ -21,6 +21,7 @@ package net.luis.utils.io.network.connection;
 import net.luis.utils.io.network.HostEndpoint;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
+import net.luis.utils.io.network.connection.context.ConnectionContext;
 import net.luis.utils.io.network.connection.event.ErrorEventHandler;
 import net.luis.utils.io.network.connection.exception.*;
 import org.jspecify.annotations.NonNull;
@@ -337,6 +338,13 @@ class NetworkUtilsTest {
 	}
 	
 	private static final class StubConnection implements Connection {
+		
+		private final ConnectionContext context = new ConnectionContext();
+		
+		@Override
+		public @NonNull ConnectionContext context() {
+			return this.context;
+		}
 		
 		@Override
 		public @NonNull IpEndpoint remoteEndpoint() {
@@ -953,7 +961,7 @@ class NetworkUtilsTest {
 		try (ServerSocket serverSocket = new ServerSocket(0)) {
 			int port = serverSocket.getLocalPort();
 			try (Socket local = new Socket("127.0.0.1", port);
-			     Socket peer = serverSocket.accept()) {
+				 Socket peer = serverSocket.accept()) {
 				body.accept(local, peer);
 			}
 		}

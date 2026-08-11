@@ -192,6 +192,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.network.address.ipv6;
 	exports net.luis.utils.io.network.address.mac;
 	exports net.luis.utils.io.network.connection;
+	exports net.luis.utils.io.network.connection.context;
 	exports net.luis.utils.io.network.connection.event;
 	exports net.luis.utils.io.network.connection.exception;
 	exports net.luis.utils.io.network.connection.executor;

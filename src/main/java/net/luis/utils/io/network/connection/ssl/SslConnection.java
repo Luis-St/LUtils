@@ -21,7 +21,9 @@ package net.luis.utils.io.network.connection.ssl;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.Connection;
 import net.luis.utils.io.network.connection.NetworkUtils;
-import net.luis.utils.io.network.connection.exception.*;
+import net.luis.utils.io.network.connection.context.ConnectionContext;
+import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
+import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -75,6 +77,12 @@ public final class SslConnection implements Connection {
 	/**
 	 * The reusable scratch buffer for unframed read operations.<br>
 	 * Allocated lazily and grown on demand, and unused while framing is enabled.<br>
+	 * The context storing user data attached to this connection.<br>
+	 */
+	private final ConnectionContext context = new ConnectionContext();
+	/**
+	 * The reusable scratch buffer for read operations.<br>
+	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
 	 */
 	private byte @Nullable [] readBuffer;
 	
@@ -83,7 +91,6 @@ public final class SslConnection implements Connection {
 	 *
 	 * @param socket The client SSL socket
 	 * @param bufferSize The buffer size for read operations
-	 * @param framing Whether messages are framed with a length prefix on the wire
 	 * @param readTimeout The read timeout
 	 * @throws NullPointerException If socket or read timeout is null
 	 */
@@ -111,10 +118,6 @@ public final class SslConnection implements Connection {
 		}
 	}
 	
-	/**
-	 * Returns whether this connection is still active.<br>
-	 * @return True if the connection is active
-	 */
 	@Override
 	public boolean isActive() {
 		return !this.socket.isClosed() && this.socket.isConnected();
@@ -128,6 +131,11 @@ public final class SslConnection implements Connection {
 	 */
 	public @NonNull SSLSession getSession() {
 		return this.socket.getSession();
+	}
+	
+	@Override
+	public @NonNull ConnectionContext context() {
+		return this.context;
 	}
 	
 	@Override
