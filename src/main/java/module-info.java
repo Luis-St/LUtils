@@ -115,6 +115,8 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.types.temporal.zoned;
 	
 	exports net.luis.utils.io.data;
+	exports net.luis.utils.io.data.binary;
+	exports net.luis.utils.io.data.binary.exception;
 	exports net.luis.utils.io.data.config;
 	exports net.luis.utils.io.data.ini;
 	exports net.luis.utils.io.data.ini.exception;
