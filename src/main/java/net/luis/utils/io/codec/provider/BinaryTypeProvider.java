@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.codec.provider;
 
-import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.codec.FieldRef;
 import net.luis.utils.io.data.binary.*;
 import org.jetbrains.annotations.UnknownNullability;
@@ -30,7 +29,12 @@ import java.util.function.Function;
 
 /**
  * Type provider implementation for binary elements.<br>
- * This class is a singleton and should be accessed through the {@link #INSTANCE} constant.<br>
+ * This class provides two instances, the {@link #INSTANCE default instance} and the {@link #COMPACT compact instance}.<br>
+ * <p>
+ *     The compact instance stores a value with a narrower type if that type encodes the value without a loss and with fewer bytes,<br>
+ *     a double which is exactly representable as a float is for example stored as a float and needs four bytes less.<br>
+ *     The values are read back with the type the codec asks for, therefore both instances decode to the same values.
+ * </p>
  * <p>
  *     The binary format is the most compact format of all provided formats.<br>
  *     The components of an object are stored in a {@link BinaryStruct struct} which identifies its fields by their position,<br>
@@ -49,7 +53,6 @@ import java.util.function.Function;
  *
  * @author Luis-St
  */
-@Singleton
 public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 	
 	/**
@@ -60,14 +63,28 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 	private static final BinaryElement EMPTY_ELEMENT = () -> BinaryType.ABSENT;
 	
 	/**
-	 * The singleton instance of this class.<br>
+	 * The instance of this class which stores every value with the type the codec asked for.<br>
 	 */
-	public static final BinaryTypeProvider INSTANCE = new BinaryTypeProvider();
+	public static final BinaryTypeProvider INSTANCE = new BinaryTypeProvider(false);
+	/**
+	 * The instance of this class which stores a value with a narrower type if that type encodes the value without a loss and with fewer bytes.<br>
+	 * The elements which are created by this instance hold a different type than the elements of {@link #INSTANCE},<br>
+	 * therefore the elements of both instances are not equal to each other, but they decode to the same values.<br>
+	 */
+	public static final BinaryTypeProvider COMPACT = new BinaryTypeProvider(true);
+	
+	/**
+	 * Whether the values are stored with the narrowest type which encodes them without a loss.<br>
+	 */
+	private final boolean compact;
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
+	 * @param compact Whether the values are stored with the narrowest type which encodes them without a loss
 	 */
-	private BinaryTypeProvider() {}
+	private BinaryTypeProvider(boolean compact) {
+		this.compact = compact;
+	}
 	
 	@Override
 	public @NonNull BinaryElement empty() {
@@ -99,6 +116,9 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 	public <X extends Exception> @NonNull BinaryElement createShort(short value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (this.compact && fitsInByte(value)) {
+			return new BinaryPrimitive((byte) value);
+		}
 		return new BinaryPrimitive(value);
 	}
 	
@@ -106,6 +126,9 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 	public <X extends Exception> @NonNull BinaryElement createInteger(int value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (this.compact && fitsInByte(value)) {
+			return new BinaryPrimitive((byte) value);
+		}
 		return new BinaryPrimitive(value);
 	}
 	
@@ -113,6 +136,9 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 	public <X extends Exception> @NonNull BinaryElement createLong(long value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (this.compact && fitsInByte(value)) {
+			return new BinaryPrimitive((byte) value);
+		}
 		return new BinaryPrimitive(value);
 	}
 	
@@ -127,6 +153,9 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 	public <X extends Exception> @NonNull BinaryElement createDouble(double value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		
+		if (this.compact && fitsInFloat(value)) {
+			return new BinaryPrimitive((float) value);
+		}
 		return new BinaryPrimitive(value);
 	}
 	
@@ -397,6 +426,37 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 			return struct.has(index) ? struct.get(index) : null;
 		}
 		return TypeProvider.super.getField(type, field, exceptionConstructor);
+	}
+	
+	/**
+	 * Checks whether the given value is encoded with fewer bytes as a byte than as a variable-length integer.<br>
+	 * <p>
+	 *     A number is encoded as a zigzag encoded variable-length integer which needs a single byte for values from {@code -64} to {@code 63},<br>
+	 *     therefore a smaller value is only stored as a byte if it is outside of that range.
+	 * </p>
+	 *
+	 * @param value The value to check
+	 * @return True if the value should be stored as a byte, false otherwise
+	 */
+	private static boolean fitsInByte(long value) {
+		if (value < Byte.MIN_VALUE || value > Byte.MAX_VALUE) {
+			return false;
+		}
+		return value > 63 || -64 > value;
+	}
+	
+	/**
+	 * Checks whether the given value is encoded as a float without a loss.<br>
+	 * Not a number is not stored as a float, because the payload of a float does not hold every bit pattern of a double which is not a number.<br>
+	 *
+	 * @param value The value to check
+	 * @return True if the value should be stored as a float, false otherwise
+	 */
+	private static boolean fitsInFloat(double value) {
+		if (Double.isNaN(value)) {
+			return false;
+		}
+		return (double) (float) value == value;
 	}
 	
 	/**

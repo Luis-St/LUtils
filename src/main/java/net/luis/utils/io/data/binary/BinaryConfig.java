@@ -35,18 +35,22 @@ import java.util.Objects;
  *
  * @author Luis-St
  *
- * @param writeHeader Whether the magic number and the format version are written in front of the data
+ * @param writeHeader Whether the magic number, the format version and the flags are written in front of the data
  * @param maxDepth The maximum nesting depth of the data which is read (read-only)
  * @param maxCollectionSize The maximum number of elements of a list, struct or map which is read (read-only)
  * @param maxStringLength The maximum length in bytes of a string which is read (read-only)
+ * @param maxDocumentSize The maximum length in bytes of a compressed document and of its decompressed data (read-only)
  * @param charset The charset to use for reading and writing strings
+ * @param compression The compression mode to use for writing, a compressed document is always recognized while reading
  */
 public record BinaryConfig(
 	boolean writeHeader,
 	@ReadOnly int maxDepth,
 	@ReadOnly int maxCollectionSize,
 	@ReadOnly int maxStringLength,
-	@NonNull Charset charset
+	@ReadOnly int maxDocumentSize,
+	@NonNull Charset charset,
+	@NonNull BinaryCompression compression
 ) {
 	
 	/**
@@ -57,6 +61,15 @@ public record BinaryConfig(
 	 * The version of the binary format which is written after the magic number if the header is enabled.<br>
 	 */
 	public static final byte VERSION = 1;
+	/**
+	 * The flag which indicates that the data behind the header is compressed.<br>
+	 * The flag is set in the flags byte which is written after the version if the header is enabled.<br>
+	 */
+	public static final byte FLAG_COMPRESSED = 0x01;
+	/**
+	 * The default maximum length in bytes of a compressed document and of its decompressed data.<br>
+	 */
+	public static final int DEFAULT_MAX_DOCUMENT_SIZE = 16777216;
 	
 	/**
 	 * The default binary configuration.<br>
@@ -65,7 +78,9 @@ public record BinaryConfig(
 	 *     <li>Max depth: 64</li>
 	 *     <li>Max collection size: 65536</li>
 	 *     <li>Max string length: 1048576</li>
+	 *     <li>Max document size: 16777216</li>
 	 *     <li>Charset: UTF-8</li>
+	 *     <li>Compression: none</li>
 	 * </ul>
 	 */
 	public static final BinaryConfig DEFAULT = new BinaryConfig(
@@ -73,22 +88,42 @@ public record BinaryConfig(
 		64,
 		65536,
 		1048576,
-		StandardCharsets.UTF_8
+		DEFAULT_MAX_DOCUMENT_SIZE,
+		StandardCharsets.UTF_8,
+		BinaryCompression.NONE
+	);
+	/**
+	 * A binary configuration which compresses the data if the compressed data is smaller than the uncompressed data.<br>
+	 * The limits are the same as the limits of the {@link #DEFAULT default configuration},<br>
+	 * the header is enabled because it holds the flag which marks the data as compressed.<br>
+	 */
+	public static final BinaryConfig COMPRESSED = new BinaryConfig(
+		true,
+		64,
+		65536,
+		1048576,
+		DEFAULT_MAX_DOCUMENT_SIZE,
+		StandardCharsets.UTF_8,
+		BinaryCompression.AUTO
 	);
 	
 	/**
 	 * Constructs a new binary configuration.<br>
 	 *
-	 * @param writeHeader Whether the magic number and the format version are written in front of the data
+	 * @param writeHeader Whether the magic number, the format version and the flags are written in front of the data
 	 * @param maxDepth The maximum nesting depth of the data which is read
 	 * @param maxCollectionSize The maximum number of elements of a list, struct or map which is read
 	 * @param maxStringLength The maximum length in bytes of a string which is read
+	 * @param maxDocumentSize The maximum length in bytes of a compressed document and of its decompressed data
 	 * @param charset The charset to use for reading and writing strings
-	 * @throws NullPointerException If the charset is null
-	 * @throws IllegalArgumentException If the max depth, max collection size or max string length is not positive
+	 * @param compression The compression mode to use for writing
+	 * @throws NullPointerException If the charset or the compression mode is null
+	 * @throws IllegalArgumentException If the max depth, max collection size, max string length or max document size is not positive,
+	 *         or if a compression mode other than {@link BinaryCompression#NONE} is used without the header
 	 */
 	public BinaryConfig {
 		Objects.requireNonNull(charset, "Charset must not be null");
+		Objects.requireNonNull(compression, "Compression must not be null");
 		
 		if (0 >= maxDepth) {
 			throw new IllegalArgumentException("Max depth must be positive, but was " + maxDepth);
@@ -99,5 +134,26 @@ public record BinaryConfig(
 		if (0 >= maxStringLength) {
 			throw new IllegalArgumentException("Max string length must be positive, but was " + maxStringLength);
 		}
+		if (0 >= maxDocumentSize) {
+			throw new IllegalArgumentException("Max document size must be positive, but was " + maxDocumentSize);
+		}
+		if (compression != BinaryCompression.NONE && !writeHeader) {
+			throw new IllegalArgumentException("Compression " + compression + " requires the header to be written, the header holds the flag which marks the data as compressed");
+		}
+	}
+	
+	/**
+	 * Constructs a new uncompressed binary configuration with the default maximum document size.<br>
+	 *
+	 * @param writeHeader Whether the magic number, the format version and the flags are written in front of the data
+	 * @param maxDepth The maximum nesting depth of the data which is read
+	 * @param maxCollectionSize The maximum number of elements of a list, struct or map which is read
+	 * @param maxStringLength The maximum length in bytes of a string which is read
+	 * @param charset The charset to use for reading and writing strings
+	 * @throws NullPointerException If the charset is null
+	 * @throws IllegalArgumentException If the max depth, max collection size or max string length is not positive
+	 */
+	public BinaryConfig(boolean writeHeader, int maxDepth, int maxCollectionSize, int maxStringLength, @NonNull Charset charset) {
+		this(writeHeader, maxDepth, maxCollectionSize, maxStringLength, DEFAULT_MAX_DOCUMENT_SIZE, charset, BinaryCompression.NONE);
 	}
 }

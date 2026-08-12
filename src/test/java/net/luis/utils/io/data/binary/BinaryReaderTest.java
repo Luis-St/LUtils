@@ -27,6 +27,8 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.zip.DeflaterOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,6 +40,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class BinaryReaderTest {
 	
 	private static final BinaryConfig HEADER_CONFIG = new BinaryConfig(true, 64, 65536, 1048576, StandardCharsets.UTF_8);
+	private static final BinaryConfig DEFLATE_CONFIG = new BinaryConfig(
+		true, 64, 65536, 1048576, BinaryConfig.DEFAULT_MAX_DOCUMENT_SIZE, StandardCharsets.UTF_8, BinaryCompression.DEFLATE
+	);
 	private static final Path TEST_FILE = Path.of("test-binary-reader.bin");
 	
 	@AfterAll
@@ -51,6 +56,39 @@ class BinaryReaderTest {
 	
 	private static BinaryElement roundTrip(BinaryElement element) {
 		return BinaryReader.fromByteArray(BinaryWriter.toByteArray(element));
+	}
+	
+	private static byte[] deflate(byte[] data) {
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		try (DeflaterOutputStream out = new DeflaterOutputStream(buffer)) {
+			out.write(data);
+		} catch (IOException e) {
+			fail(e);
+		}
+		return buffer.toByteArray();
+	}
+	
+	private static byte[] compressedDocument(byte[] payload) {
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		buffer.writeBytes(new byte[] { 0x4C, 0x42, 0x01, BinaryConfig.FLAG_COMPRESSED });
+		
+		long remaining = payload.length;
+		while ((remaining & ~0x7FL) != 0) {
+			buffer.write((int) (remaining & 0x7F) | 0x80);
+			remaining >>>= 7;
+		}
+		buffer.write((int) remaining);
+		
+		buffer.writeBytes(payload);
+		return buffer.toByteArray();
+	}
+	
+	private static BinaryArray booleans(boolean... values) {
+		BinaryArray array = new BinaryArray();
+		for (boolean value : values) {
+			array.add(value);
+		}
+		return array;
 	}
 	
 	@Test
@@ -269,6 +307,120 @@ class BinaryReaderTest {
 	}
 	
 	@Test
+	void readWithUnknownHeaderFlags() {
+		byte[] data = { 0x4C, 0x42, 0x01, 0x02, 0x04, 0x07 };
+		
+		BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> BinaryReader.fromByteArray(data, HEADER_CONFIG));
+		assertTrue(exception.getMessage().contains("flags"));
+	}
+	
+	@Test
+	void readCompressedDocumentWithInvalidData() {
+		byte[] data = compressedDocument(new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF });
+		
+		BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> BinaryReader.fromByteArray(data, HEADER_CONFIG));
+		assertTrue(exception.getMessage().contains("decompress"));
+	}
+	
+	@Test
+	void readCompressedDocumentWithTruncatedData() {
+		byte[] compressed = deflate(BinaryWriter.toByteArray(new BinaryPrimitive("a value which compresses")));
+		byte[] truncated = Arrays.copyOfRange(compressed, 0, compressed.length - 4);
+		byte[] data = compressedDocument(truncated);
+		
+		BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> BinaryReader.fromByteArray(data, HEADER_CONFIG));
+		assertTrue(exception.getMessage().contains("truncated"));
+	}
+	
+	@Test
+	@Timeout(5)
+	void readCompressedDocumentWithExcessiveLength() {
+		byte[] data = { 0x4C, 0x42, 0x01, BinaryConfig.FLAG_COMPRESSED, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, 0x7F };
+		
+		BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> BinaryReader.fromByteArray(data, HEADER_CONFIG));
+		assertTrue(exception.getMessage().contains("maximum document size"));
+	}
+	
+	@Test
+	@Timeout(5)
+	void readCompressedDocumentWithNegativeLength() {
+		byte[] data = {
+			0x4C, 0x42, 0x01, BinaryConfig.FLAG_COMPRESSED,
+			(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF,
+			(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, 0x01
+		};
+		
+		BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> BinaryReader.fromByteArray(data, HEADER_CONFIG));
+		assertTrue(exception.getMessage().contains("maximum document size"));
+	}
+	
+	@Test
+	void readCompressedDocumentExceedingMaxDocumentSizeWhenInflated() {
+		BinaryArray array = new BinaryArray();
+		for (int i = 0; i < 512; i++) {
+			array.add("compressible");
+		}
+		byte[] data = BinaryWriter.toByteArray(array, BinaryConfig.COMPRESSED);
+		BinaryConfig restricted = new BinaryConfig(true, 64, 65536, 1048576, 1024, StandardCharsets.UTF_8, BinaryCompression.NONE);
+		
+		BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> BinaryReader.fromByteArray(data, restricted));
+		assertTrue(exception.getMessage().contains("maximum document size"));
+	}
+	
+	@Test
+	void readTypedListWithTypeWithoutPayload() {
+		BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> read((byte) 0x10, (byte) 0x00, (byte) 0x01));
+		
+		assertTrue(exception.getMessage().contains("no payload"));
+	}
+	
+	@Test
+	void readTypedListWithAbsentOrBooleanElementType() {
+		for (byte id : new byte[] { 0x01, 0x02, 0x03 }) {
+			BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> read((byte) 0x10, id, (byte) 0x01));
+			
+			assertTrue(exception.getMessage().contains("no payload"), "Unexpected message for id " + id);
+		}
+	}
+	
+	@Test
+	void readTypedListWithNonPrimitiveType() {
+		BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> read((byte) 0x10, (byte) 0x0C, (byte) 0x01));
+		
+		assertTrue(exception.getMessage().contains("not a primitive"));
+	}
+	
+	@Test
+	void readTypedListWithListOrMapElementType() {
+		for (byte id : new byte[] { 0x0B, 0x0D, 0x0E }) {
+			BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> read((byte) 0x10, id, (byte) 0x01));
+			
+			assertTrue(exception.getMessage().contains("not a primitive"), "Unexpected message for id " + id);
+		}
+	}
+	
+	@Test
+	void readTypedListWithUnknownElementType() {
+		BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> read((byte) 0x10, (byte) 0x7F, (byte) 0x01));
+		
+		assertTrue(exception.getMessage().contains("0x7F"));
+	}
+	
+	@Test
+	void readCompactedListExceedingMaxCollectionSize() {
+		BinaryConfig small = new BinaryConfig(false, 64, 2, 1048576, StandardCharsets.UTF_8);
+		
+		assertThrows(BinarySyntaxException.class, () -> BinaryReader.fromByteArray(new byte[] { 0x0E, 0x64 }, small));
+		assertThrows(BinarySyntaxException.class, () -> BinaryReader.fromByteArray(new byte[] { 0x0F, 0x64 }, small));
+	}
+	
+	@Test
+	void readCompactedListWithTruncatedPayload() {
+		assertTrue(assertThrows(BinarySyntaxException.class, () -> read((byte) 0x0E, (byte) 0x04, (byte) 0x01)).getMessage().contains("truncated"));
+		assertTrue(assertThrows(BinarySyntaxException.class, () -> read((byte) 0x0F, (byte) 0x10, (byte) 0x00)).getMessage().contains("truncated"));
+	}
+	
+	@Test
 	void readBinaryWithHeaderEnabled() {
 		byte[] data = BinaryWriter.toByteArray(new BinaryPrimitive("value"), HEADER_CONFIG);
 		
@@ -424,6 +576,112 @@ class BinaryReaderTest {
 		assertEquals(2, decoded.size());
 		assertEquals(1, decoded.getAsInteger("a"));
 		assertEquals("text", decoded.getAsString("b"));
+	}
+	
+	@Test
+	void readCompactedListsYieldsPlainElements() {
+		BinaryArray bytes = new BinaryArray(new BinaryPrimitive((byte) 1), new BinaryPrimitive((byte) 2));
+		BinaryArray flags = booleans(true, false, true);
+		BinaryArray integers = new BinaryArray(new BinaryPrimitive(1000), new BinaryPrimitive(2000));
+		BinaryArray strings = new BinaryArray(new BinaryPrimitive("a"), new BinaryPrimitive("bc"));
+		
+		assertEquals(bytes, roundTrip(bytes));
+		assertEquals(flags, roundTrip(flags));
+		assertEquals(integers, roundTrip(integers));
+		assertEquals(strings, roundTrip(strings));
+		assertEquals(BinaryType.BYTE, roundTrip(bytes).getAsBinaryArray().get(0).getType());
+	}
+	
+	@Test
+	void readBooleanListWithPartialByte() {
+		BinaryArray original = booleans(true, false, false, true, true, false, true, false, true, true, false);
+		
+		BinaryArray decoded = roundTrip(original).getAsBinaryArray();
+		
+		assertEquals(11, decoded.size());
+		assertEquals(original, decoded);
+	}
+	
+	@Test
+	void readBooleanListWithFullBytes() {
+		BinaryArray original = booleans(
+			true, false, false, true, true, false, true, false,
+			false, true, true, false, false, false, true, true
+		);
+		
+		BinaryArray decoded = roundTrip(original).getAsBinaryArray();
+		
+		assertEquals(16, decoded.size());
+		assertEquals(original, decoded);
+	}
+	
+	@Test
+	void readCompactedListsWithZeroSize() {
+		BinaryArray empty = new BinaryArray();
+		
+		assertEquals(empty, read((byte) 0x0E, (byte) 0x00));
+		assertEquals(empty, read((byte) 0x0F, (byte) 0x00));
+		assertEquals(empty, read((byte) 0x10, (byte) 0x06, (byte) 0x00));
+		assertEquals(read((byte) 0x0B, (byte) 0x00), read((byte) 0x0E, (byte) 0x00));
+	}
+	
+	@Test
+	void readCompressedDocument() {
+		BinaryArray original = new BinaryArray();
+		for (int i = 0; i < 512; i++) {
+			original.add("repeated");
+		}
+		
+		byte[] data = BinaryWriter.toByteArray(original, BinaryConfig.COMPRESSED);
+		
+		assertEquals(BinaryConfig.FLAG_COMPRESSED, data[3]);
+		assertTrue(data.length < BinaryWriter.toByteArray(original, HEADER_CONFIG).length);
+		assertEquals(original, BinaryReader.fromByteArray(data, BinaryConfig.COMPRESSED));
+	}
+	
+	@Test
+	void readUncompressedDocumentWithCompressedConfig() {
+		BinaryPrimitive original = new BinaryPrimitive("value");
+		
+		byte[] data = BinaryWriter.toByteArray(original, HEADER_CONFIG);
+		
+		assertEquals((byte) 0x00, data[3]);
+		assertEquals(original, BinaryReader.fromByteArray(data, BinaryConfig.COMPRESSED));
+	}
+	
+	@Test
+	void readCompressedDocumentWithUncompressedConfig() {
+		BinaryPrimitive original = new BinaryPrimitive("value");
+		
+		byte[] data = BinaryWriter.toByteArray(original, DEFLATE_CONFIG);
+		
+		assertEquals(BinaryConfig.FLAG_COMPRESSED, data[3]);
+		assertEquals(original, BinaryReader.fromByteArray(data, HEADER_CONFIG));
+		assertEquals(original, BinaryReader.fromByteArray(data, BinaryConfig.COMPRESSED));
+	}
+	
+	@Test
+	void readTypedListOfEachPrimitiveType() {
+		BinaryArray shorts = new BinaryArray(new BinaryPrimitive((short) 1000), new BinaryPrimitive((short) -1000));
+		BinaryArray integers = new BinaryArray(new BinaryPrimitive(1000), new BinaryPrimitive(-1000));
+		BinaryArray longs = new BinaryArray(new BinaryPrimitive(1000L), new BinaryPrimitive(-1000L));
+		BinaryArray floats = new BinaryArray(new BinaryPrimitive(1.5F), new BinaryPrimitive(-2.5F));
+		BinaryArray doubles = new BinaryArray(new BinaryPrimitive(1.5), new BinaryPrimitive(-2.5));
+		BinaryArray strings = new BinaryArray(new BinaryPrimitive("a"), new BinaryPrimitive("bc"));
+		
+		for (BinaryArray original : new BinaryArray[] { shorts, integers, longs, floats, doubles, strings }) {
+			assertEquals(original, roundTrip(original), "Unexpected result for " + original);
+		}
+	}
+	
+	@Test
+	void readTypedListOfBytes() {
+		BinaryElement typed = read((byte) 0x10, (byte) 0x04, (byte) 0x02, (byte) 0x01, (byte) 0x02);
+		
+		assertEquals(read((byte) 0x0E, (byte) 0x02, (byte) 0x01, (byte) 0x02), typed);
+		assertEquals(2, typed.getAsBinaryArray().size());
+		assertEquals((byte) 1, typed.getAsBinaryArray().getAsByte(0));
+		assertEquals((byte) 2, typed.getAsBinaryArray().getAsByte(1));
 	}
 	
 	@Test
@@ -642,6 +900,48 @@ class BinaryReaderTest {
 		try (BinaryReader reader = new BinaryReader(new InputProvider(TEST_FILE))) {
 			assertEquals(original, reader.readBinary());
 		}
+	}
+	
+	@Test
+	void readCompressedDocumentFollowedByMoreData() {
+		BinaryPrimitive original = new BinaryPrimitive("value");
+		byte[] document = BinaryWriter.toByteArray(original, DEFLATE_CONFIG);
+		byte[] combined = Arrays.copyOf(document, document.length + 2);
+		combined[document.length] = 0x7F;
+		combined[document.length + 1] = 0x7F;
+		
+		try (BinaryReader reader = new BinaryReader(new InputProvider(combined), DEFLATE_CONFIG)) {
+			assertEquals(original, reader.readBinary());
+		} catch (IOException e) {
+			fail(e);
+		}
+		
+		assertEquals(original, BinaryReader.fromByteArray(combined, DEFLATE_CONFIG));
+	}
+	
+	@Test
+	void readCompressedDocumentWithNestedCompactedLists() {
+		BinaryStruct original = new BinaryStruct(3);
+		original.set(0, new BinaryArray(new BinaryPrimitive((byte) 1), new BinaryPrimitive((byte) 2)));
+		original.set(1, booleans(true, false, true, true, false, true, true, false, true));
+		original.set(2, new BinaryArray(new BinaryPrimitive(1000), new BinaryPrimitive(2000)));
+		
+		byte[] data = BinaryWriter.toByteArray(original, BinaryConfig.COMPRESSED);
+		
+		assertEquals(original, BinaryReader.fromByteArray(data, BinaryConfig.COMPRESSED));
+	}
+	
+	@Test
+	void readCompressedDocumentLargerThanInflateBuffer() {
+		BinaryArray original = new BinaryArray();
+		for (int i = 0; i < 2048; i++) {
+			original.add("a value which is repeated many times");
+		}
+		
+		byte[] data = BinaryWriter.toByteArray(original, BinaryConfig.COMPRESSED);
+		
+		assertEquals(BinaryConfig.FLAG_COMPRESSED, data[3]);
+		assertEquals(original, BinaryReader.fromByteArray(data, BinaryConfig.COMPRESSED));
 	}
 	
 	@Test

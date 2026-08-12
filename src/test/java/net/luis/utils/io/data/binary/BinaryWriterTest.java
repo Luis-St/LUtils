@@ -39,6 +39,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class BinaryWriterTest {
 	
 	private static final BinaryConfig HEADER_CONFIG = new BinaryConfig(true, 64, 65536, 1048576, StandardCharsets.UTF_8);
+	private static final BinaryConfig DEFLATE_CONFIG = new BinaryConfig(
+		true, 64, 65536, 1048576, BinaryConfig.DEFAULT_MAX_DOCUMENT_SIZE, StandardCharsets.UTF_8, BinaryCompression.DEFLATE
+	);
 	private static final Path TEST_FILE = Path.of("test-binary-writer.bin");
 	
 	@AfterAll
@@ -180,7 +183,7 @@ class BinaryWriterTest {
 	void writeBinaryWithHeaderEnabled() {
 		byte[] data = BinaryWriter.toByteArray(new BinaryPrimitive((byte) 7), HEADER_CONFIG);
 		
-		assertArrayEquals(new byte[] { 0x4C, 0x42, 0x01, 0x04, 0x07 }, data);
+		assertArrayEquals(new byte[] { 0x4C, 0x42, 0x01, 0x00, 0x04, 0x07 }, data);
 	}
 	
 	@Test
@@ -188,6 +191,52 @@ class BinaryWriterTest {
 		byte[] data = write(new BinaryPrimitive((byte) 7));
 		
 		assertEquals((byte) 0x04, data[0]);
+	}
+	
+	@Test
+	void writeCompressedDocumentWritesFlagAndLength() {
+		BinaryArray array = new BinaryArray();
+		for (int i = 0; i < 128; i++) {
+			array.add("compressible");
+		}
+		
+		byte[] data = BinaryWriter.toByteArray(array, DEFLATE_CONFIG);
+		
+		assertEquals(BinaryConfig.FLAG_COMPRESSED, data[3]);
+		
+		int index = 4;
+		long length = 0;
+		for (int shift = 0; ; shift += 7) {
+			byte current = data[index++];
+			length |= (long) (current & 0x7F) << shift;
+			if ((current & 0x80) == 0) {
+				break;
+			}
+		}
+		
+		assertEquals(data.length - index, length);
+		assertEquals(array, BinaryReader.fromByteArray(data, DEFLATE_CONFIG));
+	}
+	
+	@Test
+	void writeCompressedDocumentFallsBackWhenLarger() {
+		BinaryPrimitive element = new BinaryPrimitive(1);
+		
+		byte[] data = BinaryWriter.toByteArray(element, BinaryConfig.COMPRESSED);
+		
+		assertEquals((byte) 0x00, data[3]);
+		assertArrayEquals(BinaryWriter.toByteArray(element, HEADER_CONFIG), data);
+	}
+	
+	@Test
+	void writeCompressedDocumentAlwaysCompressesWithDeflate() {
+		BinaryPrimitive element = new BinaryPrimitive(1);
+		
+		byte[] data = BinaryWriter.toByteArray(element, DEFLATE_CONFIG);
+		
+		assertEquals(BinaryConfig.FLAG_COMPRESSED, data[3]);
+		assertTrue(data.length > BinaryWriter.toByteArray(element, HEADER_CONFIG).length);
+		assertEquals(element, BinaryReader.fromByteArray(data, DEFLATE_CONFIG));
 	}
 	
 	@Test
@@ -296,9 +345,94 @@ class BinaryWriterTest {
 	
 	@Test
 	void writeListWithElements() {
+		BinaryArray array = new BinaryArray(new BinaryPrimitive(1), new BinaryPrimitive("a"), new BinaryPrimitive(true));
+		
+		assertArrayEquals(new byte[] { 0x0B, 0x03, 0x06, 0x02, 0x0A, 0x01, 'a', 0x03 }, write(array));
+	}
+	
+	@Test
+	void writeListOfBytesAsRawBytes() {
 		BinaryArray array = new BinaryArray(new BinaryPrimitive((byte) 1), new BinaryPrimitive((byte) 2));
 		
-		assertArrayEquals(new byte[] { 0x0B, 0x02, 0x04, 0x01, 0x04, 0x02 }, write(array));
+		assertArrayEquals(new byte[] { 0x0E, 0x02, 0x01, 0x02 }, write(array));
+	}
+	
+	@Test
+	void writeListOfBooleansAsPackedBits() {
+		BinaryArray array = new BinaryArray(new BinaryPrimitive(true), new BinaryPrimitive(false), new BinaryPrimitive(true));
+		
+		assertArrayEquals(new byte[] { 0x0F, 0x03, 0x05 }, write(array));
+	}
+	
+	@Test
+	void writeListOfBooleansWithFullBytes() {
+		BinaryArray array = new BinaryArray();
+		for (int i = 0; i < 8; i++) {
+			array.add(true);
+		}
+		
+		byte[] data = write(array);
+		
+		assertEquals(3, data.length);
+		assertArrayEquals(new byte[] { 0x0F, 0x08, (byte) 0xFF }, data);
+	}
+	
+	@Test
+	void writeListOfBooleansSpanningMultipleBytes() {
+		BinaryArray array = new BinaryArray();
+		array.add(true);
+		for (int i = 0; i < 7; i++) {
+			array.add(false);
+		}
+		array.add(true);
+		
+		byte[] data = write(array);
+		
+		assertArrayEquals(new byte[] { 0x0F, 0x09, 0x01, 0x01 }, data);
+		assertEquals(array, BinaryReader.fromByteArray(data));
+	}
+	
+	@Test
+	void writeListOfIntegersWithSingleElementTag() {
+		BinaryArray array = new BinaryArray(new BinaryPrimitive(1), new BinaryPrimitive(2));
+		
+		assertArrayEquals(new byte[] { 0x10, 0x06, 0x02, 0x02, 0x04 }, write(array));
+	}
+	
+	@Test
+	void writeListWithSingleElementIsNotCompacted() {
+		assertArrayEquals(new byte[] { 0x0B, 0x01, 0x06, 0x02 }, write(new BinaryArray(new BinaryPrimitive(1))));
+		assertArrayEquals(new byte[] { 0x0B, 0x01, 0x03 }, write(new BinaryArray(new BinaryPrimitive(true))));
+	}
+	
+	@Test
+	void writeListOfSingleByteIsStillCompacted() {
+		assertArrayEquals(new byte[] { 0x0E, 0x01, 0x01 }, write(new BinaryArray(new BinaryPrimitive((byte) 1))));
+	}
+	
+	@Test
+	void writeListOfMixedTypesIsNotCompacted() {
+		BinaryArray array = new BinaryArray(new BinaryPrimitive(1), new BinaryPrimitive((byte) 2));
+		
+		assertArrayEquals(new byte[] { 0x0B, 0x02, 0x06, 0x02, 0x04, 0x02 }, write(array));
+	}
+	
+	@Test
+	void writeListOfNonPrimitivesIsNotCompacted() {
+		BinaryArray arrays = new BinaryArray(new BinaryArray(), new BinaryArray());
+		BinaryArray nulls = new BinaryArray(BinaryNull.INSTANCE, BinaryNull.INSTANCE);
+		
+		assertEquals((byte) 0x0B, write(arrays)[0]);
+		assertEquals((byte) 0x0B, write(nulls)[0]);
+		assertEquals(arrays, BinaryReader.fromByteArray(write(arrays)));
+		assertEquals(nulls, BinaryReader.fromByteArray(write(nulls)));
+	}
+	
+	@Test
+	void writeListOfStringsWithSingleElementTag() {
+		BinaryArray array = new BinaryArray(new BinaryPrimitive("a"), new BinaryPrimitive("bc"));
+		
+		assertArrayEquals(new byte[] { 0x10, 0x0A, 0x02, 0x01, 'a', 0x02, 'b', 'c' }, write(array));
 	}
 	
 	@Test
@@ -516,6 +650,43 @@ class BinaryWriterTest {
 		assertEquals((byte) 0x0B, data[0]);
 		assertEquals((byte) 0x09, data[1]);
 		assertEquals(array, BinaryReader.fromByteArray(data));
+	}
+	
+	@Test
+	void writeCompactedListsInsideContainers() {
+		BinaryStruct compacted = new BinaryStruct(3);
+		compacted.set(0, new BinaryArray(new BinaryPrimitive((byte) 1), new BinaryPrimitive((byte) 2), new BinaryPrimitive((byte) 3)));
+		compacted.set(1, new BinaryArray(new BinaryPrimitive(true), new BinaryPrimitive(false), new BinaryPrimitive(true)));
+		compacted.set(2, new BinaryArray(new BinaryPrimitive(1000), new BinaryPrimitive(2000), new BinaryPrimitive(3000)));
+		BinaryMap map = new BinaryMap();
+		map.add("a", compacted);
+		
+		BinaryStruct mixed = new BinaryStruct(3);
+		mixed.set(0, new BinaryArray(new BinaryPrimitive((byte) 1), new BinaryPrimitive((byte) 2), new BinaryPrimitive((short) 3)));
+		mixed.set(1, new BinaryArray(new BinaryPrimitive(true), new BinaryPrimitive(false), new BinaryPrimitive((byte) 1)));
+		mixed.set(2, new BinaryArray(new BinaryPrimitive(1000), new BinaryPrimitive(2000), new BinaryPrimitive((short) 3000)));
+		BinaryMap mixedMap = new BinaryMap();
+		mixedMap.add("a", mixed);
+		
+		byte[] data = write(map);
+		
+		assertEquals(map, BinaryReader.fromByteArray(data));
+		assertTrue(data.length < write(mixedMap).length, "Expected the compacted lists to shrink the output");
+	}
+	
+	@Test
+	void writeCompressedDocumentWithCompactedLists() {
+		BinaryArray array = new BinaryArray();
+		for (int i = 0; i < 256; i++) {
+			array.add((byte) i);
+		}
+		BinaryStruct struct = new BinaryStruct(1);
+		struct.set(0, array);
+		
+		byte[] data = BinaryWriter.toByteArray(struct, BinaryConfig.COMPRESSED);
+		
+		assertEquals(struct, BinaryReader.fromByteArray(data, BinaryConfig.COMPRESSED));
+		assertTrue(data.length <= BinaryWriter.toByteArray(struct, HEADER_CONFIG).length);
 	}
 	
 	@Test

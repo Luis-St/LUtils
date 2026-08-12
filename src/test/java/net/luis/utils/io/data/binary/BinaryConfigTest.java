@@ -110,6 +110,64 @@ class BinaryConfigTest {
 	}
 	
 	@Test
+	void constructWithCompressionAndHeader() {
+		BinaryConfig config = new BinaryConfig(true, 8, 16, 32, 64, StandardCharsets.UTF_8, BinaryCompression.AUTO);
+		
+		assertTrue(config.writeHeader());
+		assertEquals(64, config.maxDocumentSize());
+		assertEquals(BinaryCompression.AUTO, config.compression());
+	}
+	
+	@Test
+	void constructWithMinimalValidMaxDocumentSize() {
+		BinaryConfig config = assertDoesNotThrow(() -> new BinaryConfig(false, 1, 1, 1, 1, StandardCharsets.UTF_8, BinaryCompression.NONE));
+		
+		assertEquals(1, config.maxDocumentSize());
+	}
+	
+	@Test
+	void constructWithoutCompressionUsesDefaults() {
+		BinaryConfig config = new BinaryConfig(false, 8, 16, 32, StandardCharsets.UTF_8);
+		
+		assertEquals(BinaryConfig.DEFAULT_MAX_DOCUMENT_SIZE, config.maxDocumentSize());
+		assertEquals(BinaryCompression.NONE, config.compression());
+	}
+	
+	@Test
+	void constructWithNullCompression() {
+		assertThrows(NullPointerException.class, () -> new BinaryConfig(true, 1, 1, 1, 1, StandardCharsets.UTF_8, null));
+	}
+	
+	@Test
+	void constructWithZeroMaxDocumentSize() {
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> new BinaryConfig(false, 1, 1, 1, 0, StandardCharsets.UTF_8, BinaryCompression.NONE));
+		
+		assertTrue(exception.getMessage().contains("Max document size"));
+	}
+	
+	@Test
+	void constructWithNegativeMaxDocumentSize() {
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> new BinaryConfig(false, 1, 1, 1, -8, StandardCharsets.UTF_8, BinaryCompression.NONE));
+		
+		assertTrue(exception.getMessage().contains("-8"));
+	}
+	
+	@Test
+	void constructWithCompressionWithoutHeader() {
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> new BinaryConfig(false, 1, 1, 1, 1, StandardCharsets.UTF_8, BinaryCompression.DEFLATE));
+		
+		assertTrue(exception.getMessage().contains("requires the header"));
+	}
+	
+	@Test
+	void constructWithoutCompressionWithoutHeader() {
+		BinaryConfig config = assertDoesNotThrow(() -> new BinaryConfig(false, 1, 1, 1, 1, StandardCharsets.UTF_8, BinaryCompression.NONE));
+		
+		assertFalse(config.writeHeader());
+		assertEquals(BinaryCompression.NONE, config.compression());
+	}
+	
+	@Test
 	void defaultConfigValues() {
 		BinaryConfig config = BinaryConfig.DEFAULT;
 		
@@ -160,6 +218,30 @@ class BinaryConfigTest {
 	}
 	
 	@Test
+	void compressedConfigEnablesHeaderAndAutoCompression() {
+		BinaryConfig config = BinaryConfig.COMPRESSED;
+		
+		assertTrue(config.writeHeader());
+		assertEquals(BinaryCompression.AUTO, config.compression());
+		assertEquals(BinaryConfig.DEFAULT.maxDepth(), config.maxDepth());
+		assertEquals(BinaryConfig.DEFAULT.maxCollectionSize(), config.maxCollectionSize());
+		assertEquals(BinaryConfig.DEFAULT.maxStringLength(), config.maxStringLength());
+		assertEquals(BinaryConfig.DEFAULT.maxDocumentSize(), config.maxDocumentSize());
+	}
+	
+	@Test
+	void defaultConfigCompressionValues() {
+		assertEquals(BinaryConfig.DEFAULT_MAX_DOCUMENT_SIZE, BinaryConfig.DEFAULT.maxDocumentSize());
+		assertEquals(BinaryCompression.NONE, BinaryConfig.DEFAULT.compression());
+	}
+	
+	@Test
+	void flagAndDocumentSizeConstants() {
+		assertEquals(0x01, BinaryConfig.FLAG_COMPRESSED);
+		assertEquals(16777216, BinaryConfig.DEFAULT_MAX_DOCUMENT_SIZE);
+	}
+	
+	@Test
 	void configDrivesReaderStringLimit() {
 		byte[] data = BinaryWriter.toByteArray(new BinaryPrimitive("abcdef"));
 		
@@ -200,5 +282,20 @@ class BinaryConfigTest {
 		assertEquals((byte) 0x42, data[1]);
 		assertEquals((byte) 0x01, data[2]);
 		assertEquals("ä", BinaryReader.fromByteArray(data, config).getAsString());
+	}
+	
+	@Test
+	void configDrivesReaderDocumentSizeLimit() {
+		BinaryArray array = new BinaryArray();
+		for (int i = 0; i < 512; i++) {
+			array.add("compressible");
+		}
+		byte[] data = BinaryWriter.toByteArray(array, BinaryConfig.COMPRESSED);
+		
+		BinaryConfig restricted = new BinaryConfig(true, 64, 65536, 1048576, 1024, StandardCharsets.UTF_8, BinaryCompression.NONE);
+		BinarySyntaxException exception = assertThrows(BinarySyntaxException.class, () -> BinaryReader.fromByteArray(data, restricted));
+		assertTrue(exception.getMessage().contains("maximum document size"));
+		
+		assertEquals(array, BinaryReader.fromByteArray(data, BinaryConfig.COMPRESSED));
 	}
 }

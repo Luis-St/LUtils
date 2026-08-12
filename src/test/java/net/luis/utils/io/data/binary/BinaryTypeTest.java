@@ -84,6 +84,13 @@ class BinaryTypeTest {
 	}
 	
 	@Test
+	void fromIdMapsCompactedListIdsToList() {
+		assertSame(BinaryType.LIST, BinaryType.fromId(BinaryType.LIST_BYTE_ID));
+		assertSame(BinaryType.LIST, BinaryType.fromId(BinaryType.LIST_BOOLEAN_ID));
+		assertSame(BinaryType.LIST, BinaryType.fromId(BinaryType.LIST_TYPED_ID));
+	}
+	
+	@Test
 	void getIdOfEachType() {
 		assertEquals((byte) 0x00, BinaryType.NULL.getId());
 		assertEquals((byte) 0x01, BinaryType.ABSENT.getId());
@@ -136,6 +143,20 @@ class BinaryTypeTest {
 	}
 	
 	@Test
+	void compactedListIdsAreNotOwnTypes() {
+		assertEquals(0x0E, BinaryType.LIST_BYTE_ID);
+		assertEquals(0x0F, BinaryType.LIST_BOOLEAN_ID);
+		assertEquals(0x10, BinaryType.LIST_TYPED_ID);
+		
+		for (BinaryType type : BinaryType.values()) {
+			assertNotEquals(BinaryType.LIST_BYTE_ID, type.getId());
+			assertNotEquals(BinaryType.LIST_BOOLEAN_ID, type.getId());
+			assertNotEquals(BinaryType.LIST_TYPED_ID, type.getId());
+		}
+		assertEquals(13, BinaryType.values().length);
+	}
+	
+	@Test
 	void typeCountIsStable() {
 		assertEquals(13, BinaryType.values().length);
 	}
@@ -154,6 +175,9 @@ class BinaryTypeTest {
 			accepted.add(type.getId());
 		}
 		accepted.add(BinaryType.BOOLEAN_TRUE_ID);
+		accepted.add(BinaryType.LIST_BYTE_ID);
+		accepted.add(BinaryType.LIST_BOOLEAN_ID);
+		accepted.add(BinaryType.LIST_TYPED_ID);
 		
 		for (int value = 0; value < 256; value++) {
 			byte id = (byte) value;
@@ -163,6 +187,6 @@ class BinaryTypeTest {
 				assertThrows(BinarySyntaxException.class, () -> BinaryType.fromId(id));
 			}
 		}
-		assertEquals(14, accepted.size());
+		assertEquals(17, accepted.size());
 	}
 }

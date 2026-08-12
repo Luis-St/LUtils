@@ -44,6 +44,16 @@ import java.util.Objects;
  *     <li>Struct: The number of fields as a variable-length integer followed by the fields, the field names are not written</li>
  *     <li>Map: The number of entries as a variable-length integer followed by the key-value pairs</li>
  * </ul>
+ * <p>
+ *     A list whose elements all have the same type is written in a compacted form which does not repeat the tag of every element.<br>
+ *     The compacted forms are identified by their own tag ids which are all mapped back to {@link #LIST},<br>
+ *     therefore they are an encoding detail of a list and not a type of their own:
+ * </p>
+ * <ul>
+ *     <li>{@link #LIST_BYTE_ID}: The number of elements as a variable-length integer followed by the raw bytes</li>
+ *     <li>{@link #LIST_BOOLEAN_ID}: The number of elements as a variable-length integer followed by the bits of the values, eight values per byte, the lowest bit first</li>
+ *     <li>{@link #LIST_TYPED_ID}: The tag id of the elements, the number of elements as a variable-length integer and the payloads of the elements</li>
+ * </ul>
  *
  * @author Luis-St
  */
@@ -110,6 +120,21 @@ public enum BinaryType {
 	 * The tag id of a boolean value which is {@code true}.<br>
 	 */
 	public static final byte BOOLEAN_TRUE_ID = 0x03;
+	/**
+	 * The tag id of a list which holds only byte values.<br>
+	 * The values are written as raw bytes without a tag per element.<br>
+	 */
+	public static final byte LIST_BYTE_ID = 0x0E;
+	/**
+	 * The tag id of a list which holds only boolean values.<br>
+	 * The values are written as bits, eight values per byte, the lowest bit first.<br>
+	 */
+	public static final byte LIST_BOOLEAN_ID = 0x0F;
+	/**
+	 * The tag id of a list whose elements all have the same type.<br>
+	 * The tag id of the elements is written once, the payloads of the elements follow without a tag per element.<br>
+	 */
+	public static final byte LIST_TYPED_ID = 0x10;
 	
 	/**
 	 * The tag id of this type.<br>
@@ -135,6 +160,7 @@ public enum BinaryType {
 	/**
 	 * Returns the binary type which is identified by the given tag id.<br>
 	 * The tag ids {@code 0x02} and {@code 0x03} are both mapped to {@link #BOOLEAN}.<br>
+	 * The tag ids of the compacted list forms are all mapped to {@link #LIST}.<br>
 	 *
 	 * @param id The tag id to get the type for
 	 * @return The type of the tag id
@@ -143,6 +169,9 @@ public enum BinaryType {
 	public static @NonNull BinaryType fromId(byte id) {
 		if (id == BOOLEAN_TRUE_ID) {
 			return BOOLEAN;
+		}
+		if (id == LIST_BYTE_ID || id == LIST_BOOLEAN_ID || id == LIST_TYPED_ID) {
+			return LIST;
 		}
 		
 		for (BinaryType type : values()) {

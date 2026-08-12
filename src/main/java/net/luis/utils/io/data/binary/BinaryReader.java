@@ -24,6 +24,8 @@ import org.jspecify.annotations.NonNull;
 
 import java.io.*;
 import java.util.*;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
 
 /**
  * A binary reader for reading binary elements from an input.<br>
@@ -31,6 +33,11 @@ import java.util.*;
  * <p>
  *     A {@link BinaryStruct struct} which is read from an input does not know the names of its fields,<br>
  *     the fields must be accessed by their position.
+ * </p>
+ * <p>
+ *     The compacted forms of a list are read transparently, they yield the same elements as the plain form.<br>
+ *     A compressed document is recognized by the flag in its header,<br>
+ *     therefore the compression mode of the configuration is not used while reading.
  * </p>
  *
  * @author Luis-St
@@ -131,6 +138,14 @@ public class BinaryReader implements AutoCloseable {
 				if (version != BinaryConfig.VERSION) {
 					throw new BinarySyntaxException("Unsupported binary format version: " + version);
 				}
+				
+				byte flags = this.stream.readByte();
+				if ((flags & ~BinaryConfig.FLAG_COMPRESSED) != 0) {
+					throw new BinarySyntaxException("Unknown binary header flags: 0x" + String.format("%02X", flags));
+				}
+				if ((flags & BinaryConfig.FLAG_COMPRESSED) != 0) {
+					return this.readCompressed();
+				}
 			}
 			return this.readElement(0);
 		} catch (EOFException e) {
@@ -138,6 +153,68 @@ public class BinaryReader implements AutoCloseable {
 		} catch (IOException e) {
 			throw new UncheckedIOException("An I/O error occurred while reading the binary element", e);
 		}
+	}
+	
+	/**
+	 * Reads a compressed document from the input and decodes the element it holds.<br>
+	 * The compressed data is preceded by its length, therefore the input may hold more data than the document.<br>
+	 *
+	 * @return The binary element which was read
+	 * @throws BinarySyntaxException If the data is invalid or a limit of the configuration is exceeded
+	 * @throws IOException If an I/O error occurs
+	 */
+	private @NonNull BinaryElement readCompressed() throws IOException {
+		long length = this.readVarLong();
+		if (0 > length || length > this.config.maxDocumentSize()) {
+			throw new BinarySyntaxException("The length of the compressed document (" + length + ") exceeds the maximum document size of " + this.config.maxDocumentSize());
+		}
+		
+		byte[] compressed = new byte[(int) length];
+		this.stream.readFully(compressed);
+		
+		BinaryConfig config = new BinaryConfig(
+			false, this.config.maxDepth(), this.config.maxCollectionSize(), this.config.maxStringLength(), this.config.maxDocumentSize(), this.config.charset(), BinaryCompression.NONE
+		);
+		try (BinaryReader reader = new BinaryReader(new InputProvider(this.inflate(compressed)), config)) {
+			return reader.readBinary();
+		}
+	}
+	
+	/**
+	 * Decompresses the given data with the deflate algorithm.<br>
+	 * The size of the decompressed data is limited by the maximum document size of the configuration.<br>
+	 *
+	 * @param data The data to decompress
+	 * @return The decompressed data
+	 * @throws NullPointerException If the data is null
+	 * @throws BinarySyntaxException If the data is not valid deflate data or the decompressed data exceeds the maximum document size
+	 */
+	private byte @NonNull [] inflate(byte @NonNull [] data) throws IOException {
+		Objects.requireNonNull(data, "Data must not be null");
+		
+		Inflater inflater = new Inflater();
+		inflater.setInput(data);
+		
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		byte[] buffer = new byte[8192];
+		try {
+			while (!inflater.finished()) {
+				int read = inflater.inflate(buffer);
+				if (read == 0 && (inflater.needsInput() || inflater.needsDictionary())) {
+					throw new BinarySyntaxException("Unable to decompress the binary document, the compressed data is truncated");
+				}
+				
+				output.write(buffer, 0, read);
+				if (output.size() > this.config.maxDocumentSize()) {
+					throw new BinarySyntaxException("The size of the decompressed document exceeds the maximum document size of " + this.config.maxDocumentSize());
+				}
+			}
+		} catch (DataFormatException e) {
+			throw new BinarySyntaxException("Unable to decompress the binary document, the compressed data is invalid", e);
+		} finally {
+			inflater.end();
+		}
+		return output.toByteArray();
 	}
 	
 	/**
@@ -158,7 +235,32 @@ public class BinaryReader implements AutoCloseable {
 		}
 		
 		byte id = this.stream.readByte();
-		BinaryType type = BinaryType.fromId(id);
+		if (id == BinaryType.LIST_BYTE_ID) {
+			return this.readByteList();
+		}
+		if (id == BinaryType.LIST_BOOLEAN_ID) {
+			return this.readBooleanList();
+		}
+		if (id == BinaryType.LIST_TYPED_ID) {
+			return this.readTypedList(depth);
+		}
+		return this.readPayload(BinaryType.fromId(id), id, depth);
+	}
+	
+	/**
+	 * Reads the payload of a binary element of the given type from the input.<br>
+	 *
+	 * @param type The type of the element
+	 * @param id The tag id which was read for the element, it is used to distinguish the two boolean values
+	 * @param depth The current nesting depth
+	 * @return The binary element which was read
+	 * @throws NullPointerException If the type is null
+	 * @throws BinarySyntaxException If the data is invalid or a limit of the configuration is exceeded
+	 * @throws IOException If an I/O error occurs
+	 */
+	private @NonNull BinaryElement readPayload(@NonNull BinaryType type, byte id, int depth) throws IOException {
+		Objects.requireNonNull(type, "Type must not be null");
+		
 		return switch (type) {
 			case NULL -> BinaryNull.INSTANCE;
 			case ABSENT -> BinaryAbsent.INSTANCE;
@@ -195,6 +297,73 @@ public class BinaryReader implements AutoCloseable {
 				yield map;
 			}
 		};
+	}
+	
+	/**
+	 * Reads a list which holds only byte values from the input.<br>
+	 * The values are stored as raw bytes without a tag per element.<br>
+	 *
+	 * @return The list which was read
+	 * @throws BinarySyntaxException If the size exceeds the maximum collection size
+	 * @throws IOException If an I/O error occurs
+	 */
+	private @NonNull BinaryArray readByteList() throws IOException {
+		int size = this.readSize("list");
+		byte[] bytes = new byte[size];
+		this.stream.readFully(bytes);
+		
+		List<BinaryElement> elements = new ArrayList<>(size);
+		for (byte value : bytes) {
+			elements.add(new BinaryPrimitive(value));
+		}
+		return new BinaryArray(elements);
+	}
+	
+	/**
+	 * Reads a list which holds only boolean values from the input.<br>
+	 * The values are stored as bits, eight values per byte, the value of the first element is stored in the lowest bit.<br>
+	 *
+	 * @return The list which was read
+	 * @throws BinarySyntaxException If the size exceeds the maximum collection size
+	 * @throws IOException If an I/O error occurs
+	 */
+	private @NonNull BinaryArray readBooleanList() throws IOException {
+		int size = this.readSize("list");
+		byte[] bits = new byte[(size + Byte.SIZE - 1) / Byte.SIZE];
+		this.stream.readFully(bits);
+		
+		List<BinaryElement> elements = new ArrayList<>(size);
+		for (int i = 0; i < size; i++) {
+			elements.add(new BinaryPrimitive((bits[i / Byte.SIZE] & 1 << i % Byte.SIZE) != 0));
+		}
+		return new BinaryArray(elements);
+	}
+	
+	/**
+	 * Reads a list whose elements all have the same type from the input.<br>
+	 * The tag id of the elements is stored once, the payloads of the elements follow without a tag per element.<br>
+	 *
+	 * @param depth The current nesting depth
+	 * @return The list which was read
+	 * @throws BinarySyntaxException If the element type has no payload, the element type is not a primitive or the size exceeds the maximum collection size
+	 * @throws IOException If an I/O error occurs
+	 */
+	private @NonNull BinaryArray readTypedList(int depth) throws IOException {
+		byte elementId = this.stream.readByte();
+		BinaryType elementType = BinaryType.fromId(elementId);
+		if (elementType == BinaryType.NULL || elementType == BinaryType.ABSENT || elementType == BinaryType.BOOLEAN) {
+			throw new BinarySyntaxException("A typed list can not hold elements of the type " + elementType + ", the type has no payload");
+		}
+		if (elementType == BinaryType.LIST || elementType == BinaryType.STRUCT || elementType == BinaryType.MAP) {
+			throw new BinarySyntaxException("A typed list can not hold elements of the type " + elementType + ", the type is not a primitive");
+		}
+		
+		int size = this.readSize("list");
+		List<BinaryElement> elements = new ArrayList<>(size);
+		for (int i = 0; i < size; i++) {
+			elements.add(this.readPayload(elementType, elementId, depth + 1));
+		}
+		return new BinaryArray(elements);
 	}
 	
 	/**

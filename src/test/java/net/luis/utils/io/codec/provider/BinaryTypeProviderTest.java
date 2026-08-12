@@ -38,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class BinaryTypeProviderTest {
 	
 	private static final BinaryTypeProvider INSTANCE = BinaryTypeProvider.INSTANCE;
+	private static final BinaryTypeProvider COMPACT = BinaryTypeProvider.COMPACT;
 	
 	private static BinaryStruct namedStruct(String name, BinaryElement value) {
 		BinaryStruct struct = new BinaryStruct(1);
@@ -50,6 +51,108 @@ class BinaryTypeProviderTest {
 		assertNotNull(BinaryTypeProvider.INSTANCE);
 		assertSame(BinaryTypeProvider.INSTANCE, BinaryTypeProvider.INSTANCE);
 		assertTrue(Modifier.isFinal(BinaryTypeProvider.class.getModifiers()));
+	}
+	
+	@Test
+	void compactInstanceIsSeparateFromDefaultInstance() {
+		assertNotNull(BinaryTypeProvider.COMPACT);
+		assertNotSame(BinaryTypeProvider.INSTANCE, BinaryTypeProvider.COMPACT);
+		assertSame(BinaryTypeProvider.COMPACT, BinaryTypeProvider.COMPACT);
+	}
+	
+	@Test
+	void compactStoresSmallNumbersAsByte() throws Exception {
+		BinaryElement shortValue = COMPACT.createShort((short) 100, EncoderException::new);
+		BinaryElement intValue = COMPACT.createInteger(100, EncoderException::new);
+		BinaryElement longValue = COMPACT.createLong(-100L, EncoderException::new);
+		
+		assertEquals(BinaryType.BYTE, shortValue.getType());
+		assertEquals(BinaryType.BYTE, intValue.getType());
+		assertEquals(BinaryType.BYTE, longValue.getType());
+		assertEquals((short) 100, COMPACT.getShort(shortValue, DecoderException::new));
+		assertEquals(100, COMPACT.getInteger(intValue, DecoderException::new));
+		assertEquals(-100L, COMPACT.getLong(longValue, DecoderException::new));
+	}
+	
+	@Test
+	void compactKeepsNumbersWhichAreNotSmallerAsByte() {
+		assertEquals(BinaryType.INTEGER, COMPACT.createInteger(0, EncoderException::new).getType());
+		assertEquals(BinaryType.INTEGER, COMPACT.createInteger(63, EncoderException::new).getType());
+		assertEquals(BinaryType.INTEGER, COMPACT.createInteger(-64, EncoderException::new).getType());
+		assertEquals(BinaryType.INTEGER, COMPACT.createInteger(128, EncoderException::new).getType());
+		assertEquals(BinaryType.INTEGER, COMPACT.createInteger(-129, EncoderException::new).getType());
+		assertEquals(BinaryType.LONG, COMPACT.createLong(Long.MAX_VALUE, EncoderException::new).getType());
+	}
+	
+	@Test
+	void compactStoresNumbersAtByteBoundaries() {
+		for (int value : new int[] { 64, 127, -65, -128 }) {
+			assertEquals(BinaryType.BYTE, COMPACT.createInteger(value, EncoderException::new).getType(), "Unexpected type for " + value);
+		}
+		for (int value : new int[] { 63, 128, -64, -129 }) {
+			assertEquals(BinaryType.INTEGER, COMPACT.createInteger(value, EncoderException::new).getType(), "Unexpected type for " + value);
+		}
+	}
+	
+	@Test
+	void compactKeepsWideShortAsShort() throws Exception {
+		BinaryElement positive = COMPACT.createShort((short) 1000, EncoderException::new);
+		BinaryElement negative = COMPACT.createShort((short) -1000, EncoderException::new);
+		
+		assertEquals(BinaryType.SHORT, positive.getType());
+		assertEquals(BinaryType.SHORT, negative.getType());
+		assertEquals((short) 1000, COMPACT.getShort(positive, DecoderException::new));
+		assertEquals((short) -1000, COMPACT.getShort(negative, DecoderException::new));
+	}
+	
+	@Test
+	void compactStoresExactDoublesAsFloat() throws Exception {
+		BinaryElement exact = COMPACT.createDouble(1.5, EncoderException::new);
+		
+		assertEquals(BinaryType.FLOAT, exact.getType());
+		assertEquals(BinaryType.DOUBLE, COMPACT.createDouble(0.1, EncoderException::new).getType());
+		assertEquals(BinaryType.DOUBLE, COMPACT.createDouble(Double.NaN, EncoderException::new).getType());
+		assertEquals(1.5, COMPACT.getDouble(exact, DecoderException::new));
+	}
+	
+	@Test
+	void compactStoresSpecialDoubles() throws Exception {
+		double[] narrowed = { Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 0.0, -0.0, Float.MAX_VALUE };
+		for (double value : narrowed) {
+			BinaryElement element = COMPACT.createDouble(value, EncoderException::new);
+			
+			assertEquals(BinaryType.FLOAT, element.getType(), "Unexpected type for " + value);
+			assertEquals(0, Double.compare(value, COMPACT.getDouble(element, DecoderException::new)), "Unexpected value for " + value);
+		}
+		
+		BinaryElement wide = COMPACT.createDouble(Double.MAX_VALUE, EncoderException::new);
+		assertEquals(BinaryType.DOUBLE, wide.getType());
+		assertEquals(Double.MAX_VALUE, COMPACT.getDouble(wide, DecoderException::new));
+	}
+	
+	@Test
+	void defaultInstanceDoesNotNarrowValues() {
+		assertEquals(BinaryType.INTEGER, INSTANCE.createInteger(100, EncoderException::new).getType());
+		assertEquals(BinaryType.DOUBLE, INSTANCE.createDouble(1.5, EncoderException::new).getType());
+	}
+	
+	@Test
+	void defaultInstanceDoesNotNarrowShortAndLong() throws Exception {
+		BinaryElement shortValue = INSTANCE.createShort((short) 100, EncoderException::new);
+		BinaryElement longValue = INSTANCE.createLong(100L, EncoderException::new);
+		
+		assertEquals(BinaryType.SHORT, shortValue.getType());
+		assertEquals(BinaryType.LONG, longValue.getType());
+		assertEquals((short) 100, INSTANCE.getShort(shortValue, DecoderException::new));
+		assertEquals(100L, INSTANCE.getLong(longValue, DecoderException::new));
+	}
+	
+	@Test
+	void compactDoesNotNarrowBooleansOrStrings() throws Exception {
+		assertEquals(BinaryType.BOOLEAN, COMPACT.createBoolean(true, EncoderException::new).getType());
+		assertEquals(BinaryType.STRING, COMPACT.createString("text", EncoderException::new).getType());
+		assertEquals(BinaryType.BYTE, COMPACT.createByte((byte) 100, EncoderException::new).getType());
+		assertEquals(BinaryType.FLOAT, COMPACT.createFloat(1.5F, EncoderException::new).getType());
 	}
 	
 	@Test
@@ -1018,6 +1121,39 @@ class BinaryTypeProviderTest {
 		assertThrows(DecoderException.class, () -> INSTANCE.getList(level1, DecoderException::new));
 	}
 	
+	@Test
+	void compactCodecRoundTripThroughWriterAndReader() throws Exception {
+		CodecGroup<TestObject> group = createGroup();
+		TestObject original = new TestObject("test", 100, true);
+		
+		byte[] compact = BinaryWriter.toByteArray(group.encode(COMPACT, COMPACT.empty(), original));
+		byte[] wide = BinaryWriter.toByteArray(group.encode(INSTANCE, INSTANCE.empty(), original));
+		
+		assertTrue(compact.length < wide.length, "Expected the compact encoding to be shorter");
+		
+		BinaryElement decoded = BinaryReader.fromByteArray(compact);
+		assertEquals(original, group.decode(COMPACT, decoded, decoded));
+		assertEquals(original, group.decode(INSTANCE, decoded, decoded));
+	}
+	
+	@Test
+	void compactStructWithNarrowedAndWideFields() throws Exception {
+		CodecGroup<MixedObject> group = createMixedGroup();
+		MixedObject original = new MixedObject(100, 1000, 1.5, "text");
+		
+		BinaryElement encoded = group.encode(COMPACT, COMPACT.empty(), original);
+		BinaryStruct struct = encoded.getAsBinaryStruct();
+		
+		assertEquals(BinaryType.BYTE, struct.get(0).getType());
+		assertEquals(BinaryType.INTEGER, struct.get(1).getType());
+		assertEquals(BinaryType.FLOAT, struct.get(2).getType());
+		assertEquals(BinaryType.STRING, struct.get(3).getType());
+		
+		BinaryElement decoded = BinaryReader.fromByteArray(BinaryWriter.toByteArray(encoded));
+		assertEquals(original, group.decode(COMPACT, decoded, decoded));
+		assertEquals(original, group.decode(INSTANCE, decoded, decoded));
+	}
+	
 	private static CodecGroup<TestObject> createGroup() {
 		List<FieldCodec<?, TestObject>> codecs = List.of(
 			STRING.fieldOf("name", TestObject::name),
@@ -1027,5 +1163,19 @@ class BinaryTypeProviderTest {
 		return new CodecGroup<>(codecs, components -> new TestObject((String) components.getFirst(), (Integer) components.get(1), (Boolean) components.get(2)));
 	}
 	
+	private static CodecGroup<MixedObject> createMixedGroup() {
+		List<FieldCodec<?, MixedObject>> codecs = List.of(
+			INTEGER.fieldOf("narrowed", MixedObject::narrowed),
+			INTEGER.fieldOf("wide", MixedObject::wide),
+			DOUBLE.fieldOf("exact", MixedObject::exact),
+			STRING.fieldOf("text", MixedObject::text)
+		);
+		return new CodecGroup<>(codecs, components -> new MixedObject(
+			(Integer) components.getFirst(), (Integer) components.get(1), (Double) components.get(2), (String) components.get(3)
+		));
+	}
+	
 	private record TestObject(String name, int value, boolean flag) {}
+	
+	private record MixedObject(int narrowed, int wide, double exact, String text) {}
 }
