@@ -365,6 +365,9 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 	public <X extends Exception> void setField(@Nullable BinaryElement type, @NonNull FieldRef field, @Nullable BinaryElement value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
 		Objects.requireNonNull(field, "Field must not be null");
+		if (value == null) {
+			throw exceptionConstructor.apply("Value 'null' is not valid");
+		}
 		
 		if (type instanceof BinaryStruct struct) {
 			struct.set(this.getIndex(struct, field, exceptionConstructor), field.name(), value);
@@ -517,6 +520,12 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 	/**
 	 * Merges the given structs into a new struct.<br>
 	 * The fields of the given value overwrite the fields of the current struct if they are present.<br>
+	 * <p>
+	 *     In contrast to the merge of two lists or maps, the current struct is not modified.<br>
+	 *     The number of fields of a struct is fixed after its construction,<br>
+	 *     therefore the current struct can not hold the merged fields if the given value has more fields than the current struct.<br>
+	 *     A new struct is returned in all cases to keep the behavior of this method independent of the sizes of the given structs.
+	 * </p>
 	 *
 	 * @param current The current struct
 	 * @param value The struct to merge

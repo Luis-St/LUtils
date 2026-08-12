@@ -595,12 +595,12 @@ class BinaryTypeProviderTest {
 	}
 	
 	@Test
-	void setFieldWithNullValueOnStruct() throws Exception {
+	void setFieldWithNullValue() {
 		BinaryStruct struct = new BinaryStruct(1);
 		FieldRef field = new FieldRef("name", Set.of(), 0);
 		
-		INSTANCE.setField(struct, field, null, EncoderException::new);
-		assertSame(BinaryNull.INSTANCE, struct.get(0));
+		assertThrows(EncoderException.class, () -> INSTANCE.setField(struct, field, null, EncoderException::new));
+		assertFalse(struct.has(0));
 		
 		BinaryMap map = new BinaryMap();
 		assertThrows(EncoderException.class, () -> INSTANCE.setField(map, field, null, EncoderException::new));
@@ -961,7 +961,7 @@ class BinaryTypeProviderTest {
 		BinaryStruct struct = new BinaryStruct(2);
 		FieldRef nullable = new FieldRef("nullable", Set.of(), 0);
 		
-		INSTANCE.setField(struct, nullable, null, EncoderException::new);
+		INSTANCE.setField(struct, nullable, INSTANCE.createNull(EncoderException::new), EncoderException::new);
 		
 		assertSame(BinaryNull.INSTANCE, struct.get(0));
 		assertSame(BinaryAbsent.INSTANCE, struct.get(1));
