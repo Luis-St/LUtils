@@ -466,6 +466,7 @@ public final class ConnectionContext {
 		if (value == null) {
 			return null;
 		}
+		
 		if (!type.isInstance(value)) {
 			throw new ClassCastException("Context value for key '" + key + "' is of type " + value.getClass().getName() + ", expected " + type.getName());
 		}
