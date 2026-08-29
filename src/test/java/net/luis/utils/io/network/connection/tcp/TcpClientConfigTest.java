@@ -98,7 +98,7 @@ class TcpClientConfigTest {
 		assertNotNull(config.onDisconnect());
 		assertNotNull(config.onError());
 	}
-
+	
 	@Test
 	void framingIsEnabledByDefault() {
 		assertTrue(TcpClientConfig.builder().build().framing());
@@ -109,5 +109,5 @@ class TcpClientConfigTest {
 		assertFalse(TcpClientConfig.builder().framing(false).build().framing());
 		assertTrue(TcpClientConfig.builder().framing(false).framing(true).build().framing());
 	}
-
+	
 }

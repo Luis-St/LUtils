@@ -44,6 +44,38 @@ import static org.junit.jupiter.api.Assertions.*;
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 class TcpConnectionTest {
 	
+	private static byte[] filled(int length, byte value) {
+		byte[] data = new byte[length];
+		java.util.Arrays.fill(data, value);
+		return data;
+	}
+	
+	private static void writeFramed(Socket socket, byte[] data) throws Exception {
+		NetworkUtils.writeFrame(socket.getOutputStream(), data);
+	}
+	
+	private static byte[] receiveExactly(TcpConnection connection, int expected, int maxBytes) throws Exception {
+		byte[] received = connection.receive(maxBytes);
+		assertEquals(expected, received.length);
+		return received;
+	}
+	
+	private static Socket openPeerAndClose(int port, ServerSocket serverSocket) throws Exception {
+		try (Socket peer = new Socket("127.0.0.1", port)) {
+			Socket accepted = serverSocket.accept();
+			peer.close();
+			return accepted;
+		}
+	}
+	
+	private static byte[] readUntil(TcpConnection connection, int expected, int maxBytes) throws Exception {
+		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
+		while (reassembled.size() < expected) {
+			reassembled.writeBytes(connection.receive(maxBytes));
+		}
+		return reassembled.toByteArray();
+	}
+	
 	@Test
 	void sendWithNullDataThrows() throws Exception {
 		try (ServerSocket serverSocket = new ServerSocket(0)) {
@@ -904,30 +936,6 @@ class TcpConnectionTest {
 		});
 	}
 	
-	private static byte[] filled(int length, byte value) {
-		byte[] data = new byte[length];
-		java.util.Arrays.fill(data, value);
-		return data;
-	}
-	
-	private static void writeFramed(Socket socket, byte[] data) throws Exception {
-		NetworkUtils.writeFrame(socket.getOutputStream(), data);
-	}
-	
-	private static byte[] receiveExactly(TcpConnection connection, int expected, int maxBytes) throws Exception {
-		byte[] received = connection.receive(maxBytes);
-		assertEquals(expected, received.length);
-		return received;
-	}
-	
-	private static Socket openPeerAndClose(int port, ServerSocket serverSocket) throws Exception {
-		try (Socket peer = new Socket("127.0.0.1", port)) {
-			Socket accepted = serverSocket.accept();
-			peer.close();
-			return accepted;
-		}
-	}
-	
 	private void withPair(PairConsumer body) throws Exception {
 		this.withPair(8192, true, body);
 	}
@@ -942,14 +950,6 @@ class TcpConnectionTest {
 				body.accept(clientSocket, new TcpConnection(serverSideSocket, bufferSize, framing, Duration.ofSeconds(5)));
 			}
 		}
-	}
-	
-	private static byte[] readUntil(TcpConnection connection, int expected, int maxBytes) throws Exception {
-		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
-		while (reassembled.size() < expected) {
-			reassembled.writeBytes(connection.receive(maxBytes));
-		}
-		return reassembled.toByteArray();
 	}
 	
 	@FunctionalInterface

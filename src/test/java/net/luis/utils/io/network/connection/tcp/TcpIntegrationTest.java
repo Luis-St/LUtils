@@ -63,6 +63,137 @@ class TcpIntegrationTest {
 		clientContext = createContext();
 	}
 	
+	private static String hostPartOf(Endpoint endpoint) {
+		return switch (endpoint) {
+			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
+			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
+		};
+	}
+	
+	private static byte[] filled(int length, byte value) {
+		byte[] data = new byte[length];
+		Arrays.fill(data, value);
+		return data;
+	}
+	
+	private static TcpServerConfig echoConfig() {
+		return echoConfig(true);
+	}
+	
+	private static TcpServerConfig echoConfig(boolean framing) {
+		return TcpServerConfig.builder()
+			.framing(framing)
+			.onMessage((server, conn, data) -> {
+				try {
+					conn.send(data);
+				} catch (NetworkConnectionException e) {
+					fail("Echo failed: " + e.getMessage());
+				}
+			})
+			.build();
+	}
+	
+	private static TcpClientConfig readTimeoutConfig() {
+		return TcpClientConfig.builder().readTimeout(Duration.ofSeconds(5)).build();
+	}
+	
+	private static byte[] receiveExactly(TcpClient client, int expected, int maxBytes) throws Exception {
+		byte[] received = client.receive(maxBytes);
+		assertEquals(expected, received.length);
+		return received;
+	}
+	
+	private static void withEchoServer(ClientConsumer body) throws Exception {
+		withEchoServer(true, body);
+	}
+	
+	private static void withEchoServer(boolean framing, ClientConsumer body) throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (TcpServer server = new TcpServer(endpoint, echoConfig(framing))) {
+			server.start();
+			
+			try (TcpClient client = new TcpClient(framing ? readTimeoutConfig() : unframedClientConfig())) {
+				client.connect(server.boundEndpoint());
+				body.accept(client);
+			}
+		}
+	}
+	
+	private static TcpClientConfig unframedClientConfig() {
+		return TcpClientConfig.builder().framing(false).readTimeout(Duration.ofSeconds(5)).build();
+	}
+	
+	private static SslServerConfig secureEchoConfig() {
+		return secureEchoConfig(true);
+	}
+	
+	private static SslServerConfig secureEchoConfig(boolean framing) {
+		return SslServerConfig.builder(serverContext)
+			.framing(framing)
+			.onMessage((server, conn, data) -> {
+				try {
+					conn.send(data);
+				} catch (NetworkConnectionException e) {
+					fail("Echo failed: " + e.getMessage());
+				}
+			})
+			.build();
+	}
+	
+	private static SslUpgradeConfigBuilder upgradeConfig() {
+		return SslUpgradeConfig.builder().sslContext(clientContext).verifyHostname(false);
+	}
+	
+	private static void withUpgradeServer(UpgradeConsumer body) throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, secureEchoConfig())) {
+			server.start();
+			
+			try (TcpClient client = new TcpClient(readTimeoutConfig())) {
+				client.connect(server.boundEndpoint());
+				body.accept(client, server);
+			}
+		}
+	}
+	
+	private static SSLContext createContext() throws Exception {
+		KeyStore keyStore = KeyStore.getInstance("PKCS12");
+		try (InputStream stream = TcpIntegrationTest.class.getResourceAsStream("/ssl/keystore.p12")) {
+			if (stream == null) {
+				throw new IllegalStateException("Test keystore /ssl/keystore.p12 not found on the classpath");
+			}
+			keyStore.load(stream, KEYSTORE_PASSWORD.toCharArray());
+		}
+		
+		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+		keyManagerFactory.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
+		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+		trustManagerFactory.init(keyStore);
+		
+		SSLContext context = SSLContext.getInstance("TLS");
+		context.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+		return context;
+	}
+	
+	private static byte[] readUntil(TcpClient client, int expected, int maxBytes) throws Exception {
+		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
+		while (reassembled.size() < expected) {
+			reassembled.writeBytes(client.receive(maxBytes));
+		}
+		return reassembled.toByteArray();
+	}
+	
+	private static boolean awaitClientCount(TcpServer server, int expected) throws Exception {
+		long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+		while (System.nanoTime() < deadline) {
+			if (server.getClientCount() == expected) {
+				return true;
+			}
+			Thread.sleep(20);
+		}
+		return false;
+	}
+	
 	@Test
 	void serverStartAndStop() {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -1846,6 +1977,8 @@ class TcpIntegrationTest {
 		});
 	}
 	
+	//region Helper methods
+	
 	@Test
 	void closeAfterUpgradeDoesNotFireDisconnectHandler() throws Exception {
 		AtomicInteger disconnectCount = new AtomicInteger(0);
@@ -2157,139 +2290,6 @@ class TcpIntegrationTest {
 			assertTrue(latch.await(20, TimeUnit.SECONDS));
 			assertEquals(2, successes.get());
 		}
-	}
-	
-	//region Helper methods
-	
-	private static String hostPartOf(Endpoint endpoint) {
-		return switch (endpoint) {
-			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
-			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
-		};
-	}
-	
-	private static byte[] filled(int length, byte value) {
-		byte[] data = new byte[length];
-		Arrays.fill(data, value);
-		return data;
-	}
-	
-	private static TcpServerConfig echoConfig() {
-		return echoConfig(true);
-	}
-	
-	private static TcpServerConfig echoConfig(boolean framing) {
-		return TcpServerConfig.builder()
-			.framing(framing)
-			.onMessage((server, conn, data) -> {
-				try {
-					conn.send(data);
-				} catch (NetworkConnectionException e) {
-					fail("Echo failed: " + e.getMessage());
-				}
-			})
-			.build();
-	}
-	
-	private static TcpClientConfig readTimeoutConfig() {
-		return TcpClientConfig.builder().readTimeout(Duration.ofSeconds(5)).build();
-	}
-	
-	private static byte[] receiveExactly(TcpClient client, int expected, int maxBytes) throws Exception {
-		byte[] received = client.receive(maxBytes);
-		assertEquals(expected, received.length);
-		return received;
-	}
-	
-	private static void withEchoServer(ClientConsumer body) throws Exception {
-		withEchoServer(true, body);
-	}
-	
-	private static void withEchoServer(boolean framing, ClientConsumer body) throws Exception {
-		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
-		try (TcpServer server = new TcpServer(endpoint, echoConfig(framing))) {
-			server.start();
-			
-			try (TcpClient client = new TcpClient(framing ? readTimeoutConfig() : unframedClientConfig())) {
-				client.connect(server.boundEndpoint());
-				body.accept(client);
-			}
-		}
-	}
-	
-	private static TcpClientConfig unframedClientConfig() {
-		return TcpClientConfig.builder().framing(false).readTimeout(Duration.ofSeconds(5)).build();
-	}
-	
-	private static SslServerConfig secureEchoConfig() {
-		return secureEchoConfig(true);
-	}
-	
-	private static SslServerConfig secureEchoConfig(boolean framing) {
-		return SslServerConfig.builder(serverContext)
-			.framing(framing)
-			.onMessage((server, conn, data) -> {
-				try {
-					conn.send(data);
-				} catch (NetworkConnectionException e) {
-					fail("Echo failed: " + e.getMessage());
-				}
-			})
-			.build();
-	}
-	
-	private static SslUpgradeConfigBuilder upgradeConfig() {
-		return SslUpgradeConfig.builder().sslContext(clientContext).verifyHostname(false);
-	}
-	
-	private static void withUpgradeServer(UpgradeConsumer body) throws Exception {
-		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
-		try (SslServer server = new SslServer(endpoint, secureEchoConfig())) {
-			server.start();
-			
-			try (TcpClient client = new TcpClient(readTimeoutConfig())) {
-				client.connect(server.boundEndpoint());
-				body.accept(client, server);
-			}
-		}
-	}
-	
-	private static SSLContext createContext() throws Exception {
-		KeyStore keyStore = KeyStore.getInstance("PKCS12");
-		try (InputStream stream = TcpIntegrationTest.class.getResourceAsStream("/ssl/keystore.p12")) {
-			if (stream == null) {
-				throw new IllegalStateException("Test keystore /ssl/keystore.p12 not found on the classpath");
-			}
-			keyStore.load(stream, KEYSTORE_PASSWORD.toCharArray());
-		}
-		
-		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-		keyManagerFactory.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
-		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-		trustManagerFactory.init(keyStore);
-		
-		SSLContext context = SSLContext.getInstance("TLS");
-		context.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-		return context;
-	}
-	
-	private static byte[] readUntil(TcpClient client, int expected, int maxBytes) throws Exception {
-		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
-		while (reassembled.size() < expected) {
-			reassembled.writeBytes(client.receive(maxBytes));
-		}
-		return reassembled.toByteArray();
-	}
-	
-	private static boolean awaitClientCount(TcpServer server, int expected) throws Exception {
-		long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
-		while (System.nanoTime() < deadline) {
-			if (server.getClientCount() == expected) {
-				return true;
-			}
-			Thread.sleep(20);
-		}
-		return false;
 	}
 	
 	@FunctionalInterface

@@ -49,6 +49,34 @@ import static org.junit.jupiter.api.Assertions.*;
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 class UdpIntegrationTest {
 	
+	private static final String UNRESOLVABLE_HOSTNAME = "this-host-does-not-exist.invalid";
+	
+	/**
+	 * Returns the address {@code localhost} actually resolves to, on the given port.<br>
+	 * Binding to this rather than to a hardcoded {@code 127.0.0.1} keeps the address family
+	 * consistent with what a {@code HostEndpoint("localhost", ...)} destination resolves to,
+	 * which matters on dual stack hosts where {@code localhost} may map to the IPv6 loopback.<br>
+	 */
+	private static IpEndpoint resolvedLocalhost(int port) {
+		return new HostEndpoint("localhost", port).resolve().orElseThrow();
+	}
+	
+	private static UdpClientConfig receiveTimeoutConfig() {
+		return UdpClientConfig.builder().receiveTimeout(Duration.ofSeconds(5)).build();
+	}
+	
+	private static UdpServerConfig echoConfig() {
+		return UdpServerConfig.builder()
+			.onMessage((server, datagram, data) -> {
+				try {
+					server.send(datagram.endpoint(), data);
+				} catch (NetworkConnectionException e) {
+					fail("Echo failed: " + e.getMessage());
+				}
+			})
+			.build();
+	}
+	
 	@Test
 	void serverStartAndStop() {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -628,7 +656,7 @@ class UdpIntegrationTest {
 	@Test
 	void clientSendWithNullDatagramThrows() {
 		try (UdpClient client = new UdpClient()) {
-			assertThrows(NullPointerException.class, () -> client.send((UdpDatagram) null));
+			assertThrows(NullPointerException.class, () -> client.send(null));
 		}
 	}
 	
@@ -794,7 +822,7 @@ class UdpIntegrationTest {
 		UdpClientConfig config = UdpClientConfig.builder().receiveTimeout(Duration.ofSeconds(5)).build();
 		
 		try (UdpClient receiver = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config);
-		     UdpClient sender = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config)) {
+			 UdpClient sender = UdpClient.bindTo(new IpEndpoint(Ipv4Address.LOOPBACK, 0), config)) {
 			IpEndpoint target = receiver.localEndpoint().orElseThrow();
 			
 			sender.send(new UdpDatagram(target, "Hello".getBytes()));
@@ -1154,6 +1182,8 @@ class UdpIntegrationTest {
 		}
 	}
 	
+	//region Helper methods
+	
 	@Test
 	void serverSendDatagramWithIpEndpointStillDelegates() throws Exception {
 		UdpServerConfig config = UdpServerConfig.builder()
@@ -1225,36 +1255,6 @@ class UdpIntegrationTest {
 				assertArrayEquals("Hello".getBytes(), client.receive().data());
 			}
 		}
-	}
-	
-	//region Helper methods
-	
-	private static final String UNRESOLVABLE_HOSTNAME = "this-host-does-not-exist.invalid";
-	
-	/**
-	 * Returns the address {@code localhost} actually resolves to, on the given port.<br>
-	 * Binding to this rather than to a hardcoded {@code 127.0.0.1} keeps the address family
-	 * consistent with what a {@code HostEndpoint("localhost", ...)} destination resolves to,
-	 * which matters on dual stack hosts where {@code localhost} may map to the IPv6 loopback.<br>
-	 */
-	private static IpEndpoint resolvedLocalhost(int port) {
-		return new HostEndpoint("localhost", port).resolve().orElseThrow();
-	}
-	
-	private static UdpClientConfig receiveTimeoutConfig() {
-		return UdpClientConfig.builder().receiveTimeout(Duration.ofSeconds(5)).build();
-	}
-	
-	private static UdpServerConfig echoConfig() {
-		return UdpServerConfig.builder()
-			.onMessage((server, datagram, data) -> {
-				try {
-					server.send(datagram.endpoint(), data);
-				} catch (NetworkConnectionException e) {
-					fail("Echo failed: " + e.getMessage());
-				}
-			})
-			.build();
 	}
 	//endregion
 }

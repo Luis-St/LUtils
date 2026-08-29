@@ -56,6 +56,61 @@ class SslIntegrationTest {
 		clientContext = SslTestContext.clientContext();
 	}
 	
+	private static String hostPartOf(Endpoint endpoint) {
+		return switch (endpoint) {
+			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
+			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
+		};
+	}
+	
+	private static byte[] filled(int length, byte value) {
+		byte[] data = new byte[length];
+		Arrays.fill(data, value);
+		return data;
+	}
+	
+	private static byte[] receiveExactly(SslClient client, int expected, int maxBytes) throws Exception {
+		byte[] received = client.receive(maxBytes);
+		assertEquals(expected, received.length);
+		return received;
+	}
+	
+	private static void withNonTlsPeer(PeerConsumer body) throws Exception {
+		try (ServerSocket peer = new ServerSocket(0, 0, InetAddress.getLoopbackAddress())) {
+			Thread acceptor = new Thread(() -> {
+				try (Socket accepted = peer.accept()) {
+					accepted.getOutputStream().write("NOT-TLS\n".getBytes());
+					accepted.getOutputStream().flush();
+					Thread.sleep(5000);
+				} catch (Exception _) {}
+			});
+			acceptor.setDaemon(true);
+			acceptor.start();
+			
+			body.accept(new IpEndpoint(Ipv4Address.LOOPBACK, peer.getLocalPort()));
+			acceptor.interrupt();
+		}
+	}
+	
+	private static byte[] readUntil(SslClient client, int expected, int maxBytes) throws Exception {
+		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
+		while (reassembled.size() < expected) {
+			reassembled.writeBytes(client.receive(maxBytes));
+		}
+		return reassembled.toByteArray();
+	}
+	
+	private static boolean awaitClientCount(SslServer server, int expected) throws Exception {
+		long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+		while (System.nanoTime() < deadline) {
+			if (server.getClientCount() == expected) {
+				return true;
+			}
+			Thread.sleep(20);
+		}
+		return false;
+	}
+	
 	@Test
 	void serverStartAndStop() {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -1532,6 +1587,8 @@ class SslIntegrationTest {
 		});
 	}
 	
+	//region Helper methods
+	
 	@Test
 	void upgradedClientUsableThroughNetworkClientInterface() throws Exception {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
@@ -1644,8 +1701,6 @@ class SslIntegrationTest {
 			}
 		}
 	}
-	
-	//region Helper methods
 	
 	@Test
 	void constructWithNullConfig() {
@@ -2055,25 +2110,6 @@ class SslIntegrationTest {
 		}
 	}
 	
-	private static String hostPartOf(Endpoint endpoint) {
-		return switch (endpoint) {
-			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
-			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
-		};
-	}
-	
-	private static byte[] filled(int length, byte value) {
-		byte[] data = new byte[length];
-		Arrays.fill(data, value);
-		return data;
-	}
-	
-	private static byte[] receiveExactly(SslClient client, int expected, int maxBytes) throws Exception {
-		byte[] received = client.receive(maxBytes);
-		assertEquals(expected, received.length);
-		return received;
-	}
-	
 	private SslServerConfig echoConfig() {
 		return this.echoConfig(true);
 	}
@@ -2122,40 +2158,11 @@ class SslIntegrationTest {
 		}
 	}
 	
-	private static void withNonTlsPeer(PeerConsumer body) throws Exception {
-		try (ServerSocket peer = new ServerSocket(0, 0, InetAddress.getLoopbackAddress())) {
-			Thread acceptor = new Thread(() -> {
-				try (Socket accepted = peer.accept()) {
-					accepted.getOutputStream().write("NOT-TLS\n".getBytes());
-					accepted.getOutputStream().flush();
-					Thread.sleep(5000);
-				} catch (Exception _) {}
-			});
-			acceptor.setDaemon(true);
-			acceptor.start();
-			
-			body.accept(new IpEndpoint(Ipv4Address.LOOPBACK, peer.getLocalPort()));
-			acceptor.interrupt();
-		}
-	}
-	
-	private static byte[] readUntil(SslClient client, int expected, int maxBytes) throws Exception {
-		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
-		while (reassembled.size() < expected) {
-			reassembled.writeBytes(client.receive(maxBytes));
-		}
-		return reassembled.toByteArray();
-	}
-	
-	private static boolean awaitClientCount(SslServer server, int expected) throws Exception {
-		long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
-		while (System.nanoTime() < deadline) {
-			if (server.getClientCount() == expected) {
-				return true;
-			}
-			Thread.sleep(20);
-		}
-		return false;
+	/**
+	 * Returns a client config builder that trusts the test server certificate and skips hostname verification.<br>
+	 */
+	private SslClientConfigBuilder clientConfig() {
+		return SslClientConfig.builder().sslContext(clientContext).verifyHostname(false);
 	}
 	
 	@FunctionalInterface
@@ -2168,13 +2175,6 @@ class SslIntegrationTest {
 	private interface PeerConsumer {
 		
 		void accept(IpEndpoint endpoint) throws Exception;
-	}
-	
-	/**
-	 * Returns a client config builder that trusts the test server certificate and skips hostname verification.<br>
-	 */
-	private SslClientConfigBuilder clientConfig() {
-		return SslClientConfig.builder().sslContext(clientContext).verifyHostname(false);
 	}
 	//endregion
 }

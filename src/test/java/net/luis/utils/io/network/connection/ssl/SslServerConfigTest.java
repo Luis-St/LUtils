@@ -159,7 +159,7 @@ class SslServerConfigTest {
 		assertNotNull(config.onMessage());
 		assertNotNull(config.onError());
 	}
-
+	
 	@Test
 	void framingIsEnabledByDefault() {
 		assertTrue(SslServerConfig.builder(context).build().framing());
@@ -170,5 +170,5 @@ class SslServerConfigTest {
 		assertFalse(SslServerConfig.builder(context).framing(false).build().framing());
 		assertTrue(SslServerConfig.builder(context).framing(false).framing(true).build().framing());
 	}
-
+	
 }

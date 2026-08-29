@@ -103,7 +103,7 @@ class TcpServerConfigTest {
 		assertNotNull(config.onMessage());
 		assertNotNull(config.onError());
 	}
-
+	
 	@Test
 	void framingIsEnabledByDefault() {
 		assertTrue(TcpServerConfig.builder().build().framing());
@@ -114,5 +114,5 @@ class TcpServerConfigTest {
 		assertFalse(TcpServerConfig.builder().framing(false).build().framing());
 		assertTrue(TcpServerConfig.builder().framing(false).framing(true).build().framing());
 	}
-
+	
 }

@@ -53,6 +53,30 @@ class SslConnectionTest {
 		clientContext = SslTestContext.clientContext();
 	}
 	
+	private static byte[] filled(int length, byte value) {
+		byte[] data = new byte[length];
+		Arrays.fill(data, value);
+		return data;
+	}
+	
+	private static void writeAndFlush(SSLSocket socket, byte[] data) throws Exception {
+		NetworkUtils.writeFrame(socket.getOutputStream(), data);
+	}
+	
+	private static byte[] receiveExactly(SslConnection connection, int expected, int maxBytes) throws Exception {
+		byte[] received = connection.receive(maxBytes);
+		assertEquals(expected, received.length);
+		return received;
+	}
+	
+	private static byte[] readUntil(SslConnection connection, int expected, int maxBytes) throws Exception {
+		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
+		while (reassembled.size() < expected) {
+			reassembled.writeBytes(connection.receive(maxBytes));
+		}
+		return reassembled.toByteArray();
+	}
+	
 	@Test
 	void sendWithNullDataThrows() throws Exception {
 		this.withPair(8192, (client, connection) -> assertThrows(NullPointerException.class, () -> connection.send(null)));
@@ -558,6 +582,8 @@ class SslConnectionTest {
 		});
 	}
 	
+	//region Helper methods
+	
 	@Test
 	void receiveWithoutFramingReturnsEmptyArrayOnPeerClose() throws Exception {
 		this.withPair(8192, false, (client, connection) -> {
@@ -612,32 +638,6 @@ class SslConnectionTest {
 			
 			assertArrayEquals(payload, readUntil(connection, payload.length, 32768));
 		});
-	}
-	
-	//region Helper methods
-	
-	private static byte[] filled(int length, byte value) {
-		byte[] data = new byte[length];
-		Arrays.fill(data, value);
-		return data;
-	}
-	
-	private static void writeAndFlush(SSLSocket socket, byte[] data) throws Exception {
-		NetworkUtils.writeFrame(socket.getOutputStream(), data);
-	}
-	
-	private static byte[] receiveExactly(SslConnection connection, int expected, int maxBytes) throws Exception {
-		byte[] received = connection.receive(maxBytes);
-		assertEquals(expected, received.length);
-		return received;
-	}
-	
-	private static byte[] readUntil(SslConnection connection, int expected, int maxBytes) throws Exception {
-		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
-		while (reassembled.size() < expected) {
-			reassembled.writeBytes(connection.receive(maxBytes));
-		}
-		return reassembled.toByteArray();
 	}
 	
 	private void withPair(int bufferSize, PairConsumer body) throws Exception {
