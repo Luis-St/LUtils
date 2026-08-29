@@ -28,7 +28,7 @@ import org.junit.jupiter.api.*;
 
 import javax.net.ssl.*;
 import java.io.*;
-import java.net.Socket;
+import java.net.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -1156,6 +1156,495 @@ class SslIntegrationTest {
 		}
 	}
 	
+	@Test
+	void upgradeWithUntrustedServerThrows() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = SslClientConfig.builder().verifyHostname(false).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> SslClient.upgrade(socket, server.boundEndpoint(), config));
+				assertEquals(NetworkErrorType.HANDSHAKE_FAILED, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void upgradeWithMismatchedHostnameThrows() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.UNSPECIFIED, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			HostEndpoint target = new HostEndpoint("127.0.0.2", server.boundEndpoint().port());
+			SslClientConfig config = this.clientConfig().verifyHostname(true).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(target.toInetSocketAddress(), 5000);
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> SslClient.upgrade(socket, target, config));
+				assertEquals(NetworkErrorType.HANDSHAKE_FAILED, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void upgradeWithNonTlsPeerThrows() throws Exception {
+		withNonTlsPeer(peer -> {
+			try (Socket socket = new Socket()) {
+				socket.connect(peer.toInetSocketAddress(), 5000);
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> SslClient.upgrade(socket, peer, this.clientConfig().build()));
+				assertEquals(NetworkErrorType.IO_ERROR, exception.errorType());
+			}
+		});
+	}
+	
+	@Test
+	void upgradeNotifiesErrorHandlerOnHandshakeFailure() throws Exception {
+		AtomicReference<NetworkErrorType> recorded = new AtomicReference<>();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = SslClientConfig.builder()
+				.verifyHostname(false)
+				.onError((connection, errorType, message, cause) -> recorded.set(errorType))
+				.build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				assertThrows(NetworkConnectionException.class, () -> SslClient.upgrade(socket, server.boundEndpoint(), config));
+				assertEquals(NetworkErrorType.HANDSHAKE_FAILED, recorded.get());
+			}
+		}
+	}
+	
+	@Test
+	void upgradeNotifiesErrorHandlerOnIoFailure() throws Exception {
+		AtomicReference<NetworkErrorType> recorded = new AtomicReference<>();
+		
+		withNonTlsPeer(peer -> {
+			SslClientConfig config = this.clientConfig().onError((connection, errorType, message, cause) -> recorded.set(errorType)).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(peer.toInetSocketAddress(), 5000);
+				
+				assertThrows(NetworkConnectionException.class, () -> SslClient.upgrade(socket, peer, config));
+				assertEquals(NetworkErrorType.IO_ERROR, recorded.get());
+			}
+		});
+	}
+	
+	@Test
+	void upgradeConnectedSocketEstablishesSession() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = this.clientConfig().readTimeout(Duration.ofSeconds(5)).build();
+			
+			Socket socket = new Socket();
+			socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+			assertFalse(socket.isClosed());
+			
+			try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), config)) {
+				assertTrue(client.isActive());
+				assertTrue(client.getSession().getProtocol().startsWith("TLS"));
+				
+				client.send("Hello".getBytes());
+				assertArrayEquals("Hello".getBytes(), receiveExactly(client, 5, 4096));
+			}
+		}
+	}
+	
+	@Test
+	void upgradeClosedConnectedSocketThrows() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			
+			Socket socket = new Socket();
+			socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+			socket.close();
+			assertTrue(socket.isConnected());
+			assertTrue(socket.isClosed());
+			
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> SslClient.upgrade(socket, server.boundEndpoint(), this.clientConfig().build()));
+			assertEquals(NetworkErrorType.NOT_CONNECTED, exception.errorType());
+			assertEquals(server.boundEndpoint(), exception.endpoint());
+		}
+	}
+	
+	@Test
+	void upgradeWithIpEndpointVerifiesAddress() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = this.clientConfig().verifyHostname(true).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				SslClient client = assertDoesNotThrow(() -> SslClient.upgrade(socket, server.boundEndpoint(), config));
+				assertTrue(client.isActive());
+				client.close();
+			}
+		}
+	}
+	
+	@Test
+	void upgradeWithHostEndpointVerifiesHostname() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			HostEndpoint target = new HostEndpoint("localhost", server.boundEndpoint().port());
+			SslClientConfig config = this.clientConfig().verifyHostname(true).readTimeout(Duration.ofSeconds(5)).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient client = assertDoesNotThrow(() -> SslClient.upgrade(socket, target, config))) {
+					client.send("Hello".getBytes());
+					assertArrayEquals("Hello".getBytes(), receiveExactly(client, 5, 4096));
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradeUsesEndpointHostnameNotPeerAddress() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.UNSPECIFIED, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			HostEndpoint target = new HostEndpoint("localhost", server.boundEndpoint().port());
+			SslClientConfig config = this.clientConfig().verifyHostname(true).readTimeout(Duration.ofSeconds(5)).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(new HostEndpoint("127.0.0.2", server.boundEndpoint().port()).toInetSocketAddress(), 5000);
+				
+				try (SslClient client = assertDoesNotThrow(() -> SslClient.upgrade(socket, target, config))) {
+					assertTrue(client.getSession().getProtocol().startsWith("TLS"));
+					client.send("Hello".getBytes());
+					assertArrayEquals("Hello".getBytes(), receiveExactly(client, 5, 4096));
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradeWithoutHostnameVerification() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.UNSPECIFIED, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			HostEndpoint target = new HostEndpoint("127.0.0.2", server.boundEndpoint().port());
+			SslClientConfig config = this.clientConfig().verifyHostname(false).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(target.toInetSocketAddress(), 5000);
+				
+				try (SslClient client = assertDoesNotThrow(() -> SslClient.upgrade(socket, target, config))) {
+					assertTrue(client.isActive());
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradeWithEnabledProtocols() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = this.clientConfig().enabledProtocols(List.of("TLSv1.2")).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), config)) {
+					assertEquals("TLSv1.2", client.getSession().getProtocol());
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradeWithoutEnabledProtocols() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = this.clientConfig().build();
+			assertTrue(config.enabledProtocols().isEmpty());
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), config)) {
+					assertTrue(client.getSession().getProtocol().startsWith("TLS"));
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradeWithEnabledCipherSuites() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = this.clientConfig()
+				.enabledProtocols(List.of("TLSv1.3"))
+				.enabledCipherSuites(List.of("TLS_AES_128_GCM_SHA256"))
+				.build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), config)) {
+					assertEquals("TLS_AES_128_GCM_SHA256", client.getSession().getCipherSuite());
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradeWithoutEnabledCipherSuites() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = this.clientConfig().build();
+			assertTrue(config.enabledCipherSuites().isEmpty());
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), config)) {
+					assertNotNull(client.getSession().getCipherSuite());
+					assertNotEquals("SSL_NULL_WITH_NULL_NULL", client.getSession().getCipherSuite());
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradeWithReadTimeoutExpires() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, SslServerConfig.builder(serverContext).build())) {
+			server.start();
+			SslClientConfig config = this.clientConfig().readTimeout(Duration.ofMillis(500)).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), config)) {
+					NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, client::receive);
+					assertEquals(NetworkErrorType.READ_TIMEOUT, exception.errorType());
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradeWithoutReadTimeoutDoesNotExpire() throws Exception {
+		SslServerConfig serverConfig = SslServerConfig.builder(serverContext)
+			.onMessage((server, conn, data) -> {
+				try {
+					Thread.sleep(1500);
+					conn.send(data);
+				} catch (Exception e) {
+					fail("Delayed echo failed: " + e.getMessage());
+				}
+			})
+			.build();
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, serverConfig)) {
+			server.start();
+			SslClientConfig config = this.clientConfig().readTimeout(Duration.ZERO).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), config)) {
+					client.send("Hello".getBytes());
+					assertArrayEquals("Hello".getBytes(), receiveExactly(client, 5, 4096));
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradeDoesNotFireConnectHandler() throws Exception {
+		AtomicInteger connectCount = new AtomicInteger(0);
+		
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = this.clientConfig().onConnect((connection, local, remote, timestamp) -> connectCount.incrementAndGet()).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), config)) {
+					assertTrue(client.isActive());
+					assertEquals(0, connectCount.get());
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradedClientReportsEndpoints() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), this.clientConfig().build())) {
+					assertTrue(client.localEndpoint().isPresent());
+					assertTrue(client.remoteEndpoint().isPresent());
+					assertInstanceOf(IpEndpoint.class, client.localEndpoint().orElseThrow());
+					assertEquals(server.boundEndpoint().port(), client.remoteEndpoint().orElseThrow().port());
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradedClientExposesSession() throws Exception {
+		this.withUpgradedClient(client -> {
+			SSLSession session = client.getSession();
+			
+			assertNotNull(session);
+			assertTrue(session.getProtocol().startsWith("TLS"));
+			assertNotEquals(0, session.getPeerCertificates().length);
+		});
+	}
+	
+	@Test
+	void upgradedClientRoundTripsMessage() throws Exception {
+		this.withUpgradedClient(client -> {
+			byte[] payload = "Upgraded message".getBytes();
+			client.send(payload);
+			
+			assertArrayEquals(payload, receiveExactly(client, payload.length, 4096));
+		});
+	}
+	
+	@Test
+	void upgradedClientUsableThroughNetworkClientInterface() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = this.clientConfig().readTimeout(Duration.ofSeconds(5)).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (NetworkClient<byte[]> client = SslClient.upgrade(socket, server.boundEndpoint(), config)) {
+					assertInstanceOf(NetworkClient.class, client);
+					assertTrue(client.isActive());
+					
+					client.send("Hello".getBytes());
+					assertArrayEquals("Hello".getBytes(), client.receive(1024));
+				}
+			}
+		}
+	}
+	
+	@Test
+	void closeUpgradedClientClosesUnderlyingSocket() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			
+			Socket socket = new Socket();
+			socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+			SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), this.clientConfig().build());
+			assertFalse(socket.isClosed());
+			
+			client.close();
+			
+			assertTrue(socket.isClosed());
+			assertFalse(client.isActive());
+		}
+	}
+	
+	@Test
+	void failedUpgradeLeavesSocketToCaller() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = SslClientConfig.builder().verifyHostname(false).build();
+			
+			Socket socket = new Socket();
+			socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+			
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> SslClient.upgrade(socket, server.boundEndpoint(), config));
+			assertEquals(NetworkErrorType.HANDSHAKE_FAILED, exception.errorType());
+			assertTrue(socket.isClosed());
+			assertDoesNotThrow(socket::close);
+		}
+	}
+	
+	@Test
+	void upgradedClientMultipleRoundTripsWithVaryingSizes() throws Exception {
+		this.withUpgradedClient(client -> {
+			int[] sizes = { 10, 500, 20, 2000, 5 };
+			for (int size : sizes) {
+				byte[] payload = filled(size, (byte) (size % 128));
+				client.send(payload);
+				assertArrayEquals(payload, receiveExactly(client, size, 4096));
+			}
+		});
+	}
+	
+	@Test
+	void unframedUpgradedClientSendAndReceive() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig(false))) {
+			server.start();
+			SslClientConfig config = this.clientConfig().framing(false).readTimeout(Duration.ofSeconds(5)).build();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), config)) {
+					byte[] payload = "Raw bytes".getBytes();
+					client.send(payload);
+					
+					assertArrayEquals(payload, readUntil(client, payload.length, 4096));
+				}
+			}
+		}
+	}
+	
+	@Test
+	void upgradeTwoClientsOnSameServer() throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			SslClientConfig config = this.clientConfig().readTimeout(Duration.ofSeconds(5)).build();
+			
+			try (Socket first = new Socket(); Socket second = new Socket()) {
+				first.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				second.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient firstClient = SslClient.upgrade(first, server.boundEndpoint(), config); SslClient secondClient = SslClient.upgrade(second, server.boundEndpoint(), config)) {
+					assertTrue(firstClient.getSession().getProtocol().startsWith("TLS"));
+					assertTrue(secondClient.getSession().getProtocol().startsWith("TLS"));
+					assertTrue(awaitClientCount(server, 2));
+					
+					firstClient.send("First".getBytes());
+					secondClient.send("Second".getBytes());
+					assertArrayEquals("First".getBytes(), receiveExactly(firstClient, 5, 4096));
+					assertArrayEquals("Second".getBytes(), receiveExactly(secondClient, 6, 4096));
+				}
+			}
+		}
+	}
+	
 	//region Helper methods
 	
 	@Test
@@ -1618,6 +2107,38 @@ class SslIntegrationTest {
 		}
 	}
 	
+	private void withUpgradedClient(ClientConsumer body) throws Exception {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
+		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
+			server.start();
+			
+			try (Socket socket = new Socket()) {
+				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
+				
+				try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), this.clientConfig().readTimeout(Duration.ofSeconds(5)).build())) {
+					body.accept(client);
+				}
+			}
+		}
+	}
+	
+	private static void withNonTlsPeer(PeerConsumer body) throws Exception {
+		try (ServerSocket peer = new ServerSocket(0, 0, InetAddress.getLoopbackAddress())) {
+			Thread acceptor = new Thread(() -> {
+				try (Socket accepted = peer.accept()) {
+					accepted.getOutputStream().write("NOT-TLS\n".getBytes());
+					accepted.getOutputStream().flush();
+					Thread.sleep(5000);
+				} catch (Exception _) {}
+			});
+			acceptor.setDaemon(true);
+			acceptor.start();
+			
+			body.accept(new IpEndpoint(Ipv4Address.LOOPBACK, peer.getLocalPort()));
+			acceptor.interrupt();
+		}
+	}
+	
 	private static byte[] readUntil(SslClient client, int expected, int maxBytes) throws Exception {
 		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
 		while (reassembled.size() < expected) {
@@ -1641,6 +2162,12 @@ class SslIntegrationTest {
 	private interface ClientConsumer {
 		
 		void accept(SslClient client) throws Exception;
+	}
+	
+	@FunctionalInterface
+	private interface PeerConsumer {
+		
+		void accept(IpEndpoint endpoint) throws Exception;
 	}
 	
 	/**
