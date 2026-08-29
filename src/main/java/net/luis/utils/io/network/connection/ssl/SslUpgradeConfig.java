@@ -46,7 +46,7 @@ import java.util.Objects;
  * </p>
  * <pre>{@code
  * SslUpgradeConfig upgrade = SslUpgradeConfig.builder()
- *     .enabledProtocols(List.of("TLSv1.3"))
+ *     .enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
  *     .verifyHostname(true)
  *     .build();
  *
@@ -67,13 +67,13 @@ import java.util.Objects;
  * @author Luis-St
  *
  * @param sslContext The SSL context to use, or null to use the JVM default ({@link SSLContext#getDefault()})
- * @param enabledProtocols The TLS protocols to enable (empty for the socket default), e.g. {@code "TLSv1.3"}
+ * @param enabledProtocols The TLS protocols to enable (empty for the socket default), e.g. {@link TlsProtocol#TLS_V1_3}
  * @param enabledCipherSuites The cipher suites to enable (empty for the socket default)
  * @param verifyHostname Whether to verify the server hostname against its certificate (HTTPS endpoint identification)
  */
 public record SslUpgradeConfig(
 	@Nullable SSLContext sslContext,
-	@NonNull List<String> enabledProtocols,
+	@NonNull List<TlsProtocol> enabledProtocols,
 	@NonNull List<String> enabledCipherSuites,
 	boolean verifyHostname
 ) {
@@ -97,7 +97,7 @@ public record SslUpgradeConfig(
 	 * @param enabledProtocols The TLS protocols to enable
 	 * @param enabledCipherSuites The cipher suites to enable
 	 * @param verifyHostname Whether to verify the server hostname
-	 * @throws NullPointerException If enabled protocols or enabled cipher suites is null
+	 * @throws NullPointerException If enabled protocols or enabled cipher suites is null, or if enabled protocols contains null
 	 */
 	public SslUpgradeConfig {
 		Objects.requireNonNull(enabledProtocols, "Enabled protocols must not be null");

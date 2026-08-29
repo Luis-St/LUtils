@@ -47,13 +47,13 @@ class SslServerTest {
 	private static final IpEndpoint EPHEMERAL = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
 	
 	private static SSLContext serverContext;
-	private static String supportedProtocol;
+	private static TlsProtocol supportedProtocol;
 	private static String supportedCipherSuite;
 	
 	@BeforeAll
 	static void setUp() throws Exception {
 		serverContext = SslTestContext.serverContext();
-		supportedProtocol = serverContext.getSupportedSSLParameters().getProtocols()[0];
+		supportedProtocol = TlsProtocol.byName(serverContext.getSupportedSSLParameters().getProtocols()[0]).orElseThrow();
 		supportedCipherSuite = serverContext.getSupportedSSLParameters().getCipherSuites()[0];
 	}
 	
@@ -98,8 +98,8 @@ class SslServerTest {
 	}
 	
 	@Test
-	void startOnWithInvalidProtocolClosesServerAndRethrows() {
-		SslServerConfig config = SslServerConfig.builder(serverContext).enabledProtocols(List.of("NO-SUCH-PROTOCOL")).build();
+	void startOnWithInvalidCipherSuiteClosesServerAndRethrows() {
+		SslServerConfig config = SslServerConfig.builder(serverContext).enabledCipherSuites(List.of("NO-SUCH-SUITE")).build();
 		
 		assertThrows(IllegalArgumentException.class, () -> SslServer.startOn(EPHEMERAL, config));
 	}

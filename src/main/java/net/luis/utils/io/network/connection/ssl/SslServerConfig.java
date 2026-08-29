@@ -82,7 +82,7 @@ public record SslServerConfig(
 	boolean tcpNoDelay,
 	boolean keepAlive,
 	@NonNull SSLContext sslContext,
-	@NonNull List<String> enabledProtocols,
+	@NonNull List<TlsProtocol> enabledProtocols,
 	@NonNull List<String> enabledCipherSuites,
 	@NonNull SslClientAuth clientAuth,
 	@NonNull ClientExecutorStrategy executorStrategy,
@@ -111,7 +111,7 @@ public record SslServerConfig(
 	 * @param onClientDisconnect Handler for client disconnections
 	 * @param onMessage Handler for incoming messages
 	 * @param onError Handler for errors
-	 * @throws NullPointerException If clientReadTimeout, sslContext, enabledProtocols, enabledCipherSuites, clientAuth, or executorStrategy is null
+	 * @throws NullPointerException If clientReadTimeout, sslContext, enabledProtocols, enabledCipherSuites, clientAuth, or executorStrategy is null, or if enabledProtocols contains null
 	 * @throws IllegalArgumentException If backlog or clientBufferSize is less than 1
 	 */
 	public SslServerConfig {

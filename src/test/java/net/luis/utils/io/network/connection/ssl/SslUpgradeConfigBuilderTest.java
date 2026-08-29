@@ -70,7 +70,7 @@ class SslUpgradeConfigBuilderTest {
 	
 	@Test
 	void buildWithNullProtocolElementThrows() {
-		List<String> protocols = new ArrayList<>();
+		List<TlsProtocol> protocols = new ArrayList<>();
 		protocols.add(null);
 		SslUpgradeConfigBuilder builder = assertDoesNotThrow(() -> SslUpgradeConfig.builder().enabledProtocols(protocols));
 		
@@ -93,9 +93,9 @@ class SslUpgradeConfigBuilderTest {
 	
 	@Test
 	void enabledProtocolsWithValidList() {
-		SslUpgradeConfig config = SslUpgradeConfig.builder().enabledProtocols(List.of("TLSv1.3", "TLSv1.2")).build();
+		SslUpgradeConfig config = SslUpgradeConfig.builder().enabledProtocols(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2)).build();
 		
-		assertEquals(List.of("TLSv1.3", "TLSv1.2"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2), config.enabledProtocols());
 	}
 	
 	@Test
@@ -138,7 +138,7 @@ class SslUpgradeConfigBuilderTest {
 		SslUpgradeConfigBuilder builder = SslUpgradeConfig.builder();
 		
 		assertSame(builder, builder.sslContext(context));
-		assertSame(builder, builder.enabledProtocols(List.of("TLSv1.3")));
+		assertSame(builder, builder.enabledProtocols(List.of(TlsProtocol.TLS_V1_3)));
 		assertSame(builder, builder.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384")));
 		assertSame(builder, builder.verifyHostname(false));
 	}
@@ -147,13 +147,13 @@ class SslUpgradeConfigBuilderTest {
 	void builderWithAllValues() {
 		SslUpgradeConfig config = SslUpgradeConfig.builder()
 			.sslContext(context)
-			.enabledProtocols(List.of("TLSv1.3"))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
 			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
 			.verifyHostname(false)
 			.build();
 		
 		assertSame(context, config.sslContext());
-		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
 		assertFalse(config.verifyHostname());
 	}
@@ -161,11 +161,11 @@ class SslUpgradeConfigBuilderTest {
 	@Test
 	void builderOverwriteValues() {
 		SslUpgradeConfig config = SslUpgradeConfig.builder()
-			.enabledProtocols(List.of("TLSv1.2"))
-			.enabledProtocols(List.of("TLSv1.3"))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_2))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
 			.build();
 		
-		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
 	}
 	
 	@Test
@@ -175,7 +175,7 @@ class SslUpgradeConfigBuilderTest {
 	
 	@Test
 	void builderMultipleBuilds() {
-		SslUpgradeConfigBuilder builder = SslUpgradeConfig.builder().sslContext(context).enabledProtocols(List.of("TLSv1.3"));
+		SslUpgradeConfigBuilder builder = SslUpgradeConfig.builder().sslContext(context).enabledProtocols(List.of(TlsProtocol.TLS_V1_3));
 		
 		SslUpgradeConfig first = builder.build();
 		SslUpgradeConfig second = builder.build();
@@ -186,36 +186,36 @@ class SslUpgradeConfigBuilderTest {
 	
 	@Test
 	void builderReuseAfterBuild() {
-		SslUpgradeConfigBuilder builder = SslUpgradeConfig.builder().enabledProtocols(List.of("TLSv1.2"));
+		SslUpgradeConfigBuilder builder = SslUpgradeConfig.builder().enabledProtocols(List.of(TlsProtocol.TLS_V1_2));
 		
 		SslUpgradeConfig first = builder.build();
-		assertEquals(List.of("TLSv1.2"), first.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_2), first.enabledProtocols());
 		
-		builder.enabledProtocols(List.of("TLSv1.3"));
+		builder.enabledProtocols(List.of(TlsProtocol.TLS_V1_3));
 		SslUpgradeConfig second = builder.build();
 		
-		assertEquals(List.of("TLSv1.3"), second.enabledProtocols());
-		assertEquals(List.of("TLSv1.2"), first.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), second.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_2), first.enabledProtocols());
 	}
 	
 	@Test
 	void buildIsolatesFromMutableSourceList() {
-		List<String> protocols = new ArrayList<>(List.of("TLSv1.3"));
+		List<TlsProtocol> protocols = new ArrayList<>(List.of(TlsProtocol.TLS_V1_3));
 		SslUpgradeConfigBuilder builder = SslUpgradeConfig.builder().enabledProtocols(protocols);
 		
-		protocols.add("TLSv1.2");
+		protocols.add(TlsProtocol.TLS_V1_2);
 		SslUpgradeConfig config = builder.build();
-		protocols.add("TLSv1.1");
+		protocols.add(TlsProtocol.TLS_V1_1);
 		
-		assertEquals(List.of("TLSv1.3", "TLSv1.2"), config.enabledProtocols());
-		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add("TLSv1.1"));
+		assertEquals(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2), config.enabledProtocols());
+		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add(TlsProtocol.TLS_V1_1));
 	}
 	
 	@Test
 	void buildFeedsToClientConfig() {
 		SslUpgradeConfig config = SslUpgradeConfig.builder()
 			.sslContext(context)
-			.enabledProtocols(List.of("TLSv1.3"))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
 			.verifyHostname(false)
 			.build();
 		TcpClientConfig base = TcpClientConfig.builder().bufferSize(1024).readTimeout(Duration.ofSeconds(5)).build();
@@ -223,7 +223,7 @@ class SslUpgradeConfigBuilderTest {
 		SslClientConfig result = config.toClientConfig(base);
 		
 		assertSame(context, result.sslContext());
-		assertEquals(List.of("TLSv1.3"), result.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), result.enabledProtocols());
 		assertFalse(result.verifyHostname());
 		assertEquals(1024, result.bufferSize());
 		assertEquals(Duration.ofSeconds(5), result.readTimeout());

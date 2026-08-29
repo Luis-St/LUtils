@@ -354,7 +354,7 @@ public final class SslClient implements NetworkClient<byte[]> {
 			sslSocket.setSoTimeout((int) this.config.readTimeout().toMillis());
 		}
 		if (!this.config.enabledProtocols().isEmpty()) {
-			sslSocket.setEnabledProtocols(this.config.enabledProtocols().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+			sslSocket.setEnabledProtocols(TlsProtocol.toProtocolNames(this.config.enabledProtocols()));
 		}
 		if (!this.config.enabledCipherSuites().isEmpty()) {
 			sslSocket.setEnabledCipherSuites(this.config.enabledCipherSuites().toArray(ArrayUtils.EMPTY_STRING_ARRAY));

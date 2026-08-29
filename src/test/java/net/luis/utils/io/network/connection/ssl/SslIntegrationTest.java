@@ -728,7 +728,7 @@ class SslIntegrationTest {
 		SSLContext trustOnly = SslTestContext.trustOnlyClientContext();
 		
 		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.enabledProtocols(List.of("TLSv1.2"))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_2))
 			.clientAuth(SslClientAuth.REQUIRED)
 			.build();
 		
@@ -738,7 +738,7 @@ class SslIntegrationTest {
 			
 			SslClientConfig clientConfig = SslClientConfig.builder()
 				.sslContext(trustOnly)
-				.enabledProtocols(List.of("TLSv1.2"))
+				.enabledProtocols(List.of(TlsProtocol.TLS_V1_2))
 				.verifyHostname(false)
 				.build();
 			
@@ -1411,13 +1411,13 @@ class SslIntegrationTest {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
 		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
 			server.start();
-			SslClientConfig config = this.clientConfig().enabledProtocols(List.of("TLSv1.2")).build();
+			SslClientConfig config = this.clientConfig().enabledProtocols(List.of(TlsProtocol.TLS_V1_2)).build();
 			
 			try (Socket socket = new Socket()) {
 				socket.connect(server.boundEndpoint().toInetSocketAddress(), 5000);
 				
 				try (SslClient client = SslClient.upgrade(socket, server.boundEndpoint(), config)) {
-					assertEquals("TLSv1.2", client.getSession().getProtocol());
+					assertEquals(TlsProtocol.TLS_V1_2.protocolName(), client.getSession().getProtocol());
 				}
 			}
 		}
@@ -1447,7 +1447,7 @@ class SslIntegrationTest {
 		try (SslServer server = new SslServer(endpoint, this.echoConfig())) {
 			server.start();
 			SslClientConfig config = this.clientConfig()
-				.enabledProtocols(List.of("TLSv1.3"))
+				.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
 				.enabledCipherSuites(List.of("TLS_AES_128_GCM_SHA256"))
 				.build();
 			

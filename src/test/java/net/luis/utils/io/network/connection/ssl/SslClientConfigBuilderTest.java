@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLContext;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -216,15 +217,24 @@ class SslClientConfigBuilderTest {
 	@Test
 	void enabledProtocolsWithValue() {
 		SslClientConfig config = SslClientConfig.builder()
-			.enabledProtocols(List.of("TLSv1.3", "TLSv1.2"))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2))
 			.build();
-		assertEquals(List.of("TLSv1.3", "TLSv1.2"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2), config.enabledProtocols());
 	}
 	
 	@Test
 	void enabledProtocolsWithNullThrows() {
 		SslClientConfigBuilder builder = SslClientConfig.builder();
 		assertThrows(NullPointerException.class, () -> builder.enabledProtocols(null));
+	}
+	
+	@Test
+	void buildWithNullProtocolElementThrows() {
+		List<TlsProtocol> protocols = new ArrayList<>();
+		protocols.add(null);
+		SslClientConfigBuilder builder = assertDoesNotThrow(() -> SslClientConfig.builder().enabledProtocols(protocols));
+		
+		assertThrows(NullPointerException.class, builder::build);
 	}
 	
 	@Test
@@ -300,7 +310,7 @@ class SslClientConfigBuilderTest {
 		assertSame(builder, builder.tcpNoDelay(true));
 		assertSame(builder, builder.keepAlive(true));
 		assertSame(builder, builder.sslContext(context));
-		assertSame(builder, builder.enabledProtocols(List.of("TLSv1.3")));
+		assertSame(builder, builder.enabledProtocols(List.of(TlsProtocol.TLS_V1_3)));
 		assertSame(builder, builder.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384")));
 		assertSame(builder, builder.verifyHostname(true));
 		assertSame(builder, builder.onConnect((connection, local, remote, timestamp) -> {}));
@@ -319,7 +329,7 @@ class SslClientConfigBuilderTest {
 			.tcpNoDelay(false)
 			.keepAlive(false)
 			.sslContext(context)
-			.enabledProtocols(List.of("TLSv1.3"))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
 			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
 			.verifyHostname(false)
 			.onConnect((connection, local, remote, timestamp) -> {})
@@ -335,7 +345,7 @@ class SslClientConfigBuilderTest {
 		assertFalse(config.tcpNoDelay());
 		assertFalse(config.keepAlive());
 		assertSame(context, config.sslContext());
-		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
 		assertFalse(config.verifyHostname());
 		assertNotNull(config.onConnect());

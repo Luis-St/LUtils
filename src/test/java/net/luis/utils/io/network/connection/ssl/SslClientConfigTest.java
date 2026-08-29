@@ -99,13 +99,21 @@ class SslClientConfigTest {
 	}
 	
 	@Test
+	void constructWithNullProtocolElementThrows() {
+		List<TlsProtocol> protocols = new ArrayList<>();
+		protocols.add(null);
+		
+		assertThrows(NullPointerException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, protocols, List.of(), true, null, null, null));
+	}
+	
+	@Test
 	void constructCopiesProtocolsDefensively() {
-		List<String> protocols = new ArrayList<>(List.of("TLSv1.3"));
+		List<TlsProtocol> protocols = new ArrayList<>(List.of(TlsProtocol.TLS_V1_3));
 		SslClientConfig config = new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, protocols, List.of(), true, null, null, null);
 		
-		protocols.add("TLSv1.2");
+		protocols.add(TlsProtocol.TLS_V1_2);
 		assertEquals(1, config.enabledProtocols().size());
-		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add("TLSv1.1"));
+		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add(TlsProtocol.TLS_V1_1));
 	}
 	
 	@Test
@@ -140,7 +148,7 @@ class SslClientConfigTest {
 			.tcpNoDelay(false)
 			.keepAlive(false)
 			.sslContext(context)
-			.enabledProtocols(List.of("TLSv1.3"))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
 			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
 			.verifyHostname(false)
 			.build();
@@ -152,7 +160,7 @@ class SslClientConfigTest {
 		assertFalse(config.tcpNoDelay());
 		assertFalse(config.keepAlive());
 		assertSame(context, config.sslContext());
-		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
 		assertFalse(config.verifyHostname());
 	}

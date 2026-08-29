@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLContext;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -176,15 +177,24 @@ class SslServerConfigBuilderTest {
 	@Test
 	void enabledProtocolsWithValue() {
 		SslServerConfig config = SslServerConfig.builder(context)
-			.enabledProtocols(List.of("TLSv1.3", "TLSv1.2"))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2))
 			.build();
-		assertEquals(List.of("TLSv1.3", "TLSv1.2"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2), config.enabledProtocols());
 	}
 	
 	@Test
 	void enabledProtocolsWithNullThrows() {
 		SslServerConfigBuilder builder = SslServerConfig.builder(context);
 		assertThrows(NullPointerException.class, () -> builder.enabledProtocols(null));
+	}
+	
+	@Test
+	void buildWithNullProtocolElementThrows() {
+		List<TlsProtocol> protocols = new ArrayList<>();
+		protocols.add(null);
+		SslServerConfigBuilder builder = assertDoesNotThrow(() -> SslServerConfig.builder(context).enabledProtocols(protocols));
+		
+		assertThrows(NullPointerException.class, builder::build);
 	}
 	
 	@Test
@@ -281,7 +291,7 @@ class SslServerConfigBuilderTest {
 		assertSame(builder, builder.framing(false));
 		assertSame(builder, builder.tcpNoDelay(true));
 		assertSame(builder, builder.keepAlive(true));
-		assertSame(builder, builder.enabledProtocols(List.of("TLSv1.3")));
+		assertSame(builder, builder.enabledProtocols(List.of(TlsProtocol.TLS_V1_3)));
 		assertSame(builder, builder.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384")));
 		assertSame(builder, builder.clientAuth(SslClientAuth.NONE));
 		assertSame(builder, builder.executorStrategy(ClientExecutorStrategy.virtualThreads()));
@@ -301,7 +311,7 @@ class SslServerConfigBuilderTest {
 			.clientReadTimeout(Duration.ofSeconds(60))
 			.tcpNoDelay(false)
 			.keepAlive(false)
-			.enabledProtocols(List.of("TLSv1.3"))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
 			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
 			.clientAuth(SslClientAuth.REQUIRED)
 			.executorStrategy(strategy)
@@ -317,7 +327,7 @@ class SslServerConfigBuilderTest {
 		assertFalse(config.framing());
 		assertFalse(config.tcpNoDelay());
 		assertFalse(config.keepAlive());
-		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
 		assertEquals(SslClientAuth.REQUIRED, config.clientAuth());
 		assertSame(strategy, config.executorStrategy());

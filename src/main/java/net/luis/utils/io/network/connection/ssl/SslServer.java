@@ -160,7 +160,7 @@ public final class SslServer implements NetworkServer {
 			sslServerSocket.setReuseAddress(true);
 			
 			if (!this.config.enabledProtocols().isEmpty()) {
-				sslServerSocket.setEnabledProtocols(this.config.enabledProtocols().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+				sslServerSocket.setEnabledProtocols(TlsProtocol.toProtocolNames(this.config.enabledProtocols()));
 			}
 			if (!this.config.enabledCipherSuites().isEmpty()) {
 				sslServerSocket.setEnabledCipherSuites(this.config.enabledCipherSuites().toArray(ArrayUtils.EMPTY_STRING_ARRAY));

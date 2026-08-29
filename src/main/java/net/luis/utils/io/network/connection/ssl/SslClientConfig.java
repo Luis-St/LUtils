@@ -38,7 +38,7 @@ import java.util.Objects;
  * <pre>{@code
  * SslClientConfig config = SslClientConfig.builder()
  *     .connectTimeout(Duration.ofSeconds(10))
- *     .enabledProtocols(List.of("TLSv1.3", "TLSv1.2"))
+ *     .enabledProtocols(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2))
  *     .verifyHostname(true)
  *     .onConnect((connection, local, remote, timestamp) -> System.out.println("Secure connection established!"))
  *     .build();
@@ -61,7 +61,7 @@ import java.util.Objects;
  * @param tcpNoDelay Whether to disable Nagle's algorithm (TCP_NODELAY)
  * @param keepAlive Whether to enable TCP keep-alive (SO_KEEPALIVE)
  * @param sslContext The SSL context to use, or null to use the JVM default ({@link SSLContext#getDefault()})
- * @param enabledProtocols The TLS protocols to enable (empty for the socket default), e.g. {@code "TLSv1.3"}
+ * @param enabledProtocols The TLS protocols to enable (empty for the socket default), e.g. {@link TlsProtocol#TLS_V1_3}
  * @param enabledCipherSuites The cipher suites to enable (empty for the socket default)
  * @param verifyHostname Whether to verify the server hostname against its certificate (HTTPS endpoint identification)
  * @param onConnect Handler called when the secure connection is established
@@ -77,7 +77,7 @@ public record SslClientConfig(
 	boolean tcpNoDelay,
 	boolean keepAlive,
 	@Nullable SSLContext sslContext,
-	@NonNull List<String> enabledProtocols,
+	@NonNull List<TlsProtocol> enabledProtocols,
 	@NonNull List<String> enabledCipherSuites,
 	boolean verifyHostname,
 	@Nullable ConnectEventHandler onConnect,
@@ -122,7 +122,7 @@ public record SslClientConfig(
 	 * @param onConnect Handler called when the connection is established
 	 * @param onDisconnect Handler called when the connection is closed
 	 * @param onError Handler called when an error occurs
-	 * @throws NullPointerException If connect timeout, read timeout, write timeout, enabled protocols, or enabled cipher suites is null
+	 * @throws NullPointerException If connect timeout, read timeout, write timeout, enabled protocols, or enabled cipher suites is null, or if enabled protocols contains null
 	 * @throws IllegalArgumentException If bufferSize is less than 1
 	 */
 	public SslClientConfig {

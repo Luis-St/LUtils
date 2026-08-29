@@ -21,6 +21,7 @@ package net.luis.utils.io.network.mail;
 import net.luis.utils.io.network.connection.exception.*;
 import net.luis.utils.io.network.connection.ssl.SslClientConfig;
 import net.luis.utils.io.network.connection.ssl.SslClientConfigBuilder;
+import net.luis.utils.io.network.connection.ssl.TlsProtocol;
 import net.luis.utils.io.network.mail.message.*;
 import org.junit.jupiter.api.*;
 
@@ -504,14 +505,14 @@ class SmtpClientTest {
 			session.send("250 smtp.test");
 		})) {
 			SslClientConfig tls = tlsBuilder().sslContext(sslContext).verifyHostname(true)
-				.enabledProtocols(List.of("TLSv1.2")).enabledCipherSuites(List.of("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256")).build();
+				.enabledProtocols(List.of(TlsProtocol.TLS_V1_2)).enabledCipherSuites(List.of("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256")).build();
 			SmtpClientConfig config = SmtpClientConfig.builder().security(SmtpSecurity.IMPLICIT_TLS).auth(new SmtpAuth.None())
 				.ehloHostname("client.test").tlsConfig(tls).build();
 			
 			try (SmtpClient client = new SmtpClient(config)) {
 				client.connect("localhost", server.port());
 				assertTrue(client.isConnected());
-				assertEquals("TLSv1.2", protocol.get());
+				assertEquals(TlsProtocol.TLS_V1_2.protocolName(), protocol.get());
 			}
 		}
 	}

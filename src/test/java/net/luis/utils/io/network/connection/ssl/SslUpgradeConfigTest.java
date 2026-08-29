@@ -47,20 +47,20 @@ class SslUpgradeConfigTest {
 	
 	@Test
 	void constructWithAllValues() {
-		SslUpgradeConfig config = new SslUpgradeConfig(context, List.of("TLSv1.3"), List.of("TLS_AES_256_GCM_SHA384"), false);
+		SslUpgradeConfig config = new SslUpgradeConfig(context, List.of(TlsProtocol.TLS_V1_3), List.of("TLS_AES_256_GCM_SHA384"), false);
 		
 		assertSame(context, config.sslContext());
-		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
 		assertFalse(config.verifyHostname());
 	}
 	
 	@Test
 	void constructWithNullSslContextIsAllowed() {
-		SslUpgradeConfig config = assertDoesNotThrow(() -> new SslUpgradeConfig(null, List.of("TLSv1.3"), List.of(), true));
+		SslUpgradeConfig config = assertDoesNotThrow(() -> new SslUpgradeConfig(null, List.of(TlsProtocol.TLS_V1_3), List.of(), true));
 		
 		assertNull(config.sslContext());
-		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
 		assertTrue(config.verifyHostname());
 	}
 	
@@ -76,7 +76,7 @@ class SslUpgradeConfigTest {
 	
 	@Test
 	void constructWithNullProtocolElementThrows() {
-		List<String> protocols = new ArrayList<>();
+		List<TlsProtocol> protocols = new ArrayList<>();
 		protocols.add(null);
 		
 		assertThrows(NullPointerException.class, () -> new SslUpgradeConfig(null, protocols, List.of(), true));
@@ -107,14 +107,14 @@ class SslUpgradeConfigTest {
 	
 	@Test
 	void constructCopiesProtocolsDefensively() {
-		List<String> protocols = new ArrayList<>(List.of("TLSv1.3"));
+		List<TlsProtocol> protocols = new ArrayList<>(List.of(TlsProtocol.TLS_V1_3));
 		SslUpgradeConfig config = new SslUpgradeConfig(null, protocols, List.of(), true);
 		
-		protocols.add("TLSv1.2");
+		protocols.add(TlsProtocol.TLS_V1_2);
 		
 		assertEquals(1, config.enabledProtocols().size());
-		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());
-		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add("TLSv1.1"));
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
+		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add(TlsProtocol.TLS_V1_1));
 	}
 	
 	@Test
@@ -164,12 +164,12 @@ class SslUpgradeConfigTest {
 	
 	@Test
 	void toClientConfigTakesTlsSettingsFromUpgradeConfig() {
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(context, List.of("TLSv1.3"), List.of("TLS_AES_256_GCM_SHA384"), false);
+		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(context, List.of(TlsProtocol.TLS_V1_3), List.of("TLS_AES_256_GCM_SHA384"), false);
 		
 		SslClientConfig result = upgradeConfig.toClientConfig(TcpClientConfig.DEFAULT);
 		
 		assertSame(context, result.sslContext());
-		assertEquals(List.of("TLSv1.3"), result.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), result.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), result.enabledCipherSuites());
 		assertFalse(result.verifyHostname());
 	}
@@ -258,31 +258,31 @@ class SslUpgradeConfigTest {
 	
 	@Test
 	void toClientConfigKeepsListsImmutable() {
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(null, List.of("TLSv1.3"), List.of("TLS_AES_256_GCM_SHA384"), true);
+		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(null, List.of(TlsProtocol.TLS_V1_3), List.of("TLS_AES_256_GCM_SHA384"), true);
 		
 		SslClientConfig result = upgradeConfig.toClientConfig(TcpClientConfig.DEFAULT);
 		
-		assertEquals(List.of("TLSv1.3"), result.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), result.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), result.enabledCipherSuites());
-		assertThrows(UnsupportedOperationException.class, () -> result.enabledProtocols().add("TLSv1.2"));
+		assertThrows(UnsupportedOperationException.class, () -> result.enabledProtocols().add(TlsProtocol.TLS_V1_2));
 		assertThrows(UnsupportedOperationException.class, () -> result.enabledCipherSuites().add("TLS_AES_128_GCM_SHA256"));
 	}
 	
 	@Test
 	void toClientConfigIsIndependentOfSourceListMutation() {
-		List<String> protocols = new ArrayList<>(List.of("TLSv1.3"));
+		List<TlsProtocol> protocols = new ArrayList<>(List.of(TlsProtocol.TLS_V1_3));
 		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(null, protocols, List.of(), true);
 		
-		protocols.add("TLSv1.2");
+		protocols.add(TlsProtocol.TLS_V1_2);
 		SslClientConfig result = upgradeConfig.toClientConfig(TcpClientConfig.DEFAULT);
 		
 		assertEquals(1, result.enabledProtocols().size());
-		assertEquals(List.of("TLSv1.3"), result.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), result.enabledProtocols());
 	}
 	
 	@Test
 	void toClientConfigAppliedToMultipleBaseConfigs() {
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(context, List.of("TLSv1.3"), List.of(), false);
+		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(context, List.of(TlsProtocol.TLS_V1_3), List.of(), false);
 		TcpClientConfig first = TcpClientConfig.builder().framing(false).bufferSize(1024).build();
 		TcpClientConfig second = TcpClientConfig.builder().framing(true).bufferSize(8192).build();
 		
@@ -314,7 +314,7 @@ class SslUpgradeConfigTest {
 			.onDisconnect(onDisconnect)
 			.onError(onError)
 			.build();
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(context, List.of("TLSv1.3"), List.of("TLS_AES_256_GCM_SHA384"), false);
+		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(context, List.of(TlsProtocol.TLS_V1_3), List.of("TLS_AES_256_GCM_SHA384"), false);
 		
 		SslClientConfig result = upgradeConfig.toClientConfig(base);
 		
@@ -322,7 +322,7 @@ class SslUpgradeConfigTest {
 		assertEquals(16384, result.bufferSize());
 		assertEquals(List.of(false, false, false), List.of(result.framing(), result.tcpNoDelay(), result.keepAlive()));
 		assertSame(context, result.sslContext());
-		assertEquals(List.of("TLSv1.3"), result.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), result.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), result.enabledCipherSuites());
 		assertFalse(result.verifyHostname());
 		assertEquals(List.of(onConnect, onDisconnect, onError), List.of(result.onConnect(), result.onDisconnect(), result.onError()));

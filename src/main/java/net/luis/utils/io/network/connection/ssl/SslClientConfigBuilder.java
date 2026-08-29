@@ -40,7 +40,7 @@ import java.util.Objects;
  * SslClientConfig config = SslClientConfig.builder()
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .sslContext(myContext)
- *     .enabledProtocols(List.of("TLSv1.3"))
+ *     .enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
  *     .verifyHostname(true)
  *     .onConnect((connection, local, remote, timestamp) -> System.out.println("Connected to " + remote))
  *     .build();
@@ -88,7 +88,7 @@ public final class SslClientConfigBuilder {
 	/**
 	 * The TLS protocols to enable.<br>
 	 */
-	private List<String> enabledProtocols = List.of();
+	private List<TlsProtocol> enabledProtocols = List.of();
 	/**
 	 * The cipher suites to enable.<br>
 	 */
@@ -153,7 +153,6 @@ public final class SslClientConfigBuilder {
 		return this;
 	}
 	
-
 	/**
 	 * Sets whether messages are framed with a length prefix on the wire.<br>
 	 * <p>
@@ -173,6 +172,7 @@ public final class SslClientConfigBuilder {
 		this.framing = framing;
 		return this;
 	}
+	
 	/**
 	 * Sets the size of the read/write buffers in bytes.<br>
 	 *
@@ -223,11 +223,11 @@ public final class SslClientConfigBuilder {
 	 * Sets the TLS protocols to enable on the socket.<br>
 	 * An empty list uses the socket default.<br>
 	 *
-	 * @param enabledProtocols The protocols to enable, e.g. {@code List.of("TLSv1.3", "TLSv1.2")}
+	 * @param enabledProtocols The protocols to enable, e.g. {@code List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2)}
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the enabled protocols list is null
 	 */
-	public @NonNull SslClientConfigBuilder enabledProtocols(@NonNull List<String> enabledProtocols) {
+	public @NonNull SslClientConfigBuilder enabledProtocols(@NonNull List<TlsProtocol> enabledProtocols) {
 		this.enabledProtocols = Objects.requireNonNull(enabledProtocols, "Enabled protocols must not be null");
 		return this;
 	}
