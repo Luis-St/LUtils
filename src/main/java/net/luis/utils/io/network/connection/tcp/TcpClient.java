@@ -23,6 +23,8 @@ import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.NetworkClient;
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
+import net.luis.utils.io.network.connection.ssl.SslClient;
+import net.luis.utils.io.network.connection.ssl.SslUpgradeConfig;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -65,18 +67,27 @@ public final class TcpClient implements NetworkClient<byte[]> {
 	 */
 	private final TcpClientConfig config;
 	/**
+	 * The reusable scratch buffer for unframed read operations.<br>
+	 * Allocated lazily and grown on demand, and unused while framing is enabled.<br>
+	 */
+	private byte @Nullable [] readBuffer;
+	/**
 	 * The underlying socket for communication.<br>
 	 */
 	private volatile Socket socket;
+	/**
+	 * The endpoint this client was connected to, or null if it was never connected.<br>
+	 * It is kept because the peer name is required to upgrade the connection to TLS.<br>
+	 */
+	private volatile @Nullable Endpoint endpoint;
 	/**
 	 * Whether this client is currently connected.<br>
 	 */
 	private volatile boolean connected;
 	/**
-	 * The reusable scratch buffer for read operations.<br>
-	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
+	 * Whether the connection of this client was handed over to an SSL client by an upgrade.<br>
 	 */
-	private byte @Nullable [] readBuffer;
+	private volatile boolean upgraded;
 	
 	/**
 	 * Constructs a new TCP client with default configuration.<br>
@@ -149,6 +160,8 @@ public final class TcpClient implements NetworkClient<byte[]> {
 		
 		try {
 			this.socket = new Socket();
+			this.endpoint = endpoint;
+			this.upgraded = false;
 			this.socket.setTcpNoDelay(this.config.tcpNoDelay());
 			this.socket.setKeepAlive(this.config.keepAlive());
 			
@@ -168,6 +181,63 @@ public final class TcpClient implements NetworkClient<byte[]> {
 		} catch (IOException e) {
 			throw NetworkUtils.mapConnectFailure(e, endpoint, this.config.connectTimeout(), this.config.onError());
 		}
+	}
+	
+	/**
+	 * Upgrades this connection to TLS using the default upgrade configuration.<br>
+	 *
+	 * @return A secure client that owns the upgraded connection
+	 * @throws NetworkConnectionException If the client is not connected or the TLS handshake fails
+	 * @see #upgrade(SslUpgradeConfig)
+	 */
+	public @NonNull SslClient upgrade() throws NetworkConnectionException {
+		return this.upgrade(SslUpgradeConfig.DEFAULT);
+	}
+	
+	/**
+	 * Upgrades this connection to TLS and returns a secure client for it.<br>
+	 * <p>
+	 *     The given upgrade configuration is combined with the configuration of this client into the configuration of the returned client, see {@link SslUpgradeConfig#toClientConfig(TcpClientConfig)}.<br>
+	 *     All transport settings such as timeouts, buffer size, framing, socket options and event handlers are therefore carried over, so that the secure connection behaves exactly like the plaintext connection it replaces.
+	 * </p>
+	 * <p>
+	 *     This is the client side of protocols that negotiate TLS on an existing connection, such as {@code STARTTLS}.<br>
+	 *     The negotiation itself is not part of this method, the upgrade is performed once the peer has agreed to it.
+	 * </p>
+	 * <p>
+	 *     On success the returned client owns the connection and this client is left inactive, so closing it becomes a no operation and the secure client has to be closed instead.<br>
+	 *     The connect handler is not called again, because the connection was already established.<br>
+	 *     If the upgrade fails, this client keeps the connection and has to be closed as usual.
+	 * </p>
+	 *
+	 * @param upgradeConfig The TLS options to upgrade with
+	 * @return A secure client that owns the upgraded connection
+	 * @throws NullPointerException If the upgrade config is null
+	 * @throws NetworkConnectionException If the client is not connected or the TLS handshake fails
+	 */
+	public @NonNull SslClient upgrade(@NonNull SslUpgradeConfig upgradeConfig) throws NetworkConnectionException {
+		Objects.requireNonNull(upgradeConfig, "Upgrade config must not be null");
+		this.ensureConnected();
+		
+		Endpoint endpoint = this.endpoint;
+		if (endpoint == null) {
+			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
+		}
+		
+		SslClient client = SslClient.upgrade(this.socket, endpoint, upgradeConfig.toClientConfig(this.config));
+		this.upgraded = true;
+		this.connected = false;
+		return client;
+	}
+	
+	/**
+	 * Checks whether the connection of this client was handed over to a secure client by {@link #upgrade(SslUpgradeConfig)}.<br>
+	 * An upgraded client is no longer active and closing it does not close the upgraded connection.<br>
+	 *
+	 * @return True if this client was upgraded, false otherwise
+	 */
+	public boolean isUpgraded() {
+		return this.upgraded;
 	}
 	
 	@Override
@@ -201,7 +271,7 @@ public final class TcpClient implements NetworkClient<byte[]> {
 		NetworkUtils.validateMessageSize(data, this.config.bufferSize(), null);
 		this.ensureConnected();
 		
-		NetworkUtils.writeAll(this.socket, data, this.config.onError(), null, this::handleDisconnect);
+		NetworkUtils.writeAll(this.socket, data, this.config.framing(), this.config.onError(), null, this::handleDisconnect);
 	}
 	
 	@Override
@@ -216,8 +286,11 @@ public final class TcpClient implements NetworkClient<byte[]> {
 		}
 		this.ensureConnected();
 		
-		this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
-		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
+		if (!this.config.framing()) {
+			this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
+		}
+		
+		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.config.framing(), this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
 	}
 	
 	/**
@@ -252,9 +325,13 @@ public final class TcpClient implements NetworkClient<byte[]> {
 		}
 	}
 	
+	/**
+	 * Closes this client and its underlying socket.<br>
+	 * If the connection was handed over to a secure client by an upgrade, nothing is closed, because the secure client owns the connection.<br>
+	 */
 	@Override
 	public void close() {
-		if (this.socket != null && !this.socket.isClosed()) {
+		if (!this.upgraded && this.socket != null && !this.socket.isClosed()) {
 			this.handleDisconnect();
 			
 			try {

@@ -46,54 +46,62 @@ class SslServerConfigTest {
 	
 	@Test
 	void constructWithNullClientReadTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, null, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, null, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullSslContextThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, Duration.ZERO, true, true, null, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, null, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullEnabledProtocolsThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, Duration.ZERO, true, true, context, null, List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, null, List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullEnabledCipherSuitesThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, Duration.ZERO, true, true, context, List.of(), null, SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, List.of(), null, SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullClientAuthThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, Duration.ZERO, true, true, context, List.of(), List.of(), null, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, List.of(), List.of(), null, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullExecutorStrategyThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, null, null, null, null, null));
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, null, null, null, null, null));
 	}
 	
 	@Test
 	void constructWithInvalidBacklogThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(0, 8192, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
-		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(-1, 8192, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(0, 8192, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(-1, 8192, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
 	}
 	
 	@Test
 	void constructWithInvalidClientBufferSizeThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(50, 0, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
-		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(50, -1, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(50, 0, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(50, -1, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+	}
+	
+	@Test
+	void constructWithNullProtocolElementThrows() {
+		List<TlsProtocol> protocols = new ArrayList<>();
+		protocols.add(null);
+		
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, protocols, List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
 	}
 	
 	@Test
 	void constructCopiesProtocolsDefensively() {
-		List<String> protocols = new ArrayList<>(List.of("TLSv1.3"));
-		SslServerConfig config = new SslServerConfig(50, 8192, Duration.ZERO, true, true, context, protocols, List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null);
+		List<TlsProtocol> protocols = new ArrayList<>(List.of(TlsProtocol.TLS_V1_3));
+		SslServerConfig config = new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, protocols, List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null);
 		
-		protocols.add("TLSv1.2");
+		protocols.add(TlsProtocol.TLS_V1_2);
 		assertEquals(1, config.enabledProtocols().size());
-		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add("x"));
+		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add(TlsProtocol.TLS_V1_2));
 	}
 	
 	@Test
@@ -129,7 +137,7 @@ class SslServerConfigTest {
 			.clientReadTimeout(Duration.ofSeconds(60))
 			.tcpNoDelay(false)
 			.keepAlive(false)
-			.enabledProtocols(List.of("TLSv1.3"))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
 			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
 			.clientAuth(SslClientAuth.REQUIRED)
 			.executorStrategy(ClientExecutorStrategy.fixedPool(8))
@@ -140,7 +148,7 @@ class SslServerConfigTest {
 		assertEquals(Duration.ofSeconds(60), config.clientReadTimeout());
 		assertFalse(config.tcpNoDelay());
 		assertFalse(config.keepAlive());
-		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
 		assertEquals(SslClientAuth.REQUIRED, config.clientAuth());
 	}
@@ -159,4 +167,16 @@ class SslServerConfigTest {
 		assertNotNull(config.onMessage());
 		assertNotNull(config.onError());
 	}
+	
+	@Test
+	void framingIsEnabledByDefault() {
+		assertTrue(SslServerConfig.builder(context).build().framing());
+	}
+	
+	@Test
+	void framingCanBeDisabled() {
+		assertFalse(SslServerConfig.builder(context).framing(false).build().framing());
+		assertTrue(SslServerConfig.builder(context).framing(false).framing(true).build().framing());
+	}
+	
 }

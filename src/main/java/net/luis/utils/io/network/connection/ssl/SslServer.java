@@ -143,8 +143,7 @@ public final class SslServer implements NetworkServer {
 	@Override
 	public @NonNull IpEndpoint boundEndpoint() {
 		if (this.serverSocket != null && this.serverSocket.isBound()) {
-			InetSocketAddress address = (InetSocketAddress) this.serverSocket.getLocalSocketAddress();
-			return IpEndpoint.from(address);
+			return IpEndpoint.from((InetSocketAddress) this.serverSocket.getLocalSocketAddress());
 		}
 		return this.bindEndpoint;
 	}
@@ -161,7 +160,7 @@ public final class SslServer implements NetworkServer {
 			sslServerSocket.setReuseAddress(true);
 			
 			if (!this.config.enabledProtocols().isEmpty()) {
-				sslServerSocket.setEnabledProtocols(this.config.enabledProtocols().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+				sslServerSocket.setEnabledProtocols(TlsProtocol.toProtocolNames(this.config.enabledProtocols()));
 			}
 			if (!this.config.enabledCipherSuites().isEmpty()) {
 				sslServerSocket.setEnabledCipherSuites(this.config.enabledCipherSuites().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
@@ -262,7 +261,7 @@ public final class SslServer implements NetworkServer {
 					clientSocket.setSoTimeout((int) this.config.clientReadTimeout().toMillis());
 				}
 				
-				SslConnection connection = new SslConnection(clientSocket, this.config.clientBufferSize(), this.config.clientReadTimeout());
+				SslConnection connection = new SslConnection(clientSocket, this.config.clientBufferSize(), this.config.framing(), this.config.clientReadTimeout());
 				this.connections.add(connection);
 				
 				if (this.isRunning()) {

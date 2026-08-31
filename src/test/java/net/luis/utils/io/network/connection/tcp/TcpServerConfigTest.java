@@ -51,24 +51,24 @@ class TcpServerConfigTest {
 	
 	@Test
 	void constructWithNullClientReadTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpServerConfig(50, 8192, null, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(NullPointerException.class, () -> new TcpServerConfig(50, 8192, true, null, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullExecutorStrategyThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpServerConfig(50, 8192, Duration.ZERO, true, true, null, null, null, null, null));
+		assertThrows(NullPointerException.class, () -> new TcpServerConfig(50, 8192, true, Duration.ZERO, true, true, null, null, null, null, null));
 	}
 	
 	@Test
 	void constructWithInvalidBacklogThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(0, 8192, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(-1, 8192, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(0, 8192, true, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(-1, 8192, true, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
 	}
 	
 	@Test
 	void constructWithInvalidClientBufferSizeThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(50, 0, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(50, -1, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(50, 0, true, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(50, -1, true, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
 	}
 	
 	@Test
@@ -103,4 +103,16 @@ class TcpServerConfigTest {
 		assertNotNull(config.onMessage());
 		assertNotNull(config.onError());
 	}
+	
+	@Test
+	void framingIsEnabledByDefault() {
+		assertTrue(TcpServerConfig.builder().build().framing());
+	}
+	
+	@Test
+	void framingCanBeDisabled() {
+		assertFalse(TcpServerConfig.builder().framing(false).build().framing());
+		assertTrue(TcpServerConfig.builder().framing(false).framing(true).build().framing());
+	}
+	
 }

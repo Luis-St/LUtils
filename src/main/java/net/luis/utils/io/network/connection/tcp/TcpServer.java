@@ -158,8 +158,7 @@ public final class TcpServer implements NetworkServer {
 	@Override
 	public @NonNull IpEndpoint boundEndpoint() {
 		if (this.serverSocket != null && this.serverSocket.isBound()) {
-			InetSocketAddress address = (InetSocketAddress) this.serverSocket.getLocalSocketAddress();
-			return IpEndpoint.from(address);
+			return IpEndpoint.from((InetSocketAddress) this.serverSocket.getLocalSocketAddress());
 		}
 		return this.bindEndpoint;
 	}
@@ -263,7 +262,7 @@ public final class TcpServer implements NetworkServer {
 					clientSocket.setSoTimeout((int) this.config.clientReadTimeout().toMillis());
 				}
 				
-				TcpConnection connection = new TcpConnection(clientSocket, this.config.clientBufferSize(), this.config.clientReadTimeout());
+				TcpConnection connection = new TcpConnection(clientSocket, this.config.clientBufferSize(), this.config.framing(), this.config.clientReadTimeout());
 				this.connections.add(connection);
 				
 				if (this.config.onClientConnect() != null) {

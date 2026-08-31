@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
-import net.luis.utils.io.network.Endpoint;
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.*;
 import net.luis.utils.io.network.connection.NetworkClient;
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
@@ -29,7 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 import javax.net.ssl.*;
 import java.io.*;
-import java.net.InetSocketAddress;
+import java.net.*;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Objects;
@@ -69,6 +68,11 @@ public final class SslClient implements NetworkClient<byte[]> {
 	 */
 	private final SslClientConfig config;
 	/**
+	 * The reusable scratch buffer for unframed read operations.<br>
+	 * Allocated lazily and grown on demand, and unused while framing is enabled.<br>
+	 */
+	private byte @Nullable [] readBuffer;
+	/**
 	 * The underlying SSL socket for communication.<br>
 	 */
 	private volatile SSLSocket socket;
@@ -76,11 +80,6 @@ public final class SslClient implements NetworkClient<byte[]> {
 	 * Whether this client is currently connected.<br>
 	 */
 	private volatile boolean connected;
-	/**
-	 * The reusable scratch buffer for read operations.<br>
-	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
-	 */
-	private byte @Nullable [] readBuffer;
 	
 	/**
 	 * Constructs a new SSL client with default configuration.<br>
@@ -138,6 +137,59 @@ public final class SslClient implements NetworkClient<byte[]> {
 	}
 	
 	/**
+	 * Layers TLS over an already connected socket and returns a client that owns the secured connection.<br>
+	 * <p>
+	 *     The socket is wrapped in an {@link SSLSocket} that is configured from the given configuration, afterwards the TLS handshake is performed.<br>
+	 *     This is how protocols that negotiate TLS on an established connection, such as {@code STARTTLS}, switch to a secure channel without opening a new connection.
+	 * </p>
+	 * <p>
+	 *     The given endpoint names the peer for server name indication and hostname verification, so it has to be the endpoint the socket was connected to.<br>
+	 *     A {@link HostEndpoint} contributes its hostname, an {@link IpEndpoint} its literal address.
+	 * </p>
+	 * <p>
+	 *     On success the returned client owns the socket, so closing the client closes the underlying socket.<br>
+	 *     If the upgrade fails, ownership stays with the caller, which is responsible for closing the socket.<br>
+	 *     The connect handler of the configuration is not called, because the connection itself was established before the upgrade.
+	 * </p>
+	 *
+	 * @param socket The connected plaintext socket to upgrade
+	 * @param endpoint The remote endpoint the socket is connected to
+	 * @param config The configuration for the secured connection
+	 * @return A client for the secured connection
+	 * @throws NullPointerException If socket, endpoint, or config is null
+	 * @throws NetworkConnectionException If the socket is not connected or the TLS handshake fails
+	 */
+	public static @NonNull SslClient upgrade(@NonNull Socket socket, @NonNull Endpoint endpoint, @NonNull SslClientConfig config) throws NetworkConnectionException {
+		Objects.requireNonNull(socket, "Socket must not be null");
+		Objects.requireNonNull(endpoint, "Endpoint must not be null");
+		Objects.requireNonNull(config, "Config must not be null");
+		if (socket.isClosed() || !socket.isConnected()) {
+			throw new NetworkConnectionException("Socket is not connected", NetworkErrorType.NOT_CONNECTED, endpoint);
+		}
+		
+		SslClient client = new SslClient(config);
+		try {
+			SSLContext context = config.resolveSslContext();
+			SSLSocket sslSocket = (SSLSocket) context.getSocketFactory().createSocket(socket, resolvePeerHost(endpoint), endpoint.port(), true);
+			client.socket = sslSocket;
+			client.configureSocket(sslSocket);
+			
+			sslSocket.startHandshake();
+			client.connected = true;
+			return client;
+		} catch (NoSuchAlgorithmException e) {
+			NetworkUtils.handleError(config.onError(), NetworkErrorType.CONNECTION_FAILED, "Failed to initialize SSL context", e);
+			throw new NetworkConnectionException("Failed to initialize SSL context", e, NetworkErrorType.CONNECTION_FAILED, endpoint);
+		} catch (SSLHandshakeException e) {
+			NetworkUtils.handleError(config.onError(), NetworkErrorType.HANDSHAKE_FAILED, "SSL handshake failed during upgrade", e);
+			throw new NetworkConnectionException("SSL handshake failed during upgrade", e, NetworkErrorType.HANDSHAKE_FAILED, endpoint);
+		} catch (IOException e) {
+			NetworkUtils.handleError(config.onError(), NetworkErrorType.IO_ERROR, "Failed to upgrade connection to TLS", e);
+			throw new NetworkConnectionException("Failed to upgrade connection to TLS", e, NetworkErrorType.IO_ERROR, endpoint);
+		}
+	}
+	
+	/**
 	 * Connects to the specified remote endpoint and performs the TLS handshake.<br>
 	 *
 	 * @param endpoint The remote endpoint to connect to
@@ -156,22 +208,7 @@ public final class SslClient implements NetworkClient<byte[]> {
 			SSLSocket sslSocket = (SSLSocket) context.getSocketFactory().createSocket();
 			this.socket = sslSocket;
 			
-			sslSocket.setTcpNoDelay(this.config.tcpNoDelay());
-			sslSocket.setKeepAlive(this.config.keepAlive());
-			if (!this.config.readTimeout().isZero()) {
-				sslSocket.setSoTimeout((int) this.config.readTimeout().toMillis());
-			}
-			if (!this.config.enabledProtocols().isEmpty()) {
-				sslSocket.setEnabledProtocols(this.config.enabledProtocols().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
-			}
-			if (!this.config.enabledCipherSuites().isEmpty()) {
-				sslSocket.setEnabledCipherSuites(this.config.enabledCipherSuites().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
-			}
-			if (this.config.verifyHostname()) {
-				SSLParameters parameters = sslSocket.getSSLParameters();
-				parameters.setEndpointIdentificationAlgorithm("HTTPS");
-				sslSocket.setSSLParameters(parameters);
-			}
+			this.configureSocket(sslSocket);
 			
 			sslSocket.connect(endpoint.toInetSocketAddress(), (int) this.config.connectTimeout().toMillis());
 			sslSocket.startHandshake();
@@ -234,7 +271,7 @@ public final class SslClient implements NetworkClient<byte[]> {
 		NetworkUtils.validateMessageSize(data, this.config.bufferSize(), null);
 		this.ensureConnected();
 		
-		NetworkUtils.writeAll(this.socket, data, this.config.onError(), null, this::handleDisconnect);
+		NetworkUtils.writeAll(this.socket, data, this.config.framing(), this.config.onError(), null, this::handleDisconnect);
 	}
 	
 	@Override
@@ -249,8 +286,11 @@ public final class SslClient implements NetworkClient<byte[]> {
 		}
 		this.ensureConnected();
 		
-		this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
-		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
+		if (!this.config.framing()) {
+			this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
+		}
+		
+		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.config.framing(), this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
 	}
 	
 	/**
@@ -298,6 +338,46 @@ public final class SslClient implements NetworkClient<byte[]> {
 	}
 	
 	//region Helper methods
+	
+	/**
+	 * Applies the configured socket options and TLS parameters to the given socket.<br>
+	 * This is done before the handshake, because the enabled protocols, cipher suites and endpoint identification
+	 * algorithm have to be known when the handshake starts.<br>
+	 *
+	 * @param sslSocket The socket to configure
+	 * @throws SocketException If a socket option could not be applied
+	 */
+	private void configureSocket(@NonNull SSLSocket sslSocket) throws SocketException {
+		sslSocket.setTcpNoDelay(this.config.tcpNoDelay());
+		sslSocket.setKeepAlive(this.config.keepAlive());
+		if (!this.config.readTimeout().isZero()) {
+			sslSocket.setSoTimeout((int) this.config.readTimeout().toMillis());
+		}
+		if (!this.config.enabledProtocols().isEmpty()) {
+			sslSocket.setEnabledProtocols(TlsProtocol.toProtocolNames(this.config.enabledProtocols()));
+		}
+		if (!this.config.enabledCipherSuites().isEmpty()) {
+			sslSocket.setEnabledCipherSuites(this.config.enabledCipherSuites().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+		}
+		if (this.config.verifyHostname()) {
+			SSLParameters parameters = sslSocket.getSSLParameters();
+			parameters.setEndpointIdentificationAlgorithm("HTTPS");
+			sslSocket.setSSLParameters(parameters);
+		}
+	}
+	
+	/**
+	 * Determines the peer host name to use for server name indication and hostname verification.<br>
+	 *
+	 * @param endpoint The remote endpoint
+	 * @return The hostname of a host endpoint, or the literal address of an ip endpoint
+	 */
+	private static @NonNull String resolvePeerHost(@NonNull Endpoint endpoint) {
+		return switch (endpoint) {
+			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
+			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
+		};
+	}
 	
 	/**
 	 * Ensures that the client is connected before performing operations.<br>

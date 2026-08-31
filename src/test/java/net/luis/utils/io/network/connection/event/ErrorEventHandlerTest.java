@@ -21,6 +21,7 @@ package net.luis.utils.io.network.connection.event;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
 import net.luis.utils.io.network.connection.Connection;
+import net.luis.utils.io.network.connection.context.ConnectionContext;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -86,6 +87,18 @@ class ErrorEventHandlerTest {
 	
 	private static final class StubConnection implements Connection {
 		
+		private final ConnectionContext context = new ConnectionContext();
+		
+		@Override
+		public boolean isActive() {
+			return true;
+		}
+		
+		@Override
+		public @NonNull ConnectionContext context() {
+			return this.context;
+		}
+		
 		@Override
 		public @NonNull IpEndpoint remoteEndpoint() {
 			return new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
@@ -117,11 +130,6 @@ class ErrorEventHandlerTest {
 		@Override
 		public @NonNull OutputStream getOutputStream() {
 			return OutputStream.nullOutputStream();
-		}
-		
-		@Override
-		public boolean isActive() {
-			return true;
 		}
 		
 		@Override
