@@ -21,6 +21,7 @@ package net.luis.utils.io.network.connection.ssl;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.NetworkServer;
 import net.luis.utils.io.network.connection.NetworkUtils;
+import net.luis.utils.io.network.connection.event.ConnectionHandler;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.apache.commons.lang3.ArrayUtils;
@@ -45,6 +46,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     The {@code onClientConnect} handler is only invoked after a successful handshake.
  * </p>
  * <p>
+ *     By default the server drives the read loop itself and reports each received message to the configured message handler.<br>
+ *     A {@link ConnectionHandler} can be configured instead, which is called once per client after the handshake and owns the
+ *     connection and its decrypted streams for the whole session, while the server keeps managing the thread, the connection
+ *     registry, and the shutdown.
+ * </p>
+ * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
@@ -66,6 +73,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @see SslServerConfig
  * @see SslConnection
+ * @see ConnectionHandler
  *
  * @author Luis-St
  */
@@ -286,7 +294,7 @@ public final class SslServer implements NetworkServer {
 	
 	/**
 	 * Handles communication with a connected client.<br>
-	 * This method runs on the executor, performs the TLS handshake, and processes incoming messages.<br>
+	 * This method runs on the executor, performs the TLS handshake, and then either hands the connection to the configured connection handler or processes incoming messages.<br>
 	 *
 	 * @param connection The client connection to handle
 	 * @throws NullPointerException If connection is null
@@ -303,20 +311,11 @@ public final class SslServer implements NetworkServer {
 				this.config.onClientConnect().handle(connection, connection.localEndpoint(), connection.remoteEndpoint(), Instant.now());
 			}
 			
-			while (this.running.get() && connection.isActive()) {
-				byte[] data = connection.receive();
-				
-				if (data.length == 0) {
-					break;
-				}
-				
-				if (this.config.onMessage() != null) {
-					try {
-						this.config.onMessage().handle(this, connection, data);
-					} catch (Exception e) {
-						NetworkUtils.handleError(this.config.onError(), connection, NetworkErrorType.IO_ERROR, "Error in message handler", e);
-					}
-				}
+			ConnectionHandler<SslServer, SslConnection> handler = this.config.onConnection();
+			if (handler != null) {
+				this.runConnectionHandler(handler, connection);
+			} else {
+				this.receiveLoop(connection);
 			}
 		} catch (NetworkConnectionException e) {
 			if (e.errorType() != NetworkErrorType.READ_TIMEOUT) {
@@ -331,6 +330,56 @@ public final class SslServer implements NetworkServer {
 			
 			this.connections.remove(connection);
 			connection.close();
+		}
+	}
+	
+	/**
+	 * Hands the given connection to the configured connection handler and waits until the handler returns.<br>
+	 * Failures of the handler are reported to the configured error handler, network failures are passed on to the caller.<br>
+	 *
+	 * @param handler The connection handler to run
+	 * @param connection The client connection to hand over
+	 * @throws NullPointerException If handler or connection is null
+	 * @throws NetworkConnectionException If the handler failed with a network error
+	 */
+	private void runConnectionHandler(@NonNull ConnectionHandler<SslServer, SslConnection> handler, @NonNull SslConnection connection) throws NetworkConnectionException {
+		Objects.requireNonNull(handler, "Handler must not be null");
+		Objects.requireNonNull(connection, "Connection must not be null");
+		
+		try {
+			handler.handle(this, connection);
+		} catch (NetworkConnectionException e) {
+			throw e;
+		} catch (Exception e) {
+			NetworkUtils.handleError(this.config.onError(), connection, NetworkErrorType.IO_ERROR, "Error in connection handler", e);
+		}
+	}
+	
+	/**
+	 * Reads messages from the given connection until it is closed and dispatches them to the configured message handler.<br>
+	 * This is the built-in read loop that is used when no connection handler is configured.<br>
+	 *
+	 * @param connection The client connection to read from
+	 * @throws NullPointerException If connection is null
+	 * @throws NetworkConnectionException If receiving fails
+	 */
+	private void receiveLoop(@NonNull SslConnection connection) throws NetworkConnectionException {
+		Objects.requireNonNull(connection, "Connection must not be null");
+		
+		while (this.running.get() && connection.isActive()) {
+			byte[] data = connection.receive();
+			
+			if (data.length == 0) {
+				break;
+			}
+			
+			if (this.config.onMessage() != null) {
+				try {
+					this.config.onMessage().handle(this, connection, data);
+				} catch (Exception e) {
+					NetworkUtils.handleError(this.config.onError(), connection, NetworkErrorType.IO_ERROR, "Error in message handler", e);
+				}
+			}
 		}
 	}
 	//endregion

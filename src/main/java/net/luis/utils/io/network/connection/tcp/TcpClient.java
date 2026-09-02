@@ -20,8 +20,7 @@ package net.luis.utils.io.network.connection.tcp;
 
 import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.connection.NetworkClient;
-import net.luis.utils.io.network.connection.NetworkUtils;
+import net.luis.utils.io.network.connection.*;
 import net.luis.utils.io.network.connection.exception.*;
 import net.luis.utils.io.network.connection.ssl.SslClient;
 import net.luis.utils.io.network.connection.ssl.SslUpgradeConfig;
@@ -75,6 +74,11 @@ public final class TcpClient implements NetworkClient<byte[]> {
 	 * The underlying socket for communication.<br>
 	 */
 	private volatile Socket socket;
+	/**
+	 * The streams of the current socket, so that every caller gets the same instance.<br>
+	 * Replaced whenever a new connection is established.<br>
+	 */
+	private volatile @Nullable SocketStreams streams;
 	/**
 	 * The endpoint this client was connected to, or null if it was never connected.<br>
 	 * It is kept because the peer name is required to upgrade the connection to TLS.<br>
@@ -160,6 +164,7 @@ public final class TcpClient implements NetworkClient<byte[]> {
 		
 		try {
 			this.socket = new Socket();
+			this.streams = new SocketStreams(this.socket);
 			this.endpoint = endpoint;
 			this.upgraded = false;
 			this.socket.setTcpNoDelay(this.config.tcpNoDelay());
@@ -205,6 +210,11 @@ public final class TcpClient implements NetworkClient<byte[]> {
 	 *     The negotiation itself is not part of this method, the upgrade is performed once the peer has agreed to it.
 	 * </p>
 	 * <p>
+	 *     The peer must not have sent anything beyond its agreement, because the secure client reads the raw socket and
+	 *     neither sees what a reader of this client has already buffered nor expects plaintext before the handshake.<br>
+	 *     Pending input is therefore rejected rather than silently dropped.
+	 * </p>
+	 * <p>
 	 *     On success the returned client owns the connection and this client is left inactive, so closing it becomes a no operation and the secure client has to be closed instead.<br>
 	 *     The connect handler is not called again, because the connection was already established.<br>
 	 *     If the upgrade fails, this client keeps the connection and has to be closed as usual.
@@ -213,7 +223,7 @@ public final class TcpClient implements NetworkClient<byte[]> {
 	 * @param upgradeConfig The TLS options to upgrade with
 	 * @return A secure client that owns the upgraded connection
 	 * @throws NullPointerException If the upgrade config is null
-	 * @throws NetworkConnectionException If the client is not connected or the TLS handshake fails
+	 * @throws NetworkConnectionException If the client is not connected, unread plaintext is still pending, or the TLS handshake fails
 	 */
 	public @NonNull SslClient upgrade(@NonNull SslUpgradeConfig upgradeConfig) throws NetworkConnectionException {
 		Objects.requireNonNull(upgradeConfig, "Upgrade config must not be null");
@@ -223,8 +233,12 @@ public final class TcpClient implements NetworkClient<byte[]> {
 		if (endpoint == null) {
 			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
 		}
+		if (this.streams().hasPendingInput()) {
+			throw new NetworkConnectionException("Unread plaintext is pending, it would be lost or misread as handshake data", NetworkErrorType.IO_ERROR, endpoint);
+		}
 		
 		SslClient client = SslClient.upgrade(this.socket, endpoint, upgradeConfig.toClientConfig(this.config));
+		this.streams = null;
 		this.upgraded = true;
 		this.connected = false;
 		return client;
@@ -290,39 +304,42 @@ public final class TcpClient implements NetworkClient<byte[]> {
 			this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
 		}
 		
-		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.config.framing(), this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
+		InputStream in;
+		try {
+			in = this.streams().input();
+		} catch (NetworkConnectionException e) {
+			this.handleDisconnect();
+			throw e;
+		}
+		
+		return NetworkUtils.readMessage(in, this.readBuffer, maxBytes, this.config.framing(), this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
 	}
 	
 	/**
 	 * Returns the input stream for advanced reading.<br>
+	 * The stream is buffered and the same instance is returned on every call, so it can be stored and read across calls.<br>
+	 * <p>
+	 *     {@link #receive()} reads through this same buffer, so the two can be mixed without skipping bytes.
+	 * </p>
 	 *
 	 * @return The input stream
-	 * @throws NetworkConnectionException If the stream cannot be obtained
+	 * @throws NetworkConnectionException If the client is not connected or the stream cannot be obtained
 	 */
 	public @NonNull InputStream getInputStream() throws NetworkConnectionException {
 		this.ensureConnected();
-		
-		try {
-			return this.socket.getInputStream();
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to get input stream", e, NetworkErrorType.IO_ERROR);
-		}
+		return this.streams().input();
 	}
 	
 	/**
 	 * Returns the output stream for advanced writing.<br>
+	 * The stream is not buffered and the same instance is returned on every call, so everything written to it goes to the peer immediately.<br>
 	 *
 	 * @return The output stream
-	 * @throws NetworkConnectionException If the stream cannot be obtained
+	 * @throws NetworkConnectionException If the client is not connected or the stream cannot be obtained
 	 */
 	public @NonNull OutputStream getOutputStream() throws NetworkConnectionException {
 		this.ensureConnected();
-		
-		try {
-			return this.socket.getOutputStream();
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to get output stream", e, NetworkErrorType.IO_ERROR);
-		}
+		return this.streams().output();
 	}
 	
 	/**
@@ -351,6 +368,20 @@ public final class TcpClient implements NetworkClient<byte[]> {
 		if (!this.connected || this.socket == null || this.socket.isClosed()) {
 			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
 		}
+	}
+	
+	/**
+	 * Returns the streams of the current connection.<br>
+	 *
+	 * @return The streams
+	 * @throws NetworkConnectionException If the client is not connected
+	 */
+	private @NonNull SocketStreams streams() throws NetworkConnectionException {
+		SocketStreams streams = this.streams;
+		if (streams == null) {
+			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
+		}
+		return streams;
 	}
 	
 	/**

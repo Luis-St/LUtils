@@ -19,8 +19,7 @@
 package net.luis.utils.io.network.connection.ssl;
 
 import net.luis.utils.io.network.*;
-import net.luis.utils.io.network.connection.NetworkClient;
-import net.luis.utils.io.network.connection.NetworkUtils;
+import net.luis.utils.io.network.connection.*;
 import net.luis.utils.io.network.connection.exception.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
@@ -76,6 +75,11 @@ public final class SslClient implements NetworkClient<byte[]> {
 	 * The underlying SSL socket for communication.<br>
 	 */
 	private volatile SSLSocket socket;
+	/**
+	 * The streams of the current socket, so that every caller gets the same instance.<br>
+	 * Replaced whenever a new connection is established.<br>
+	 */
+	private volatile @Nullable SocketStreams streams;
 	/**
 	 * Whether this client is currently connected.<br>
 	 */
@@ -172,6 +176,7 @@ public final class SslClient implements NetworkClient<byte[]> {
 			SSLContext context = config.resolveSslContext();
 			SSLSocket sslSocket = (SSLSocket) context.getSocketFactory().createSocket(socket, resolvePeerHost(endpoint), endpoint.port(), true);
 			client.socket = sslSocket;
+			client.streams = new SocketStreams(sslSocket);
 			client.configureSocket(sslSocket);
 			
 			sslSocket.startHandshake();
@@ -187,6 +192,19 @@ public final class SslClient implements NetworkClient<byte[]> {
 			NetworkUtils.handleError(config.onError(), NetworkErrorType.IO_ERROR, "Failed to upgrade connection to TLS", e);
 			throw new NetworkConnectionException("Failed to upgrade connection to TLS", e, NetworkErrorType.IO_ERROR, endpoint);
 		}
+	}
+	
+	/**
+	 * Determines the peer host name to use for server name indication and hostname verification.<br>
+	 *
+	 * @param endpoint The remote endpoint
+	 * @return The hostname of a host endpoint, or the literal address of an ip endpoint
+	 */
+	private static @NonNull String resolvePeerHost(@NonNull Endpoint endpoint) {
+		return switch (endpoint) {
+			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
+			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
+		};
 	}
 	
 	/**
@@ -207,6 +225,7 @@ public final class SslClient implements NetworkClient<byte[]> {
 			SSLContext context = this.config.resolveSslContext();
 			SSLSocket sslSocket = (SSLSocket) context.getSocketFactory().createSocket();
 			this.socket = sslSocket;
+			this.streams = new SocketStreams(sslSocket);
 			
 			this.configureSocket(sslSocket);
 			
@@ -290,7 +309,15 @@ public final class SslClient implements NetworkClient<byte[]> {
 			this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
 		}
 		
-		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.config.framing(), this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
+		InputStream in;
+		try {
+			in = this.streams().input();
+		} catch (NetworkConnectionException e) {
+			this.handleDisconnect();
+			throw e;
+		}
+		
+		return NetworkUtils.readMessage(in, this.readBuffer, maxBytes, this.config.framing(), this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
 	}
 	
 	/**
@@ -301,12 +328,7 @@ public final class SslClient implements NetworkClient<byte[]> {
 	 */
 	public @NonNull InputStream getInputStream() throws NetworkConnectionException {
 		this.ensureConnected();
-		
-		try {
-			return this.socket.getInputStream();
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to get input stream", e, NetworkErrorType.IO_ERROR);
-		}
+		return this.streams().input();
 	}
 	
 	/**
@@ -317,14 +339,14 @@ public final class SslClient implements NetworkClient<byte[]> {
 	 */
 	public @NonNull OutputStream getOutputStream() throws NetworkConnectionException {
 		this.ensureConnected();
-		
-		try {
-			return this.socket.getOutputStream();
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to get output stream", e, NetworkErrorType.IO_ERROR);
-		}
+		return this.streams().output();
 	}
 	
+	//region Helper methods
+	
+	/**
+	 * Closes this client and its underlying socket.<br>
+	 */
 	@Override
 	public void close() {
 		if (this.socket != null && !this.socket.isClosed()) {
@@ -336,8 +358,6 @@ public final class SslClient implements NetworkClient<byte[]> {
 		}
 		this.connected = false;
 	}
-	
-	//region Helper methods
 	
 	/**
 	 * Applies the configured socket options and TLS parameters to the given socket.<br>
@@ -367,19 +387,6 @@ public final class SslClient implements NetworkClient<byte[]> {
 	}
 	
 	/**
-	 * Determines the peer host name to use for server name indication and hostname verification.<br>
-	 *
-	 * @param endpoint The remote endpoint
-	 * @return The hostname of a host endpoint, or the literal address of an ip endpoint
-	 */
-	private static @NonNull String resolvePeerHost(@NonNull Endpoint endpoint) {
-		return switch (endpoint) {
-			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
-			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
-		};
-	}
-	
-	/**
 	 * Ensures that the client is connected before performing operations.<br>
 	 * @throws NetworkConnectionException If the client is not connected
 	 */
@@ -387,6 +394,20 @@ public final class SslClient implements NetworkClient<byte[]> {
 		if (!this.connected || this.socket == null || this.socket.isClosed()) {
 			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
 		}
+	}
+	
+	/**
+	 * Returns the streams of the current connection.<br>
+	 *
+	 * @return The streams
+	 * @throws NetworkConnectionException If the client is not connected
+	 */
+	private @NonNull SocketStreams streams() throws NetworkConnectionException {
+		SocketStreams streams = this.streams;
+		if (streams == null) {
+			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
+		}
+		return streams;
 	}
 	
 	/**

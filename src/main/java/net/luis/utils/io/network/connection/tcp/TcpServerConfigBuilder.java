@@ -94,6 +94,10 @@ public final class TcpServerConfigBuilder {
 	 */
 	private @Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage;
 	/**
+	 * The handler that takes over the whole connection instead of the built-in read loop.<br>
+	 */
+	private @Nullable ConnectionHandler<TcpServer, TcpConnection> onConnection;
+	/**
 	 * The handler called when an error occurs.<br>
 	 */
 	private @Nullable ErrorEventHandler onError;
@@ -114,7 +118,6 @@ public final class TcpServerConfigBuilder {
 		return this;
 	}
 	
-
 	/**
 	 * Sets whether messages are framed with a length prefix on the wire.<br>
 	 * <p>
@@ -134,6 +137,7 @@ public final class TcpServerConfigBuilder {
 		this.framing = framing;
 		return this;
 	}
+	
 	/**
 	 * Sets the buffer size for each client connection in bytes.<br>
 	 *
@@ -224,6 +228,26 @@ public final class TcpServerConfigBuilder {
 	}
 	
 	/**
+	 * Sets the handler that takes over the whole connection.<br>
+	 * <p>
+	 *     The handler is called once per client on the thread the server assigned to it and owns the connection until it returns.<br>
+	 *     While it runs, the server does not read from the connection, so the handler can read from {@link TcpConnection#getInputStream()}
+	 *     and write to {@link TcpConnection#getOutputStream()} exactly as its protocol requires.
+	 * </p>
+	 * <p>
+	 *     This replaces the built-in read loop, so it cannot be combined with {@link #onMessage(MessageEventHandler)}.<br>
+	 *     Setting both makes {@link #build()} fail.
+	 * </p>
+	 *
+	 * @param onConnection The connection handler, or null to use the built-in read loop
+	 * @return This builder for method chaining
+	 */
+	public @NonNull TcpServerConfigBuilder onConnection(@Nullable ConnectionHandler<TcpServer, TcpConnection> onConnection) {
+		this.onConnection = onConnection;
+		return this;
+	}
+	
+	/**
 	 * Sets the error event handler.<br>
 	 *
 	 * @param onError The error handler, or null to disable
@@ -236,9 +260,13 @@ public final class TcpServerConfigBuilder {
 	
 	/**
 	 * Builds a new TCP server configuration with the configured values.<br>
+	 *
 	 * @return A new configuration instance
+	 * @throws IllegalArgumentException If both a message handler and a connection handler are set
 	 */
 	public @NonNull TcpServerConfig build() {
-		return new TcpServerConfig(this.backlog, this.clientBufferSize, this.framing, this.clientReadTimeout, this.tcpNoDelay, this.keepAlive, this.executorStrategy, this.onClientConnect, this.onClientDisconnect, this.onMessage, this.onError);
+		return new TcpServerConfig(
+			this.backlog, this.clientBufferSize, this.framing, this.clientReadTimeout, this.tcpNoDelay, this.keepAlive, this.executorStrategy, this.onClientConnect, this.onClientDisconnect, this.onMessage, this.onConnection, this.onError
+		);
 	}
 }

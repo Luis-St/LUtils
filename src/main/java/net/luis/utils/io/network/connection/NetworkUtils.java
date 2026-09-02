@@ -160,6 +160,7 @@ public final class NetworkUtils {
 	 * @throws NullPointerException If socket or read timeout is null, or if framing is disabled and buffer is null
 	 * @throws NetworkConnectionException If receiving fails, or the declared frame length exceeds maxBytes
 	 * @throws NetworkTimeoutException If the read times out
+	 * @see #readMessage(InputStream, byte[], int, boolean, Duration, ErrorEventHandler, Endpoint, Runnable)
 	 */
 	public static byte @NonNull [] readAvailable(
 		@NonNull Socket socket,
@@ -172,14 +173,66 @@ public final class NetworkUtils {
 		@Nullable Runnable onDisconnect
 	) throws NetworkConnectionException {
 		Objects.requireNonNull(socket, "Socket must not be null");
+		
+		InputStream in;
+		try {
+			in = socket.getInputStream();
+		} catch (SocketException e) {
+			if (onDisconnect != null) {
+				onDisconnect.run();
+			}
+			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET, endpoint);
+		} catch (IOException e) {
+			handleError(onError, NetworkErrorType.IO_ERROR, "Failed to receive data", e);
+			throw new NetworkConnectionException("Failed to receive data", e, NetworkErrorType.IO_ERROR, endpoint);
+		}
+		
+		return readMessage(in, buffer, maxBytes, framing, readTimeout, onError, endpoint, onDisconnect);
+	}
+	
+	/**
+	 * Reads a single message from the given input stream (blocking).<br>
+	 * This is the stream based variant of {@link #readAvailable(Socket, byte[], int, boolean, Duration, ErrorEventHandler, Endpoint, Runnable)}.<br>
+	 * It lets the caller pass the buffered stream it also hands to the user, so that both read through the same buffer and no buffered bytes are skipped.<br>
+	 * <p>
+	 *     When framing is enabled, one complete length-prefixed frame is read by {@link #readFrame(InputStream, int)}, so that exactly
+	 *     the bytes passed to the peers {@link #writeAll} call are returned, regardless of how the stream fragments or coalesces them.
+	 * </p>
+	 * <p>
+	 *     When it is disabled, whatever is currently available is returned instead, up to the given limit. A single read may then hold
+	 *     several messages or only part of one, so the caller has to delimit messages itself.
+	 * </p>
+	 *
+	 * @param in The input stream to read from
+	 * @param buffer The scratch buffer used for unframed reads, which must be at least maxBytes long, or null when framing is enabled
+	 * @param maxBytes The maximum payload length that is accepted
+	 * @param framing Whether to read a single length-prefixed frame
+	 * @param readTimeout The read timeout to report on a timeout
+	 * @param onError The handler to notify on an I/O error, or null if none is configured
+	 * @param endpoint The endpoint to attach to thrown exceptions, or null if not available
+	 * @param onDisconnect The action to run when the connection was closed or reset, or null if the caller tracks no connection state
+	 * @return The received message, or an empty array if the connection was closed cleanly between messages
+	 * @throws NullPointerException If the input stream or read timeout is null, or if framing is disabled and buffer is null
+	 * @throws NetworkConnectionException If receiving fails, or the declared frame length exceeds maxBytes
+	 * @throws NetworkTimeoutException If the read times out
+	 */
+	public static byte @NonNull [] readMessage(
+		@NonNull InputStream in,
+		byte @Nullable [] buffer,
+		int maxBytes,
+		boolean framing,
+		@NonNull Duration readTimeout,
+		@Nullable ErrorEventHandler onError,
+		@Nullable Endpoint endpoint,
+		@Nullable Runnable onDisconnect
+	) throws NetworkConnectionException {
+		Objects.requireNonNull(in, "Input stream must not be null");
 		Objects.requireNonNull(readTimeout, "Read timeout must not be null");
 		if (!framing) {
 			Objects.requireNonNull(buffer, "Buffer must not be null when framing is disabled");
 		}
-
+		
 		try {
-			InputStream in = socket.getInputStream();
-
 			if (!framing) {
 				int bytesRead = in.read(buffer, 0, maxBytes);
 

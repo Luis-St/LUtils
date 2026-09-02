@@ -112,6 +112,10 @@ public final class SslServerConfigBuilder {
 	 */
 	private @Nullable MessageEventHandler<SslServer, SslConnection> onMessage;
 	/**
+	 * The handler that takes over the whole connection instead of the built-in read loop.<br>
+	 */
+	private @Nullable ConnectionHandler<SslServer, SslConnection> onConnection;
+	/**
 	 * The handler called when an error occurs.<br>
 	 */
 	private @Nullable ErrorEventHandler onError;
@@ -285,6 +289,27 @@ public final class SslServerConfigBuilder {
 	}
 	
 	/**
+	 * Sets the handler that takes over the whole connection.<br>
+	 * <p>
+	 *     The handler is called once per client after the TLS handshake has completed, on the thread the server assigned to it,
+	 *     and owns the connection until it returns.<br>
+	 *     While it runs, the server does not read from the connection, so the handler can read from {@link SslConnection#getInputStream()}
+	 *     and write to {@link SslConnection#getOutputStream()} exactly as its protocol requires.
+	 * </p>
+	 * <p>
+	 *     This replaces the built-in read loop, so it cannot be combined with {@link #onMessage(MessageEventHandler)}.<br>
+	 *     Setting both makes {@link #build()} fail.
+	 * </p>
+	 *
+	 * @param onConnection The connection handler, or null to use the built-in read loop
+	 * @return This builder for method chaining
+	 */
+	public @NonNull SslServerConfigBuilder onConnection(@Nullable ConnectionHandler<SslServer, SslConnection> onConnection) {
+		this.onConnection = onConnection;
+		return this;
+	}
+	
+	/**
 	 * Sets the error event handler.<br>
 	 *
 	 * @param onError The error handler, or null to disable
@@ -297,9 +322,14 @@ public final class SslServerConfigBuilder {
 	
 	/**
 	 * Builds a new SSL server configuration with the configured values.<br>
+	 *
 	 * @return A new configuration instance
+	 * @throws IllegalArgumentException If both a message handler and a connection handler are set
 	 */
 	public @NonNull SslServerConfig build() {
-		return new SslServerConfig(this.backlog, this.clientBufferSize, this.framing, this.clientReadTimeout, this.tcpNoDelay, this.keepAlive, this.sslContext, this.enabledProtocols, this.enabledCipherSuites, this.clientAuth, this.executorStrategy, this.onClientConnect, this.onClientDisconnect, this.onMessage, this.onError);
+		return new SslServerConfig(
+			this.backlog, this.clientBufferSize, this.framing, this.clientReadTimeout, this.tcpNoDelay, this.keepAlive, this.sslContext, this.enabledProtocols, this.enabledCipherSuites, this.clientAuth, this.executorStrategy,
+			this.onClientConnect, this.onClientDisconnect, this.onMessage, this.onConnection, this.onError
+		);
 	}
 }

@@ -19,8 +19,7 @@
 package net.luis.utils.io.network.connection.tcp;
 
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.connection.Connection;
-import net.luis.utils.io.network.connection.NetworkUtils;
+import net.luis.utils.io.network.connection.*;
 import net.luis.utils.io.network.connection.context.ConnectionContext;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
@@ -81,6 +80,10 @@ public final class TcpConnection implements Connection {
 	 */
 	private final ConnectionContext context = new ConnectionContext();
 	/**
+	 * The streams of the socket, so that every caller gets the same instance.<br>
+	 */
+	private final SocketStreams streams;
+	/**
 	 * The reusable scratch buffer for read operations.<br>
 	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
 	 */
@@ -97,9 +100,20 @@ public final class TcpConnection implements Connection {
 	 */
 	TcpConnection(@NonNull Socket socket, int bufferSize, boolean framing, @NonNull Duration readTimeout) {
 		this.socket = Objects.requireNonNull(socket, "Socket must not be null");
+		this.streams = new SocketStreams(socket);
 		this.bufferSize = bufferSize;
 		this.framing = framing;
 		this.readTimeout = Objects.requireNonNull(readTimeout, "Read timeout must not be null");
+	}
+	
+	/**
+	 * Ensures that this connection is still active before its streams are handed out.<br>
+	 * @throws NetworkConnectionException If the connection is closed
+	 */
+	private void ensureActive() throws NetworkConnectionException {
+		if (!this.isActive()) {
+			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED);
+		}
 	}
 	
 	@Override
@@ -143,7 +157,6 @@ public final class TcpConnection implements Connection {
 		if (maxBytes < 1) {
 			throw new IllegalArgumentException("Max bytes must be at least 1: " + maxBytes);
 		}
-		
 		if (!this.isActive()) {
 			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
 		}
@@ -151,34 +164,19 @@ public final class TcpConnection implements Connection {
 		if (!this.framing) {
 			this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
 		}
-		
-		return NetworkUtils.readAvailable(this.socket, this.readBuffer, maxBytes, this.framing, this.readTimeout, null, this.remoteEndpoint(), null);
+		return NetworkUtils.readMessage(this.streams.input(), this.readBuffer, maxBytes, this.framing, this.readTimeout, null, this.remoteEndpoint(), null);
 	}
 	
 	@Override
 	public @NonNull InputStream getInputStream() throws NetworkConnectionException {
-		if (!this.isActive()) {
-			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED);
-		}
-		
-		try {
-			return this.socket.getInputStream();
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to get input stream", e, NetworkErrorType.IO_ERROR);
-		}
+		this.ensureActive();
+		return this.streams.input();
 	}
 	
 	@Override
 	public @NonNull OutputStream getOutputStream() throws NetworkConnectionException {
-		if (!this.isActive()) {
-			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED);
-		}
-		
-		try {
-			return this.socket.getOutputStream();
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to get output stream", e, NetworkErrorType.IO_ERROR);
-		}
+		this.ensureActive();
+		return this.streams.output();
 	}
 	
 	@Override
