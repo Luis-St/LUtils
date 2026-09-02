@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
+import net.luis.utils.io.network.connection.event.ConnectionHandler;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -61,6 +62,7 @@ class SslServerConfigBuilderTest {
 		assertNull(config.onClientConnect());
 		assertNull(config.onClientDisconnect());
 		assertNull(config.onMessage());
+		assertNull(config.onConnection());
 		assertNull(config.onError());
 	}
 	
@@ -371,5 +373,117 @@ class SslServerConfigBuilderTest {
 			.build();
 		
 		assertEquals(200, config.backlog());
+	}
+	
+	@Test
+	void buildWithBothMessageAndConnectionHandler() {
+		SslServerConfigBuilder builder = SslServerConfig.builder(context)
+			.onMessage((server, connection, data) -> {})
+			.onConnection((server, connection) -> {});
+		
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, builder::build);
+		assertTrue(exception.getMessage().contains("must not be set at the same time"));
+	}
+	
+	@Test
+	void buildAfterClearingMessageHandler() {
+		ConnectionHandler<SslServer, SslConnection> handler = (server, connection) -> {};
+		SslServerConfigBuilder builder = SslServerConfig.builder(context)
+			.onMessage((server, connection, data) -> {})
+			.onConnection(handler);
+		
+		builder.onMessage(null);
+		
+		SslServerConfig config = assertDoesNotThrow(builder::build);
+		assertSame(handler, config.onConnection());
+		assertNull(config.onMessage());
+	}
+	
+	@Test
+	void onConnectionWithHandler() {
+		ConnectionHandler<SslServer, SslConnection> handler = (server, connection) -> {};
+		
+		SslServerConfig config = SslServerConfig.builder(context)
+			.onConnection(handler)
+			.build();
+		
+		assertSame(handler, config.onConnection());
+	}
+	
+	@Test
+	void onConnectionWithNull() {
+		SslServerConfig config = assertDoesNotThrow(() -> SslServerConfig.builder(context)
+			.onConnection(null)
+			.build());
+		
+		assertNull(config.onConnection());
+	}
+	
+	@Test
+	void onConnectionResetToNull() {
+		SslServerConfigBuilder builder = SslServerConfig.builder(context)
+			.onConnection((server, connection) -> {});
+		
+		SslServerConfig config = builder.onConnection(null).build();
+		assertNull(config.onConnection());
+		
+		SslServerConfig withMessage = assertDoesNotThrow(() -> builder.onMessage((server, connection, data) -> {}).build());
+		assertNotNull(withMessage.onMessage());
+	}
+	
+	@Test
+	void onConnectionReturnsSameBuilder() {
+		SslServerConfigBuilder builder = SslServerConfig.builder(context);
+		
+		assertSame(builder, builder.onConnection((server, connection) -> {}));
+		assertSame(builder, builder.onConnection(null));
+	}
+	
+	@Test
+	void onConnectionSetMultipleTimes() {
+		ConnectionHandler<SslServer, SslConnection> first = (server, connection) -> {};
+		ConnectionHandler<SslServer, SslConnection> second = (server, connection) -> {};
+		
+		SslServerConfig config = SslServerConfig.builder(context)
+			.onConnection(first)
+			.onConnection(second)
+			.build();
+		
+		assertSame(second, config.onConnection());
+	}
+	
+	@Test
+	void onConnectionSurvivesBuilderReuse() {
+		ConnectionHandler<SslServer, SslConnection> first = (server, connection) -> {};
+		ConnectionHandler<SslServer, SslConnection> second = (server, connection) -> {};
+		SslServerConfigBuilder builder = SslServerConfig.builder(context).onConnection(first);
+		
+		SslServerConfig initial = builder.build();
+		assertSame(first, initial.onConnection());
+		
+		SslServerConfig updated = builder.onConnection(second).build();
+		assertSame(second, updated.onConnection());
+		assertSame(first, initial.onConnection());
+	}
+	
+	@Test
+	void onConnectionCombinedWithOtherOptions() {
+		ConnectionHandler<SslServer, SslConnection> handler = (server, connection) -> {};
+		
+		SslServerConfig config = SslServerConfig.builder(context)
+			.backlog(200)
+			.clientBufferSize(16384)
+			.framing(false)
+			.clientReadTimeout(Duration.ofSeconds(60))
+			.onConnection(handler)
+			.onError((connection, type, message, cause) -> {})
+			.build();
+		
+		assertEquals(200, config.backlog());
+		assertEquals(16384, config.clientBufferSize());
+		assertFalse(config.framing());
+		assertSame(handler, config.onConnection());
+		assertNull(config.onMessage());
+		assertNotNull(config.onError());
 	}
 }

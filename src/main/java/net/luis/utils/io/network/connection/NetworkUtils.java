@@ -78,7 +78,7 @@ public final class NetworkUtils {
 		}
 		return current;
 	}
-
+	
 	/**
 	 * Validates that the given data does not exceed the configured buffer size.<br>
 	 *
@@ -235,26 +235,26 @@ public final class NetworkUtils {
 		try {
 			if (!framing) {
 				int bytesRead = in.read(buffer, 0, maxBytes);
-
+				
 				if (bytesRead == -1) {
 					if (onDisconnect != null) {
 						onDisconnect.run();
 					}
 					return ArrayUtils.EMPTY_BYTE_ARRAY;
 				}
-
+				
 				return Arrays.copyOf(buffer, bytesRead);
 			}
-
+			
 			byte[] data = readFrame(in, maxBytes);
-
+			
 			if (data == null) {
 				if (onDisconnect != null) {
 					onDisconnect.run();
 				}
 				return ArrayUtils.EMPTY_BYTE_ARRAY;
 			}
-
+			
 			return data;
 		} catch (FrameTooLargeException e) {
 			throw new NetworkConnectionException(e.getMessage(), e, NetworkErrorType.MESSAGE_TOO_LARGE, endpoint);

@@ -46,6 +46,12 @@ class NetworkUtilsTest {
 	
 	private static final IpEndpoint ENDPOINT = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
 	
+	private static byte[] frame(byte[] payload) throws IOException {
+		ByteArrayOutputStream framed = new ByteArrayOutputStream();
+		NetworkUtils.writeFrame(framed, payload);
+		return framed.toByteArray();
+	}
+	
 	private static void withPair(PairConsumer body) throws Exception {
 		try (ServerSocket serverSocket = new ServerSocket(0)) {
 			int port = serverSocket.getLocalPort();
@@ -1086,6 +1092,291 @@ class NetworkUtilsTest {
 		assertTrue(executor.isShutdown());
 		assertTrue(TimeUnit.NANOSECONDS.toSeconds(elapsed) < 15);
 	}
+	
+	@Test
+	void readMessageWithNullStream() {
+		assertThrows(NullPointerException.class, () -> NetworkUtils.readMessage(null, null, 16, true, Duration.ofSeconds(1), null, null, null));
+	}
+	
+	@Test
+	void readMessageWithNullTimeout() {
+		InputStream in = new ByteArrayInputStream(new byte[0]);
+		
+		assertThrows(NullPointerException.class, () -> NetworkUtils.readMessage(in, null, 16, true, null, null, null, null));
+	}
+	
+	@Test
+	void readMessageWithNullBufferWithoutFraming() {
+		InputStream in = new ByteArrayInputStream(new byte[0]);
+		
+		NullPointerException exception = assertThrows(
+			NullPointerException.class,
+			() -> NetworkUtils.readMessage(in, null, 16, false, Duration.ofSeconds(1), null, null, null)
+		);
+		assertTrue(exception.getMessage().contains("Buffer"));
+	}
+	
+	@Test
+	void readMessageWithNullBufferAndFraming() throws Exception {
+		InputStream in = new ByteArrayInputStream(frame("Hello".getBytes()));
+		
+		byte[] received = assertDoesNotThrow(() -> NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, null));
+		assertArrayEquals("Hello".getBytes(), received);
+	}
+	
+	@Test
+	void readMessageThrowsOnOversizedFrame() {
+		InputStream in = new ByteArrayInputStream(new byte[] { 0, 0, 0, 100 });
+		
+		NetworkConnectionException exception = assertThrows(
+			NetworkConnectionException.class,
+			() -> NetworkUtils.readMessage(in, null, 10, true, Duration.ofSeconds(5), null, null, null)
+		);
+		assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
+	}
+	
+	@Test
+	void readMessageThrowsOnPeerCloseMidHeader() {
+		InputStream in = new ByteArrayInputStream(new byte[] { 0, 0 });
+		
+		NetworkConnectionException exception = assertThrows(
+			NetworkConnectionException.class,
+			() -> NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, null)
+		);
+		assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+		assertEquals("Connection reset while receiving data", exception.getMessage());
+	}
+	
+	@Test
+	void readMessageThrowsOnPeerCloseMidPayload() {
+		InputStream in = new ByteArrayInputStream(new byte[] { 0, 0, 0, 10, 1, 2, 3, 4 });
+		
+		NetworkConnectionException exception = assertThrows(
+			NetworkConnectionException.class,
+			() -> NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, null)
+		);
+		assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+	}
+	
+	@Test
+	void readMessageThrowsOnReadTimeout() throws Exception {
+		withPair((local, peer) -> {
+			local.setSoTimeout(100);
+			Duration readTimeout = Duration.ofMillis(100);
+			InputStream in = local.getInputStream();
+			
+			NetworkTimeoutException exception = assertThrows(
+				NetworkTimeoutException.class,
+				() -> NetworkUtils.readMessage(in, null, 1024, true, readTimeout, null, null, null)
+			);
+			assertEquals(NetworkErrorType.READ_TIMEOUT, exception.errorType());
+			assertEquals(readTimeout, exception.timeout());
+		});
+	}
+	
+	@Test
+	void readMessageThrowsOnInvalidFrameLength() {
+		InputStream in = new ByteArrayInputStream(new byte[] { (byte) 0xFF, 0, 0, 0 });
+		
+		NetworkConnectionException exception = assertThrows(
+			NetworkConnectionException.class,
+			() -> NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, null)
+		);
+		assertEquals(NetworkErrorType.IO_ERROR, exception.errorType());
+		assertEquals("Failed to receive data", exception.getMessage());
+	}
+	
+	@Test
+	void readMessageThrowsConnectionResetOnClosedStream() throws Exception {
+		withPair((local, peer) -> {
+			AtomicBoolean disconnected = new AtomicBoolean(false);
+			InputStream in = local.getInputStream();
+			local.close();
+			
+			NetworkConnectionException exception = assertThrows(
+				NetworkConnectionException.class,
+				() -> NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, () -> disconnected.set(true))
+			);
+			assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+			assertEquals("Connection reset", exception.getMessage());
+			assertTrue(disconnected.get());
+		});
+	}
+	
+	@Test
+	void readMessageNotifiesErrorHandlerOnIoError() {
+		RecordingErrorHandler handler = new RecordingErrorHandler();
+		
+		NetworkConnectionException exception = assertThrows(
+			NetworkConnectionException.class,
+			() -> NetworkUtils.readMessage(new FailingInputStream(), null, 1024, true, Duration.ofSeconds(5), handler, null, null)
+		);
+		assertEquals(NetworkErrorType.IO_ERROR, exception.errorType());
+		assertEquals(1, handler.errorTypes.size());
+		assertEquals(NetworkErrorType.IO_ERROR, handler.errorTypes.getFirst());
+		assertEquals("read failed", handler.causes.getFirst().getMessage());
+	}
+	
+	@Test
+	void readMessageOnResetWithNullDisconnect() {
+		InputStream in = new ByteArrayInputStream(new byte[] { 0, 0 });
+		
+		NetworkConnectionException exception = assertThrows(
+			NetworkConnectionException.class,
+			() -> NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, null)
+		);
+		assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+	}
+	
+	@Test
+	void readMessageWithoutFramingReturnsAvailableBytes() throws Exception {
+		InputStream in = new ByteArrayInputStream("Hello".getBytes());
+		
+		byte[] received = NetworkUtils.readMessage(in, new byte[1024], 1024, false, Duration.ofSeconds(5), null, null, null);
+		assertArrayEquals("Hello".getBytes(), received);
+	}
+	
+	@Test
+	void readMessageWithFramingReturnsOneFrame() throws Exception {
+		ByteArrayOutputStream queued = new ByteArrayOutputStream();
+		queued.writeBytes(frame("first".getBytes()));
+		queued.writeBytes(frame("second".getBytes()));
+		InputStream in = new ByteArrayInputStream(queued.toByteArray());
+		
+		assertArrayEquals("first".getBytes(), NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, null));
+		assertArrayEquals("second".getBytes(), NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, null));
+	}
+	
+	@Test
+	void readMessageWithoutFramingReturnsEmptyArrayOnEof() throws Exception {
+		InputStream in = new ByteArrayInputStream(new byte[0]);
+		
+		byte[] received = NetworkUtils.readMessage(in, new byte[1024], 1024, false, Duration.ofSeconds(5), null, null, null);
+		assertEquals(0, received.length);
+	}
+	
+	@Test
+	void readMessageWithFramingReturnsEmptyArrayOnEof() throws Exception {
+		InputStream in = new ByteArrayInputStream(new byte[0]);
+		
+		byte[] received = NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, null);
+		assertEquals(0, received.length);
+	}
+	
+	@Test
+	void readMessageInvokesDisconnectOnEof() throws Exception {
+		AtomicBoolean disconnected = new AtomicBoolean(false);
+		InputStream in = new ByteArrayInputStream(new byte[0]);
+		
+		byte[] received = NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, () -> disconnected.set(true));
+		assertEquals(0, received.length);
+		assertTrue(disconnected.get());
+	}
+	
+	@Test
+	void readMessageWithoutDisconnectHandlerOnEof() {
+		InputStream in = new ByteArrayInputStream(new byte[0]);
+		
+		byte[] received = assertDoesNotThrow(() -> NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, null));
+		assertEquals(0, received.length);
+	}
+	
+	@Test
+	void readMessageInvokesDisconnectOnReset() {
+		AtomicBoolean disconnected = new AtomicBoolean(false);
+		InputStream in = new ByteArrayInputStream(new byte[] { 0, 0 });
+		
+		assertThrows(
+			NetworkConnectionException.class,
+			() -> NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, () -> disconnected.set(true))
+		);
+		assertTrue(disconnected.get());
+	}
+	
+	@Test
+	void readMessageRespectsMaxBytes() throws Exception {
+		InputStream in = new ByteArrayInputStream(new byte[50]);
+		
+		byte[] received = NetworkUtils.readMessage(in, new byte[1024], 10, false, Duration.ofSeconds(5), null, null, null);
+		assertTrue(received.length > 0);
+		assertTrue(received.length <= 10);
+	}
+	
+	@Test
+	void readAvailableDelegatesToReadMessage() throws Exception {
+		withPair((local, peer) -> {
+			NetworkUtils.writeFrame(peer.getOutputStream(), "Hello".getBytes());
+			byte[] viaSocket = NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, null);
+			
+			NetworkUtils.writeFrame(peer.getOutputStream(), "Hello".getBytes());
+			byte[] viaStream = NetworkUtils.readMessage(local.getInputStream(), null, 1024, true, Duration.ofSeconds(5), null, null, null);
+			
+			assertArrayEquals(viaSocket, viaStream);
+			assertArrayEquals("Hello".getBytes(), viaStream);
+		});
+	}
+	
+	@Test
+	void readAvailableOnClosedSocketThrowsConnectionReset() throws Exception {
+		withPair((local, peer) -> {
+			AtomicBoolean disconnected = new AtomicBoolean(false);
+			local.close();
+			
+			NetworkConnectionException exception = assertThrows(
+				NetworkConnectionException.class,
+				() -> NetworkUtils.readAvailable(local, null, 1024, true, Duration.ofSeconds(5), null, null, () -> disconnected.set(true))
+			);
+			assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+			assertEquals("Connection reset", exception.getMessage());
+			assertTrue(disconnected.get());
+		});
+	}
+	
+	@Test
+	void readMessageWithSingleByteMessage() throws Exception {
+		InputStream framed = new ByteArrayInputStream(frame(new byte[] { 0x7F }));
+		assertArrayEquals(new byte[] { 0x7F }, NetworkUtils.readMessage(framed, null, 1024, true, Duration.ofSeconds(5), null, null, null));
+		
+		InputStream raw = new ByteArrayInputStream(new byte[] { 0x7F });
+		assertArrayEquals(new byte[] { 0x7F }, NetworkUtils.readMessage(raw, new byte[1024], 1024, false, Duration.ofSeconds(5), null, null, null));
+	}
+	
+	@Test
+	void readMessageWithEmptyFrame() throws Exception {
+		AtomicBoolean disconnected = new AtomicBoolean(false);
+		InputStream in = new ByteArrayInputStream(frame(new byte[0]));
+		
+		byte[] received = NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, () -> disconnected.set(true));
+		assertEquals(0, received.length);
+		assertFalse(disconnected.get());
+	}
+	
+	@Test
+	void readMessageWithFramingReassemblesFragmentedFrame() throws Exception {
+		byte[] payload = new byte[100];
+		Arrays.fill(payload, (byte) 0x41);
+		InputStream in = new FragmentedInputStream(frame(payload), 7);
+		
+		byte[] received = NetworkUtils.readMessage(in, null, 1024, true, Duration.ofSeconds(5), null, null, null);
+		assertArrayEquals(payload, received);
+	}
+	
+	@Test
+	void readMessageWithSharedBufferedStreamAcrossCalls() throws Exception {
+		withPair((local, peer) -> {
+			ByteArrayOutputStream queued = new ByteArrayOutputStream();
+			queued.writeBytes(frame("first".getBytes()));
+			queued.writeBytes(frame("second".getBytes()));
+			peer.getOutputStream().write(queued.toByteArray());
+			peer.getOutputStream().flush();
+			
+			InputStream shared = new BufferedInputStream(local.getInputStream());
+			
+			assertArrayEquals("first".getBytes(), NetworkUtils.readMessage(shared, null, 1024, true, Duration.ofSeconds(5), null, null, null));
+			assertArrayEquals("second".getBytes(), NetworkUtils.readMessage(shared, null, 1024, true, Duration.ofSeconds(5), null, null, null));
+		});
+	}
+	
 	//region Helper methods and test doubles
 	
 	@Test
@@ -1194,6 +1485,19 @@ class NetworkUtilsTest {
 		@Override
 		public OutputStream getOutputStream() throws IOException {
 			throw new IOException("stream unavailable");
+		}
+	}
+	
+	private static final class FailingInputStream extends InputStream {
+		
+		@Override
+		public int read() throws IOException {
+			throw new IOException("read failed");
+		}
+		
+		@Override
+		public int read(byte @NonNull [] b, int off, int len) throws IOException {
+			throw new IOException("read failed");
 		}
 	}
 	
