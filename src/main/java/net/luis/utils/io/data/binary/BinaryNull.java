@@ -16,36 +16,41 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.network.connection.event;
+package net.luis.utils.io.data.binary;
 
+import net.luis.utils.annotation.type.Singleton;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Handler for connection lifecycle events (connect/disconnect).<br>
- * This functional interface is used to handle connection and disconnection events for both TCP clients and servers.<br>
- * <p>
- *     Example usage:
- * </p>
- * <pre>{@code
- * ConnectionEventHandler onConnect = event -> {
- *     System.out.println("Connected to " + event.remoteEndpoint());
- * };
- *
- * TcpClientConfig config = TcpClientConfig.builder()
- *     .onConnect(onConnect)
- *     .build();
- * }</pre>
- *
- * @see ConnectionEvent
+ * Represents a binary null value.<br>
+ * This class is a singleton.<br>
  *
  * @author Luis-St
  */
-@FunctionalInterface
-public interface ConnectionEventHandler {
+@Singleton
+public final class BinaryNull implements BinaryElement {
 	
 	/**
-	 * Called when a connection event occurs.<br>
-	 * @param event The connection event context
+	 * The singleton instance of {@link BinaryNull}.<br>
+	 * This instance is immutable and can be used for all null values.<br>
 	 */
-	void handle(@NonNull ConnectionEvent event);
+	public static final BinaryNull INSTANCE = new BinaryNull();
+	
+	/**
+	 * Constructs a new binary null.<br>
+	 * Should not be used, use {@link #INSTANCE} instead.<br>
+	 */
+	private BinaryNull() {}
+	
+	@Override
+	public @NonNull BinaryType getType() {
+		return BinaryType.NULL;
+	}
+	
+	//region Object overrides
+	@Override
+	public String toString() {
+		return "null";
+	}
+	//endregion
 }

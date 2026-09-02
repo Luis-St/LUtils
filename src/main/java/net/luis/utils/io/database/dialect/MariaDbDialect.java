@@ -73,6 +73,16 @@ public class MariaDbDialect extends MySqlDialect {
 	 */
 	public MariaDbDialect() {}
 	
+	/**
+	 * Constructs a new MariaDB dialect that additionally knows the type mappings of the given registry.<br>
+	 *
+	 * @param additionalTypes The type mappings the dialect should know in addition to its own
+	 * @throws NullPointerException If the additional type mappings are null
+	 */
+	public MariaDbDialect(@NonNull SqlTypeRegistry additionalTypes) {
+		super(additionalTypes);
+	}
+	
 	@Override
 	public @NonNull String name() {
 		return "MariaDB";

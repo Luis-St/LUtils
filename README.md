@@ -2,15 +2,18 @@
 Utility Library for Java.\
 This library is a collection of all useful classes and methods that I have written over the last few years during my work on different projects and learning new things.\
 **Disclaimer**: Versions before `5.0.0` are not stable and may contain bugs.
+
 ## Dependencies
 The library is built on top of the following libraries:
-### Version 8.0.0
+
+### Version 11.0.0
 
 - Java 25
 - Apache Commons Lang3 (3.18.0)
 - Log4j2 (2.25.2)
 - Google Guava (33.5.0-jre)
 - JetBrains Annotations (26.0.2)
+- BouncyCastle (1.85.2, optional: only needed for AES-GCM-SIV and SLH-DSA)
 
 ### Version 6.0.0
 
@@ -78,6 +81,11 @@ The library provides the following packages:
     * `registry` (removed in 7.4.0)
         * `key` (removed in 7.4.0)
     * `util`
+* `crypto` (since 11.0.0)
+    * `algorithm`
+    * `exception`
+    * `key`
+    * `util`
 * `exception`
 * `function`
     * `throwable`
@@ -136,6 +144,28 @@ The library provides the following packages:
     * `unsafe`
         * `classpath` (not tested)
         * `reflection`
+
+## Cryptography
+The `crypto` package (since `11.0.0`) is a post-quantum-first helper layer over the JCA.\
+Algorithms are types rather than strings, so a typo is a compile error, and the weak primitives
+(RSA, DSA, MD5, SHA-1, CBC, ECB, 3DES, PKCS#1 v1.5) are not modelled at all and cannot be selected
+by accident.
+
+* Hashing, HMAC and HKDF: `Hashes`, `Hasher`, `Macs`, `Kdf`
+* Authenticated encryption: `Aead` (AES-256-GCM, ChaCha20-Poly1305, AES-256-GCM-SIV)
+* Key encapsulation: `Kems` (ML-KEM, X25519/X448 as DHKEM, and hybrids of the two)
+* Signatures: `Signatures` (Ed25519, Ed448, ECDSA, ML-DSA, SLH-DSA, and hybrids)
+* Public-key encryption: `Sealed`, `SealedStream`, `SealedForMany`
+* Passwords and key files: `Passwords` (PBKDF2 in the PHC format), `Pem`
+
+Every artifact written to disk or the wire starts with a magic, a version and a `CryptoSuite` id, so
+the default suite can change without invalidating anything already written. The default is
+`CryptoSuite.HYBRID_V1`, which stays secure as long as either the classical or the post-quantum half
+holds.
+
+BouncyCastle is optional and never installed implicitly: call `Providers.installBouncyCastle()` once
+at startup if AES-256-GCM-SIV or SLH-DSA is needed, and `Providers.require(CryptoSuite.current())`
+to fail loudly on a misconfigured runtime instead of at the first encrypted request.
 
 ## Documentation
 The documentation is available at [docs.luis-st.net](https://docs.luis-st.net/net.luis.utils/module-summary.html).\

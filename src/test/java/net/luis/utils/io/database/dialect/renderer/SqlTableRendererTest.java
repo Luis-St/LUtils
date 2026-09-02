@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect.renderer;
 
+import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.audit.SqlAuditColumn;
 import net.luis.utils.io.database.audit.SqlAuditRole;
@@ -560,5 +561,386 @@ class SqlTableRendererTest {
 		assertTrue(sql.contains("CHECK"));
 		assertFalse(sql.startsWith(","));
 		assertFalse(sql.endsWith(","));
+	}
+	
+	@Test
+	void renderCreateTableWithColumnCheckRendersLiteral() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		table.column("count2", SqlTypes.INTEGER, object -> 0, builder -> builder.addConstraint(Sql.greaterThanOrEqualTo(count, 0)));
+		SqlRendered rendered = RENDERER.renderCreateTable(table, false);
+		assertTrue(rendered.sql().contains("CHECK("));
+		assertTrue(rendered.sql().contains(">= 0"));
+		assertFalse(rendered.sql().contains("?"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableWithTableCheckRendersLiteral() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		table.checkConstraint(Sql.greaterThanOrEqualTo(count, 0));
+		SqlRendered rendered = RENDERER.renderTableConstraints(table);
+		assertTrue(rendered.sql().contains("CHECK("));
+		assertTrue(rendered.sql().contains(">= 0"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableWithoutChecksHasNoCheckClause() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		table.column("count", SqlTypes.INTEGER, object -> 0);
+		SqlRendered rendered = RENDERER.renderCreateTable(table, false);
+		assertFalse(rendered.sql().contains("CHECK("));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableWithMultipleColumnChecksRendersAllLiterals() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		table.column("other", SqlTypes.INTEGER, object -> 0, builder -> builder.addConstraint(Sql.greaterThanOrEqualTo(count, 0)).addConstraint(Sql.lessThan(count, 100)));
+		SqlRendered rendered = RENDERER.renderCreateTable(table, false);
+		assertTrue(rendered.sql().contains(">= 0"));
+		assertTrue(rendered.sql().contains("< 100"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableWithCheckAfterUniqueConstraintSeparatesWithComma() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		table.uniqueConstraint(count);
+		table.checkConstraint(Sql.greaterThanOrEqualTo(count, 0));
+		SqlRendered rendered = RENDERER.renderTableConstraints(table);
+		assertTrue(rendered.sql().contains("UNIQUE("));
+		assertTrue(rendered.sql().contains("CHECK("));
+		assertTrue(rendered.sql().indexOf(',') < rendered.sql().indexOf("CHECK("));
+		assertFalse(rendered.sql().startsWith(","));
+	}
+	
+	@Test
+	void renderCreateTableWithStringCheckEscapesLiteral() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, String> kind = table.column("kind", SqlTypes.TEXT, object -> "");
+		table.checkConstraint(Sql.equalTo(kind, "O'Brien"));
+		SqlRendered rendered = RENDERER.renderTableConstraints(table);
+		assertTrue(rendered.sql().contains("'O''Brien'"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableWithBooleanCheckRendersBooleanLiteral() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Boolean> active = table.column("active", SqlTypes.BOOLEAN, object -> true);
+		table.checkConstraint(Sql.equalTo(active, true));
+		SqlRendered rendered = RENDERER.renderTableConstraints(table);
+		assertFalse(rendered.sql().contains("?"));
+		assertFalse(rendered.sql().contains("'true'"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableWithNumericRangeCheck() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		table.checkConstraint(Sql.between(count, 1, 5));
+		SqlRendered rendered = RENDERER.renderTableConstraints(table);
+		assertTrue(rendered.sql().contains("1"));
+		assertTrue(rendered.sql().contains("5"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableWithColumnAndTableChecksProducesNoParameters() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		table.column("other", SqlTypes.INTEGER, object -> 0, builder -> builder.addConstraint(Sql.greaterThanOrEqualTo(count, 0)));
+		table.checkConstraint(Sql.lessThan(count, 100));
+		SqlRendered rendered = RENDERER.renderCreateTable(table, false);
+		assertTrue(rendered.sql().contains(">= 0"));
+		assertTrue(rendered.sql().contains("< 100"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableWithCombinedConditionCheck() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, String> kind = table.column("kind", SqlTypes.TEXT, object -> "");
+		table.checkConstraint(SqlCondition.allOf(Sql.greaterThanOrEqualTo(count, 0), Sql.equalTo(kind, "A")));
+		SqlRendered rendered = RENDERER.renderTableConstraints(table);
+		assertTrue(rendered.sql().contains(">= 0"));
+		assertTrue(rendered.sql().contains("'A'"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableWithColumnsAndNullTable() {
+		assertThrows(NullPointerException.class, () -> RENDERER.renderCreateTable(null, List.of(), List.of(), false));
+	}
+	
+	@Test
+	void renderCreateTableWithNullColumns() {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		assertThrows(NullPointerException.class, () -> RENDERER.renderCreateTable(table, null, List.of(), false));
+	}
+	
+	@Test
+	void renderCreateTableWithNullPrimaryKeyColumns() {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		assertThrows(NullPointerException.class, () -> RENDERER.renderCreateTable(table, List.of(), null, false));
+	}
+	
+	@Test
+	void renderTruncateTableWithCascadeAndNullTable() {
+		assertThrows(NullPointerException.class, () -> RENDERER.renderTruncateTable(null, true));
+		assertThrows(NullPointerException.class, () -> RENDERER.renderTruncateTable(null, false));
+	}
+	
+	@Test
+	void renderCreateTableWithGivenColumnsReplacesDeclaredColumns() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> a = table.column("a", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, Integer> b = table.column("b", SqlTypes.INTEGER, object -> 0);
+		table.column("c", SqlTypes.INTEGER, object -> 0);
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(a, b), List.of(), false).sql();
+		assertTrue(sql.contains("\"a\""), sql);
+		assertTrue(sql.contains("\"b\""), sql);
+		assertFalse(sql.contains("\"c\""), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithEmptyColumnsProducesEmptyColumnList() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		table.column("id", SqlTypes.INTEGER, object -> 0);
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(), List.of(), false).sql();
+		assertEquals("CREATE TABLE \"users\"()", sql);
+	}
+	
+	@Test
+	void renderCreateTableWithSingleGivenColumnOmitsComma() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(id), List.of(), false).sql();
+		assertEquals(0, countCommas(sql), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithMultipleGivenColumnsSeparatesWithComma() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> a = table.column("a", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, Integer> b = table.column("b", SqlTypes.INTEGER, object -> 0);
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(a, b), List.of(), false).sql();
+		assertEquals(1, countCommas(sql), sql);
+		assertTrue(sql.indexOf("\"a\"") < sql.indexOf("\"b\""), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithSinglePrimaryKeyColumnUsesInlineMarker() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(id), List.of(id), false).sql();
+		assertTrue(sql.contains("PRIMARY KEY"), sql);
+		assertFalse(sql.contains("PRIMARY KEY("), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithMultiplePrimaryKeyColumnsUsesTableConstraint() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> a = table.column("a", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		SqlColumn<Object, Integer> b = table.column("b", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(a, b), List.of(a, b), false).sql();
+		assertTrue(sql.contains("PRIMARY KEY(\"a\", \"b\")"), sql);
+		assertEquals(1, sql.split("PRIMARY KEY", -1).length - 1, sql);
+	}
+	
+	@Test
+	void renderCreateTableWithEmptyPrimaryKeyColumnsUsesTableDeclaration() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> a = table.column("a", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		SqlColumn<Object, Integer> b = table.column("b", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		table.compositePrimaryKey(List.of(a, b));
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(a, b), List.of(), false).sql();
+		assertTrue(sql.contains("PRIMARY KEY(\"a\", \"b\")"), sql);
+		assertEquals(1, sql.split("PRIMARY KEY", -1).length - 1, sql);
+	}
+	
+	@Test
+	void renderCreateTableWithEmptyPrimaryKeyColumnsAndNoCompositeKey() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(id), List.of(), false).sql();
+		assertTrue(sql.contains("PRIMARY KEY"), sql);
+		assertFalse(sql.contains("PRIMARY KEY("), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithGivenPrimaryKeySkipsDeclaredCompositeKey() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> a = table.column("a", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		SqlColumn<Object, Integer> b = table.column("b", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		table.compositePrimaryKey(List.of(a, b));
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(a, b), List.of(a, b), false).sql();
+		assertEquals(1, sql.split("PRIMARY KEY", -1).length - 1, sql);
+	}
+	
+	@Test
+	void renderCreateTableWithColumnsWithoutTableConstraintsOmitsTrailingComma() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(id), List.of(), false).sql();
+		assertTrue(RENDERER.renderTableConstraints(table, true).sql().isEmpty());
+		assertFalse(sql.contains(",)"), sql);
+		assertEquals(0, countCommas(sql), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithColumnsAndTableConstraintsAppendsThem() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		table.uniqueConstraint(id);
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(id), List.of(), false).sql();
+		assertFalse(RENDERER.renderTableConstraints(table, true).sql().isEmpty());
+		assertTrue(sql.contains("UNIQUE("), sql);
+		assertEquals(1, countCommas(sql), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithColumnsAndIfNotExists() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(id), List.of(), true).sql();
+		assertTrue(sql.startsWith("CREATE TABLE IF NOT EXISTS \"users\""), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithColumnsWithoutIfNotExists() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(id), List.of(), false).sql();
+		assertTrue(sql.startsWith("CREATE TABLE \"users\""), sql);
+		assertFalse(sql.contains("IF NOT EXISTS"), sql);
+	}
+	
+	@Test
+	void renderTableConstraintsWithoutCompositePrimaryKeyOmitsIt() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> a = table.column("a", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		SqlColumn<Object, Integer> b = table.column("b", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		table.compositePrimaryKey(List.of(a, b));
+		table.uniqueConstraint(a);
+		
+		String sql = RENDERER.renderTableConstraints(table, false).sql();
+		assertFalse(sql.contains("PRIMARY KEY"), sql);
+		assertTrue(sql.startsWith("UNIQUE("), sql);
+		assertEquals(0, countCommas(sql), sql);
+	}
+	
+	@Test
+	void renderTableConstraintsWithCompositePrimaryKeyIncluded() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> a = table.column("a", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		SqlColumn<Object, Integer> b = table.column("b", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		table.compositePrimaryKey(List.of(a, b));
+		
+		SqlRendered rendered = RENDERER.renderTableConstraints(table, true);
+		assertTrue(rendered.sql().contains("PRIMARY KEY(\"a\", \"b\")"), rendered.sql());
+		assertEquals(RENDERER.renderTableConstraints(table).sql(), rendered.sql());
+	}
+	
+	@Test
+	void renderTruncateTableWithoutCascadeReturnsPlainTruncate() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlRendered rendered = RENDERER.renderTruncateTable(table, false);
+		assertEquals(RENDERER.renderTruncateTable(table).sql(), rendered.sql());
+		assertFalse(rendered.sql().contains("CASCADE"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderTruncateTableWithCascadeAppendsCascade() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlRendered rendered = RENDERER.renderTruncateTable(table, true);
+		assertTrue(rendered.sql().startsWith(RENDERER.renderTruncateTable(table).sql()), rendered.sql());
+		assertTrue(rendered.sql().endsWith("CASCADE"), rendered.sql());
+		assertTrue(rendered.sql().contains("\"users\""), rendered.sql());
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableDelegatesToColumnOverload() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		table.column("a", SqlTypes.INTEGER, object -> 0);
+		table.column("b", SqlTypes.TEXT, object -> "");
+		
+		assertEquals(RENDERER.renderCreateTable(table, table.columns(), List.of(), false).sql(), RENDERER.renderCreateTable(table, false).sql());
+	}
+	
+	@Test
+	void renderCreateTableWithColumnsProducesNoParameters() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, Integer> checked = table.column("checked", SqlTypes.INTEGER, object -> 0, builder -> builder.addConstraint(Sql.greaterThanOrEqualTo(count, 0)));
+		
+		SqlRendered rendered = RENDERER.renderCreateTable(table, List.of(count, checked), List.of(), false);
+		assertTrue(rendered.sql().contains(">= 0"), rendered.sql());
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableWithGivenColumnsChecksAndCompositeKey() throws SqlException {
+		SqlTable<Object> other = SqlTable.create(Object.class, "other");
+		SqlColumn<Object, Integer> oid = other.column("oid", SqlTypes.INTEGER, object -> 0);
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> a = table.column("a", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		SqlColumn<Object, Integer> b = table.column("b", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0, builder -> builder.defaultValue(0));
+		table.uniqueConstraint(count);
+		table.foreignKey(List.of(count), other, oid);
+		table.checkConstraint(Sql.greaterThanOrEqualTo(count, 0));
+		
+		SqlRendered rendered = RENDERER.renderCreateTable(table, List.of(a, b, count), List.of(a, b), false);
+		String sql = rendered.sql();
+		assertEquals(1, sql.split("PRIMARY KEY", -1).length - 1, sql);
+		assertTrue(sql.indexOf("PRIMARY KEY(") < sql.indexOf("UNIQUE("), sql);
+		assertTrue(sql.contains("FOREIGN KEY"), sql);
+		assertTrue(sql.contains(">= 0"), sql);
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateTableWithGivenColumnsInDifferentOrderPreservesGivenOrder() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> a = table.column("a", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, Integer> b = table.column("b", SqlTypes.INTEGER, object -> 0);
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(b, a), List.of(), false).sql();
+		assertTrue(sql.indexOf("\"b\"") < sql.indexOf("\"a\""), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithPrimaryKeyColumnNotInGivenColumns() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> a = table.column("a", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		SqlColumn<Object, Integer> b = table.column("b", SqlTypes.INTEGER, object -> 0, builder -> builder.primaryKey());
+		SqlColumn<Object, Integer> c = table.column("c", SqlTypes.INTEGER, object -> 0);
+		
+		String sql = RENDERER.renderCreateTable(table, List.of(c), List.of(a, b), false).sql();
+		assertTrue(sql.contains("PRIMARY KEY(\"a\", \"b\")"), sql);
+		assertFalse(sql.contains("\"a\" INTEGER"), sql);
 	}
 }

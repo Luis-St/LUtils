@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
-import net.luis.utils.io.network.connection.event.ConnectionEventHandler;
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
+import net.luis.utils.io.network.connection.event.*;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -41,9 +40,9 @@ import java.util.Objects;
  * SslClientConfig config = SslClientConfig.builder()
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .sslContext(myContext)
- *     .enabledProtocols(List.of("TLSv1.3"))
+ *     .enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
  *     .verifyHostname(true)
- *     .onConnect(event -> System.out.println("Connected to " + event.remoteEndpoint()))
+ *     .onConnect((connection, local, remote, timestamp) -> System.out.println("Connected to " + remote))
  *     .build();
  * }</pre>
  *
@@ -70,6 +69,11 @@ public final class SslClientConfigBuilder {
 	 */
 	private int bufferSize = 8192;
 	/**
+	 * Whether messages are framed with a length prefix on the wire.<br>
+	 * Enabled by default, so that every send is received as exactly one message.<br>
+	 */
+	private boolean framing = true;
+	/**
 	 * Whether to disable Nagle's algorithm (TCP_NODELAY).<br>
 	 */
 	private boolean tcpNoDelay = true;
@@ -84,7 +88,7 @@ public final class SslClientConfigBuilder {
 	/**
 	 * The TLS protocols to enable.<br>
 	 */
-	private List<String> enabledProtocols = List.of();
+	private List<TlsProtocol> enabledProtocols = List.of();
 	/**
 	 * The cipher suites to enable.<br>
 	 */
@@ -96,11 +100,11 @@ public final class SslClientConfigBuilder {
 	/**
 	 * The handler called when the connection is established.<br>
 	 */
-	private @Nullable ConnectionEventHandler onConnect;
+	private @Nullable ConnectEventHandler onConnect;
 	/**
 	 * The handler called when the connection is closed.<br>
 	 */
-	private @Nullable ConnectionEventHandler onDisconnect;
+	private @Nullable DisconnectEventHandler onDisconnect;
 	/**
 	 * The handler called when an error occurs.<br>
 	 */
@@ -146,6 +150,26 @@ public final class SslClientConfigBuilder {
 	 */
 	public @NonNull SslClientConfigBuilder writeTimeout(@NonNull Duration writeTimeout) {
 		this.writeTimeout = Objects.requireNonNull(writeTimeout, "Write timeout must not be null");
+		return this;
+	}
+	
+	/**
+	 * Sets whether messages are framed with a length prefix on the wire.<br>
+	 * <p>
+	 *     With framing enabled, each send is written as one length-prefixed frame and each receive returns exactly that message,
+	 *     regardless of how TCP fragments or coalesces the stream. This is the default and is required for message oriented protocols.
+	 * </p>
+	 * <p>
+	 *     Disabling it restores the raw byte stream, where a read returns whatever is currently available. This is only useful when
+	 *     talking to a peer that does not understand the frame header, or when the payload carries its own delimiters. Both peers
+	 *     have to agree, since a framed peer and an unframed peer cannot interoperate.
+	 * </p>
+	 *
+	 * @param framing Whether to frame messages with a length prefix
+	 * @return This builder
+	 */
+	public @NonNull SslClientConfigBuilder framing(boolean framing) {
+		this.framing = framing;
 		return this;
 	}
 	
@@ -199,11 +223,11 @@ public final class SslClientConfigBuilder {
 	 * Sets the TLS protocols to enable on the socket.<br>
 	 * An empty list uses the socket default.<br>
 	 *
-	 * @param enabledProtocols The protocols to enable, e.g. {@code List.of("TLSv1.3", "TLSv1.2")}
+	 * @param enabledProtocols The protocols to enable, e.g. {@code List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2)}
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the enabled protocols list is null
 	 */
-	public @NonNull SslClientConfigBuilder enabledProtocols(@NonNull List<String> enabledProtocols) {
+	public @NonNull SslClientConfigBuilder enabledProtocols(@NonNull List<TlsProtocol> enabledProtocols) {
 		this.enabledProtocols = Objects.requireNonNull(enabledProtocols, "Enabled protocols must not be null");
 		return this;
 	}
@@ -239,7 +263,7 @@ public final class SslClientConfigBuilder {
 	 * @param onConnect The connection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SslClientConfigBuilder onConnect(@Nullable ConnectionEventHandler onConnect) {
+	public @NonNull SslClientConfigBuilder onConnect(@Nullable ConnectEventHandler onConnect) {
 		this.onConnect = onConnect;
 		return this;
 	}
@@ -250,7 +274,7 @@ public final class SslClientConfigBuilder {
 	 * @param onDisconnect The disconnection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SslClientConfigBuilder onDisconnect(@Nullable ConnectionEventHandler onDisconnect) {
+	public @NonNull SslClientConfigBuilder onDisconnect(@Nullable DisconnectEventHandler onDisconnect) {
 		this.onDisconnect = onDisconnect;
 		return this;
 	}
@@ -271,6 +295,6 @@ public final class SslClientConfigBuilder {
 	 * @return A new configuration instance
 	 */
 	public @NonNull SslClientConfig build() {
-		return new SslClientConfig(this.connectTimeout, this.readTimeout, this.writeTimeout, this.bufferSize, this.tcpNoDelay, this.keepAlive, this.sslContext, this.enabledProtocols, this.enabledCipherSuites, this.verifyHostname, this.onConnect, this.onDisconnect, this.onError);
+		return new SslClientConfig(this.connectTimeout, this.readTimeout, this.writeTimeout, this.bufferSize, this.framing, this.tcpNoDelay, this.keepAlive, this.sslContext, this.enabledProtocols, this.enabledCipherSuites, this.verifyHostname, this.onConnect, this.onDisconnect, this.onError);
 	}
 }

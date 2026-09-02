@@ -128,7 +128,7 @@ class OutputProviderTest {
 		}
 		
 		try (FileOutputStream fos = new FileOutputStream("OutputProvider/OutputProvider.json");
-			 OutputProvider provider3 = new OutputProvider(fos)) {
+		     OutputProvider provider3 = new OutputProvider(fos)) {
 			assertNotNull(provider3.getStream());
 		} catch (IOException e) {
 			fail("Should not throw IOException for valid file");

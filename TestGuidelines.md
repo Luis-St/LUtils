@@ -37,9 +37,9 @@ Every test file must include:
 
 package net.luis.utils.collection;
 
-import static org.junit.jupiter.api.Assertions.*;
+// Other imports... (see section 3 for the group order)
 
-// Other imports...
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link SortedList}.<br>
@@ -53,19 +53,27 @@ class SortedListTest {
 
 ## 3. Import Organization
 
+Three blocks, in this order, separated by a single blank line. **Static imports always come last.**
+
 ```java
-// Static assertion imports first
-import static org.junit.jupiter.api.Assertions.*;
-
-// JUnit imports
-import org.junit.jupiter.api.*;
-
-// Project imports
+// 1. Project imports, then third-party imports (incl. JUnit) — no blank line between them
 import net.luis.utils.collection.SortedList;
+import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.Test;
 
-// Java standard library imports
+// 2. javax.* before java.*
+import javax.net.ssl.SSLContext;
+import java.io.*;
 import java.util.*;
+
+// 3. Static imports last
+import static org.junit.jupiter.api.Assertions.*;
 ```
+
+Group order in full: `net.luis.*` → `org.*` → `javax.*` → `java.*` → `import static`.
+
+This is IntelliJ's default layout, so a plain "Optimize Imports" produces it. Note that the
+static-import group goes at the **bottom**, not the top.
 
 ---
 
@@ -287,10 +295,11 @@ static void cleanUp() throws Exception {
 
 package net.luis.utils.example;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.*;
+
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link ExampleClass}.<br>
