@@ -62,6 +62,7 @@ import java.util.Objects;
  * @param onClientConnect Handler called when a client connects
  * @param onClientDisconnect Handler called when a client disconnects
  * @param onMessage Handler called when a message is received from a client
+ * @param onConnection Handler that takes over the whole connection instead of the built-in read loop
  * @param onError Handler called when an error occurs
  */
 public record TcpServerConfig(
@@ -75,6 +76,7 @@ public record TcpServerConfig(
 	@Nullable ConnectEventHandler onClientConnect,
 	@Nullable DisconnectEventHandler onClientDisconnect,
 	@Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage,
+	@Nullable ConnectionHandler<TcpServer, TcpConnection> onConnection,
 	@Nullable ErrorEventHandler onError
 ) {
 	
@@ -91,7 +93,7 @@ public record TcpServerConfig(
 	 *     <li>All handlers = {@code null}</li>
 	 * </ul>
 	 */
-	public static final TcpServerConfig DEFAULT = new TcpServerConfig(50, 8192, true, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null);
+	public static final TcpServerConfig DEFAULT = new TcpServerConfig(50, 8192, true, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null);
 	
 	/**
 	 * Constructs a new TCP server configuration.<br>
@@ -106,9 +108,10 @@ public record TcpServerConfig(
 	 * @param onClientConnect Handler for client connections
 	 * @param onClientDisconnect Handler for client disconnections
 	 * @param onMessage Handler for incoming messages
+	 * @param onConnection Handler that takes over the whole connection
 	 * @param onError Handler for errors
 	 * @throws NullPointerException If clientReadTimeout or executorStrategy is null
-	 * @throws IllegalArgumentException If backlog or clientBufferSize is less than 1
+	 * @throws IllegalArgumentException If backlog or clientBufferSize is less than 1, or if both onMessage and onConnection are set
 	 */
 	public TcpServerConfig {
 		Objects.requireNonNull(clientReadTimeout, "Client read timeout must not be null");
@@ -119,6 +122,9 @@ public record TcpServerConfig(
 		}
 		if (clientBufferSize < 1) {
 			throw new IllegalArgumentException("Client buffer size must be at least 1: " + clientBufferSize);
+		}
+		if (onMessage != null && onConnection != null) {
+			throw new IllegalArgumentException("Message handler and connection handler must not be set at the same time");
 		}
 	}
 	

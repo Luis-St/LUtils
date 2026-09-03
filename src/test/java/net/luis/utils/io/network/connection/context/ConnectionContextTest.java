@@ -85,7 +85,7 @@ class ConnectionContextTest {
 		assertThrows(NullPointerException.class, () -> context.getOrDefault("k", null, "d"));
 		assertThrows(NullPointerException.class, () -> context.getOrDefault("k", String.class, null));
 		assertThrows(NullPointerException.class, () -> context.getOrDefault(NAME, null));
-		assertThrows(NullPointerException.class, () -> context.getOrDefault((ContextKey<String>) null, "d"));
+		assertThrows(NullPointerException.class, () -> context.getOrDefault(null, "d"));
 	}
 	
 	@Test
@@ -95,7 +95,7 @@ class ConnectionContextTest {
 		assertThrows(NullPointerException.class, () -> context.computeIfAbsent(null, String.class, () -> "v"));
 		assertThrows(NullPointerException.class, () -> context.computeIfAbsent("k", null, () -> "v"));
 		assertThrows(NullPointerException.class, () -> context.computeIfAbsent("k", String.class, null));
-		assertThrows(NullPointerException.class, () -> context.computeIfAbsent((ContextKey<String>) null, () -> "v"));
+		assertThrows(NullPointerException.class, () -> context.computeIfAbsent(null, () -> "v"));
 		assertThrows(NullPointerException.class, () -> context.computeIfAbsent(NAME, null));
 	}
 	

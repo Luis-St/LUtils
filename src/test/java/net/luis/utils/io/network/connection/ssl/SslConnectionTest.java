@@ -29,6 +29,7 @@ import org.junit.jupiter.api.*;
 import javax.net.ssl.*;
 import java.io.*;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.*;
@@ -579,6 +580,146 @@ class SslConnectionTest {
 			
 			assertArrayEquals("Hello".getBytes(), connection.receive());
 			assertArrayEquals("World".getBytes(), connection.receive());
+		});
+	}
+	
+	@Test
+	void constructWithUnconnectedSocketDoesNotOpenStreams() throws Exception {
+		try (SSLSocket socket = (SSLSocket) clientContext.getSocketFactory().createSocket()) {
+			SslConnection connection = assertDoesNotThrow(() -> new SslConnection(socket, 8192, true, Duration.ofSeconds(5)));
+			
+			assertFalse(connection.isActive());
+		}
+	}
+	
+	@Test
+	void getInputStreamReturnsSameInstance() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			InputStream first = connection.getInputStream();
+			
+			assertSame(first, connection.getInputStream());
+			assertInstanceOf(BufferedInputStream.class, first);
+		});
+	}
+	
+	@Test
+	void getOutputStreamReturnsSameInstance() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			OutputStream first = connection.getOutputStream();
+			
+			assertSame(first, connection.getOutputStream());
+		});
+	}
+	
+	@Test
+	void receiveAfterStreamReadReturnsBufferedRemainder() throws Exception {
+		this.withPair(8192, false, (client, connection) -> {
+			client.getOutputStream().write("ABCD".getBytes());
+			client.getOutputStream().flush();
+			
+			assertEquals('A', connection.getInputStream().read());
+			
+			assertArrayEquals("BCD".getBytes(), readUntil(connection, 3, 8192));
+		});
+	}
+	
+	@Test
+	void streamReadAfterReceiveContinues() throws Exception {
+		this.withPair(8192, false, (client, connection) -> {
+			client.getOutputStream().write("AB".getBytes());
+			client.getOutputStream().flush();
+			assertArrayEquals("AB".getBytes(), readUntil(connection, 2, 8192));
+			
+			client.getOutputStream().write("CD".getBytes());
+			client.getOutputStream().flush();
+			
+			InputStream in = connection.getInputStream();
+			assertEquals('C', in.read());
+			assertEquals('D', in.read());
+		});
+	}
+	
+	@Test
+	void streamReadAfterFramedReceiveStopsAtFrameBoundary() throws Exception {
+		this.withPair(8192, true, (client, connection) -> {
+			ByteArrayOutputStream queued = new ByteArrayOutputStream();
+			NetworkUtils.writeFrame(queued, "Hello".getBytes());
+			queued.writeBytes("XYZ".getBytes());
+			client.getOutputStream().write(queued.toByteArray());
+			client.getOutputStream().flush();
+			
+			assertArrayEquals("Hello".getBytes(), connection.receive());
+			
+			assertEquals("XYZ", new String(connection.getInputStream().readNBytes(3), StandardCharsets.US_ASCII));
+		});
+	}
+	
+	@Test
+	void getInputStreamReadsPeerData() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			client.getOutputStream().write("Hello".getBytes());
+			client.getOutputStream().flush();
+			
+			assertEquals("Hello", new String(connection.getInputStream().readNBytes(5), StandardCharsets.US_ASCII));
+		});
+	}
+	
+	@Test
+	void getOutputStreamWritesToPeer() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			OutputStream out = connection.getOutputStream();
+			out.write("Hello".getBytes());
+			out.flush();
+			
+			assertEquals("Hello", new String(client.getInputStream().readNBytes(5), StandardCharsets.US_ASCII));
+		});
+	}
+	
+	@Test
+	void userBuiltReaderKeepsBufferedLines() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			client.getOutputStream().write("line1\r\nline2\r\n".getBytes());
+			client.getOutputStream().flush();
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.US_ASCII));
+			
+			assertEquals("line1", reader.readLine());
+			assertEquals("line2", reader.readLine());
+		});
+	}
+	
+	@Test
+	void readerFromRefetchedStreamContinues() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			client.getOutputStream().write("line1\r\nline2\r\n".getBytes());
+			client.getOutputStream().flush();
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.US_ASCII));
+			assertEquals("line1", reader.readLine());
+			
+			assertSame(connection.getInputStream(), connection.getInputStream());
+			assertEquals("line2", reader.readLine());
+		});
+	}
+	
+	@Test
+	void fullDuplexConversation() throws Exception {
+		this.withPair(8192, (client, connection) -> {
+			InputStream in = connection.getInputStream();
+			OutputStream out = connection.getOutputStream();
+			
+			for (int round = 0; round < 3; round++) {
+				client.getOutputStream().write(("ping" + round).getBytes());
+				client.getOutputStream().flush();
+				assertEquals("ping" + round, new String(in.readNBytes(5), StandardCharsets.US_ASCII));
+				
+				out.write(("pong" + round).getBytes());
+				out.flush();
+				assertEquals("pong" + round, new String(client.getInputStream().readNBytes(5), StandardCharsets.US_ASCII));
+			}
+			
+			assertSame(in, connection.getInputStream());
+			assertSame(out, connection.getOutputStream());
 		});
 	}
 	

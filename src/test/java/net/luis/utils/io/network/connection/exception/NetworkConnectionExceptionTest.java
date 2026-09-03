@@ -33,6 +33,14 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class NetworkConnectionExceptionTest {
 	
+	private static String hostPartOf(NetworkConnectionException exception) {
+		return switch (exception.endpoint()) {
+			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
+			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
+			case null -> "";
+		};
+	}
+	
 	@Test
 	void constructNoArgs() {
 		NetworkConnectionException exception = new NetworkConnectionException();
@@ -225,13 +233,5 @@ class NetworkConnectionExceptionTest {
 		assertEquals("127.0.0.1:8080", String.valueOf(host));
 		assertEquals("127.0.0.1:8080", String.valueOf(ip));
 		assertNotEquals(host, ip);
-	}
-	
-	private static String hostPartOf(NetworkConnectionException exception) {
-		return switch (exception.endpoint()) {
-			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
-			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
-			case null -> "";
-		};
 	}
 }

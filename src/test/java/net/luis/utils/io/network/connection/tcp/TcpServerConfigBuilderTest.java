@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
+import net.luis.utils.io.network.connection.event.ConnectionHandler;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +47,7 @@ class TcpServerConfigBuilderTest {
 		assertNull(config.onClientConnect());
 		assertNull(config.onClientDisconnect());
 		assertNull(config.onMessage());
+		assertNull(config.onConnection());
 		assertNull(config.onError());
 	}
 	
@@ -360,6 +362,119 @@ class TcpServerConfigBuilderTest {
 		assertEquals(defaultConfig.onClientConnect(), fromBuilder.onClientConnect());
 		assertEquals(defaultConfig.onClientDisconnect(), fromBuilder.onClientDisconnect());
 		assertEquals(defaultConfig.onMessage(), fromBuilder.onMessage());
+		assertEquals(defaultConfig.onConnection(), fromBuilder.onConnection());
 		assertEquals(defaultConfig.onError(), fromBuilder.onError());
+	}
+	
+	@Test
+	void buildWithBothMessageAndConnectionHandler() {
+		TcpServerConfigBuilder builder = TcpServerConfig.builder()
+			.onMessage((server, connection, data) -> {})
+			.onConnection((server, connection) -> {});
+		
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, builder::build);
+		assertTrue(exception.getMessage().contains("must not be set at the same time"));
+	}
+	
+	@Test
+	void buildAfterClearingMessageHandler() {
+		ConnectionHandler<TcpServer, TcpConnection> handler = (server, connection) -> {};
+		TcpServerConfigBuilder builder = TcpServerConfig.builder()
+			.onMessage((server, connection, data) -> {})
+			.onConnection(handler);
+		
+		builder.onMessage(null);
+		
+		TcpServerConfig config = assertDoesNotThrow(builder::build);
+		assertSame(handler, config.onConnection());
+		assertNull(config.onMessage());
+	}
+	
+	@Test
+	void onConnectionWithHandler() {
+		ConnectionHandler<TcpServer, TcpConnection> handler = (server, connection) -> {};
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onConnection(handler)
+			.build();
+		
+		assertSame(handler, config.onConnection());
+	}
+	
+	@Test
+	void onConnectionWithNull() {
+		TcpServerConfig config = assertDoesNotThrow(() -> TcpServerConfig.builder()
+			.onConnection(null)
+			.build());
+		
+		assertNull(config.onConnection());
+	}
+	
+	@Test
+	void onConnectionResetToNull() {
+		TcpServerConfigBuilder builder = TcpServerConfig.builder()
+			.onConnection((server, connection) -> {});
+		
+		TcpServerConfig config = builder.onConnection(null).build();
+		assertNull(config.onConnection());
+		
+		TcpServerConfig withMessage = assertDoesNotThrow(() -> builder.onMessage((server, connection, data) -> {}).build());
+		assertNotNull(withMessage.onMessage());
+	}
+	
+	@Test
+	void onConnectionReturnsSameBuilder() {
+		TcpServerConfigBuilder builder = TcpServerConfig.builder();
+		
+		assertSame(builder, builder.onConnection((server, connection) -> {}));
+		assertSame(builder, builder.onConnection(null));
+	}
+	
+	@Test
+	void onConnectionSetMultipleTimes() {
+		ConnectionHandler<TcpServer, TcpConnection> first = (server, connection) -> {};
+		ConnectionHandler<TcpServer, TcpConnection> second = (server, connection) -> {};
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.onConnection(first)
+			.onConnection(second)
+			.build();
+		
+		assertSame(second, config.onConnection());
+	}
+	
+	@Test
+	void onConnectionSurvivesBuilderReuse() {
+		ConnectionHandler<TcpServer, TcpConnection> first = (server, connection) -> {};
+		ConnectionHandler<TcpServer, TcpConnection> second = (server, connection) -> {};
+		TcpServerConfigBuilder builder = TcpServerConfig.builder().onConnection(first);
+		
+		TcpServerConfig initial = builder.build();
+		assertSame(first, initial.onConnection());
+		
+		TcpServerConfig updated = builder.onConnection(second).build();
+		assertSame(second, updated.onConnection());
+		assertSame(first, initial.onConnection());
+	}
+	
+	@Test
+	void onConnectionCombinedWithOtherOptions() {
+		ConnectionHandler<TcpServer, TcpConnection> handler = (server, connection) -> {};
+		
+		TcpServerConfig config = TcpServerConfig.builder()
+			.backlog(200)
+			.clientBufferSize(16384)
+			.framing(false)
+			.clientReadTimeout(Duration.ofSeconds(60))
+			.onConnection(handler)
+			.onError((connection, type, message, cause) -> {})
+			.build();
+		
+		assertEquals(200, config.backlog());
+		assertEquals(16384, config.clientBufferSize());
+		assertFalse(config.framing());
+		assertSame(handler, config.onConnection());
+		assertNull(config.onMessage());
+		assertNotNull(config.onError());
 	}
 }

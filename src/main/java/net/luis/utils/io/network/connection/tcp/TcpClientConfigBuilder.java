@@ -135,7 +135,6 @@ public final class TcpClientConfigBuilder {
 		return this;
 	}
 	
-
 	/**
 	 * Sets whether messages are framed with a length prefix on the wire.<br>
 	 * <p>
@@ -155,6 +154,7 @@ public final class TcpClientConfigBuilder {
 		this.framing = framing;
 		return this;
 	}
+	
 	/**
 	 * Sets the size of the read/write buffers in bytes.<br>
 	 *

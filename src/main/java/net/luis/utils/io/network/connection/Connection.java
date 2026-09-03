@@ -31,6 +31,17 @@ import java.io.OutputStream;
  * Represents an active network connection between a local and a remote endpoint.<br>
  * This interface is implemented by the protocol-specific connection classes (e.g. {@code TcpConnection}, {@code SslConnection})<br>
  * so that events such as {@link ConnectEventHandler} can reference the connection that triggered them without depending on a specific protocol.<br>
+ * <p>
+ *     Next to the message oriented {@link #send(byte[])} and {@link #receive()}, a connection hands out the streams of the
+ *     underlying socket, for protocols that have to drive the conversation themselves.<br>
+ *     Which wrapper is put on top of them is left to the caller, a reader, a writer, a data stream, or a parser of its own.
+ * </p>
+ * <p>
+ *     A wrapper has to be created once and then reused, because a buffered wrapper reads ahead and a second one built over
+ *     the same connection would wait for data the first one already holds. The streams themselves are stable, so the same
+ *     instance is returned on every call, and a wrapper that has to outlive a single call can be kept in {@link #context()}.<br>
+ *     Wrappers must not be closed, because that closes the connection, {@link #close()} is used instead.
+ * </p>
  *
  * @author Luis-St
  */
@@ -96,6 +107,10 @@ public interface Connection extends AutoCloseable {
 	
 	/**
 	 * Returns the input stream for advanced reading.<br>
+	 * The stream is buffered and the same instance is returned on every call, so it can be stored and read across calls.<br>
+	 * <p>
+	 *     {@link #receive()} reads through this same buffer, so the two can be mixed without skipping bytes.
+	 * </p>
 	 *
 	 * @return The input stream
 	 * @throws NetworkConnectionException If the stream cannot be obtained
@@ -104,6 +119,7 @@ public interface Connection extends AutoCloseable {
 	
 	/**
 	 * Returns the output stream for advanced writing.<br>
+	 * The stream is not buffered and the same instance is returned on every call, so everything written to it goes to the peer immediately.<br>
 	 *
 	 * @return The output stream
 	 * @throws NetworkConnectionException If the stream cannot be obtained

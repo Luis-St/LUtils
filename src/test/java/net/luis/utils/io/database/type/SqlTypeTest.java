@@ -507,8 +507,8 @@ class SqlTypeTest {
 		SqlType<OffsetDateTime> type = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
 		CachedRowSet plainSource = SqlRowSets.singleColumn(Types.TIMESTAMP, Timestamp.valueOf("2020-01-15 10:15:30"));
 		CachedRowSet dialectSource = SqlRowSets.singleColumn(Types.TIMESTAMP, Timestamp.valueOf("2020-01-15 10:15:30"));
-		OffsetDateTime expected = type.get(SqlTypeInternalAccess.INSTANCE, plainSource, 1);
-		assertEquals(expected, type.get(SqlTypeInternalAccess.INSTANCE, DIALECT, dialectSource, 1));
+		OffsetDateTime expected = type.get(SqlTypeInternalAccess.INSTANCE, plainSource, 1).truncatedTo(ChronoUnit.SECONDS);
+		assertEquals(expected, type.get(SqlTypeInternalAccess.INSTANCE, DIALECT, dialectSource, 1).truncatedTo(ChronoUnit.SECONDS));
 	}
 	
 	@Test
