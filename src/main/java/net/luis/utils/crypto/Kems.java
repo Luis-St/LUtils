@@ -278,7 +278,7 @@ public final class Kems {
 		byte[] ikm = CryptoBytes.concat(postQuantum.material(), classical.material());
 		byte[] context = CryptoBytes.concat(HYBRID_LABEL, algorithm.name().getBytes(StandardCharsets.UTF_8), encapsulation);
 		try {
-			return Kdf.derive(COMBINER, ikm, null, context, algorithm.sharedSecretLength());
+			return Kdfs.derive(COMBINER, ikm, null, context, algorithm.sharedSecretLength());
 		} finally {
 			CryptoBytes.wipe(ikm);
 		}

@@ -41,35 +41,35 @@ import java.util.Optional;
  * <p>
  *     None of these modes are key-committing.<br>
  *     A ciphertext can be constructed that authenticates under two different keys, which matters wherever a reader tries more than one key against the same ciphertext.<br>
- *     {@link Sealed} therefore derives an explicit key commitment and binds it into the header.<br>
+ *     {@link CryptoMessages} therefore derives an explicit key commitment and binds it into the header.<br>
  *     Do the same in any construction that trial-decrypts.
  * </p>
  * <p>
  *     Example:
  * </p>
  * <pre>{@code
- * SecretKey key = Aead.generateKey(AeadAlgorithm.AES_256_GCM);
+ * SecretKey key = Aeads.generateKey(AeadAlgorithm.AES_256_GCM);
  *
- * byte[] ciphertext = Aead.encrypt(AeadAlgorithm.AES_256_GCM, key, plaintext);
- * byte[] recovered = Aead.decrypt(AeadAlgorithm.AES_256_GCM, key, ciphertext);
+ * byte[] ciphertext = Aeads.encrypt(AeadAlgorithm.AES_256_GCM, key, plaintext);
+ * byte[] recovered = Aeads.decrypt(AeadAlgorithm.AES_256_GCM, key, ciphertext);
  *
  * // Associated data is authenticated but not encrypted, and has to be presented again to decrypt
  * byte[] header = "message-42".getBytes(StandardCharsets.UTF_8);
- * byte[] bound = Aead.encrypt(AeadAlgorithm.AES_256_GCM, key, plaintext, header);
- * byte[] opened = Aead.decrypt(AeadAlgorithm.AES_256_GCM, key, bound, header);
+ * byte[] bound = Aeads.encrypt(AeadAlgorithm.AES_256_GCM, key, plaintext, header);
+ * byte[] opened = Aeads.decrypt(AeadAlgorithm.AES_256_GCM, key, bound, header);
  * }</pre>
  *
  * @see AeadAlgorithm
  *
  * @author Luis-St
  */
-public final class Aead {
+public final class Aeads {
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 * This is a static helper class.<br>
 	 */
-	private Aead() {}
+	private Aeads() {}
 	
 	/**
 	 * Generates a new random key for the given algorithm.<br>

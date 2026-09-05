@@ -50,25 +50,26 @@ import java.util.Objects;
  * </p>
  * <pre>{@code
  * // One input secret, several independent keys, told apart by their info parameter
- * try (Secret encryption = Kdf.derive(KdfAlgorithm.HKDF_SHA_256, ikm, salt, "encryption".getBytes(StandardCharsets.UTF_8), 32)) {
+ * try (Secret encryption = Kdfs.derive(KdfAlgorithm.HKDF_SHA_256, ikm, salt, "encryption".getBytes(StandardCharsets.UTF_8), 32)) {
  *     use(encryption.material());
  * }
  *
  * // The same derivation, handed straight to an aead algorithm as a key
- * SecretKey key = Kdf.deriveKey(KdfAlgorithm.HKDF_SHA_256, ikm, salt, info, AeadAlgorithm.AES_256_GCM);
+ * SecretKey key = Kdfs.deriveKey(KdfAlgorithm.HKDF_SHA_256, ikm, salt, info, AeadAlgorithm.AES_256_GCM);
  * }</pre>
  *
  * @see KdfAlgorithm
+ * @see Kems
  *
  * @author Luis-St
  */
-public final class Kdf {
+public final class Kdfs {
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 * This is a static helper class.<br>
 	 */
-	private Kdf() {}
+	private Kdfs() {}
 	
 	/**
 	 * Performs the extract step, condensing the input key material into a pseudo random key.<br>

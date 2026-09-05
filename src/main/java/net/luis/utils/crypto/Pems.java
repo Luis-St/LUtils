@@ -49,19 +49,19 @@ import java.util.*;
  *     Example:
  * </p>
  * <pre>{@code
- * String pem = Pem.encode(pair.getPublic());
+ * String pem = Pems.encode(pair.getPublic());
  *
  * // The expected label is checked, so a private key never arrives where a public one belongs
- * Pem.Document document = Pem.decode(pem, Pem.PUBLIC_KEY);
+ * Pems.Document document = Pems.decode(pem, Pems.PUBLIC_KEY);
  * PublicKey key = CryptoKeys.publicKey(KemAlgorithm.X25519_ML_KEM_768, document.der());
  *
  * // Created with owner only permissions wherever the file system supports them
- * Pem.write(Path.of("private.pem"), pair.getPrivate());
+ * Pems.write(Path.of("private.pem"), pair.getPrivate());
  * }</pre>
  *
  * @author Luis-St
  */
-public final class Pem {
+public final class Pems {
 	
 	/**
 	 * The number of base64 characters per line.<br>
@@ -96,7 +96,7 @@ public final class Pem {
 	 * Private constructor to prevent instantiation.<br>
 	 * This is a static helper class.<br>
 	 */
-	private Pem() {}
+	private Pems() {}
 	
 	/**
 	 * Encodes the given body under the given label.<br>
@@ -193,7 +193,7 @@ public final class Pem {
 	 * @throws MalformedDataException If a document is malformed or its BEGIN and END labels differ
 	 */
 	public static @NonNull @Unmodifiable List<Document> decodeAll(@NonNull String pem) {
-		Objects.requireNonNull(pem, "Pem must not be null");
+		Objects.requireNonNull(pem, "Pems must not be null");
 		
 		StringReader reader = new StringReader(pem);
 		List<Document> documents = new ArrayList<>();
