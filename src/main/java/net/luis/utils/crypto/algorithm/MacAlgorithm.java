@@ -23,6 +23,7 @@ import org.jspecify.annotations.NonNull;
 
 import javax.crypto.Mac;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 /**
  * The message authentication codes available in this library.<br>
@@ -82,7 +83,7 @@ public enum MacAlgorithm {
 	 * @param recommendedKeyLength The recommended key length in bytes
 	 */
 	MacAlgorithm(@NonNull String jcaName, int tagLength, int recommendedKeyLength) {
-		this.jcaName = jcaName;
+		this.jcaName = Objects.requireNonNull(jcaName, "Jca name must not be null");
 		this.tagLength = tagLength;
 		this.recommendedKeyLength = recommendedKeyLength;
 	}

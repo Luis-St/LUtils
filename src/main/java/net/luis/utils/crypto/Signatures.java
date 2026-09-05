@@ -304,6 +304,8 @@ public final class Signatures {
 	 * @throws AuthenticationException If the signature does not match
 	 */
 	public static void require(@NonNull SignatureAlgorithm algorithm, @NonNull PublicKey key, byte @NonNull [] data, byte @NonNull [] signature) {
+		Objects.requireNonNull(algorithm, "Algorithm must not be null");
+		
 		if (!verify(algorithm, key, data, signature)) {
 			throw new AuthenticationException("Signature verification failed for " + algorithm.name());
 		}

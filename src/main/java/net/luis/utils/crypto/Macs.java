@@ -172,10 +172,11 @@ public final class Macs {
 	 * @param data The data to authenticate
 	 * @param expectedTag The tag to compare against
 	 * @return True if the data authenticates to the expected tag
-	 * @throws NullPointerException If the algorithm, the key or the data is null
+	 * @throws NullPointerException If the algorithm, the key, the data or the expected tag is null
 	 * @throws CryptoException If the key is not usable for the algorithm
 	 */
 	public static boolean verify(@NonNull MacAlgorithm algorithm, @NonNull SecretKey key, byte @NonNull [] data, byte @NonNull [] expectedTag) {
+		Objects.requireNonNull(expectedTag, "Expected tag must not be null");
 		return MessageDigest.isEqual(mac(algorithm, key, data), expectedTag);
 	}
 	
@@ -186,7 +187,7 @@ public final class Macs {
 	 * @param key The key to authenticate with
 	 * @param data The data to authenticate
 	 * @param expectedTag The tag to compare against
-	 * @throws NullPointerException If the algorithm, the key or the data is null
+	 * @throws NullPointerException If the algorithm, the key, the data or the expected tag is null
 	 * @throws CryptoException If the key is not usable for the algorithm
 	 * @throws AuthenticationException If the data does not authenticate to the expected tag
 	 */

@@ -189,8 +189,8 @@ class HashesTest {
 	
 	@Test
 	void matchesWithNullExpected() {
-		assertFalse(Hashes.matches(HashAlgorithm.SHA_256, new byte[0], null));
-		assertFalse(Hashes.matches(HashAlgorithm.SHA_256, DATA, null));
+		assertThrows(NullPointerException.class, () -> Hashes.matches(HashAlgorithm.SHA_256, new byte[0], null));
+		assertThrows(NullPointerException.class, () -> Hashes.matches(HashAlgorithm.SHA_256, DATA, null));
 	}
 	
 	@Test

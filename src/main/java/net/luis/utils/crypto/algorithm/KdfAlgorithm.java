@@ -20,6 +20,8 @@ package net.luis.utils.crypto.algorithm;
 
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  * The key derivation functions available in this library.<br>
  * <p>
@@ -65,9 +67,9 @@ public enum KdfAlgorithm {
 	 * @param hash The hash behind the mac
 	 */
 	KdfAlgorithm(@NonNull String jcaName, @NonNull MacAlgorithm mac, @NonNull HashAlgorithm hash) {
-		this.jcaName = jcaName;
-		this.mac = mac;
-		this.hash = hash;
+		this.jcaName = Objects.requireNonNull(jcaName, "Jca name must not be null");
+		this.mac = Objects.requireNonNull(mac, "Mac algorithm must not be null");
+		this.hash = Objects.requireNonNull(hash, "Hash algorithm must not be null");
 	}
 	
 	/**

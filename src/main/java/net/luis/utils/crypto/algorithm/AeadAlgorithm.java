@@ -105,8 +105,8 @@ public enum AeadAlgorithm {
 	 * @param requiresBouncyCastle Whether the algorithm needs BouncyCastle
 	 */
 	AeadAlgorithm(@NonNull String jcaName, @NonNull String keyJcaName, int keyLength, int nonceLength, int tagLength, boolean requiresBouncyCastle) {
-		this.jcaName = jcaName;
-		this.keyJcaName = keyJcaName;
+		this.jcaName = Objects.requireNonNull(jcaName, "Jca name must not be null");
+		this.keyJcaName = Objects.requireNonNull(keyJcaName, "Key jca name must not be null");
 		this.keyLength = keyLength;
 		this.nonceLength = nonceLength;
 		this.tagLength = tagLength;

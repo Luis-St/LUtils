@@ -268,7 +268,7 @@ class MacsTest {
 	
 	@Test
 	void verifyWithNullExpectedTag() {
-		assertFalse(Macs.verify(ALGORITHM, key, DATA, null));
+		assertThrows(NullPointerException.class, () -> Macs.verify(ALGORITHM, key, DATA, null));
 	}
 	
 	@Test
@@ -279,7 +279,7 @@ class MacsTest {
 	
 	@Test
 	void requireWithNullExpectedTag() {
-		assertThrows(AuthenticationException.class, () -> Macs.require(ALGORITHM, key, DATA, null));
+		assertThrows(NullPointerException.class, () -> Macs.require(ALGORITHM, key, DATA, null));
 	}
 	
 	@Test

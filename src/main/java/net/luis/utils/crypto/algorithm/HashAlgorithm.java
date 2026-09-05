@@ -23,6 +23,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 /**
  * The cryptographic hash functions available in this library.<br>
@@ -103,7 +104,7 @@ public enum HashAlgorithm {
 	 * @param blockLength The internal block length in bytes
 	 */
 	HashAlgorithm(@NonNull String jcaName, int digestLength, int blockLength) {
-		this.jcaName = jcaName;
+		this.jcaName = Objects.requireNonNull(jcaName, "Jca name must not be null");
 		this.digestLength = digestLength;
 		this.blockLength = blockLength;
 	}

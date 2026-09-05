@@ -149,10 +149,11 @@ public final class Hashes {
 	 * @param data The bytes to hash
 	 * @param expected The digest to compare against
 	 * @return True if the data hashes to the expected digest
-	 * @throws NullPointerException If the algorithm or the data is null
+	 * @throws NullPointerException If the algorithm, the data or the expected digest is null
 	 * @throws UnsupportedAlgorithmException If no registered provider serves the algorithm
 	 */
 	public static boolean matches(@NonNull HashAlgorithm algorithm, byte @NonNull [] data, byte @NonNull [] expected) {
+		Objects.requireNonNull(expected, "Expected digest must not be null");
 		return MessageDigest.isEqual(hash(algorithm, data), expected);
 	}
 	
