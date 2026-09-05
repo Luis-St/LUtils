@@ -1124,6 +1124,8 @@ public class SqlInsertQuery<E> implements SqlQuery<E> {
 	 *
 	 * @param column The column to build the default set clause for
 	 * @param dialect The sql dialect used to reference the proposed value
+	 * @param <E> The type of the entity mapped from a row of the table
+	 * @param <V> The value type of the column
 	 * @return The default set clause for the given column
 	 * @throws NullPointerException If the column or dialect is null
 	 * @throws SqlException If the dialect does not support referencing the proposed row

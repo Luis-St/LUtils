@@ -29,6 +29,9 @@ import java.io.Serial;
  */
 public class FrameTooLargeException extends IOException {
 	
+	/**
+	 * The serial version uid of this exception.<br>
+	 */
 	@Serial
 	private static final long serialVersionUID = 1L;
 	

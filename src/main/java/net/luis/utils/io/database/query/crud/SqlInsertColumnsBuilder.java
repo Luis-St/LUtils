@@ -116,6 +116,7 @@ public final class SqlInsertColumnsBuilder<E> implements SqlQuery<E> {
 	 * Collects the column names referenced by the given row, in order.<br>
 	 *
 	 * @param values The row to collect the column names of
+	 * @param <E> The type of the entity mapped from a row of the table
 	 * @return The column names referenced by the given row
 	 */
 	private static <E> @NonNull Set<String> columnNames(@NonNull List<SqlColumnValue<E, ?>> values) {
@@ -133,6 +134,7 @@ public final class SqlInsertColumnsBuilder<E> implements SqlQuery<E> {
 	 * @param dialect The sql dialect used to render the query
 	 * @param auditUserProvider The provider that resolves the audit user, or {@code null} for no audit user
 	 * @param rows The rows to render the value tuples for
+	 * @param <E> The type of the entity mapped from a row of the table
 	 * @return The rendered insert statement
 	 * @throws SqlStatementBuilderException If the given rows are empty
 	 * @throws SqlException If an error occurs while rendering the query

@@ -2314,6 +2314,7 @@ public class Sql {
 	 * @param zoneId The time zone identifier to convert into
 	 * @return An expression evaluating to the date within the given time zone
 	 * @throws NullPointerException If the expression or zone id is null
+	 * @throws SqlTypeNotFoundException If no sql type is registered for the string value expression
 	 */
 	public static @NonNull SqlExpression<LocalDate> dateInZone(@NonNull SqlExpression<?> expression, @NonNull String zoneId) throws SqlTypeNotFoundException {
 		Objects.requireNonNull(zoneId, "Zone id must not be null");

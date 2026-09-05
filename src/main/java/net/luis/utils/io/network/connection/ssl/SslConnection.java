@@ -94,6 +94,7 @@ public final class SslConnection implements Connection {
 	 *
 	 * @param socket The client SSL socket
 	 * @param bufferSize The buffer size for read operations
+	 * @param framing Whether messages are framed with a length prefix on the wire
 	 * @param readTimeout The read timeout
 	 * @throws NullPointerException If socket or read timeout is null
 	 */

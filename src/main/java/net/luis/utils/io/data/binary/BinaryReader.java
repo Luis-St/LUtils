@@ -189,7 +189,7 @@ public class BinaryReader implements AutoCloseable {
 	 * @throws NullPointerException If the data is null
 	 * @throws BinarySyntaxException If the data is not valid deflate data or the decompressed data exceeds the maximum document size
 	 */
-	private byte @NonNull [] inflate(byte @NonNull [] data) throws IOException {
+	private byte @NonNull [] inflate(byte @NonNull [] data) {
 		Objects.requireNonNull(data, "Data must not be null");
 		
 		Inflater inflater = new Inflater();
