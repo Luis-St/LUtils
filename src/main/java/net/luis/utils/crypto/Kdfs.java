@@ -18,8 +18,7 @@
 
 package net.luis.utils.crypto;
 
-import net.luis.utils.crypto.algorithm.AeadAlgorithm;
-import net.luis.utils.crypto.algorithm.KdfAlgorithm;
+import net.luis.utils.crypto.algorithm.*;
 import net.luis.utils.crypto.exception.CryptoException;
 import net.luis.utils.crypto.exception.UnsupportedAlgorithmException;
 import net.luis.utils.crypto.key.Secret;
@@ -56,6 +55,12 @@ import java.util.Objects;
  *
  * // The same derivation, handed straight to an aead algorithm as a key
  * SecretKey key = Kdfs.deriveKey(KdfAlgorithm.HKDF_SHA_256, ikm, salt, info, AeadAlgorithm.AES_256_GCM);
+ *
+ * // A key encapsulation shared secret goes in as a secret, never as a cipher key of its own
+ * try (Secret shared = Kems.decapsulate(KemAlgorithm.X25519_ML_KEM_768, pair.getPrivate(), wire)) {
+ *     SecretKey encryption = Kdfs.deriveKey(KdfAlgorithm.HKDF_SHA_256, shared, transcript, "c2s".getBytes(StandardCharsets.UTF_8), AeadAlgorithm.AES_256_GCM);
+ *     SecretKey confirmation = Kdfs.deriveKey(KdfAlgorithm.HKDF_SHA_256, shared, transcript, "c2s-finished".getBytes(StandardCharsets.UTF_8), MacAlgorithm.HMAC_SHA_256);
+ * }
  * }</pre>
  *
  * @see KdfAlgorithm
@@ -100,6 +105,27 @@ public final class Kdfs {
 		} catch (GeneralSecurityException e) {
 			throw new CryptoException("Extraction failed for " + algorithm.name(), e);
 		}
+	}
+	
+	/**
+	 * Performs the extract step over material that is already held in a secret.<br>
+	 * <p>
+	 *     This is the overload the key encapsulation path wants, since {@link Kems#decapsulate} hands back a secret rather than an array.<br>
+	 *     The given secret is read but not closed, so the caller keeps ownership of it.
+	 * </p>
+	 *
+	 * @param algorithm The key derivation function to use
+	 * @param salt The salt to extract with, may be null
+	 * @param ikm The input key material
+	 * @return The extracted pseudo random key
+	 * @throws NullPointerException If the algorithm or the input key material is null
+	 * @throws IllegalStateException If the input key material has already been closed
+	 * @throws UnsupportedAlgorithmException If no registered provider serves the algorithm
+	 * @throws CryptoException If the extraction fails
+	 */
+	public static @NonNull Secret extract(@NonNull KdfAlgorithm algorithm, byte @Nullable [] salt, @NonNull Secret ikm) {
+		Objects.requireNonNull(ikm, "Input key material must not be null");
+		return extract(algorithm, salt, ikm.material());
 	}
 	
 	/**
@@ -162,6 +188,27 @@ public final class Kdfs {
 	}
 	
 	/**
+	 * Derives output key material in one step from material that is already held in a secret.<br>
+	 * The given secret is read but not closed, so the caller keeps ownership of it.<br>
+	 *
+	 * @param algorithm The key derivation function to use
+	 * @param ikm The input key material
+	 * @param salt The salt to extract with, may be null
+	 * @param info The context to bind the output to, may be null
+	 * @param length The number of bytes to produce
+	 * @return The derived output key material
+	 * @throws NullPointerException If the algorithm or the input key material is null
+	 * @throws IllegalArgumentException If the length is not in the range supported by the algorithm
+	 * @throws IllegalStateException If the input key material has already been closed
+	 * @throws UnsupportedAlgorithmException If no registered provider serves the algorithm
+	 * @throws CryptoException If the derivation fails
+	 */
+	public static @NonNull Secret derive(@NonNull KdfAlgorithm algorithm, @NonNull Secret ikm, byte @Nullable [] salt, byte @Nullable [] info, int length) {
+		Objects.requireNonNull(ikm, "Input key material must not be null");
+		return derive(algorithm, ikm.material(), salt, info, length);
+	}
+	
+	/**
 	 * Derives a key of the length the given aead algorithm requires.<br>
 	 * The intermediate material is wiped before this returns.<br>
 	 * Only the key survives.<br>
@@ -178,8 +225,71 @@ public final class Kdfs {
 		Objects.requireNonNull(target, "Target must not be null");
 		
 		try (Secret material = derive(algorithm, ikm, salt, info, target.keyLength())) {
-			return material.toKey(target.keyJcaName());
+			return material.toKey(target);
 		}
+	}
+	
+	/**
+	 * Derives a key of the recommended length for the given mac algorithm.<br>
+	 * <p>
+	 *     The intermediate material is wiped before this returns.<br>
+	 *     Only the key survives.
+	 * </p>
+	 * <p>
+	 *     This is the counterpart of {@link #deriveKey(KdfAlgorithm, byte[], byte[], byte[], AeadAlgorithm)} for the authentication half of a protocol,<br>
+	 *     so a construction that needs an encryption key and a mac key derives both the same way and tells them apart by their info parameter.
+	 * </p>
+	 *
+	 * @param algorithm The key derivation function to use
+	 * @param ikm The input key material
+	 * @param salt The salt to extract with, may be null
+	 * @param info The context to bind the output to, may be null
+	 * @param target The algorithm the derived key is for
+	 * @return The derived key
+	 * @throws NullPointerException If the algorithm, the input key material or the target is null
+	 */
+	public static @NonNull SecretKey deriveKey(@NonNull KdfAlgorithm algorithm, byte @NonNull [] ikm, byte @Nullable [] salt, byte @Nullable [] info, @NonNull MacAlgorithm target) {
+		Objects.requireNonNull(target, "Target must not be null");
+		
+		try (Secret material = derive(algorithm, ikm, salt, info, target.recommendedKeyLength())) {
+			return material.toKey(target);
+		}
+	}
+	
+	/**
+	 * Derives a key of the length the given aead algorithm requires, from material that is already held in a secret.<br>
+	 * The given secret is read but not closed, so the caller keeps ownership of it.<br>
+	 *
+	 * @param algorithm The key derivation function to use
+	 * @param ikm The input key material
+	 * @param salt The salt to extract with, may be null
+	 * @param info The context to bind the output to, may be null
+	 * @param target The algorithm the derived key is for
+	 * @return The derived key
+	 * @throws NullPointerException If the algorithm, the input key material or the target is null
+	 * @throws IllegalStateException If the input key material has already been closed
+	 */
+	public static @NonNull SecretKey deriveKey(@NonNull KdfAlgorithm algorithm, @NonNull Secret ikm, byte @Nullable [] salt, byte @Nullable [] info, @NonNull AeadAlgorithm target) {
+		Objects.requireNonNull(ikm, "Input key material must not be null");
+		return deriveKey(algorithm, ikm.material(), salt, info, target);
+	}
+	
+	/**
+	 * Derives a key of the recommended length for the given mac algorithm, from material that is already held in a secret.<br>
+	 * The given secret is read but not closed, so the caller keeps ownership of it.<br>
+	 *
+	 * @param algorithm The key derivation function to use
+	 * @param ikm The input key material
+	 * @param salt The salt to extract with, may be null
+	 * @param info The context to bind the output to, may be null
+	 * @param target The algorithm the derived key is for
+	 * @return The derived key
+	 * @throws NullPointerException If the algorithm, the input key material or the target is null
+	 * @throws IllegalStateException If the input key material has already been closed
+	 */
+	public static @NonNull SecretKey deriveKey(@NonNull KdfAlgorithm algorithm, @NonNull Secret ikm, byte @Nullable [] salt, byte @Nullable [] info, @NonNull MacAlgorithm target) {
+		Objects.requireNonNull(ikm, "Input key material must not be null");
+		return deriveKey(algorithm, ikm.material(), salt, info, target);
 	}
 	
 	/**

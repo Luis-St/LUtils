@@ -20,6 +20,7 @@ package net.luis.utils.crypto;
 
 import net.luis.utils.crypto.algorithm.HashAlgorithm;
 import net.luis.utils.crypto.exception.UnsupportedAlgorithmException;
+import net.luis.utils.resources.ResourceLocation;
 import org.jspecify.annotations.NonNull;
 
 import java.io.InputStream;
@@ -126,6 +127,23 @@ public final class Hashes {
 		Objects.requireNonNull(file, "File must not be null");
 		
 		return Hasher.of(algorithm).update(file).digest();
+	}
+	
+	/**
+	 * Hashes the contents of the given resource.<br>
+	 * The resource may live on the classpath or on the filesystem.<br>
+	 *
+	 * @param algorithm The algorithm to hash with
+	 * @param resource The resource to read
+	 * @return The computed digest
+	 * @throws NullPointerException If the algorithm or the resource is null
+	 * @throws UncheckedIOException If reading the resource fails
+	 */
+	public static byte @NonNull [] hash(@NonNull HashAlgorithm algorithm, @NonNull ResourceLocation resource) {
+		Objects.requireNonNull(algorithm, "Algorithm must not be null");
+		Objects.requireNonNull(resource, "Resource must not be null");
+		
+		return Hasher.of(algorithm).update(resource).digest();
 	}
 	
 	/**

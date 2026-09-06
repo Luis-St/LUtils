@@ -20,6 +20,7 @@ package net.luis.utils.crypto;
 
 import net.luis.utils.crypto.algorithm.NativeSignatureAlgorithm;
 import net.luis.utils.crypto.exception.CryptoException;
+import net.luis.utils.resources.ResourceLocation;
 import org.jspecify.annotations.NonNull;
 
 import java.io.*;
@@ -203,6 +204,26 @@ public final class Signer {
 			return this.update(input);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Failed to read the file to sign: " + file, e);
+		}
+	}
+	
+	/**
+	 * Updates this signer with the contents of the given resource.<br>
+	 * The resource may live on the classpath or on the filesystem.<br>
+	 *
+	 * @param resource The resource to read
+	 * @return This signer
+	 * @throws NullPointerException If the resource is null
+	 * @throws UncheckedIOException If reading the resource fails
+	 * @throws CryptoException If the update fails
+	 */
+	public @NonNull Signer update(@NonNull ResourceLocation resource) {
+		Objects.requireNonNull(resource, "Resource must not be null");
+		
+		try (InputStream input = resource.getStream()) {
+			return this.update(input);
+		} catch (IOException e) {
+			throw new UncheckedIOException("Failed to read the resource to sign: " + resource, e);
 		}
 	}
 	

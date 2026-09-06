@@ -20,6 +20,7 @@ package net.luis.utils.crypto;
 
 import net.luis.utils.crypto.algorithm.HashAlgorithm;
 import net.luis.utils.crypto.util.CryptoRandom;
+import net.luis.utils.resources.ResourceLocation;
 import org.junit.jupiter.api.*;
 
 import java.io.*;
@@ -46,6 +47,7 @@ class HashesTest {
 	private static final Path FILE = DIRECTORY.resolve("content.bin");
 	private static final Path EMPTY_FILE = DIRECTORY.resolve("empty.bin");
 	private static final Path LARGE_FILE = DIRECTORY.resolve("large.bin");
+	private static final Path MUTABLE_FILE = DIRECTORY.resolve("mutable.bin");
 	
 	private static byte[] largeContent;
 	
@@ -64,6 +66,7 @@ class HashesTest {
 		Files.deleteIfExists(FILE);
 		Files.deleteIfExists(EMPTY_FILE);
 		Files.deleteIfExists(LARGE_FILE);
+		Files.deleteIfExists(MUTABLE_FILE);
 		Files.deleteIfExists(DIRECTORY);
 	}
 	
@@ -386,6 +389,109 @@ class HashesTest {
 		
 		byte[] split = Hashes.hasher(HashAlgorithm.SHA_256).update(DATA, 0, 4).update(DATA, 4, DATA.length - 4).digest();
 		assertArrayEquals(expected, split);
+	}
+	
+	@Test
+	void hashResourceWithNullAlgorithm() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		assertThrows(NullPointerException.class, () -> Hashes.hash(null, resource));
+	}
+	
+	@Test
+	void hashResourceWithNullResource() {
+		assertThrows(NullPointerException.class, () -> Hashes.hash(HashAlgorithm.SHA_256, (ResourceLocation) null));
+	}
+	
+	@Test
+	void hashResourceWithBothNull() {
+		NullPointerException exception = assertThrows(NullPointerException.class, () -> Hashes.hash(null, (ResourceLocation) null));
+		assertEquals("Algorithm must not be null", exception.getMessage());
+	}
+	
+	@Test
+	void hashMissingExternalResource() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.resolve("missing.bin").toString());
+		assertThrows(UncheckedIOException.class, () -> Hashes.hash(HashAlgorithm.SHA_256, resource));
+	}
+	
+	@Test
+	void hashMissingInternalResource() {
+		ResourceLocation resource = ResourceLocation.internal("does/not/exist.bin");
+		assertThrows(NullPointerException.class, () -> Hashes.hash(HashAlgorithm.SHA_256, resource));
+	}
+	
+	@Test
+	void hashExternalResource() {
+		byte[] digest = Hashes.hash(HashAlgorithm.SHA_256, ResourceLocation.external(FILE.toString()));
+		assertEquals(32, digest.length);
+		assertArrayEquals(Hashes.hash(HashAlgorithm.SHA_256, DATA), digest);
+	}
+	
+	@Test
+	void hashInternalResource() throws Exception {
+		ResourceLocation resource = ResourceLocation.internal("ResourceLocation/ResourceLocation.json");
+		assertArrayEquals(Hashes.hash(HashAlgorithm.SHA_256, resource.getBytes()), Hashes.hash(HashAlgorithm.SHA_256, resource));
+	}
+	
+	@Test
+	void hashEmptyResource() {
+		byte[] digest = Hashes.hash(HashAlgorithm.SHA_256, ResourceLocation.external(EMPTY_FILE.toString()));
+		assertEquals(EMPTY_SHA_256, HexFormat.of().formatHex(digest));
+		assertArrayEquals(Hashes.hash(HashAlgorithm.SHA_256, new byte[0]), digest);
+	}
+	
+	@Test
+	void hashResourceMatchesHashFile() {
+		byte[] fromResource = Hashes.hash(HashAlgorithm.SHA_512, ResourceLocation.external(FILE.toString()));
+		assertArrayEquals(Hashes.hash(HashAlgorithm.SHA_512, FILE), fromResource);
+	}
+	
+	@Test
+	void hashResourceIsDeterministic() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		byte[] first = Hashes.hash(HashAlgorithm.SHA_256, resource);
+		byte[] second = Hashes.hash(HashAlgorithm.SHA_256, resource);
+		
+		assertArrayEquals(first, second);
+		assertNotSame(first, second);
+	}
+	
+	@Test
+	void hashResourceForEveryAlgorithm() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		for (HashAlgorithm algorithm : HashAlgorithm.values()) {
+			byte[] digest = Hashes.hash(algorithm, resource);
+			assertEquals(algorithm.digestLength(), digest.length);
+			assertArrayEquals(Hashes.hash(algorithm, DATA), digest);
+		}
+	}
+	
+	@Test
+	void hashResourceDetectsContentChange() throws Exception {
+		Files.write(MUTABLE_FILE, DATA);
+		ResourceLocation resource = ResourceLocation.external(MUTABLE_FILE.toString());
+		byte[] before = Hashes.hash(HashAlgorithm.SHA_256, resource);
+		
+		byte[] changed = Arrays.copyOf(DATA, DATA.length);
+		changed[0] ^= 0x01;
+		Files.write(MUTABLE_FILE, changed);
+		
+		assertFalse(Arrays.equals(before, Hashes.hash(HashAlgorithm.SHA_256, resource)));
+	}
+	
+	@Test
+	void hashLargeResource() {
+		ResourceLocation resource = ResourceLocation.external(LARGE_FILE.toString());
+		assertArrayEquals(Hashes.hash(HashAlgorithm.SHA_256, largeContent), Hashes.hash(HashAlgorithm.SHA_256, resource));
+	}
+	
+	@Test
+	void hashResourceMatchesHashHexOfBytes() throws Exception {
+		ResourceLocation resource = ResourceLocation.internal("ResourceLocation/ResourceLocation.json");
+		for (HashAlgorithm algorithm : HashAlgorithm.values()) {
+			String hex = HexFormat.of().formatHex(Hashes.hash(algorithm, resource));
+			assertEquals(Hashes.hashHex(algorithm, resource.getBytes()), hex);
+		}
 	}
 	
 	private static final class FailingStream extends InputStream {

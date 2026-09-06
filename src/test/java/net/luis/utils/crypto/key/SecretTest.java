@@ -18,6 +18,11 @@
 
 package net.luis.utils.crypto.key;
 
+import net.luis.utils.crypto.Aeads;
+import net.luis.utils.crypto.Macs;
+import net.luis.utils.crypto.algorithm.AeadAlgorithm;
+import net.luis.utils.crypto.algorithm.MacAlgorithm;
+import net.luis.utils.crypto.exception.CryptoException;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.*;
@@ -97,14 +102,14 @@ class SecretTest {
 	@Test
 	void toKeyWithNullAlgorithm() {
 		Secret secret = Secret.random(32);
-		assertThrows(NullPointerException.class, () -> secret.toKey(null));
+		assertThrows(NullPointerException.class, () -> secret.toKey((String) null));
 	}
 	
 	@Test
 	void toKeyWithNullAlgorithmAfterClose() {
 		Secret secret = Secret.random(32);
 		secret.close();
-		assertThrows(NullPointerException.class, () -> secret.toKey(null));
+		assertThrows(NullPointerException.class, () -> secret.toKey((String) null));
 	}
 	
 	@Test
@@ -359,5 +364,219 @@ class SecretTest {
 		assertArrayEquals(new byte[] { 1, 2, 3 }, secret.toKey("AES").getEncoded());
 		assertEquals(3, secret.length());
 		assertArrayEquals(new byte[] { 1, 2, 3 }, secret.material());
+	}
+	
+	@Test
+	void toKeyWithNullAeadAlgorithm() {
+		Secret secret = Secret.random(32);
+		assertThrows(NullPointerException.class, () -> secret.toKey((AeadAlgorithm) null));
+	}
+	
+	@Test
+	void toKeyWithNullMacAlgorithm() {
+		Secret secret = Secret.random(32);
+		assertThrows(NullPointerException.class, () -> secret.toKey((MacAlgorithm) null));
+	}
+	
+	@Test
+	void toKeyWithNullAeadAlgorithmAfterClose() {
+		Secret secret = Secret.random(32);
+		secret.close();
+		assertThrows(NullPointerException.class, () -> secret.toKey((AeadAlgorithm) null));
+	}
+	
+	@Test
+	void toKeyWithNullMacAlgorithmAfterClose() {
+		Secret secret = Secret.random(32);
+		secret.close();
+		assertThrows(NullPointerException.class, () -> secret.toKey((MacAlgorithm) null));
+	}
+	
+	@Test
+	void toKeyWithWrongAeadKeyLength() {
+		Secret secret = Secret.random(16);
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> secret.toKey(AeadAlgorithm.AES_256_GCM));
+		assertTrue(exception.getMessage().contains("32"));
+		assertTrue(exception.getMessage().contains("16"));
+	}
+	
+	@Test
+	void toKeyWithEmptySecretForMac() {
+		Secret secret = Secret.adopt(new byte[0]);
+		assertThrows(CryptoException.class, () -> secret.toKey(MacAlgorithm.HMAC_SHA_256));
+	}
+	
+	@Test
+	void toKeyAeadAfterClose() {
+		Secret secret = Secret.random(32);
+		secret.close();
+		assertThrows(IllegalStateException.class, () -> secret.toKey(AeadAlgorithm.AES_256_GCM));
+	}
+	
+	@Test
+	void toKeyMacAfterClose() {
+		Secret secret = Secret.random(32);
+		secret.close();
+		assertThrows(IllegalStateException.class, () -> secret.toKey(MacAlgorithm.HMAC_SHA_256));
+	}
+	
+	@Test
+	void toKeyWithCorrectAeadKeyLength() {
+		Secret secret = Secret.random(32);
+		SecretKey key = secret.toKey(AeadAlgorithm.AES_256_GCM);
+		
+		assertNotNull(key);
+		assertEquals("AES", key.getAlgorithm());
+		assertEquals(32, key.getEncoded().length);
+	}
+	
+	@Test
+	void toKeyWithLongAeadKeyLength() {
+		Secret secret = Secret.random(33);
+		assertThrows(IllegalArgumentException.class, () -> secret.toKey(AeadAlgorithm.AES_256_GCM));
+	}
+	
+	@Test
+	void toKeyWithNonEmptySecretForMac() {
+		Secret secret = Secret.random(32);
+		SecretKey key = secret.toKey(MacAlgorithm.HMAC_SHA_256);
+		
+		assertEquals("HmacSHA256", key.getAlgorithm());
+		assertEquals(32, key.getEncoded().length);
+	}
+	
+	@Test
+	void toKeyAeadWithWrongLengthAfterClose() {
+		Secret secret = Secret.random(16);
+		secret.close();
+		assertThrows(IllegalArgumentException.class, () -> secret.toKey(AeadAlgorithm.AES_256_GCM));
+	}
+	
+	@Test
+	void toKeyMacWithEmptySecretAfterClose() {
+		Secret secret = Secret.adopt(new byte[0]);
+		secret.close();
+		assertThrows(CryptoException.class, () -> secret.toKey(MacAlgorithm.HMAC_SHA_256));
+	}
+	
+	@Test
+	void toKeyForEveryAeadAlgorithm() {
+		for (AeadAlgorithm algorithm : AeadAlgorithm.values()) {
+			Secret secret = Secret.random(algorithm.keyLength());
+			SecretKey key = secret.toKey(algorithm);
+			assertEquals(algorithm.keyJcaName(), key.getAlgorithm());
+			assertEquals(algorithm.keyLength(), key.getEncoded().length);
+		}
+	}
+	
+	@Test
+	void toKeyForEveryMacAlgorithm() {
+		for (MacAlgorithm algorithm : MacAlgorithm.values()) {
+			Secret secret = Secret.random(algorithm.recommendedKeyLength());
+			SecretKey key = secret.toKey(algorithm);
+			assertEquals(algorithm.jcaName(), key.getAlgorithm());
+			assertEquals(algorithm.recommendedKeyLength(), key.getEncoded().length);
+		}
+	}
+	
+	@Test
+	void toKeyMacWithSingleByteSecret() {
+		Secret secret = Secret.adopt(new byte[] { 42 });
+		SecretKey key = assertDoesNotThrow(() -> secret.toKey(MacAlgorithm.HMAC_SHA_256));
+		assertEquals(1, key.getEncoded().length);
+	}
+	
+	@Test
+	void toKeyMacBelowRecommendedLength() {
+		Secret secret = Secret.random(8);
+		SecretKey key = assertDoesNotThrow(() -> secret.toKey(MacAlgorithm.HMAC_SHA_512));
+		assertEquals(8, key.getEncoded().length);
+		assertEquals("HmacSHA512", key.getAlgorithm());
+	}
+	
+	@Test
+	void toKeyAeadCopiesMaterial() {
+		Secret secret = Secret.random(32);
+		byte[] material = secret.material().clone();
+		SecretKey key = secret.toKey(AeadAlgorithm.AES_256_GCM);
+		
+		assertArrayEquals(material, key.getEncoded());
+		secret.close();
+		assertArrayEquals(material, key.getEncoded());
+	}
+	
+	@Test
+	void toKeyMacCopiesMaterial() {
+		Secret secret = Secret.random(32);
+		byte[] material = secret.material().clone();
+		SecretKey key = secret.toKey(MacAlgorithm.HMAC_SHA_256);
+		
+		assertArrayEquals(material, key.getEncoded());
+		secret.close();
+		assertArrayEquals(material, key.getEncoded());
+	}
+	
+	@Test
+	void toKeyAeadMatchesStringOverload() {
+		Secret secret = Secret.random(32);
+		SecretKey typed = secret.toKey(AeadAlgorithm.AES_256_GCM);
+		SecretKey named = secret.toKey("AES");
+		
+		assertEquals(named.getAlgorithm(), typed.getAlgorithm());
+		assertArrayEquals(named.getEncoded(), typed.getEncoded());
+	}
+	
+	@Test
+	void toKeyMacMatchesStringOverload() {
+		Secret secret = Secret.random(32);
+		SecretKey typed = secret.toKey(MacAlgorithm.HMAC_SHA_256);
+		SecretKey named = secret.toKey(MacAlgorithm.HMAC_SHA_256.jcaName());
+		
+		assertEquals(named.getAlgorithm(), typed.getAlgorithm());
+		assertArrayEquals(named.getEncoded(), typed.getEncoded());
+	}
+	
+	@Test
+	void toKeyAeadReturnsIndependentSpecs() {
+		Secret secret = Secret.random(32);
+		SecretKey first = secret.toKey(AeadAlgorithm.AES_256_GCM);
+		SecretKey second = secret.toKey(AeadAlgorithm.AES_256_GCM);
+		
+		assertNotSame(first, second);
+		assertArrayEquals(first.getEncoded(), second.getEncoded());
+	}
+	
+	@Test
+	void toKeyAeadEncryptsAndDecrypts() {
+		byte[] plaintext = "authenticated".getBytes();
+		try (Secret secret = Secret.random(32)) {
+			SecretKey key = secret.toKey(AeadAlgorithm.AES_256_GCM);
+			byte[] nonce = AeadAlgorithm.AES_256_GCM.sequenceNonce(0);
+			byte[] ciphertext = Aeads.encrypt(AeadAlgorithm.AES_256_GCM, key, nonce, plaintext, null);
+			
+			assertArrayEquals(plaintext, Aeads.decrypt(AeadAlgorithm.AES_256_GCM, key, nonce, ciphertext, null));
+		}
+	}
+	
+	@Test
+	void toKeyMacAuthenticates() {
+		byte[] data = "authenticate me".getBytes();
+		try (Secret secret = Secret.random(32); Secret other = Secret.random(32)) {
+			SecretKey key = secret.toKey(MacAlgorithm.HMAC_SHA_256);
+			byte[] tag = Macs.mac(MacAlgorithm.HMAC_SHA_256, key, data);
+			
+			assertTrue(Macs.verify(MacAlgorithm.HMAC_SHA_256, key, data, tag));
+			assertFalse(Arrays.equals(tag, Macs.mac(MacAlgorithm.HMAC_SHA_256, other.toKey(MacAlgorithm.HMAC_SHA_256), data)));
+		}
+	}
+	
+	@Test
+	void toKeyRejectsCrossAlgorithmLengths() {
+		for (int length : new int[] { 16, 24, 64 }) {
+			Secret secret = Secret.random(length);
+			for (AeadAlgorithm algorithm : AeadAlgorithm.values()) {
+				assertThrows(IllegalArgumentException.class, () -> secret.toKey(algorithm));
+			}
+		}
 	}
 }

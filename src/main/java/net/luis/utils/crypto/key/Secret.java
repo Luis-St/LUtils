@@ -18,6 +18,9 @@
 
 package net.luis.utils.crypto.key;
 
+import net.luis.utils.crypto.algorithm.AeadAlgorithm;
+import net.luis.utils.crypto.algorithm.MacAlgorithm;
+import net.luis.utils.crypto.exception.CryptoException;
 import net.luis.utils.crypto.util.CryptoBytes;
 import net.luis.utils.crypto.util.CryptoRandom;
 import org.jspecify.annotations.NonNull;
@@ -132,7 +135,7 @@ public final class Secret implements AutoCloseable {
 	
 	/**
 	 * Wraps this secret's material in a JCA secret key for the given algorithm.<br>
-	 * The key shares the array with this secret, so it stops being usable once this secret is closed.<br>
+	 * The key holds its own copy of the material, so it stays usable after this secret is closed and is not wiped along with it.<br>
 	 *
 	 * @param algorithm The JCA algorithm name the key is for
 	 * @return The wrapped key
@@ -142,6 +145,59 @@ public final class Secret implements AutoCloseable {
 	public @NonNull SecretKey toKey(@NonNull String algorithm) {
 		Objects.requireNonNull(algorithm, "Algorithm must not be null");
 		return new SecretKeySpec(this.material(), algorithm);
+	}
+	
+	/**
+	 * Wraps this secret's material in a key for the given authenticated cipher.<br>
+	 * <p>
+	 *     This is the typed form of {@link #toKey(String)} and is the one to prefer, since the JCA name comes off the algorithm instead of a literal at the call site.<br>
+	 *     The length is checked here, because every mode takes a key of exactly one length and a mismatch is a construction error rather than something to discover inside a provider.
+	 * </p>
+	 * <p>
+	 *     The key holds its own copy of the material, so it stays usable after this secret is closed and is not wiped along with it.<br>
+	 *     Keeping the key alive therefore keeps the material alive, which is why a key should not outlive the secret it was taken from.<br>
+	 *     Note that a key encapsulation shared secret is not a cipher key and must be run through {@link net.luis.utils.crypto.Kdfs} first.
+	 * </p>
+	 *
+	 * @param algorithm The algorithm the key is for
+	 * @return The wrapped key
+	 * @throws NullPointerException If the algorithm is null
+	 * @throws IllegalStateException If this secret has already been closed
+	 * @throws IllegalArgumentException If this secret does not have the length the algorithm requires
+	 */
+	public @NonNull SecretKey toKey(@NonNull AeadAlgorithm algorithm) {
+		Objects.requireNonNull(algorithm, "Algorithm must not be null");
+		if (this.length() != algorithm.keyLength()) {
+			throw new IllegalArgumentException(algorithm + " requires a " + algorithm.keyLength() + " byte key, got " + this.length());
+		}
+		
+		return new SecretKeySpec(this.material(), algorithm.keyJcaName());
+	}
+	
+	/**
+	 * Wraps this secret's material in a key for the given message authentication code.<br>
+	 * <p>
+	 *     HMAC accepts a key of any length, so no length is enforced here beyond rejecting an empty secret.<br>
+	 *     A secret shorter than {@link MacAlgorithm#recommendedKeyLength()} reduces the strength of the mac accordingly.
+	 * </p>
+	 * <p>
+	 *     The key holds its own copy of the material, so it stays usable after this secret is closed and is not wiped along with it.<br>
+	 *     Keeping the key alive therefore keeps the material alive, which is why a key should not outlive the secret it was taken from.
+	 * </p>
+	 *
+	 * @param algorithm The algorithm the key is for
+	 * @return The wrapped key
+	 * @throws NullPointerException If the algorithm is null
+	 * @throws IllegalStateException If this secret has already been closed
+	 * @throws CryptoException If this secret is empty
+	 */
+	public @NonNull SecretKey toKey(@NonNull MacAlgorithm algorithm) {
+		Objects.requireNonNull(algorithm, "Algorithm must not be null");
+		if (this.length() == 0) {
+			throw new CryptoException("Cannot create a " + algorithm + " key from an empty secret");
+		}
+		
+		return new SecretKeySpec(this.material(), algorithm.jcaName());
 	}
 	
 	/**

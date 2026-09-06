@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import javax.crypto.KEM;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 

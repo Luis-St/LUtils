@@ -21,6 +21,7 @@ package net.luis.utils.crypto;
 import net.luis.utils.crypto.algorithm.HashAlgorithm;
 import net.luis.utils.crypto.exception.UnsupportedAlgorithmException;
 import net.luis.utils.crypto.util.CryptoBytes;
+import net.luis.utils.resources.ResourceLocation;
 import net.luis.utils.util.UUIDs;
 import org.jspecify.annotations.NonNull;
 
@@ -231,6 +232,25 @@ public final class Hasher {
 			return this.update(input);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Failed to read the file to hash: " + file, e);
+		}
+	}
+	
+	/**
+	 * Updates this hasher with the contents of the given resource.<br>
+	 * The resource may live on the classpath or on the filesystem.<br>
+	 *
+	 * @param resource The resource to read
+	 * @return This hasher
+	 * @throws NullPointerException If the resource is null
+	 * @throws UncheckedIOException If reading the resource fails
+	 */
+	public @NonNull Hasher update(@NonNull ResourceLocation resource) {
+		Objects.requireNonNull(resource, "Resource must not be null");
+		
+		try (InputStream input = resource.getStream()) {
+			return this.update(input);
+		} catch (IOException e) {
+			throw new UncheckedIOException("Failed to read the resource to hash: " + resource, e);
 		}
 	}
 	

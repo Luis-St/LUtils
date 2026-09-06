@@ -24,6 +24,7 @@ import net.luis.utils.crypto.exception.AuthenticationException;
 import net.luis.utils.crypto.exception.CryptoException;
 import net.luis.utils.crypto.util.CryptoBytes;
 import net.luis.utils.crypto.util.CryptoRandom;
+import net.luis.utils.resources.ResourceLocation;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.function.Executable;
 
@@ -49,6 +50,7 @@ class VerifierTest {
 	private static final Path FILE = DIRECTORY.resolve("content.bin");
 	private static final Path EMPTY_FILE = DIRECTORY.resolve("empty.bin");
 	private static final Path LARGE_FILE = DIRECTORY.resolve("large.bin");
+	private static final Path CHANGING_FILE = DIRECTORY.resolve("changing.bin");
 	
 	private static KeyPair ed25519;
 	private static byte[] largeContent;
@@ -74,6 +76,7 @@ class VerifierTest {
 		Files.deleteIfExists(FILE);
 		Files.deleteIfExists(EMPTY_FILE);
 		Files.deleteIfExists(LARGE_FILE);
+		Files.deleteIfExists(CHANGING_FILE);
 		Files.deleteIfExists(DIRECTORY);
 	}
 	
@@ -533,6 +536,133 @@ class VerifierTest {
 		assertTrue(verifier().update(DATA).verify(signature));
 		assertTrue(verifier().update(new ByteArrayInputStream(DATA)).verify(signature));
 		assertTrue(verifier().update(FILE).verify(signature));
+	}
+	
+	@Test
+	void updateWithNullResource() {
+		assertThrows(NullPointerException.class, () -> verifier().update((ResourceLocation) null));
+	}
+	
+	@Test
+	void updateWithMissingExternalResource() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.resolve("missing.bin").toString());
+		UncheckedIOException exception = assertThrows(UncheckedIOException.class, () -> verifier().update(resource));
+		assertTrue(exception.getMessage().contains("missing.bin"));
+	}
+	
+	@Test
+	void updateWithMissingInternalResource() {
+		ResourceLocation resource = ResourceLocation.internal("does/not/exist.bin");
+		assertThrows(NullPointerException.class, () -> verifier().update(resource));
+	}
+	
+	@Test
+	void updateWithDirectoryAsResource() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.toString());
+		assertThrows(UncheckedIOException.class, () -> verifier().update(resource));
+	}
+	
+	@Test
+	void updateWithExternalResource() {
+		Verifier verifier = verifier();
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		
+		assertSame(verifier, verifier.update(resource));
+		assertTrue(verifier.verify(signature));
+	}
+	
+	@Test
+	void updateWithInternalResource() throws Exception {
+		ResourceLocation resource = ResourceLocation.internal("ResourceLocation/ResourceLocation.json");
+		byte[] resourceSignature = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), resource.getBytes());
+		
+		assertTrue(verifier().update(resource).verify(resourceSignature));
+	}
+	
+	@Test
+	void updateResourceWithWrongSignature() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		assertFalse(verifier().update(resource).verify(emptySignature));
+	}
+	
+	@Test
+	void updateWithEmptyResource() {
+		ResourceLocation resource = ResourceLocation.external(EMPTY_FILE.toString());
+		assertTrue(verifier().update(resource).verify(emptySignature));
+	}
+	
+	@Test
+	void updateResourceMatchesUpdateBytes() {
+		assertTrue(verifier().update(ResourceLocation.external(FILE.toString())).verify(signature));
+		assertTrue(verifier().update(DATA).verify(signature));
+	}
+	
+	@Test
+	void updateResourceMatchesUpdateFile() {
+		assertTrue(verifier().update(ResourceLocation.external(FILE.toString())).verify(signature));
+		assertTrue(verifier().update(FILE).verify(signature));
+	}
+	
+	@Test
+	void updateResourceReturnsSameVerifier() {
+		Verifier verifier = verifier();
+		assertSame(verifier, verifier.update(ResourceLocation.external(FILE.toString())));
+		assertSame(verifier, verifier.update(ResourceLocation.external(EMPTY_FILE.toString())));
+	}
+	
+	@Test
+	void updateResourceCombinedWithOtherUpdates() {
+		byte[] prefix = "prefix".getBytes(StandardCharsets.UTF_8);
+		byte[] suffix = "suffix".getBytes(StandardCharsets.UTF_8);
+		byte[] combined = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), CryptoBytes.concat(prefix, DATA, suffix));
+		
+		assertTrue(verifier().update(prefix).update(ResourceLocation.external(FILE.toString())).update(suffix).verify(combined));
+		assertFalse(verifier().update(prefix).update(ResourceLocation.external(FILE.toString())).update(suffix).verify(signature));
+	}
+	
+	@Test
+	void updateResourceMultipleTimes() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		byte[] doubled = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), CryptoBytes.concat(DATA, DATA));
+		
+		assertTrue(verifier().update(resource).update(resource).verify(doubled));
+		assertFalse(verifier().update(resource).update(resource).verify(signature));
+	}
+	
+	@Test
+	void updateLargeResource() {
+		byte[] largeSignature = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), largeContent);
+		assertTrue(verifier().update(ResourceLocation.external(LARGE_FILE.toString())).verify(largeSignature));
+	}
+	
+	@Test
+	void updateResourceAfterVerifyReuse() {
+		Verifier verifier = verifier();
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		
+		assertTrue(verifier.update(resource).verify(signature));
+		assertTrue(verifier.update(resource).verify(signature));
+	}
+	
+	@Test
+	void updateResourceThenRequire() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		
+		assertDoesNotThrow(() -> verifier().update(resource).require(signature));
+		assertThrows(AuthenticationException.class, () -> verifier().update(resource).require(emptySignature));
+	}
+	
+	@Test
+	void updateResourceDetectsContentChange() throws Exception {
+		Files.write(CHANGING_FILE, DATA);
+		ResourceLocation resource = ResourceLocation.external(CHANGING_FILE.toString());
+		assertTrue(verifier().update(resource).verify(signature));
+		
+		byte[] changed = Arrays.copyOf(DATA, DATA.length);
+		changed[0] ^= 0x01;
+		Files.write(CHANGING_FILE, changed);
+		
+		assertFalse(verifier().update(resource).verify(signature));
 	}
 	
 	private static final class FailingStream extends InputStream {

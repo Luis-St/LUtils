@@ -21,6 +21,7 @@ package net.luis.utils.crypto;
 import net.luis.utils.crypto.algorithm.NativeSignatureAlgorithm;
 import net.luis.utils.crypto.exception.AuthenticationException;
 import net.luis.utils.crypto.exception.CryptoException;
+import net.luis.utils.resources.ResourceLocation;
 import org.jspecify.annotations.NonNull;
 
 import java.io.*;
@@ -206,6 +207,26 @@ public final class Verifier {
 			return this.update(input);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Failed to read the file to verify: " + file, e);
+		}
+	}
+	
+	/**
+	 * Updates this verifier with the contents of the given resource.<br>
+	 * The resource may live on the classpath or on the filesystem.<br>
+	 *
+	 * @param resource The resource to read
+	 * @return This verifier
+	 * @throws NullPointerException If the resource is null
+	 * @throws UncheckedIOException If reading the resource fails
+	 * @throws CryptoException If the update fails
+	 */
+	public @NonNull Verifier update(@NonNull ResourceLocation resource) {
+		Objects.requireNonNull(resource, "Resource must not be null");
+		
+		try (InputStream input = resource.getStream()) {
+			return this.update(input);
+		} catch (IOException e) {
+			throw new UncheckedIOException("Failed to read the resource to verify: " + resource, e);
 		}
 	}
 	

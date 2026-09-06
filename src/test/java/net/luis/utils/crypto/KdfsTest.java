@@ -18,8 +18,7 @@
 
 package net.luis.utils.crypto;
 
-import net.luis.utils.crypto.algorithm.AeadAlgorithm;
-import net.luis.utils.crypto.algorithm.KdfAlgorithm;
+import net.luis.utils.crypto.algorithm.*;
 import net.luis.utils.crypto.key.Secret;
 import net.luis.utils.crypto.util.CryptoRandom;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,6 +30,7 @@ import javax.crypto.spec.HKDFParameterSpec;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -583,6 +583,401 @@ class KdfsTest {
 			SecretKey key = Kdfs.deriveKey(algorithm, IKM, SALT, INFO, AeadAlgorithm.XCHACHA20_POLY1305);
 			assertEquals(32, key.getEncoded().length);
 			assertEquals("ChaCha20", key.getAlgorithm());
+		}
+	}
+	
+	@Test
+	void extractSecretWithNullSecret() {
+		assertThrows(NullPointerException.class, () -> Kdfs.extract(ALGORITHM, SALT, (Secret) null));
+	}
+	
+	@Test
+	void extractSecretWithNullAlgorithm() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertThrows(NullPointerException.class, () -> Kdfs.extract(null, SALT, ikm));
+		}
+	}
+	
+	@Test
+	void extractSecretAfterClose() {
+		Secret ikm = Secret.copyOf(IKM);
+		ikm.close();
+		assertThrows(IllegalStateException.class, () -> Kdfs.extract(ALGORITHM, SALT, ikm));
+	}
+	
+	@Test
+	void extractSecretAfterCloseWithNullAlgorithm() {
+		Secret ikm = Secret.copyOf(IKM);
+		ikm.close();
+		assertThrows(IllegalStateException.class, () -> Kdfs.extract(null, SALT, ikm));
+	}
+	
+	@Test
+	void deriveSecretWithNullSecret() {
+		assertThrows(NullPointerException.class, () -> Kdfs.derive(ALGORITHM, (Secret) null, SALT, INFO, 32));
+	}
+	
+	@Test
+	void deriveSecretWithNullAlgorithm() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertThrows(NullPointerException.class, () -> Kdfs.derive(null, ikm, SALT, INFO, 32));
+		}
+	}
+	
+	@Test
+	void deriveSecretAfterClose() {
+		Secret ikm = Secret.copyOf(IKM);
+		ikm.close();
+		assertThrows(IllegalStateException.class, () -> Kdfs.derive(ALGORITHM, ikm, SALT, INFO, 32));
+	}
+	
+	@Test
+	void deriveSecretWithZeroLength() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertThrows(IllegalArgumentException.class, () -> Kdfs.derive(ALGORITHM, ikm, SALT, INFO, 0));
+		}
+	}
+	
+	@Test
+	void deriveSecretWithNegativeLength() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertThrows(IllegalArgumentException.class, () -> Kdfs.derive(ALGORITHM, ikm, SALT, INFO, -1));
+		}
+	}
+	
+	@Test
+	void deriveSecretWithExcessiveLength() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertThrows(IllegalArgumentException.class, () -> Kdfs.derive(ALGORITHM, ikm, SALT, INFO, 255 * ALGORITHM.outputLength() + 1));
+		}
+	}
+	
+	@Test
+	void deriveKeyMacWithNullTarget() {
+		assertThrows(NullPointerException.class, () -> Kdfs.deriveKey(ALGORITHM, IKM, SALT, INFO, (MacAlgorithm) null));
+	}
+	
+	@Test
+	void deriveKeyMacWithNullAlgorithm() {
+		assertThrows(NullPointerException.class, () -> Kdfs.deriveKey(null, IKM, SALT, INFO, MacAlgorithm.HMAC_SHA_256));
+	}
+	
+	@Test
+	void deriveKeyMacWithNullIkm() {
+		assertThrows(NullPointerException.class, () -> Kdfs.deriveKey(ALGORITHM, (byte[]) null, SALT, INFO, MacAlgorithm.HMAC_SHA_256));
+	}
+	
+	@Test
+	void deriveKeySecretAeadWithNullSecret() {
+		assertThrows(NullPointerException.class, () -> Kdfs.deriveKey(ALGORITHM, (Secret) null, SALT, INFO, AeadAlgorithm.AES_256_GCM));
+	}
+	
+	@Test
+	void deriveKeySecretAeadWithNullTarget() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertThrows(NullPointerException.class, () -> Kdfs.deriveKey(ALGORITHM, ikm, SALT, INFO, (AeadAlgorithm) null));
+		}
+	}
+	
+	@Test
+	void deriveKeySecretAeadAfterClose() {
+		Secret ikm = Secret.copyOf(IKM);
+		ikm.close();
+		assertThrows(IllegalStateException.class, () -> Kdfs.deriveKey(ALGORITHM, ikm, SALT, INFO, AeadAlgorithm.AES_256_GCM));
+	}
+	
+	@Test
+	void deriveKeySecretAeadAfterCloseWithNullTarget() {
+		Secret ikm = Secret.copyOf(IKM);
+		ikm.close();
+		assertThrows(IllegalStateException.class, () -> Kdfs.deriveKey(ALGORITHM, ikm, SALT, INFO, (AeadAlgorithm) null));
+	}
+	
+	@Test
+	void deriveKeySecretMacWithNullSecret() {
+		assertThrows(NullPointerException.class, () -> Kdfs.deriveKey(ALGORITHM, (Secret) null, SALT, INFO, MacAlgorithm.HMAC_SHA_256));
+	}
+	
+	@Test
+	void deriveKeySecretMacWithNullTarget() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertThrows(NullPointerException.class, () -> Kdfs.deriveKey(ALGORITHM, ikm, SALT, INFO, (MacAlgorithm) null));
+		}
+	}
+	
+	@Test
+	void deriveKeySecretMacAfterClose() {
+		Secret ikm = Secret.copyOf(IKM);
+		ikm.close();
+		assertThrows(IllegalStateException.class, () -> Kdfs.deriveKey(ALGORITHM, ikm, SALT, INFO, MacAlgorithm.HMAC_SHA_256));
+	}
+	
+	@Test
+	void extractSecretMatchesByteArrayOverload() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			byte[] fromSecret = materialOf(Kdfs.extract(ALGORITHM, SALT, ikm));
+			assertEquals(ALGORITHM.outputLength(), fromSecret.length);
+			assertArrayEquals(materialOf(Kdfs.extract(ALGORITHM, SALT, IKM)), fromSecret);
+		}
+	}
+	
+	@Test
+	void extractSecretWithNullSalt() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertArrayEquals(materialOf(Kdfs.extract(ALGORITHM, null, IKM)), materialOf(Kdfs.extract(ALGORITHM, null, ikm)));
+		}
+	}
+	
+	@Test
+	void extractSecretWithEmptySalt() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertArrayEquals(materialOf(Kdfs.extract(ALGORITHM, null, ikm)), materialOf(Kdfs.extract(ALGORITHM, new byte[0], ikm)));
+		}
+	}
+	
+	@Test
+	void extractSecretWithSalt() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertFalse(Arrays.equals(materialOf(Kdfs.extract(ALGORITHM, null, ikm)), materialOf(Kdfs.extract(ALGORITHM, SALT, ikm))));
+		}
+	}
+	
+	@Test
+	void extractSecretDoesNotCloseInput() {
+		try (Secret ikm = Secret.copyOf(IKM); Secret prk = Kdfs.extract(ALGORITHM, SALT, ikm)) {
+			assertArrayEquals(IKM, ikm.material());
+			assertNotSame(ikm, prk);
+			assertEquals(ALGORITHM.outputLength(), prk.material().length);
+		}
+	}
+	
+	@Test
+	void deriveSecretMatchesByteArrayOverload() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertArrayEquals(derived(ALGORITHM, IKM, SALT, INFO, 64), materialOf(Kdfs.derive(ALGORITHM, ikm, SALT, INFO, 64)));
+		}
+	}
+	
+	@Test
+	void deriveSecretWithMinimumLength() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertEquals(1, materialOf(Kdfs.derive(ALGORITHM, ikm, SALT, INFO, 1)).length);
+		}
+	}
+	
+	@Test
+	void deriveSecretWithMaximumLength() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			int maximum = 255 * ALGORITHM.outputLength();
+			assertEquals(maximum, materialOf(Kdfs.derive(ALGORITHM, ikm, SALT, INFO, maximum)).length);
+		}
+	}
+	
+	@Test
+	void deriveSecretDoesNotCloseInput() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			materialOf(Kdfs.derive(ALGORITHM, ikm, SALT, INFO, 32));
+			assertArrayEquals(IKM, ikm.material());
+		}
+	}
+	
+	@Test
+	void deriveKeyMacProducesRecommendedLength() {
+		SecretKey key = Kdfs.deriveKey(ALGORITHM, IKM, SALT, INFO, MacAlgorithm.HMAC_SHA_256);
+		assertEquals(MacAlgorithm.HMAC_SHA_256.recommendedKeyLength(), key.getEncoded().length);
+		assertEquals(MacAlgorithm.HMAC_SHA_256.jcaName(), key.getAlgorithm());
+	}
+	
+	@Test
+	void deriveKeySecretAeadMatchesByteArrayOverload() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			SecretKey fromSecret = Kdfs.deriveKey(ALGORITHM, ikm, SALT, INFO, AeadAlgorithm.AES_256_GCM);
+			SecretKey fromBytes = Kdfs.deriveKey(ALGORITHM, IKM, SALT, INFO, AeadAlgorithm.AES_256_GCM);
+			
+			assertArrayEquals(fromBytes.getEncoded(), fromSecret.getEncoded());
+			assertEquals(fromBytes.getAlgorithm(), fromSecret.getAlgorithm());
+		}
+	}
+	
+	@Test
+	void deriveKeySecretMacMatchesByteArrayOverload() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			SecretKey fromSecret = Kdfs.deriveKey(ALGORITHM, ikm, SALT, INFO, MacAlgorithm.HMAC_SHA_512);
+			SecretKey fromBytes = Kdfs.deriveKey(ALGORITHM, IKM, SALT, INFO, MacAlgorithm.HMAC_SHA_512);
+			
+			assertArrayEquals(fromBytes.getEncoded(), fromSecret.getEncoded());
+			assertEquals(fromBytes.getAlgorithm(), fromSecret.getAlgorithm());
+		}
+	}
+	
+	@Test
+	void deriveKeySecretDoesNotCloseInput() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			Kdfs.deriveKey(ALGORITHM, ikm, SALT, INFO, AeadAlgorithm.AES_256_GCM);
+			assertArrayEquals(IKM, ikm.material());
+			
+			Kdfs.deriveKey(ALGORITHM, ikm, SALT, INFO, MacAlgorithm.HMAC_SHA_256);
+			assertArrayEquals(IKM, ikm.material());
+		}
+	}
+	
+	@Test
+	void extractSecretForEveryAlgorithm() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			for (KdfAlgorithm algorithm : KdfAlgorithm.values()) {
+				assertEquals(algorithm.outputLength(), materialOf(Kdfs.extract(algorithm, SALT, ikm)).length);
+			}
+		}
+	}
+	
+	@Test
+	void deriveSecretIsDeterministic() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertArrayEquals(materialOf(Kdfs.derive(ALGORITHM, ikm, SALT, INFO, 48)), materialOf(Kdfs.derive(ALGORITHM, ikm, SALT, INFO, 48)));
+		}
+	}
+	
+	@Test
+	void deriveSecretWithNullInfo() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			assertArrayEquals(derived(ALGORITHM, IKM, SALT, null, 32), materialOf(Kdfs.derive(ALGORITHM, ikm, SALT, null, 32)));
+		}
+	}
+	
+	@Test
+	void deriveSecretWithEmptyInfo() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			byte[] withNull = materialOf(Kdfs.derive(ALGORITHM, ikm, SALT, null, 32));
+			assertArrayEquals(withNull, materialOf(Kdfs.derive(ALGORITHM, ikm, SALT, new byte[0], 32)));
+			assertFalse(Arrays.equals(withNull, materialOf(Kdfs.derive(ALGORITHM, ikm, SALT, INFO, 32))));
+		}
+	}
+	
+	@Test
+	void deriveKeyMacForEveryMacAlgorithm() {
+		for (MacAlgorithm target : MacAlgorithm.values()) {
+			SecretKey key = Kdfs.deriveKey(ALGORITHM, IKM, SALT, INFO, target);
+			assertEquals(target.recommendedKeyLength(), key.getEncoded().length);
+			assertEquals(target.jcaName(), key.getAlgorithm());
+		}
+	}
+	
+	@Test
+	void deriveKeySecretAeadForEveryAeadAlgorithm() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			for (AeadAlgorithm target : AeadAlgorithm.values()) {
+				SecretKey key = Kdfs.deriveKey(ALGORITHM, ikm, SALT, INFO, target);
+				assertEquals(target.keyLength(), key.getEncoded().length);
+				assertEquals(target.keyJcaName(), key.getAlgorithm());
+			}
+		}
+	}
+	
+	@Test
+	void deriveKeyAeadStillUsesKeyJcaName() {
+		for (AeadAlgorithm target : AeadAlgorithm.values()) {
+			SecretKey key = Kdfs.deriveKey(ALGORITHM, IKM, SALT, INFO, target);
+			assertEquals(target.keyJcaName(), key.getAlgorithm());
+			assertArrayEquals(derived(ALGORITHM, IKM, SALT, INFO, target.keyLength()), key.getEncoded());
+		}
+	}
+	
+	@Test
+	void extractSecretWithEmptySecret() {
+		try (Secret empty = Secret.adopt(new byte[0]); Secret filled = Secret.copyOf(IKM)) {
+			byte[] material = assertDoesNotThrow(() -> materialOf(Kdfs.extract(ALGORITHM, SALT, empty)));
+			assertEquals(ALGORITHM.outputLength(), material.length);
+			assertFalse(Arrays.equals(material, materialOf(Kdfs.extract(ALGORITHM, SALT, filled))));
+		}
+	}
+	
+	@Test
+	void deriveKeyMacDiffersByInfo() {
+		SecretKey clientToServer = Kdfs.deriveKey(ALGORITHM, IKM, SALT, "c2s".getBytes(StandardCharsets.UTF_8), MacAlgorithm.HMAC_SHA_256);
+		SecretKey serverToClient = Kdfs.deriveKey(ALGORITHM, IKM, SALT, "s2c".getBytes(StandardCharsets.UTF_8), MacAlgorithm.HMAC_SHA_256);
+		
+		assertFalse(Arrays.equals(clientToServer.getEncoded(), serverToClient.getEncoded()));
+		assertEquals(MacAlgorithm.HMAC_SHA_256.recommendedKeyLength(), clientToServer.getEncoded().length);
+		assertEquals(MacAlgorithm.HMAC_SHA_256.recommendedKeyLength(), serverToClient.getEncoded().length);
+	}
+	
+	@Test
+	void deriveKeyPairFromOneSharedSecret() {
+		KeyPair pair = Kems.generateKeyPair(CryptoSuite.current().kem());
+		try (Kems.Encapsulation encapsulated = Kems.encapsulate(CryptoSuite.current().kem(), pair.getPublic());
+			 Secret shared = Kems.decapsulate(CryptoSuite.current().kem(), pair.getPrivate(), encapsulated.encapsulation())) {
+			SecretKey encryption = Kdfs.deriveKey(ALGORITHM, shared, SALT, "c2s".getBytes(StandardCharsets.UTF_8), AeadAlgorithm.AES_256_GCM);
+			SecretKey confirmation = Kdfs.deriveKey(ALGORITHM, shared, SALT, "c2s-finished".getBytes(StandardCharsets.UTF_8), MacAlgorithm.HMAC_SHA_256);
+			
+			assertFalse(Arrays.equals(encryption.getEncoded(), confirmation.getEncoded()));
+			assertNotEquals(0, shared.material().length);
+			
+			byte[] nonce = AeadAlgorithm.AES_256_GCM.sequenceNonce(0);
+			byte[] ciphertext = Aeads.encrypt(AeadAlgorithm.AES_256_GCM, encryption, nonce, IKM, null);
+			assertArrayEquals(IKM, Aeads.decrypt(AeadAlgorithm.AES_256_GCM, encryption, nonce, ciphertext, null));
+			assertTrue(Macs.verify(MacAlgorithm.HMAC_SHA_256, confirmation, IKM, Macs.mac(MacAlgorithm.HMAC_SHA_256, confirmation, IKM)));
+		}
+	}
+	
+	@Test
+	void deriveKeySecretMatchesDeriveThenToKey() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			SecretKey shortcut = Kdfs.deriveKey(ALGORITHM, ikm, SALT, INFO, AeadAlgorithm.AES_256_GCM);
+			try (Secret material = Kdfs.derive(ALGORITHM, ikm, SALT, INFO, AeadAlgorithm.AES_256_GCM.keyLength())) {
+				SecretKey longForm = material.toKey(AeadAlgorithm.AES_256_GCM);
+				assertArrayEquals(longForm.getEncoded(), shortcut.getEncoded());
+				assertEquals(longForm.getAlgorithm(), shortcut.getAlgorithm());
+			}
+		}
+	}
+	
+	@Test
+	void extractThenExpandMatchesDeriveSecret() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			byte[] twoStep;
+			try (Secret prk = Kdfs.extract(ALGORITHM, SALT, ikm)) {
+				twoStep = materialOf(Kdfs.expand(ALGORITHM, prk, INFO, 40));
+			}
+			assertArrayEquals(twoStep, materialOf(Kdfs.derive(ALGORITHM, ikm, SALT, INFO, 40)));
+		}
+	}
+	
+	@Test
+	void deriveSecretAcrossAlgorithmsDiffers() {
+		try (Secret ikm = Secret.copyOf(IKM)) {
+			byte[] sha256 = materialOf(Kdfs.derive(KdfAlgorithm.HKDF_SHA_256, ikm, SALT, INFO, 32));
+			byte[] sha512 = materialOf(Kdfs.derive(KdfAlgorithm.HKDF_SHA_512, ikm, SALT, INFO, 32));
+			assertFalse(Arrays.equals(sha256, sha512));
+		}
+	}
+	
+	@Test
+	void deriveKeySecretReusableForManyDerivations() {
+		Secret ikm = Secret.copyOf(IKM);
+		Set<String> keys = new HashSet<>();
+		for (int i = 0; i < 5; i++) {
+			SecretKey key = Kdfs.deriveKey(ALGORITHM, ikm, SALT, ("info-" + i).getBytes(StandardCharsets.UTF_8), AeadAlgorithm.AES_256_GCM);
+			keys.add(HexFormat.of().formatHex(key.getEncoded()));
+		}
+		
+		assertEquals(5, keys.size());
+		assertArrayEquals(IKM, ikm.material());
+		ikm.close();
+		assertThrows(IllegalStateException.class, ikm::material);
+	}
+	
+	@Test
+	void deriveKeyFromDecapsulatedSecretRoundTrips() {
+		KeyPair pair = Kems.generateKeyPair(CryptoSuite.current().kem());
+		try (Kems.Encapsulation encapsulated = Kems.encapsulate(CryptoSuite.current().kem(), pair.getPublic());
+			 Secret received = Kems.decapsulate(CryptoSuite.current().kem(), pair.getPrivate(), encapsulated.encapsulation())) {
+			SecretKey sender = Kdfs.deriveKey(ALGORITHM, encapsulated.sharedSecret(), SALT, INFO, AeadAlgorithm.AES_256_GCM);
+			SecretKey recipient = Kdfs.deriveKey(ALGORITHM, received, SALT, INFO, AeadAlgorithm.AES_256_GCM);
+			assertArrayEquals(sender.getEncoded(), recipient.getEncoded());
+			
+			byte[] nonce = AeadAlgorithm.AES_256_GCM.sequenceNonce(1);
+			byte[] ciphertext = Aeads.encrypt(AeadAlgorithm.AES_256_GCM, sender, nonce, IKM, null);
+			assertArrayEquals(IKM, Aeads.decrypt(AeadAlgorithm.AES_256_GCM, recipient, nonce, ciphertext, null));
 		}
 	}
 }

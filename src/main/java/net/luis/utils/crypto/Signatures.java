@@ -24,6 +24,7 @@ import net.luis.utils.crypto.key.HybridPrivateKey;
 import net.luis.utils.crypto.key.HybridPublicKey;
 import net.luis.utils.crypto.util.CryptoRandom;
 import net.luis.utils.function.throwable.ThrowableSupplier;
+import net.luis.utils.resources.ResourceLocation;
 import org.jspecify.annotations.NonNull;
 
 import java.io.*;
@@ -180,6 +181,27 @@ public final class Signatures {
 	}
 	
 	/**
+	 * Signs the contents of the given resource.<br>
+	 * <p>
+	 *     The resource may live on the classpath or on the filesystem.<br>
+	 *     It is re-opened once per component, which is what makes it usable with a hybrid scheme.
+	 * </p>
+	 *
+	 * @param algorithm The scheme to sign with
+	 * @param key The private key to sign with
+	 * @param resource The resource to sign
+	 * @return The produced signature
+	 * @throws NullPointerException If the algorithm, the key or the resource is null
+	 * @throws ClassCastException If a hybrid scheme is given a key that is not a hybrid private key
+	 * @throws UncheckedIOException If opening or reading the resource fails
+	 * @throws CryptoException If the signing fails
+	 */
+	public static byte @NonNull [] sign(@NonNull SignatureAlgorithm algorithm, @NonNull PrivateKey key, @NonNull ResourceLocation resource) {
+		Objects.requireNonNull(resource, "Resource must not be null");
+		return sign(algorithm, key, resource::getStream);
+	}
+	
+	/**
 	 * Signs everything the given stream yields.<br>
 	 * <p>
 	 *     Restricted to the schemes that read the message exactly once.<br>
@@ -259,6 +281,25 @@ public final class Signatures {
 	public static boolean verify(@NonNull SignatureAlgorithm algorithm, @NonNull PublicKey key, @NonNull Path file, byte @NonNull [] signature) {
 		Objects.requireNonNull(file, "File must not be null");
 		return verify(algorithm, key, () -> Files.newInputStream(file), signature);
+	}
+	
+	/**
+	 * Checks the given signature against the contents of the given resource.<br>
+	 * The resource may live on the classpath or on the filesystem.<br>
+	 *
+	 * @param algorithm The scheme to verify with
+	 * @param key The public key to verify with
+	 * @param resource The resource the signature should cover
+	 * @param signature The signature to check
+	 * @return True if the signature matches the resource and the key
+	 * @throws NullPointerException If the algorithm, the key, the resource or the signature is null
+	 * @throws ClassCastException If a hybrid scheme is given a key that is not a hybrid public key
+	 * @throws MalformedDataException If a hybrid signature is malformed
+	 * @throws UncheckedIOException If opening or reading the resource fails
+	 */
+	public static boolean verify(@NonNull SignatureAlgorithm algorithm, @NonNull PublicKey key, @NonNull ResourceLocation resource, byte @NonNull [] signature) {
+		Objects.requireNonNull(resource, "Resource must not be null");
+		return verify(algorithm, key, resource::getStream, signature);
 	}
 	
 	/**

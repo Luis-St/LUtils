@@ -22,6 +22,7 @@ import net.luis.utils.crypto.exception.CryptoException;
 import net.luis.utils.crypto.exception.MalformedDataException;
 import net.luis.utils.crypto.util.PemDocument;
 import net.luis.utils.io.reader.StringReader;
+import net.luis.utils.resources.ResourceLocation;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
@@ -253,6 +254,26 @@ public final class Pems {
 	}
 	
 	/**
+	 * Writes the given key to the given resource, readable only by its owner.<br>
+	 * <p>
+	 *     Only resources on the filesystem can be written to, a resource on the classpath is rejected.<br>
+	 *     The permissions are handled as described on {@link #write(Path, Key)}.
+	 * </p>
+	 *
+	 * @param resource The resource to write to
+	 * @param key The key to write
+	 * @throws NullPointerException If the resource or the key is null
+	 * @throws UnsupportedOperationException If the resource is on the classpath
+	 * @throws UncheckedIOException If writing fails
+	 */
+	public static void write(@NonNull ResourceLocation resource, @NonNull Key key) {
+		Objects.requireNonNull(resource, "Resource must not be null");
+		Objects.requireNonNull(key, "Key must not be null");
+		
+		write(resource.asPath(), key);
+	}
+	
+	/**
 	 * Reads the first document from the given file.<br>
 	 *
 	 * @param file The file to read
@@ -268,6 +289,26 @@ public final class Pems {
 			return decode(Files.readString(file, StandardCharsets.US_ASCII));
 		} catch (IOException e) {
 			throw new UncheckedIOException("Failed to read the pem file: " + file, e);
+		}
+	}
+	
+	/**
+	 * Reads the first document from the given resource.<br>
+	 * The resource may live on the classpath or on the filesystem.<br>
+	 *
+	 * @param resource The resource to read
+	 * @return The first decoded document
+	 * @throws NullPointerException If the resource is null
+	 * @throws MalformedDataException If the resource holds no document, or a malformed one
+	 * @throws UncheckedIOException If reading fails
+	 */
+	public static @NonNull PemDocument read(@NonNull ResourceLocation resource) {
+		Objects.requireNonNull(resource, "Resource must not be null");
+		
+		try {
+			return decode(new String(resource.getBytes(), StandardCharsets.US_ASCII));
+		} catch (IOException e) {
+			throw new UncheckedIOException("Failed to read the pem resource: " + resource, e);
 		}
 	}
 }

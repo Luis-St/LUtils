@@ -629,6 +629,209 @@ class PemsTest {
 		}
 	}
 	
+	@Test
+	void writeResourceWithNullResource() {
+		assertThrows(NullPointerException.class, () -> Pems.write((ResourceLocation) null, ed25519.getPublic()));
+	}
+	
+	@Test
+	void writeResourceWithNullKey() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.resolve("null-key.pem").toString());
+		assertThrows(NullPointerException.class, () -> Pems.write(resource, null));
+	}
+	
+	@Test
+	void writeResourceWithBothNull() {
+		NullPointerException exception = assertThrows(NullPointerException.class, () -> Pems.write((ResourceLocation) null, null));
+		assertEquals("Resource must not be null", exception.getMessage());
+	}
+	
+	@Test
+	void writeInternalResource() {
+		ResourceLocation resource = ResourceLocation.internal("Pems/document.pem");
+		assertThrows(UnsupportedOperationException.class, () -> Pems.write(resource, ed25519.getPublic()));
+	}
+	
+	@Test
+	void readResourceWithNullResource() {
+		assertThrows(NullPointerException.class, () -> Pems.read((ResourceLocation) null));
+	}
+	
+	@Test
+	void readMissingExternalResource() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.resolve("missing.pem").toString());
+		UncheckedIOException exception = assertThrows(UncheckedIOException.class, () -> Pems.read(resource));
+		assertTrue(exception.getMessage().contains("missing.pem"));
+	}
+	
+	@Test
+	void readMissingInternalResource() {
+		ResourceLocation resource = ResourceLocation.internal("Pems/does-not-exist.pem");
+		assertThrows(NullPointerException.class, () -> Pems.read(resource));
+	}
+	
+	@Test
+	void readResourceWithoutAnyDocument() throws Exception {
+		Path file = DIRECTORY.resolve("plain.txt");
+		Files.writeString(file, "no document here", StandardCharsets.US_ASCII);
+		assertThrows(MalformedDataException.class, () -> Pems.read(ResourceLocation.external(file.toString())));
+	}
+	
+	@Test
+	void readMalformedResource() {
+		ResourceLocation resource = ResourceLocation.external(MALFORMED_FILE.toString());
+		assertThrows(MalformedDataException.class, () -> Pems.read(resource));
+	}
+	
+	@Test
+	void readDirectoryAsResource() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.toString());
+		assertThrows(UncheckedIOException.class, () -> Pems.read(resource));
+	}
+	
+	@Test
+	void writeToExternalResource() throws Exception {
+		Path file = DIRECTORY.resolve("written-resource.pem");
+		Pems.write(ResourceLocation.external(file.toString()), ed25519.getPublic());
+		
+		assertTrue(Files.exists(file));
+		assertEquals(Pems.encode(ed25519.getPublic()), Files.readString(file, StandardCharsets.US_ASCII));
+	}
+	
+	@Test
+	void readFromExternalResource() throws Exception {
+		Path file = DIRECTORY.resolve("read-resource.pem");
+		Files.writeString(file, Pems.encode(ed25519.getPublic()), StandardCharsets.US_ASCII);
+		PemDocument document = Pems.read(ResourceLocation.external(file.toString()));
+		
+		assertEquals(Pems.PUBLIC_KEY, document.label());
+		assertArrayEquals(ed25519.getPublic().getEncoded(), document.content());
+	}
+	
+	@Test
+	void readFromInternalResource() {
+		PemDocument document = Pems.read(ResourceLocation.internal("Pems/document.pem"));
+		
+		assertEquals(Pems.PUBLIC_KEY, document.label());
+		assertArrayEquals(FIXTURE_CONTENT, document.content());
+	}
+	
+	@Test
+	void writeResourceThenReadResource() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.resolve("round-trip-resource.pem").toString());
+		Pems.write(resource, ed25519.getPublic());
+		
+		assertArrayEquals(ed25519.getPublic().getEncoded(), Pems.read(resource).content());
+	}
+	
+	@Test
+	void writeResourceOverwritesExistingContent() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.resolve("overwritten-resource.pem").toString());
+		Pems.write(resource, ed25519.getPublic());
+		Pems.write(resource, ed25519.getPrivate());
+		PemDocument document = Pems.read(resource);
+		
+		assertEquals(Pems.PRIVATE_KEY, document.label());
+		assertArrayEquals(ed25519.getPrivate().getEncoded(), document.content());
+	}
+	
+	@Test
+	void writeResourceCreatesOwnerOnlyFileOnPosix() throws Exception {
+		assumeTrue(posix);
+		Path file = DIRECTORY.resolve("owner-only-resource.pem");
+		Pems.write(ResourceLocation.external(file.toString()), ed25519.getPrivate());
+		
+		assertEquals(PosixFilePermissions.fromString("rw-------"), Files.getPosixFilePermissions(file));
+	}
+	
+	@Test
+	void readResourceReturnsFirstDocument() throws Exception {
+		Path file = DIRECTORY.resolve("two-documents-resource.pem");
+		Files.writeString(file, Pems.encode(ed25519.getPublic()) + Pems.encode(ed25519.getPrivate()), StandardCharsets.US_ASCII);
+		PemDocument document = Pems.read(ResourceLocation.external(file.toString()));
+		
+		assertEquals(Pems.PUBLIC_KEY, document.label());
+		assertArrayEquals(ed25519.getPublic().getEncoded(), document.content());
+	}
+	
+	@Test
+	void readResourceMatchesReadFile() throws Exception {
+		Path file = DIRECTORY.resolve("same-file-resource.pem");
+		Files.writeString(file, Pems.encode(ed25519.getPublic()), StandardCharsets.US_ASCII);
+		PemDocument fromResource = Pems.read(ResourceLocation.external(file.toString()));
+		PemDocument fromFile = Pems.read(file);
+		
+		assertEquals(fromFile.label(), fromResource.label());
+		assertArrayEquals(fromFile.content(), fromResource.content());
+	}
+	
+	@Test
+	void writeResourceThenReadCertificateChain() throws Exception {
+		Path file = DIRECTORY.resolve("certificate-resource.pem");
+		Files.writeString(file, Pems.encode(Pems.CERTIFICATE, certificate.getEncoded()), StandardCharsets.US_ASCII);
+		PemDocument document = Pems.read(ResourceLocation.external(file.toString()));
+		
+		assertEquals(Pems.CERTIFICATE, document.label());
+		CertificateFactory factory = CertificateFactory.getInstance("X.509");
+		assertEquals(certificate, factory.generateCertificate(new ByteArrayInputStream(document.content())));
+	}
+	
+	@Test
+	void readResourceRoundTripsThroughCryptoKeys() throws Exception {
+		KeyPair hybrid = Kems.generateKeyPair(KemAlgorithm.X25519_ML_KEM_768);
+		Path file = DIRECTORY.resolve("hybrid-resource.pem");
+		Files.writeString(file, Pems.encode(hybrid.getPublic()), StandardCharsets.US_ASCII);
+		PemDocument document = Pems.read(ResourceLocation.external(file.toString()));
+		
+		assertEquals(hybrid.getPublic(), CryptoKeys.publicKey(KemAlgorithm.X25519_ML_KEM_768, document.content()));
+	}
+	
+	@Test
+	void decodeReturnsPemDocument() {
+		String pem = Pems.encode(ed25519.getPublic());
+		
+		assertInstanceOf(PemDocument.class, Pems.decode(pem));
+		assertInstanceOf(PemDocument.class, Pems.decode(pem, Pems.PUBLIC_KEY));
+		List<PemDocument> documents = Pems.decodeAll(pem);
+		assertEquals(1, documents.size());
+		assertInstanceOf(PemDocument.class, documents.getFirst());
+	}
+	
+	@Test
+	void readFileReturnsPemDocument() throws Exception {
+		Path file = DIRECTORY.resolve("typed-read.pem");
+		Files.writeString(file, Pems.encode(ed25519.getPublic()), StandardCharsets.US_ASCII);
+		assertInstanceOf(PemDocument.class, Pems.read(file));
+	}
+	
+	@Test
+	void encodeParameterRenameKeepsOutput() {
+		String pem = Pems.encode(Pems.PUBLIC_KEY, FIXTURE_CONTENT);
+		List<String> lines = pem.lines().toList();
+		
+		assertEquals("-----BEGIN PUBLIC KEY-----", lines.getFirst());
+		assertEquals("-----END PUBLIC KEY-----", lines.getLast());
+		assertTrue(lines.subList(1, lines.size() - 1).stream().allMatch(line -> line.length() <= 64));
+		assertArrayEquals(FIXTURE_CONTENT, Pems.decode(pem).content());
+	}
+	
+	@Test
+	void readResourceToleratesTrailingContent() throws Exception {
+		Path file = DIRECTORY.resolve("trailing-resource.pem");
+		Files.writeString(file, Pems.encode(ed25519.getPublic()) + "trailing text\n", StandardCharsets.US_ASCII);
+		PemDocument document = Pems.read(ResourceLocation.external(file.toString()));
+		
+		assertEquals(Pems.PUBLIC_KEY, document.label());
+		assertArrayEquals(ed25519.getPublic().getEncoded(), document.content());
+	}
+	
+	@Test
+	void writeResourceRejectsKeyWithoutEncodedForm() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.resolve("unencodable.pem").toString());
+		NullPointerException exception = assertThrows(NullPointerException.class, () -> Pems.write(resource, new UnencodableKey()));
+		assertEquals("Content must not be null", exception.getMessage());
+	}
+	
 	private record UnencodableKey() implements PublicKey {
 		
 		@Override

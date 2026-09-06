@@ -21,6 +21,7 @@ package net.luis.utils.crypto;
 import net.luis.utils.crypto.algorithm.HashAlgorithm;
 import net.luis.utils.crypto.util.CryptoBytes;
 import net.luis.utils.crypto.util.CryptoRandom;
+import net.luis.utils.resources.ResourceLocation;
 import net.luis.utils.util.UUIDs;
 import org.junit.jupiter.api.*;
 
@@ -517,6 +518,114 @@ class HasherTest {
 	@Test
 	void largeFileCrossesBufferBoundary() {
 		assertArrayEquals(Hashes.hash(HashAlgorithm.SHA_256, largeContent), hasher().update(LARGE_FILE).digest());
+	}
+	
+	@Test
+	void updateWithNullResource() {
+		assertThrows(NullPointerException.class, () -> hasher().update((ResourceLocation) null));
+	}
+	
+	@Test
+	void updateWithMissingExternalResource() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.resolve("missing.bin").toString());
+		UncheckedIOException exception = assertThrows(UncheckedIOException.class, () -> hasher().update(resource));
+		assertTrue(exception.getMessage().contains("missing.bin"));
+	}
+	
+	@Test
+	void updateWithMissingInternalResource() {
+		ResourceLocation resource = ResourceLocation.internal("does/not/exist.bin");
+		assertThrows(NullPointerException.class, () -> hasher().update(resource));
+	}
+	
+	@Test
+	void updateWithDirectoryAsResource() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.toString());
+		assertThrows(UncheckedIOException.class, () -> hasher().update(resource));
+	}
+	
+	@Test
+	void updateWithExternalResource() {
+		Hasher hasher = hasher();
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		
+		assertSame(hasher, hasher.update(resource));
+		assertArrayEquals(Hashes.hash(HashAlgorithm.SHA_256, DATA), hasher.digest());
+	}
+	
+	@Test
+	void updateWithInternalResource() throws Exception {
+		ResourceLocation resource = ResourceLocation.internal("ResourceLocation/ResourceLocation.json");
+		byte[] expected = Hashes.hash(HashAlgorithm.SHA_256, resource.getBytes());
+		assertArrayEquals(expected, hasher().update(resource).digest());
+	}
+	
+	@Test
+	void updateWithEmptyResource() {
+		ResourceLocation resource = ResourceLocation.external(EMPTY_FILE.toString());
+		assertArrayEquals(EMPTY_DIGEST, hasher().update(resource).digest());
+	}
+	
+	@Test
+	void updateResourceReturnsSameHasher() {
+		Hasher hasher = hasher();
+		assertSame(hasher, hasher.update(ResourceLocation.external(FILE.toString())));
+		assertSame(hasher, hasher.update(ResourceLocation.external(EMPTY_FILE.toString())));
+	}
+	
+	@Test
+	void updateResourceMatchesUpdateFile() {
+		byte[] fromResource = hasher().update(ResourceLocation.external(FILE.toString())).digest();
+		byte[] fromFile = hasher().update(FILE).digest();
+		assertArrayEquals(fromFile, fromResource);
+	}
+	
+	@Test
+	void updateResourceMatchesUpdateBytes() {
+		byte[] fromResource = hasher().update(ResourceLocation.external(FILE.toString())).digest();
+		byte[] fromBytes = hasher().update(DATA).digest();
+		assertArrayEquals(fromBytes, fromResource);
+	}
+	
+	@Test
+	void updateResourceCombinedWithOtherUpdates() {
+		byte[] prefix = "prefix".getBytes(StandardCharsets.UTF_8);
+		byte[] suffix = "suffix".getBytes(StandardCharsets.UTF_8);
+		byte[] combined = hasher().update("prefix", StandardCharsets.UTF_8).update(ResourceLocation.external(FILE.toString())).update(suffix).digest();
+		
+		assertArrayEquals(hasher().update(CryptoBytes.concat(prefix, DATA, suffix)).digest(), combined);
+	}
+	
+	@Test
+	void updateResourceMultipleTimes() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		byte[] twice = hasher().update(resource).update(resource).digest();
+		assertArrayEquals(hasher().update(CryptoBytes.concat(DATA, DATA)).digest(), twice);
+	}
+	
+	@Test
+	void updateLargeResourceCrossesBufferBoundaries() {
+		ResourceLocation resource = ResourceLocation.external(LARGE_FILE.toString());
+		assertArrayEquals(Hashes.hash(HashAlgorithm.SHA_256, largeContent), hasher().update(resource).digest());
+	}
+	
+	@Test
+	void updateResourceAfterDigestReuse() {
+		Hasher hasher = hasher();
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		
+		byte[] first = hasher.update(resource).digest();
+		byte[] second = hasher.update(resource).digest();
+		assertArrayEquals(first, second);
+	}
+	
+	@Test
+	void updateResourceForEveryAlgorithm() throws Exception {
+		ResourceLocation resource = ResourceLocation.internal("ResourceLocation/ResourceLocation.json");
+		byte[] content = resource.getBytes();
+		for (HashAlgorithm algorithm : HashAlgorithm.values()) {
+			assertArrayEquals(Hashes.hash(algorithm, content), Hasher.of(algorithm).update(resource).digest());
+		}
 	}
 	
 	private static final class FailingStream extends InputStream {

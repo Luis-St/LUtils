@@ -24,6 +24,7 @@ import net.luis.utils.crypto.key.HybridPrivateKey;
 import net.luis.utils.crypto.key.HybridPublicKey;
 import net.luis.utils.crypto.util.CryptoRandom;
 import net.luis.utils.function.throwable.ThrowableSupplier;
+import net.luis.utils.resources.ResourceLocation;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;
@@ -58,6 +59,7 @@ class SignaturesTest {
 	private static final Path FILE = DIRECTORY.resolve("content.bin");
 	private static final Path EMPTY_FILE = DIRECTORY.resolve("empty.bin");
 	private static final Path LARGE_FILE = DIRECTORY.resolve("large.bin");
+	private static final Path CHANGING_FILE = DIRECTORY.resolve("changing.bin");
 	
 	private static KeyPair ed25519;
 	private static KeyPair ecdsa;
@@ -83,6 +85,7 @@ class SignaturesTest {
 		Files.deleteIfExists(FILE);
 		Files.deleteIfExists(EMPTY_FILE);
 		Files.deleteIfExists(LARGE_FILE);
+		Files.deleteIfExists(CHANGING_FILE);
 		Files.deleteIfExists(DIRECTORY);
 	}
 	
@@ -762,6 +765,224 @@ class SignaturesTest {
 		
 		assertTrue(Signatures.verify(SignatureAlgorithm.ED25519_ML_DSA_65, restoredPublic, DATA, signature));
 		assertTrue(Signatures.verify(SignatureAlgorithm.ED25519_ML_DSA_65, hybrid.getPublic(), DATA, signature));
+	}
+	
+	@Test
+	void signResourceWithNullAlgorithm() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		assertThrows(NullPointerException.class, () -> Signatures.sign(null, ed25519.getPrivate(), resource));
+	}
+	
+	@Test
+	void signResourceWithNullKey() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		assertThrows(NullPointerException.class, () -> Signatures.sign(SignatureAlgorithm.ED25519, null, resource));
+	}
+	
+	@Test
+	void signWithNullResource() {
+		assertThrows(NullPointerException.class, () -> Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), (ResourceLocation) null));
+	}
+	
+	@Test
+	void signResourceWithAllNull() {
+		NullPointerException exception = assertThrows(NullPointerException.class, () -> Signatures.sign(null, null, (ResourceLocation) null));
+		assertEquals("Resource must not be null", exception.getMessage());
+	}
+	
+	@Test
+	void signMissingExternalResource() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.resolve("missing.bin").toString());
+		assertThrows(UncheckedIOException.class, () -> Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), resource));
+	}
+	
+	@Test
+	void signMissingInternalResource() {
+		ResourceLocation resource = ResourceLocation.internal("does/not/exist.bin");
+		assertThrows(NullPointerException.class, () -> Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), resource));
+	}
+	
+	@Test
+	void signResourceWithHybridSchemeAndNativeKey() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		assertThrows(ClassCastException.class, () -> Signatures.sign(SignatureAlgorithm.ED25519_ML_DSA_65, ed25519.getPrivate(), resource));
+	}
+	
+	@Test
+	void verifyResourceWithNullAlgorithm() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		assertThrows(NullPointerException.class, () -> Signatures.verify(null, ed25519.getPublic(), resource, new byte[64]));
+	}
+	
+	@Test
+	void verifyResourceWithNullKey() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		assertThrows(NullPointerException.class, () -> Signatures.verify(SignatureAlgorithm.ED25519, null, resource, new byte[64]));
+	}
+	
+	@Test
+	void verifyWithNullResource() {
+		assertThrows(NullPointerException.class, () -> Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), (ResourceLocation) null, new byte[64]));
+	}
+	
+	@Test
+	void verifyResourceWithNullSignature() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		assertThrows(NullPointerException.class, () -> Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), resource, null));
+	}
+	
+	@Test
+	void verifyMissingExternalResource() {
+		ResourceLocation resource = ResourceLocation.external(DIRECTORY.resolve("missing.bin").toString());
+		assertThrows(UncheckedIOException.class, () -> Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), resource, new byte[64]));
+	}
+	
+	@Test
+	void verifyResourceWithMalformedHybridSignature() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		assertThrows(MalformedDataException.class, () -> Signatures.verify(SignatureAlgorithm.ED25519_ML_DSA_65, hybrid.getPublic(), resource, new byte[] { 1, 2, 3 }));
+	}
+	
+	@Test
+	void verifyResourceWithHybridSchemeAndNativeKey() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		assertThrows(ClassCastException.class, () -> Signatures.verify(SignatureAlgorithm.ED25519_ML_DSA_65, ed25519.getPublic(), resource, new byte[64]));
+	}
+	
+	@Test
+	void signExternalResourceWithNativeScheme() {
+		byte[] signature = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), ResourceLocation.external(FILE.toString()));
+		assertTrue(Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), DATA, signature));
+	}
+	
+	@Test
+	void signInternalResourceWithNativeScheme() throws Exception {
+		ResourceLocation resource = ResourceLocation.internal("ResourceLocation/ResourceLocation.json");
+		byte[] signature = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), resource);
+		assertTrue(Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), resource.getBytes(), signature));
+	}
+	
+	@Test
+	void signResourceWithHybridScheme() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		byte[] signature = assertDoesNotThrow(() -> Signatures.sign(SignatureAlgorithm.ED25519_ML_DSA_65, hybrid.getPrivate(), resource));
+		assertTrue(Signatures.verify(SignatureAlgorithm.ED25519_ML_DSA_65, hybrid.getPublic(), resource, signature));
+	}
+	
+	@Test
+	void verifyResourceReturnsTrueForMatchingSignature() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		byte[] signature = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), DATA);
+		assertTrue(Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), resource, signature));
+	}
+	
+	@Test
+	void verifyResourceReturnsFalseForForeignSignature() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		byte[] signature = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), new byte[0]);
+		assertFalse(Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), resource, signature));
+	}
+	
+	@Test
+	void verifyResourceReturnsFalseForWrongKey() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		byte[] signature = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), DATA);
+		KeyPair other = Signatures.generateKeyPair(SignatureAlgorithm.ED25519);
+		
+		assertFalse(Signatures.verify(SignatureAlgorithm.ED25519, other.getPublic(), resource, signature));
+	}
+	
+	@Test
+	void signResourceMatchesSignBytes() {
+		byte[] fromResource = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), ResourceLocation.external(FILE.toString()));
+		assertArrayEquals(Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), DATA), fromResource);
+	}
+	
+	@Test
+	void signResourceMatchesSignFile() {
+		byte[] fromResource = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), ResourceLocation.external(FILE.toString()));
+		assertArrayEquals(Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), FILE), fromResource);
+	}
+	
+	@Test
+	void signEmptyResource() {
+		byte[] signature = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), ResourceLocation.external(EMPTY_FILE.toString()));
+		assertTrue(Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), new byte[0], signature));
+	}
+	
+	@Test
+	void verifyEmptyResource() {
+		ResourceLocation resource = ResourceLocation.external(EMPTY_FILE.toString());
+		byte[] empty = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), new byte[0]);
+		byte[] overData = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), DATA);
+		
+		assertTrue(Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), resource, empty));
+		assertFalse(Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), resource, overData));
+	}
+	
+	@Test
+	void verifyResourceWithEmptySignature() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		assertFalse(Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), resource, new byte[0]));
+	}
+	
+	@Test
+	void signAndVerifyResourceRoundTrip() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		for (SignatureAlgorithm algorithm : new SignatureAlgorithm[] { SignatureAlgorithm.ED25519, SignatureAlgorithm.ECDSA_P256_SHA_256, SignatureAlgorithm.ED25519_ML_DSA_65 }) {
+			assumeTrue(Providers.supports(algorithm));
+			KeyPair pair = Signatures.generateKeyPair(algorithm);
+			byte[] signature = Signatures.sign(algorithm, pair.getPrivate(), resource);
+			assertTrue(Signatures.verify(algorithm, pair.getPublic(), resource, signature));
+		}
+	}
+	
+	@Test
+	void verifyResourceDetectsContentChange() throws Exception {
+		Files.write(CHANGING_FILE, DATA);
+		ResourceLocation resource = ResourceLocation.external(CHANGING_FILE.toString());
+		byte[] signature = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), resource);
+		
+		byte[] changed = Arrays.copyOf(DATA, DATA.length);
+		changed[0] ^= 0x01;
+		Files.write(CHANGING_FILE, changed);
+		
+		assertFalse(Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), resource, signature));
+	}
+	
+	@Test
+	void signResourceReopensPerComponentForHybrid() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		byte[] signature = Signatures.sign(SignatureAlgorithm.ED25519_ML_DSA_65, hybrid.getPrivate(), resource);
+		assertTrue(Signatures.verify(SignatureAlgorithm.ED25519_ML_DSA_65, hybrid.getPublic(), resource, signature));
+		
+		AtomicInteger verifyCount = new AtomicInteger();
+		assertTrue(Signatures.verify(SignatureAlgorithm.ED25519_ML_DSA_65, hybrid.getPublic(), counting(verifyCount), signature));
+		assertEquals(2, verifyCount.get());
+	}
+	
+	@Test
+	void signLargeResource() throws Exception {
+		ResourceLocation resource = ResourceLocation.external(LARGE_FILE.toString());
+		byte[] signature = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), resource);
+		assertTrue(Signatures.verify(SignatureAlgorithm.ED25519, ed25519.getPublic(), Files.readAllBytes(LARGE_FILE), signature));
+	}
+	
+	@Test
+	void verifyResourceAgainstHybridSignatureWithSwappedComponents() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		byte[] foreign = Signatures.sign(SignatureAlgorithm.ED25519_ML_DSA_65, hybrid.getPrivate(), new byte[] { 9, 9, 9 });
+		
+		assertFalse(Signatures.verify(SignatureAlgorithm.ED25519_ML_DSA_65, hybrid.getPublic(), resource, foreign));
+	}
+	
+	@Test
+	void signResourceThroughSignerMatchesStaticOverload() {
+		ResourceLocation resource = ResourceLocation.external(FILE.toString());
+		byte[] fromStatic = Signatures.sign(SignatureAlgorithm.ED25519, ed25519.getPrivate(), resource);
+		byte[] fromSigner = Signatures.signer(SignatureAlgorithm.ED25519, ed25519.getPrivate()).update(resource).sign();
+		
+		assertArrayEquals(fromStatic, fromSigner);
 	}
 	
 	private static final class FailingStream extends InputStream {

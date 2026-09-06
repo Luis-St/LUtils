@@ -179,6 +179,34 @@ public enum AeadAlgorithm {
 	}
 	
 	/**
+	 * Builds a nonce of the length this algorithm requires from a message sequence number.<br>
+	 * <p>
+	 *     This is the counted alternative to a random nonce, for the record layers that number their messages anyway.<br>
+	 *     The sequence number is written big-endian into the trailing eight bytes and the rest of the nonce stays zero,<br>
+	 *     so distinct sequence numbers give distinct nonces and the caller never has to budget against {@link #randomNonceMessageLimit()}.
+	 * </p>
+	 * <p>
+	 *     Each direction of a conversation needs its own key, or its own sequence space, since both sides start counting at zero.<br>
+	 *     A sequence number may never be reused under one key, which for the modes that are not misuse resistant loses the authentication key outright.
+	 * </p>
+	 *
+	 * @param sequence The message sequence number
+	 * @return The built nonce
+	 * @throws IllegalArgumentException If the sequence number is negative
+	 */
+	public byte @NonNull [] sequenceNonce(long sequence) {
+		if (sequence < 0) {
+			throw new IllegalArgumentException("Sequence number must not be negative, was " + sequence);
+		}
+		
+		byte[] nonce = new byte[this.nonceLength];
+		for (int i = 0; i < Long.BYTES; i++) {
+			nonce[nonce.length - 1 - i] = (byte) (sequence >>> (i * Byte.SIZE));
+		}
+		return nonce;
+	}
+	
+	/**
 	 * Builds the parameter spec carrying the given nonce for this algorithm.<br>
 	 * <p>
 	 *     The GCM modes take the tag length alongside the nonce, the ChaCha20 modes take the nonce alone.<br>
