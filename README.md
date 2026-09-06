@@ -4,32 +4,18 @@ This library is a collection of all useful classes and methods that I have writt
 **Disclaimer**: Versions before `5.0.0` are not stable and may contain bugs.
 
 ## Dependencies
-The library is built on top of the following libraries:
-
-### Version 11.0.0
+The current version is built on top of the following libraries:
 
 - Java 25
-- Apache Commons Lang3 (3.18.0)
-- Log4j2 (2.25.2)
-- Google Guava (33.5.0-jre)
-- JetBrains Annotations (26.0.2)
-- BouncyCastle (1.85.2, optional: only needed for AES-GCM-SIV and SLH-DSA)
+- Google Guava (33.6.0-jre)
+- Log4j2 (2.26.0)
+- Apache Commons Lang3 (3.20.0)
+- HikariCP (7.0.2)
+- BouncyCastle (1.85.2)
+- JSpecify (1.0.0)
+- JetBrains Annotations (26.1.0)
 
-### Version 6.0.0
-
-- Java 21
-- Apache Commons Lang3 (3.17.0)
-- Log4j2 (2.24.2)
-- Google Guava (33.3.1-jre)
-- JetBrains Annotations (26.0.1)
-
-### Version 5.0.0
-
-- Java 17
-- Apache Commons Lang3 (3.14.0)
-- Log4j2 (2.22.1)
-- Google Guava (33.0.0-jre)
-- JetBrains Annotations (24.1.0)
+The JDBC drivers for PostgreSQL, MySQL, MariaDB, SQL Server, H2 and SQLite are runtime dependencies only.
 
 ## Installation
 If you like to use this library, you can use it with Maven or Gradle.
@@ -73,15 +59,13 @@ If you are using Maven, add the following lines to your `pom.xml` file:
 ```
 
 ## Packages
-The library provides the following packages:
+The library provides the following packages, all of them below `net.luis.utils`:
 
 * `annotation`
     * `type`
 * `collection`
-    * `registry` (removed in 7.4.0)
-        * `key` (removed in 7.4.0)
     * `util`
-* `crypto` (since 11.0.0)
+* `crypto`
     * `algorithm`
     * `exception`
     * `key`
@@ -89,51 +73,166 @@ The library provides the following packages:
 * `exception`
 * `function`
     * `throwable`
-* `io`
-    * `codec` (since 7.0.0)
-        * `decoder`
-        * `encoder`
-        * `function` (since 7.5.0)
-        * `group` (removed in 7.5.0)
-            * `function` (moved in 7.5.0 to `codec.function`)
-            * `grouper` (removed in 7.5.0)
-        * `provider`
-        * `struct`
-    * `data` (since 6.0.0)
-        * `config`
-        * `json`
-            * `exception`
-        * `properties`
-            * `exception`
-        * `xml`
-            * `exception`
-    * `exception`
-    * `reader`
-    * `token` (since 7.4.0)
-        * `actions` (since 8.0.0)
+* `grammar`
+    * `lexer`
+        * `rule`
+            * `anchors`
+            * `combinators`
+            * `matchers`
+            * `quantifiers`
+        * `stream`
+    * `parser`
+        * `action`
             * `core`
             * `enhancers`
             * `filters`
             * `transformers`
         * `context`
-        * `definition`
-        * `grammar` (since 8.0.0)
-        * `rule` (removed in 7.5.0)
-            * `actions` (moved in 8.0.0 to `token.actions`)
-            * `rules` (moved in 8.0.0 to `token.rules`)
-        * `rules` (since 8.0.0)
+        * `rule`
             * `assertions`
                 * `anchors`
             * `combinators`
+            * `core`
             * `matchers`
             * `quantifiers`
             * `reference`
-        * `stream` (since 8.0.0)
-        * `tokens`
-        * `type` (since 8.0.0)
-            * `classifier`
-* `lang` (since 5.5.0)
-    * `concurrency`
+        * `stream`
+    * `token`
+        * `type`
+* `io`
+    * `codec`
+        * `constraint`
+            * `builder`
+            * `config`
+                * `collection`
+                * `io`
+                * `numeric`
+                * `temporal`
+                    * `local`
+                    * `offset`
+                    * `zoned`
+                * `validator`
+            * `core`
+                * `io`
+                * `temporal`
+            * `merged`
+                * `collection`
+                * `io`
+                * `numeric`
+                * `temporal`
+                    * `local`
+                    * `offset`
+                    * `zoned`
+            * `util`
+        * `decoder`
+        * `encoder`
+        * `function`
+        * `mapping`
+        * `provider`
+        * `types`
+            * `array`
+            * `i18n`
+            * `io`
+            * `primitive`
+                * `numeric`
+            * `stream`
+            * `struct`
+                * `collection`
+            * `temporal`
+                * `local`
+                * `offset`
+                * `zoned`
+    * `data`
+        * `binary`
+            * `exception`
+        * `config`
+        * `ini`
+            * `exception`
+        * `json`
+            * `exception`
+        * `property`
+            * `exception`
+        * `toml`
+            * `exception`
+        * `toon`
+            * `exception`
+        * `xml`
+            * `exception`
+        * `yaml`
+            * `exception`
+    * `database`
+        * `audit`
+        * `condition`
+            * `conditions`
+                * `comparison`
+                * `numeric`
+                * `string`
+                * `temporal`
+        * `dialect`
+            * `renderer`
+                * `expression`
+                    * `condition`
+                    * `function`
+        * `exception`
+            * `client`
+                * `dialect`
+                * `transaction`
+            * `database`
+                * `concurrency`
+                * `constraint`
+                * `statement`
+                * `transaction`
+        * `expression`
+            * `orderable`
+        * `function`
+            * `functions`
+                * `aggregate`
+                * `generic`
+                * `numeric`
+                    * `bitwise`
+                    * `trigonometric`
+                * `string`
+                * `temporal`
+                * `window`
+            * `window`
+                * `frame`
+                    * `bound`
+        * `index`
+        * `migration`
+            * `operation`
+            * `store`
+        * `query`
+            * `crud`
+            * `row`
+            * `util`
+        * `rendering`
+        * `table`
+        * `transaction`
+        * `type`
+            * `infer`
+            * `parameter`
+        * `util`
+    * `exception`
+    * `network`
+        * `address`
+            * `exception`
+            * `format`
+            * `ipv4`
+            * `ipv6`
+            * `mac`
+        * `connection`
+            * `context`
+            * `event`
+            * `exception`
+            * `executor`
+            * `ssl`
+            * `tcp`
+            * `udp`
+        * `mail`
+            * `message`
+    * `reader`
+* `lang`
+    * `concurrent`
 * `logging`
     * `factory`
 * `math`
@@ -141,36 +240,16 @@ The library provides the following packages:
 * `resources`
 * `util`
     * `getter`
+    * `result`
     * `unsafe`
-        * `classpath` (not tested)
+        * `classpath`
         * `reflection`
-
-## Cryptography
-The `crypto` package (since `11.0.0`) is a post-quantum-first helper layer over the JCA.\
-Algorithms are types rather than strings, so a typo is a compile error, and the weak primitives
-(RSA, DSA, MD5, SHA-1, CBC, ECB, 3DES, PKCS#1 v1.5) are not modelled at all and cannot be selected
-by accident.
-
-* Hashing, HMAC and HKDF: `Hashes`, `Hasher`, `Macs`, `Kdf`
-* Authenticated encryption: `Aead` (AES-256-GCM, ChaCha20-Poly1305, AES-256-GCM-SIV)
-* Key encapsulation: `Kems` (ML-KEM, X25519/X448 as DHKEM, and hybrids of the two)
-* Signatures: `Signatures` (Ed25519, Ed448, ECDSA, ML-DSA, SLH-DSA, and hybrids)
-* Public-key encryption: `Sealed`, `SealedStream`, `SealedForMany`
-* Passwords and key files: `Passwords` (PBKDF2 in the PHC format), `Pem`
-
-Every artifact written to disk or the wire starts with a magic, a version and a `CryptoSuite` id, so
-the default suite can change without invalidating anything already written. The default is
-`CryptoSuite.HYBRID_V1`, which stays secure as long as either the classical or the post-quantum half
-holds.
-
-BouncyCastle is optional and never installed implicitly: call `Providers.installBouncyCastle()` once
-at startup if AES-256-GCM-SIV or SLH-DSA is needed, and `Providers.require(CryptoSuite.current())`
-to fail loudly on a misconfigured runtime instead of at the first encrypted request.
 
 ## Documentation
 The documentation is available at [docs.luis-st.net](https://docs.luis-st.net/net.luis.utils/module-summary.html).\
 \
 The documentation is not update automatically, so it may be outdated.\
 If you find any issues, please report them.
+
 ## Examples
 For examples and usage you can take a look at the tests in the `src/test/java` directory.
