@@ -20,7 +20,8 @@ package net.luis.utils.io.network.mail;
 
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
-import net.luis.utils.io.network.connection.ssl.*;
+import net.luis.utils.io.network.connection.ssl.SslClientConfig;
+import net.luis.utils.io.network.connection.ssl.TlsProtocol;
 import net.luis.utils.io.network.mail.message.MailMessage;
 import net.luis.utils.io.network.mail.message.MailRecipient;
 import org.apache.commons.lang3.ArrayUtils;

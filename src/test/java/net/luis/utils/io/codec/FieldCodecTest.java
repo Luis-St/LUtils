@@ -245,7 +245,7 @@ class FieldCodecTest {
 	
 	@Test
 	void constructWithNullFieldRef() {
-		assertThrows(NullPointerException.class, () -> new FieldCodec<>(STRING, (FieldRef) null, TestObject::name));
+		assertThrows(NullPointerException.class, () -> new FieldCodec<>(STRING, null, TestObject::name));
 	}
 	
 	@Test

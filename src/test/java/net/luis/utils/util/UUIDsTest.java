@@ -91,7 +91,7 @@ class UUIDsTest {
 	
 	@Test
 	void v8WithNullByteArray() {
-		assertThrows(NullPointerException.class, () -> UUIDs.v8((byte[]) null));
+		assertThrows(NullPointerException.class, () -> UUIDs.v8(null));
 	}
 	
 	@Test

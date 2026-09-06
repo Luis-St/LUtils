@@ -20,7 +20,6 @@ package net.luis.utils.io.database.table;
 
 import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.SqlTestFixtures;
-import net.luis.utils.io.database.SqlTestFixtures.*;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.SqlDialects;
 import net.luis.utils.io.database.exception.SqlException;

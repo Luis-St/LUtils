@@ -258,7 +258,7 @@ class SqlQueryProviderTest {
 	@Test
 	void insertOrIgnoreEntityWithNullConflictColumns() {
 		ConflictFixture fixture = conflictFixture();
-		assertThrows(NullPointerException.class, () -> fixture.provider().insertOrIgnore(new Person(1, "a"), (List<SqlColumn<Person, ?>>) null));
+		assertThrows(NullPointerException.class, () -> fixture.provider().insertOrIgnore(new Person(1, "a"), null));
 	}
 	
 	@Test
@@ -282,7 +282,7 @@ class SqlQueryProviderTest {
 	@Test
 	void insertOrIgnoreWithEmptyEntities() {
 		ConflictFixture fixture = conflictFixture();
-		assertThrows(IllegalArgumentException.class, () -> fixture.provider().insertOrIgnore(List.<Person>of(), List.of(fixture.id())));
+		assertThrows(IllegalArgumentException.class, () -> fixture.provider().insertOrIgnore(List.of(), List.of(fixture.id())));
 	}
 	
 	@Test
@@ -348,7 +348,7 @@ class SqlQueryProviderTest {
 	@Test
 	void upsertWithEmptyEntities() {
 		ConflictFixture fixture = conflictFixture();
-		assertThrows(IllegalArgumentException.class, () -> fixture.provider().upsert(List.<Person>of(), List.of(fixture.id())));
+		assertThrows(IllegalArgumentException.class, () -> fixture.provider().upsert(List.of(), List.of(fixture.id())));
 	}
 	
 	@Test

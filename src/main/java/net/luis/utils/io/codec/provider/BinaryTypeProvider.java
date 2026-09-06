@@ -86,6 +86,37 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 		this.compact = compact;
 	}
 	
+	/**
+	 * Checks whether the given value is encoded with fewer bytes as a byte than as a variable-length integer.<br>
+	 * <p>
+	 *     A number is encoded as a zigzag encoded variable-length integer which needs a single byte for values from {@code -64} to {@code 63},<br>
+	 *     therefore a smaller value is only stored as a byte if it is outside of that range.
+	 * </p>
+	 *
+	 * @param value The value to check
+	 * @return True if the value should be stored as a byte, false otherwise
+	 */
+	private static boolean fitsInByte(long value) {
+		if (value < Byte.MIN_VALUE || value > Byte.MAX_VALUE) {
+			return false;
+		}
+		return value > 63 || -64 > value;
+	}
+	
+	/**
+	 * Checks whether the given value is encoded as a float without a loss.<br>
+	 * Not a number is not stored as a float, because the payload of a float does not hold every bit pattern of a double which is not a number.<br>
+	 *
+	 * @param value The value to check
+	 * @return True if the value should be stored as a float, false otherwise
+	 */
+	private static boolean fitsInFloat(double value) {
+		if (Double.isNaN(value)) {
+			return false;
+		}
+		return (float) value == value;
+	}
+	
 	@Override
 	public @NonNull BinaryElement empty() {
 		return EMPTY_ELEMENT;
@@ -426,37 +457,6 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 			return struct.has(index) ? struct.get(index) : null;
 		}
 		return TypeProvider.super.getField(type, field, exceptionConstructor);
-	}
-	
-	/**
-	 * Checks whether the given value is encoded with fewer bytes as a byte than as a variable-length integer.<br>
-	 * <p>
-	 *     A number is encoded as a zigzag encoded variable-length integer which needs a single byte for values from {@code -64} to {@code 63},<br>
-	 *     therefore a smaller value is only stored as a byte if it is outside of that range.
-	 * </p>
-	 *
-	 * @param value The value to check
-	 * @return True if the value should be stored as a byte, false otherwise
-	 */
-	private static boolean fitsInByte(long value) {
-		if (value < Byte.MIN_VALUE || value > Byte.MAX_VALUE) {
-			return false;
-		}
-		return value > 63 || -64 > value;
-	}
-	
-	/**
-	 * Checks whether the given value is encoded as a float without a loss.<br>
-	 * Not a number is not stored as a float, because the payload of a float does not hold every bit pattern of a double which is not a number.<br>
-	 *
-	 * @param value The value to check
-	 * @return True if the value should be stored as a float, false otherwise
-	 */
-	private static boolean fitsInFloat(double value) {
-		if (Double.isNaN(value)) {
-			return false;
-		}
-		return (double) (float) value == value;
 	}
 	
 	/**

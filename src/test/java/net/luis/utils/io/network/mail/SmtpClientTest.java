@@ -19,9 +19,7 @@
 package net.luis.utils.io.network.mail;
 
 import net.luis.utils.io.network.connection.exception.*;
-import net.luis.utils.io.network.connection.ssl.SslClientConfig;
-import net.luis.utils.io.network.connection.ssl.SslClientConfigBuilder;
-import net.luis.utils.io.network.connection.ssl.TlsProtocol;
+import net.luis.utils.io.network.connection.ssl.*;
 import net.luis.utils.io.network.mail.message.*;
 import org.junit.jupiter.api.*;
 

@@ -127,6 +127,52 @@ public class BinaryWriter implements AutoCloseable {
 	}
 	
 	/**
+	 * Compresses the given data with the deflate algorithm.<br>
+	 *
+	 * @param data The data to compress
+	 * @return The compressed data
+	 * @throws NullPointerException If the data is null
+	 * @throws IOException If an I/O error occurs
+	 */
+	private static byte @NonNull [] deflate(byte @NonNull [] data) throws IOException {
+		Objects.requireNonNull(data, "Data must not be null");
+		
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
+		try (DeflaterOutputStream out = new DeflaterOutputStream(buffer, deflater)) {
+			out.write(data);
+		} finally {
+			deflater.end();
+		}
+		return buffer.toByteArray();
+	}
+	
+	/**
+	 * Returns the type which all elements of the given array have.<br>
+	 *
+	 * @param array The array to get the uniform type of
+	 * @return The type of all elements or null if the array is empty, holds an element which is not a primitive or holds elements of different types
+	 * @throws NullPointerException If the array is null
+	 */
+	private static @Nullable BinaryType uniformType(@NonNull BinaryArray array) {
+		Objects.requireNonNull(array, "Array must not be null");
+		
+		BinaryType type = null;
+		for (BinaryElement element : array) {
+			if (!element.isBinaryPrimitive()) {
+				return null;
+			}
+			
+			if (type == null) {
+				type = element.getType();
+			} else if (type != element.getType()) {
+				return null;
+			}
+		}
+		return type;
+	}
+	
+	/**
 	 * Writes the given binary element to the output.<br>
 	 *
 	 * @param binary The binary element to write
@@ -209,27 +255,6 @@ public class BinaryWriter implements AutoCloseable {
 		this.writeHeader(this.stream, true);
 		this.writeVarLong(this.stream, compressed.length);
 		this.stream.write(compressed);
-	}
-	
-	/**
-	 * Compresses the given data with the deflate algorithm.<br>
-	 *
-	 * @param data The data to compress
-	 * @return The compressed data
-	 * @throws NullPointerException If the data is null
-	 * @throws IOException If an I/O error occurs
-	 */
-	private static byte @NonNull [] deflate(byte @NonNull [] data) throws IOException {
-		Objects.requireNonNull(data, "Data must not be null");
-		
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
-		try (DeflaterOutputStream out = new DeflaterOutputStream(buffer, deflater)) {
-			out.write(data);
-		} finally {
-			deflater.end();
-		}
-		return buffer.toByteArray();
 	}
 	
 	/**
@@ -396,31 +421,6 @@ public class BinaryWriter implements AutoCloseable {
 		if (count > 0) {
 			out.writeByte(bits);
 		}
-	}
-	
-	/**
-	 * Returns the type which all elements of the given array have.<br>
-	 *
-	 * @param array The array to get the uniform type of
-	 * @return The type of all elements or null if the array is empty, holds an element which is not a primitive or holds elements of different types
-	 * @throws NullPointerException If the array is null
-	 */
-	private static @Nullable BinaryType uniformType(@NonNull BinaryArray array) {
-		Objects.requireNonNull(array, "Array must not be null");
-		
-		BinaryType type = null;
-		for (BinaryElement element : array) {
-			if (!element.isBinaryPrimitive()) {
-				return null;
-			}
-			
-			if (type == null) {
-				type = element.getType();
-			} else if (type != element.getType()) {
-				return null;
-			}
-		}
-		return type;
 	}
 	
 	/**

@@ -46,6 +46,27 @@ class BinaryTypeProviderTest {
 		return struct;
 	}
 	
+	private static CodecGroup<TestObject> createGroup() {
+		List<FieldCodec<?, TestObject>> codecs = List.of(
+			STRING.fieldOf("name", TestObject::name),
+			INTEGER.fieldOf("value", TestObject::value),
+			BOOLEAN.fieldOf("flag", TestObject::flag)
+		);
+		return new CodecGroup<>(codecs, components -> new TestObject((String) components.getFirst(), (Integer) components.get(1), (Boolean) components.get(2)));
+	}
+	
+	private static CodecGroup<MixedObject> createMixedGroup() {
+		List<FieldCodec<?, MixedObject>> codecs = List.of(
+			INTEGER.fieldOf("narrowed", MixedObject::narrowed),
+			INTEGER.fieldOf("wide", MixedObject::wide),
+			DOUBLE.fieldOf("exact", MixedObject::exact),
+			STRING.fieldOf("text", MixedObject::text)
+		);
+		return new CodecGroup<>(codecs, components -> new MixedObject(
+			(Integer) components.getFirst(), (Integer) components.get(1), (Double) components.get(2), (String) components.get(3)
+		));
+	}
+	
 	@Test
 	void instanceIsSingleton() {
 		assertNotNull(BinaryTypeProvider.INSTANCE);
@@ -1152,27 +1173,6 @@ class BinaryTypeProviderTest {
 		BinaryElement decoded = BinaryReader.fromByteArray(BinaryWriter.toByteArray(encoded));
 		assertEquals(original, group.decode(COMPACT, decoded, decoded));
 		assertEquals(original, group.decode(INSTANCE, decoded, decoded));
-	}
-	
-	private static CodecGroup<TestObject> createGroup() {
-		List<FieldCodec<?, TestObject>> codecs = List.of(
-			STRING.fieldOf("name", TestObject::name),
-			INTEGER.fieldOf("value", TestObject::value),
-			BOOLEAN.fieldOf("flag", TestObject::flag)
-		);
-		return new CodecGroup<>(codecs, components -> new TestObject((String) components.getFirst(), (Integer) components.get(1), (Boolean) components.get(2)));
-	}
-	
-	private static CodecGroup<MixedObject> createMixedGroup() {
-		List<FieldCodec<?, MixedObject>> codecs = List.of(
-			INTEGER.fieldOf("narrowed", MixedObject::narrowed),
-			INTEGER.fieldOf("wide", MixedObject::wide),
-			DOUBLE.fieldOf("exact", MixedObject::exact),
-			STRING.fieldOf("text", MixedObject::text)
-		);
-		return new CodecGroup<>(codecs, components -> new MixedObject(
-			(Integer) components.getFirst(), (Integer) components.get(1), (Double) components.get(2), (String) components.get(3)
-		));
 	}
 	
 	private record TestObject(String name, int value, boolean flag) {}

@@ -20,7 +20,7 @@ package net.luis.utils.crypto.util;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -149,8 +149,8 @@ class PemDocumentTest {
 		byte[] der = { 1, 2, 3 };
 		PemDocument document = new PemDocument("PUBLIC KEY", der);
 		
-		assertTrue(Objects.equals(document, document));
-		assertFalse(Objects.equals(document, new PemDocument("PUBLIC KEY", new byte[] { 1, 2, 3 })));
-		assertTrue(Objects.equals(document, new PemDocument("PUBLIC KEY", der)));
+		assertEquals(document, document);
+		assertNotEquals(document, new PemDocument("PUBLIC KEY", new byte[] { 1, 2, 3 }));
+		assertEquals(document, new PemDocument("PUBLIC KEY", der));
 	}
 }

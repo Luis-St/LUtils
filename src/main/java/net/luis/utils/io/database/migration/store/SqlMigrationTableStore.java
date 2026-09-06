@@ -74,6 +74,28 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 	}
 	
 	/**
+	 * Checks whether the given result set contains a column with the given name.<br>
+	 *
+	 * @param rs The result set to check
+	 * @param columnName The name of the column to look for
+	 * @return An optional holding whether the result set contains the column, or an empty optional if the driver does not expose the result set metadata
+	 * @throws SQLException If the result set metadata could not be read
+	 */
+	private static @NonNull Optional<Boolean> containsColumn(@NonNull ResultSet rs, @NonNull String columnName) throws SQLException {
+		ResultSetMetaData meta = rs.getMetaData();
+		if (meta == null) {
+			return Optional.empty();
+		}
+		
+		for (int i = 1; i <= meta.getColumnCount(); i++) {
+			if (columnName.equalsIgnoreCase(meta.getColumnLabel(i))) {
+				return Optional.of(true);
+			}
+		}
+		return Optional.of(false);
+	}
+	
+	/**
 	 * Builds the sql statement used to create the migration table.<br>
 	 *
 	 * @return The rendered create table sql statement
@@ -196,28 +218,6 @@ public class SqlMigrationTableStore implements SqlMigrationStore {
 		} catch (SQLException e) {
 			throw new SqlMigrationExecutionException("Failed to upgrade the migration table", e);
 		}
-	}
-	
-	/**
-	 * Checks whether the given result set contains a column with the given name.<br>
-	 *
-	 * @param rs The result set to check
-	 * @param columnName The name of the column to look for
-	 * @return An optional holding whether the result set contains the column, or an empty optional if the driver does not expose the result set metadata
-	 * @throws SQLException If the result set metadata could not be read
-	 */
-	private static @NonNull Optional<Boolean> containsColumn(@NonNull ResultSet rs, @NonNull String columnName) throws SQLException {
-		ResultSetMetaData meta = rs.getMetaData();
-		if (meta == null) {
-			return Optional.empty();
-		}
-		
-		for (int i = 1; i <= meta.getColumnCount(); i++) {
-			if (columnName.equalsIgnoreCase(meta.getColumnLabel(i))) {
-				return Optional.of(true);
-			}
-		}
-		return Optional.of(false);
 	}
 	
 	@Override

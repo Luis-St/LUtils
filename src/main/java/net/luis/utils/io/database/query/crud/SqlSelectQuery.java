@@ -120,6 +120,38 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	}
 	
 	/**
+	 * Returns the names the columns of the given configuration are exposed under.<br>
+	 * If the configuration selects no expression the column names of its table are returned, otherwise the name of every selected
+	 * expression is derived from its alias or, for a plain column, from the column name.<br>
+	 *
+	 * @param cfg The configuration to derive the column names of
+	 * @return The derived column names, or an empty list if a selected expression exposes no name
+	 * @throws NullPointerException If the configuration is null
+	 */
+	private static @NonNull List<String> columnNames(@NonNull SqlSelectQueryConfig<?> cfg) {
+		Objects.requireNonNull(cfg, "Sql select query config must not be null");
+		
+		List<String> names = new ArrayList<>();
+		if (cfg.selectedExpressions().isEmpty()) {
+			for (SqlColumn<?, ?> column : cfg.table().columns().stream().sorted(Comparator.comparingInt(SqlColumn::index)).toList()) {
+				names.add(column.name());
+			}
+			return names;
+		}
+		
+		for (SqlExpression<?> expression : cfg.selectedExpressions()) {
+			switch (expression) {
+				case SqlAliasedExpression<?> aliased -> names.add(aliased.alias().get());
+				case SqlColumn<?, ?> column -> names.add(column.name());
+				default -> {
+					return List.of();
+				}
+			}
+		}
+		return names;
+	}
+	
+	/**
 	 * Adds a {@code FOR UPDATE} lock to this query, locking the selected rows for writing.<br>
 	 *
 	 * @return A new query with the {@code FOR UPDATE} lock mode applied
@@ -647,38 +679,6 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	public @NonNull SqlRendered toSql(@NonNull SqlDialect dialect) throws SqlException {
 		Objects.requireNonNull(dialect, "Sql dialect must not be null");
 		return this.render(this.config, dialect, false);
-	}
-	
-	/**
-	 * Returns the names the columns of the given configuration are exposed under.<br>
-	 * If the configuration selects no expression the column names of its table are returned, otherwise the name of every selected
-	 * expression is derived from its alias or, for a plain column, from the column name.<br>
-	 *
-	 * @param cfg The configuration to derive the column names of
-	 * @return The derived column names, or an empty list if a selected expression exposes no name
-	 * @throws NullPointerException If the configuration is null
-	 */
-	private static @NonNull List<String> columnNames(@NonNull SqlSelectQueryConfig<?> cfg) {
-		Objects.requireNonNull(cfg, "Sql select query config must not be null");
-		
-		List<String> names = new ArrayList<>();
-		if (cfg.selectedExpressions().isEmpty()) {
-			for (SqlColumn<?, ?> column : cfg.table().columns().stream().sorted(Comparator.comparingInt(SqlColumn::index)).toList()) {
-				names.add(column.name());
-			}
-			return names;
-		}
-		
-		for (SqlExpression<?> expression : cfg.selectedExpressions()) {
-			switch (expression) {
-				case SqlAliasedExpression<?> aliased -> names.add(aliased.alias().get());
-				case SqlColumn<?, ?> column -> names.add(column.name());
-				default -> {
-					return List.of();
-				}
-			}
-		}
-		return names;
 	}
 	
 	/**

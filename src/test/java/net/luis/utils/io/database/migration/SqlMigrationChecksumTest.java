@@ -81,6 +81,16 @@ class SqlMigrationChecksumTest {
 		return new SqlAlterColumnOperation(fixture.name(), List.of(new SqlSetDefaultAlteration(value)));
 	}
 	
+	private static SqlMigrationOperation @NonNull [] operations(@NonNull Fixture fixture) {
+		return new SqlMigrationOperation[] {
+			fixture.createTable(),
+			new SqlAddColumnOperation(fixture.name(), fixture.name().type(), SqlColumnOptions.EMPTY),
+			new SqlCreateIndexOperation(fixture.index("users_idx", false), fixture.table()),
+			new SqlAddUniqueConstraintOperation(fixture.table(), "users_unique", fixture.indexColumns()),
+			new SqlAddCheckConstraintOperation(fixture.table(), "users_check", new SqlIsNullCondition(fixture.name()))
+		};
+	}
+	
 	@Test
 	void computeWithNullOperations() {
 		assertThrows(NullPointerException.class, () -> SqlMigrationChecksum.compute(null, DIALECT));
@@ -576,7 +586,7 @@ class SqlMigrationChecksumTest {
 		List<SqlColumnDefinition> definitions = new ArrayList<>(fixture.definitions());
 		definitions.add(new SqlColumnDefinition(added, added.type(), SqlColumnOptions.EMPTY));
 		
-		SqlCreateTableOperation operation = new SqlCreateTableOperation(fixture.table(), definitions, List.<SqlColumn<?, ?>>of(fixture.id()));
+		SqlCreateTableOperation operation = new SqlCreateTableOperation(fixture.table(), definitions, List.of(fixture.id()));
 		assertNotEquals(compute(fixture().createTable()), compute(operation));
 	}
 	
@@ -584,7 +594,7 @@ class SqlMigrationChecksumTest {
 	void computeDetectsRemovedColumn() throws SqlException {
 		Fixture fixture = fixture();
 		SqlCreateTableOperation operation = new SqlCreateTableOperation(
-			fixture.table(), List.of(fixture.definitions().getFirst()), List.<SqlColumn<?, ?>>of(fixture.id())
+			fixture.table(), List.of(fixture.definitions().getFirst()), List.of(fixture.id())
 		);
 		
 		assertNotEquals(compute(fixture().createTable()), compute(operation));
@@ -644,16 +654,6 @@ class SqlMigrationChecksumTest {
 		assertNotEquals(compute(Arrays.copyOf(operations(fixture()), 3)), checksum);
 	}
 	
-	private static SqlMigrationOperation @NonNull [] operations(@NonNull Fixture fixture) {
-		return new SqlMigrationOperation[] {
-			fixture.createTable(),
-			new SqlAddColumnOperation(fixture.name(), fixture.name().type(), SqlColumnOptions.EMPTY),
-			new SqlCreateIndexOperation(fixture.index("users_idx", false), fixture.table()),
-			new SqlAddUniqueConstraintOperation(fixture.table(), "users_unique", fixture.indexColumns()),
-			new SqlAddCheckConstraintOperation(fixture.table(), "users_check", new SqlIsNullCondition(fixture.name()))
-		};
-	}
-	
 	private record Fixture(@NonNull SqlTable<Object> table, @NonNull SqlColumn<Object, ?> id, @NonNull SqlColumn<Object, ?> name) {
 		
 		private @NonNull List<SqlColumnDefinition> definitions() {
@@ -668,11 +668,11 @@ class SqlMigrationChecksumTest {
 		}
 		
 		private @NonNull SqlCreateTableOperation createTable() {
-			return new SqlCreateTableOperation(this.table, this.definitions(), List.<SqlColumn<?, ?>>of(this.id));
+			return new SqlCreateTableOperation(this.table, this.definitions(), List.of(this.id));
 		}
 		
 		private @NonNull SqlIndex index(@NonNull String name, boolean unique) {
-			return new SqlIndex(name, List.<SqlColumn<?, ?>>of(this.id), unique, SqlIndexMethod.BTREE);
+			return new SqlIndex(name, List.of(this.id), unique, SqlIndexMethod.BTREE);
 		}
 	}
 }

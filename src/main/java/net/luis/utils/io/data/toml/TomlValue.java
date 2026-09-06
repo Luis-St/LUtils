@@ -395,7 +395,7 @@ public class TomlValue implements TomlElement {
 		Objects.requireNonNull(config, "Config must not be null");
 		
 		if (this.isTomlBoolean()) {
-			return this.getAsBoolean() ? "true" : "false";
+			return Boolean.toString(this.getAsBoolean());
 		} else if (this.isTomlNumber()) {
 			Number num = this.getAsNumber();
 			

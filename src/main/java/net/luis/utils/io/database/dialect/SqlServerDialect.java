@@ -126,6 +126,54 @@ public class SqlServerDialect extends AbstractSqlDialect {
 		super(additionalTypes);
 	}
 	
+	/**
+	 * Returns the name used for the default constraint of the given column.<br>
+	 * T-SQL models a column default as a named table constraint, this name makes the constraint of a column predictable.<br>
+	 *
+	 * @param column The column to name the default constraint of
+	 * @return The name of the default constraint of the column
+	 * @throws NullPointerException If the column is null
+	 */
+	static @NonNull String defaultConstraintName(@NonNull SqlColumn<?, ?> column) {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		return "DF_" + column.owningTable().name() + "_" + column.name();
+	}
+	
+	/**
+	 * Quotes the given value as a t-sql string literal.<br>
+	 *
+	 * @param value The value to quote
+	 * @return The quoted string literal
+	 * @throws NullPointerException If the value is null
+	 */
+	static @NonNull String quoteStringLiteral(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		return "'" + value.replace("'", "''") + "'";
+	}
+	
+	/**
+	 * Renders a statement that drops the default constraint of the given column if the column has one.<br>
+	 * The constraint may carry a generated name, so it is looked up in the system catalog before it is dropped.<br>
+	 *
+	 * @param dialect The dialect used to quote the identifiers
+	 * @param tableName The name of the table the column belongs to
+	 * @param columnName The name of the column to drop the default constraint of
+	 * @return The rendered statement
+	 * @throws NullPointerException If the dialect, table name or column name is null
+	 */
+	static @NonNull SqlRendered renderDropDefaultConstraint(@NonNull SqlDialect dialect, @NonNull String tableName, @NonNull String columnName) {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(tableName, "Sql table name must not be null");
+		Objects.requireNonNull(columnName, "Sql column name must not be null");
+		
+		return SqlRendered.of(
+			"DECLARE @constraint sysname = (SELECT dc.name FROM sys.default_constraints dc " +
+				"INNER JOIN sys.columns c ON c.object_id = dc.parent_object_id AND c.column_id = dc.parent_column_id " +
+				"WHERE dc.parent_object_id = OBJECT_ID(N" + quoteStringLiteral(tableName) + ") AND c.name = N" + quoteStringLiteral(columnName) + "); " +
+				"IF @constraint IS NOT NULL EXEC('ALTER TABLE " + dialect.quoteIdentifier(tableName) + " DROP CONSTRAINT [' + @constraint + ']')"
+		);
+	}
+	
 	@Override
 	public @NonNull String name() {
 		return "SQL Server";
@@ -217,54 +265,6 @@ public class SqlServerDialect extends AbstractSqlDialect {
 	public @NonNull String quoteIdentifier(@NonNull String identifier) {
 		Objects.requireNonNull(identifier, "Identifier must not be null");
 		return "[" + identifier.replace("]", "]]") + "]";
-	}
-	
-	/**
-	 * Returns the name used for the default constraint of the given column.<br>
-	 * T-SQL models a column default as a named table constraint, this name makes the constraint of a column predictable.<br>
-	 *
-	 * @param column The column to name the default constraint of
-	 * @return The name of the default constraint of the column
-	 * @throws NullPointerException If the column is null
-	 */
-	static @NonNull String defaultConstraintName(@NonNull SqlColumn<?, ?> column) {
-		Objects.requireNonNull(column, "Sql column must not be null");
-		return "DF_" + column.owningTable().name() + "_" + column.name();
-	}
-	
-	/**
-	 * Quotes the given value as a t-sql string literal.<br>
-	 *
-	 * @param value The value to quote
-	 * @return The quoted string literal
-	 * @throws NullPointerException If the value is null
-	 */
-	static @NonNull String quoteStringLiteral(@NonNull String value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		return "'" + value.replace("'", "''") + "'";
-	}
-	
-	/**
-	 * Renders a statement that drops the default constraint of the given column if the column has one.<br>
-	 * The constraint may carry a generated name, so it is looked up in the system catalog before it is dropped.<br>
-	 *
-	 * @param dialect The dialect used to quote the identifiers
-	 * @param tableName The name of the table the column belongs to
-	 * @param columnName The name of the column to drop the default constraint of
-	 * @return The rendered statement
-	 * @throws NullPointerException If the dialect, table name or column name is null
-	 */
-	static @NonNull SqlRendered renderDropDefaultConstraint(@NonNull SqlDialect dialect, @NonNull String tableName, @NonNull String columnName) {
-		Objects.requireNonNull(dialect, "Sql dialect must not be null");
-		Objects.requireNonNull(tableName, "Sql table name must not be null");
-		Objects.requireNonNull(columnName, "Sql column name must not be null");
-		
-		return SqlRendered.of(
-			"DECLARE @constraint sysname = (SELECT dc.name FROM sys.default_constraints dc " +
-				"INNER JOIN sys.columns c ON c.object_id = dc.parent_object_id AND c.column_id = dc.parent_column_id " +
-				"WHERE dc.parent_object_id = OBJECT_ID(N" + quoteStringLiteral(tableName) + ") AND c.name = N" + quoteStringLiteral(columnName) + "); " +
-				"IF @constraint IS NOT NULL EXEC('ALTER TABLE " + dialect.quoteIdentifier(tableName) + " DROP CONSTRAINT [' + @constraint + ']')"
-		);
 	}
 	
 	@Override

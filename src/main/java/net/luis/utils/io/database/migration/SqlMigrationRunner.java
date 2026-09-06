@@ -146,6 +146,112 @@ public final class SqlMigrationRunner {
 	}
 	
 	/**
+	 * Validates that the check constraints of the recorded tables still match the schema snapshot.<br>
+	 * Only the names of the constraints are compared, their clauses are normalized differently by every engine and carry
+	 * no information the names do not already carry.<br>
+	 *
+	 * @param version The version of the schema snapshot the live schema is compared against
+	 * @param snapshot The schema snapshot recorded after the migration with the given version was applied
+	 * @param live The live schema of the database
+	 * @param recordedTables The names of the tables the snapshot records columns for
+	 * @throws SqlMigrationConflictException If the check constraints of a recorded table have drifted
+	 */
+	private static void validateCheckConstraintDrift(@NonNull Version version, @NonNull SqlSchemaSnapshot snapshot, @NonNull SqlMigrationSchema live, @NonNull Set<String> recordedTables) throws SqlException {
+		Map<String, List<SqlCheckConstraintInfo>> liveConstraints = live.extractCheckConstraints();
+		
+		for (String table : recordedTables) {
+			Set<String> expected = constraintNames(snapshot.checkConstraints().get(table));
+			Set<String> actual = constraintNames(liveConstraints.get(table));
+			if (expected.equals(actual)) {
+				continue;
+			}
+			
+			throw new SqlMigrationConflictException(
+				"The check constraints of table '" + table + "' have drifted from the schema snapshot of version " + version + ", expected " + expected + " but found " + actual
+			);
+		}
+	}
+	
+	/**
+	 * Returns the names of the given check constraints.<br>
+	 *
+	 * @param constraints The check constraints to collect the names of or {@code null} if there are none
+	 * @return The names of the given check constraints
+	 */
+	private static @NonNull Set<String> constraintNames(@Nullable List<SqlCheckConstraintInfo> constraints) {
+		if (constraints == null) {
+			return Set.of();
+		}
+		return constraints.stream().map(SqlCheckConstraintInfo::constraintName).collect(Collectors.toCollection(TreeSet::new));
+	}
+	
+	/**
+	 * Returns the key that identifies the given column within a schema.<br>
+	 *
+	 * @param column The column to build the key for
+	 * @return The key that identifies the column
+	 */
+	private static @NonNull String columnKey(@NonNull SqlSchemaColumnInfo column) {
+		return column.tableName() + '.' + column.columnName();
+	}
+	
+	/**
+	 * Describes the first difference between the recorded and the live state of a column.<br>
+	 * The ordinal position and the resolved type parameter are not compared, both are reported inconsistently across
+	 * driver versions and would turn harmless upgrades into validation failures.<br>
+	 *
+	 * @param expected The column as recorded in the schema snapshot
+	 * @param actual The column as found in the live database
+	 * @return The description of the first difference or {@code null} if the column matches the recorded state
+	 */
+	private static @Nullable String describeDifference(@NonNull SqlSchemaColumnInfo expected, @NonNull SqlSchemaColumnInfo actual) {
+		if (expected.jdbcType() != actual.jdbcType()) {
+			return "expected jdbc type " + expected.jdbcType() + " but found " + actual.jdbcType();
+		}
+		if (expected.nullable() != actual.nullable()) {
+			return "expected nullable " + expected.nullable() + " but found " + actual.nullable();
+		}
+		if (expected.autoIncrement() != actual.autoIncrement()) {
+			return "expected auto-increment " + expected.autoIncrement() + " but found " + actual.autoIncrement();
+		}
+		if (expected.primaryKey() != actual.primaryKey()) {
+			return "expected primary key " + expected.primaryKey() + " but found " + actual.primaryKey();
+		}
+		if (expected.unique() != actual.unique()) {
+			return "expected unique " + expected.unique() + " but found " + actual.unique();
+		}
+		return null;
+	}
+	
+	/**
+	 * Checks whether the given table belongs to the bookkeeping of the migration framework itself.<br>
+	 * Those tables are upgraded by the framework rather than by a migration, so they are not covered by any schema
+	 * snapshot and must be excluded from the drift check.<br>
+	 *
+	 * @param tableName The name of the table to check
+	 * @return True if the table belongs to the bookkeeping of the framework, false otherwise
+	 */
+	private static boolean isBookkeepingTable(@NonNull String tableName) {
+		return tableName.toLowerCase(Locale.ROOT).startsWith("_sql_");
+	}
+	
+	/**
+	 * Returns the hint that lists the sql which was executed when the given migration was applied.<br>
+	 * The hint is empty if no statements were recorded, which is the case for every migration that was applied before the
+	 * framework started recording them.<br>
+	 *
+	 * @param info The recorded info of the applied migration
+	 * @return The hint listing the executed sql or an empty string if none was recorded
+	 */
+	private static @NonNull String appliedStatementsHint(@NonNull SqlMigrationInfo info) {
+		String statements = info.statements();
+		if (statements == null || statements.isEmpty()) {
+			return "";
+		}
+		return ", the following sql was executed when it was applied:\n" + statements;
+	}
+	
+	/**
 	 * Registers the given migration with this runner.<br>
 	 * The registered migrations are kept sorted by their version after insertion.<br>
 	 *
@@ -609,112 +715,6 @@ public final class SqlMigrationRunner {
 			);
 		}
 		validateCheckConstraintDrift(version, snapshot, live, recordedTables);
-	}
-	
-	/**
-	 * Validates that the check constraints of the recorded tables still match the schema snapshot.<br>
-	 * Only the names of the constraints are compared, their clauses are normalized differently by every engine and carry
-	 * no information the names do not already carry.<br>
-	 *
-	 * @param version The version of the schema snapshot the live schema is compared against
-	 * @param snapshot The schema snapshot recorded after the migration with the given version was applied
-	 * @param live The live schema of the database
-	 * @param recordedTables The names of the tables the snapshot records columns for
-	 * @throws SqlMigrationConflictException If the check constraints of a recorded table have drifted
-	 */
-	private static void validateCheckConstraintDrift(@NonNull Version version, @NonNull SqlSchemaSnapshot snapshot, @NonNull SqlMigrationSchema live, @NonNull Set<String> recordedTables) throws SqlException {
-		Map<String, List<SqlCheckConstraintInfo>> liveConstraints = live.extractCheckConstraints();
-		
-		for (String table : recordedTables) {
-			Set<String> expected = constraintNames(snapshot.checkConstraints().get(table));
-			Set<String> actual = constraintNames(liveConstraints.get(table));
-			if (expected.equals(actual)) {
-				continue;
-			}
-			
-			throw new SqlMigrationConflictException(
-				"The check constraints of table '" + table + "' have drifted from the schema snapshot of version " + version + ", expected " + expected + " but found " + actual
-			);
-		}
-	}
-	
-	/**
-	 * Returns the names of the given check constraints.<br>
-	 *
-	 * @param constraints The check constraints to collect the names of or {@code null} if there are none
-	 * @return The names of the given check constraints
-	 */
-	private static @NonNull Set<String> constraintNames(@Nullable List<SqlCheckConstraintInfo> constraints) {
-		if (constraints == null) {
-			return Set.of();
-		}
-		return constraints.stream().map(SqlCheckConstraintInfo::constraintName).collect(Collectors.toCollection(TreeSet::new));
-	}
-	
-	/**
-	 * Returns the key that identifies the given column within a schema.<br>
-	 *
-	 * @param column The column to build the key for
-	 * @return The key that identifies the column
-	 */
-	private static @NonNull String columnKey(@NonNull SqlSchemaColumnInfo column) {
-		return column.tableName() + '.' + column.columnName();
-	}
-	
-	/**
-	 * Describes the first difference between the recorded and the live state of a column.<br>
-	 * The ordinal position and the resolved type parameter are not compared, both are reported inconsistently across
-	 * driver versions and would turn harmless upgrades into validation failures.<br>
-	 *
-	 * @param expected The column as recorded in the schema snapshot
-	 * @param actual The column as found in the live database
-	 * @return The description of the first difference or {@code null} if the column matches the recorded state
-	 */
-	private static @Nullable String describeDifference(@NonNull SqlSchemaColumnInfo expected, @NonNull SqlSchemaColumnInfo actual) {
-		if (expected.jdbcType() != actual.jdbcType()) {
-			return "expected jdbc type " + expected.jdbcType() + " but found " + actual.jdbcType();
-		}
-		if (expected.nullable() != actual.nullable()) {
-			return "expected nullable " + expected.nullable() + " but found " + actual.nullable();
-		}
-		if (expected.autoIncrement() != actual.autoIncrement()) {
-			return "expected auto-increment " + expected.autoIncrement() + " but found " + actual.autoIncrement();
-		}
-		if (expected.primaryKey() != actual.primaryKey()) {
-			return "expected primary key " + expected.primaryKey() + " but found " + actual.primaryKey();
-		}
-		if (expected.unique() != actual.unique()) {
-			return "expected unique " + expected.unique() + " but found " + actual.unique();
-		}
-		return null;
-	}
-	
-	/**
-	 * Checks whether the given table belongs to the bookkeeping of the migration framework itself.<br>
-	 * Those tables are upgraded by the framework rather than by a migration, so they are not covered by any schema
-	 * snapshot and must be excluded from the drift check.<br>
-	 *
-	 * @param tableName The name of the table to check
-	 * @return True if the table belongs to the bookkeeping of the framework, false otherwise
-	 */
-	private static boolean isBookkeepingTable(@NonNull String tableName) {
-		return tableName.toLowerCase(Locale.ROOT).startsWith("_sql_");
-	}
-	
-	/**
-	 * Returns the hint that lists the sql which was executed when the given migration was applied.<br>
-	 * The hint is empty if no statements were recorded, which is the case for every migration that was applied before the
-	 * framework started recording them.<br>
-	 *
-	 * @param info The recorded info of the applied migration
-	 * @return The hint listing the executed sql or an empty string if none was recorded
-	 */
-	private static @NonNull String appliedStatementsHint(@NonNull SqlMigrationInfo info) {
-		String statements = info.statements();
-		if (statements == null || statements.isEmpty()) {
-			return "";
-		}
-		return ", the following sql was executed when it was applied:\n" + statements;
 	}
 	
 	/**

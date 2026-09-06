@@ -118,7 +118,7 @@ class InputProviderTest {
 			assertNotNull(provider.getStream());
 		}
 		
-		try (InputProvider provider = new InputProvider(new byte[]{1, 2, 3})) {
+		try (InputProvider provider = new InputProvider(new byte[] { 1, 2, 3 })) {
 			assertNotNull(provider.getStream());
 		}
 	}
@@ -131,8 +131,7 @@ class InputProviderTest {
 			assertNotNull(provider1.getStream());
 		}
 		
-		try (FileInputStream fis = new FileInputStream("InputProvider/InputProvider.json");
-		     InputProvider provider2 = new InputProvider(fis)) {
+		try (FileInputStream fis = new FileInputStream("InputProvider/InputProvider.json"); InputProvider provider2 = new InputProvider(fis)) {
 			assertNotNull(provider2.getStream());
 		} catch (IOException e) {
 			fail("Should not throw IOException for valid file");
