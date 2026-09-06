@@ -20,6 +20,7 @@ package net.luis.utils.crypto;
 
 import net.luis.utils.crypto.exception.CryptoException;
 import net.luis.utils.crypto.exception.MalformedDataException;
+import net.luis.utils.crypto.util.PemDocument;
 import net.luis.utils.io.reader.StringReader;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
@@ -52,11 +53,14 @@ import java.util.*;
  * String pem = Pems.encode(pair.getPublic());
  *
  * // The expected label is checked, so a private key never arrives where a public one belongs
- * Pems.Document document = Pems.decode(pem, Pems.PUBLIC_KEY);
- * PublicKey key = CryptoKeys.publicKey(KemAlgorithm.X25519_ML_KEM_768, document.der());
+ * PemDocument document = Pems.decode(pem, Pems.PUBLIC_KEY);
+ * PublicKey key = CryptoKeys.publicKey(KemAlgorithm.X25519_ML_KEM_768, document.content());
  *
  * // Created with owner only permissions wherever the file system supports them
  * Pems.write(Path.of("private.pem"), pair.getPrivate());
+ *
+ * // A document shipped on the classpath is read through a resource location
+ * PemDocument trusted = Pems.read(ResourceLocation.internal("certs/root.pem"));
  * }</pre>
  *
  * @author Luis-St
@@ -99,18 +103,18 @@ public final class Pems {
 	private Pems() {}
 	
 	/**
-	 * Encodes the given body under the given label.<br>
+	 * Encodes the given content under the given label.<br>
 	 *
 	 * @param label The label to write
-	 * @param der The body to encode
+	 * @param content The der encoded content to encode
 	 * @return The encoded document
-	 * @throws NullPointerException If the label or the body is null
+	 * @throws NullPointerException If the label or the content is null
 	 */
-	public static @NonNull String encode(@NonNull String label, byte @NonNull [] der) {
+	public static @NonNull String encode(@NonNull String label, byte @NonNull [] content) {
 		Objects.requireNonNull(label, "Label must not be null");
-		Objects.requireNonNull(der, "Der must not be null");
+		Objects.requireNonNull(content, "Content must not be null");
 		
-		String body = Base64.getEncoder().encodeToString(der);
+		String body = Base64.getEncoder().encodeToString(content);
 		StringBuilder builder = new StringBuilder(BEGIN).append(label).append(DASHES).append('\n');
 		for (int offset = 0; offset < body.length(); offset += LINE_LENGTH) {
 			builder.append(body, offset, Math.min(offset + LINE_LENGTH, body.length())).append('\n');
@@ -156,8 +160,8 @@ public final class Pems {
 	 * @throws NullPointerException If the text is null
 	 * @throws MalformedDataException If the text holds no document, or a malformed one
 	 */
-	public static @NonNull Document decode(@NonNull String pem) {
-		List<Document> documents = decodeAll(pem);
+	public static @NonNull PemDocument decode(@NonNull String pem) {
+		List<PemDocument> documents = decodeAll(pem);
 		if (documents.isEmpty()) {
 			throw new MalformedDataException("Not a PEM document");
 		}
@@ -173,10 +177,10 @@ public final class Pems {
 	 * @throws NullPointerException If the text or the expected label is null
 	 * @throws MalformedDataException If the text holds no document, a malformed one, or one with another label
 	 */
-	public static @NonNull Document decode(@NonNull String pem, @NonNull String expectedLabel) {
+	public static @NonNull PemDocument decode(@NonNull String pem, @NonNull String expectedLabel) {
 		Objects.requireNonNull(expectedLabel, "Expected label must not be null");
 		
-		Document document = decode(pem);
+		PemDocument document = decode(pem);
 		if (!document.label().equals(expectedLabel)) {
 			throw new MalformedDataException("Expected a '" + expectedLabel + "' PEM document, got '" + document.label() + "'");
 		}
@@ -192,11 +196,11 @@ public final class Pems {
 	 * @throws NullPointerException If the text is null
 	 * @throws MalformedDataException If a document is malformed or its BEGIN and END labels differ
 	 */
-	public static @NonNull @Unmodifiable List<Document> decodeAll(@NonNull String pem) {
+	public static @NonNull @Unmodifiable List<PemDocument> decodeAll(@NonNull String pem) {
 		Objects.requireNonNull(pem, "Pems must not be null");
 		
 		StringReader reader = new StringReader(pem);
-		List<Document> documents = new ArrayList<>();
+		List<PemDocument> documents = new ArrayList<>();
 		while (reader.canRead()) {
 			reader.readUntil(BEGIN, true);
 			if (!reader.canRead()) {
@@ -207,7 +211,7 @@ public final class Pems {
 				String label = reader.readUntil(DASHES, true);
 				String body = reader.readUntil(END, true);
 				reader.readExpected(label + DASHES, true);
-				documents.add(new Document(label, Base64.getMimeDecoder().decode(body.replaceAll("\\s", ""))));
+				documents.add(new PemDocument(label, Base64.getMimeDecoder().decode(body.replaceAll("\\s", ""))));
 			} catch (MalformedDataException e) {
 				throw e;
 			} catch (RuntimeException e) {
@@ -257,36 +261,13 @@ public final class Pems {
 	 * @throws MalformedDataException If the file holds no document, or a malformed one
 	 * @throws UncheckedIOException If reading fails
 	 */
-	public static @NonNull Document read(@NonNull Path file) {
+	public static @NonNull PemDocument read(@NonNull Path file) {
 		Objects.requireNonNull(file, "File must not be null");
 		
 		try {
 			return decode(Files.readString(file, StandardCharsets.US_ASCII));
 		} catch (IOException e) {
 			throw new UncheckedIOException("Failed to read the pem file: " + file, e);
-		}
-	}
-	
-	/**
-	 * A decoded PEM document: its label and its DER body.<br>
-	 *
-	 * @author Luis-St
-	 *
-	 * @param label The label between the BEGIN and END markers
-	 * @param der The decoded body
-	 */
-	public record Document(
-		@NonNull String label,
-		byte @NonNull [] der
-	) {
-		
-		/**
-		 * Constructs a new document.<br>
-		 * @throws NullPointerException If the label or the body is null
-		 */
-		public Document {
-			Objects.requireNonNull(label, "Label must not be null");
-			Objects.requireNonNull(der, "Der must not be null");
 		}
 	}
 }

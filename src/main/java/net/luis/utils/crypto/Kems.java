@@ -33,7 +33,7 @@ import java.util.Objects;
  * Key encapsulation, the replacement for encrypting directly to a public key.<br>
  * <p>
  *     A mechanism produces a random shared secret plus an encapsulation that only the holder of the private key can turn back into that secret.<br>
- *     The secret is then used to key an authenticated cipher, which is what {@link Sealed} does.
+ *     The secret is then used to key an authenticated cipher, which is what {@link CryptoMessages} does.
  * </p>
  * <p>
  *     Every mechanism here goes through the JDK key encapsulation API, the Diffie-Hellman ones included.<br>
@@ -60,7 +60,7 @@ import java.util.Objects;
  * }</pre>
  *
  * @see KemAlgorithm
- * @see Sealed
+ * @see CryptoMessages
  *
  * @author Luis-St
  */
@@ -133,7 +133,7 @@ public final class Kems {
 	 * <p>
 	 *     A wrong key does not necessarily fail here.<br>
 	 *     The lattice mechanisms reject implicitly, which means they return a different secret rather than an error,<br>
-	 *     so the caller has to detect the mismatch further down, which is what the key commitment in {@link Sealed} is for.
+	 *     so the caller has to detect the mismatch further down, which is what the key commitment in {@link CryptoMessages} is for.
 	 * </p>
 	 *
 	 * @param algorithm The mechanism to decapsulate with

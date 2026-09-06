@@ -22,6 +22,8 @@ import net.luis.utils.crypto.algorithm.KemAlgorithm;
 import net.luis.utils.crypto.algorithm.SignatureAlgorithm;
 import net.luis.utils.crypto.exception.MalformedDataException;
 import net.luis.utils.crypto.util.CryptoRandom;
+import net.luis.utils.crypto.util.PemDocument;
+import net.luis.utils.resources.ResourceLocation;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;
@@ -51,6 +53,8 @@ import static org.junit.jupiter.api.Assumptions.*;
 class PemsTest {
 	
 	private static final Path DIRECTORY = Path.of("PemsTest-files");
+	private static final Path MALFORMED_FILE = DIRECTORY.resolve("malformed.pem");
+	private static final byte[] FIXTURE_CONTENT = HexFormat.of().parseHex("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
 	
 	private static KeyPair ed25519;
 	private static X509Certificate certificate;
@@ -63,6 +67,9 @@ class PemsTest {
 		ed25519 = Signatures.generateKeyPair(SignatureAlgorithm.ED25519);
 		certificate = selfSignedCertificate(ed25519);
 		posix = Files.getFileStore(DIRECTORY.toAbsolutePath()).supportsFileAttributeView(PosixFileAttributeView.class);
+		
+		String document = Pems.encode(ed25519.getPublic());
+		Files.writeString(MALFORMED_FILE, document.substring(0, document.indexOf("-----END")), StandardCharsets.US_ASCII);
 	}
 	
 	@AfterAll
@@ -110,35 +117,13 @@ class PemsTest {
 	}
 	
 	@Test
-	void constructDocument() {
-		Pems.Document document = new Pems.Document(Pems.PUBLIC_KEY, new byte[] { 1, 2, 3 });
-		assertEquals("PUBLIC KEY", document.label());
-		assertArrayEquals(new byte[] { 1, 2, 3 }, document.der());
-	}
-	
-	@Test
-	void constructDocumentWithNullLabel() {
-		assertEquals("Label must not be null", assertThrows(NullPointerException.class, () -> new Pems.Document(null, new byte[0])).getMessage());
-	}
-	
-	@Test
-	void constructDocumentWithNullDer() {
-		assertEquals("Der must not be null", assertThrows(NullPointerException.class, () -> new Pems.Document("TEST", null)).getMessage());
-	}
-	
-	@Test
-	void constructDocumentWithBothNull() {
-		assertEquals("Label must not be null", assertThrows(NullPointerException.class, () -> new Pems.Document(null, null)).getMessage());
-	}
-	
-	@Test
 	void encodeWithNullLabel() {
 		assertEquals("Label must not be null", assertThrows(NullPointerException.class, () -> Pems.encode(null, new byte[0])).getMessage());
 	}
 	
 	@Test
 	void encodeWithNullDer() {
-		assertEquals("Der must not be null", assertThrows(NullPointerException.class, () -> Pems.encode("TEST", null)).getMessage());
+		assertEquals("Content must not be null", assertThrows(NullPointerException.class, () -> Pems.encode("TEST", null)).getMessage());
 	}
 	
 	@Test
@@ -159,7 +144,7 @@ class PemsTest {
 	@Test
 	void encodeKeyWithoutEncodedForm() {
 		NullPointerException exception = assertThrows(NullPointerException.class, () -> Pems.encode(new UnencodableKey()));
-		assertEquals("Der must not be null", exception.getMessage());
+		assertEquals("Content must not be null", exception.getMessage());
 	}
 	
 	@Test
@@ -219,7 +204,7 @@ class PemsTest {
 	
 	@Test
 	void writeWithNullFile() {
-		assertEquals("File must not be null", assertThrows(NullPointerException.class, () -> Pems.write(null, ed25519.getPublic())).getMessage());
+		assertEquals("File must not be null", assertThrows(NullPointerException.class, () -> Pems.write((Path) null, ed25519.getPublic())).getMessage());
 	}
 	
 	@Test
@@ -236,7 +221,7 @@ class PemsTest {
 	
 	@Test
 	void readWithNullFile() {
-		assertEquals("File must not be null", assertThrows(NullPointerException.class, () -> Pems.read(null)).getMessage());
+		assertEquals("File must not be null", assertThrows(NullPointerException.class, () -> Pems.read((Path) null)).getMessage());
 	}
 	
 	@Test
@@ -301,82 +286,82 @@ class PemsTest {
 	@Test
 	void encodePrivateKey() {
 		String pem = Pems.encode(ed25519.getPrivate());
-		Pems.Document document = Pems.decode(pem);
+		PemDocument document = Pems.decode(pem);
 		
 		assertEquals(Pems.PRIVATE_KEY, document.label());
-		assertArrayEquals(ed25519.getPrivate().getEncoded(), document.der());
+		assertArrayEquals(ed25519.getPrivate().getEncoded(), document.content());
 	}
 	
 	@Test
 	void encodePublicKey() {
-		Pems.Document document = Pems.decode(Pems.encode(ed25519.getPublic()));
+		PemDocument document = Pems.decode(Pems.encode(ed25519.getPublic()));
 		
 		assertEquals(Pems.PUBLIC_KEY, document.label());
-		assertArrayEquals(ed25519.getPublic().getEncoded(), document.der());
+		assertArrayEquals(ed25519.getPublic().getEncoded(), document.content());
 	}
 	
 	@Test
 	void encodeSecretKeyUsesPublicLabel() {
-		Pems.Document document = Pems.decode(Pems.encode(new SecretKeySpec(new byte[32], "AES")));
+		PemDocument document = Pems.decode(Pems.encode(new SecretKeySpec(new byte[32], "AES")));
 		
 		assertEquals(Pems.PUBLIC_KEY, document.label());
-		assertArrayEquals(new byte[32], document.der());
+		assertArrayEquals(new byte[32], document.content());
 	}
 	
 	@Test
 	void encodeCertificate() throws Exception {
-		Pems.Document document = Pems.decode(Pems.encode(certificate));
+		PemDocument document = Pems.decode(Pems.encode(certificate));
 		
 		assertEquals(Pems.CERTIFICATE, document.label());
-		assertArrayEquals(certificate.getEncoded(), document.der());
+		assertArrayEquals(certificate.getEncoded(), document.content());
 	}
 	
 	@Test
 	void decodeAllWithNoDocuments() {
-		List<Pems.Document> documents = assertDoesNotThrow(() -> Pems.decodeAll("just some text"));
+		List<PemDocument> documents = assertDoesNotThrow(() -> Pems.decodeAll("just some text"));
 		assertTrue(documents.isEmpty());
 	}
 	
 	@Test
 	void decodeAllWithSingleDocument() {
-		List<Pems.Document> documents = Pems.decodeAll(Pems.encode(ed25519.getPublic()));
+		List<PemDocument> documents = Pems.decodeAll(Pems.encode(ed25519.getPublic()));
 		
 		assertEquals(1, documents.size());
 		assertEquals(Pems.PUBLIC_KEY, documents.getFirst().label());
-		assertArrayEquals(ed25519.getPublic().getEncoded(), documents.getFirst().der());
+		assertArrayEquals(ed25519.getPublic().getEncoded(), documents.getFirst().content());
 	}
 	
 	@Test
 	void decodeAllWithMultipleDocuments() throws Exception {
 		String pem = Pems.encode(certificate) + Pems.encode(ed25519.getPublic()) + Pems.encode(ed25519.getPrivate());
-		List<Pems.Document> documents = Pems.decodeAll(pem);
+		List<PemDocument> documents = Pems.decodeAll(pem);
 		
 		assertEquals(3, documents.size());
 		assertEquals(Pems.CERTIFICATE, documents.get(0).label());
 		assertEquals(Pems.PUBLIC_KEY, documents.get(1).label());
 		assertEquals(Pems.PRIVATE_KEY, documents.get(2).label());
-		assertArrayEquals(certificate.getEncoded(), documents.get(0).der());
+		assertArrayEquals(certificate.getEncoded(), documents.get(0).content());
 	}
 	
 	@Test
 	void decodeAllIgnoresTextBetweenDocuments() {
 		String pem = "before\n" + Pems.encode(ed25519.getPublic()) + "between\n" + Pems.encode(ed25519.getPrivate()) + "after\n";
-		List<Pems.Document> documents = Pems.decodeAll(pem);
+		List<PemDocument> documents = Pems.decodeAll(pem);
 		
 		assertEquals(2, documents.size());
-		assertArrayEquals(ed25519.getPublic().getEncoded(), documents.get(0).der());
-		assertArrayEquals(ed25519.getPrivate().getEncoded(), documents.get(1).der());
+		assertArrayEquals(ed25519.getPublic().getEncoded(), documents.get(0).content());
+		assertArrayEquals(ed25519.getPrivate().getEncoded(), documents.get(1).content());
 	}
 	
 	@Test
 	void decodeWithCorrectLabel() {
-		Pems.Document document = assertDoesNotThrow(() -> Pems.decode(Pems.encode(ed25519.getPublic()), Pems.PUBLIC_KEY));
+		PemDocument document = assertDoesNotThrow(() -> Pems.decode(Pems.encode(ed25519.getPublic()), Pems.PUBLIC_KEY));
 		assertEquals(Pems.PUBLIC_KEY, document.label());
 	}
 	
 	@Test
 	void decodeReturnsFirstDocument() {
-		Pems.Document document = Pems.decode(Pems.encode(certificate) + Pems.encode(ed25519.getPublic()));
+		PemDocument document = Pems.decode(Pems.encode(certificate) + Pems.encode(ed25519.getPublic()));
 		assertEquals(Pems.CERTIFICATE, document.label());
 	}
 	
@@ -389,7 +374,7 @@ class PemsTest {
 		Pems.write(file, ed25519.getPublic());
 		assertTrue(Files.exists(file));
 		assertEquals(Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE), Files.getPosixFilePermissions(file));
-		assertArrayEquals(ed25519.getPublic().getEncoded(), Pems.read(file).der());
+		assertArrayEquals(ed25519.getPublic().getEncoded(), Pems.read(file).content());
 	}
 	
 	@Test
@@ -442,7 +427,7 @@ class PemsTest {
 	
 	@Test
 	void decodeAllReturnsUnmodifiableList() {
-		List<Pems.Document> documents = Pems.decodeAll(Pems.encode(ed25519.getPublic()));
+		List<PemDocument> documents = Pems.decodeAll(Pems.encode(ed25519.getPublic()));
 		
 		assertThrows(UnsupportedOperationException.class, () -> documents.add(documents.getFirst()));
 		assertThrows(UnsupportedOperationException.class, () -> documents.remove(0));
@@ -454,15 +439,15 @@ class PemsTest {
 		String body = Base64.getEncoder().encodeToString(der);
 		String pem = "-----BEGIN TEST-----\n" + body.substring(0, 10) + " \t\n\n" + body.substring(10) + "\n-----END TEST-----\n";
 		
-		assertArrayEquals(der, Pems.decode(pem).der());
+		assertArrayEquals(der, Pems.decode(pem).content());
 	}
 	
 	@Test
 	void decodeToleratesCarriageReturns() {
 		String pem = Pems.encode(ed25519.getPublic()).replace("\n", "\r\n");
-		Pems.Document document = Pems.decode(pem);
+		PemDocument document = Pems.decode(pem);
 		
-		assertArrayEquals(ed25519.getPublic().getEncoded(), document.der());
+		assertArrayEquals(ed25519.getPublic().getEncoded(), document.content());
 		assertEquals(Pems.PUBLIC_KEY, document.label());
 	}
 	
@@ -470,10 +455,10 @@ class PemsTest {
 	void readFromFile() {
 		Path file = DIRECTORY.resolve("read.pem");
 		Pems.write(file, ed25519.getPublic());
-		Pems.Document document = Pems.read(file);
+		PemDocument document = Pems.read(file);
 		
 		assertEquals(Pems.PUBLIC_KEY, document.label());
-		assertArrayEquals(ed25519.getPublic().getEncoded(), document.der());
+		assertArrayEquals(ed25519.getPublic().getEncoded(), document.content());
 	}
 	
 	@Test
@@ -496,22 +481,22 @@ class PemsTest {
 		keys.add(hybrid.getPrivate());
 		
 		for (Key key : keys) {
-			Pems.Document document = Pems.decode(Pems.encode(key));
-			assertArrayEquals(key.getEncoded(), document.der());
+			PemDocument document = Pems.decode(Pems.encode(key));
+			assertArrayEquals(key.getEncoded(), document.content());
 			assertEquals(key instanceof PrivateKey ? Pems.PRIVATE_KEY : Pems.PUBLIC_KEY, document.label());
 		}
 	}
 	
 	@Test
 	void encodeDecodeRoundTripForCertificate() throws Exception {
-		assertArrayEquals(certificate.getEncoded(), Pems.decode(Pems.encode(certificate), Pems.CERTIFICATE).der());
+		assertArrayEquals(certificate.getEncoded(), Pems.decode(Pems.encode(certificate), Pems.CERTIFICATE).content());
 	}
 	
 	@Test
 	void roundTripThroughCryptoKeys() {
 		KeyPair hybrid = Kems.generateKeyPair(KemAlgorithm.X25519_ML_KEM_768);
-		Pems.Document document = Pems.decode(Pems.encode(hybrid.getPublic()), Pems.PUBLIC_KEY);
-		PublicKey restored = CryptoKeys.publicKey(KemAlgorithm.X25519_ML_KEM_768, document.der());
+		PemDocument document = Pems.decode(Pems.encode(hybrid.getPublic()), Pems.PUBLIC_KEY);
+		PublicKey restored = CryptoKeys.publicKey(KemAlgorithm.X25519_ML_KEM_768, document.content());
 		
 		assertEquals(hybrid.getPublic(), restored);
 		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519_ML_KEM_768, restored)) {
@@ -529,35 +514,35 @@ class PemsTest {
 		X509Certificate second = selfSignedCertificate(Signatures.generateKeyPair(SignatureAlgorithm.ED25519));
 		X509Certificate third = selfSignedCertificate(Signatures.generateKeyPair(SignatureAlgorithm.ED25519));
 		String chain = Pems.encode(certificate) + "\n" + Pems.encode(second) + "\n" + Pems.encode(third);
-		List<Pems.Document> documents = Pems.decodeAll(chain);
+		List<PemDocument> documents = Pems.decodeAll(chain);
 		
 		assertEquals(3, documents.size());
-		assertArrayEquals(certificate.getEncoded(), documents.get(0).der());
-		assertArrayEquals(second.getEncoded(), documents.get(1).der());
-		assertArrayEquals(third.getEncoded(), documents.get(2).der());
+		assertArrayEquals(certificate.getEncoded(), documents.get(0).content());
+		assertArrayEquals(second.getEncoded(), documents.get(1).content());
+		assertArrayEquals(third.getEncoded(), documents.get(2).content());
 	}
 	
 	@Test
 	void encodeDecodeRoundTripAtLineBoundaries() {
 		for (int size : new int[] { 0, 1, 47, 48, 49, 95, 96, 97, 1000 }) {
 			byte[] der = CryptoRandom.bytes(size);
-			assertArrayEquals(der, Pems.decode(Pems.encode("TEST", der)).der(), "size " + size);
+			assertArrayEquals(der, Pems.decode(Pems.encode("TEST", der)).content(), "size " + size);
 		}
 	}
 	
 	@Test
 	void decodeIgnoresTrailingContentAfterLastDocument() {
-		List<Pems.Document> documents = assertDoesNotThrow(() -> Pems.decodeAll(Pems.encode(ed25519.getPublic()) + "trailing prose with no markers\n"));
+		List<PemDocument> documents = assertDoesNotThrow(() -> Pems.decodeAll(Pems.encode(ed25519.getPublic()) + "trailing prose with no markers\n"));
 		assertEquals(1, documents.size());
 	}
 	
 	@Test
 	void decodeWithNestedMarkersInBody() {
 		String pem = "-----BEGIN TEST-----\nAAAA\n-----BEGIN INNER-----\n-----END TEST-----\n";
-		Pems.Document document = assertDoesNotThrow(() -> Pems.decode(pem));
+		PemDocument document = assertDoesNotThrow(() -> Pems.decode(pem));
 		
 		assertEquals("TEST", document.label());
-		assertArrayEquals(Base64.getMimeDecoder().decode("AAAA-----BEGININNER-----"), document.der());
+		assertArrayEquals(Base64.getMimeDecoder().decode("AAAA-----BEGININNER-----"), document.content());
 		assertEquals(1, Pems.decodeAll(pem).size());
 	}
 	
@@ -569,9 +554,9 @@ class PemsTest {
 		Pems.write(privateFile, ed25519.getPrivate());
 		
 		assertEquals(Pems.PUBLIC_KEY, Pems.read(publicFile).label());
-		assertArrayEquals(ed25519.getPublic().getEncoded(), Pems.read(publicFile).der());
+		assertArrayEquals(ed25519.getPublic().getEncoded(), Pems.read(publicFile).content());
 		assertEquals(Pems.PRIVATE_KEY, Pems.read(privateFile).label());
-		assertArrayEquals(ed25519.getPrivate().getEncoded(), Pems.read(privateFile).der());
+		assertArrayEquals(ed25519.getPrivate().getEncoded(), Pems.read(privateFile).content());
 	}
 	
 	@Test
@@ -581,7 +566,7 @@ class PemsTest {
 		
 		Pems.write(file, ed25519.getPublic());
 		Pems.write(file, second.getPublic());
-		assertArrayEquals(second.getPublic().getEncoded(), Pems.read(file).der());
+		assertArrayEquals(second.getPublic().getEncoded(), Pems.read(file).content());
 		assertEquals(Pems.encode(second.getPublic()).length(), Files.readString(file, StandardCharsets.US_ASCII).length());
 	}
 	
@@ -596,22 +581,12 @@ class PemsTest {
 	}
 	
 	@Test
-	void documentEqualsIsIdentityBasedForArrayComponent() {
-		byte[] der = { 1, 2, 3 };
-		Pems.Document first = new Pems.Document("TEST", der);
-		
-		assertNotEquals(new Pems.Document("TEST", der.clone()), first);
-		assertEquals(new Pems.Document("TEST", der), first);
-		assertEquals(first, first);
-	}
-	
-	@Test
 	void documentDoesNotAliasDecodedBytes() {
 		String pem = Pems.encode(ed25519.getPublic());
-		Pems.Document first = Pems.decode(pem);
+		PemDocument first = Pems.decode(pem);
 		
-		Arrays.fill(first.der(), (byte) 0);
-		assertArrayEquals(ed25519.getPublic().getEncoded(), Pems.decode(pem).der());
+		Arrays.fill(first.content(), (byte) 0);
+		assertArrayEquals(ed25519.getPublic().getEncoded(), Pems.decode(pem).content());
 	}
 	
 	@Test
@@ -632,10 +607,10 @@ class PemsTest {
 			builder.append(Pems.encode(Pems.CERTIFICATE, der));
 		}
 		
-		List<Pems.Document> documents = Pems.decodeAll(builder.toString());
+		List<PemDocument> documents = Pems.decodeAll(builder.toString());
 		assertEquals(20, documents.size());
 		for (int i = 0; i < 20; i++) {
-			assertArrayEquals(bodies.get(i), documents.get(i).der(), "document " + i);
+			assertArrayEquals(bodies.get(i), documents.get(i).content(), "document " + i);
 		}
 	}
 	
