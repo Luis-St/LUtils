@@ -177,6 +177,107 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		return new Ipv6Address(highBits, lowBits, null);
 	}
 	
+	/**
+	 * Sets a specific bit in an IPv6 address.<br>
+	 *
+	 * @param address The address to modify
+	 * @param bitIndex The bit index (0 is MSB)
+	 * @return A new address with the bit set
+	 */
+	private static @NonNull Ipv6Address setBitAt(@NonNull Ipv6Address address, int bitIndex) {
+		long highBits = address.highBits();
+		long lowBits = address.lowBits();
+		
+		if (bitIndex < 64) {
+			highBits |= (1L << (63 - bitIndex));
+		} else {
+			lowBits |= (1L << (127 - bitIndex));
+		}
+		return new Ipv6Address(highBits, lowBits, null);
+	}
+	
+	/**
+	 * Converts a BigInteger to an Ipv6Address.<br>
+	 *
+	 * @param value The BigInteger value
+	 * @return The corresponding Ipv6Address
+	 */
+	private static @NonNull Ipv6Address bigIntegerToIpv6Address(@NonNull BigInteger value) {
+		byte[] bytes = value.toByteArray();
+		byte[] addressBytes = new byte[16];
+		
+		int srcOffset = Math.max(0, bytes.length - 16);
+		int destOffset = Math.max(0, 16 - bytes.length);
+		int length = Math.min(bytes.length, 16);
+		
+		System.arraycopy(bytes, srcOffset, addressBytes, destOffset, length);
+		long highBits = 0;
+		long lowBits = 0;
+		for (int i = 0; i < 8; i++) {
+			highBits = (highBits << 8) | (addressBytes[i] & 0xFF);
+		}
+		for (int i = 8; i < 16; i++) {
+			lowBits = (lowBits << 8) | (addressBytes[i] & 0xFF);
+		}
+		return new Ipv6Address(highBits, lowBits, null);
+	}
+	
+	/**
+	 * Formats an IPv6 address in compressed notation.<br>
+	 *
+	 * @param address The address to format
+	 * @return The formatted string
+	 * @throws NullPointerException If the address is null
+	 */
+	private static @NonNull String formatIpv6Address(@NonNull Ipv6Address address) {
+		Objects.requireNonNull(address, "Address must not be null");
+		int[] hextets = new int[8];
+		for (int i = 0; i < 8; i++) {
+			hextets[i] = address.getHextet(i);
+		}
+		
+		int bestStart = -1;
+		int bestLength = 0;
+		int currentStart = -1;
+		int currentLength = 0;
+		for (int i = 0; i < 8; i++) {
+			if (hextets[i] == 0) {
+				if (currentStart == -1) {
+					currentStart = i;
+					currentLength = 1;
+				} else {
+					currentLength++;
+				}
+			} else {
+				if (currentLength > bestLength && currentLength > 1) {
+					bestStart = currentStart;
+					bestLength = currentLength;
+				}
+				currentStart = -1;
+				currentLength = 0;
+			}
+		}
+		if (currentLength > bestLength && currentLength > 1) {
+			bestStart = currentStart;
+			bestLength = currentLength;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 8; i++) {
+			if (bestStart != -1 && i >= bestStart && i < bestStart + bestLength) {
+				if (i == bestStart) {
+					sb.append("::");
+				}
+				continue;
+			}
+			if (i > 0 && !(bestStart != -1 && i == bestStart + bestLength)) {
+				sb.append(':');
+			}
+			sb.append(Integer.toHexString(hextets[i]));
+		}
+		return sb.toString();
+	}
+	
 	@Override
 	public @NonNull Ipv6Address broadcastAddress() {
 		throw new UnsupportedOperationException("IPv6 does not have broadcast addresses");
@@ -225,25 +326,6 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		return List.of(first, second);
 	}
 	
-	/**
-	 * Sets a specific bit in an IPv6 address.<br>
-	 *
-	 * @param address The address to modify
-	 * @param bitIndex The bit index (0 is MSB)
-	 * @return A new address with the bit set
-	 */
-	private static @NonNull Ipv6Address setBitAt(@NonNull Ipv6Address address, int bitIndex) {
-		long highBits = address.highBits();
-		long lowBits = address.lowBits();
-		
-		if (bitIndex < 64) {
-			highBits |= (1L << (63 - bitIndex));
-		} else {
-			lowBits |= (1L << (127 - bitIndex));
-		}
-		return new Ipv6Address(highBits, lowBits, null);
-	}
-	
 	@Override
 	public @NonNull Optional<Ipv6Network> supernet() {
 		if (this.prefixLength == 0) {
@@ -278,32 +360,6 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 			result.add(new Ipv6Network(subnetAddr, newPrefixLength));
 		}
 		return result;
-	}
-	
-	/**
-	 * Converts a BigInteger to an Ipv6Address.<br>
-	 *
-	 * @param value The BigInteger value
-	 * @return The corresponding Ipv6Address
-	 */
-	private static @NonNull Ipv6Address bigIntegerToIpv6Address(@NonNull BigInteger value) {
-		byte[] bytes = value.toByteArray();
-		byte[] addressBytes = new byte[16];
-		
-		int srcOffset = Math.max(0, bytes.length - 16);
-		int destOffset = Math.max(0, 16 - bytes.length);
-		int length = Math.min(bytes.length, 16);
-		
-		System.arraycopy(bytes, srcOffset, addressBytes, destOffset, length);
-		long highBits = 0;
-		long lowBits = 0;
-		for (int i = 0; i < 8; i++) {
-			highBits = (highBits << 8) | (addressBytes[i] & 0xFF);
-		}
-		for (int i = 8; i < 16; i++) {
-			lowBits = (lowBits << 8) | (addressBytes[i] & 0xFF);
-		}
-		return new Ipv6Address(highBits, lowBits, null);
 	}
 	
 	@Override
@@ -397,62 +453,6 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	 */
 	public @NonNull Ipv6Range toRange() {
 		return Ipv6Range.fromNetwork(this);
-	}
-	
-	/**
-	 * Formats an IPv6 address in compressed notation.<br>
-	 *
-	 * @param address The address to format
-	 * @return The formatted string
-	 * @throws NullPointerException If the address is null
-	 */
-	private static @NonNull String formatIpv6Address(@NonNull Ipv6Address address) {
-		Objects.requireNonNull(address, "Address must not be null");
-		int[] hextets = new int[8];
-		for (int i = 0; i < 8; i++) {
-			hextets[i] = address.getHextet(i);
-		}
-		
-		int bestStart = -1;
-		int bestLength = 0;
-		int currentStart = -1;
-		int currentLength = 0;
-		for (int i = 0; i < 8; i++) {
-			if (hextets[i] == 0) {
-				if (currentStart == -1) {
-					currentStart = i;
-					currentLength = 1;
-				} else {
-					currentLength++;
-				}
-			} else {
-				if (currentLength > bestLength && currentLength > 1) {
-					bestStart = currentStart;
-					bestLength = currentLength;
-				}
-				currentStart = -1;
-				currentLength = 0;
-			}
-		}
-		if (currentLength > bestLength && currentLength > 1) {
-			bestStart = currentStart;
-			bestLength = currentLength;
-		}
-		
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 8; i++) {
-			if (bestStart != -1 && i >= bestStart && i < bestStart + bestLength) {
-				if (i == bestStart) {
-					sb.append("::");
-				}
-				continue;
-			}
-			if (i > 0 && !(bestStart != -1 && i == bestStart + bestLength)) {
-				sb.append(':');
-			}
-			sb.append(Integer.toHexString(hextets[i]));
-		}
-		return sb.toString();
 	}
 	
 	@Override

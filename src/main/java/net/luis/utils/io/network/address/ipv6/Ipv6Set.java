@@ -193,6 +193,28 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		return result;
 	}
 	
+	/**
+	 * Calculates the minimal prefix length for a network that can contain both addresses.<br>
+	 *
+	 * @param start The start address
+	 * @param end The end address
+	 * @return The minimal prefix length
+	 */
+	private static int calculateMinimalPrefixLength(@NonNull Ipv6Address start, @NonNull Ipv6Address end) {
+		long highXor = start.highBits() ^ end.highBits();
+		long lowXor = start.lowBits() ^ end.lowBits();
+		
+		if (highXor == 0 && lowXor == 0) {
+			return 128;
+		}
+		
+		if (highXor == 0) {
+			return 64 + Long.numberOfLeadingZeros(lowXor);
+		} else {
+			return Long.numberOfLeadingZeros(highXor);
+		}
+	}
+	
 	@Override
 	public boolean isEmpty() {
 		return this.ranges.isEmpty();
@@ -397,28 +419,6 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 			result.addAll(range.toCidrNetworks());
 		}
 		return result;
-	}
-	
-	/**
-	 * Calculates the minimal prefix length for a network that can contain both addresses.<br>
-	 *
-	 * @param start The start address
-	 * @param end The end address
-	 * @return The minimal prefix length
-	 */
-	private static int calculateMinimalPrefixLength(@NonNull Ipv6Address start, @NonNull Ipv6Address end) {
-		long highXor = start.highBits() ^ end.highBits();
-		long lowXor = start.lowBits() ^ end.lowBits();
-		
-		if (highXor == 0 && lowXor == 0) {
-			return 128;
-		}
-		
-		if (highXor == 0) {
-			return 64 + Long.numberOfLeadingZeros(lowXor);
-		} else {
-			return Long.numberOfLeadingZeros(highXor);
-		}
 	}
 	
 	@Override

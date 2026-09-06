@@ -23,17 +23,20 @@ import net.luis.utils.io.data.xml.XmlElement;
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
+import net.luis.utils.io.database.query.SqlAlias;
+import net.luis.utils.io.database.query.util.SqlSetClause;
+import net.luis.utils.io.database.query.util.SqlSetType;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
-import net.luis.utils.io.database.type.SqlType;
-import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,6 +49,57 @@ import static org.junit.jupiter.api.Assertions.*;
 class SqlServerDialectTest {
 	
 	private static final SqlServerDialect DIALECT = new SqlServerDialect();
+	
+	private static SQLXML recordingXml(AtomicReference<String> setStringCapture, String document) {
+		return (SQLXML) Proxy.newProxyInstance(
+			SQLXML.class.getClassLoader(),
+			new Class<?>[] { SQLXML.class },
+			(proxy, method, args) -> switch (method.getName()) {
+				case "setString" -> {
+					setStringCapture.set((String) args[0]);
+					yield null;
+				}
+				case "getString" -> document;
+				case "toString" -> "FakeSqlXml";
+				default -> null;
+			}
+		);
+	}
+	
+	private static PreparedStatement bindingStatement(SQLXML createdXml, AtomicReference<SQLXML> boundXml, AtomicInteger capturedIndex, AtomicInteger nullType, AtomicBoolean sqlXmlBound) {
+		Connection connection = (Connection) Proxy.newProxyInstance(
+			Connection.class.getClassLoader(),
+			new Class<?>[] { Connection.class },
+			(proxy, method, args) -> "createSQLXML".equals(method.getName()) ? createdXml : null
+		);
+		return (PreparedStatement) Proxy.newProxyInstance(
+			PreparedStatement.class.getClassLoader(),
+			new Class<?>[] { PreparedStatement.class },
+			(proxy, method, args) -> switch (method.getName()) {
+				case "getConnection" -> connection;
+				case "setSQLXML" -> {
+					sqlXmlBound.set(true);
+					capturedIndex.set((Integer) args[0]);
+					boundXml.set((SQLXML) args[1]);
+					yield null;
+				}
+				case "setNull" -> {
+					capturedIndex.set((Integer) args[0]);
+					nullType.set((Integer) args[1]);
+					yield null;
+				}
+				default -> null;
+			}
+		);
+	}
+	
+	private static ResultSet readingResultSet(SQLXML xml) {
+		return (ResultSet) Proxy.newProxyInstance(
+			ResultSet.class.getClassLoader(),
+			new Class<?>[] { ResultSet.class },
+			(proxy, method, args) -> "getSQLXML".equals(method.getName()) ? xml : null
+		);
+	}
 	
 	@Test
 	void isFeatureSupportedNullFeature() {
@@ -79,7 +133,14 @@ class SqlServerDialectTest {
 	
 	@Test
 	void renderUpsertClauseUnsupported() {
-		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), List.of()));
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of()));
+	}
+	
+	@Test
+	void renderUpsertClauseUnsupportedWithSetClauses() {
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		SqlSetClause<Object, String> updateClause = new SqlSetClause<>(stringColumn, stringColumn.of(SqlAlias.EXCLUDED), SqlSetType.EXPRESSION);
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of(updateClause)));
 	}
 	
 	@Test
@@ -89,12 +150,12 @@ class SqlServerDialectTest {
 	
 	@Test
 	void renderUpsertStatementNullTable() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(null, List.of(), SqlTestFixtures.integerColumn(), SqlRendered.of("")));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(null, List.of(), List.of(SqlTestFixtures.integerColumn()), SqlRendered.of("")));
 	}
 	
 	@Test
 	void renderUpsertStatementNullColumns() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), null, SqlTestFixtures.integerColumn(), SqlRendered.of("")));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), null, List.of(SqlTestFixtures.integerColumn()), SqlRendered.of("")));
 	}
 	
 	@Test
@@ -104,7 +165,7 @@ class SqlServerDialectTest {
 	
 	@Test
 	void renderUpsertStatementNullValueTuples() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), SqlTestFixtures.integerColumn(), null));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), List.of(SqlTestFixtures.integerColumn()), null));
 	}
 	
 	@Test
@@ -284,7 +345,7 @@ class SqlServerDialectTest {
 		SqlColumn<Object, String> email = table.column("email", SqlTestFixtures.STRING_TYPE, object -> "test");
 		List<SqlColumn<?, ?>> columns = List.of(id, name, email);
 		
-		String sql = DIALECT.renderUpsertStatement(table, columns, id, SqlRendered.of("(?, ?, ?)")).sql();
+		String sql = DIALECT.renderUpsertStatement(table, columns, List.of(id), SqlRendered.of("(?, ?, ?)")).sql();
 		assertTrue(sql.contains("MERGE"));
 		assertTrue(sql.contains("INTO"));
 		assertTrue(sql.contains("USING"));
@@ -302,7 +363,7 @@ class SqlServerDialectTest {
 		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
 		List<SqlColumn<?, ?>> columns = List.of(id, name);
 		
-		String sql = DIALECT.renderUpsertStatement(table, columns, id, SqlRendered.of("(?, ?)")).sql();
+		String sql = DIALECT.renderUpsertStatement(table, columns, List.of(id), SqlRendered.of("(?, ?)")).sql();
 		String setClause = sql.substring(sql.indexOf("UPDATE SET") + "UPDATE SET".length(), sql.indexOf("WHEN NOT MATCHED"));
 		assertTrue(setClause.contains("target.[name]"));
 		assertFalse(setClause.contains("[id]"));
@@ -314,10 +375,53 @@ class SqlServerDialectTest {
 		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
 		List<SqlColumn<?, ?>> columns = List.of(id);
 		
-		String sql = DIALECT.renderUpsertStatement(table, columns, id, SqlRendered.of("(?)")).sql();
+		String sql = DIALECT.renderUpsertStatement(table, columns, List.of(id), SqlRendered.of("(?)")).sql();
 		String setClause = sql.substring(sql.indexOf("UPDATE SET") + "UPDATE SET".length(), sql.indexOf("WHEN NOT MATCHED"));
 		assertTrue(setClause.contains("target.[id]"));
 		assertTrue(setClause.contains("source.[id]"));
+	}
+	
+	@Test
+	void renderUpsertStatementAllColumnsConflictMultiColumnFallback() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
+		List<SqlColumn<?, ?>> columns = List.of(id, name);
+		
+		String sql = DIALECT.renderUpsertStatement(table, columns, columns, SqlRendered.of("(?, ?)")).sql();
+		String setClause = sql.substring(sql.indexOf("UPDATE SET") + "UPDATE SET".length(), sql.indexOf("WHEN NOT MATCHED"));
+		assertTrue(setClause.contains("target.[id]"));
+		assertTrue(setClause.contains("source.[id]"));
+		assertFalse(setClause.contains("[name]"));
+	}
+	
+	@Test
+	void renderUpsertStatementCompositeConflictColumnsBuildsAndedOnClause() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
+		List<SqlColumn<?, ?>> columns = List.of(id, name);
+		
+		String sql = DIALECT.renderUpsertStatement(table, columns, columns, SqlRendered.of("(?, ?)")).sql();
+		String onClause = sql.substring(sql.indexOf("ON target"), sql.indexOf("WHEN MATCHED"));
+		assertTrue(onClause.contains("target.[id] = source.[id]"));
+		assertTrue(onClause.contains("target.[name] = source.[name]"));
+		assertTrue(onClause.contains("AND"));
+	}
+	
+	@Test
+	void renderUpsertStatementCompositeConflictColumnsExcludedFromSetClause() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
+		SqlColumn<Object, String> email = table.column("email", SqlTestFixtures.STRING_TYPE, object -> "test");
+		List<SqlColumn<?, ?>> columns = List.of(id, name, email);
+		
+		String sql = DIALECT.renderUpsertStatement(table, columns, List.of(id, name), SqlRendered.of("(?, ?, ?)")).sql();
+		String setClause = sql.substring(sql.indexOf("UPDATE SET") + "UPDATE SET".length(), sql.indexOf("WHEN NOT MATCHED"));
+		assertTrue(setClause.contains("target.[email]"));
+		assertFalse(setClause.contains("[id]"));
+		assertFalse(setClause.contains("[name]"));
 	}
 	
 	@Test
@@ -327,7 +431,7 @@ class SqlServerDialectTest {
 		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
 		List<SqlColumn<?, ?>> columns = List.of(id, name);
 		
-		String sql = DIALECT.renderUpsertStatement(table, columns, id, SqlRendered.of("(?, ?)")).sql();
+		String sql = DIALECT.renderUpsertStatement(table, columns, List.of(id), SqlRendered.of("(?, ?)")).sql();
 		String auditColumn = table.auditConfig().orElseThrow().columnNames().getFirst();
 		assertTrue(sql.contains(auditColumn));
 	}
@@ -339,7 +443,7 @@ class SqlServerDialectTest {
 		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test");
 		List<SqlColumn<?, ?>> columns = List.of(id, name);
 		
-		assertTrue(DIALECT.renderUpsertStatement(table, columns, id, SqlRendered.of("(?, ?)")).sql().contains("MERGE"));
+		assertTrue(DIALECT.renderUpsertStatement(table, columns, List.of(id), SqlRendered.of("(?, ?)")).sql().contains("MERGE"));
 	}
 	
 	@Test
@@ -388,54 +492,167 @@ class SqlServerDialectTest {
 		assertTrue(DIALECT.readingOverride(SqlTypes.UUID).isEmpty());
 	}
 	
-	private static SQLXML recordingXml(AtomicReference<String> setStringCapture, String document) {
-		return (SQLXML) Proxy.newProxyInstance(
-			SQLXML.class.getClassLoader(),
-			new Class<?>[] { SQLXML.class },
-			(proxy, method, args) -> switch (method.getName()) {
-				case "setString" -> {
-					setStringCapture.set((String) args[0]);
-					yield null;
-				}
-				case "getString" -> document;
-				case "toString" -> "FakeSqlXml";
-				default -> null;
-			}
-		);
+	@Test
+	void resolveNativeTypeWithNullNativeType() {
+		assertThrows(NullPointerException.class, () -> DIALECT.resolveType(null));
 	}
 	
-	private static PreparedStatement bindingStatement(SQLXML createdXml, AtomicReference<SQLXML> boundXml, AtomicInteger capturedIndex, AtomicInteger nullType, AtomicBoolean sqlXmlBound) {
-		Connection connection = (Connection) Proxy.newProxyInstance(
-			Connection.class.getClassLoader(),
-			new Class<?>[] { Connection.class },
-			(proxy, method, args) -> "createSQLXML".equals(method.getName()) ? createdXml : null
-		);
-		return (PreparedStatement) Proxy.newProxyInstance(
-			PreparedStatement.class.getClassLoader(),
-			new Class<?>[] { PreparedStatement.class },
-			(proxy, method, args) -> switch (method.getName()) {
-				case "getConnection" -> connection;
-				case "setSQLXML" -> {
-					sqlXmlBound.set(true);
-					capturedIndex.set((Integer) args[0]);
-					boundXml.set((SQLXML) args[1]);
-					yield null;
-				}
-				case "setNull" -> {
-					capturedIndex.set((Integer) args[0]);
-					nullType.set((Integer) args[1]);
-					yield null;
-				}
-				default -> null;
-			}
-		);
+	@Test
+	void resolveNativeTypeForDatetimeOffset() {
+		SqlType<?> expected = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		assertEquals(Optional.of(expected), DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset", 33, 6)));
 	}
 	
-	private static ResultSet readingResultSet(SQLXML xml) {
-		return (ResultSet) Proxy.newProxyInstance(
-			ResultSet.class.getClassLoader(),
-			new Class<?>[] { ResultSet.class },
-			(proxy, method, args) -> "getSQLXML".equals(method.getName()) ? xml : null
-		);
+	@Test
+	void resolveNativeTypeForOtherNameDelegatesToSuper() {
+		assertEquals(Optional.of(SqlTypes.STRING.configure(SqlParameter.length(64))), DIALECT.resolveType(new SqlNativeType(Types.VARCHAR, "varchar", 64, 0)));
+	}
+	
+	@Test
+	void resolveNativeTypeForDatetimeOffsetWithNegativeDecimalDigits() {
+		SqlType<?> expected = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(0));
+		assertEquals(Optional.of(expected), assertDoesNotThrow(() -> DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset", 33, -1))));
+	}
+	
+	@Test
+	void resolveNativeTypeForDatetimeOffsetIgnoresCase() {
+		SqlType<?> expected = SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6));
+		assertEquals(Optional.of(expected), DIALECT.resolveType(new SqlNativeType(-155, "DATETIMEOFFSET", 33, 6)));
+		assertEquals(Optional.of(expected), DIALECT.resolveType(new SqlNativeType(-155, "DateTimeOffset", 33, 6)));
+		assertEquals(Optional.of(expected), DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset(6)", 33, 6)));
+	}
+	
+	@Test
+	void resolveTypeForRegisteredNativeTypes() {
+		assertEquals(Optional.of(SqlTypes.UUID), DIALECT.resolveType(new SqlNativeType(Types.CHAR, "uniqueidentifier", 36, 0)));
+		assertEquals(Optional.of(SqlTypes.XML), DIALECT.resolveType(new SqlNativeType(-16, "xml", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeForDatetimeOffsetWasPreviouslyUnsupported() {
+		assertTrue(DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset", 33, 6)).isPresent());
+		assertTrue(DIALECT.resolveType(new SqlNativeType(-155, "geography", 0, 0)).isEmpty());
+	}
+	
+	@Test
+	void datetimeOffsetRoundTripsThroughResolveType() throws SqlException {
+		String rendered = DIALECT.getTypeName(SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(6)));
+		assertEquals("DATETIMEOFFSET(6)", rendered);
+		SqlType<?> resolved = DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset", 33, 6)).orElseThrow();
+		assertEquals(rendered, DIALECT.getTypeName(resolved));
+	}
+	
+	@Test
+	void resolveTypePreservesFractionalDigits() throws SqlException {
+		for (int digits : new int[] { 0, 3, 6, 7 }) {
+			SqlType<?> resolved = DIALECT.resolveType(new SqlNativeType(-155, "datetimeoffset", 33, digits)).orElseThrow();
+			assertEquals("DATETIMEOFFSET(" + digits + ")", DIALECT.getTypeName(resolved));
+		}
+	}
+	
+	@Test
+	void constructWithAdditionalTypes() throws SqlException {
+		SqlServerDialect dialect = new SqlServerDialect(SqlTypeRegistry.builder().register(SqlTypes.JSON, "NVARCHAR(MAX)").build());
+		assertEquals("SQL Server", dialect.name());
+		assertEquals("NVARCHAR(MAX)", dialect.getTypeName(SqlTypes.JSON));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesOverridingOwnMapping() throws SqlException {
+		SqlServerDialect dialect = new SqlServerDialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "MY_GUID").build());
+		assertEquals("UNIQUEIDENTIFIER", DIALECT.getTypeName(SqlTypes.UUID));
+		assertEquals("MY_GUID", dialect.getTypeName(SqlTypes.UUID));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new SqlServerDialect(null));
+	}
+	
+	@Test
+	void defaultConstraintNameWithNullColumn() {
+		assertThrows(NullPointerException.class, () -> SqlServerDialect.defaultConstraintName(null));
+	}
+	
+	@Test
+	void quoteStringLiteralWithNullValue() {
+		assertThrows(NullPointerException.class, () -> SqlServerDialect.quoteStringLiteral(null));
+	}
+	
+	@Test
+	void renderDropDefaultConstraintWithNullDialect() {
+		assertThrows(NullPointerException.class, () -> SqlServerDialect.renderDropDefaultConstraint(null, "users", "age"));
+	}
+	
+	@Test
+	void renderDropDefaultConstraintWithNullTableName() {
+		assertThrows(NullPointerException.class, () -> SqlServerDialect.renderDropDefaultConstraint(DIALECT, null, "age"));
+	}
+	
+	@Test
+	void renderDropDefaultConstraintWithNullColumnName() {
+		assertThrows(NullPointerException.class, () -> SqlServerDialect.renderDropDefaultConstraint(DIALECT, "users", null));
+	}
+	
+	@Test
+	void usesRecursiveCteKeywordReturnsFalse() {
+		assertFalse(DIALECT.usesRecursiveCteKeyword());
+	}
+	
+	@Test
+	void quoteStringLiteralWithoutQuotesWrapsValue() {
+		assertEquals("'users'", SqlServerDialect.quoteStringLiteral("users"));
+	}
+	
+	@Test
+	void quoteStringLiteralWithQuotesDoublesThem() {
+		assertEquals("'it''s'", SqlServerDialect.quoteStringLiteral("it's"));
+	}
+	
+	@Test
+	void quoteStringLiteralWithEmptyValue() {
+		assertEquals("''", SqlServerDialect.quoteStringLiteral(""));
+	}
+	
+	@Test
+	void quoteStringLiteralWithOnlyQuotes() {
+		assertEquals("''''''", SqlServerDialect.quoteStringLiteral("''"));
+	}
+	
+	@Test
+	void defaultConstraintNameCombinesTableAndColumn() {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> age = table.column("age", SqlTypes.INTEGER, object -> 0);
+		assertEquals("DF_users_age", SqlServerDialect.defaultConstraintName(age));
+	}
+	
+	@Test
+	void renderDropDefaultConstraintProducesLookupAndDrop() {
+		SqlRendered rendered = SqlServerDialect.renderDropDefaultConstraint(DIALECT, "users", "age");
+		String sql = rendered.sql();
+		
+		assertTrue(sql.contains("DECLARE @constraint sysname"), sql);
+		assertTrue(sql.contains("sys.default_constraints"), sql);
+		assertTrue(sql.contains("sys.columns"), sql);
+		assertTrue(sql.contains("OBJECT_ID(N'users')"), sql);
+		assertTrue(sql.contains("c.name = N'age'"), sql);
+		assertTrue(sql.contains("IF @constraint IS NOT NULL EXEC("), sql);
+		assertTrue(sql.contains("ALTER TABLE [users] DROP CONSTRAINT"), sql);
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderDropDefaultConstraintEscapesIdentifiersAndLiterals() {
+		String sql = SqlServerDialect.renderDropDefaultConstraint(DIALECT, "us'ers", "a]ge").sql();
+		assertTrue(sql.contains("OBJECT_ID(N'us''ers')"), sql);
+		assertTrue(sql.contains("c.name = N'a]ge'"), sql);
+		assertTrue(sql.contains("ALTER TABLE [us'ers] DROP CONSTRAINT"), sql);
+	}
+	
+	@Test
+	void defaultConstraintNameWithUnderscoredNames() {
+		SqlTable<Object> table = SqlTable.create(Object.class, "user_accounts");
+		SqlColumn<Object, Integer> column = table.column("login_count", SqlTypes.INTEGER, object -> 0);
+		assertEquals("DF_user_accounts_login_count", SqlServerDialect.defaultConstraintName(column));
 	}
 }

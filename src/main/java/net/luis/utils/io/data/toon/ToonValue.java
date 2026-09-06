@@ -271,7 +271,7 @@ public class ToonValue implements ToonElement {
 		Objects.requireNonNull(config, "Config must not be null");
 		
 		if (this.isToonBoolean()) {
-			return this.getAsBoolean() ? "true" : "false";
+			return Boolean.toString(this.getAsBoolean());
 		} else if (this.isToonNumber()) {
 			return ToonHelper.formatNumber(this.getAsNumber());
 		} else if (this.isToonString()) {

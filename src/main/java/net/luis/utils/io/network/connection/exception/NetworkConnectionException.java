@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.network.connection.exception;
 
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.Endpoint;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -56,7 +56,7 @@ public class NetworkConnectionException extends IOException {
 	/**
 	 * The endpoint involved in the failed operation, or null if not available.<br>
 	 */
-	private final @Nullable IpEndpoint endpoint;
+	private final @Nullable Endpoint endpoint;
 	
 	/**
 	 * Constructs a new network connection exception with no details.<br>
@@ -123,7 +123,7 @@ public class NetworkConnectionException extends IOException {
 	 * @param errorType The type of error that caused this exception
 	 * @param endpoint The endpoint involved in the failed operation
 	 */
-	public NetworkConnectionException(@Nullable NetworkErrorType errorType, @Nullable IpEndpoint endpoint) {
+	public NetworkConnectionException(@Nullable NetworkErrorType errorType, @Nullable Endpoint endpoint) {
 		this.errorType = errorType != null ? errorType : NetworkErrorType.UNKNOWN;
 		this.endpoint = endpoint;
 	}
@@ -149,7 +149,7 @@ public class NetworkConnectionException extends IOException {
 	 * @param errorType The type of error that caused this exception
 	 * @param endpoint The endpoint involved in the failed operation
 	 */
-	public NetworkConnectionException(@Nullable String message, @Nullable NetworkErrorType errorType, @Nullable IpEndpoint endpoint) {
+	public NetworkConnectionException(@Nullable String message, @Nullable NetworkErrorType errorType, @Nullable Endpoint endpoint) {
 		super(message);
 		this.errorType = errorType != null ? errorType : NetworkErrorType.UNKNOWN;
 		this.endpoint = endpoint;
@@ -178,7 +178,7 @@ public class NetworkConnectionException extends IOException {
 	 * @param errorType The type of error that caused this exception
 	 * @param endpoint The endpoint involved in the failed operation
 	 */
-	public NetworkConnectionException(@Nullable String message, @Nullable Throwable cause, @Nullable NetworkErrorType errorType, @Nullable IpEndpoint endpoint) {
+	public NetworkConnectionException(@Nullable String message, @Nullable Throwable cause, @Nullable NetworkErrorType errorType, @Nullable Endpoint endpoint) {
 		super(message, cause);
 		this.errorType = errorType != null ? errorType : NetworkErrorType.UNKNOWN;
 		this.endpoint = endpoint;
@@ -196,7 +196,7 @@ public class NetworkConnectionException extends IOException {
 	 * Returns the endpoint involved in the failed operation.<br>
 	 * @return The endpoint, or null if not available
 	 */
-	public @Nullable IpEndpoint endpoint() {
+	public @Nullable Endpoint endpoint() {
 		return this.endpoint;
 	}
 }

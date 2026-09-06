@@ -35,8 +35,8 @@ import net.luis.utils.io.database.function.window.frame.*;
 import net.luis.utils.io.database.function.window.frame.bound.*;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.migration.SqlCheckConstraintInfo;
-import net.luis.utils.io.database.query.SqlLockMode;
-import net.luis.utils.io.database.query.SqlSetOperation;
+import net.luis.utils.io.database.query.*;
+import net.luis.utils.io.database.query.util.SqlSetClause;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.*;
@@ -63,11 +63,11 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	/**
 	 * The name of the internal table used to store schema column metadata.
 	 */
-	private static final String SCHEMA_COLUMNS_TABLE = "_sql_schema_columns";
+	private static final String SCHEMA_COLUMNS_TABLE = SqlDialect.SCHEMA_COLUMNS_TABLE;
 	/**
 	 * The name of the internal table used to store schema check constraint metadata.
 	 */
-	private static final String SCHEMA_CHECK_CONSTRAINTS_TABLE = "_sql_schema_check_constraints";
+	private static final String SCHEMA_CHECK_CONSTRAINTS_TABLE = SqlDialect.SCHEMA_CHECK_CONSTRAINTS_TABLE;
 	/**
 	 * The type registry holding the dialect-specific type mappings.
 	 */
@@ -82,7 +82,21 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	 * The type registry and renderer are created using {@link #createTypeRegistry()} and {@link #createRenderer()}.<br>
 	 */
 	protected AbstractSqlDialect() {
-		this.typeRegistry = this.createTypeRegistry();
+		this(SqlTypeRegistry.empty());
+	}
+	
+	/**
+	 * Constructs a new abstract sql dialect that additionally knows the type mappings of the given registry.<br>
+	 * The given mappings are added to the registry created by {@link #createTypeRegistry()} and replace the mappings the dialect ships with for the same type,<br>
+	 * which allows a caller to teach the dialect a native type name, binder and reader for an own type.<br>
+	 *
+	 * @param additionalTypes The type mappings the dialect should know in addition to its own
+	 * @throws NullPointerException If the additional type mappings are null
+	 */
+	protected AbstractSqlDialect(@NonNull SqlTypeRegistry additionalTypes) {
+		Objects.requireNonNull(additionalTypes, "Additional sql type registry must not be null");
+		
+		this.typeRegistry = this.createTypeRegistry().with(additionalTypes);
 		this.renderer = this.createRenderer();
 	}
 	
@@ -186,6 +200,36 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			case ParameterizedSqlType<?, ?> parameterized -> this.getParameterizedTypeName(parameterized.jdbcType(), parameterized.parameter());
 			default -> Optional.empty();
 		};
+	}
+	
+	@Override
+	public @NonNull Optional<SqlType<?>> resolveType(@NonNull SqlNativeType nativeType) {
+		Objects.requireNonNull(nativeType, "Sql native type must not be null");
+		
+		Optional<SqlType<?>> registered = this.typeRegistry.resolveNative(nativeType.typeName());
+		if (registered.isPresent()) {
+			return registered;
+		}
+		
+		Optional<SqlType<?>> dialectSpecific = this.resolveNativeType(nativeType);
+		if (dialectSpecific.isPresent()) {
+			return dialectSpecific;
+		}
+		return SqlNativeTypeMapper.mapNativeType(nativeType);
+	}
+	
+	/**
+	 * Resolves the sql type for a native column type that is specific to this dialect but not part of its {@link SqlTypeRegistry type registry}.<br>
+	 * This hook covers native types a driver reports under a name or jdbc type code that the portable {@link SqlNativeTypeMapper} cannot resolve, concrete dialects may override it, the default
+	 * implementation resolves nothing.<br>
+	 *
+	 * @param nativeType The native column type to resolve
+	 * @return An optional containing the resolved sql type or an empty optional if the native type is not known to this dialect
+	 * @throws NullPointerException If the native type is null
+	 */
+	protected @NonNull Optional<SqlType<?>> resolveNativeType(@NonNull SqlNativeType nativeType) {
+		Objects.requireNonNull(nativeType, "Sql native type must not be null");
+		return Optional.empty();
 	}
 	
 	@Override
@@ -433,6 +477,8 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 			return value.toString();
 		} else if (value instanceof Boolean b) {
 			return this.renderBooleanLiteral(b).sql();
+		} else if (value.getClass().isArray()) {
+			throw new SqlDialectUnsupportedRenderingException("Value of array type " + value.getClass().getSimpleName() + " cannot be rendered as a sql literal by dialect " + this.name());
 		} else {
 			return "'" + value.toString().replace("'", "''") + "'";
 		}
@@ -572,28 +618,39 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderUpsertClause(@NonNull SqlColumn<?, ?> conflictColumn, @NonNull List<SqlColumn<?, ?>> updateColumns) throws SqlException {
-		Objects.requireNonNull(conflictColumn, "Sql conflict column must not be null");
-		Objects.requireNonNull(updateColumns, "Sql update columns must not be null");
+	public @NonNull SqlRendered renderUpsertClause(@NonNull List<SqlColumn<?, ?>> conflictColumns, @NonNull List<SqlSetClause<?, ?>> updateClauses) throws SqlException {
+		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
+		Objects.requireNonNull(updateClauses, "Sql update clauses must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.on().literal("CONFLICT");
-		renderer.openingBracket().literal(this.quoteIdentifier(conflictColumn.name())).closingBracket();
-		renderer.literal("DO").update().set();
-		
-		for (int i = 0; i < updateColumns.size(); i++) {
+		renderer.on().literal("CONFLICT").openingBracket();
+		for (int i = 0; i < conflictColumns.size(); i++) {
 			if (i > 0) {
 				renderer.comma();
 			}
-			String quotedName = this.quoteIdentifier(updateColumns.get(i).name());
-			renderer.literal(quotedName).literal("=").literal("EXCLUDED." + quotedName);
+			renderer.literal(this.quoteIdentifier(conflictColumns.get(i).name()));
+		}
+		renderer.closingBracket();
+		renderer.literal("DO").update().set();
+		
+		for (int i = 0; i < updateClauses.size(); i++) {
+			if (i > 0) {
+				renderer.comma();
+			}
+			renderer.rendered(updateClauses.get(i).toSql(this));
 		}
 		return renderer.toSql();
 	}
 	
 	@Override
-	public @NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull SqlColumn<?, ?> conflictColumn, @NonNull SqlRendered valueTuples) throws SqlException {
+	public @NonNull SqlRendered renderUpsertStatement(@NonNull SqlTable<?> table, @NonNull List<SqlColumn<?, ?>> columns, @NonNull List<SqlColumn<?, ?>> conflictColumns, @NonNull SqlRendered valueTuples) throws SqlException {
 		throw new SqlDialectFeatureException(SqlFeature.UPSERT, this);
+	}
+	
+	@Override
+	public @NonNull SqlExpression<?> upsertExcludedValue(@NonNull SqlColumn<?, ?> column) throws SqlException {
+		Objects.requireNonNull(column, "Sql column must not be null");
+		return column.of(SqlAlias.EXCLUDED);
 	}
 	
 	@Override
@@ -671,6 +728,7 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		table.column("is_primary_key", SqlTypes.BOOLEAN, v -> null, col -> col.notNull());
 		table.column("is_unique", SqlTypes.BOOLEAN, v -> null, col -> col.notNull());
 		table.column("ordinal_position", SqlTypes.INTEGER, v -> null, col -> col.notNull());
+		table.column("type_identifier", SqlTypes.STRING.configure(SqlParameter.length(64)), v -> null);
 		table.compositePrimaryKey(version, tableName, columnName);
 		return this.tableRenderer().renderCreateTable(table, true).sql();
 	}
@@ -702,13 +760,14 @@ public abstract class AbstractSqlDialect implements SqlDialect {
 		String isPrimaryKey = this.quoteIdentifier("is_primary_key");
 		String isUnique = this.quoteIdentifier("is_unique");
 		String ordinalPosition = this.quoteIdentifier("ordinal_position");
+		String typeIdentifier = this.quoteIdentifier("type_identifier");
 		
 		return "INSERT INTO " + table + " (" +
 			version + ", " + tableName + ", " + columnName + ", " +
 			jdbcType + ", " + length + ", " + precision + ", " + scale + ", " + fractional + ", " +
 			isNullable + ", " + isAutoIncrement + ", " + isPrimaryKey + ", " + isUnique + ", " +
-			ordinalPosition +
-			") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			ordinalPosition + ", " + typeIdentifier +
+			") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	}
 	
 	@Override

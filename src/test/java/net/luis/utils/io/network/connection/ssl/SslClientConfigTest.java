@@ -63,55 +63,63 @@ class SslClientConfigTest {
 	
 	@Test
 	void constructWithNullConnectTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new SslClientConfig(null, Duration.ZERO, Duration.ZERO, 8192, true, true, null, List.of(), List.of(), true, null, null, null));
+		assertThrows(NullPointerException.class, () -> new SslClientConfig(null, Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, List.of(), List.of(), true, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullReadTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new SslClientConfig(Duration.ofSeconds(30), null, Duration.ZERO, 8192, true, true, null, List.of(), List.of(), true, null, null, null));
+		assertThrows(NullPointerException.class, () -> new SslClientConfig(Duration.ofSeconds(30), null, Duration.ZERO, 8192, true, true, true, null, List.of(), List.of(), true, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullWriteTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, null, 8192, true, true, null, List.of(), List.of(), true, null, null, null));
+		assertThrows(NullPointerException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, null, 8192, true, true, true, null, List.of(), List.of(), true, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullEnabledProtocolsThrows() {
-		assertThrows(NullPointerException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, null, null, List.of(), true, null, null, null));
+		assertThrows(NullPointerException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, null, List.of(), true, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullEnabledCipherSuitesThrows() {
-		assertThrows(NullPointerException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, null, List.of(), null, true, null, null, null));
+		assertThrows(NullPointerException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, List.of(), null, true, null, null, null));
 	}
 	
 	@Test
 	void constructWithInvalidBufferSizeThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 0, true, true, null, List.of(), List.of(), true, null, null, null));
-		assertThrows(IllegalArgumentException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, -1, true, true, null, List.of(), List.of(), true, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 0, true, true, true, null, List.of(), List.of(), true, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, -1, true, true, true, null, List.of(), List.of(), true, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullSslContextIsAllowed() {
-		SslClientConfig config = new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, null, List.of(), List.of(), true, null, null, null);
+		SslClientConfig config = new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, List.of(), List.of(), true, null, null, null);
 		assertNull(config.sslContext());
 	}
 	
 	@Test
-	void constructCopiesProtocolsDefensively() {
-		List<String> protocols = new ArrayList<>(List.of("TLSv1.3"));
-		SslClientConfig config = new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, null, protocols, List.of(), true, null, null, null);
+	void constructWithNullProtocolElementThrows() {
+		List<TlsProtocol> protocols = new ArrayList<>();
+		protocols.add(null);
 		
-		protocols.add("TLSv1.2");
+		assertThrows(NullPointerException.class, () -> new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, protocols, List.of(), true, null, null, null));
+	}
+	
+	@Test
+	void constructCopiesProtocolsDefensively() {
+		List<TlsProtocol> protocols = new ArrayList<>(List.of(TlsProtocol.TLS_V1_3));
+		SslClientConfig config = new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, protocols, List.of(), true, null, null, null);
+		
+		protocols.add(TlsProtocol.TLS_V1_2);
 		assertEquals(1, config.enabledProtocols().size());
-		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add("TLSv1.1"));
+		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add(TlsProtocol.TLS_V1_1));
 	}
 	
 	@Test
 	void constructCopiesCipherSuitesDefensively() {
 		List<String> ciphers = new ArrayList<>(List.of("TLS_AES_256_GCM_SHA384"));
-		SslClientConfig config = new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, null, List.of(), ciphers, true, null, null, null);
+		SslClientConfig config = new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, List.of(), ciphers, true, null, null, null);
 		
 		ciphers.add("TLS_AES_128_GCM_SHA256");
 		assertEquals(1, config.enabledCipherSuites().size());
@@ -140,7 +148,7 @@ class SslClientConfigTest {
 			.tcpNoDelay(false)
 			.keepAlive(false)
 			.sslContext(context)
-			.enabledProtocols(List.of("TLSv1.3"))
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
 			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
 			.verifyHostname(false)
 			.build();
@@ -152,7 +160,7 @@ class SslClientConfigTest {
 		assertFalse(config.tcpNoDelay());
 		assertFalse(config.keepAlive());
 		assertSame(context, config.sslContext());
-		assertEquals(List.of("TLSv1.3"), config.enabledProtocols());
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
 		assertFalse(config.verifyHostname());
 	}
@@ -160,13 +168,25 @@ class SslClientConfigTest {
 	@Test
 	void builderWithHandlers() {
 		SslClientConfig config = SslClientConfig.builder()
-			.onConnect(event -> {})
-			.onDisconnect(event -> {})
-			.onError((type, msg, cause) -> {})
+			.onConnect((connection, local, remote, timestamp) -> {})
+			.onDisconnect((connection, local, remote, timestamp) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
 		assertNotNull(config.onConnect());
 		assertNotNull(config.onDisconnect());
 		assertNotNull(config.onError());
 	}
+	
+	@Test
+	void framingIsEnabledByDefault() {
+		assertTrue(SslClientConfig.builder().build().framing());
+	}
+	
+	@Test
+	void framingCanBeDisabled() {
+		assertFalse(SslClientConfig.builder().framing(false).build().framing());
+		assertTrue(SslClientConfig.builder().framing(false).framing(true).build().framing());
+	}
+	
 }

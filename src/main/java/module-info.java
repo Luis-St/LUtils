@@ -31,6 +31,7 @@ module net.luis.utils {
 	requires org.apache.logging.log4j.core;
 	requires java.sql;
 	requires jdk.security.auth;
+	requires org.bouncycastle.provider;
 	
 	exports net.luis.utils.annotation;
 	exports net.luis.utils.annotation.type;
@@ -38,6 +39,12 @@ module net.luis.utils {
 	exports net.luis.utils.collection;
 	exports net.luis.utils.collection.util;
 	
+	exports net.luis.utils.crypto;
+	exports net.luis.utils.crypto.algorithm;
+	exports net.luis.utils.crypto.exception;
+	exports net.luis.utils.crypto.key;
+	exports net.luis.utils.crypto.util;
+
 	exports net.luis.utils.exception;
 	
 	exports net.luis.utils.function;
@@ -115,6 +122,8 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.types.temporal.zoned;
 	
 	exports net.luis.utils.io.data;
+	exports net.luis.utils.io.data.binary;
+	exports net.luis.utils.io.data.binary.exception;
 	exports net.luis.utils.io.data.config;
 	exports net.luis.utils.io.data.ini;
 	exports net.luis.utils.io.data.ini.exception;
@@ -192,6 +201,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.network.address.ipv6;
 	exports net.luis.utils.io.network.address.mac;
 	exports net.luis.utils.io.network.connection;
+	exports net.luis.utils.io.network.connection.context;
 	exports net.luis.utils.io.network.connection.event;
 	exports net.luis.utils.io.network.connection.exception;
 	exports net.luis.utils.io.network.connection.executor;

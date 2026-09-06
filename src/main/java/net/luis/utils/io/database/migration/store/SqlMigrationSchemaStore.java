@@ -24,6 +24,10 @@ import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.database.SqlMigrationExecutionException;
 import net.luis.utils.io.database.migration.*;
+import net.luis.utils.io.database.migration.operation.SqlColumnOptions;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.*;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
@@ -123,6 +127,46 @@ public class SqlMigrationSchemaStore {
 	}
 	
 	/**
+	 * Sets the given string value on the prepared statement at the given index.<br>
+	 * If the value is {@code null}, an sql null of type {@link Types#VARCHAR} is set instead.<br>
+	 *
+	 * @param statement The prepared statement to set the value on
+	 * @param index The parameter index to set the value at
+	 * @param value The value to set or {@code null} to set sql null
+	 * @throws SQLException If the value could not be set on the statement
+	 */
+	private static void setNullableString(@NonNull PreparedStatement statement, int index, @Nullable String value) throws SQLException {
+		if (value != null) {
+			statement.setString(index, value);
+		} else {
+			statement.setNull(index, Types.VARCHAR);
+		}
+	}
+	
+	/**
+	 * Checks whether the given result set contains a column with the given name.<br>
+	 * This keeps snapshots that were written by an earlier version of the library, whose store table does not contain every column yet, readable.<br>
+	 *
+	 * @param rs The result set to check
+	 * @param columnName The name of the column to look for
+	 * @return An optional holding whether the result set contains the column, or an empty optional if the driver does not expose the result set metadata
+	 * @throws SQLException If the result set metadata could not be read
+	 */
+	private static @NonNull Optional<Boolean> containsColumn(@NonNull ResultSet rs, @NonNull String columnName) throws SQLException {
+		ResultSetMetaData meta = rs.getMetaData();
+		if (meta == null) {
+			return Optional.empty();
+		}
+		
+		for (int i = 1; i <= meta.getColumnCount(); i++) {
+			if (columnName.equalsIgnoreCase(meta.getColumnLabel(i))) {
+				return Optional.of(true);
+			}
+		}
+		return Optional.of(false);
+	}
+	
+	/**
 	 * Reconstructs the parameter of a column from the current row of the given result set.<br>
 	 * Reads the length, precision, scale and fractional columns and rebuilds the matching parameter.<br>
 	 *
@@ -160,6 +204,39 @@ public class SqlMigrationSchemaStore {
 			statement.execute(this.dialect.getCreateSchemaCheckConstraintsTableSql());
 		} catch (SQLException e) {
 			throw new SqlMigrationExecutionException("Failed to initialize schema store tables", e);
+		}
+		this.upgradeSchemaColumnsTable();
+	}
+	
+	/**
+	 * Adds the columns missing from a schema columns table that was created by an earlier version of the library.<br>
+	 * A table created by the current version already contains every column, in which case this does nothing.<br>
+	 *
+	 * @throws SqlException If the schema columns table could not be upgraded
+	 */
+	private void upgradeSchemaColumnsTable() throws SqlException {
+		try (Connection connection = this.dataSource.getConnection()) {
+			boolean present;
+			try (PreparedStatement statement = connection.prepareStatement(this.dialect.getSelectSchemaColumnsSql())) {
+				statement.setString(1, "");
+				try (ResultSet rs = statement.executeQuery()) {
+					present = containsColumn(rs, "type_identifier").orElse(true);
+				}
+			}
+			
+			if (present) {
+				return;
+			}
+			
+			SqlTable<Void> table = SqlTable.create(Void.class, SqlDialect.SCHEMA_COLUMNS_TABLE);
+			SqlColumn<Void, String> column = table.column("type_identifier", SqlTypes.STRING.configure(SqlParameter.length(64)), _ -> null);
+			String sql = this.dialect.migrationRenderer().renderAddColumn(table, column, column.type(), SqlColumnOptions.EMPTY).sql();
+			
+			try (Statement statement = connection.createStatement()) {
+				statement.execute(sql);
+			}
+		} catch (SQLException e) {
+			throw new SqlMigrationExecutionException("Failed to upgrade the schema columns store table", e);
 		}
 	}
 	
@@ -225,6 +302,7 @@ public class SqlMigrationSchemaStore {
 				statement.setBoolean(11, info.primaryKey());
 				statement.setBoolean(12, info.unique());
 				statement.setInt(13, info.ordinalPosition());
+				setNullableString(statement, 14, info.typeIdentifier());
 				statement.addBatch();
 			}
 			statement.executeBatch();
@@ -267,6 +345,7 @@ public class SqlMigrationSchemaStore {
 		try (Connection connection = this.dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(this.dialect.getSelectSchemaColumnsSql())) {
 			statement.setString(1, versionStr);
 			try (ResultSet rs = statement.executeQuery()) {
+				boolean hasTypeIdentifier = containsColumn(rs, "type_identifier").orElse(false);
 				while (rs.next()) {
 					SqlParameter parameter = reconstructParameter(rs);
 					
@@ -279,7 +358,8 @@ public class SqlMigrationSchemaStore {
 						rs.getBoolean("is_auto_increment"),
 						rs.getBoolean("is_primary_key"),
 						rs.getBoolean("is_unique"),
-						rs.getInt("ordinal_position")
+						rs.getInt("ordinal_position"),
+						hasTypeIdentifier ? rs.getString("type_identifier") : null
 					));
 				}
 			}

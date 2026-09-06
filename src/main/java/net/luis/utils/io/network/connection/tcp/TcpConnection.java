@@ -19,12 +19,16 @@
 package net.luis.utils.io.network.connection.tcp;
 
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.connection.exception.*;
-import org.apache.commons.lang3.ArrayUtils;
+import net.luis.utils.io.network.connection.*;
+import net.luis.utils.io.network.connection.context.ConnectionContext;
+import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
+import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.time.Duration;
 import java.util.Objects;
 
@@ -51,7 +55,7 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public final class TcpConnection implements AutoCloseable {
+public final class TcpConnection implements Connection {
 	
 	/**
 	 * The underlying client socket.<br>
@@ -65,157 +69,114 @@ public final class TcpConnection implements AutoCloseable {
 	 * The read timeout for blocking operations.<br>
 	 */
 	private final Duration readTimeout;
+	/**
+	 * Whether messages are framed with a length prefix on the wire.<br>
+	 */
+	private final boolean framing;
+	/**
+	 * The reusable scratch buffer for unframed read operations.<br>
+	 * Allocated lazily and grown on demand, and unused while framing is enabled.<br>
+	 * The context storing user data attached to this connection.<br>
+	 */
+	private final ConnectionContext context = new ConnectionContext();
+	/**
+	 * The streams of the socket, so that every caller gets the same instance.<br>
+	 */
+	private final SocketStreams streams;
+	/**
+	 * The reusable scratch buffer for read operations.<br>
+	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
+	 */
+	private byte @Nullable [] readBuffer;
 	
 	/**
 	 * Constructs a new TCP connection wrapping the given socket.<br>
 	 *
 	 * @param socket The client socket
 	 * @param bufferSize The buffer size for read operations
+	 * @param framing Whether messages are framed with a length prefix on the wire
 	 * @param readTimeout The read timeout
 	 * @throws NullPointerException If socket or read timeout is null
 	 */
-	TcpConnection(@NonNull Socket socket, int bufferSize, @NonNull Duration readTimeout) {
+	TcpConnection(@NonNull Socket socket, int bufferSize, boolean framing, @NonNull Duration readTimeout) {
 		this.socket = Objects.requireNonNull(socket, "Socket must not be null");
+		this.streams = new SocketStreams(socket);
 		this.bufferSize = bufferSize;
+		this.framing = framing;
 		this.readTimeout = Objects.requireNonNull(readTimeout, "Read timeout must not be null");
 	}
 	
 	/**
-	 * Returns the remote endpoint of this connection.<br>
-	 * @return The remote endpoint
+	 * Ensures that this connection is still active before its streams are handed out.<br>
+	 * @throws NetworkConnectionException If the connection is closed
 	 */
+	private void ensureActive() throws NetworkConnectionException {
+		if (!this.isActive()) {
+			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED);
+		}
+	}
+	
+	@Override
+	public boolean isActive() {
+		return !this.socket.isClosed() && this.socket.isConnected();
+	}
+	
+	@Override
+	public @NonNull ConnectionContext context() {
+		return this.context;
+	}
+	
+	@Override
 	public @NonNull IpEndpoint remoteEndpoint() {
-		InetSocketAddress address = (InetSocketAddress) this.socket.getRemoteSocketAddress();
-		return IpEndpoint.from(address);
+		return IpEndpoint.from((InetSocketAddress) this.socket.getRemoteSocketAddress());
 	}
 	
-	/**
-	 * Returns the local endpoint of this connection.<br>
-	 * @return The local endpoint
-	 */
+	@Override
 	public @NonNull IpEndpoint localEndpoint() {
-		InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
-		return IpEndpoint.from(address);
+		return IpEndpoint.from((InetSocketAddress) this.socket.getLocalSocketAddress());
 	}
 	
-	/**
-	 * Sends data to the connected client.<br>
-	 *
-	 * @param data The data to send
-	 * @throws NullPointerException If data is null
-	 * @throws NetworkConnectionException If sending fails or data exceeds buffer size
-	 */
+	@Override
 	public void send(byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(data, "Data must not be null");
-		this.validateMessageSize(data);
+		NetworkUtils.validateMessageSize(data, this.bufferSize, this.remoteEndpoint());
 		if (!this.isActive()) {
 			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
 		}
 		
-		try {
-			OutputStream out = this.socket.getOutputStream();
-			out.write(data);
-			out.flush();
-		} catch (SocketException e) {
-			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET, this.remoteEndpoint());
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to send data", e, NetworkErrorType.IO_ERROR, this.remoteEndpoint());
-		}
+		NetworkUtils.writeAll(this.socket, data, this.framing, null, this.remoteEndpoint(), null);
 	}
 	
-	/**
-	 * Receives data from the connected client (blocking).<br>
-	 * Uses the configured buffer size.<br>
-	 *
-	 * @return The received data, or an empty array if the connection was closed
-	 * @throws NetworkConnectionException If receiving fails
-	 * @throws NetworkTimeoutException If the receive times out
-	 */
+	@Override
 	public byte @NonNull [] receive() throws NetworkConnectionException {
 		return this.receive(this.bufferSize);
 	}
 	
-	/**
-	 * Receives data with a custom buffer size (blocking).<br>
-	 *
-	 * @param maxBytes The maximum number of bytes to receive
-	 * @return The received data, or an empty array if the connection was closed
-	 * @throws IllegalArgumentException If maxBytes is less than 1
-	 * @throws NetworkConnectionException If receiving fails
-	 * @throws NetworkTimeoutException If the receive times out
-	 */
+	@Override
 	public byte @NonNull [] receive(int maxBytes) throws NetworkConnectionException {
 		if (maxBytes < 1) {
 			throw new IllegalArgumentException("Max bytes must be at least 1: " + maxBytes);
 		}
-		
 		if (!this.isActive()) {
 			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
 		}
 		
-		try {
-			InputStream in = this.socket.getInputStream();
-			byte[] buffer = new byte[maxBytes];
-			int bytesRead = in.read(buffer);
-			
-			if (bytesRead == -1) {
-				return ArrayUtils.EMPTY_BYTE_ARRAY;
-			}
-			
-			byte[] data = new byte[bytesRead];
-			System.arraycopy(buffer, 0, data, 0, bytesRead);
-			return data;
-		} catch (SocketTimeoutException e) {
-			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, this.readTimeout, this.remoteEndpoint());
-		} catch (SocketException e) {
-			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET, this.remoteEndpoint());
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to receive data", e, NetworkErrorType.IO_ERROR, this.remoteEndpoint());
+		if (!this.framing) {
+			this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
 		}
+		return NetworkUtils.readMessage(this.streams.input(), this.readBuffer, maxBytes, this.framing, this.readTimeout, null, this.remoteEndpoint(), null);
 	}
 	
-	/**
-	 * Returns the input stream for advanced reading.<br>
-	 *
-	 * @return The input stream
-	 * @throws NetworkConnectionException If the stream cannot be obtained
-	 */
+	@Override
 	public @NonNull InputStream getInputStream() throws NetworkConnectionException {
-		if (!this.isActive()) {
-			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED);
-		}
-		
-		try {
-			return this.socket.getInputStream();
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to get input stream", e, NetworkErrorType.IO_ERROR);
-		}
+		this.ensureActive();
+		return this.streams.input();
 	}
 	
-	/**
-	 * Returns the output stream for advanced writing.<br>
-	 *
-	 * @return The output stream
-	 * @throws NetworkConnectionException If the stream cannot be obtained
-	 */
+	@Override
 	public @NonNull OutputStream getOutputStream() throws NetworkConnectionException {
-		if (!this.isActive()) {
-			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED);
-		}
-		
-		try {
-			return this.socket.getOutputStream();
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to get output stream", e, NetworkErrorType.IO_ERROR);
-		}
-	}
-	
-	/**
-	 * Returns whether this connection is still active.<br>
-	 * @return True if the connection is active
-	 */
-	public boolean isActive() {
-		return !this.socket.isClosed() && this.socket.isConnected();
+		this.ensureActive();
+		return this.streams.output();
 	}
 	
 	@Override
@@ -226,19 +187,4 @@ public final class TcpConnection implements AutoCloseable {
 			} catch (IOException _) {}
 		}
 	}
-	
-	//region Helper methods
-	
-	/**
-	 * Validates that the message size does not exceed the configured buffer size.<br>
-	 *
-	 * @param data The data to validate
-	 * @throws NetworkConnectionException If the data exceeds the buffer size
-	 */
-	private void validateMessageSize(byte @NonNull [] data) throws NetworkConnectionException {
-		if (data.length > this.bufferSize) {
-			throw new NetworkConnectionException("Message size " + data.length + " exceeds buffer size " + this.bufferSize, NetworkErrorType.MESSAGE_TOO_LARGE, this.remoteEndpoint());
-		}
-	}
-	//endregion
 }

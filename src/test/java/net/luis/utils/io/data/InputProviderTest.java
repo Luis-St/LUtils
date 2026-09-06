@@ -111,6 +111,19 @@ class InputProviderTest {
 	}
 	
 	@Test
+	void constructorWithByteArray() throws Exception {
+		assertThrows(NullPointerException.class, () -> new InputProvider((byte[]) null));
+		
+		try (InputProvider provider = new InputProvider(new byte[0])) {
+			assertNotNull(provider.getStream());
+		}
+		
+		try (InputProvider provider = new InputProvider(new byte[] { 1, 2, 3 })) {
+			assertNotNull(provider.getStream());
+		}
+	}
+	
+	@Test
 	void constructorWithInputStream() throws Exception {
 		assertThrows(NullPointerException.class, () -> new InputProvider((InputStream) null));
 		
@@ -118,8 +131,7 @@ class InputProviderTest {
 			assertNotNull(provider1.getStream());
 		}
 		
-		try (FileInputStream fis = new FileInputStream("InputProvider/InputProvider.json");
-			 InputProvider provider2 = new InputProvider(fis)) {
+		try (FileInputStream fis = new FileInputStream("InputProvider/InputProvider.json"); InputProvider provider2 = new InputProvider(fis)) {
 			assertNotNull(provider2.getStream());
 		} catch (IOException e) {
 			fail("Should not throw IOException for valid file");

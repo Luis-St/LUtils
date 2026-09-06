@@ -113,7 +113,7 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 				throw new SqlResultMappingException("Reading override for column index " + columnIndex + " returned a value of incompatible type " + value.getClass().getName(), e, type.javaType());
 			}
 		}
-		return type.get(SqlTypeInternalAccess.INSTANCE, resultSet, columnIndex);
+		return type.get(SqlTypeInternalAccess.INSTANCE, dialect, resultSet, columnIndex);
 	}
 	
 	/**
@@ -252,6 +252,49 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 	}
 	
 	/**
+	 * Reads the value of this sql type from the result set at the specified column index using the given dialect.<br>
+	 * A dialect without an offset carrying temporal type stores such a value as a plain utc timestamp or time,<br>
+	 * it is read back accordingly, every other value is read by {@link #get(SqlTypeInternalAccess, ResultSet, int)}.<br>
+	 * This method is intended for internal use only and must be called with the package-private access token,<br>
+	 * external callers should use {@link #getValue(SqlType, SqlDialect, ResultSet, int)} instead.<br>
+	 *
+	 * @param access The internal access token used to restrict the caller to this package
+	 * @param dialect The sql dialect used to read the value
+	 * @param resultSet The result set to read the value from
+	 * @param columnIndex The one-based column index to read the value from
+	 * @return The read value or {@code null} if the column value is sql null
+	 * @throws IllegalCallerException If the access token is null
+	 * @throws NullPointerException If the dialect or result set is null
+	 * @throws SqlException If the value could not be read from the result set
+	 */
+	@ApiStatus.Internal
+	default @Nullable T get(@NonNull SqlTypeInternalAccess access, @NonNull SqlDialect dialect, @NonNull ResultSet resultSet, int columnIndex) throws SqlException {
+		if (access == null) {
+			throw new IllegalCallerException("SqlType#get should only be called from inside the net.luis.utils.io.database.type package, external callers should use SqlType#getValue");
+		}
+		
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(resultSet, "Result set must not be null");
+		if (dialect.supportsOffsetTemporalTypes()) {
+			return this.get(access, resultSet, columnIndex);
+		}
+		
+		try {
+			if (this.javaType() == OffsetDateTime.class && this.jdbcType() == Types.TIMESTAMP_WITH_TIMEZONE) {
+				LocalDateTime value = resultSet.getObject(columnIndex, LocalDateTime.class);
+				return value == null ? null : this.javaType().cast(value.atOffset(ZoneOffset.UTC));
+			}
+			if (this.javaType() == OffsetTime.class && this.jdbcType() == Types.TIME_WITH_TIMEZONE) {
+				LocalTime value = resultSet.getObject(columnIndex, LocalTime.class);
+				return value == null ? null : this.javaType().cast(value.atOffset(ZoneOffset.UTC));
+			}
+		} catch (SQLException e) {
+			throw new SqlResultMappingException("Failed to retrieve value from result set at column index " + columnIndex, e, this.javaType(), null);
+		}
+		return this.get(access, resultSet, columnIndex);
+	}
+	
+	/**
 	 * Reads the value of this sql type from the result set at the specified column index.<br>
 	 * This method is intended for internal use only and must be called with the package-private access token, external callers should use {@link #getValue(SqlType, SqlDialect, ResultSet, int)} instead.<br>
 	 *
@@ -330,6 +373,19 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		}
 		
 		try {
+			if (!dialect.supportsOffsetTemporalTypes()) {
+				if (this.jdbcType() == Types.TIMESTAMP_WITH_TIMEZONE && (value == null || value instanceof OffsetDateTime)) {
+					OffsetDateTime dateTime = (OffsetDateTime) value;
+					preparedStatement.setObject(columnIndex, dateTime == null ? null : dateTime.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime(), Types.TIMESTAMP);
+					return;
+				}
+				if (this.jdbcType() == Types.TIME_WITH_TIMEZONE && (value == null || value instanceof OffsetTime)) {
+					OffsetTime time = (OffsetTime) value;
+					preparedStatement.setObject(columnIndex, time == null ? null : time.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime(), Types.TIME);
+					return;
+				}
+			}
+			
 			preparedStatement.setObject(columnIndex, value, this.jdbcType());
 		} catch (SQLException e) {
 			throw new SqlStatementBindException("Failed to bind value to prepared statement at column index " + columnIndex, e, columnIndex);
@@ -357,5 +413,40 @@ public sealed interface SqlType<T> permits SqlScalarType, ParameterizedSqlType, 
 		Objects.requireNonNull(fromSourceToTarget, "Setter function must not be null");
 		
 		return new MappedSqlType<>(this, targetType, fromTargetToSource, fromSourceToTarget);
+	}
+	
+	/**
+	 * Creates a new identified sql type that maps this type to a different target java type.<br>
+	 * The identifier makes the resulting type distinguishable from a structurally identical but anonymous type created by {@link #map(Class, ThrowableFunction, ThrowableFunction)}, which is what allows a
+	 * dialect to register a native type for a library type without capturing every user defined type that happens to map the same java type onto the same source type.<br>
+	 * <p>
+	 *     Warning: identifiers share a single namespace with the identified types of {@link SqlTypes}, and a dialect resolves its native type registrations through that identifier.<br>
+	 *     Passing an identifier that is already used by the library, for example {@code uuid} or {@code json}, therefore makes the resulting type indistinguishable from the library type and lets a<br>
+	 *     dialect render and bind it as its own native type, which is exactly what an anonymous type created by {@link #map(Class, ThrowableFunction, ThrowableFunction)} avoids.<br>
+	 *     Identifiers are also persisted in schema snapshots, so renaming one invalidates every snapshot that was written with it, and an identifier that {@link SqlTypes#byIdentifier(String)} does not<br>
+	 *     know is not restored as the mapped type when a snapshot is read back.<br>
+	 *     Unless the type is meant to be recognized as a library type, prefer {@link #map(Class, ThrowableFunction, ThrowableFunction)}.
+	 * </p>
+	 *
+	 * @param identifier The stable identifier of the resulting type
+	 * @param targetType The target java type to map to
+	 * @param fromTargetToSource The function converting a target value into a value of this type when binding
+	 * @param fromSourceToTarget The function converting a value of this type into a target value when reading
+	 * @return The mapped sql type
+	 * @throws NullPointerException If the identifier, target type or either function is null
+	 * @param <O> The target java type to map to
+	 */
+	default <O> @NonNull SqlType<O> map(
+		@NonNull String identifier,
+		@NonNull Class<O> targetType,
+		@NonNull ThrowableFunction<@Nullable O, @Nullable T, SqlStatementBindException> fromTargetToSource,
+		@NonNull ThrowableFunction<@NonNull T, @Nullable O, SqlClientException> fromSourceToTarget
+	) {
+		Objects.requireNonNull(identifier, "Identifier must not be null");
+		Objects.requireNonNull(targetType, "Target type must not be null");
+		Objects.requireNonNull(fromTargetToSource, "Getter function must not be null");
+		Objects.requireNonNull(fromSourceToTarget, "Setter function must not be null");
+		
+		return new MappedSqlType<>(identifier, this, targetType, fromTargetToSource, fromSourceToTarget);
 	}
 }

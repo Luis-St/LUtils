@@ -137,7 +137,7 @@ class MacAddressesTest {
 	
 	@Test
 	void ofBytesNullThrows() {
-		assertThrows(NullPointerException.class, () -> MacAddresses.of((byte[]) null));
+		assertThrows(NullPointerException.class, () -> MacAddresses.of(null));
 	}
 	
 	@Test

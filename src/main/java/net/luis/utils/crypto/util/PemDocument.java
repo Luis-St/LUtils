@@ -16,36 +16,35 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.network.connection.event;
+package net.luis.utils.crypto.util;
 
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
- * Handler for connection lifecycle events (connect/disconnect).<br>
- * This functional interface is used to handle connection and disconnection events for both TCP clients and servers.<br>
+ * A decoded PEM document, its label and its DER encoded content.<br>
  * <p>
- *     Example usage:
+ *     The label is the text between the BEGIN and END markers, for example {@code PUBLIC KEY}.<br>
+ *     It says what the content is, so a caller that asked for a certificate cannot silently be handed a private key.
  * </p>
- * <pre>{@code
- * ConnectionEventHandler onConnect = event -> {
- *     System.out.println("Connected to " + event.remoteEndpoint());
- * };
- *
- * TcpClientConfig config = TcpClientConfig.builder()
- *     .onConnect(onConnect)
- *     .build();
- * }</pre>
- *
- * @see ConnectionEvent
  *
  * @author Luis-St
+ *
+ * @param label The label between the BEGIN and END markers
+ * @param content The decoded DER encoded content
  */
-@FunctionalInterface
-public interface ConnectionEventHandler {
+public record PemDocument(
+	@NonNull String label,
+	byte @NonNull [] content
+) {
 	
 	/**
-	 * Called when a connection event occurs.<br>
-	 * @param event The connection event context
+	 * Constructs a new pem document.<br>
+	 * @throws NullPointerException If the label or the content is null
 	 */
-	void handle(@NonNull ConnectionEvent event);
+	public PemDocument {
+		Objects.requireNonNull(label, "Label must not be null");
+		Objects.requireNonNull(content, "Content must not be null");
+	}
 }

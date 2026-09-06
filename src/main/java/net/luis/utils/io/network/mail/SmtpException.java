@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.network.mail;
 
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.jspecify.annotations.NonNull;
@@ -76,7 +76,7 @@ public class SmtpException extends NetworkConnectionException {
 	 * @param endpoint The endpoint involved in the failed operation
 	 * @throws NullPointerException If the reply is null
 	 */
-	public SmtpException(@Nullable String message, @NonNull SmtpReply reply, @Nullable IpEndpoint endpoint) {
+	public SmtpException(@Nullable String message, @NonNull SmtpReply reply, @Nullable Endpoint endpoint) {
 		super(message, NetworkErrorType.PROTOCOL_ERROR, endpoint);
 		this.reply = Objects.requireNonNull(reply, "Reply must not be null");
 	}
@@ -90,7 +90,7 @@ public class SmtpException extends NetworkConnectionException {
 	 * @param endpoint The endpoint involved in the failed operation
 	 * @throws NullPointerException If the reply is null
 	 */
-	public SmtpException(@Nullable String message, @NonNull SmtpReply reply, @Nullable NetworkErrorType errorType, @Nullable IpEndpoint endpoint) {
+	public SmtpException(@Nullable String message, @NonNull SmtpReply reply, @Nullable NetworkErrorType errorType, @Nullable Endpoint endpoint) {
 		super(message, errorType, endpoint);
 		this.reply = Objects.requireNonNull(reply, "Reply must not be null");
 	}
@@ -105,7 +105,7 @@ public class SmtpException extends NetworkConnectionException {
 	 * @param endpoint The endpoint involved in the failed operation
 	 * @throws NullPointerException If the reply is null
 	 */
-	public SmtpException(@Nullable String message, @Nullable Throwable cause, @NonNull SmtpReply reply, @Nullable NetworkErrorType errorType, @Nullable IpEndpoint endpoint) {
+	public SmtpException(@Nullable String message, @Nullable Throwable cause, @NonNull SmtpReply reply, @Nullable NetworkErrorType errorType, @Nullable Endpoint endpoint) {
 		super(message, cause, errorType, endpoint);
 		this.reply = Objects.requireNonNull(reply, "Reply must not be null");
 	}

@@ -47,6 +47,10 @@ import java.util.Objects;
 public final class MappedSqlType<S, T> implements SqlType<T> {
 	
 	/**
+	 * The stable identifier of this type or {@code null} if this type is anonymous.
+	 */
+	private final @Nullable String identifier;
+	/**
 	 * The underlying source type that performs the actual binding and reading.
 	 */
 	private final SqlType<S> sourceType;
@@ -78,10 +82,41 @@ public final class MappedSqlType<S, T> implements SqlType<T> {
 		@NonNull ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource,
 		@NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlClientException> fromSourceToTarget
 	) {
+		this(null, sourceType, javaType, fromTargetToSource, fromSourceToTarget);
+	}
+	
+	/**
+	 * Constructs a new identified mapped sql type wrapping the given source type.<br>
+	 * Two mapped types are only equal if they carry the same identifier, an anonymous type therefore never matches an identified one even if both map the same java type onto the same source type.<br>
+	 *
+	 * @param identifier The stable identifier of the type or {@code null} to create an anonymous type
+	 * @param sourceType The underlying source type that performs the actual binding and reading
+	 * @param javaType The java type this type maps the source value to
+	 * @param fromTargetToSource The function converting a target value into a source value when binding a value
+	 * @param fromSourceToTarget The function converting a source value into a target value when reading a value
+	 * @throws NullPointerException If the source type, java type or any of the functions is null
+	 */
+	MappedSqlType(
+		@Nullable String identifier,
+		@NonNull SqlType<S> sourceType,
+		@NonNull Class<T> javaType,
+		@NonNull ThrowableFunction<@Nullable T, @Nullable S, SqlStatementBindException> fromTargetToSource,
+		@NonNull ThrowableFunction<@NonNull S, @Nullable T, SqlClientException> fromSourceToTarget
+	) {
+		this.identifier = identifier;
 		this.sourceType = Objects.requireNonNull(sourceType, "Source type must not be null");
 		this.javaType = Objects.requireNonNull(javaType, "Java type must not be null");
 		this.fromTargetToSource = Objects.requireNonNull(fromTargetToSource, "Getter function must not be null");
 		this.fromSourceToTarget = Objects.requireNonNull(fromSourceToTarget, "Setter function must not be null");
+	}
+	
+	/**
+	 * Returns the stable identifier of this type.<br>
+	 * An identified type is only equal to another type carrying the same identifier, which keeps a dialect specific type registration from capturing a structurally identical type defined by a user.<br>
+	 * @return The identifier or {@code null} if this type is anonymous
+	 */
+	public @Nullable String identifier() {
+		return this.identifier;
 	}
 	
 	/**
@@ -135,6 +170,16 @@ public final class MappedSqlType<S, T> implements SqlType<T> {
 	
 	@Override
 	@ApiStatus.Internal
+	public @Nullable T get(@NonNull SqlTypeInternalAccess access, @NonNull SqlDialect dialect, @NonNull ResultSet resultSet, int columnIndex) throws SqlException {
+		S source = this.sourceType.get(access, dialect, resultSet, columnIndex);
+		if (source == null) {
+			return null;
+		}
+		return this.fromSourceToTarget.apply(source);
+	}
+	
+	@Override
+	@ApiStatus.Internal
 	public void set(@NonNull SqlTypeInternalAccess access, @NonNull SqlDialect dialect, @NonNull PreparedStatement preparedStatement, int columnIndex, @Nullable T value) throws SqlException {
 		this.sourceType.set(access, dialect, preparedStatement, columnIndex, this.fromTargetToSource.apply(value));
 	}
@@ -143,17 +188,17 @@ public final class MappedSqlType<S, T> implements SqlType<T> {
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof MappedSqlType<?, ?> that)) return false;
-		return this.sourceType.equals(that.sourceType) && this.javaType.equals(that.javaType);
+		return Objects.equals(this.identifier, that.identifier) && this.sourceType.equals(that.sourceType) && this.javaType.equals(that.javaType);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.sourceType, this.javaType);
+		return Objects.hash(this.identifier, this.sourceType, this.javaType);
 	}
 	
 	@Override
 	public @NonNull String toString() {
-		return "MappedSqlType[sourceType=" + this.sourceType + ", javaType=" + this.javaType + "]";
+		return "MappedSqlType[identifier=" + this.identifier + ", sourceType=" + this.sourceType + ", javaType=" + this.javaType + "]";
 	}
 	//endregion
 }

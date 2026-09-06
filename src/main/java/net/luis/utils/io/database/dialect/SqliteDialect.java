@@ -41,7 +41,7 @@ import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
-import net.luis.utils.io.database.type.SqlType;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import net.luis.utils.io.database.util.SqlTemporalPart;
 import org.jspecify.annotations.NonNull;
@@ -81,6 +81,16 @@ public class SqliteDialect extends AbstractSqlDialect {
 	 */
 	public SqliteDialect() {}
 	
+	/**
+	 * Constructs a new SQLite dialect that additionally knows the type mappings of the given registry.<br>
+	 *
+	 * @param additionalTypes The type mappings the dialect should know in addition to its own
+	 * @throws NullPointerException If the additional type mappings are null
+	 */
+	public SqliteDialect(@NonNull SqlTypeRegistry additionalTypes) {
+		super(additionalTypes);
+	}
+	
 	@Override
 	public @NonNull String name() {
 		return "SQLite";
@@ -99,6 +109,17 @@ public class SqliteDialect extends AbstractSqlDialect {
 			.columnRenderer(new SqliteColumnRenderer(this))
 			.migrationRenderer(new SqliteMigrationOperationRenderer(this))
 			.build();
+	}
+	
+	@Override
+	protected @NonNull Optional<SqlType<?>> resolveNativeType(@NonNull SqlNativeType nativeType) {
+		Objects.requireNonNull(nativeType, "Sql native type must not be null");
+		
+		return switch (nativeType.normalizedTypeName()) {
+			case "blob" -> Optional.of(SqlTypes.LARGE_BYTES);
+			case "text" -> Optional.of(SqlTypes.TEXT);
+			default -> super.resolveNativeType(nativeType);
+		};
 	}
 	
 	@Override
@@ -126,6 +147,11 @@ public class SqliteDialect extends AbstractSqlDialect {
 	public boolean isFeatureSupported(@NonNull SqlFeature feature) {
 		Objects.requireNonNull(feature, "Sql feature must not be null");
 		return SUPPORTED_FEATURES.contains(feature);
+	}
+	
+	@Override
+	public boolean supportsOffsetTemporalTypes() {
+		return false;
 	}
 	
 	@Override
@@ -389,7 +415,7 @@ class SqliteIndexRenderer extends SqlIndexRenderer {
 		renderer.closingBracket();
 		
 		if (index.whereCondition() != null) {
-			renderer.where().rendered(index.whereCondition().toSql(this.dialect));
+			renderer.where().rendered(this.dialect.renderConditionInline(index.whereCondition()));
 		}
 		return renderer.toSql();
 	}

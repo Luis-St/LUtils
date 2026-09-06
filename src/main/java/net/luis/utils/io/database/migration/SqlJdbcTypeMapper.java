@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.migration;
 
+import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
@@ -25,6 +26,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.sql.Types;
+import java.util.Optional;
 
 /**
  * Maps JDBC type codes to the library's {@link SqlType}s during schema introspection.<br>
@@ -42,8 +44,9 @@ final class SqlJdbcTypeMapper {
 	private SqlJdbcTypeMapper() {}
 	
 	/**
-	 * Maps the given JDBC type code to the matching {@link SqlType}.<br>
-	 * The column size and decimal digits are used to configure parameterized types such as numeric, string or temporal types.<br>
+	 * Maps the given JDBC type code to the matching {@link SqlType} using only the portable jdbc type codes.<br>
+	 * Schema introspection resolves column types through {@link SqlDialect#resolveType(SqlNativeType)} instead, which recognizes dialect specific native types before
+	 * falling back to this mapping.<br>
 	 *
 	 * @param jdbcType The JDBC type code as defined in {@link Types}
 	 * @param columnSize The column size used to configure length or precision
@@ -52,38 +55,9 @@ final class SqlJdbcTypeMapper {
 	 * @throws SqlSchemaIntrospectionException If the JDBC type code is not supported
 	 */
 	static @NonNull SqlType<?> mapJdbcType(int jdbcType, int columnSize, int decimalDigits) throws SqlSchemaIntrospectionException {
-		return switch (jdbcType) {
-			case Types.BIT, Types.BOOLEAN -> SqlTypes.BOOLEAN;
-			case Types.TINYINT -> SqlTypes.BYTE;
-			case Types.SMALLINT -> SqlTypes.SHORT;
-			case Types.INTEGER -> SqlTypes.INTEGER;
-			case Types.BIGINT -> SqlTypes.LONG;
-			case Types.REAL -> SqlTypes.REAL;
-			case Types.FLOAT -> SqlTypes.FLOAT;
-			case Types.DOUBLE -> SqlTypes.DOUBLE;
-			case Types.NUMERIC -> SqlTypes.NUMERIC.configure(SqlParameter.precision(Math.max(columnSize, 1), Math.max(decimalDigits, 0)));
-			case Types.DECIMAL -> SqlTypes.DECIMAL.configure(SqlParameter.precision(Math.max(columnSize, 1), Math.max(decimalDigits, 0)));
-			case Types.CHAR, Types.NCHAR -> {
-				int length = Math.max(columnSize, 1);
-				yield (jdbcType == Types.CHAR ? SqlTypes.FIXED_STRING : SqlTypes.UNICODE_FIXED_STRING).configure(SqlParameter.length(length));
-			}
-			case Types.VARCHAR -> SqlTypes.STRING.configure(SqlParameter.length(Math.max(columnSize, 1)));
-			case Types.NVARCHAR -> SqlTypes.UNICODE_STRING.configure(SqlParameter.length(Math.max(columnSize, 1)));
-			case Types.LONGVARCHAR -> SqlTypes.TEXT;
-			case Types.LONGNVARCHAR -> SqlTypes.UNICODE_TEXT;
-			case Types.BINARY -> SqlTypes.FIXED_BYTES.configure(SqlParameter.length(Math.max(columnSize, 1)));
-			case Types.VARBINARY -> SqlTypes.BYTES.configure(SqlParameter.length(Math.max(columnSize, 1)));
-			case Types.LONGVARBINARY -> SqlTypes.LARGE_BYTES;
-			case Types.CLOB -> SqlTypes.CLOB;
-			case Types.NCLOB -> SqlTypes.NCLOB;
-			case Types.BLOB -> SqlTypes.BLOB;
-			case Types.DATE -> SqlTypes.LOCAL_DATE;
-			case Types.TIME -> SqlTypes.LOCAL_TIME.configure(SqlParameter.fractional(Math.max(decimalDigits, 0)));
-			case Types.TIMESTAMP -> SqlTypes.LOCAL_DATE_TIME.configure(SqlParameter.fractional(Math.max(decimalDigits, 0)));
-			case Types.TIME_WITH_TIMEZONE -> SqlTypes.OFFSET_TIME.configure(SqlParameter.fractional(Math.max(decimalDigits, 0)));
-			case Types.TIMESTAMP_WITH_TIMEZONE -> SqlTypes.OFFSET_DATE_TIME.configure(SqlParameter.fractional(Math.max(decimalDigits, 0)));
-			default -> throw new SqlSchemaIntrospectionException("Unsupported JDBC type code: " + jdbcType);
-		};
+		return SqlNativeTypeMapper.mapNativeType(new SqlNativeType(jdbcType, "", columnSize, decimalDigits)).orElseThrow(
+			() -> new SqlSchemaIntrospectionException("Unsupported JDBC type code: " + jdbcType)
+		);
 	}
 	
 	/**
@@ -96,6 +70,27 @@ final class SqlJdbcTypeMapper {
 	 * @throws SqlSchemaIntrospectionException If the JDBC type code is not supported for the given parameter
 	 */
 	static @NonNull SqlType<?> reconstructType(int jdbcType, @Nullable SqlParameter parameter) throws SqlSchemaIntrospectionException {
+		return reconstructType(jdbcType, parameter, null);
+	}
+	
+	/**
+	 * Reconstructs a {@link SqlType} from the given JDBC type code, the optional stored parameter and the optional stored type identifier.<br>
+	 * A stored identifier takes precedence, it restores the exact type the column was defined with instead of the type the jdbc type code alone would resolve to.<br>
+	 *
+	 * @param jdbcType The JDBC type code as defined in {@link Types}
+	 * @param parameter The parameter to apply to the type or {@code null} for a scalar type
+	 * @param typeIdentifier The identifier of the stored type or {@code null} if the type is not identified
+	 * @return The reconstructed sql type
+	 * @throws SqlSchemaIntrospectionException If the JDBC type code is not supported for the given parameter
+	 */
+	static @NonNull SqlType<?> reconstructType(int jdbcType, @Nullable SqlParameter parameter, @Nullable String typeIdentifier) throws SqlSchemaIntrospectionException {
+		if (typeIdentifier != null) {
+			Optional<SqlType<?>> identified = SqlTypes.byIdentifier(typeIdentifier);
+			if (identified.isPresent()) {
+				return identified.get();
+			}
+		}
+		
 		if (parameter == null) {
 			return switch (jdbcType) {
 				case Types.BIT, Types.BOOLEAN -> SqlTypes.BOOLEAN;
