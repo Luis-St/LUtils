@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.network.file.exception;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -58,12 +58,12 @@ public enum FtpStatusCodeClass {
 	private final String name;
 	private final int code;
 	
-	FtpStatusCodeClass(@NotNull String name, int code) {
+	FtpStatusCodeClass(@NonNull String name, int code) {
 		this.name = Objects.requireNonNull(name, "Name must not be null");
 		this.code = code;
 	}
 	
-	public @NotNull String getName() {
+	public @NonNull String getName() {
 		return this.name;
 	}
 	

@@ -40,6 +40,7 @@ public enum FtpDataChannelProtection {
 	SAFE("Safe", 'S'),
 	/**
 	 * Fully protected data channel, both the integrity and the privacy of the data channel are protected.<br>
+	 * The data channel uses full tls encryption for the data transfer.<br>
 	 */
 	PRIVATE("Private", 'P');
 	

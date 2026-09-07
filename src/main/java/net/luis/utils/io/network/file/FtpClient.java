@@ -20,11 +20,17 @@ package net.luis.utils.io.network.file;
 
 import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.file.exception.FtpException;
-import org.jetbrains.annotations.NotNull;
+import net.luis.utils.io.network.connection.NetworkClient;
+import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
+import net.luis.utils.io.network.connection.ssl.SslClient;
+import net.luis.utils.io.network.connection.tcp.TcpClient;
+import net.luis.utils.io.network.connection.tcp.TcpClientConfig;
+import net.luis.utils.io.network.file.exception.*;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  *
@@ -40,44 +46,118 @@ public class FtpClient implements AutoCloseable {
 	// PORT (deprecated, does not support IPv6), PASV (deprecated, does not support IPv6), SMNT (not needed)
 	// ALLO (not needed)
 	
+	private static final String CRLF = "\r\n";
 	
+	private NetworkClient<byte[]> client;
 	
+	public FtpClient() {
+		this.client = new TcpClient(TcpClientConfig.builder().framing(false).build());
+	}
 	
+	private @NonNull FtpStatusCode parseStatusCode(@NonNull String response) throws FtpException {
+		return null;
+	}
+	
+	private @NonNull FtpStatusCode sendCommand(@NonNull String command) throws FtpException {
+		Objects.requireNonNull(command, "Command must not be null");
+		if (command.isBlank()) {
+			throw new IllegalArgumentException("Command must not be blank");
+		}
+		if (!this.client.isActive()) {
+			throw new FtpException("Not connected to a ftp server");
+		}
+		
+		String response = "";
+		FtpStatusCode status = this.parseStatusCode(response);
+		if (status.is5xx()) {
+			throw new FtpStatusException(status);
+		}
+		return status;
+	}
 	
 	public void connect(@NonNull IpEndpoint endpoint) throws FtpException {
-	
+		Objects.requireNonNull(endpoint, "Endpoint must not be null");
+		if (this.client.isActive()) {
+			throw new FtpException("Already connected to a ftp server");
+		}
+		
+		try {
+			switch (this.client) {
+				case TcpClient tcp -> tcp.connect(endpoint);
+				case SslClient ssl -> ssl.connect(endpoint);
+				default -> throw new FtpException("Unsupported client type");
+			}
+		} catch (NetworkConnectionException e) {
+			throw new FtpException("Failed to connect to " + endpoint, e);
+		}
 	}
 	
-	public void authenticate(@NonNull FtpAuthenticationMethod method) throws FtpException {
-		// AUTH
+	public @NonNull FtpStatusCode authenticate(@NonNull FtpAuthenticationMethod method) throws FtpException {
+		Objects.requireNonNull(method, "Authentication method must not be null");
+		return this.sendCommand("AUTH " + method.name());
 	}
 	
-	public void host(@NonNull String hostname) throws FtpException {
-		// HOST
+	public @NonNull FtpStatusCode host(@NonNull String hostname) throws FtpException {
+		Objects.requireNonNull(hostname, "Hostname must not be null");
+		if (hostname.isBlank()) {
+			throw new IllegalArgumentException("Hostname must not be blank");
+		}
+		
+		return this.sendCommand("HOST " + hostname);
 	}
 	
-	public void password(char @NonNull [] password) throws FtpException {
-		// PASS
+	public @NonNull FtpStatusCode user(@NonNull String username) throws FtpException {
+		Objects.requireNonNull(username, "Username must not be null");
+		if (username.isBlank()) {
+			throw new IllegalArgumentException("Username must not be blank");
+		}
+		
+		return this.sendCommand("USER " + username);
 	}
 	
-	public void account(@NonNull String account) throws FtpException {
-		// ACCT
+	public @NonNull FtpStatusCode password(char @NonNull [] password) throws FtpException {
+		Objects.requireNonNull(password, "Password must not be null");
+		if (password.length == 0) {
+			throw new IllegalArgumentException("Password must not be empty");
+		}
+		
+		FtpStatusCode status = this.sendCommand("PASS " + new String(password));
+		Arrays.fill(password, '\0');
+		return status;
 	}
 	
-	public void login(@NonNull String username, char @NonNull [] password) throws FtpException {
-		// USER
-		// PASS
+	public @NonNull FtpStatusCode account(@NonNull String account) throws FtpException {
+		Objects.requireNonNull(account, "Account must not be null");
+		if (account.isBlank()) {
+			throw new IllegalArgumentException("Account must not be blank");
+		}
+		
+		return this.sendCommand("ACCT " + account);
 	}
 	
-	public void login(@NonNull String username, char @NonNull [] password, @NonNull String account) throws FtpException {
-		// USER
-		// PASS
-		// ACCT
+	public @NonNull FtpStatusCode login(@NonNull String username, char @NonNull [] password) throws FtpException {
+		FtpStatusCode status = this.user(username);
+		
+		if (status == FtpStatusCode.USER_NAME_OKAY) {
+			return this.password(password);
+		}
+		return status;
+	}
+	
+	public @NonNull FtpStatusCode login(@NonNull String username, char @NonNull [] password, @NonNull String account) throws FtpException {
+		FtpStatusCode status = this.login(username, password);
+		
+		if (status == FtpStatusCode.NEED_ACCOUNT_FOR_LOGIN) {
+			return this.account(account);
+		}
+		return status;
 	}
 	
 	public void dataChannelProtection(@NonNull FtpDataChannelProtection protection) throws FtpException {
-		// PBSZ 0
-		// PROT
+		Objects.requireNonNull(protection, "Data channel protection must not be null");
+		
+		this.sendCommand("PBSZ 0");
+		this.sendCommand("PROT " + protection.getName());
 	}
 	
 	public void transferTyp(@NonNull FtpTransferType type) throws FtpException {
@@ -179,7 +259,7 @@ public class FtpClient implements AutoCloseable {
 		// MLST
 	}
 	
-	public @NotNull Object stats(@NonNull String path) throws FtpException {
+	public @NonNull Object stats(@NonNull String path) throws FtpException {
 		// STAT
 		return null;
 	}
