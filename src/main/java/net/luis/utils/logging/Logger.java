@@ -20,11 +20,13 @@ package net.luis.utils.logging;
 
 import net.luis.utils.logging.context.LogContext;
 import net.luis.utils.logging.event.LogEvent;
+import net.luis.utils.logging.exception.LoggingException;
 import net.luis.utils.logging.marker.LogMarker;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
+import java.util.Optional;
 
 /**
  *
@@ -34,7 +36,13 @@ import java.time.Instant;
 
 public interface Logger {
 	
+	@NonNull String getName();
+	
 	// --- child logger ---
+	
+	boolean isRootLogger();
+	
+	boolean isChildLogger();
 	
 	@NonNull Logger childLogger(@NonNull String name);
 	
@@ -46,61 +54,107 @@ public interface Logger {
 	
 	// --- scope ---
 	
-	@NonNull LogScope createScope();
+	@NonNull Optional<LogScope> getScope();
 	
-	@NonNull LogScope createScope(int capacity);
+	default @NonNull LogScope createScope() {
+		return this.createScope(Integer.MAX_VALUE);
+	}
 	
-	@NonNull LogScope createScope(int capacity, @NonNull LogMarker marker);
+	default @NonNull LogScope createScope(int capacity) {
+		return this.createScope(capacity, LogMarker.EMPTY);
+	}
+	
+	default @NonNull LogScope createScope(int capacity, @NonNull LogMarker marker) {
+		return this.createScope(capacity, marker, LogContext.empty());
+	}
 	
 	@NonNull LogScope createScope(int capacity, @NonNull LogMarker marker, @NonNull LogContext context);
 	
 	// --- buffered ---
 	
-	@NonNull Logger buffered();
+	default @NonNull Logger buffered() {
+		return this.buffered(this.getScope().orElseGet(this::createScope));
+	}
 	
 	@NonNull Logger buffered(@NonNull LogScope scope);
 	
-	void flushBuffer();
+	default void flushBuffer() {
+		this.flushBuffer(this.getScope().orElseThrow(() -> new LoggingException("No scope is currently active.")));
+	}
 	
 	void flushBuffer(@NonNull LogScope scope);
 	
-	void clearBuffer();
+	default void clearBuffer() {
+		this.clearBuffer(this.getScope().orElseThrow(() -> new LoggingException("No scope is currently active.")));
+	}
 	
 	void clearBuffer(@NonNull LogScope scope);
 	
 	// --- enabled ---
 	
-	boolean isTraceEnabled();
+	default boolean isTraceEnabled() {
+		return this.isEnabled(LogLevel.TRACE);
+	}
 	
-	boolean isTraceEnabled(@NonNull LogMarker marker);
+	default boolean isTraceEnabled(@NonNull LogMarker marker) {
+		return this.isEnabled(LogLevel.TRACE, marker);
+	}
 	
-	boolean isDebugEnabled();
+	default boolean isDebugEnabled() {
+		return this.isEnabled(LogLevel.DEBUG);
+	}
 	
-	boolean isDebugEnabled(@NonNull LogMarker marker);
+	default boolean isDebugEnabled(@NonNull LogMarker marker) {
+		return this.isEnabled(LogLevel.DEBUG, marker);
+	}
 	
-	boolean isInfoEnabled();
+	default boolean isInfoEnabled() {
+		return this.isEnabled(LogLevel.INFO);
+	}
 	
-	boolean isInfoEnabled(@NonNull LogMarker marker);
+	default boolean isInfoEnabled(@NonNull LogMarker marker) {
+		return this.isEnabled(LogLevel.INFO, marker);
+	}
 	
-	boolean isNoticeEnabled();
+	default boolean isNoticeEnabled() {
+		return this.isEnabled(LogLevel.NOTICE);
+	}
 	
-	boolean isNoticeEnabled(@NonNull LogMarker marker);
+	default boolean isNoticeEnabled(@NonNull LogMarker marker) {
+		return this.isEnabled(LogLevel.NOTICE, marker);
+	}
 	
-	boolean isWarnEnabled();
+	default boolean isWarnEnabled() {
+		return this.isEnabled(LogLevel.WARN);
+	}
 	
-	boolean isWarnEnabled(@NonNull LogMarker marker);
+	default boolean isWarnEnabled(@NonNull LogMarker marker) {
+		return this.isEnabled(LogLevel.WARN, marker);
+	}
 	
-	boolean isErrorEnabled();
+	default boolean isErrorEnabled() {
+		return this.isEnabled(LogLevel.ERROR);
+	}
 	
-	boolean isErrorEnabled(@NonNull LogMarker marker);
+	default boolean isErrorEnabled(@NonNull LogMarker marker) {
+		return this.isEnabled(LogLevel.ERROR, marker);
+	}
 	
-	boolean isCriticalEnabled();
+	default boolean isCriticalEnabled() {
+		return this.isEnabled(LogLevel.CRITICAL);
+	}
 	
-	boolean isCriticalEnabled(@NonNull LogMarker marker);
+	default boolean isCriticalEnabled(@NonNull LogMarker marker) {
+		return this.isEnabled(LogLevel.CRITICAL, marker);
+	}
 	
-	boolean isFatalEnabled();
+	default boolean isFatalEnabled() {
+		return this.isEnabled(LogLevel.FATAL);
+	}
 	
-	boolean isFatalEnabled(@NonNull LogMarker marker);
+	default boolean isFatalEnabled(@NonNull LogMarker marker) {
+		return this.isEnabled(LogLevel.FATAL, marker);
+	}
 	
 	boolean isEnabled(@NonNull LogLevel level);
 	
@@ -138,15 +192,27 @@ public interface Logger {
 	
 	void debug(@NonNull String message, @Nullable Object p1);
 	
+	void debug(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1);
+	
 	void debug(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void debug(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
 	
 	void debug(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
 	
+	void debug(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
 	void debug(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void debug(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
 	
 	void debug(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
 	
+	void debug(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
 	void debug(@NonNull String message, Object @NonNull ... parameters);
+	
+	void debug(@NonNull LogMarker marker, @NonNull String message, Object @NonNull ... parameters);
 	
 	void debug(@NonNull LogMessage message);
 	
@@ -166,15 +232,27 @@ public interface Logger {
 	
 	void info(@NonNull String message, @Nullable Object p1);
 	
+	void info(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1);
+	
 	void info(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void info(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
 	
 	void info(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
 	
+	void info(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
 	void info(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void info(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
 	
 	void info(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
 	
+	void info(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
 	void info(@NonNull String message, Object @NonNull ... parameters);
+	
+	void info(@NonNull LogMarker marker, @NonNull String message, Object @NonNull ... parameters);
 	
 	void info(@NonNull LogMessage message);
 	
@@ -194,15 +272,27 @@ public interface Logger {
 	
 	void notice(@NonNull String message, @Nullable Object p1);
 	
+	void notice(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1);
+	
 	void notice(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void notice(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
 	
 	void notice(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
 	
+	void notice(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
 	void notice(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void notice(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
 	
 	void notice(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
 	
+	void notice(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
 	void notice(@NonNull String message, Object @NonNull ... parameters);
+	
+	void notice(@NonNull LogMarker marker, @NonNull String message, Object @NonNull ... parameters);
 	
 	void notice(@NonNull LogMessage message);
 	
@@ -222,15 +312,27 @@ public interface Logger {
 	
 	void warn(@NonNull String message, @Nullable Object p1);
 	
+	void warn(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1);
+	
 	void warn(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void warn(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
 	
 	void warn(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
 	
+	void warn(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
 	void warn(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void warn(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
 	
 	void warn(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
 	
+	void warn(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
 	void warn(@NonNull String message, Object @NonNull ... parameters);
+	
+	void warn(@NonNull LogMarker marker, @NonNull String message, Object @NonNull ... parameters);
 	
 	void warn(@NonNull LogMessage message);
 	
@@ -250,15 +352,27 @@ public interface Logger {
 	
 	void error(@NonNull String message, @Nullable Object p1);
 	
+	void error(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1);
+	
 	void error(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void error(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
 	
 	void error(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
 	
+	void error(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
 	void error(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void error(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
 	
 	void error(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
 	
+	void error(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
 	void error(@NonNull String message, Object @NonNull ... parameters);
+	
+	void error(@NonNull LogMarker marker, @NonNull String message, Object @NonNull ... parameters);
 	
 	void error(@NonNull LogMessage message);
 	
@@ -278,15 +392,27 @@ public interface Logger {
 	
 	void critical(@NonNull String message, @Nullable Object p1);
 	
+	void critical(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1);
+	
 	void critical(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void critical(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
 	
 	void critical(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
 	
+	void critical(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
 	void critical(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void critical(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
 	
 	void critical(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
 	
+	void critical(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
 	void critical(@NonNull String message, Object @NonNull ... parameters);
+	
+	void critical(@NonNull LogMarker marker, @NonNull String message, Object @NonNull ... parameters);
 	
 	void critical(@NonNull LogMessage message);
 	
@@ -306,15 +432,27 @@ public interface Logger {
 	
 	void fatal(@NonNull String message, @Nullable Object p1);
 	
+	void fatal(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1);
+	
 	void fatal(@NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void fatal(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
 	
 	void fatal(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
 	
+	void fatal(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
 	void fatal(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void fatal(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
 	
 	void fatal(@NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
 	
+	void fatal(@NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
 	void fatal(@NonNull String message, Object @NonNull ... parameters);
+	
+	void fatal(@NonNull LogMarker marker, @NonNull String message, Object @NonNull ... parameters);
 	
 	void fatal(@NonNull LogMessage message);
 	
@@ -334,15 +472,27 @@ public interface Logger {
 	
 	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1);
 	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull String message, @Nullable Object p1);
+	
 	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
+	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2);
 	
 	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
 	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3);
+	
 	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
+	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4);
 	
 	void log(@NonNull LogLevel level, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
 	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull String message, @Nullable Object p1, @Nullable Object p2, @Nullable Object p3, @Nullable Object p4, @Nullable Object p5);
+	
 	void log(@NonNull LogLevel level, @NonNull String message, Object @NonNull ... parameters);
+	
+	void log(@NonNull LogLevel level, @NonNull LogMarker marker, @NonNull String message, Object @NonNull ... parameters);
 	
 	void log(@NonNull LogLevel level, @NonNull LogMessage message);
 	

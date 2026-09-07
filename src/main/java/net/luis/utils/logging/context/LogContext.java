@@ -22,8 +22,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -32,6 +31,14 @@ import java.util.List;
  */
 
 public interface LogContext extends Iterable<String> {
+	
+	static @NonNull LogContext empty() {
+		return new ImmutableLogContext();
+	}
+	
+	static @NonNull LogContext of(@NonNull Map<String, Object> context) {
+		return new ImmutableLogContext(context);
+	}
 	
 	@NonNull LogContext with(@NonNull String key, @Nullable Object value);
 	

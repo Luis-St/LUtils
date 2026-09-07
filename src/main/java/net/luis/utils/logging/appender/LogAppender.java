@@ -33,5 +33,7 @@ public interface LogAppender {
 	
 	void disable();
 	
+	@NonNull LogAppenderState getState();
+	
 	void append(@NonNull FormattedLogEvent event);
 }

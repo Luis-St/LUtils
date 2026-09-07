@@ -18,10 +18,30 @@
 
 package net.luis.utils.logging.appender;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public abstract class AbstractLogAppender implements LogAppender {}
+public abstract class AbstractLogAppender implements LogAppender {
+	
+	private LogAppenderState state = LogAppenderState.ENABLED;
+	
+	@Override
+	public void enable() {
+		this.state = LogAppenderState.ENABLED;
+	}
+	
+	@Override
+	public void disable() {
+		this.state = LogAppenderState.DISABLED;
+	}
+	
+	@Override
+	public @NonNull LogAppenderState getState() {
+		return this.state;
+	}
+}

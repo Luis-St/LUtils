@@ -23,8 +23,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -46,6 +45,11 @@ public class ImmutableLogContext implements LogContext {
 	
 	@Override
 	public @NonNull LogContext with(@NonNull String key, @Nullable Object value) {
+		Objects.requireNonNull(key, "Key must not be null");
+		if (key.isBlank()) {
+			throw new IllegalArgumentException("Key must not be blank");
+		}
+		
 		Map<String, Object> newContext = Maps.newHashMap(this.context);
 		newContext.put(key, value);
 		return new ImmutableLogContext(newContext);

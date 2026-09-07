@@ -25,4 +25,6 @@ package net.luis.utils.logging.marker;
  */
 
 public interface LogMarker {
+	
+	static final LogMarker EMPTY = new LogMarker() {};
 }
