@@ -36,7 +36,7 @@ public interface LogEvent {
 	
 	@NonNull LogLevel level();
 	
-	@NotNull LogMarker marker();
+	@NonNull LogMarker marker();
 	
 	@NonNull LogMessage message();
 	

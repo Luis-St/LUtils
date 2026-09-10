@@ -33,11 +33,11 @@ import java.util.List;
 
 public interface LogMessage {
 	
-	@NotNull String message();
+	@NonNull String message();
 	
 	@NonNull
 	@Unmodifiable
-	List<@NotNull Object> parameters();
+	List<@NonNull Object> parameters();
 	
 	@Nullable Throwable throwable();
 }

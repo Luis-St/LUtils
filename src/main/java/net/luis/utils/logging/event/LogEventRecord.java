@@ -35,7 +35,7 @@ import java.util.Objects;
 
 public record LogEventRecord(
 	@NonNull LogLevel level,
-	@NotNull LogMarker marker,
+	@NonNull LogMarker marker,
 	@NonNull LogMessage message,
 	@NonNull LogContext context,
 	@NonNull Instant timestamp,
