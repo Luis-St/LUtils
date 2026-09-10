@@ -16,7 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern.token;
+package net.luis.utils.logging.formatter.pattern.token.config.util;
+
+import java.lang.annotation.*;
 
 /**
  *
@@ -24,5 +26,8 @@ package net.luis.utils.logging.formatter.pattern.token;
  *
  */
 
-public class LogPatternNewlineToken {
-}
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+// ToDo: Move to root util package
+public @interface Embeddable {}

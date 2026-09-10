@@ -16,11 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern.config;
+package net.luis.utils.logging.formatter.pattern.token.config.base;
 
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
-import net.luis.utils.logging.formatter.pattern.util.*;
-import org.jetbrains.annotations.NotNull;
+import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
+import net.luis.utils.logging.formatter.pattern.token.config.util.*;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -32,12 +33,12 @@ import java.util.*;
 
 @Embeddable
 public record LogPatternPaddingConfig(
-	@NotNull OptionalInt minWidth,
-	@NotNull OptionalInt maxWidth,
-	@NotNull Optional<Align> align,
-	@NotNull Optional<Character> padChar,
-	@NotNull Optional<TruncateFrom> truncateFrom
-) {
+	@NonNull OptionalInt minWidth,
+	@NonNull OptionalInt maxWidth,
+	@NonNull Optional<Align> align,
+	@NonNull Optional<Character> padChar,
+	@NonNull Optional<TruncateFrom> truncateFrom
+) implements LogPatternTokenConfig {
 	
 	static final Set<Character> ILLEGAL_PAD_CHARS = Set.of('\n', '\r', '\t');
 	

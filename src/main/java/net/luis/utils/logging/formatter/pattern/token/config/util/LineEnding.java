@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern.token;
+package net.luis.utils.logging.formatter.pattern.token.config.util;
 
 /**
  *
@@ -24,5 +24,9 @@ package net.luis.utils.logging.formatter.pattern.token;
  *
  */
 
-public class LogPatternMarkerToken {
+// ToDo: Move to root util package
+public enum LineEnding {
+	LF,
+	CRLF,
+	SYSTEM
 }

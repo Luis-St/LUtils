@@ -16,12 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern.config;
+package net.luis.utils.logging.formatter.pattern.token.config.base;
 
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
-import net.luis.utils.logging.formatter.pattern.util.Embedded;
+import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -32,25 +32,23 @@ import java.util.Optional;
  *
  */
 
-public record LogPatternContextItemConfig(
-	@NotNull String key,
-	@NotNull Optional<String> defaultValue,
-	@NotNull Optional<String> prefix,
-	@NotNull Optional<String> suffix,
-	@NotNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
+public record LogPatternBooleanValueConfig(
+	@NonNull Optional<String> trueValue,
+	@NonNull Optional<String> falseValue,
+	@NonNull Optional<String> prefix,
+	@NonNull Optional<String> suffix,
+	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
 ) {
 	
-	static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
+	private static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
 	
-	public LogPatternContextItemConfig {
-		Objects.requireNonNull(key, "Key must not be null");
-		Objects.requireNonNull(defaultValue, "Default value must not be null");
+	public LogPatternBooleanValueConfig {
+		Objects.requireNonNull(trueValue, "True value must not be null");
+		Objects.requireNonNull(falseValue, "False value must not be null");
 		Objects.requireNonNull(prefix, "Prefix must not be null");
 		Objects.requireNonNull(suffix, "Suffix must not be null");
+		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
 		
-		if (key.isBlank()) {
-			throw new LogPatternException("Key must not be empty or blank");
-		}
 		if (prefix.isPresent() && Strings.CI.containsAny(prefix.get(), ILLEGAL_CHARS)) {
 			throw new LogPatternException("Prefix must not contain newline, carriage return or tab");
 		}

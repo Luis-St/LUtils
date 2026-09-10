@@ -18,11 +18,33 @@
 
 package net.luis.utils.logging.formatter.pattern.token;
 
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Optional;
+import java.util.Set;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public class LogPatternTimestampToken {
+public interface LogPatternTokenType {
+	
+	@NonNull String getName();
+	
+	@NonNull @Unmodifiable
+	Set<String> getIdentifiers();
+	
+	default boolean isIdentifier(@Nullable String identifier) {
+		return this.getIdentifiers().contains(identifier);
+	}
+	
+	boolean supportsConfiguration();
+	
+	boolean requiresConfiguration();
+	
+	@NonNull Optional<Class<?>> getConfigurationType();
 }

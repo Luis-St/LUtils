@@ -16,15 +16,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern.config;
+package net.luis.utils.logging.formatter.pattern.token.config.core;
 
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
-import net.luis.utils.logging.formatter.pattern.util.Embedded;
+import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
+import net.luis.utils.logging.formatter.pattern.token.config.util.Casing;
+import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  *
@@ -32,31 +33,25 @@ import java.util.Optional;
  *
  */
 
-public record LogPatternMarkerConfig(
-	@NotNull Optional<Boolean> path,
-	@NotNull Optional<String> separator,
-	@NotNull Optional<String> prefix,
-	@NotNull Optional<String> suffix,
-	@NotNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
+public record LogPatternLevelConfig(
+	@NonNull OptionalInt length,
+	@NonNull Optional<Casing> casing,
+	@NonNull Optional<String> prefix,
+	@NonNull Optional<String> suffix,
+	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
 ) {
 	
-	static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
+	private static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
 	
-	public LogPatternMarkerConfig {
-		Objects.requireNonNull(path, "Path must not be null");
-		Objects.requireNonNull(separator, "Separator must not be null");
+	public LogPatternLevelConfig {
+		Objects.requireNonNull(length, "Length must not be null");
+		Objects.requireNonNull(casing, "Casing mus not be null");
 		Objects.requireNonNull(prefix, "Prefix must not be null");
 		Objects.requireNonNull(suffix, "Suffix must not be null");
 		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
 		
-		if (separator.isPresent()) {
-			if (separator.get().isBlank()) {
-				throw new LogPatternException("Separator must not be blank");
-			}
-			
-			if (Strings.CI.containsAny(separator.get(), ILLEGAL_CHARS)) {
-				throw new LogPatternException("Separator must not contain newline, carriage return or tab");
-			}
+		if (length.isPresent() && length.getAsInt() < 0) {
+			throw new LogPatternException("Length must not be negative");
 		}
 		if (prefix.isPresent() && Strings.CI.containsAny(prefix.get(), ILLEGAL_CHARS)) {
 			throw new LogPatternException("Prefix must not contain newline, carriage return or tab");

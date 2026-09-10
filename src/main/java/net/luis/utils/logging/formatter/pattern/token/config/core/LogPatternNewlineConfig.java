@@ -16,7 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern.config;
+package net.luis.utils.logging.formatter.pattern.token.config.core;
+
+import net.luis.utils.logging.formatter.pattern.token.config.util.LineEnding;
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  *
@@ -24,5 +30,11 @@ package net.luis.utils.logging.formatter.pattern.config;
  *
  */
 
-public record LogPatternLevelConfig() {
+public record LogPatternNewlineConfig(
+	@NonNull Optional<LineEnding> style
+) {
+	
+	public LogPatternNewlineConfig {
+		Objects.requireNonNull(style, "Line ending style must not be null");
+	}
 }

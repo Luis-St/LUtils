@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern.util;
+package net.luis.utils.logging.formatter.pattern.token.config;
 
 /**
  *
@@ -24,9 +24,4 @@ package net.luis.utils.logging.formatter.pattern.util;
  *
  */
 
-// ToDo: Move to root util package
-public enum Casing {
-	NONE,
-	UPPER,
-	LOWER
-}
+public interface LogPatternTokenConfig {}

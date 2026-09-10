@@ -16,13 +16,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern.config;
+package net.luis.utils.logging.formatter.pattern.token.config.core;
 
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
-import net.luis.utils.logging.formatter.pattern.util.Embedded;
+import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
+import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -33,13 +34,13 @@ import java.util.*;
  */
 
 public record LogPatternContextMapConfig(
-	@NotNull List<Pair</*Key*/ String, /*Default value*/ String>> include,
-	@NotNull List<String> exclude,
-	@NotNull Optional<String> kvSeparator,
-	@NotNull Optional<String> entrySeparator,
-	@NotNull Optional<String> prefix,
-	@NotNull Optional<String> suffix,
-	@NotNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
+	@NonNull List<Pair</*Key*/ String, /*Default value*/ String>> include,
+	@NonNull List<String> exclude,
+	@NonNull Optional<String> kvSeparator,
+	@NonNull Optional<String> entrySeparator,
+	@NonNull Optional<String> prefix,
+	@NonNull Optional<String> suffix,
+	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
 ) {
 	
 	static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };

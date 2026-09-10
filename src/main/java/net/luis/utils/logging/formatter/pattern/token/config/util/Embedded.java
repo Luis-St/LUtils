@@ -16,7 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern.config;
+package net.luis.utils.logging.formatter.pattern.token.config.util;
+
+import org.jspecify.annotations.NonNull;
+
+import java.lang.annotation.*;
 
 /**
  *
@@ -24,5 +28,13 @@ package net.luis.utils.logging.formatter.pattern.config;
  *
  */
 
-public record LogPatternTimestampConfig() {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.RECORD_COMPONENT)
+// ToDo: Move to root util package
+public @interface Embedded {
+	
+	@NonNull String namespace() default "";
+	
+	boolean namespaceRequired() default false;
 }

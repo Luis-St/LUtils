@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern.util;
+package net.luis.utils.logging.formatter.pattern.token.config.util;
 
 /**
  *
