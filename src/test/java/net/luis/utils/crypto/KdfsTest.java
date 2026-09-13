@@ -481,7 +481,7 @@ class KdfsTest {
 				keys.add(HexFormat.of().formatHex(key.getEncoded()));
 			}
 		}
-		assertEquals(3, keys.size());
+		assertEquals(6, keys.size());
 	}
 	
 	@Test

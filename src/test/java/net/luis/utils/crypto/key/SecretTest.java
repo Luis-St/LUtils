@@ -572,7 +572,7 @@ class SecretTest {
 	
 	@Test
 	void toKeyRejectsCrossAlgorithmLengths() {
-		for (int length : new int[] { 16, 24, 64 }) {
+		for (int length : new int[] { 8, 24, 64 }) {
 			Secret secret = Secret.random(length);
 			for (AeadAlgorithm algorithm : AeadAlgorithm.values()) {
 				assertThrows(IllegalArgumentException.class, () -> secret.toKey(algorithm));

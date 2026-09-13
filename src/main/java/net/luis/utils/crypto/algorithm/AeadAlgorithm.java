@@ -28,9 +28,10 @@ import java.util.Objects;
 /**
  * The authenticated encryption modes available in this library.<br>
  * <p>
- *     AES-128-GCM is deliberately absent.<br>
- *     A library that drops RSA on a 2030 horizon has no consistent reason to keep a 128-bit symmetric key.<br>
- *     If AES-128 is needed for external interop, that is a deliberate addition with a written justification, not a default.
+ *     {@link #AES_128_GCM} is listed last and is never a default.<br>
+ *     A library that drops RSA on a 2030 horizon has no consistent reason to pick a 128-bit symmetric key for anything new.<br>
+ *     It exists because {@code TLS_AES_128_GCM_SHA256} is the one cipher suite every TLS 1.3 peer must implement,
+ *     so the TLS record layer cannot interoperate without it.
  * </p>
  * <p>
  *     Every mode here takes a 96-bit nonce except XChaCha20-Poly1305, which takes 192 bits.<br>
@@ -67,7 +68,15 @@ public enum AeadAlgorithm {
 	 *     which is the one thing none of the 96-bit-nonce modes can offer.
 	 * </p>
 	 */
-	XCHACHA20_POLY1305("XChaCha20-Poly1305", "ChaCha20", 32, 24, 16, true);
+	XCHACHA20_POLY1305("XChaCha20-Poly1305", "ChaCha20", 32, 24, 16, true),
+	/**
+	 * AES-128 in Galois/Counter mode, served by the JDK.<br>
+	 * <p>
+	 *     This mode exists for interoperability with TLS only.<br>
+	 *     Use {@link #AES_256_GCM} for everything this library encrypts on its own.
+	 * </p>
+	 */
+	AES_128_GCM("AES/GCM/NoPadding", "AES", 16, 12, 16, false);
 	
 	/**
 	 * The JCA transformation name of this algorithm.<br>
@@ -174,7 +183,7 @@ public enum AeadAlgorithm {
 	public long randomNonceMessageLimit() {
 		return switch (this) {
 			case AES_256_GCM_SIV, XCHACHA20_POLY1305 -> Long.MAX_VALUE;
-			case AES_256_GCM, CHACHA20_POLY1305 -> 1L << 32;
+			case AES_256_GCM, AES_128_GCM, CHACHA20_POLY1305 -> 1L << 32;
 		};
 	}
 	
@@ -223,7 +232,7 @@ public enum AeadAlgorithm {
 		
 		return switch (this) {
 			case CHACHA20_POLY1305, XCHACHA20_POLY1305 -> new IvParameterSpec(nonce);
-			case AES_256_GCM, AES_256_GCM_SIV -> new GCMParameterSpec(this.tagLength * Byte.SIZE, nonce);
+			case AES_256_GCM, AES_256_GCM_SIV, AES_128_GCM -> new GCMParameterSpec(this.tagLength * Byte.SIZE, nonce);
 		};
 	}
 }

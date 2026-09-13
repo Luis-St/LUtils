@@ -210,6 +210,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.network.connection.udp;
 	exports net.luis.utils.io.network.mail;
 	exports net.luis.utils.io.network.mail.message;
+	exports net.luis.utils.io.network.tls;
 	
 	exports net.luis.utils.lang;
 	exports net.luis.utils.lang.concurrent;

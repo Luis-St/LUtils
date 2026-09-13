@@ -174,7 +174,7 @@ class AeadAlgorithmTest {
 	@Test
 	void lengthAccessorsForEveryConstant() {
 		for (AeadAlgorithm algorithm : AeadAlgorithm.values()) {
-			assertEquals(32, algorithm.keyLength());
+			assertEquals(algorithm == AeadAlgorithm.AES_128_GCM ? 16 : 32, algorithm.keyLength());
 			assertEquals(16, algorithm.tagLength());
 			assertTrue(algorithm.nonceLength() > 0);
 		}

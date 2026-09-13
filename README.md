@@ -230,6 +230,7 @@ The library provides the following packages, all of them below `net.luis.utils`:
             * `udp`
         * `mail`
             * `message`
+        * `tls`
     * `reader`
 * `lang`
     * `concurrent`
