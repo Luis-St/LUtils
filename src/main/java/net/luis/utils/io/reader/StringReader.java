@@ -25,7 +25,6 @@ import net.luis.utils.io.FileUtils;
 import net.luis.utils.math.NumberType;
 import net.luis.utils.math.Radix;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -193,6 +192,25 @@ public class StringReader {
 	 */
 	public char peek() {
 		return this.string.charAt(this.index);
+	}
+	
+	/**
+	 * Peeks the given number of characters without incrementing the index.<br>
+	 * If the amount is greater than the remaining characters, the remaining characters are returned.<br>
+	 *
+	 * @param amount The number of characters to peek
+	 * @return The peeked characters as a string
+	 * @throws IllegalArgumentException If the amount is less than or equal to zero
+	 */
+	public @NonNull String peek(int amount) {
+		if (0 >= amount) {
+			throw new IllegalArgumentException("Amount must be greater than zero");
+		}
+		
+		return this.string.substring(
+			this.index,
+			Math.min(this.index + amount, this.string.length())
+		);
 	}
 	
 	/**
@@ -431,18 +449,24 @@ public class StringReader {
 		char next = this.peek();
 		if (next == '"' || next == '\'') {
 			this.skip();
-			return this.readUntil(next);
+			return this.readUntilSkip(next);
 		}
 		return this.readUnquotedString();
 	}
 	
 	/**
 	 * Reads the string until the given terminator is found.<br>
-	 * The terminator and escape character ('\\') are read but not included in the result.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
 	 * <p>
 	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
 	 *     If the terminator is not found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned on the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
 	 * </p>
 	 *
 	 * @param terminator The terminator to read until
@@ -462,11 +486,17 @@ public class StringReader {
 	 * <p>
 	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
 	 *     If the terminator is not found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
 	 * </p>
 	 *
 	 * @param terminator The terminator to read until
-	 * @return The string which was read until the terminator
+	 * @return The string which was read until the terminator is found, inclusive of the terminator
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 */
 	public @NonNull String readUntilInclusive(char terminator) {
@@ -477,19 +507,60 @@ public class StringReader {
 	}
 	
 	/**
+	 * Reads the string until the given terminator is found.<br>
+	 * The terminator and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the terminator is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
+	 *     If the terminator is not found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
+	 *
+	 * @param terminator The terminator to read until
+	 * @return The string which was read until the terminator
+	 * @throws IllegalArgumentException If the terminator is a backslash
+	 */
+	public @NonNull String readUntilSkip(char terminator) {
+		if (terminator == '\\') {
+			throw new IllegalArgumentException("Terminator must not be a backslash");
+		}
+		
+		String str = this.readUntil(c -> c == terminator, false);
+		if (this.canRead()) {
+			this.skip();
+		}
+		return str;
+	}
+	
+	/**
 	 * Reads the string until any of the given terminators is found.<br>
-	 * The terminators and escape character ('\\') are read but not included in the result.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
 	 * <p>
 	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If any terminator is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
 	 *     If none terminator is found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned on the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
 	 * </p>
 	 *
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator
+	 * @throws NullPointerException If the terminator array is null
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
+	@SuppressWarnings("DuplicatedCode")
 	public @NonNull String readUntil(char @NonNull ... terminators) {
+		Objects.requireNonNull(terminators, "Terminators must not be null");
+		
 		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
 		if (uniqueTerminators.isEmpty()) {
 			throw new IllegalArgumentException("Terminators must not be empty");
@@ -506,14 +577,24 @@ public class StringReader {
 	 * <p>
 	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If any terminator is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
 	 *     If none terminator is found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
 	 * </p>
 	 *
 	 * @param terminators The terminators to read until
-	 * @return The string which was read until the terminator
+	 * @return The string which was read until the terminator is found, inclusive of the terminator
+	 * @throws NullPointerException If the terminator array is null
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
-	public @NonNull String readUntilInclusive(char... terminators) {
+	@SuppressWarnings("DuplicatedCode")
+	public @NonNull String readUntilInclusive(char @NonNull ... terminators) {
+		Objects.requireNonNull(terminators, "Terminators must not be null");
+		
 		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
 		if (uniqueTerminators.isEmpty()) {
 			throw new IllegalArgumentException("Terminators must not be empty");
@@ -525,32 +606,153 @@ public class StringReader {
 	}
 	
 	/**
+	 * Reads the string until any of the given terminators is found.<br>
+	 * The terminators and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If any terminator is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
+	 *     If none terminator is found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
+	 *
+	 * @param terminators The terminators to read until
+	 * @return The string which was read until the terminator
+	 * @throws NullPointerException If the terminator array is null
+	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
+	 */
+	@SuppressWarnings("DuplicatedCode")
+	public @NonNull String readUntilSkip(char @NonNull ... terminators) {
+		Objects.requireNonNull(terminators, "Terminators must not be null");
+		
+		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
+		if (uniqueTerminators.isEmpty()) {
+			throw new IllegalArgumentException("Terminators must not be empty");
+		}
+		if (uniqueTerminators.contains('\\')) {
+			throw new IllegalArgumentException("Terminators must not contain a backslash");
+		}
+		
+		String str = this.readUntil(uniqueTerminators::contains, false);
+		if (this.canRead()) {
+			this.skip();
+		}
+		return str;
+	}
+	
+	/**
+	 * Reads the string until the given predicate is true.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
+	 * <p>
+	 *     If the predicate is true at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the predicate is true in a quoted part of the string, the predicate is ignored.<br>
+	 *     If the predicate is true for an escaped character, it is ignored and the next character is read.<br>
+	 *     If the predicate is not true, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned on the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
+	 *
+	 * @param predicate The predicate to match the characters
+	 * @return The string which was read until the predicate is true
+	 * @throws NullPointerException If the predicate is null
+	 */
+	public @NonNull String readUntil(@NonNull Predicate<Character> predicate) {
+		return this.readUntil(predicate, false);
+	}
+	
+	/**
+	 * Reads the string until the given predicate is true.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
+	 * <p>
+	 *     If the predicate is true at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the predicate is true in a quoted part of the string, the predicate is ignored.<br>
+	 *     If the predicate is true for an escaped character, it is ignored and the next character is read.<br>
+	 *     If the predicate is not true, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
+	 *
+	 * @param predicate The predicate to match the characters is found, inclusive of the terminator
+	 * @return The string which was read until the predicate is true
+	 * @throws NullPointerException If the predicate is null
+	 */
+	public @NonNull String readUntilInclusive(@NonNull Predicate<Character> predicate) {
+		return this.readUntil(predicate, true);
+	}
+	
+	/**
+	 * Reads the string until the given predicate is true.<br>
+	 * The predicate and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If the predicate is true at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the predicate is true in a quoted part of the string, the predicate is ignored.<br>
+	 *     If the predicate is true for an escaped character, it is ignored and the next character is read.<br>
+	 *     If the predicate is not true, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
+	 *
+	 * @param predicate The predicate to match the characters
+	 * @return The string which was read until the predicate is true
+	 * @throws NullPointerException If the predicate is null
+	 */
+	public @NonNull String readUntilSkip(@NonNull Predicate<Character> predicate) {
+		String str = this.readUntil(predicate, false);
+		if (this.canRead()) {
+			this.skip();
+		}
+		return str;
+	}
+	
+	/**
 	 * Internal method to read the string until the given predicate is true.<br>
 	 *
 	 * @param predicate The predicate to match the characters
 	 * @param inclusive Whether the character which matches the predicate should be included in the result or not
 	 * @return The string which was read until the predicate is true
+	 * @throws NullPointerException If the predicate is null
 	 * @see #readUntil(char)
 	 * @see #readUntilInclusive(char)
+	 * @see #readUntilSkip(char)
 	 * @see #readUntil(char...)
 	 * @see #readUntilInclusive(char...)
+	 * @see #readUntilSkip(char...)
+	 * @see #readUntil(Predicate)
+	 * @see #readUntilInclusive(Predicate)
+	 * @see #readUntilSkip(Predicate)
 	 */
 	protected @NonNull String readUntil(@NonNull Predicate<Character> predicate, boolean inclusive) {
+		Objects.requireNonNull(predicate, "Predicate must not be null");
+		
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
 		boolean inDoubleQuotes = false;
 		
 		while (this.canRead()) {
-			char c = this.read();
+			char c = this.peek();
 			if (escaped) {
 				escaped = false;
 			} else if (c == '\\') {
 				escaped = true;
+				this.skip();
 				continue;
 			} else if (!inSingleQuotes && !inDoubleQuotes && predicate.test(c)) {
 				if (inclusive) {
-					builder.append(c);
+					builder.append(this.read());
 				}
 				break;
 			} else if (c == '\'') {
@@ -558,14 +760,14 @@ public class StringReader {
 			} else if (c == '\"') {
 				inDoubleQuotes = !inDoubleQuotes;
 			}
-			builder.append(c);
+			builder.append(this.read());
 		}
 		return builder.toString();
 	}
 	
 	/**
 	 * Reads the string until the given terminator string is found.<br>
-	 * The terminator string and escape character ('\\') are read but not included in the result.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
 	 * <p>
 	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator string is found in a quoted part of the string, the terminator is ignored.<br>
@@ -603,7 +805,7 @@ public class StringReader {
 	 *
 	 * @param terminator The terminating string to read until
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
-	 * @return The string which was read until the terminator
+	 * @return The string which was read until the terminator is found, inclusive of the terminator
 	 * @throws NullPointerException If the terminator string is null
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 */
@@ -622,6 +824,38 @@ public class StringReader {
 	}
 	
 	/**
+	 * Reads the string until the given terminator string is found.<br>
+	 * The terminator string and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the terminator string is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If the terminator string is not found, the rest of the string is returned.
+	 * </p>
+	 *
+	 * @param terminator The terminating string to read until
+	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
+	 * @return The string which was read until the terminator
+	 * @throws NullPointerException If the terminator string is null
+	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
+	 */
+	public @NonNull String readUntilSkip(@NonNull String terminator, boolean caseSensitive) {
+		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		if (terminator.isEmpty()) {
+			throw new IllegalArgumentException("Terminators string must not be empty");
+		}
+		if (terminator.contains("\\")) {
+			throw new IllegalArgumentException("Terminator string must not contain a backslash");
+		}
+		
+		int terminatorLength = terminator.length();
+		String str = terminatorLength == 1 ? this.readUntil(terminator.charAt(0)) : this.readUntil(terminator, caseSensitive, false);
+		if (this.canRead(terminatorLength)) {
+			this.skip(terminatorLength);
+		}
+		return str;
+	}
+	
+	/**
 	 * Internal method to read the string until the terminating string is found.<br>
 	 *
 	 * @param terminator The terminator string to read until
@@ -631,54 +865,45 @@ public class StringReader {
 	 * @throws NullPointerException If the terminator string is null
 	 * @see #readUntil(String, boolean)
 	 * @see #readUntilInclusive(String, boolean)
+	 * @see #readUntilSkip(String, boolean)
 	 */
 	@SuppressWarnings("DuplicatedCode")
 	protected @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive, boolean inclusive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
-		Predicate<String> matcher = s -> caseSensitive ? terminator.startsWith(s) : Strings.CI.startsWith(s, terminator);
-		Predicate<String> breaker = s -> caseSensitive ? terminator.equals(s) : s.equalsIgnoreCase(terminator);
+		
 		StringBuilder builder = new StringBuilder();
-		StringBuilder terminatorBuilder = new StringBuilder();
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
 		boolean inDoubleQuotes = false;
-		
 		while (this.canRead()) {
-			char c = this.read();
+			if (!inSingleQuotes && !inDoubleQuotes) {
+				String lookahead = this.peek(terminator.length());
+				boolean matches = caseSensitive ? terminator.equals(lookahead) : terminator.equalsIgnoreCase(lookahead);
+				if (matches) {
+					if (inclusive) {
+						builder.append(lookahead);
+						this.skip(terminator.length());
+					}
+					break;
+				}
+			}
+			
+			char c = this.peek();
 			if (escaped) {
 				escaped = false;
 			} else if (c == '\\') {
 				escaped = true;
+				this.skip();
 				continue;
 			} else if (c == '\'') {
 				inSingleQuotes = !inSingleQuotes;
-			} else if (c == '\"') {
+			} else if (c == '"') {
 				inDoubleQuotes = !inDoubleQuotes;
 			}
-			if (!inSingleQuotes && !inDoubleQuotes) {
-				if (terminatorBuilder.isEmpty()) {
-					if (matcher.test(String.valueOf(c))) {
-						terminatorBuilder.append(c);
-						continue;
-					}
-				} else {
-					terminatorBuilder.append(c);
-					if (breaker.test(terminatorBuilder.toString())) {
-						if (inclusive) {
-							builder.append(terminatorBuilder);
-						}
-						break;
-					}
-					
-					if (!matcher.test(terminatorBuilder.toString())) {
-						builder.append(terminatorBuilder);
-						terminatorBuilder.setLength(0);
-					}
-					continue;
-				}
-			}
-			builder.append(c);
+			
+			builder.append(this.read());
 		}
+		
 		return builder.toString();
 	}
 	
@@ -1284,6 +1509,7 @@ public class StringReader {
 	
 	/**
 	 * Internal to represent a parsed number.<br>
+	 *
 	 * @param sign The sign of the number
 	 * @param value The value of the number
 	 * @param type The type of the number
@@ -1293,6 +1519,7 @@ public class StringReader {
 		
 		/**
 		 * Constructs a new parsed number.<br>
+		 *
 		 * @param sign The sign of the number
 		 * @param value The value of the number
 		 * @param type The type of the number
@@ -1308,6 +1535,7 @@ public class StringReader {
 		/**
 		 * Returns the signed value of the number.<br>
 		 * The value is prefixed with the sign.<br>
+		 *
 		 * @return The signed value
 		 */
 		public @NonNull String getSignedValue() {
