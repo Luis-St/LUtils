@@ -19,7 +19,6 @@
 package net.luis.utils.io.reader;
 
 import net.luis.utils.exception.InvalidStringException;
-import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
 
 import java.io.Reader;
@@ -136,15 +135,21 @@ public class ScopedStringReader extends StringReader {
 	
 	/**
 	 * Reads the string until the given terminator is found.<br>
-	 * The terminator and escape character ('\\') are read but not included in the result.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
 	 * <p>
 	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
 	 *     If the terminator is not found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned on the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
 	 * </p>
 	 *
 	 * @param terminator The terminator to read until
-	 * @return The read string
+	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 */
@@ -159,11 +164,17 @@ public class ScopedStringReader extends StringReader {
 	 * <p>
 	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
 	 *     If the terminator is not found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
 	 * </p>
 	 *
 	 * @param terminator The terminator to read until
-	 * @return The read string
+	 * @return The string which was read until the terminator is found, inclusive of the terminator
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 */
@@ -173,17 +184,50 @@ public class ScopedStringReader extends StringReader {
 	}
 	
 	/**
+	 * Reads the string until the given terminator is found.<br>
+	 * The terminator and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
+	 *     If the terminator is not found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
+	 *
+	 * @param terminator The terminator to read until
+	 * @return The string which was read until the terminator
+	 * @throws IllegalArgumentException If the terminator is a backslash
+	 * @throws InvalidStringException If the scope is invalid
+	 */
+	@Override
+	public @NonNull String readUntilSkip(char terminator) {
+		return super.readUntilSkip(terminator);
+	}
+	
+	/**
 	 * Reads the string until any of the given terminators is found.<br>
-	 * The terminators and escape character ('\\') are read but not included in the result.
+	 * The escape character ('\\') is read but not included in the result.<br>
 	 * <p>
 	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If any terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
 	 *     If none terminator is found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned on the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
 	 * </p>
 	 *
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator
+	 * @throws NullPointerException If the terminator array is null
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
+	 * @throws InvalidStringException If the scope is invalid
 	 */
 	@Override
 	public @NonNull String readUntil(char @NonNull ... terminators) {
@@ -192,20 +236,129 @@ public class ScopedStringReader extends StringReader {
 	
 	/**
 	 * Reads the string until any of the given terminators is found.<br>
-	 * The escape character ('\\') is read but not included in the result.
+	 * The escape character ('\\') is read but not included in the result.<br>
 	 * <p>
 	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If any terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
 	 *     If none terminator is found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
 	 * </p>
 	 *
 	 * @param terminators The terminators to read until
-	 * @return The string which was read until the terminator
+	 * @return The string which was read until the terminator is found, inclusive of the terminator
+	 * @throws NullPointerException If the terminator array is null
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
+	 * @throws InvalidStringException If the scope is invalid
 	 */
 	@Override
 	public @NonNull String readUntilInclusive(char @NonNull ... terminators) {
 		return super.readUntilInclusive(terminators);
+	}
+	
+	/**
+	 * Reads the string until any of the given terminators is found.<br>
+	 * The terminators and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If any terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If the terminator is escaped, it is ignored and the next character is read.<br>
+	 *     If none terminator is found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
+	 *
+	 * @param terminators The terminators to read until
+	 * @return The string which was read until the terminator
+	 * @throws NullPointerException If the terminator array is null
+	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
+	 * @throws InvalidStringException If the scope is invalid
+	 */
+	@Override
+	public @NonNull String readUntilSkip(char @NonNull ... terminators) {
+		return super.readUntilSkip(terminators);
+	}
+	
+	/**
+	 * Reads the string until the given predicate is true.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
+	 * <p>
+	 *     If the predicate is true at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the predicate is true in a quoted part or in a scope, the predicate is ignored.<br>
+	 *     If the predicate is true for an escaped character, it is ignored and the next character is read.<br>
+	 *     If the predicate is not true, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned on the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
+	 *
+	 * @param predicate The predicate to match the characters
+	 * @return The string which was read until the predicate is true
+	 * @throws NullPointerException If the predicate is null
+	 * @throws InvalidStringException If the scope is invalid
+	 */
+	@Override
+	public @NonNull String readUntil(@NonNull Predicate<Character> predicate) {
+		return super.readUntil(predicate);
+	}
+	
+	/**
+	 * Reads the string until the given predicate is true.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
+	 * <p>
+	 *     If the predicate is true at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the predicate is true in a quoted part or in a scope, the predicate is ignored.<br>
+	 *     If the predicate is true for an escaped character, it is ignored and the next character is read.<br>
+	 *     If the predicate is not true, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
+	 *
+	 * @param predicate The predicate to match the characters is found, inclusive of the terminator
+	 * @return The string which was read until the predicate is true
+	 * @throws NullPointerException If the predicate is null
+	 * @throws InvalidStringException If the scope is invalid
+	 */
+	@Override
+	public @NonNull String readUntilInclusive(@NonNull Predicate<Character> predicate) {
+		return super.readUntilInclusive(predicate);
+	}
+	
+	/**
+	 * Reads the string until the given predicate is true.<br>
+	 * The predicate and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If the predicate is true at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the predicate is true in a quoted part or in a scope, the predicate is ignored.<br>
+	 *     If the predicate is true for an escaped character, it is ignored and the next character is read.<br>
+	 *     If the predicate is not true, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating character after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating character.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
+	 *
+	 * @param predicate The predicate to match the characters
+	 * @return The string which was read until the predicate is true
+	 * @throws NullPointerException If the predicate is null
+	 * @throws InvalidStringException If the scope is invalid
+	 */
+	@Override
+	public @NonNull String readUntilSkip(@NonNull Predicate<Character> predicate) {
+		return super.readUntilSkip(predicate);
 	}
 	
 	/**
@@ -214,14 +367,22 @@ public class ScopedStringReader extends StringReader {
 	 * @param predicate The predicate to match the characters
 	 * @param inclusive Whether the character which matches the predicate should be included in the result or not
 	 * @return The string which was read until the predicate is true
+	 * @throws NullPointerException If the predicate is null
 	 * @see #readUntil(char)
 	 * @see #readUntilInclusive(char)
+	 * @see #readUntilSkip(char)
 	 * @see #readUntil(char...)
 	 * @see #readUntilInclusive(char...)
+	 * @see #readUntilSkip(char...)
+	 * @see #readUntil(Predicate)
+	 * @see #readUntilInclusive(Predicate)
+	 * @see #readUntilSkip(Predicate)
 	 */
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	protected @NonNull String readUntil(@NonNull Predicate<Character> predicate, boolean inclusive) {
+		Objects.requireNonNull(predicate, "Predicate must not be null");
+		
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
@@ -229,15 +390,16 @@ public class ScopedStringReader extends StringReader {
 		Deque<Character> stack = new ArrayDeque<>();
 		
 		while (this.canRead()) {
-			char c = this.read();
+			char c = this.peek();
 			if (escaped) {
 				escaped = false;
 			} else if (c == '\\') {
 				escaped = true;
+				this.skip();
 				continue;
 			} else if (!inSingleQuotes && !inDoubleQuotes && predicate.test(c) && stack.isEmpty()) {
 				if (inclusive) {
-					builder.append(c);
+					builder.append(this.read());
 				}
 				break;
 			} else if (c == '\'') {
@@ -249,7 +411,7 @@ public class ScopedStringReader extends StringReader {
 			} else if (!stack.isEmpty() && SCOPE_REGISTRY.get(stack.peek()) == c) {
 				stack.pop();
 			}
-			builder.append(c);
+			builder.append(this.read());
 		}
 		
 		if (!stack.isEmpty()) {
@@ -261,11 +423,16 @@ public class ScopedStringReader extends StringReader {
 	
 	/**
 	 * Reads the string until the given terminator string is found.<br>
-	 * The terminator string and escape character ('\\') are read but not included in the result.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
 	 * <p>
 	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator string is found in a quoted part or in a scope, the terminator is ignored.<br>
 	 *     If the terminator string is not found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned on the first character of the terminating string after this method is called.<br>
+	 *     The next call to {@link #read()} will return the first character of the terminating string.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
 	 * </p>
 	 *
 	 * @param terminator The terminating string to read until
@@ -273,6 +440,7 @@ public class ScopedStringReader extends StringReader {
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator string is null
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
+	 * @throws InvalidStringException If the scope is invalid
 	 */
 	@Override
 	public @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive) {
@@ -287,16 +455,48 @@ public class ScopedStringReader extends StringReader {
 	 *     If the terminator string is found in a quoted part or in a scope, the terminator is ignored.<br>
 	 *     If the terminator string is not found, the rest of the string is returned.
 	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating string after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating string.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
+	 *
+	 * @param terminator The terminating string to read until
+	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
+	 * @return The string which was read until the terminator is found, inclusive of the terminator
+	 * @throws NullPointerException If the terminator string is null
+	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
+	 * @throws InvalidStringException If the scope is invalid
+	 */
+	@Override
+	public @NonNull String readUntilInclusive(@NonNull String terminator, boolean caseSensitive) {
+		return super.readUntilInclusive(terminator, caseSensitive);
+	}
+	
+	/**
+	 * Reads the string until the given terminator string is found.<br>
+	 * The terminator string and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the terminator string is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If the terminator string is not found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating string after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating string.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
 	 *
 	 * @param terminator The terminating string to read until
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator string is null
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
+	 * @throws InvalidStringException If the scope is invalid
 	 */
 	@Override
-	public @NonNull String readUntilInclusive(@NonNull String terminator, boolean caseSensitive) {
-		return super.readUntilInclusive(terminator, caseSensitive);
+	public @NonNull String readUntilSkip(@NonNull String terminator, boolean caseSensitive) {
+		return super.readUntilSkip(terminator, caseSensitive);
 	}
 	
 	/**
@@ -307,34 +507,52 @@ public class ScopedStringReader extends StringReader {
 	 * @param inclusive Whether the terminator string should be included in the result or not
 	 * @return The string which was read until the equals predicate is true
 	 * @throws NullPointerException If the terminator string is null
+	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
+	 * @throws InvalidStringException If the scope is invalid
 	 * @see #readUntil(String, boolean)
 	 * @see #readUntilInclusive(String, boolean)
+	 * @see #readUntilSkip(String, boolean)
 	 */
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	protected @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive, boolean inclusive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		if (terminator.isEmpty()) {
+			throw new IllegalArgumentException("Terminators string must not be empty");
+		}
+		if (terminator.contains("\\")) {
+			throw new IllegalArgumentException("Terminator string must not contain a backslash");
+		}
 		
-		Predicate<String> matcher = s -> caseSensitive ? terminator.startsWith(s) : Strings.CI.startsWith(s, terminator);
-		Predicate<String> breaker = s -> caseSensitive ? terminator.equals(s) : s.equalsIgnoreCase(terminator);
 		StringBuilder builder = new StringBuilder();
-		StringBuilder terminatorBuilder = new StringBuilder();
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
 		boolean inDoubleQuotes = false;
 		Deque<Character> stack = new ArrayDeque<>();
 		
 		while (this.canRead()) {
-			char c = this.read();
+			if (!inSingleQuotes && !inDoubleQuotes && stack.isEmpty()) {
+				String lookahead = this.peek(terminator.length());
+				boolean matches = caseSensitive ? terminator.equals(lookahead) : terminator.equalsIgnoreCase(lookahead);
+				if (matches) {
+					if (inclusive) {
+						builder.append(lookahead);
+						this.skip(terminator.length());
+					}
+					break;
+				}
+			}
 			
+			char c = this.peek();
 			if (escaped) {
 				escaped = false;
 			} else if (c == '\\') {
 				escaped = true;
+				this.skip();
 				continue;
 			} else if (c == '\'') {
 				inSingleQuotes = !inSingleQuotes;
-			} else if (c == '\"') {
+			} else if (c == '"') {
 				inDoubleQuotes = !inDoubleQuotes;
 			} else if (SCOPE_REGISTRY.containsKey(c)) {
 				stack.push(c);
@@ -342,28 +560,7 @@ public class ScopedStringReader extends StringReader {
 				stack.pop();
 			}
 			
-			if (!inSingleQuotes && !inDoubleQuotes && stack.isEmpty()) {
-				if (terminatorBuilder.isEmpty()) {
-					if (matcher.test(String.valueOf(c))) {
-						terminatorBuilder.append(c);
-						continue;
-					}
-				} else {
-					terminatorBuilder.append(c);
-					if (breaker.test(terminatorBuilder.toString())) {
-						if (inclusive) {
-							builder.append(terminatorBuilder);
-						}
-						break;
-					}
-					if (!matcher.test(terminatorBuilder.toString())) {
-						builder.append(terminatorBuilder);
-						terminatorBuilder.setLength(0);
-					}
-					continue;
-				}
-			}
-			builder.append(c);
+			builder.append(this.read());
 		}
 		
 		if (!stack.isEmpty()) {
@@ -411,7 +608,7 @@ public class ScopedStringReader extends StringReader {
 				break;
 			}
 			
-			String value = reader.readUntil(',').strip();
+			String value = reader.readUntilSkip(',').strip();
 			if (value.isEmpty()) {
 				continue;
 			}
@@ -498,14 +695,14 @@ public class ScopedStringReader extends StringReader {
 		}
 		
 		Map<K, V> map = new HashMap<>();
-		Collection<String> entries = this.readCollection(CURLY_BRACKETS, reader -> reader.readUntil(',').strip());
+		Collection<String> entries = this.readCollection(CURLY_BRACKETS, reader -> reader.readUntilSkip(',').strip());
 		for (String entry : entries) {
 			if (!entry.contains("=")) {
 				throw new InvalidStringException("Invalid map entry, expected 'key=value' but got: '" + entry + "'");
 			}
 			
 			ScopedStringReader reader = new ScopedStringReader(entry);
-			K key = keyParser.apply(new ScopedStringReader(reader.readUntil('=').strip()));
+			K key = keyParser.apply(new ScopedStringReader(reader.readUntilSkip('=').strip()));
 			V value = valueParser.apply(new ScopedStringReader(reader.readRemaining().strip()));
 			map.put(key, value);
 		}

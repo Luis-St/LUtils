@@ -144,7 +144,7 @@ public class XmlReader implements AutoCloseable {
 			
 			this.reader.skipWhitespaces();
 			StringReader declarationReader = new StringReader(this.reader.readScope(StringScope.ANGLE_BRACKETS));
-			String type = declarationReader.readUntil(' ');
+			String type = declarationReader.readUntilSkip(' ');
 			if (!"<?xml".equalsIgnoreCase(type)) {
 				throw new XmlSyntaxException("Expected xml declaration, but found: '" + declarationReader.getString() + "'");
 			}
@@ -239,7 +239,7 @@ public class XmlReader implements AutoCloseable {
 				elementReader.skipWhitespaces();
 			}
 			
-			String name = elementReader.readUntil(' ');
+			String name = elementReader.readUntilSkip(' ');
 			if (name.isBlank()) {
 				throw new XmlSyntaxException("Expected element name, but found none");
 			}
@@ -380,7 +380,7 @@ public class XmlReader implements AutoCloseable {
 						throw new XmlSyntaxException("Expected element name, but found too many whitespaces after '/'");
 					}
 					
-					String elementName = reader.readUntil('>').strip();
+					String elementName = reader.readUntilSkip('>').strip();
 					if (elementName.isEmpty()) {
 						throw new XmlSyntaxException("Expected closing element for '" + name + "', but found none");
 					}
@@ -400,7 +400,7 @@ public class XmlReader implements AutoCloseable {
 					}
 					
 					if (elementName.charAt(elementName.length() - 1) == ' ') {
-						String remainingElement = reader.readUntil('>').stripTrailing();
+						String remainingElement = reader.readUntilSkip('>').stripTrailing();
 						if (remainingElement.charAt(remainingElement.length() - 1) == '/') {
 							continue;
 						}
