@@ -188,9 +188,11 @@ class ScopedStringReaderTest {
 		ScopedStringReader reader = new ScopedStringReader("this is a 'test string' (with scope) {and more}");
 		
 		assertEquals("this is a ", reader.readUntil('\''));
-		assertEquals("test string", reader.readUntil('\''));
 		reader.skip();
+		assertEquals("test string", reader.readUntil('\''));
+		reader.skip(2);
 		assertEquals("(with scope)", reader.readUntil(' '));
+		reader.skip();
 		assertEquals("{and more}", reader.readUntil(' '));
 	}
 	
@@ -214,6 +216,7 @@ class ScopedStringReaderTest {
 		ScopedStringReader reader = new ScopedStringReader("text (with test inside) test here");
 		
 		assertEquals("text (with test inside) ", reader.readUntil("test", true));
+		reader.skip(4);
 		assertEquals(" here", reader.readRemaining());
 	}
 	

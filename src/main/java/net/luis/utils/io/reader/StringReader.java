@@ -773,6 +773,11 @@ public class StringReader {
 	 *     If the terminator string is found in a quoted part of the string, the terminator is ignored.<br>
 	 *     If the terminator string is not found, the rest of the string is returned.
 	 * </p>
+	 * <p>
+	 *     The cursor will be positioned on the first character of the terminating string after this method is called.<br>
+	 *     The next call to {@link #read()} will return the first character of the terminating string.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
 	 *
 	 * @param terminator The terminating string to read until
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
@@ -788,9 +793,6 @@ public class StringReader {
 		if (terminator.length() == 1) {
 			return this.readUntil(terminator.charAt(0));
 		}
-		if (terminator.contains("\\")) {
-			throw new IllegalArgumentException("Terminator string must not contain a backslash");
-		}
 		return this.readUntil(terminator, caseSensitive, false);
 	}
 	
@@ -801,6 +803,11 @@ public class StringReader {
 	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator string is found in a quoted part of the string, the terminator is ignored.<br>
 	 *     If the terminator string is not found, the rest of the string is returned.
+	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating string after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating string.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
 	 * </p>
 	 *
 	 * @param terminator The terminating string to read until
@@ -817,9 +824,6 @@ public class StringReader {
 		if (terminator.length() == 1) {
 			return this.readUntilInclusive(terminator.charAt(0));
 		}
-		if (terminator.contains("\\")) {
-			throw new IllegalArgumentException("Terminator string must not contain a backslash");
-		}
 		return this.readUntil(terminator, caseSensitive, true);
 	}
 	
@@ -831,6 +835,11 @@ public class StringReader {
 	 *     If the terminator string is found in a quoted part of the string, the terminator is ignored.<br>
 	 *     If the terminator string is not found, the rest of the string is returned.
 	 * </p>
+	 * <p>
+	 *     The cursor will be positioned after the terminating string after this method is called.<br>
+	 *     The next call to {@link #read()} will return the character after the terminating string.<br>
+	 *     If the terminating character is not found, the cursor will be positioned at the end of the string.
+	 * </p>
 	 *
 	 * @param terminator The terminating string to read until
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
@@ -840,12 +849,6 @@ public class StringReader {
 	 */
 	public @NonNull String readUntilSkip(@NonNull String terminator, boolean caseSensitive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
-		if (terminator.isEmpty()) {
-			throw new IllegalArgumentException("Terminators string must not be empty");
-		}
-		if (terminator.contains("\\")) {
-			throw new IllegalArgumentException("Terminator string must not contain a backslash");
-		}
 		
 		int terminatorLength = terminator.length();
 		String str = terminatorLength == 1 ? this.readUntil(terminator.charAt(0)) : this.readUntil(terminator, caseSensitive, false);
@@ -863,6 +866,7 @@ public class StringReader {
 	 * @param inclusive Whether the terminator string should be included in the result or not
 	 * @return The string which was read until the equals predicate is true
 	 * @throws NullPointerException If the terminator string is null
+	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 * @see #readUntil(String, boolean)
 	 * @see #readUntilInclusive(String, boolean)
 	 * @see #readUntilSkip(String, boolean)
@@ -870,6 +874,12 @@ public class StringReader {
 	@SuppressWarnings("DuplicatedCode")
 	protected @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive, boolean inclusive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		if (terminator.isEmpty()) {
+			throw new IllegalArgumentException("Terminators string must not be empty");
+		}
+		if (terminator.contains("\\")) {
+			throw new IllegalArgumentException("Terminator string must not contain a backslash");
+		}
 		
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
