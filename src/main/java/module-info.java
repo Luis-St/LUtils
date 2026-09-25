@@ -208,6 +208,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.network.connection.ssl;
 	exports net.luis.utils.io.network.connection.tcp;
 	exports net.luis.utils.io.network.connection.udp;
+	exports net.luis.utils.io.network.icmp;
 	exports net.luis.utils.io.network.mail;
 	exports net.luis.utils.io.network.mail.message;
 	exports net.luis.utils.io.network.tls;
