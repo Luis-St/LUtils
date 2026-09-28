@@ -23,14 +23,18 @@ import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
 import net.luis.utils.io.network.address.ipv6.Ipv6Address;
 import net.luis.utils.io.network.connection.NetworkServer;
+import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import java.io.*;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
@@ -44,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
+@Isolated
 @Timeout(value = 60, unit = TimeUnit.SECONDS)
 class SslServerTest {
 	
@@ -62,28 +67,57 @@ class SslServerTest {
 		supportedCipherSuite = serverContext.getSupportedSSLParameters().getCipherSuites()[0];
 	}
 	
-	private static SslServerConfig defaultConfig() {
+	private static @NonNull SslServerConfig defaultConfig() {
 		return SslServerConfig.builder(serverContext).build();
 	}
 	
-	private static void withServer(SslServerConfig config, ServerBody body) throws Exception {
+	private static void withServer(@NonNull SslServerConfig config, @NonNull ServerBody body) throws Exception {
 		try (SslServer server = new SslServer(EPHEMERAL, config)) {
 			server.start();
 			body.accept(server);
 		}
 	}
 	
-	private static SSLSocket connect(SslServer server) throws Exception {
+	private static @NonNull SSLSocket connect(@NonNull SslServer server) throws Exception {
 		SSLSocket socket = (SSLSocket) clientContext.getSocketFactory().createSocket("127.0.0.1", server.boundEndpoint().port());
 		socket.startHandshake();
 		return socket;
 	}
 	
-	private static void awaitClientCount(SslServer server, int expected) throws Exception {
+	private static void awaitClientCount(@NonNull SslServer server, int expected) throws Exception {
 		for (int attempt = 0; attempt < 400 && server.getClientCount() != expected; attempt++) {
 			Thread.sleep(25);
 		}
 		assertEquals(expected, server.getClientCount());
+	}
+	
+	private static @NonNull SslServerConfig echoConfig() {
+		return SslServerConfig.builder(serverContext).onMessage((server, connection, data) -> {
+			try {
+				connection.send(data);
+			} catch (NetworkConnectionException _) {}
+		}).build();
+	}
+	
+	private static @NonNull ServedClient serveClient(@NonNull SslServer server) throws Exception {
+		Socket plain;
+		Socket accepted;
+		try (ServerSocket listener = new ServerSocket(0, 50, InetAddress.getLoopbackAddress())) {
+			plain = new Socket("127.0.0.1", listener.getLocalPort());
+			accepted = listener.accept();
+		}
+		
+		SslConnection connection = SslConnection.upgrade(accepted, new byte[0], defaultConfig());
+		Thread serving = Thread.ofVirtual().start(() -> server.serve(connection));
+		SSLSocket socket = (SSLSocket) clientContext.getSocketFactory().createSocket(plain, "127.0.0.1", plain.getPort(), true);
+		socket.setSoTimeout(5000);
+		return new ServedClient(socket, connection, serving);
+	}
+	
+	private static void assertClosedByServer(@NonNull SSLSocket socket) {
+		try {
+			assertEquals(-1, socket.getInputStream().read());
+		} catch (IOException _) {}
 	}
 	
 	@Test
@@ -876,9 +910,225 @@ class SslServerTest {
 		assertEquals(NetworkErrorType.HANDSHAKE_FAILED, reported.get());
 	}
 	
+	@Test
+	void serveWithNullConnection() {
+		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
+			assertThrows(NullPointerException.class, () -> server.serve(null));
+		}
+	}
+	
+	@Test
+	void serveWithoutStartRunsReceiveLoop() throws Exception {
+		try (SslServer server = new SslServer(EPHEMERAL, echoConfig()); ServedClient served = serveClient(server)) {
+			served.socket().startHandshake();
+			
+			NetworkUtils.writeFrame(served.socket().getOutputStream(), "served".getBytes());
+			assertArrayEquals("served".getBytes(), NetworkUtils.readFrame(served.socket().getInputStream(), 1024));
+			assertFalse(server.isRunning());
+		}
+	}
+	
+	@Test
+	void serveOnStartedServer() throws Exception {
+		withServer(echoConfig(), server -> {
+			try (SSLSocket accepted = connect(server); ServedClient served = serveClient(server)) {
+				served.socket().startHandshake();
+				awaitClientCount(server, 2);
+				
+				NetworkUtils.writeFrame(served.socket().getOutputStream(), "served".getBytes());
+				assertArrayEquals("served".getBytes(), NetworkUtils.readFrame(served.socket().getInputStream(), 1024));
+				assertTrue(accepted.isConnected());
+			}
+		});
+	}
+	
+	@Test
+	void serveWithConnectionHandler() throws Exception {
+		AtomicReference<SslServer> serverRef = new AtomicReference<>();
+		AtomicReference<SslConnection> connectionRef = new AtomicReference<>();
+		SslServerConfig config = SslServerConfig.builder(serverContext).onConnection((server, connection) -> {
+			serverRef.set(server);
+			connectionRef.set(connection);
+		}).build();
+		
+		try (SslServer server = new SslServer(EPHEMERAL, config); ServedClient served = serveClient(server)) {
+			served.socket().startHandshake();
+			served.serving().join(5000);
+			
+			assertFalse(served.serving().isAlive());
+			assertSame(server, serverRef.get());
+			assertSame(served.connection(), connectionRef.get());
+			assertFalse(served.connection().isActive());
+		}
+	}
+	
+	@Test
+	void serveFiresConnectAndDisconnectHandlers() throws Exception {
+		List<Object> connects = new CopyOnWriteArrayList<>();
+		List<Object> disconnects = new CopyOnWriteArrayList<>();
+		SslServerConfig config = SslServerConfig.builder(serverContext)
+			.onClientConnect((connection, local, remote, timestamp) -> connects.add(connection))
+			.onClientDisconnect((connection, local, remote, timestamp) -> disconnects.add(connection))
+			.build();
+		
+		try (SslServer server = new SslServer(EPHEMERAL, config); ServedClient served = serveClient(server)) {
+			served.socket().startHandshake();
+			served.socket().close();
+			served.serving().join(5000);
+			
+			assertEquals(List.of(served.connection()), connects);
+			assertEquals(List.of(served.connection()), disconnects);
+		}
+	}
+	
+	@Test
+	void serveHandshakeFailureReportedToErrorHandler() throws Exception {
+		AtomicInteger connects = new AtomicInteger();
+		CountDownLatch errored = new CountDownLatch(1);
+		SslServerConfig config = SslServerConfig.builder(serverContext)
+			.onClientConnect((connection, local, remote, timestamp) -> connects.incrementAndGet())
+			.onError((connection, errorType, message, cause) -> errored.countDown())
+			.build();
+		
+		try (SslServer server = new SslServer(EPHEMERAL, config); ServerSocket listener = new ServerSocket(0, 50, InetAddress.getLoopbackAddress());
+			 Socket plain = new Socket("127.0.0.1", listener.getLocalPort()); Socket accepted = listener.accept()) {
+			SslConnection connection = SslConnection.upgrade(accepted, new byte[0], config);
+			Thread serving = Thread.ofVirtual().start(() -> server.serve(connection));
+			
+			plain.getOutputStream().write("NOT-TLS\n".getBytes());
+			plain.getOutputStream().flush();
+			serving.join(5000);
+			
+			assertFalse(serving.isAlive());
+			assertTrue(errored.await(5, TimeUnit.SECONDS));
+			assertEquals(0, connects.get());
+		}
+	}
+	
+	@Test
+	void serveRegistersConnectionWhileServed() throws Exception {
+		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig()); ServedClient served = serveClient(server)) {
+			served.socket().startHandshake();
+			
+			awaitClientCount(server, 1);
+		}
+	}
+	
+	@Test
+	void serveRemovesConnectionAfterReturn() throws Exception {
+		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig()); ServedClient served = serveClient(server)) {
+			served.socket().startHandshake();
+			awaitClientCount(server, 1);
+			
+			served.socket().close();
+			served.serving().join(5000);
+			assertEquals(0, server.getClientCount());
+		}
+	}
+	
+	@Test
+	void serveReturnsWhenConnectionEnds() throws Exception {
+		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig()); ServedClient served = serveClient(server)) {
+			served.socket().startHandshake();
+			assertTrue(served.serving().isAlive());
+			
+			served.socket().close();
+			served.serving().join(5000);
+			assertFalse(served.serving().isAlive());
+		}
+	}
+	
+	@Test
+	void stopBeforeStartClosesServedConnections() throws Exception {
+		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig()); ServedClient served = serveClient(server)) {
+			served.socket().startHandshake();
+			awaitClientCount(server, 1);
+			
+			server.stop();
+			assertClosedByServer(served.socket());
+			assertEquals(0, server.getClientCount());
+			assertFalse(server.isRunning());
+		}
+	}
+	
+	@Test
+	void stopBeforeStartWithoutConnectionsIsNoOp() {
+		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
+			assertDoesNotThrow(server::stop);
+			assertEquals(0, server.getClientCount());
+			assertFalse(server.isRunning());
+		}
+	}
+	
+	@Test
+	void stopAfterStartClosesServedAndAcceptedConnections() throws Exception {
+		withServer(defaultConfig(), server -> {
+			try (SSLSocket accepted = connect(server); ServedClient served = serveClient(server)) {
+				served.socket().startHandshake();
+				awaitClientCount(server, 2);
+				
+				server.stop();
+				assertClosedByServer(accepted);
+				assertClosedByServer(served.socket());
+				assertFalse(server.isRunning());
+			}
+		});
+	}
+	
+	@Test
+	void broadcastReachesServedConnection() throws Exception {
+		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig()); ServedClient served = serveClient(server)) {
+			served.socket().startHandshake();
+			awaitClientCount(server, 1);
+			
+			server.broadcast("broadcast".getBytes());
+			assertArrayEquals("broadcast".getBytes(), NetworkUtils.readFrame(served.socket().getInputStream(), 1024));
+		}
+	}
+	
+	@Test
+	void serveMultipleConnectionsConcurrently() throws Exception {
+		try (SslServer server = new SslServer(EPHEMERAL, echoConfig());
+			 ServedClient first = serveClient(server); ServedClient second = serveClient(server); ServedClient third = serveClient(server)) {
+			List<ServedClient> clients = List.of(first, second, third);
+			for (ServedClient served : clients) {
+				served.socket().startHandshake();
+			}
+			awaitClientCount(server, 3);
+			
+			for (int i = 0; i < clients.size(); i++) {
+				byte[] data = ("client-" + i).getBytes();
+				NetworkUtils.writeFrame(clients.get(i).socket().getOutputStream(), data);
+				assertArrayEquals(data, NetworkUtils.readFrame(clients.get(i).socket().getInputStream(), 1024));
+			}
+		}
+	}
+	
+	@Test
+	void serveAfterStopStillWorks() throws Exception {
+		try (SslServer server = new SslServer(EPHEMERAL, echoConfig())) {
+			server.start();
+			server.stop();
+			
+			try (ServedClient served = serveClient(server)) {
+				served.socket().startHandshake();
+				NetworkUtils.writeFrame(served.socket().getOutputStream(), "after".getBytes());
+				assertArrayEquals("after".getBytes(), NetworkUtils.readFrame(served.socket().getInputStream(), 1024));
+			}
+		}
+	}
+	
 	@FunctionalInterface
 	private interface ServerBody {
 		
 		void accept(SslServer server) throws Exception;
+	}
+	
+	private record ServedClient(@NonNull SSLSocket socket, @NonNull SslConnection connection, @NonNull Thread serving) implements AutoCloseable {
+		
+		@Override
+		public void close() throws IOException {
+			this.socket.close();
+		}
 	}
 }

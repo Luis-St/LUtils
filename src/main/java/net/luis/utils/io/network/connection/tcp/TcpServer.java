@@ -236,14 +236,17 @@ public final class TcpServer implements NetworkServer {
 	
 	/**
 	 * Returns the number of currently connected clients.<br>
+	 * Connections that were upgraded to TLS are not counted, because they are no longer plain TCP clients.<br>
+	 *
 	 * @return The number of active connections
 	 */
 	public int getClientCount() {
-		return this.connections.size();
+		return (int) this.connections.stream().filter(connection -> !connection.isUpgraded()).count();
 	}
 	
 	/**
 	 * Broadcasts data to all connected clients.<br>
+	 * Connections that were upgraded to TLS are skipped, because plain data would corrupt their TLS stream.<br>
 	 *
 	 * @param data The data to broadcast
 	 * @throws NullPointerException If data is null
@@ -252,7 +255,7 @@ public final class TcpServer implements NetworkServer {
 		Objects.requireNonNull(data, "Data must not be null");
 		
 		for (TcpConnection connection : this.connections) {
-			if (connection.isActive()) {
+			if (connection.isActive() && !connection.isUpgraded()) {
 				try {
 					connection.send(data);
 				} catch (NetworkConnectionException e) {

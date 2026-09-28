@@ -205,6 +205,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.network.connection.event;
 	exports net.luis.utils.io.network.connection.exception;
 	exports net.luis.utils.io.network.connection.executor;
+	exports net.luis.utils.io.network.connection.hybrid;
 	exports net.luis.utils.io.network.connection.ssl;
 	exports net.luis.utils.io.network.connection.tcp;
 	exports net.luis.utils.io.network.connection.udp;

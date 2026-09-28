@@ -23,12 +23,14 @@ import net.luis.utils.io.network.connection.*;
 import net.luis.utils.io.network.connection.context.ConnectionContext;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import javax.net.ssl.*;
 import java.io.*;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.time.Duration;
 import java.util.Objects;
 
@@ -104,6 +106,59 @@ public final class SslConnection implements Connection {
 		this.bufferSize = bufferSize;
 		this.framing = framing;
 		this.readTimeout = Objects.requireNonNull(readTimeout, "Read timeout must not be null");
+	}
+	
+	/**
+	 * Layers TLS over an already connected plaintext socket in server mode and returns the secured connection.<br>
+	 * <p>
+	 *     This is how a server that accepted a connection as plaintext switches it to TLS, for example after it detected a TLS handshake on a port shared with plaintext.<br>
+	 *     The given consumed bytes are the input that was already read from the socket, they are processed before any further input of the socket.<br>
+	 *     The enabled protocols, the enabled cipher suites, the client authentication mode and the client socket options are taken from the given configuration.<br>
+	 *     The TLS handshake is not started here, it is performed by the server that serves the connection or implicitly on the first read or write.
+	 * </p>
+	 * <p>
+	 *     The returned connection owns the socket, so closing it closes the underlying socket.<br>
+	 *     If the upgrade fails, ownership stays with the caller, which is responsible for closing the socket.
+	 * </p>
+	 *
+	 * @param socket The connected plaintext socket to upgrade
+	 * @param consumed The input that was already read from the socket
+	 * @param config The configuration of the secured connection
+	 * @return The secured connection
+	 * @throws NullPointerException If socket, consumed, or config is null
+	 * @throws NetworkConnectionException If the socket is not connected or cannot be layered with TLS
+	 * @see SslServer#serve(SslConnection)
+	 */
+	public static @NonNull SslConnection upgrade(@NonNull Socket socket, byte @NonNull [] consumed, @NonNull SslServerConfig config) throws NetworkConnectionException {
+		Objects.requireNonNull(socket, "Socket must not be null");
+		Objects.requireNonNull(consumed, "Consumed data must not be null");
+		Objects.requireNonNull(config, "Config must not be null");
+		if (socket.isClosed() || !socket.isConnected()) {
+			throw new NetworkConnectionException("Socket is not connected", NetworkErrorType.NOT_CONNECTED);
+		}
+		
+		IpEndpoint endpoint = IpEndpoint.from((InetSocketAddress) socket.getRemoteSocketAddress());
+		try {
+			SSLSocket sslSocket = (SSLSocket) config.sslContext().getSocketFactory().createSocket(socket, new ByteArrayInputStream(consumed), true);
+			if (!config.enabledProtocols().isEmpty()) {
+				sslSocket.setEnabledProtocols(TlsProtocol.toProtocolNames(config.enabledProtocols()));
+			}
+			if (!config.enabledCipherSuites().isEmpty()) {
+				sslSocket.setEnabledCipherSuites(config.enabledCipherSuites().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+			}
+			switch (config.clientAuth()) {
+				case NONE -> {}
+				case REQUESTED -> sslSocket.setWantClientAuth(true);
+				case REQUIRED -> sslSocket.setNeedClientAuth(true);
+			}
+			
+			sslSocket.setTcpNoDelay(config.tcpNoDelay());
+			sslSocket.setKeepAlive(config.keepAlive());
+			sslSocket.setSoTimeout((int) Math.min(Integer.MAX_VALUE, config.clientReadTimeout().toMillis()));
+			return new SslConnection(sslSocket, config.clientBufferSize(), config.framing(), config.clientReadTimeout());
+		} catch (IOException e) {
+			throw new NetworkConnectionException("Failed to upgrade connection to TLS", e, NetworkErrorType.IO_ERROR, endpoint);
+		}
 	}
 	
 	/**

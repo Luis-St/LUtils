@@ -24,6 +24,7 @@ import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.event.ConnectionHandler;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
+import net.luis.utils.io.network.connection.tcp.TcpConnection;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 
@@ -46,10 +47,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     The {@code onClientConnect} handler is only invoked after a successful handshake.
  * </p>
  * <p>
- *     By default the server drives the read loop itself and reports each received message to the configured message handler.<br>
- *     A {@link ConnectionHandler} can be configured instead, which is called once per client after the handshake and owns the
- *     connection and its decrypted streams for the whole session, while the server keeps managing the thread, the connection
- *     registry, and the shutdown.
+ *     By default, the server drives the read loop itself and reports each received message to the configured message handler.<br>
+ *     A {@link ConnectionHandler} can be configured instead, which is called once per client after the handshake and owns the connection and its decrypted streams for the whole session,
+ *     while the server keeps managing the thread, the connection registry, and the shutdown.
+ * </p>
+ * <p>
+ *     Connections that were established outside of this server, such as plain TCP connections upgraded to TLS, can be served through {@link #serve(SslConnection)}.<br>
+ *     They are handled like accepted connections, even if the server itself was never started.
  * </p>
  * <p>
  *     Example usage:
@@ -197,14 +201,16 @@ public final class SslServer implements NetworkServer {
 	
 	@Override
 	public void stop() {
-		if (!this.running.getAndSet(false)) {
-			return;
-		}
+		boolean wasRunning = this.running.getAndSet(false);
 		
 		for (SslConnection connection : this.connections) {
 			connection.close();
 		}
 		this.connections.clear();
+		
+		if (!wasRunning) {
+			return;
+		}
 		
 		if (this.serverSocket != null && !this.serverSocket.isClosed()) {
 			try {
@@ -217,6 +223,31 @@ public final class SslServer implements NetworkServer {
 		}
 		
 		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
+	}
+	
+	/**
+	 * Serves a client connection that was established outside of this server on the calling thread.<br>
+	 * <p>
+	 *     This is how a connection that was accepted as plain TCP and upgraded with {@link TcpConnection#upgrade(SslServerConfig)} is served.<br>
+	 *     The connection is handled exactly like an accepted one.<br>
+	 *     The TLS handshake is performed and the connect handler is called.<br>
+	 *     Afterward the connection is handed to the connection handler or read by the built-in read loop.<br>
+	 *     The disconnect handler is called before the connection is closed.<br>
+	 *     While it is served, the connection is registered with this server, so it is part of {@link #broadcast(byte[])} and {@link #getClientCount()}.
+	 * </p>
+	 * <p>
+	 *     The server does not have to be started to serve connections, and {@link #stop()} closes the served connections in either case.<br>
+	 *     This method returns once the connection ended.
+	 * </p>
+	 *
+	 * @param connection The established connection to serve
+	 * @throws NullPointerException If connection is null
+	 */
+	public void serve(@NonNull SslConnection connection) {
+		Objects.requireNonNull(connection, "Connection must not be null");
+		
+		this.connections.add(connection);
+		this.handleClient(connection);
 	}
 	
 	/**
@@ -366,7 +397,7 @@ public final class SslServer implements NetworkServer {
 	private void receiveLoop(@NonNull SslConnection connection) throws NetworkConnectionException {
 		Objects.requireNonNull(connection, "Connection must not be null");
 		
-		while (this.running.get() && connection.isActive()) {
+		while (connection.isActive()) {
 			byte[] data = connection.receive();
 			
 			if (data.length == 0) {

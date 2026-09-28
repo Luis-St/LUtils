@@ -24,14 +24,16 @@ import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.context.ConnectionContext;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.*;
 
 import javax.net.ssl.*;
 import java.io.*;
-import java.net.InetSocketAddress;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -54,23 +56,23 @@ class SslConnectionTest {
 		clientContext = SslTestContext.clientContext();
 	}
 	
-	private static byte[] filled(int length, byte value) {
+	private static byte @NonNull [] filled(int length, byte value) {
 		byte[] data = new byte[length];
 		Arrays.fill(data, value);
 		return data;
 	}
 	
-	private static void writeAndFlush(SSLSocket socket, byte[] data) throws Exception {
+	private static void writeAndFlush(@NonNull SSLSocket socket, byte[] data) throws Exception {
 		NetworkUtils.writeFrame(socket.getOutputStream(), data);
 	}
 	
-	private static byte[] receiveExactly(SslConnection connection, int expected, int maxBytes) throws Exception {
+	private static byte @NonNull [] receiveExactly(@NonNull SslConnection connection, int expected, int maxBytes) throws Exception {
 		byte[] received = connection.receive(maxBytes);
 		assertEquals(expected, received.length);
 		return received;
 	}
 	
-	private static byte[] readUntil(SslConnection connection, int expected, int maxBytes) throws Exception {
+	private static byte @NonNull [] readUntil(@NonNull SslConnection connection, int expected, int maxBytes) throws Exception {
 		ByteArrayOutputStream reassembled = new ByteArrayOutputStream();
 		while (reassembled.size() < expected) {
 			reassembled.writeBytes(connection.receive(maxBytes));
@@ -781,6 +783,257 @@ class SslConnectionTest {
 		});
 	}
 	
+	@Test
+	void upgradeWithNullSocket() {
+		assertThrows(NullPointerException.class, () -> SslConnection.upgrade(null, new byte[0], SslServerConfig.builder(serverContext).build()));
+	}
+	
+	@Test
+	void upgradeWithNullConsumed() {
+		assertThrows(NullPointerException.class, () -> SslConnection.upgrade(new Socket(), null, SslServerConfig.builder(serverContext).build()));
+	}
+	
+	@Test
+	void upgradeWithNullConfig() {
+		assertThrows(NullPointerException.class, () -> SslConnection.upgrade(new Socket(), new byte[0], null));
+	}
+	
+	@Test
+	void upgradeClosedSocketThrows() throws Exception {
+		Socket socket = new Socket();
+		socket.close();
+		
+		NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> SslConnection.upgrade(socket, new byte[0], SslServerConfig.builder(serverContext).build()));
+		assertEquals(NetworkErrorType.NOT_CONNECTED, exception.errorType());
+	}
+	
+	@Test
+	void upgradeUnconnectedSocketThrows() throws Exception {
+		try (Socket socket = new Socket()) {
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> SslConnection.upgrade(socket, new byte[0], SslServerConfig.builder(serverContext).build()));
+			assertEquals(NetworkErrorType.NOT_CONNECTED, exception.errorType());
+		}
+	}
+	
+	@Test
+	void upgradeWithUnsupportedCipherSuiteThrows() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).enabledCipherSuites(List.of("NO-SUCH-SUITE")).build();
+		
+		this.withPlainPair((client, accepted) -> assertThrows(IllegalArgumentException.class, () -> SslConnection.upgrade(accepted, new byte[0], config)));
+	}
+	
+	@Test
+	void failedUpgradeLeavesSocketOpen() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).enabledCipherSuites(List.of("NO-SUCH-SUITE")).build();
+		
+		this.withPlainPair((client, accepted) -> {
+			assertThrows(IllegalArgumentException.class, () -> SslConnection.upgrade(accepted, new byte[0], config));
+			assertFalse(accepted.isClosed());
+			assertTrue(accepted.isConnected());
+		});
+	}
+	
+	@Test
+	void upgradeConnectedSocketEstablishesSession() throws Exception {
+		this.withUpgrade(SslServerConfig.builder(serverContext).build(), clientContext, (client, connection, accepted) -> {
+			assertTrue(connection.isActive());
+			assertTrue(connection.getSession().isValid());
+			
+			connection.send("to client".getBytes());
+			assertArrayEquals("to client".getBytes(), NetworkUtils.readFrame(client.getInputStream(), 1024));
+			writeAndFlush(client, "to server".getBytes());
+			assertArrayEquals("to server".getBytes(), connection.receive());
+		});
+	}
+	
+	@Test
+	void upgradeWithoutEnabledProtocolsUsesContextDefaults() throws Exception {
+		this.withUpgrade(SslServerConfig.builder(serverContext).build(), clientContext, (client, connection, accepted) -> {
+			assertTrue(connection.getSession().isValid());
+			assertTrue(TlsProtocol.byName(connection.getSession().getProtocol()).isPresent());
+		});
+	}
+	
+	@Test
+	void upgradeWithEnabledProtocols() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).enabledProtocols(List.of(TlsProtocol.byName("TLSv1.2").orElseThrow())).build();
+		
+		this.withUpgrade(config, clientContext, (client, connection, accepted) -> assertEquals("TLSv1.2", connection.getSession().getProtocol()));
+	}
+	
+	@Test
+	void upgradeWithoutEnabledCipherSuitesUsesContextDefaults() throws Exception {
+		this.withUpgrade(SslServerConfig.builder(serverContext).build(), clientContext, (client, connection, accepted) -> {
+			assertTrue(connection.getSession().isValid());
+			assertNotNull(connection.getSession().getCipherSuite());
+		});
+	}
+	
+	@Test
+	void upgradeWithEnabledCipherSuites() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).enabledCipherSuites(List.of("TLS_AES_128_GCM_SHA256")).build();
+		
+		this.withUpgrade(config, clientContext, (client, connection, accepted) -> assertEquals("TLS_AES_128_GCM_SHA256", connection.getSession().getCipherSuite()));
+	}
+	
+	@Test
+	void upgradeWithClientAuthNone() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).clientAuth(SslClientAuth.NONE).build();
+		
+		this.withUpgrade(config, clientContext, (client, connection, accepted) -> {
+			assertTrue(connection.getSession().isValid());
+			assertThrows(SSLPeerUnverifiedException.class, () -> connection.getSession().getPeerCertificates());
+		});
+	}
+	
+	@Test
+	void upgradeWithClientAuthRequested() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).clientAuth(SslClientAuth.REQUESTED).build();
+		
+		this.withUpgrade(config, SslTestContext.trustOnlyClientContext(), (client, connection, accepted) -> {
+			assertTrue(connection.getSession().isValid());
+			assertThrows(SSLPeerUnverifiedException.class, () -> connection.getSession().getPeerCertificates());
+		});
+	}
+	
+	@Test
+	void upgradeWithClientAuthRequired() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).clientAuth(SslClientAuth.REQUIRED).build();
+		SSLContext trustOnly = SslTestContext.trustOnlyClientContext();
+		
+		this.withPlainPair((plain, accepted) -> {
+			try (SSLSocket client = layer(trustOnly, plain); ExecutorService executor = Executors.newSingleThreadExecutor()) {
+				executor.submit(() -> {
+					try {
+						client.startHandshake();
+					} catch (IOException _) {}
+				});
+				
+				SslConnection connection = SslConnection.upgrade(accepted, new byte[0], config);
+				assertThrows(NetworkConnectionException.class, connection::startHandshake);
+				connection.close();
+			}
+		});
+	}
+	
+	@Test
+	void upgradeWithClientAuthRequiredAndCertificate() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).clientAuth(SslClientAuth.REQUIRED).build();
+		
+		this.withUpgrade(config, clientContext, (client, connection, accepted) -> {
+			assertTrue(connection.getSession().isValid());
+			assertTrue(connection.getSession().getPeerCertificates().length > 0);
+		});
+	}
+	
+	@Test
+	void upgradeReplaysConsumedBytesBeforeSocketInput() throws Exception {
+		this.withPlainPair((plain, accepted) -> {
+			try (SSLSocket client = layer(clientContext, plain); ExecutorService executor = Executors.newSingleThreadExecutor()) {
+				Future<?> clientHandshake = executor.submit(() -> {
+					client.startHandshake();
+					return null;
+				});
+				
+				int firstByte = accepted.getInputStream().read();
+				assertEquals(0x16, firstByte);
+				SslConnection connection = SslConnection.upgrade(accepted, new byte[] { (byte) firstByte }, SslServerConfig.builder(serverContext).build());
+				connection.startHandshake();
+				clientHandshake.get(10, TimeUnit.SECONDS);
+				
+				writeAndFlush(client, "replayed".getBytes());
+				assertArrayEquals("replayed".getBytes(), connection.receive());
+				connection.close();
+			}
+		});
+	}
+	
+	@Test
+	void upgradeWithEmptyConsumed() throws Exception {
+		this.withUpgrade(SslServerConfig.builder(serverContext).build(), clientContext, (client, connection, accepted) -> {
+			writeAndFlush(client, "empty".getBytes());
+			assertArrayEquals("empty".getBytes(), connection.receive());
+		});
+	}
+	
+	@Test
+	void upgradeAppliesSocketOptions() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).tcpNoDelay(true).keepAlive(true).clientReadTimeout(Duration.ofMillis(250)).build();
+		
+		this.withUpgrade(config, clientContext, (client, connection, accepted) -> {
+			assertTrue(accepted.getTcpNoDelay());
+			assertTrue(accepted.getKeepAlive());
+			assertEquals(250, accepted.getSoTimeout());
+			
+			long start = System.nanoTime();
+			assertThrows(NetworkConnectionException.class, connection::receive);
+			assertTrue(System.nanoTime() - start < TimeUnit.SECONDS.toNanos(2));
+		});
+	}
+	
+	@Test
+	void upgradeWithZeroReadTimeoutDoesNotExpire() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).clientReadTimeout(Duration.ZERO).build();
+		
+		this.withUpgrade(config, clientContext, (client, connection, accepted) -> {
+			assertEquals(0, accepted.getSoTimeout());
+			Thread.ofVirtual().start(() -> {
+				try {
+					Thread.sleep(500);
+					writeAndFlush(client, "late".getBytes());
+				} catch (Exception _) {}
+			});
+			
+			assertArrayEquals("late".getBytes(), connection.receive());
+		});
+	}
+	
+	@Test
+	void upgradeUsesConfigFramingAndBufferSize() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).framing(false).clientBufferSize(16).build();
+		
+		this.withUpgrade(config, clientContext, (client, connection, accepted) -> {
+			client.getOutputStream().write("raw".getBytes());
+			client.getOutputStream().flush();
+			
+			assertArrayEquals("raw".getBytes(), readUntil(connection, 3, 16));
+			assertThrows(NetworkConnectionException.class, () -> connection.send(filled(17, (byte) 1)));
+		});
+	}
+	
+	@Test
+	void upgradedConnectionReportsEndpoints() throws Exception {
+		this.withUpgrade(SslServerConfig.builder(serverContext).build(), clientContext, (client, connection, accepted) -> {
+			assertEquals(client.getLocalPort(), connection.remoteEndpoint().port());
+			assertEquals(accepted.getLocalPort(), connection.localEndpoint().port());
+			assertEquals(IpEndpoint.from((InetSocketAddress) accepted.getRemoteSocketAddress()), connection.remoteEndpoint());
+		});
+	}
+	
+	@Test
+	void closeUpgradedConnectionClosesSocket() throws Exception {
+		this.withUpgrade(SslServerConfig.builder(serverContext).build(), clientContext, (client, connection, accepted) -> {
+			connection.close();
+			
+			assertFalse(connection.isActive());
+			assertTrue(accepted.isClosed());
+		});
+	}
+	
+	@Test
+	void upgradedConnectionMultipleRoundTrips() throws Exception {
+		SslServerConfig config = SslServerConfig.builder(serverContext).clientBufferSize(32768).build();
+		
+		this.withUpgrade(config, clientContext, (client, connection, accepted) -> {
+			for (int size : new int[] { 1, 1000, 20000 }) {
+				byte[] data = filled(size, (byte) size);
+				writeAndFlush(client, data);
+				connection.send(connection.receive());
+				assertArrayEquals(data, NetworkUtils.readFrame(client.getInputStream(), 32768));
+			}
+		});
+	}
+	
 	private void withPair(int bufferSize, PairConsumer body) throws Exception {
 		this.withPair(bufferSize, true, body);
 	}
@@ -810,6 +1063,54 @@ class SslConnectionTest {
 		} finally {
 			executor.shutdownNow();
 		}
+	}
+	
+	private static @NonNull SSLSocket layer(@NonNull SSLContext context, @NonNull Socket plain) throws Exception {
+		SSLSocket socket = (SSLSocket) context.getSocketFactory().createSocket(plain, "127.0.0.1", plain.getPort(), true);
+		socket.setSoTimeout(5000);
+		return socket;
+	}
+	
+	private void withPlainPair(@NonNull PlainPairConsumer body) throws Exception {
+		try (ServerSocket serverSocket = new ServerSocket(0, 50, InetAddress.getLoopbackAddress());
+			 Socket client = new Socket("127.0.0.1", serverSocket.getLocalPort());
+			 Socket accepted = serverSocket.accept()) {
+			client.setSoTimeout(5000);
+			accepted.setSoTimeout(5000);
+			body.accept(client, accepted);
+		}
+	}
+	
+	private void withUpgrade(@NonNull SslServerConfig config, @NonNull SSLContext context, @NonNull UpgradeConsumer body) throws Exception {
+		this.withPlainPair((plain, accepted) -> {
+			try (SSLSocket client = layer(context, plain); ExecutorService executor = Executors.newSingleThreadExecutor()) {
+				SslConnection connection = SslConnection.upgrade(accepted, new byte[0], config);
+				try {
+					Future<?> clientHandshake = executor.submit(() -> {
+						client.startHandshake();
+						return null;
+					});
+					connection.startHandshake();
+					clientHandshake.get(10, TimeUnit.SECONDS);
+					
+					body.accept(client, connection, accepted);
+				} finally {
+					connection.close();
+				}
+			}
+		});
+	}
+	
+	@FunctionalInterface
+	private interface PlainPairConsumer {
+		
+		void accept(@NonNull Socket client, @NonNull Socket accepted) throws Exception;
+	}
+	
+	@FunctionalInterface
+	private interface UpgradeConsumer {
+		
+		void accept(@NonNull SSLSocket client, @NonNull SslConnection connection, @NonNull Socket accepted) throws Exception;
 	}
 	
 	@FunctionalInterface

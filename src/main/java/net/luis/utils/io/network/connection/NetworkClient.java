@@ -22,6 +22,7 @@ import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkTimeoutException;
+import net.luis.utils.io.network.connection.hybrid.HybridClient;
 import net.luis.utils.io.network.connection.ssl.SslClient;
 import net.luis.utils.io.network.connection.tcp.TcpClient;
 import net.luis.utils.io.network.connection.udp.UdpClient;
@@ -60,12 +61,13 @@ import java.util.Optional;
  * @see TcpClient
  * @see SslClient
  * @see UdpClient
+ * @see HybridClient
  *
  * @author Luis-St
  *
  * @param <M> The type of message this client sends and receives, which is {@code byte[]} for the stream based clients and {@link UdpDatagram} for the datagram based client
  */
-public sealed interface NetworkClient<M> extends AutoCloseable permits TcpClient, SslClient, UdpClient {
+public sealed interface NetworkClient<M> extends AutoCloseable permits HybridClient, SslClient, TcpClient, UdpClient {
 	
 	/**
 	 * Returns whether this client is currently active (connected or bound).<br>
