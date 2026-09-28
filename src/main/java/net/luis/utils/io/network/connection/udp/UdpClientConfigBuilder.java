@@ -39,7 +39,7 @@ import java.util.Objects;
  *     .receiveTimeout(Duration.ofSeconds(5))
  *     .bufferSize(1024)
  *     .broadcast(true)
- *     .onError((type, msg, cause) -> System.err.println(msg))
+ *     .onError((connection, type, msg, cause) -> System.err.println(msg))
  *     .build();
  * }</pre>
  *

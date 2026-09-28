@@ -61,7 +61,6 @@ class SqlTransactionManagerTest {
 		return new SqlTransactionManager(dataSource, DIALECT, TIMEOUT);
 	}
 	
-	//region Tier 1 - Constructors
 	@Test
 	void constructWithThreeArgsUsesDefaultAcquisitionTimeout() throws SqlException {
 		SqlTransactionManager manager = this.manager(new FakeDataSource());
@@ -76,9 +75,7 @@ class SqlTransactionManagerTest {
 	void constructWithFourArgs() {
 		assertNotNull(new SqlTransactionManager(new FakeDataSource(), DIALECT, TIMEOUT, Duration.ofMillis(50)));
 	}
-	//endregion
 	
-	//region Tier 2 - Exceptions
 	@Test
 	void constructThreeArgsWithNullDataSource() {
 		assertThrows(NullPointerException.class, () -> new SqlTransactionManager(null, DIALECT, TIMEOUT));
@@ -198,9 +195,7 @@ class SqlTransactionManagerTest {
 		assertThrows(SqlTransactionSavepointException.class, () -> manager.begin(false, LEVEL, SqlPropagation.NESTED));
 		outer.close();
 	}
-	//endregion
 	
-	//region Tier 3 - Branch coverage
 	@Test
 	void beginRequiredWithoutCurrentCreatesNewTransaction() throws SqlException {
 		SqlTransactionManager manager = this.manager(new FakeDataSource());
@@ -350,9 +345,7 @@ class SqlTransactionManagerTest {
 		mandatory.close();
 		outer.close();
 	}
-	//endregion
 	
-	//region Tier 4 - Simple inputs
 	@Test
 	void defaultAcquisitionTimeoutConstantValue() {
 		assertEquals(Duration.ofSeconds(10), SqlTransactionManager.DEFAULT_CONNECTION_ACQUISITION_TIMEOUT);
@@ -376,9 +369,7 @@ class SqlTransactionManagerTest {
 		assertEquals(SqlIsolationLevel.SERIALIZABLE, transaction.getIsolationLevel());
 		transaction.close();
 	}
-	//endregion
 	
-	//region Tier 5 - Complex inputs
 	@Test
 	void nestedRequiresNewRestoresAcrossTwoLevels() throws SqlException {
 		SqlTransactionManager manager = this.manager(new FakeDataSource());
@@ -423,5 +414,4 @@ class SqlTransactionManagerTest {
 		assertInstanceOf(SQLException.class, exception.getCause());
 		outer.close();
 	}
-	//endregion
 }

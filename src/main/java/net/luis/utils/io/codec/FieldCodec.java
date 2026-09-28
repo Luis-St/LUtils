@@ -57,13 +57,9 @@ public class FieldCodec<C, O> {
 	 */
 	private final Codec<C> codec;
 	/**
-	 * The name of the value.<br>
+	 * The reference to the field of the data structure.<br>
 	 */
-	private final String name;
-	/**
-	 * The aliases of the value.<br>
-	 */
-	private final Set<String> aliases;
+	private final FieldRef field;
 	/**
 	 * The function used to retrieve the component from the object.<br>
 	 */
@@ -78,11 +74,37 @@ public class FieldCodec<C, O> {
 	 * @param getter The getter for the component
 	 * @throws NullPointerException If the codec, name, aliases or getter is null
 	 */
-	FieldCodec(@NonNull Codec<C> codec, @NonNull String name, Set<String> aliases, @NonNull Function<O, C> getter) {
+	FieldCodec(@NonNull Codec<C> codec, @NonNull String name, @NonNull Set<String> aliases, @NonNull Function<O, C> getter) {
+		this(codec, new FieldRef(Objects.requireNonNull(name, "Name must not be null"), Objects.requireNonNull(aliases, "Aliases must not be null")), getter);
+	}
+	
+	/**
+	 * Constructs a new field codec.<br>
+	 *
+	 * @param codec The codec used to
+	 * @param field The reference to the field of the data structure
+	 * @param getter The getter for the component
+	 * @throws NullPointerException If the codec, field or getter is null
+	 */
+	FieldCodec(@NonNull Codec<C> codec, @NonNull FieldRef field, @NonNull Function<O, C> getter) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
-		this.name = Objects.requireNonNull(name, "Name must not be null");
-		this.aliases = Set.copyOf(Objects.requireNonNull(aliases, "Aliases must not be null"));
+		this.field = Objects.requireNonNull(field, "Field must not be null");
 		this.getter = Objects.requireNonNull(getter, "Getter must not be null");
+	}
+	
+	/**
+	 * Creates a copy of this field codec with the given index assigned to its field reference.<br>
+	 * The index is used by type providers which address the fields of a data structure by position.<br>
+	 *
+	 * @param index The index of the field in the surrounding codec group
+	 * @return The copy with the indexed field reference
+	 * @throws IllegalArgumentException If the index is negative
+	 */
+	@NonNull FieldCodec<C, O> withIndex(int index) {
+		if (0 > index) {
+			throw new IllegalArgumentException("Index must not be negative, but was " + index);
+		}
+		return new FieldCodec<>(this.codec, this.field.withIndex(index), this.getter);
 	}
 	
 	/**
@@ -130,10 +152,10 @@ public class FieldCodec<C, O> {
 				return provider.empty();
 			}
 			
-			provider.set(map, this.name, encodedValue, EncoderException::new);
+			provider.setField(map, this.field, encodedValue, EncoderException::new);
 			return map;
 		} catch (EncoderException e) {
-			throw new EncoderException("Unable to encode named '" + this.name + "' '" + value, this.codec, e);
+			throw new EncoderException("Unable to encode named " + this.formatField() + " '" + value + "': " + e.getMessage(), this.codec, e);
 		}
 	}
 	
@@ -153,66 +175,46 @@ public class FieldCodec<C, O> {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (map == null) {
-			throw new DecoderException("Unable to decode named '" + this.name + "' null value", this.codec);
+			throw new DecoderException("Unable to decode named " + this.formatField() + " null value", this.codec);
 		}
 		
 		try {
-			R value = provider.get(map, this.name, DecoderException::new);
+			R value = provider.getField(map, this.field, DecoderException::new);
 			return this.codec.decode(provider, map, value);
-		} catch (DecoderException rootException) {
-			try {
-				return this.decodeWithAlias(provider, map);
-			} catch (DecoderException aliasException) {
-				throw new DecoderException("Unable to decode named '" + this.name + "' from '" + map + "': " + aliasException.getMessage(), this.codec, aliasException);
+		} catch (DecoderException e) {
+			if (!provider.hasField(map, this.field, DecoderException::new)) {
+				throw new DecoderException(this.createNotFoundMessage(map), this.codec, e);
 			}
+			throw new DecoderException("Unable to decode named " + this.formatField() + " from '" + map + "': " + e.getMessage(), this.codec, e);
 		}
 	}
 	
 	/**
-	 * Decodes the value using the given provider and map.<br>
-	 * This method will try to decode the value by the first alias which is present in the map.<br>
-	 * If no alias is present, an error will be returned.<br>
-	 *
-	 * @param provider The type provider
-	 * @param map The map to decode the value from
-	 * @return The decoded value
-	 * @param <R> The type to decode from
-	 * @throws NullPointerException If the provider, map or error is null
-	 * @throws DecoderException If an error occurs during decoding or no alias is present in the map
+	 * Formats the name and the aliases of the field for exception messages.<br>
+	 * @return The formatted field
 	 */
-	private <R> @NonNull C decodeWithAlias(@NonNull TypeProvider<R> provider, @NonNull R map) throws DecoderException {
-		Objects.requireNonNull(provider, "Type provider must not be null");
-		Objects.requireNonNull(map, "Map must not be null");
-		
-		String name = this.getDecodeName(provider, map);
-		R value = provider.get(map, name, DecoderException::new);
-		return this.codec.decode(provider, map, value);
+	private @NonNull String formatField() {
+		if (this.field.aliases().isEmpty()) {
+			return "'" + this.field.name() + "'";
+		}
+		return "'" + this.field.name() + "', " + this.field.aliases();
 	}
 	
 	/**
-	 * Gets the first alias which is present in the given map or an error.<br>
+	 * Creates the message of the exception which is thrown if the field is not present in the given map.<br>
 	 *
-	 * @param provider The type provider
-	 * @param map The map to decode the value from
-	 * @return The alias name
-	 * @param <R> The type to decode from
-	 * @throws NullPointerException If the provider or map is null
-	 * @throws DecoderException If an error occurs during alias checking
+	 * @param map The map the value was decoded from
+	 * @param <R> The type which was decoded from
+	 * @return The message of the exception
+	 * @throws NullPointerException If the map is null
 	 */
-	private <R> @NonNull String getDecodeName(@NonNull TypeProvider<R> provider, @NonNull R map) throws DecoderException {
-		Objects.requireNonNull(provider, "Type provider must not be null");
+	private <R> @NonNull String createNotFoundMessage(@NonNull R map) {
 		Objects.requireNonNull(map, "Map must not be null");
-		if (this.aliases.isEmpty()) {
-			throw new DecoderException("Name '" + this.name + "' not found in '" + map + "', no aliases configured", this.codec);
-		}
 		
-		return this.aliases.stream().filter(alias -> {
-			try {
-				return provider.has(map, alias, DecoderException::new);
-			} catch (DecoderException e) {
-				return false;
-			}
-		}).findFirst().orElseThrow(() -> new DecoderException("Name and aliases '" + this.name + "' and '" + this.aliases + "' not found in '" + map + "'", this.codec));
+		if (this.field.aliases().isEmpty()) {
+			return "Name '" + this.field.name() + "' not found in '" + map + "', no aliases configured";
+		}
+		return "Name and aliases '" + this.field.name() + "' and '" + this.field.aliases() + "' not found in '" + map + "'";
 	}
 	
 	//region Object overrides
@@ -221,21 +223,18 @@ public class FieldCodec<C, O> {
 		if (!(o instanceof FieldCodec<?, ?> that)) return false;
 		
 		if (!this.codec.equals(that.codec)) return false;
-		if (!this.name.equals(that.name)) return false;
-		return this.aliases.equals(that.aliases);
+		if (!this.field.name().equals(that.field.name())) return false;
+		return this.field.aliases().equals(that.field.aliases());
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.codec, this.name, this.aliases, this.getter);
+		return Objects.hash(this.codec, this.field.name(), this.field.aliases(), this.getter);
 	}
 	
 	@Override
 	public String toString() {
-		if (this.aliases.isEmpty()) {
-			return "NamedCodec['" + this.name + "', " + this.codec + "]";
-		}
-		return "NamedCodec['" + this.name + "', " + this.aliases + ", " + this.codec + "]";
+		return "NamedCodec[" + this.formatField() + ", " + this.codec + "]";
 	}
 	//endregion
 }

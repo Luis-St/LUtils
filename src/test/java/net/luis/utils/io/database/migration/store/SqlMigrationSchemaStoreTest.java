@@ -24,10 +24,14 @@ import net.luis.utils.io.database.exception.database.SqlMigrationExecutionExcept
 import net.luis.utils.io.database.migration.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import net.luis.utils.util.Version;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
-import java.sql.Types;
+import javax.sql.rowset.*;
+import java.lang.reflect.Proxy;
+import java.sql.*;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,6 +42,11 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class SqlMigrationSchemaStoreTest {
+	
+	/**
+	 * Marker recorded by {@link CapturingDataSource} when a parameter is bound as sql null.
+	 */
+	private static final Object NULL_MARKER = new Object();
 	
 	private static SqlMigrationSchemaStore store(DataSource dataSource) {
 		return new SqlMigrationSchemaStore(dataSource, SqlTestFixtures.DIALECT);
@@ -62,6 +71,84 @@ class SqlMigrationSchemaStoreTest {
 		row.put("is_unique", false);
 		row.put("ordinal_position", 1);
 		return row;
+	}
+	
+	private static @NonNull SqlSchemaColumnInfo identifiedColumn(@Nullable String typeIdentifier) {
+		return new SqlSchemaColumnInfo("it_table", "it_column", Types.CHAR, SqlParameter.length(36), false, false, true, false, 0, typeIdentifier);
+	}
+	
+	private static @NonNull Map<String, Object> labeledColumnRow(@Nullable String typeIdentifier) {
+		Map<String, Object> row = new HashMap<>();
+		row.put("table_name", "it_table");
+		row.put("column_name", "it_column");
+		row.put("jdbc_type", Types.CHAR);
+		row.put("length", 36);
+		row.put("is_nullable", false);
+		row.put("is_auto_increment", false);
+		row.put("is_primary_key", true);
+		row.put("is_unique", false);
+		row.put("ordinal_position", 0);
+		row.put("type_identifier", typeIdentifier);
+		return row;
+	}
+	
+	private static @NonNull ResultSet schemaColumnsRowSet(boolean withTypeIdentifier, @Nullable String typeIdentifier) {
+		return schemaColumnsRowSet(withTypeIdentifier, typeIdentifier, false);
+	}
+	
+	private static @NonNull ResultSet schemaColumnsRowSet(boolean withTypeIdentifier, @Nullable String typeIdentifier, boolean upperCaseLabels) {
+		try {
+			List<String> labels = new ArrayList<>(List.of("table_name", "column_name", "jdbc_type", "length", "precision", "scale", "fractional", "is_nullable", "is_auto_increment", "is_primary_key", "is_unique", "ordinal_position"));
+			if (withTypeIdentifier) {
+				labels.add("type_identifier");
+			}
+			
+			RowSetMetaDataImpl metaData = new RowSetMetaDataImpl();
+			metaData.setColumnCount(labels.size());
+			for (int i = 0; i < labels.size(); i++) {
+				String label = upperCaseLabels ? labels.get(i).toUpperCase(Locale.ROOT) : labels.get(i);
+				metaData.setColumnName(i + 1, label);
+				metaData.setColumnLabel(i + 1, label);
+				metaData.setColumnType(i + 1, columnType(labels.get(i)));
+			}
+			
+			CachedRowSet rowSet = RowSetProvider.newFactory().createCachedRowSet();
+			rowSet.setMetaData(metaData);
+			rowSet.moveToInsertRow();
+			rowSet.updateString(1, "it_table");
+			rowSet.updateString(2, "it_column");
+			rowSet.updateInt(3, Types.CHAR);
+			rowSet.updateInt(4, 36);
+			rowSet.updateNull(5);
+			rowSet.updateNull(6);
+			rowSet.updateNull(7);
+			rowSet.updateBoolean(8, false);
+			rowSet.updateBoolean(9, false);
+			rowSet.updateBoolean(10, true);
+			rowSet.updateBoolean(11, false);
+			rowSet.updateInt(12, 0);
+			if (withTypeIdentifier) {
+				if (typeIdentifier == null) {
+					rowSet.updateNull(13);
+				} else {
+					rowSet.updateString(13, typeIdentifier);
+				}
+			}
+			rowSet.insertRow();
+			rowSet.moveToCurrentRow();
+			rowSet.beforeFirst();
+			return rowSet;
+		} catch (SQLException e) {
+			throw new IllegalStateException("Failed to build schema columns row set fixture", e);
+		}
+	}
+	
+	private static int columnType(@NonNull String label) {
+		return switch (label) {
+			case "table_name", "column_name", "type_identifier" -> Types.VARCHAR;
+			case "is_nullable", "is_auto_increment", "is_primary_key", "is_unique" -> Types.BOOLEAN;
+			default -> Types.INTEGER;
+		};
 	}
 	
 	@Test
@@ -195,9 +282,10 @@ class SqlMigrationSchemaStoreTest {
 		store(dataSource).initialize();
 		
 		List<String> executed = dataSource.executedSql();
-		assertEquals(2, executed.size());
+		assertEquals(3, executed.size());
 		assertTrue(executed.contains(SqlTestFixtures.DIALECT.getCreateSchemaColumnsTableSql()));
 		assertTrue(executed.contains(SqlTestFixtures.DIALECT.getCreateSchemaCheckConstraintsTableSql()));
+		assertTrue(executed.contains(SqlTestFixtures.DIALECT.getSelectSchemaColumnsSql()));
 	}
 	
 	@Test
@@ -440,5 +528,226 @@ class SqlMigrationSchemaStoreTest {
 	@Test
 	void loadWrapsColumnQuerySqlException() {
 		assertThrows(SqlMigrationExecutionException.class, () -> store(SqlTestFixtures.failingDataSource()).load(Version.of(1, 0, 0)));
+	}
+	
+	@Test
+	void initializeWrapsUpgradeFailure() {
+		assertThrows(SqlMigrationExecutionException.class, () -> store(SqlTestFixtures.failingDataSource()).initialize());
+	}
+	
+	@Test
+	void initializeSkipsUpgradeWhenColumnPresent() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		dataSource.enqueueResultSet(schemaColumnsRowSet(true, "uuid"));
+		store(dataSource).initialize();
+		
+		assertTrue(dataSource.executedSql().stream().noneMatch(sql -> sql.startsWith("ALTER TABLE")));
+	}
+	
+	@Test
+	void initializeAddsColumnWhenMissing() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		dataSource.enqueueResultSet(schemaColumnsRowSet(false, null));
+		store(dataSource).initialize();
+		
+		List<String> altered = dataSource.executedSql().stream().filter(sql -> sql.startsWith("ALTER TABLE")).toList();
+		assertEquals(1, altered.size());
+		assertTrue(altered.getFirst().contains("type_identifier"));
+	}
+	
+	@Test
+	void initializeSkipsUpgradeWhenMetadataUnavailable() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		assertDoesNotThrow(() -> store(dataSource).initialize());
+		assertTrue(dataSource.executedSql().stream().noneMatch(sql -> sql.startsWith("ALTER TABLE")));
+	}
+	
+	@Test
+	void initializeIsIdempotent() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		dataSource.enqueueResultSet(schemaColumnsRowSet(false, null));
+		dataSource.enqueueResultSet(schemaColumnsRowSet(true, "uuid"));
+		SqlMigrationSchemaStore store = store(dataSource);
+		store.initialize();
+		store.initialize();
+		
+		assertEquals(1, dataSource.executedSql().stream().filter(sql -> sql.startsWith("ALTER TABLE")).count());
+	}
+	
+	@Test
+	void saveBindsTypeIdentifier() throws Exception {
+		CapturingDataSource dataSource = new CapturingDataSource();
+		new SqlMigrationSchemaStore(dataSource, SqlTestFixtures.DIALECT)
+			.save(Version.of(1, 0, 0), List.of(identifiedColumn("uuid")), Map.of());
+		assertEquals("uuid", dataSource.parameter(14));
+	}
+	
+	@Test
+	void saveBindsNullTypeIdentifier() throws Exception {
+		CapturingDataSource dataSource = new CapturingDataSource();
+		new SqlMigrationSchemaStore(dataSource, SqlTestFixtures.DIALECT)
+			.save(Version.of(1, 0, 0), List.of(identifiedColumn(null)), Map.of());
+		assertEquals(NULL_MARKER, dataSource.parameter(14));
+	}
+	
+	@Test
+	void loadReadsTypeIdentifierWhenPresent() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		dataSource.enqueueResultSet(schemaColumnsRowSet(true, "uuid"));
+		SqlSchemaSnapshot snapshot = store(dataSource).load(Version.of(1, 0, 0));
+		
+		assertNotNull(snapshot);
+		assertEquals(1, snapshot.columns().size());
+		assertEquals("uuid", snapshot.columns().getFirst().typeIdentifier());
+	}
+	
+	@Test
+	void loadWithoutTypeIdentifierColumn() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		dataSource.enqueueResultSet(schemaColumnsRowSet(false, null));
+		SqlSchemaSnapshot snapshot = assertDoesNotThrow(() -> store(dataSource).load(Version.of(1, 0, 0)));
+		
+		assertNotNull(snapshot);
+		assertNull(snapshot.columns().getFirst().typeIdentifier());
+	}
+	
+	@Test
+	void loadWithUnavailableMetadata() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(labeledColumnRow(null))));
+		SqlSchemaSnapshot snapshot = assertDoesNotThrow(() -> store(dataSource).load(Version.of(1, 0, 0)));
+		
+		assertNotNull(snapshot);
+		assertNull(snapshot.columns().getFirst().typeIdentifier());
+	}
+	
+	@Test
+	void containsColumnIgnoresCase() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		dataSource.enqueueResultSet(schemaColumnsRowSet(true, "uuid", true));
+		SqlSchemaSnapshot snapshot = store(dataSource).load(Version.of(1, 0, 0));
+		
+		assertNotNull(snapshot);
+		assertEquals("uuid", snapshot.columns().getFirst().typeIdentifier());
+	}
+	
+	@Test
+	void saveThenLoadRoundTripsTypeIdentifier() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		store(dataSource).save(Version.of(1, 0, 0), List.of(identifiedColumn("uuid"), identifiedColumn(null)), Map.of());
+		dataSource.enqueueResultSet(schemaColumnsRowSet(true, "uuid"));
+		
+		SqlSchemaSnapshot snapshot = store(dataSource).load(Version.of(1, 0, 0));
+		assertNotNull(snapshot);
+		assertEquals("uuid", snapshot.columns().getFirst().typeIdentifier());
+	}
+	
+	@Test
+	void upgradedTableAcceptsInsertStatement() {
+		String insertSql = SqlTestFixtures.DIALECT.getInsertSchemaColumnSql();
+		String columns = insertSql.substring(insertSql.indexOf('(') + 1, insertSql.indexOf(')'));
+		String createSql = assertDoesNotThrow(SqlTestFixtures.DIALECT::getCreateSchemaColumnsTableSql);
+		for (String column : columns.split(",")) {
+			assertTrue(createSql.contains(column.trim()), "Created table is missing " + column.trim());
+		}
+	}
+	
+	/**
+	 * Data source whose prepared statements record the bound parameter values so a binding can be asserted.<br>
+	 * Everything else behaves as a no-op, mirroring the recording fixture.
+	 */
+	private static final class CapturingDataSource implements DataSource {
+		
+		private final Map<Integer, Object> parameters = new HashMap<>();
+		
+		private static @Nullable Object defaultValue(@NonNull Class<?> type) {
+			if (!type.isPrimitive()) {
+				return null;
+			}
+			if (type == boolean.class) {
+				return false;
+			}
+			if (type == int.class) {
+				return 0;
+			}
+			if (type == long.class) {
+				return 0L;
+			}
+			return null;
+		}
+		
+		private @Nullable Object parameter(int index) {
+			return this.parameters.get(index);
+		}
+		
+		@Override
+		public @NonNull Connection getConnection() {
+			return (Connection) Proxy.newProxyInstance(
+				Connection.class.getClassLoader(),
+				new Class<?>[] { Connection.class },
+				(proxy, method, args) -> switch (method.getName()) {
+					case "prepareStatement" -> this.statement();
+					case "isClosed", "getAutoCommit" -> false;
+					case "toString" -> "CapturingConnection";
+					default -> defaultValue(method.getReturnType());
+				}
+			);
+		}
+		
+		private @NonNull Object statement() {
+			return Proxy.newProxyInstance(
+				PreparedStatement.class.getClassLoader(),
+				new Class<?>[] { PreparedStatement.class },
+				(proxy, method, args) -> {
+					String name = method.getName();
+					if (name.startsWith("set") && args != null && args.length >= 2 && args[0] instanceof Integer index) {
+						this.parameters.put(index, "setNull".equals(name) ? NULL_MARKER : args[1]);
+						return null;
+					}
+					return switch (name) {
+						case "executeBatch" -> new int[0];
+						case "executeLargeBatch" -> new long[0];
+						case "toString" -> "CapturingStatement";
+						default -> defaultValue(method.getReturnType());
+					};
+				}
+			);
+		}
+		
+		@Override
+		public @NonNull Connection getConnection(String username, String password) {
+			return this.getConnection();
+		}
+		
+		@Override
+		public java.io.PrintWriter getLogWriter() {
+			return null;
+		}
+		
+		@Override
+		public void setLogWriter(java.io.PrintWriter out) {}
+		
+		@Override
+		public int getLoginTimeout() {
+			return 0;
+		}
+		
+		@Override
+		public void setLoginTimeout(int seconds) {}
+		
+		@Override
+		public java.util.logging.Logger getParentLogger() {
+			return java.util.logging.Logger.getGlobal();
+		}
+		
+		@Override
+		public <T> T unwrap(Class<T> iface) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public boolean isWrapperFor(Class<?> iface) {
+			return false;
+		}
 	}
 }

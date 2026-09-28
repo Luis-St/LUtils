@@ -96,7 +96,6 @@ class SqlSessionTest {
 		return DIALECT.schemaRenderer().renderDropSchema(name, false, cascade).sql();
 	}
 	
-	//region Constructors
 	@Test
 	void constructSessionViaOpenSession() throws SqlException {
 		SqlSession session = session(recordingDataSource());
@@ -112,9 +111,7 @@ class SqlSessionTest {
 			assertNotNull(database.openSession(transaction));
 		}
 	}
-	//endregion
 	
-	//region Constructor null handling
 	@Test
 	void constructWithNullDatabase() {
 		assertThrows(NullPointerException.class, () -> new SqlSession(null, SOURCE, TIMEOUT, null));
@@ -131,9 +128,7 @@ class SqlSessionTest {
 		SqlDatabase database = database(recordingDataSource());
 		assertThrows(NullPointerException.class, () -> new SqlSession(database, SOURCE, null, null));
 	}
-	//endregion
 	
-	//region Schema null handling
 	@Test
 	void createSchemaWithNullName() throws SqlException {
 		SqlSession session = session(recordingDataSource());
@@ -169,9 +164,7 @@ class SqlSessionTest {
 		SqlSession session = session(recordingDataSource());
 		assertThrows(NullPointerException.class, () -> session.from(null));
 	}
-	//endregion
 	
-	//region Tracking null handling
 	@Test
 	void trackWithNullTable() throws SqlException {
 		SqlSession session = session(recordingDataSource());
@@ -269,9 +262,7 @@ class SqlSessionTest {
 		SqlTable<Entity> table = entityTable();
 		assertThrows(NullPointerException.class, () -> session.update(table, (SqlAudited<Entity>) null));
 	}
-	//endregion
 	
-	//region Schema SQLException wrapping and state
 	@Test
 	void createSchemaWrapsSqlException() throws SqlException {
 		SqlSession session = session(failingDataSource());
@@ -312,9 +303,7 @@ class SqlSessionTest {
 			assertThrows(SqlTransactionStateException.class, () -> session.createSchema("s"));
 		}
 	}
-	//endregion
 	
-	//region Tracking validation
 	@Test
 	void trackWithTableWithoutPrimaryKeyThrows() throws SqlException {
 		SqlSession session = session(recordingDataSource());
@@ -391,9 +380,7 @@ class SqlSessionTest {
 	void entityKeyWithNullPrimaryKey() {
 		assertThrows(NullPointerException.class, () -> new SqlEntityKey(Entity.class, null));
 	}
-	//endregion
 	
-	//region Schema execution
 	@Test
 	void createSchemaExecutesRenderedSql() throws SqlException {
 		RecordingDataSource source = recordingDataSource();
@@ -440,9 +427,7 @@ class SqlSessionTest {
 		database(source).openSession().dropSchema("s", true);
 		assertTrue(source.executedSql().contains(dropSchemaSql("s", true)));
 	}
-	//endregion
 	
-	//region Providers
 	@Test
 	void tableReturnsProvider() throws SqlException {
 		assertNotNull(session(recordingDataSource()).table(entityTable()));
@@ -458,9 +443,7 @@ class SqlSessionTest {
 		SqlSession session = database(recordingDataSource()).openSession(SqlAuditUserProvider.of("alice"));
 		assertNotNull(session.from(entityTable()));
 	}
-	//endregion
 	
-	//region Tracking behaviour
 	@Test
 	void trackMakesEntityTracked() throws SqlException {
 		SqlSession session = session(recordingDataSource());
@@ -564,9 +547,7 @@ class SqlSessionTest {
 	void entityKeyInequalityForDifferentKey() {
 		assertNotEquals(new SqlEntityKey(Entity.class, 1), new SqlEntityKey(Entity.class, 2));
 	}
-	//endregion
 	
-	//region Simple inputs
 	@Test
 	void existsSchemaScansMultipleRowsUntilMatch() throws SqlException {
 		RecordingDataSource source = recordingDataSource();
@@ -591,9 +572,7 @@ class SqlSessionTest {
 		session.track(table, entity, VERSION_ONE);
 		assertTrue(session.isTracked(table, entity));
 	}
-	//endregion
 	
-	//region Transaction listeners and positive update
 	@Test
 	void transactionRollbackRestoresTrackedSnapshots() throws SqlException {
 		RecordingDataSource source = recordingDataSource().rowsAffected(1);
@@ -695,7 +674,6 @@ class SqlSessionTest {
 		session.dropSchema("c", true);
 		assertEquals(List.of(createSchemaSql("a", false), createSchemaSql("b", true), dropSchemaSql("c", true)), source.executedSql());
 	}
-	//endregion
 	
 	private record Entity(int id, String name) {}
 	

@@ -19,7 +19,7 @@
 package net.luis.utils.io.database.migration;
 
 import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
-import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.junit.jupiter.api.Test;
 
@@ -355,5 +355,96 @@ class SqlJdbcTypeMapperTest {
 	@Test
 	void mapNumericLargePrecisionPassesThroughUnclamped() throws SqlSchemaIntrospectionException {
 		assertEquals(SqlTypes.NUMERIC.configure(SqlParameter.precision(38, 10)), mapJdbcType(Types.NUMERIC, 38, 10));
+	}
+	
+	@Test
+	void reconstructWithUnknownIdentifierAndUnsupportedScalarTypeThrows() {
+		SqlSchemaIntrospectionException exception = assertThrows(SqlSchemaIntrospectionException.class, () -> SqlJdbcTypeMapper.reconstructType(Types.OTHER, null, "not_a_type"));
+		assertTrue(exception.getMessage().contains(String.valueOf(Types.OTHER)));
+	}
+	
+	@Test
+	void reconstructWithUnknownIdentifierAndUnsupportedParameterizedTypeThrows() {
+		assertThrows(SqlSchemaIntrospectionException.class, () -> SqlJdbcTypeMapper.reconstructType(Types.OTHER, SqlParameter.length(16), "not_a_type"));
+	}
+	
+	@Test
+	void mapSqlXmlNoLongerThrows() {
+		assertSame(SqlTypes.XML, assertDoesNotThrow(() -> SqlJdbcTypeMapper.mapJdbcType(Types.SQLXML, 0, 0)));
+	}
+	
+	@Test
+	void reconstructWithKnownIdentifierReturnsIdentifiedType() throws SqlSchemaIntrospectionException {
+		assertSame(SqlTypes.UUID, SqlJdbcTypeMapper.reconstructType(Types.CHAR, SqlParameter.length(36), "uuid"));
+	}
+	
+	@Test
+	void reconstructWithUnknownIdentifierFallsBackToJdbcType() throws SqlSchemaIntrospectionException {
+		assertEquals(SqlTypes.FIXED_STRING.configure(SqlParameter.length(36)), SqlJdbcTypeMapper.reconstructType(Types.CHAR, SqlParameter.length(36), "user_defined"));
+	}
+	
+	@Test
+	void reconstructWithNullIdentifierFallsBackToJdbcType() throws SqlSchemaIntrospectionException {
+		assertEquals(SqlTypes.FIXED_STRING.configure(SqlParameter.length(36)), SqlJdbcTypeMapper.reconstructType(Types.CHAR, SqlParameter.length(36), null));
+	}
+	
+	@Test
+	void reconstructTwoArgumentFormDelegatesWithoutIdentifier() throws SqlSchemaIntrospectionException {
+		assertEquals(SqlJdbcTypeMapper.reconstructType(Types.VARCHAR, SqlParameter.length(64), null), SqlJdbcTypeMapper.reconstructType(Types.VARCHAR, SqlParameter.length(64)));
+	}
+	
+	@Test
+	void reconstructWithIdentifierIgnoresParameter() {
+		assertSame(SqlTypes.UUID, assertDoesNotThrow(() -> SqlJdbcTypeMapper.reconstructType(Types.CHAR, SqlParameter.precision(10, 2), "uuid")));
+	}
+	
+	@Test
+	void reconstructWithIdentifierIgnoresJdbcType() throws SqlSchemaIntrospectionException {
+		assertSame(SqlTypes.UUID, SqlJdbcTypeMapper.reconstructType(Types.INTEGER, null, "uuid"));
+	}
+	
+	@Test
+	void reconstructEveryIdentifiedType() throws SqlSchemaIntrospectionException {
+		assertSame(SqlTypes.CHARACTER, SqlJdbcTypeMapper.reconstructType(Types.CHAR, SqlParameter.length(1), "character"));
+		assertSame(SqlTypes.YEAR, SqlJdbcTypeMapper.reconstructType(Types.INTEGER, null, "year"));
+		assertSame(SqlTypes.MONTH, SqlJdbcTypeMapper.reconstructType(Types.INTEGER, null, "month"));
+		assertSame(SqlTypes.DAY_OF_WEEK, SqlJdbcTypeMapper.reconstructType(Types.INTEGER, null, "day_of_week"));
+		assertSame(SqlTypes.DURATION, SqlJdbcTypeMapper.reconstructType(Types.BIGINT, null, "duration"));
+		assertSame(SqlTypes.UUID, SqlJdbcTypeMapper.reconstructType(Types.CHAR, SqlParameter.length(36), "uuid"));
+		assertSame(SqlTypes.JSON, SqlJdbcTypeMapper.reconstructType(Types.LONGVARCHAR, null, "json"));
+		assertSame(SqlTypes.XML, SqlJdbcTypeMapper.reconstructType(Types.LONGVARCHAR, null, "xml"));
+		assertSame(SqlTypes.IP_ADDRESS, SqlJdbcTypeMapper.reconstructType(Types.VARCHAR, SqlParameter.length(64), "ip_address"));
+		assertSame(SqlTypes.IP_NETWORK, SqlJdbcTypeMapper.reconstructType(Types.VARCHAR, SqlParameter.length(64), "ip_network"));
+	}
+	
+	@Test
+	void mapJdbcTypeStillThrowsForUnsupportedCode() {
+		SqlSchemaIntrospectionException exception = assertThrows(SqlSchemaIntrospectionException.class, () -> SqlJdbcTypeMapper.mapJdbcType(1111, 0, 0));
+		assertTrue(exception.getMessage().contains("1111"));
+	}
+	
+	@Test
+	void reconstructRoundTripsIdentifiedColumnType() throws SqlSchemaIntrospectionException {
+		MappedSqlType<?, ?> mapped = assertInstanceOf(MappedSqlType.class, SqlTypes.UUID);
+		SqlParameter parameter = ((ParameterizedSqlType<?, ?>) SqlTypes.UUID.baseType()).parameter();
+		assertSame(SqlTypes.UUID, SqlJdbcTypeMapper.reconstructType(SqlTypes.UUID.jdbcType(), parameter, mapped.identifier()));
+	}
+	
+	@Test
+	void reconstructRoundTripsUnidentifiedColumnTypes() throws SqlSchemaIntrospectionException {
+		assertEquals(SqlTypes.STRING.configure(SqlParameter.length(64)), SqlJdbcTypeMapper.reconstructType(Types.VARCHAR, SqlParameter.length(64), null));
+		assertEquals(SqlTypes.DECIMAL.configure(SqlParameter.precision(10, 2)), SqlJdbcTypeMapper.reconstructType(Types.DECIMAL, SqlParameter.precision(10, 2), null));
+		assertEquals(SqlTypes.LOCAL_DATE_TIME.configure(SqlParameter.fractional(6)), SqlJdbcTypeMapper.reconstructType(Types.TIMESTAMP, SqlParameter.fractional(6), null));
+		assertSame(SqlTypes.LARGE_BYTES, SqlJdbcTypeMapper.reconstructType(Types.LONGVARBINARY, null, null));
+	}
+	
+	@Test
+	void mapJdbcTypeMatchesNativeTypeMapper() throws SqlSchemaIntrospectionException {
+		int[] codes = { Types.BOOLEAN, Types.INTEGER, Types.BIGINT, Types.VARCHAR, Types.LONGVARCHAR, Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY, Types.DATE, Types.TIMESTAMP, Types.SQLXML };
+		for (int code : codes) {
+			assertEquals(SqlNativeTypeMapper.mapNativeType(new SqlNativeType(code, "", 10, 2)).orElseThrow(), SqlJdbcTypeMapper.mapJdbcType(code, 10, 2), "Mismatch for code " + code);
+		}
+		assertTrue(SqlNativeTypeMapper.mapNativeType(new SqlNativeType(Types.OTHER, "", 0, 0)).isEmpty());
+		assertThrows(SqlSchemaIntrospectionException.class, () -> SqlJdbcTypeMapper.mapJdbcType(Types.OTHER, 0, 0));
 	}
 }

@@ -643,6 +643,35 @@ public final class SqlTestFixtures {
 	}
 	
 	/**
+	 * Creates a {@link ResultSet} that serves the given generated keys by 1-based row position, as
+	 * {@code Statement.getGeneratedKeys()} results are read (row-by-row via {@code next()}, value via {@code getLong(1)}).<br>
+	 * @param keys The generated keys to serve, one per row, in order
+	 * @return A new result set positioned before the first key
+	 */
+	public static @NonNull ResultSet generatedKeysResultSet(long @NonNull ... keys) {
+		long[] copy = keys.clone();
+		int[] cursor = { -1 };
+		return (ResultSet) Proxy.newProxyInstance(
+			ResultSet.class.getClassLoader(),
+			new Class<?>[] { ResultSet.class },
+			(proxy, method, args) -> {
+				String name = method.getName();
+				return switch (name) {
+					case "next" -> {
+						cursor[0]++;
+						yield cursor[0] < copy.length;
+					}
+					case "getLong" -> copy[cursor[0]];
+					case "isClosed" -> cursor[0] >= copy.length;
+					case "close" -> null;
+					case "toString" -> "GeneratedKeysResultSet";
+					default -> defaultValue(method.getReturnType());
+				};
+			}
+		);
+	}
+	
+	/**
 	 * A {@link DataSource} whose {@link Connection}s are working no-op recorders.<br>
 	 * <p>
 	 *     Every connection it hands out shares this source's recording state, so SQL executed across the several

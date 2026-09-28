@@ -13,6 +13,7 @@ val mssqlJdbc: String by project
 val h2: String by project
 val sqlite: String by project
 val jspecify: String by project
+val bouncyCastle: String by project
 val jetBrainsAnnotations: String by project
 val junitJupiter: String by project
 val junitPlatformLauncher: String by project
@@ -52,6 +53,8 @@ dependencies {
 	runtimeOnly("com.microsoft.sqlserver:mssql-jdbc:${mssqlJdbc}") // SQL Server Driver
 	runtimeOnly("com.h2database:h2:${h2}") // H2 Driver (embedded)
 	runtimeOnly("org.xerial:sqlite-jdbc:${sqlite}") // SQLite Driver (embedded)
+	// Crypto
+	implementation("org.bouncycastle:bcprov-jdk18on:${bouncyCastle}") // PQ and AEAD extras, Argon2id and scrypt
 	// Other
 	implementation("org.jspecify:jspecify:${jspecify}") // Nullability
 	implementation("org.jetbrains:annotations:${jetBrainsAnnotations}") // Annotations
@@ -103,6 +106,26 @@ tasks.register<JavaExec>("run") {
 	classpath = files()
 	jvmArgs = listOf(
 		"--module-path", sourceSets["main"].runtimeClasspath.asPath,
+		"--module", "net.luis.utils/net.luis.utils.Main"
+	)
+}
+
+// Second run configuration for the crypto provider matrix: the same code with BouncyCastle resolved.
+// The core must work without it, and the optional algorithms must become available with it.
+tasks.register<JavaExec>("runBouncyCastle") {
+	dependsOn(tasks.named("classes"))
+
+	group = "runs"
+	mainClass.set("net.luis.utils.Main")
+
+	enableAssertions = true
+	standardInput = System.`in`
+	args = listOf()
+
+	classpath = files()
+	jvmArgs = listOf(
+		"--module-path", (sourceSets["main"].runtimeClasspath + configurations["compileClasspath"]).asPath,
+		"--add-modules", "org.bouncycastle.provider",
 		"--module", "net.luis.utils/net.luis.utils.Main"
 	)
 }
@@ -202,3 +225,4 @@ tasks.named<Jar>("jar") {
 		)
 	}
 }
+

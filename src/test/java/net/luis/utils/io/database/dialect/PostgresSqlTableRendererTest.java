@@ -60,8 +60,17 @@ class PostgresSqlTableRendererTest {
 	}
 	
 	@Test
-	void renderTruncateTableProducesTruncateCascade() throws SqlException {
+	void renderTruncateTableProducesTruncateWithoutCascade() throws SqlException {
 		String sql = RENDERER.renderTruncateTable(SqlTestFixtures.sampleTable()).sql();
+		assertTrue(sql.contains("TRUNCATE"));
+		assertTrue(sql.contains("TABLE"));
+		assertTrue(sql.contains("\"test_table\""));
+		assertFalse(sql.contains("CASCADE"));
+	}
+	
+	@Test
+	void renderTruncateTableWithCascadeProducesTruncateCascade() throws SqlException {
+		String sql = RENDERER.renderTruncateTable(SqlTestFixtures.sampleTable(), true).sql();
 		assertTrue(sql.contains("TRUNCATE"));
 		assertTrue(sql.contains("TABLE"));
 		assertTrue(sql.contains("\"test_table\""));

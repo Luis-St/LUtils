@@ -21,6 +21,8 @@ package net.luis.utils.io.database.dialect;
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.migration.SqlCheckConstraintInfo;
+import net.luis.utils.io.database.type.SqlTypeRegistry;
+import net.luis.utils.io.database.type.SqlTypes;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -103,6 +105,42 @@ class SqlDefaultDialectTest {
 			boolean expected = feature == SqlFeature.CTE || feature == SqlFeature.RECURSIVE_CTE
 				|| feature == SqlFeature.ALTER_COLUMN || feature == SqlFeature.ADD_CONSTRAINT;
 			assertEquals(expected, DIALECT.isFeatureSupported(feature), "Feature " + feature);
+		}
+	}
+	
+	@Test
+	void constructWithAdditionalTypes() throws SqlException {
+		SqlDefaultDialect dialect = new SqlDefaultDialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "MY_UUID").build());
+		assertEquals("Default", dialect.name());
+		assertEquals("MY_UUID", dialect.getTypeName(SqlTypes.UUID));
+		assertTrue(dialect.isTypeSupported(SqlTypes.UUID));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesOverridingOwnMapping() throws SqlException {
+		SqlDefaultDialect dialect = new SqlDefaultDialect(SqlTypeRegistry.builder().register(SqlTypes.TEXT, "MY_TEXT").build());
+		assertEquals("MY_TEXT", dialect.getTypeName(SqlTypes.TEXT));
+		assertNotEquals(DIALECT.getTypeName(SqlTypes.TEXT), dialect.getTypeName(SqlTypes.TEXT));
+	}
+	
+	@Test
+	void constructWithEmptyAdditionalTypesMatchesDefault() throws SqlException {
+		SqlDefaultDialect dialect = new SqlDefaultDialect(SqlTypeRegistry.empty());
+		assertEquals(DIALECT.getTypeName(SqlTypes.TEXT), dialect.getTypeName(SqlTypes.TEXT));
+		assertEquals(DIALECT.getTypeName(SqlTypes.INTEGER), dialect.getTypeName(SqlTypes.INTEGER));
+		assertEquals(DIALECT.getTypeName(SqlTypes.BOOLEAN), dialect.getTypeName(SqlTypes.BOOLEAN));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new SqlDefaultDialect(null));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesKeepsFeatureSet() {
+		SqlDefaultDialect dialect = new SqlDefaultDialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "MY_UUID").build());
+		for (SqlFeature feature : SqlFeature.values()) {
+			assertEquals(DIALECT.isFeatureSupported(feature), dialect.isFeatureSupported(feature), "Feature " + feature);
 		}
 	}
 }

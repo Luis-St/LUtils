@@ -21,6 +21,7 @@ package net.luis.utils.io.network.mail;
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
 import net.luis.utils.io.network.connection.ssl.SslClientConfig;
+import net.luis.utils.io.network.connection.ssl.TlsProtocol;
 import net.luis.utils.io.network.mail.message.MailMessage;
 import net.luis.utils.io.network.mail.message.MailRecipient;
 import org.apache.commons.lang3.ArrayUtils;
@@ -392,7 +393,7 @@ public final class SmtpClient implements AutoCloseable {
 	private void configureSslSocket(@NonNull SSLSocket sslSocket) {
 		SslClientConfig tls = this.config.tlsConfig();
 		if (!tls.enabledProtocols().isEmpty()) {
-			sslSocket.setEnabledProtocols(tls.enabledProtocols().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+			sslSocket.setEnabledProtocols(TlsProtocol.toProtocolNames(tls.enabledProtocols()));
 		}
 		if (!tls.enabledCipherSuites().isEmpty()) {
 			sslSocket.setEnabledCipherSuites(tls.enabledCipherSuites().toArray(ArrayUtils.EMPTY_STRING_ARRAY));

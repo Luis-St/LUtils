@@ -20,6 +20,7 @@ package net.luis.utils.io.database.migration;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.database.SqlReferentialAction;
+import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.dialect.renderer.SqlMigrationOperationRenderer;
@@ -28,8 +29,7 @@ import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.migration.operation.*;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
-import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.table.*;
 import net.luis.utils.io.database.type.SqlType;
 import org.jspecify.annotations.NonNull;
 
@@ -88,6 +88,32 @@ class SqlMigrationRenderer {
 	}
 	
 	/**
+	 * Applies the options of the given column definition to its column and returns a new column reflecting them.<br>
+	 * The type, nullability, default value, auto-increment, unique, foreign key and check attributes are taken from the definition,<br>
+	 * the column is marked as primary key if it is part of the given primary key columns.<br>
+	 *
+	 * @param definition The column definition to apply
+	 * @param primaryKeyColumns The columns that form the primary key of the created table
+	 * @return A new column with the options of the definition applied
+	 * @throws NullPointerException If the definition or the primary key columns are null
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static @NonNull SqlColumn<?, ?> applyOptions(@NonNull SqlColumnDefinition definition, @NonNull List<SqlColumn<?, ?>> primaryKeyColumns) {
+		Objects.requireNonNull(definition, "Sql column definition must not be null");
+		Objects.requireNonNull(primaryKeyColumns, "Sql primary key columns must not be null");
+		
+		SqlColumn<?, ?> column = definition.column();
+		SqlColumnOptions options = definition.options();
+		boolean primaryKey = primaryKeyColumns.stream().anyMatch(primaryKeyColumn -> primaryKeyColumn.name().equals(column.name()));
+		Optional<SqlForeignKey<?>> foreignKey = options.referencesTable() == null ? Optional.empty() : Optional.of(SqlForeignKey.of(options.referencesTable()));
+		List<SqlCondition> checks = options.check() == null ? List.of() : List.of(options.check());
+		
+		return new SqlColumn(
+			column.owningTable(), column.name(), column.index(), definition.type(), column.getter(), !options.notNull(), options.defaultValue(), options.autoIncrement(), options.unique(), primaryKey, foreignKey, checks
+		);
+	}
+	
+	/**
 	 * Renders the given migration operations into dialect-specific sql.<br>
 	 * Each operation is dispatched to the matching renderer of the dialect and the results are collected in order.<br>
 	 *
@@ -104,6 +130,8 @@ class SqlMigrationRenderer {
 				results.addAll(this.migrationRenderer.renderEnableAuditing(op.table(), op.config()));
 			} else if (operation instanceof SqlDisableAuditingOperation op) {
 				results.addAll(this.migrationRenderer.renderDisableAuditing(op.table(), op.config()));
+			} else if (operation instanceof SqlAddColumnOperation op && this.dialect.isFeatureSupported(SqlFeature.TABLE_REBUILD) && op.options().unique()) {
+				results.addAll(this.renderAddUniqueColumnViaRebuild(op));
 			} else if (this.dialect.isFeatureSupported(SqlFeature.TABLE_REBUILD) && this.isRebuiltConstraint(operation)) {
 				results.addAll(this.renderAddConstraintViaRebuild(operation));
 			} else {
@@ -126,7 +154,7 @@ class SqlMigrationRenderer {
 		Objects.requireNonNull(operation, "Sql migration operation must not be null");
 		
 		return switch (operation) {
-			case SqlCreateTableOperation op -> this.dialect.tableRenderer().renderCreateTable(op.table(), false);
+			case SqlCreateTableOperation op -> this.renderCreateTable(op);
 			case SqlDropTableOperation op -> this.dialect.tableRenderer().renderDropTable(op.table(), false);
 			case SqlRenameTableOperation op -> this.migrationRenderer.renderRenameTable(op.from(), op.to());
 			case SqlAddColumnOperation op -> this.migrationRenderer.renderAddColumn(op.column().owningTable(), op.column(), op.type(), op.options());
@@ -145,6 +173,56 @@ class SqlMigrationRenderer {
 			case SqlDisableAuditingOperation _ -> throw new IllegalStateException("SqlDisableAuditingOperation should be handled separately");
 			case SqlExecuteDataOperation _ -> SqlRendered.of("");
 		};
+	}
+	
+	/**
+	 * Renders the given create table operation into a single dialect-specific sql statement.<br>
+	 * The table is created from the column definitions and primary key columns carried by the operation,<br>
+	 * so that every option declared for a column, such as its default value or its unique constraint, ends up in the emitted ddl.<br>
+	 * If the operation carries no column definitions the table is rendered from its static declaration instead.<br>
+	 *
+	 * @param op The create table operation to render
+	 * @return The rendered create table statement
+	 * @throws NullPointerException If the operation is null
+	 * @throws SqlException If the table cannot be rendered by the dialect
+	 */
+	private @NonNull SqlRendered renderCreateTable(@NonNull SqlCreateTableOperation op) throws SqlException {
+		Objects.requireNonNull(op, "Create table operation must not be null");
+		if (op.columns().isEmpty()) {
+			return this.dialect.tableRenderer().renderCreateTable(op.table(), false);
+		}
+		
+		List<SqlColumn<?, ?>> columns = Lists.newArrayList();
+		for (SqlColumnDefinition definition : op.columns()) {
+			columns.add(applyOptions(definition, op.primaryKeyColumns()));
+		}
+		return this.dialect.tableRenderer().renderCreateTable(op.table(), columns, op.primaryKeyColumns(), false);
+	}
+	
+	/**
+	 * Renders the given add column operation of a unique column by adding the column first and rebuilding the table afterwards.<br>
+	 * Dialects that require a table rebuild, such as SQLite, reject a unique constraint on an added column,<br>
+	 * so the column is added without it and the constraint is added inline while the table is rebuilt.<br>
+	 *
+	 * @param op The add column operation to render
+	 * @return A list of the rendered sql statements that add the column and rebuild the table
+	 * @throws NullPointerException If the operation is null
+	 * @throws SqlException If the column or the table rebuild cannot be rendered by the dialect
+	 */
+	private @NonNull List<SqlRendered> renderAddUniqueColumnViaRebuild(@NonNull SqlAddColumnOperation op) throws SqlException {
+		Objects.requireNonNull(op, "Add column operation must not be null");
+		
+		SqlColumnOptions options = op.options();
+		SqlColumnOptions withoutUnique = new SqlColumnOptions(options.notNull(), false, options.autoIncrement(), options.defaultValue(), options.referencesTable(), options.check());
+		SqlTable<?> table = op.column().owningTable();
+		
+		List<SqlRendered> results = Lists.newArrayList();
+		results.add(this.migrationRenderer.renderAddColumn(table, op.column(), op.type(), withoutUnique));
+		
+		SqlRenderer constraint = SqlRenderer.empty();
+		constraint.unique().openingBracket().literal(this.dialect.quoteIdentifier(op.column().name())).closingBracket();
+		results.addAll(this.dialect.tableRenderer().renderTableRebuild(table, List.copyOf(table.columns()), List.of(constraint.toSql())));
+		return results;
 	}
 	
 	/**
@@ -250,7 +328,7 @@ class SqlMigrationRenderer {
 				SqlRenderingHelper.renderList(renderer, op.columns(), (r, col) -> r.literal(this.dialect.quoteIdentifier(col.name())));
 				renderer.closingBracket();
 			}
-			case SqlAddCheckConstraintOperation op -> renderer.check().openingBracket().rendered(this.dialect.renderCondition(op.condition())).closingBracket();
+			case SqlAddCheckConstraintOperation op -> renderer.check().openingBracket().rendered(this.dialect.renderCheckCondition(op.condition())).closingBracket();
 			case SqlAddForeignKeyOperation op -> {
 				renderer.foreign().key().openingBracket();
 				SqlRenderingHelper.renderList(renderer, op.columns(), (r, col) -> r.literal(this.dialect.quoteIdentifier(col.name())));

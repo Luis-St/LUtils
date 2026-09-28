@@ -18,24 +18,27 @@
 
 package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.SqlDatabase;
-import net.luis.utils.io.database.SqlTestFixtures;
+import net.luis.utils.io.database.*;
 import net.luis.utils.io.database.SqlTestFixtures.RecordingDataSource;
-import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.dialect.SqlDialects;
+import net.luis.utils.io.database.dialect.*;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlMigrationConflictException;
 import net.luis.utils.io.database.exception.database.SqlMigrationExecutionException;
+import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.migration.store.SqlMigrationStore;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.Version;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import javax.sql.DataSource;
+import java.lang.reflect.*;
+import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -77,31 +80,91 @@ class SqlMigrationRunnerTest {
 		return new SqlMigrationInfo(version, "Migration " + version, SqlMigrationStatus.ROLLED_BACK, null, null);
 	}
 	
-	private static @NonNull String invokeStableParameterValue(@Nullable Object value) throws Throwable {
-		Method method = SqlMigrationRunner.class.getDeclaredMethod("stableParameterValue", Object.class);
+	private static @NonNull SqlMigrationInfo appliedWithStatements(@NonNull Version version, @Nullable String checksum, @Nullable String statements) {
+		return new SqlMigrationInfo(version, "Migration " + version, SqlMigrationStatus.APPLIED, null, checksum, statements);
+	}
+	
+	private static @NonNull SqlSchemaColumnInfo columnInfo(int jdbcType, boolean nullable, boolean autoIncrement, boolean primaryKey, boolean unique) {
+		return new SqlSchemaColumnInfo("users", "id", jdbcType, null, nullable, autoIncrement, primaryKey, unique, 1, null);
+	}
+	
+	private static @Nullable Object invokeStatic(@NonNull String name, @NonNull Class<?> type, @Nullable Object argument) throws Throwable {
+		Method method = SqlMigrationRunner.class.getDeclaredMethod(name, type);
 		method.setAccessible(true);
 		try {
-			return (String) method.invoke(null, value);
+			return method.invoke(null, argument);
 		} catch (InvocationTargetException e) {
 			throw e.getCause();
 		}
 	}
 	
-	private static @NonNull String invokeArrayToString(@Nullable Object array) throws Throwable {
-		Method method = SqlMigrationRunner.class.getDeclaredMethod("arrayToString", Object.class);
+	private static @NonNull String invokeJoinStatements(@Nullable List<SqlRendered> rendered) throws Throwable {
+		return (String) Objects.requireNonNull(invokeStatic("joinStatements", List.class, rendered));
+	}
+	
+	private static @NonNull String invokeAppliedStatementsHint(@NonNull SqlMigrationInfo info) throws Throwable {
+		return (String) Objects.requireNonNull(invokeStatic("appliedStatementsHint", SqlMigrationInfo.class, info));
+	}
+	
+	private static boolean invokeIsBookkeepingTable(@NonNull String tableName) throws Throwable {
+		return (Boolean) Objects.requireNonNull(invokeStatic("isBookkeepingTable", String.class, tableName));
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static @NonNull Set<String> invokeConstraintNames(@Nullable List<SqlCheckConstraintInfo> constraints) throws Throwable {
+		return (Set<String>) Objects.requireNonNull(invokeStatic("constraintNames", List.class, constraints));
+	}
+	
+	private static @Nullable String invokeDescribeDifference(@NonNull SqlSchemaColumnInfo expected, @NonNull SqlSchemaColumnInfo actual) throws Throwable {
+		Method method = SqlMigrationRunner.class.getDeclaredMethod("describeDifference", SqlSchemaColumnInfo.class, SqlSchemaColumnInfo.class);
 		method.setAccessible(true);
 		try {
-			return (String) method.invoke(null, array);
+			return (String) method.invoke(null, expected, actual);
 		} catch (InvocationTargetException e) {
 			throw e.getCause();
 		}
 	}
 	
-	private static @NonNull String invokeComputeChecksum(@NonNull List<SqlRendered> rendered) throws Throwable {
-		Method method = SqlMigrationRunner.class.getDeclaredMethod("computeChecksum", List.class);
+	/**
+	 * Wraps the connections of the given source so they report the given schema and catalog, which is what
+	 * {@code SqlDialect#defaultSchema(Connection)} resolves from; every other call still reaches the recording source.
+	 *
+	 * @param delegate The recording source handing out the real fake connections
+	 * @param schema The schema {@code getSchema()} reports
+	 * @param catalog The catalog {@code getCatalog()} reports
+	 * @return The wrapping data source
+	 */
+	private static @NonNull DataSource schemaOverriding(@NonNull RecordingDataSource delegate, @Nullable String schema, @Nullable String catalog) {
+		return (DataSource) Proxy.newProxyInstance(DataSource.class.getClassLoader(), new Class<?>[] { DataSource.class }, (proxy, method, args) -> {
+			if (!"getConnection".equals(method.getName())) {
+				return null;
+			}
+			Connection connection = delegate.getConnection();
+			return Proxy.newProxyInstance(Connection.class.getClassLoader(), new Class<?>[] { Connection.class }, (connectionProxy, connectionMethod, connectionArgs) -> switch (connectionMethod.getName()) {
+				case "getSchema" -> schema;
+				case "getCatalog" -> catalog;
+				default -> connectionMethod.invoke(connection, connectionArgs);
+			});
+		});
+	}
+	
+	/**
+	 * Invokes the private {@code executeStatements} method of the runner's migration context.
+	 *
+	 * @param runner The runner holding the context
+	 * @param source The data source to obtain the connection from
+	 * @param statements The statements to execute
+	 * @throws Throwable The cause thrown by the invoked method
+	 */
+	private static void invokeExecuteStatements(@NonNull SqlMigrationRunner runner, @NonNull RecordingDataSource source, @NonNull List<SqlRendered> statements) throws Throwable {
+		Field contextField = SqlMigrationRunner.class.getDeclaredField("context");
+		contextField.setAccessible(true);
+		Object context = contextField.get(runner);
+		
+		Method method = context.getClass().getDeclaredMethod("executeStatements", Connection.class, List.class);
 		method.setAccessible(true);
-		try {
-			return (String) method.invoke(null, rendered);
+		try (Connection connection = source.getConnection()) {
+			method.invoke(context, connection, statements);
 		} catch (InvocationTargetException e) {
 			throw e.getCause();
 		}
@@ -225,11 +288,47 @@ class SqlMigrationRunnerTest {
 	
 	@Test
 	void validateWithChecksumMismatchThrows() throws SqlException {
-		FakeMigrationStore store = new FakeMigrationStore(applied(V1, "0000"));
+		FakeMigrationStore store = new FakeMigrationStore(applied(V1, "s1:0000"));
 		SqlMigrationRunner runner = runner(SqlTestFixtures.recordingDataSource(), SqlDialects.POSTGRESQL, store);
 		runner.register(migration(V1));
 		SqlMigrationConflictException exception = assertThrows(SqlMigrationConflictException.class, runner::validate);
 		assertTrue(exception.getMessage().contains("checksum mismatch"));
+	}
+	
+	@Test
+	void validateWithLegacyChecksumSkipsComparison() throws SqlException {
+		FakeMigrationStore store = new FakeMigrationStore(applied(V1, "0".repeat(64)));
+		SqlMigrationRunner runner = runner(SqlTestFixtures.recordingDataSource(), SqlDialects.POSTGRESQL, store);
+		runner.register(migration(V1));
+		assertDoesNotThrow(runner::validate);
+	}
+	
+	@Test
+	void validateMismatchMessageWithoutStatements() throws SqlException {
+		FakeMigrationStore store = new FakeMigrationStore(applied(V1, "s1:0000"));
+		SqlMigrationRunner runner = runner(SqlTestFixtures.recordingDataSource(), SqlDialects.POSTGRESQL, store);
+		runner.register(migration(V1));
+		SqlMigrationConflictException exception = assertThrows(SqlMigrationConflictException.class, runner::validate);
+		assertTrue(exception.getMessage().endsWith("(checksum mismatch)"));
+		assertFalse(exception.getMessage().contains("was applied:"));
+	}
+	
+	@Test
+	void validateMismatchMessageIncludesStatements() throws SqlException {
+		FakeMigrationStore store = new FakeMigrationStore(appliedWithStatements(V1, "s1:0000", "CREATE TABLE recorded"));
+		SqlMigrationRunner runner = runner(SqlTestFixtures.recordingDataSource(), SqlDialects.POSTGRESQL, store);
+		runner.register(migration(V1));
+		SqlMigrationConflictException exception = assertThrows(SqlMigrationConflictException.class, runner::validate);
+		assertTrue(exception.getMessage().contains("checksum mismatch"));
+		assertTrue(exception.getMessage().contains("CREATE TABLE recorded"));
+	}
+	
+	@Test
+	void validateWithoutSnapshotSkipsDriftCheck() throws SqlException {
+		FakeMigrationStore store = new FakeMigrationStore(applied(V1, null));
+		SqlMigrationRunner runner = runner(SqlTestFixtures.recordingDataSource(), SqlDialects.POSTGRESQL, store);
+		runner.register(migration(V1));
+		assertDoesNotThrow(runner::validate);
 	}
 	
 	@Test
@@ -302,6 +401,61 @@ class SqlMigrationRunnerTest {
 		assertNotNull(store.saved.getFirst().checksum());
 		assertTrue(source.commitCount() >= 1);
 		assertTrue(source.executedSql().stream().anyMatch(sql -> sql.contains("CREATE TABLE") && sql.contains("test_table")));
+	}
+	
+	@Test
+	void migrateRecordsStructuralChecksum() throws SqlException {
+		FakeMigrationStore store = new FakeMigrationStore();
+		SqlMigrationRunner runner = runner(SqlTestFixtures.recordingDataSource(), SqlDialects.POSTGRESQL, store);
+		runner.register(migration(V1));
+		
+		runner.migrate();
+		
+		String checksum = store.saved.getFirst().checksum();
+		assertNotNull(checksum);
+		assertTrue(checksum.startsWith("s1:"));
+		assertEquals(64, checksum.length());
+	}
+	
+	@Test
+	void migrateRecordsExecutedStatements() throws SqlException {
+		FakeMigrationStore store = new FakeMigrationStore();
+		SqlMigrationRunner runner = runner(SqlTestFixtures.recordingDataSource(), SqlDialects.POSTGRESQL, store);
+		runner.register(migration(V1));
+		
+		runner.migrate();
+		
+		String statements = store.saved.getFirst().statements();
+		assertNotNull(statements);
+		assertTrue(statements.contains("CREATE TABLE"));
+		assertTrue(statements.contains("test_table"));
+	}
+	
+	@Test
+	void migrateRecordsNoStatementsForDataOnlyMigration() throws SqlException {
+		FakeMigrationStore store = new FakeMigrationStore();
+		SqlMigrationRunner runner = runner(SqlTestFixtures.recordingDataSource(), SqlDialects.POSTGRESQL, store);
+		runner.register(new TestMigration(V1, false, true, null, null));
+		
+		runner.migrate();
+		
+		assertEquals("", store.saved.getFirst().statements());
+	}
+	
+	@Test
+	void migrateChecksumIsStableAcrossRunnerInstances() throws SqlException {
+		FakeMigrationStore first = new FakeMigrationStore();
+		runner(SqlTestFixtures.recordingDataSource(), SqlDialects.POSTGRESQL, first).register(migration(V1));
+		SqlMigrationRunner firstRunner = runner(SqlTestFixtures.recordingDataSource(), SqlDialects.POSTGRESQL, first);
+		firstRunner.register(migration(V1));
+		firstRunner.migrate();
+		
+		FakeMigrationStore second = new FakeMigrationStore();
+		SqlMigrationRunner secondRunner = runner(SqlTestFixtures.recordingDataSource(), SqlDialects.POSTGRESQL, second);
+		secondRunner.register(migration(V1));
+		secondRunner.migrate();
+		
+		assertEquals(first.saved.getFirst().checksum(), second.saved.getFirst().checksum());
 	}
 	
 	@Test
@@ -598,51 +752,162 @@ class SqlMigrationRunnerTest {
 	}
 	
 	@Test
-	void stableParameterValueWithNull() throws Throwable {
-		assertEquals("null", invokeStableParameterValue(null));
+	void joinStatementsWithNullList() {
+		assertThrows(NullPointerException.class, () -> invokeJoinStatements(null));
 	}
 	
 	@Test
-	void stableParameterValueWithByteArray() throws Throwable {
-		assertEquals("0a1b", invokeStableParameterValue(new byte[] { 0x0a, 0x1b }));
+	void joinStatementsWithEmptyList() throws Throwable {
+		assertEquals("", invokeJoinStatements(List.of()));
 	}
 	
 	@Test
-	void stableParameterValueWithNestedArray() throws Throwable {
-		assertEquals("[1, 2]", invokeStableParameterValue(new int[] { 1, 2 }));
+	void joinStatementsWithSingleStatement() throws Throwable {
+		assertEquals("CREATE TABLE a", invokeJoinStatements(List.of(SqlRendered.of("CREATE TABLE a"))));
 	}
 	
 	@Test
-	void stableParameterValueWithScalar() throws Throwable {
-		assertEquals("42", invokeStableParameterValue(42));
+	void joinStatementsWithMultipleStatements() throws Throwable {
+		assertEquals("CREATE TABLE a;\nCREATE TABLE b", invokeJoinStatements(List.of(SqlRendered.of("CREATE TABLE a"), SqlRendered.of("CREATE TABLE b"))));
 	}
 	
 	@Test
-	void arrayToStringWithEmptyArray() throws Throwable {
-		assertEquals("[]", invokeArrayToString(new int[0]));
+	void joinStatementsSkipsEmptyStatements() throws Throwable {
+		List<SqlRendered> rendered = List.of(SqlRendered.of("CREATE TABLE a"), SqlRendered.of(""), SqlRendered.of("CREATE TABLE b"));
+		assertEquals("CREATE TABLE a;\nCREATE TABLE b", invokeJoinStatements(rendered));
 	}
 	
 	@Test
-	void arrayToStringWithNullArray() {
-		assertThrows(NullPointerException.class, () -> invokeArrayToString(null));
+	void joinStatementsWithOnlyEmptyStatements() throws Throwable {
+		assertEquals("", invokeJoinStatements(List.of(SqlRendered.of(""), SqlRendered.of(""))));
 	}
 	
 	@Test
-	void computeChecksumIsDeterministicAndHex() throws Throwable {
-		List<SqlRendered> rendered = List.of(new SqlRendered(List.of("INSERT INTO t VALUES (?)"), List.of(Pair.of(SqlTestFixtures.INTEGER_TYPE, 42))));
-		String first = invokeComputeChecksum(rendered);
-		String second = invokeComputeChecksum(rendered);
-		assertEquals(64, first.length());
-		assertTrue(first.matches("[0-9a-f]{64}"));
-		assertEquals(first, second);
-		assertNotEquals(first, invokeComputeChecksum(List.of(SqlRendered.of("INSERT INTO other VALUES (1)"))));
+	void appliedStatementsHintWithNullStatements() throws Throwable {
+		assertEquals("", invokeAppliedStatementsHint(applied(V1, "s1:abc")));
 	}
 	
 	@Test
-	void computeChecksumWithEmptyParameters() throws Throwable {
-		String checksum = invokeComputeChecksum(List.of(SqlRendered.of("CREATE TABLE t (id INTEGER)")));
-		assertEquals(64, checksum.length());
-		assertTrue(checksum.matches("[0-9a-f]{64}"));
+	void appliedStatementsHintWithEmptyStatements() throws Throwable {
+		assertEquals("", invokeAppliedStatementsHint(appliedWithStatements(V1, "s1:abc", "")));
+	}
+	
+	@Test
+	void appliedStatementsHintWithStatements() throws Throwable {
+		String hint = invokeAppliedStatementsHint(appliedWithStatements(V1, "s1:abc", "CREATE TABLE a"));
+		assertTrue(hint.startsWith(", the following sql"));
+		assertTrue(hint.contains("CREATE TABLE a"));
+	}
+	
+	@Test
+	void isBookkeepingTableWithMigrationTable() throws Throwable {
+		assertTrue(invokeIsBookkeepingTable("_sql_migrations"));
+	}
+	
+	@Test
+	void isBookkeepingTableWithSchemaColumnsTable() throws Throwable {
+		assertTrue(invokeIsBookkeepingTable(SqlDialect.SCHEMA_COLUMNS_TABLE));
+		assertTrue(invokeIsBookkeepingTable(SqlDialect.SCHEMA_CHECK_CONSTRAINTS_TABLE));
+	}
+	
+	@Test
+	void isBookkeepingTableWithUpperCaseName() throws Throwable {
+		assertTrue(invokeIsBookkeepingTable("_SQL_MIGRATIONS"));
+	}
+	
+	@Test
+	void isBookkeepingTableWithUserTable() throws Throwable {
+		assertFalse(invokeIsBookkeepingTable("users"));
+	}
+	
+	@Test
+	void isBookkeepingTableWithSimilarPrefix() throws Throwable {
+		assertFalse(invokeIsBookkeepingTable("_sqlusers"));
+		assertFalse(invokeIsBookkeepingTable("sql_users"));
+	}
+	
+	@Test
+	void describeDifferenceWithChangedJdbcType() throws Throwable {
+		String difference = invokeDescribeDifference(columnInfo(Types.INTEGER, true, false, false, false), columnInfo(Types.BIGINT, true, false, false, false));
+		assertNotNull(difference);
+		assertTrue(difference.contains("jdbc type"));
+	}
+	
+	@Test
+	void describeDifferenceWithChangedNullable() throws Throwable {
+		String difference = invokeDescribeDifference(columnInfo(Types.INTEGER, true, false, false, false), columnInfo(Types.INTEGER, false, false, false, false));
+		assertNotNull(difference);
+		assertTrue(difference.contains("nullable"));
+	}
+	
+	@Test
+	void describeDifferenceWithChangedAutoIncrement() throws Throwable {
+		String difference = invokeDescribeDifference(columnInfo(Types.INTEGER, true, false, false, false), columnInfo(Types.INTEGER, true, true, false, false));
+		assertNotNull(difference);
+		assertTrue(difference.contains("auto-increment"));
+	}
+	
+	@Test
+	void describeDifferenceWithChangedPrimaryKey() throws Throwable {
+		String difference = invokeDescribeDifference(columnInfo(Types.INTEGER, true, false, false, false), columnInfo(Types.INTEGER, true, false, true, false));
+		assertNotNull(difference);
+		assertTrue(difference.contains("primary key"));
+	}
+	
+	@Test
+	void describeDifferenceWithChangedUnique() throws Throwable {
+		String difference = invokeDescribeDifference(columnInfo(Types.INTEGER, true, false, false, false), columnInfo(Types.INTEGER, true, false, false, true));
+		assertNotNull(difference);
+		assertTrue(difference.contains("unique"));
+	}
+	
+	@Test
+	void describeDifferenceWithIdenticalColumns() throws Throwable {
+		assertNull(invokeDescribeDifference(columnInfo(Types.INTEGER, true, false, false, false), columnInfo(Types.INTEGER, true, false, false, false)));
+	}
+	
+	@Test
+	void describeDifferenceIgnoresOrdinalPosition() throws Throwable {
+		SqlSchemaColumnInfo expected = new SqlSchemaColumnInfo("users", "id", Types.INTEGER, null, true, false, false, false, 1, null);
+		SqlSchemaColumnInfo actual = new SqlSchemaColumnInfo("users", "id", Types.INTEGER, null, true, false, false, false, 7, null);
+		assertNull(invokeDescribeDifference(expected, actual));
+	}
+	
+	@Test
+	void describeDifferenceIgnoresTypeParameter() throws Throwable {
+		SqlSchemaColumnInfo expected = new SqlSchemaColumnInfo("users", "id", Types.INTEGER, SqlParameter.length(10), true, false, false, false, 1, "int");
+		SqlSchemaColumnInfo actual = new SqlSchemaColumnInfo("users", "id", Types.INTEGER, SqlParameter.length(20), true, false, false, false, 1, "integer");
+		assertNull(invokeDescribeDifference(expected, actual));
+	}
+	
+	@Test
+	void describeDifferenceReportsFirstDifferenceOnly() throws Throwable {
+		String difference = invokeDescribeDifference(columnInfo(Types.INTEGER, true, false, false, false), columnInfo(Types.BIGINT, false, false, false, false));
+		assertNotNull(difference);
+		assertTrue(difference.contains("jdbc type"));
+		assertFalse(difference.contains("nullable"));
+	}
+	
+	@Test
+	void constraintNamesWithNullList() throws Throwable {
+		assertEquals(Set.of(), invokeConstraintNames(null));
+	}
+	
+	@Test
+	void constraintNamesWithEmptyList() throws Throwable {
+		assertEquals(Set.of(), invokeConstraintNames(List.of()));
+	}
+	
+	@Test
+	void constraintNamesWithConstraints() throws Throwable {
+		List<SqlCheckConstraintInfo> constraints = List.of(new SqlCheckConstraintInfo("b_check", "b > 0"), new SqlCheckConstraintInfo("a_check", "a > 0"));
+		assertEquals(Set.of("a_check", "b_check"), invokeConstraintNames(constraints));
+	}
+	
+	@Test
+	void constraintNamesIgnoresCheckClause() throws Throwable {
+		List<SqlCheckConstraintInfo> constraints = List.of(new SqlCheckConstraintInfo("a_check", "a > 0"), new SqlCheckConstraintInfo("a_check", "a > 100"));
+		assertEquals(Set.of("a_check"), invokeConstraintNames(constraints));
 	}
 	
 	@Test
@@ -681,6 +946,189 @@ class SqlMigrationRunnerTest {
 		
 		assertNotNull(store.saved.getFirst().checksum());
 		assertDoesNotThrow(runner::validate);
+	}
+	
+	@Test
+	void executeAndSaveWrapsFailingDefaultSchema() throws SqlException {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		SchemaRecordingDialect dialect = new SchemaRecordingDialect(null, true, false);
+		SqlMigrationRunner runner = SqlMigrationRunner.of(SqlDatabase.builder(source, dialect).build(), new FakeMigrationStore());
+		runner.register(migration(V1));
+		
+		assertThrows(SqlException.class, runner::migrate);
+		assertEquals(0, source.commitCount());
+		assertEquals(0, source.rollbackCount());
+	}
+	
+	@Test
+	void executeAndSaveResolvesSchemaThroughDialect() throws SqlException {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		SchemaRecordingDialect dialect = new SchemaRecordingDialect("resolved_schema", false, false);
+		SqlMigrationRunner runner = SqlMigrationRunner.of(SqlDatabase.builder(schemaOverriding(source, "connection_schema", null), dialect).build(), new FakeMigrationStore());
+		runner.register(migration(V1));
+		
+		runner.migrate();
+		assertFalse(dialect.introspectionSchemas.isEmpty());
+		assertTrue(dialect.introspectionSchemas.stream().allMatch("resolved_schema"::equals), String.valueOf(dialect.introspectionSchemas));
+	}
+	
+	@Test
+	void executeAndSaveUsesConnectionSchemaWithDefaultDialect() throws SqlException {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		SchemaRecordingDialect dialect = new SchemaRecordingDialect(null, false, false);
+		SqlMigrationRunner runner = SqlMigrationRunner.of(SqlDatabase.builder(schemaOverriding(source, "app", "catalog"), dialect).build(), new FakeMigrationStore());
+		runner.register(migration(V1));
+		
+		runner.migrate();
+		assertTrue(dialect.introspectionSchemas.stream().allMatch("app"::equals), String.valueOf(dialect.introspectionSchemas));
+	}
+	
+	@Test
+	void executeAndSaveFallsBackToPublicWhenConnectionReportsNoSchema() throws SqlException {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		SchemaRecordingDialect dialect = new SchemaRecordingDialect(null, false, false);
+		SqlMigrationRunner runner = SqlMigrationRunner.of(SqlDatabase.builder(schemaOverriding(source, null, null), dialect).build(), new FakeMigrationStore());
+		runner.register(migration(V1));
+		
+		runner.migrate();
+		assertTrue(dialect.introspectionSchemas.stream().allMatch("public"::equals), String.valueOf(dialect.introspectionSchemas));
+	}
+	
+	@Test
+	void executeAndSaveWithCatalogScopedDialectResolvesCatalogName() throws SqlException {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		SchemaRecordingDialect dialect = new SchemaRecordingDialect(null, false, true);
+		SqlMigrationRunner runner = SqlMigrationRunner.of(SqlDatabase.builder(schemaOverriding(source, null, "app_db"), dialect).build(), new FakeMigrationStore());
+		runner.register(migration(V1));
+		
+		runner.migrate();
+		assertTrue(dialect.introspectionCatalogs.stream().allMatch("app_db"::equals), String.valueOf(dialect.introspectionCatalogs));
+		assertTrue(dialect.introspectionSchemas.stream().allMatch(Objects::isNull), String.valueOf(dialect.introspectionSchemas));
+	}
+	
+	@Test
+	void migrateWithParameterizedStatementThrowsConflict() throws Throwable {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		SqlMigrationRunner runner = runner(source, SqlDialects.POSTGRESQL, new FakeMigrationStore());
+		List<SqlRendered> statements = List.of(new SqlRendered(List.of("ALTER TABLE t ADD CONSTRAINT c CHECK(x >= ?)"), List.of(Pair.of(SqlTestFixtures.INTEGER_TYPE, 0))));
+		
+		SqlMigrationConflictException thrown = assertThrows(SqlMigrationConflictException.class, () -> invokeExecuteStatements(runner, source, statements));
+		assertTrue(thrown.getMessage().contains("CHECK(x >= ?)"));
+		assertTrue(thrown.getMessage().contains("1 bind parameter"));
+	}
+	
+	@Test
+	void migrateWithParameterizedStatementDoesNotExecuteIt() throws Throwable {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		SqlMigrationRunner runner = runner(source, SqlDialects.POSTGRESQL, new FakeMigrationStore());
+		List<SqlRendered> statements = List.of(new SqlRendered(List.of("CREATE INDEX i ON t(x) WHERE x = ?"), List.of(Pair.of(SqlTestFixtures.INTEGER_TYPE, 1))));
+		
+		assertThrows(SqlMigrationConflictException.class, () -> invokeExecuteStatements(runner, source, statements));
+		assertFalse(source.executedSql().stream().anyMatch(sql -> sql.contains("CREATE INDEX i")));
+	}
+	
+	@Test
+	void migrateWithParameterizedStatementAfterValidOneStopsAtFirstOffender() throws Throwable {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		SqlMigrationRunner runner = runner(source, SqlDialects.POSTGRESQL, new FakeMigrationStore());
+		List<SqlRendered> statements = List.of(
+			SqlRendered.of("CREATE TABLE first_table(id INTEGER)"),
+			new SqlRendered(List.of("ALTER TABLE first_table ADD CONSTRAINT c CHECK(id >= ?)"), List.of(Pair.of(SqlTestFixtures.INTEGER_TYPE, 0)))
+		);
+		
+		assertThrows(SqlMigrationConflictException.class, () -> invokeExecuteStatements(runner, source, statements));
+		assertTrue(source.executedSql().stream().anyMatch(sql -> sql.contains("CREATE TABLE first_table")));
+		assertFalse(source.executedSql().stream().anyMatch(sql -> sql.contains("ADD CONSTRAINT")));
+	}
+	
+	@Test
+	void migrateWithMultipleParametersReportsCount() throws Throwable {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		SqlMigrationRunner runner = runner(source, SqlDialects.POSTGRESQL, new FakeMigrationStore());
+		List<SqlRendered> statements = List.of(new SqlRendered(
+			List.of("ALTER TABLE t ADD CONSTRAINT c CHECK(x BETWEEN ? AND ?)"),
+			List.of(Pair.of(SqlTestFixtures.INTEGER_TYPE, 1), Pair.of(SqlTestFixtures.INTEGER_TYPE, 5))
+		));
+		
+		SqlMigrationConflictException thrown = assertThrows(SqlMigrationConflictException.class, () -> invokeExecuteStatements(runner, source, statements));
+		assertTrue(thrown.getMessage().contains("2 bind parameter"));
+	}
+	
+	@Test
+	void migrateWithParameterlessStatementExecutes() throws Throwable {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		SqlMigrationRunner runner = runner(source, SqlDialects.POSTGRESQL, new FakeMigrationStore());
+		
+		invokeExecuteStatements(runner, source, List.of(SqlRendered.of("CREATE TABLE plain_table(id INTEGER)")));
+		assertTrue(source.executedSql().stream().anyMatch(sql -> sql.contains("CREATE TABLE plain_table")));
+	}
+	
+	@Test
+	void migrateWithCheckConstraintProducesNoParameters() throws SqlException {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		FakeMigrationStore store = new FakeMigrationStore();
+		SqlMigrationRunner runner = runner(source, SqlDialects.POSTGRESQL, store);
+		runner.register(new CheckMigration(V1));
+		
+		assertDoesNotThrow(runner::migrate);
+		assertEquals(1, store.saved.size());
+		assertTrue(source.executedSql().stream().anyMatch(sql -> sql.contains("CHECK") && sql.contains(">= 0")));
+		assertTrue(source.executedSql().stream().filter(sql -> sql.startsWith("CREATE TABLE") || sql.startsWith("ALTER TABLE")).noneMatch(sql -> sql.contains("?")));
+	}
+	
+	@Test
+	void dryRunProducesNoParameterizedStatements() throws SqlException {
+		RecordingDataSource source = SqlTestFixtures.recordingDataSource();
+		SqlMigrationRunner runner = runner(source, SqlDialects.POSTGRESQL, new FakeMigrationStore());
+		runner.register(new CheckMigration(V1));
+		
+		List<SqlRendered> rendered = runner.dryRun();
+		assertFalse(rendered.isEmpty());
+		for (SqlRendered statement : rendered) {
+			assertTrue(statement.parameters().isEmpty(), "Statement carries parameters: " + statement.sql());
+			assertFalse(statement.sql().contains("?"), "Statement carries a placeholder: " + statement.sql());
+		}
+	}
+	
+	/**
+	 * A PostgreSQL dialect that records the schema and catalog the runner routes into metadata introspection, which is
+	 * the only observable trace of the schema {@code defaultSchema(Connection)} resolved for the post-migration snapshot.<br>
+	 */
+	private static final class SchemaRecordingDialect extends PostgresSqlDialect {
+		
+		private final List<String> introspectionSchemas = new ArrayList<>();
+		private final List<String> introspectionCatalogs = new ArrayList<>();
+		private final String forcedSchema;
+		private final boolean failOnDefaultSchema;
+		private final boolean schemaAsCatalog;
+		
+		private SchemaRecordingDialect(@Nullable String forcedSchema, boolean failOnDefaultSchema, boolean schemaAsCatalog) {
+			this.forcedSchema = forcedSchema;
+			this.failOnDefaultSchema = failOnDefaultSchema;
+			this.schemaAsCatalog = schemaAsCatalog;
+		}
+		
+		@Override
+		public @NonNull String defaultSchema(@NonNull Connection connection) throws SqlException {
+			if (this.failOnDefaultSchema) {
+				throw new SqlSchemaIntrospectionException("Failed to resolve the default schema in tests", new SQLException("Schema lookup failed in tests"));
+			}
+			return this.forcedSchema != null ? this.forcedSchema : super.defaultSchema(connection);
+		}
+		
+		@Override
+		public @Nullable String introspectionCatalog(@NonNull String schema) {
+			String catalog = this.schemaAsCatalog ? schema : super.introspectionCatalog(schema);
+			this.introspectionCatalogs.add(catalog);
+			return catalog;
+		}
+		
+		@Override
+		public @Nullable String introspectionSchema(@NonNull String schema) {
+			String resolved = this.schemaAsCatalog ? null : super.introspectionSchema(schema);
+			this.introspectionSchemas.add(resolved);
+			return resolved;
+		}
 	}
 	
 	private static final class FakeMigrationStore implements SqlMigrationStore {
@@ -739,7 +1187,7 @@ class SqlMigrationRunnerTest {
 				this.upCalled.set(true);
 			}
 			if (this.dataOperation) {
-				builder.data(SqlTestFixtures.sampleTable(), query -> {});
+				builder.data(SqlTestFixtures.sampleTable(), _ -> {});
 			} else {
 				builder.createTable(SqlTestFixtures.sampleTable(), table -> table.column(SqlTestFixtures.integerColumn(), SqlTestFixtures.INTEGER_TYPE));
 			}
@@ -756,6 +1204,38 @@ class SqlMigrationRunnerTest {
 		@Override
 		public boolean allowsNonAtomicExecution() {
 			return this.nonAtomic;
+		}
+	}
+	
+	/**
+	 * Migration that creates a table carrying a value check constraint and a partial index, the operations
+	 * whose values must be rendered as literals rather than bind parameters.
+	 *
+	 * @param version The version of this migration
+	 */
+	private record CheckMigration(Version version) implements SqlMigration {
+		
+		@Override
+		public @NonNull String description() {
+			return "Check migration " + this.version;
+		}
+		
+		@Override
+		public void up(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) {
+			SqlTable<Object> table = SqlTestFixtures.sampleTable();
+			SqlColumn<Object, Integer> id = table.column("id", SqlTestFixtures.INTEGER_TYPE, _ -> 0);
+			builder.createTable(table, definition -> definition.column(id, SqlTestFixtures.INTEGER_TYPE));
+			builder.addCheckConstraint(table, "sample_id_check", Sql.greaterThanOrEqualTo(id, 0));
+		}
+		
+		@Override
+		public void down(@NonNull SqlMigrationBuilder builder, @NonNull SqlMigrationSchema schema) {
+			builder.dropTable(SqlTestFixtures.sampleTable());
+		}
+		
+		@Override
+		public boolean allowsNonAtomicExecution() {
+			return true;
 		}
 	}
 }

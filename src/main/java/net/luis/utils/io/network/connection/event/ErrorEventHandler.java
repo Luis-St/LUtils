@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.connection.event;
 
+import net.luis.utils.io.network.connection.Connection;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -29,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  *     Example usage:
  * </p>
  * <pre>{@code
- * ErrorEventHandler onError = (errorType, message, cause) -> {
+ * ErrorEventHandler onError = (connection, errorType, message, cause) -> {
  *     System.err.println("Error [" + errorType + "]: " + message);
  *     if (cause != null) {
  *         cause.printStackTrace();
@@ -51,9 +52,10 @@ public interface ErrorEventHandler {
 	/**
 	 * Called when a network error occurs.<br>
 	 *
+	 * @param connection The connection the error occurred on, or null if not available
 	 * @param errorType The type/category of the error
 	 * @param message A human-readable error message
 	 * @param cause The underlying exception, if any
 	 */
-	void handle(@NonNull NetworkErrorType errorType, @NonNull String message, @Nullable Throwable cause);
+	void handle(@Nullable Connection connection, @NonNull NetworkErrorType errorType, @NonNull String message, @Nullable Throwable cause);
 }

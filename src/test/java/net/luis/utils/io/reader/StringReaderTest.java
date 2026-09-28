@@ -344,8 +344,8 @@ class StringReaderTest {
 		
 		reader.reset();
 		
-		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive((String) null, false));
-		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive((String) null, true));
+		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive(null, false));
+		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive(null, true));
 		assertEquals("t", reader.readUntilInclusive("t", false));
 		assertEquals('h', reader.peek());
 		reader.skip(4);

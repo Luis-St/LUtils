@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.database.migration;
 
-import net.luis.utils.io.database.SqlReferentialAction;
-import net.luis.utils.io.database.SqlTestFixtures;
+import net.luis.utils.io.database.*;
 import net.luis.utils.io.database.audit.SqlAuditConfig;
 import net.luis.utils.io.database.dialect.SqlDialects;
 import net.luis.utils.io.database.exception.SqlException;
@@ -35,6 +34,7 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,6 +65,30 @@ class SqlMigrationRendererTest {
 		SqlTable<Object> table = SqlTable.create(Object.class, "ref_table");
 		table.column("ref_id", SqlTestFixtures.INTEGER_TYPE, object -> 0);
 		return table;
+	}
+	
+	/**
+	 * Builds a column definition for the named column of the given table with the given options and its declared type.
+	 *
+	 * @return The built column definition
+	 */
+	private static @NonNull SqlTable<Object> keyedReferencedTable() {
+		SqlTable<Object> table = SqlTable.create(Object.class, "ref_table");
+		table.column("ref_id", SqlTestFixtures.INTEGER_TYPE, object -> 0, builder -> builder.primaryKey());
+		return table;
+	}
+	
+	/**
+	 * Builds a column definition for the named column of the given table with the given options and its declared type.
+	 *
+	 * @param table The table declaring the column
+	 * @param name The name of the column
+	 * @param options The options of the definition
+	 * @return The built column definition
+	 */
+	private static @NonNull SqlColumnDefinition definition(@NonNull SqlTable<Object> table, @NonNull String name, @NonNull SqlColumnOptions options) {
+		SqlColumn<?, ?> column = column(table, name);
+		return new SqlColumnDefinition(column, column.type(), options);
 	}
 	
 	@Test
@@ -616,5 +640,358 @@ class SqlMigrationRendererTest {
 		
 		assertTrue(allSql(rendered).contains("ON DELETE"));
 		assertTrue(allSql(rendered).contains("ON UPDATE"));
+	}
+	
+	@Test
+	void renderAddCheckConstraintOperationRendersLiteral() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		SqlAddCheckConstraintOperation operation = new SqlAddCheckConstraintOperation(table, "ck_count", Sql.greaterThanOrEqualTo(count, 0));
+		
+		List<SqlRendered> rendered = renderer.render(List.of(operation));
+		
+		assertTrue(allSql(rendered).contains("CHECK("));
+		assertTrue(allSql(rendered).contains(">= 0"));
+		assertFalse(allSql(rendered).contains("?"));
+		assertTrue(rendered.stream().allMatch(statement -> statement.parameters().isEmpty()));
+	}
+	
+	@Test
+	void renderAddCheckConstraintOperationWithStringCondition() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumn<Object, String> kind = table.column("kind", SqlTypes.TEXT, object -> "");
+		SqlAddCheckConstraintOperation operation = new SqlAddCheckConstraintOperation(table, "ck_kind", Sql.equalTo(kind, "O'Brien"));
+		
+		List<SqlRendered> rendered = renderer.render(List.of(operation));
+		
+		assertTrue(allSql(rendered).contains("'O''Brien'"));
+		assertTrue(rendered.stream().allMatch(statement -> statement.parameters().isEmpty()));
+	}
+	
+	@Test
+	void renderCreateIndexOperationWithWhereConditionRendersLiteral() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumn<Object, String> kind = table.column("kind", SqlTypes.TEXT, object -> "");
+		SqlIndex index = new SqlIndex("idx_kind", List.of(kind), false, Sql.equalTo(kind, "A"), SqlIndexMethod.BTREE);
+		SqlCreateIndexOperation operation = new SqlCreateIndexOperation(index, table);
+		
+		List<SqlRendered> rendered = renderer.render(List.of(operation));
+		
+		assertTrue(allSql(rendered).contains("WHERE"));
+		assertTrue(allSql(rendered).contains("'A'"));
+		assertTrue(rendered.stream().allMatch(statement -> statement.parameters().isEmpty()));
+	}
+	
+	@Test
+	void renderCreateTableWithColumnCheckAndAddCheckConstraintTogether() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = SqlTable.create(Object.class, "combined_table");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		table.checkConstraint(Sql.greaterThanOrEqualTo(count, 0));
+		
+		List<SqlRendered> rendered = renderer.render(List.of(
+			new SqlCreateTableOperation(table, List.of(), List.of()),
+			new SqlAddCheckConstraintOperation(table, "ck_count", Sql.lessThan(count, 100))
+		));
+		
+		assertTrue(allSql(rendered).contains(">= 0"));
+		assertTrue(allSql(rendered).contains("< 100"));
+		assertTrue(rendered.stream().allMatch(statement -> statement.parameters().isEmpty()));
+	}
+	
+	@Test
+	void renderAllOperationTypesProduceNoParameters() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = SqlTable.create(Object.class, "sweep_table");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, String> kind = table.column("kind", SqlTestFixtures.STRING_TYPE, object -> "");
+		table.checkConstraint(Sql.greaterThanOrEqualTo(count, 0));
+		SqlIndex index = new SqlIndex("idx_sweep", List.of(kind), false, Sql.equalTo(kind, "A"), SqlIndexMethod.BTREE);
+		
+		List<SqlMigrationOperation> operations = List.of(
+			new SqlCreateTableOperation(table, List.of(), List.of()),
+			new SqlAddCheckConstraintOperation(table, "ck_count", Sql.between(count, 1, 5)),
+			new SqlAddUniqueConstraintOperation(table, "uq_kind", List.of(kind)),
+			new SqlCreateIndexOperation(index, table),
+			new SqlAlterColumnOperation(count, List.of(new SqlSetDefaultAlteration(7)))
+		);
+		
+		List<SqlRendered> rendered = renderer.render(operations);
+		
+		assertFalse(rendered.isEmpty());
+		for (SqlRendered statement : rendered) {
+			assertTrue(statement.parameters().isEmpty(), "Statement carries parameters: " + statement.sql());
+			assertFalse(statement.sql().contains("?"), "Statement carries a placeholder: " + statement.sql());
+		}
+	}
+	
+	@Test
+	void renderSetDefaultAlterationRendersLiteral() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		
+		List<SqlRendered> rendered = renderer.render(List.of(new SqlAlterColumnOperation(count, List.of(new SqlSetDefaultAlteration(7)))));
+		
+		assertTrue(allSql(rendered).contains("DEFAULT"));
+		assertTrue(allSql(rendered).contains("7"));
+		assertTrue(rendered.stream().allMatch(statement -> statement.parameters().isEmpty()));
+	}
+	
+	@Test
+	void renderCreateTableWithoutColumnDefinitionsUsesTableDeclaration() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		
+		List<SqlRendered> rendered = renderer.render(List.of(new SqlCreateTableOperation(table, List.of(), List.of())));
+		assertEquals(SqlTestFixtures.DIALECT.tableRenderer().renderCreateTable(table, false).sql(), allSql(rendered));
+	}
+	
+	@Test
+	void renderCreateTableWithColumnDefinitionsAppliesOptions() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumnOptions options = new SqlColumnOptions(true, true, false, Optional.of(7), null, null);
+		
+		String sql = allSql(renderer.render(List.of(new SqlCreateTableOperation(table, List.of(definition(table, "id", options)), List.of()))));
+		assertTrue(sql.contains("NOT NULL"), sql);
+		assertTrue(sql.contains("UNIQUE"), sql);
+		assertTrue(sql.contains("DEFAULT 7"), sql);
+		assertFalse(sql.contains("\"name\""), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithPrimaryKeyColumnMarksColumnAsPrimaryKey() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		List<SqlColumnDefinition> definitions = List.of(definition(table, "id", SqlColumnOptions.EMPTY), definition(table, "name", SqlColumnOptions.EMPTY));
+		
+		String sql = allSql(renderer.render(List.of(new SqlCreateTableOperation(table, definitions, List.of(column(table, "id"))))));
+		assertTrue(sql.contains("PRIMARY KEY"), sql);
+		assertTrue(sql.indexOf("PRIMARY KEY") < sql.indexOf("\"name\""), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithoutMatchingPrimaryKeyColumn() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		SqlTable<Object> other = SqlTable.create(Object.class, "other_table");
+		SqlColumn<Object, Integer> foreign = other.column("foreign_id", SqlTestFixtures.INTEGER_TYPE, object -> 0);
+		List<SqlColumnDefinition> definitions = List.of(definition(table, "id", SqlColumnOptions.EMPTY), definition(table, "name", SqlColumnOptions.EMPTY));
+		
+		String sql = allSql(renderer.render(List.of(new SqlCreateTableOperation(table, definitions, List.of(foreign)))));
+		assertFalse(sql.contains("PRIMARY KEY"), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithDefinitionsAndEmptyPrimaryKeyColumns() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = SqlTable.create(Object.class, "test_table");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTestFixtures.INTEGER_TYPE, object -> 0, builder -> builder.primaryKey());
+		SqlColumn<Object, String> name = table.column("name", SqlTestFixtures.STRING_TYPE, object -> "test", builder -> builder.primaryKey());
+		table.compositePrimaryKey(id, name);
+		List<SqlColumnDefinition> definitions = List.of(
+			new SqlColumnDefinition(id, SqlTestFixtures.INTEGER_TYPE, new SqlColumnOptions(true, false, false, Optional.empty(), null, null)),
+			new SqlColumnDefinition(name, SqlTestFixtures.STRING_TYPE, SqlColumnOptions.EMPTY)
+		);
+		
+		List<SqlRendered> rendered = renderer.render(List.of(new SqlCreateTableOperation(table, definitions, List.of())));
+		String sql = allSql(rendered);
+		assertEquals(1, sql.split("PRIMARY KEY", -1).length - 1, sql);
+		assertTrue(sql.contains("PRIMARY KEY(\"id\", \"name\")"), sql);
+		assertTrue(sql.contains("NOT NULL"), sql);
+		assertTrue(rendered.stream().allMatch(statement -> statement.parameters().isEmpty()));
+	}
+	
+	@Test
+	void renderCreateTableWithCompositePrimaryKeyColumns() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		List<SqlColumnDefinition> definitions = List.of(definition(table, "id", SqlColumnOptions.EMPTY), definition(table, "name", SqlColumnOptions.EMPTY));
+		
+		String sql = allSql(renderer.render(List.of(new SqlCreateTableOperation(table, definitions, List.of(column(table, "id"), column(table, "name"))))));
+		assertTrue(sql.contains("PRIMARY KEY(\"id\", \"name\")"), sql);
+		assertEquals(1, sql.split("PRIMARY KEY", -1).length - 1, sql);
+	}
+	
+	@Test
+	void renderCreateTableWithReferencesTableAddsForeignKey() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumnOptions options = new SqlColumnOptions(false, false, false, Optional.empty(), keyedReferencedTable(), null);
+		
+		String sql = allSql(renderer.render(List.of(new SqlCreateTableOperation(table, List.of(definition(table, "id", options)), List.of()))));
+		assertTrue(sql.contains("REFERENCES"), sql);
+		assertTrue(sql.contains("\"ref_table\""), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithoutReferencesTableOmitsForeignKey() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		
+		String sql = allSql(renderer.render(List.of(new SqlCreateTableOperation(table, List.of(definition(table, "id", SqlColumnOptions.EMPTY)), List.of()))));
+		assertFalse(sql.contains("REFERENCES"), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithCheckAddsCheckConstraint() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = SqlTable.create(Object.class, "test_table");
+		SqlColumn<Object, Integer> age = table.column("age", SqlTypes.INTEGER, object -> 0);
+		SqlColumnOptions options = new SqlColumnOptions(false, false, false, Optional.empty(), null, Sql.greaterThan(age, 0));
+		
+		List<SqlRendered> rendered = renderer.render(List.of(new SqlCreateTableOperation(table, List.of(new SqlColumnDefinition(age, SqlTypes.INTEGER, options)), List.of())));
+		assertTrue(allSql(rendered).contains("CHECK(\"age\" > 0)"), allSql(rendered));
+		assertTrue(rendered.stream().allMatch(statement -> statement.parameters().isEmpty()));
+	}
+	
+	@Test
+	void renderCreateTableWithoutCheckOmitsCheckConstraint() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		
+		String sql = allSql(renderer.render(List.of(new SqlCreateTableOperation(table, List.of(definition(table, "id", SqlColumnOptions.EMPTY)), List.of()))));
+		assertFalse(sql.contains("CHECK"), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithNotNullOptionRendersNotNull() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumnOptions options = new SqlColumnOptions(true, false, false, Optional.empty(), null, null);
+		
+		String sql = allSql(renderer.render(List.of(new SqlCreateTableOperation(table, List.of(definition(table, "id", options)), List.of()))));
+		assertTrue(sql.contains("NOT NULL"), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithNullableOptionRendersNullable() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		
+		String sql = allSql(renderer.render(List.of(new SqlCreateTableOperation(table, List.of(definition(table, "id", SqlColumnOptions.EMPTY)), List.of()))));
+		assertFalse(sql.contains("NOT NULL"), sql);
+	}
+	
+	@Test
+	void renderAddUniqueColumnOnRebuildDialectUsesRebuild() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlDialects.SQLITE);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumnOptions options = new SqlColumnOptions(false, true, false, Optional.empty(), null, null);
+		
+		List<SqlRendered> rendered = renderer.render(List.of(new SqlAddColumnOperation(column(table, "name"), SqlTestFixtures.STRING_TYPE, options)));
+		assertTrue(rendered.size() > 1, allSql(rendered));
+		assertTrue(rendered.getFirst().sql().contains("ADD"), rendered.getFirst().sql());
+		assertFalse(rendered.getFirst().sql().contains("UNIQUE"), rendered.getFirst().sql());
+		assertTrue(allSql(rendered).contains("UNIQUE(\"name\")"), allSql(rendered));
+	}
+	
+	@Test
+	void renderAddNonUniqueColumnOnRebuildDialectUsesPlainAddColumn() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlDialects.SQLITE);
+		SqlTable<Object> table = twoColumnTable();
+		
+		List<SqlRendered> rendered = renderer.render(List.of(new SqlAddColumnOperation(column(table, "name"), SqlTestFixtures.STRING_TYPE, SqlColumnOptions.EMPTY)));
+		assertEquals(1, rendered.size(), allSql(rendered));
+		assertTrue(rendered.getFirst().sql().contains("ADD"), rendered.getFirst().sql());
+	}
+	
+	@Test
+	void renderAddUniqueColumnOnNonRebuildDialectUsesPlainAddColumn() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumnOptions options = new SqlColumnOptions(false, true, false, Optional.empty(), null, null);
+		
+		List<SqlRendered> rendered = renderer.render(List.of(new SqlAddColumnOperation(column(table, "name"), SqlTestFixtures.STRING_TYPE, options)));
+		assertEquals(1, rendered.size(), allSql(rendered));
+		assertTrue(rendered.getFirst().sql().contains("UNIQUE"), rendered.getFirst().sql());
+	}
+	
+	@Test
+	void renderNonAddColumnOperationOnRebuildDialectSkipsUniqueBranch() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlDialects.SQLITE);
+		SqlTable<Object> from = SqlTable.create(Object.class, "old_table");
+		SqlTable<Object> to = SqlTable.create(Object.class, "new_table");
+		
+		List<SqlRendered> rendered = renderer.render(List.of(new SqlRenameTableOperation(from, to)));
+		assertEquals(1, rendered.size(), allSql(rendered));
+		assertFalse(allSql(rendered).contains("UNIQUE"), allSql(rendered));
+	}
+	
+	@Test
+	void renderAddUniqueColumnViaRebuildPreservesOtherOptions() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlDialects.SQLITE);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumnOptions options = new SqlColumnOptions(true, true, false, Optional.of("x"), referencedTable(), null);
+		
+		String addColumn = renderer.render(List.of(new SqlAddColumnOperation(column(table, "name"), SqlTestFixtures.STRING_TYPE, options))).getFirst().sql();
+		assertTrue(addColumn.contains("NOT NULL"), addColumn);
+		assertTrue(addColumn.contains("DEFAULT 'x'"), addColumn);
+		assertTrue(addColumn.contains("REFERENCES"), addColumn);
+		assertFalse(addColumn.contains("UNIQUE"), addColumn);
+	}
+	
+	@Test
+	void renderAddUniqueColumnViaRebuildRebuildsWithAllTableColumns() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlDialects.SQLITE);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumnOptions options = new SqlColumnOptions(false, true, false, Optional.empty(), null, null);
+		
+		String sql = allSql(renderer.render(List.of(new SqlAddColumnOperation(column(table, "name"), SqlTestFixtures.STRING_TYPE, options))));
+		assertTrue(sql.contains("\"id\""), sql);
+		assertTrue(sql.contains("\"name\""), sql);
+	}
+	
+	@Test
+	void renderCreateTableWithColumnDefinitionsProducesNoParameters() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumnOptions options = new SqlColumnOptions(true, true, false, Optional.of(7), null, null);
+		
+		List<SqlRendered> rendered = renderer.render(List.of(new SqlCreateTableOperation(table, List.of(definition(table, "id", options)), List.of())));
+		assertTrue(rendered.stream().allMatch(statement -> statement.parameters().isEmpty()));
+	}
+	
+	@Test
+	void renderCreateTableWithAllOptionsAndCompositeKey() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlTestFixtures.DIALECT);
+		SqlTable<Object> table = SqlTable.create(Object.class, "test_table");
+		SqlColumn<Object, Integer> id = table.column("id", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, Integer> tenant = table.column("tenant", SqlTypes.INTEGER, object -> 0);
+		SqlColumn<Object, Integer> age = table.column("age", SqlTypes.INTEGER, object -> 0);
+		List<SqlColumnDefinition> definitions = List.of(
+			new SqlColumnDefinition(id, SqlTypes.INTEGER, new SqlColumnOptions(true, false, false, Optional.empty(), null, null)),
+			new SqlColumnDefinition(tenant, SqlTypes.INTEGER, new SqlColumnOptions(true, false, false, Optional.empty(), keyedReferencedTable(), null)),
+			new SqlColumnDefinition(age, SqlTypes.INTEGER, new SqlColumnOptions(false, true, false, Optional.of(18), null, Sql.greaterThan(age, 0)))
+		);
+		
+		List<SqlRendered> rendered = renderer.render(List.of(new SqlCreateTableOperation(table, definitions, List.of(id, tenant))));
+		String sql = allSql(rendered);
+		assertEquals(1, sql.split("PRIMARY KEY", -1).length - 1, sql);
+		assertTrue(sql.contains("PRIMARY KEY(\"id\", \"tenant\")"), sql);
+		assertTrue(sql.contains("REFERENCES"), sql);
+		assertTrue(sql.contains("DEFAULT 18"), sql);
+		assertTrue(sql.contains("CHECK(\"age\" > 0)"), sql);
+		assertTrue(rendered.stream().allMatch(statement -> statement.parameters().isEmpty()));
+	}
+	
+	@Test
+	void renderAddUniqueColumnViaRebuildThenAddConstraintKeepsStatementOrder() throws SqlException {
+		SqlMigrationRenderer renderer = new SqlMigrationRenderer(SqlDialects.SQLITE);
+		SqlTable<Object> table = twoColumnTable();
+		SqlColumnOptions options = new SqlColumnOptions(false, true, false, Optional.empty(), null, null);
+		
+		List<SqlRendered> rendered = renderer.render(List.of(
+			new SqlAddColumnOperation(column(table, "name"), SqlTestFixtures.STRING_TYPE, options),
+			new SqlAddUniqueConstraintOperation(table, "uq_id", List.of(column(table, "id")))
+		));
+		String sql = allSql(rendered);
+		assertTrue(rendered.size() > 2, sql);
+		assertTrue(rendered.getFirst().sql().contains("ADD"), rendered.getFirst().sql());
+		assertTrue(sql.indexOf("UNIQUE(\"name\")") < sql.lastIndexOf("UNIQUE(\"id\")"), sql);
 	}
 }

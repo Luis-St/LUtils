@@ -19,12 +19,12 @@
 package net.luis.utils.io.codec.provider;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.FieldRef;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -402,4 +402,127 @@ public interface TypeProvider<T> {
 	 * @throws X If the type does not support merging or the merge operation failed
 	 */
 	<X extends Exception> @UnknownNullability T merge(@Nullable T current, @Nullable T value, @NonNull Function<String, X> exceptionConstructor) throws X;
+	
+	/**
+	 * Creates a value of the type this provider is for which is able to hold the fields of a codec group.<br>
+	 * <p>
+	 *     The default implementation creates a map, the field count is ignored.<br>
+	 *     Providers which do not store the field names, like the binary provider,<br>
+	 *     use the field count to create a structure with a fixed number of fields.
+	 * </p>
+	 *
+	 * @param fieldCount The number of fields the struct will hold
+	 * @param exceptionConstructor A function to create an exception if the type does not support struct values or the creation failed
+	 * @param <X> The type of the exception to throw
+	 * @return An empty struct of the type
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws IllegalArgumentException If the field count is negative
+	 * @throws X If the type does not support struct values or the creation failed
+	 */
+	default <X extends Exception> @NonNull T createStruct(int fieldCount, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		if (0 > fieldCount) {
+			throw new IllegalArgumentException("Field count must not be negative, but was " + fieldCount);
+		}
+		
+		return this.createMap(exceptionConstructor);
+	}
+	
+	/**
+	 * Validates that the given value is a struct of the type this provider is for.<br>
+	 * The default implementation validates that the value is a map.<br>
+	 *
+	 * @param type The value to validate
+	 * @param exceptionConstructor A function to create an exception if the value is not a struct
+	 * @param <X> The type of the exception to throw
+	 * @throws NullPointerException If the exception constructor is null
+	 * @throws X If the value is not a struct of the type
+	 */
+	default <X extends Exception> void validateStruct(@Nullable T type, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		
+		this.getMap(type, exceptionConstructor);
+	}
+	
+	/**
+	 * Sets the value of the given field in the given struct.<br>
+	 * The default implementation sets the value using the name of the field.<br>
+	 *
+	 * @param type The struct to set the value in
+	 * @param field The field to set the value for
+	 * @param value The value to set
+	 * @param exceptionConstructor A function to create an exception if the type does not support struct values or the set operation failed
+	 * @param <X> The type of the exception to throw
+	 * @throws NullPointerException If the field or the exception constructor is null
+	 * @throws X If the type does not support struct values or the set operation failed
+	 */
+	default <X extends Exception> void setField(@Nullable T type, @NonNull FieldRef field, @Nullable T value, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		Objects.requireNonNull(field, "Field must not be null");
+		
+		this.set(type, field.name(), value, exceptionConstructor);
+	}
+	
+	/**
+	 * Checks if the given struct contains the given field.<br>
+	 * The default implementation checks the name of the field and afterwards all aliases.<br>
+	 *
+	 * @param type The struct to check
+	 * @param field The field to check
+	 * @param exceptionConstructor A function to create an exception if the type does not support struct values or the check failed
+	 * @param <X> The type of the exception to throw
+	 * @return True if the struct contains the field, false otherwise
+	 * @throws NullPointerException If the field or the exception constructor is null
+	 * @throws X If the type does not support struct values or the check failed
+	 */
+	default <X extends Exception> boolean hasField(@Nullable T type, @NonNull FieldRef field, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		Objects.requireNonNull(field, "Field must not be null");
+		
+		if (this.has(type, field.name(), exceptionConstructor)) {
+			return true;
+		}
+		
+		for (String alias : field.aliases()) {
+			if (this.has(type, alias, exceptionConstructor)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Gets the value of the given field from the given struct.<br>
+	 * <p>
+	 *     The default implementation looks up the name of the field first and afterwards all aliases.<br>
+	 *     The value of the first name which is present in the struct is returned.
+	 * </p>
+	 * <p>
+	 *     The returned value might be null if the field is not present in the struct.<br>
+	 *     This method is allowed to return null values to support optional values (which are represented as null).
+	 * </p>
+	 *
+	 * @param type The struct to get the value from
+	 * @param field The field to get the value for
+	 * @param exceptionConstructor A function to create an exception if the type does not support struct values or the retrieval failed
+	 * @param <X> The type of the exception to throw
+	 * @return The value of the field or null if the field is not present
+	 * @throws NullPointerException If the field or the exception constructor is null
+	 * @throws X If the type does not support struct values or the retrieval failed
+	 */
+	default <X extends Exception> @Nullable T getField(@Nullable T type, @NonNull FieldRef field, @NonNull Function<String, X> exceptionConstructor) throws X {
+		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
+		Objects.requireNonNull(field, "Field must not be null");
+		
+		if (this.has(type, field.name(), exceptionConstructor)) {
+			return this.get(type, field.name(), exceptionConstructor);
+		}
+		
+		for (String alias : field.aliases()) {
+			if (this.has(type, alias, exceptionConstructor)) {
+				return this.get(type, alias, exceptionConstructor);
+			}
+		}
+		return null;
+	}
 }

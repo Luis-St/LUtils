@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.mail;
 
+import net.luis.utils.io.network.HostEndpoint;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
@@ -256,5 +257,70 @@ class SmtpExceptionTest {
 		});
 		assertEquals(535, caught.replyCode());
 		assertEquals(NetworkErrorType.AUTHENTICATION_FAILED, caught.errorType());
+	}
+	
+	@Test
+	void constructWithHostEndpointAndNullReply() {
+		HostEndpoint endpoint = new HostEndpoint("smtp.example.com", 587);
+		assertThrows(NullPointerException.class, () -> new SmtpException("message", null, endpoint));
+	}
+	
+	@Test
+	void constructWithMessageReplyAndHostEndpoint() {
+		SmtpReply reply = reply(503);
+		HostEndpoint endpoint = new HostEndpoint("smtp.example.com", 587);
+		SmtpException exception = new SmtpException("Bad sequence", reply, endpoint);
+		
+		assertEquals("Bad sequence", exception.getMessage());
+		assertSame(reply, exception.reply());
+		assertEquals(NetworkErrorType.PROTOCOL_ERROR, exception.errorType());
+		assertSame(endpoint, exception.endpoint());
+	}
+	
+	@Test
+	void constructWithErrorTypeAndHostEndpoint() {
+		SmtpReply reply = reply(535);
+		HostEndpoint endpoint = new HostEndpoint("smtp.example.com", 587);
+		SmtpException exception = new SmtpException("Auth failed", reply, NetworkErrorType.AUTHENTICATION_FAILED, endpoint);
+		
+		assertEquals(NetworkErrorType.AUTHENTICATION_FAILED, exception.errorType());
+		assertSame(endpoint, exception.endpoint());
+	}
+	
+	@Test
+	void constructWithCauseAndHostEndpoint() {
+		SmtpReply reply = reply(421);
+		HostEndpoint endpoint = new HostEndpoint("smtp.example.com", 587);
+		RuntimeException cause = new RuntimeException("cause");
+		SmtpException exception = new SmtpException("Service unavailable", cause, reply, NetworkErrorType.IO_ERROR, endpoint);
+		
+		assertEquals("Service unavailable", exception.getMessage());
+		assertSame(cause, exception.getCause());
+		assertSame(reply, exception.reply());
+		assertEquals(NetworkErrorType.IO_ERROR, exception.errorType());
+		assertSame(endpoint, exception.endpoint());
+	}
+	
+	@Test
+	void smtpExceptionIsCatchableAsConnectionExceptionWithNamedEndpoint() {
+		HostEndpoint endpoint = new HostEndpoint("smtp.example.com", 587);
+		
+		NetworkConnectionException caught = assertThrows(NetworkConnectionException.class, () -> {
+			throw new SmtpException("Bad sequence", reply(503), endpoint);
+		});
+		assertInstanceOf(SmtpException.class, caught);
+		assertEquals("smtp.example.com:587", String.valueOf(caught.endpoint()));
+	}
+	
+	@Test
+	void endpointRetainsConcreteTypeForPatternMatching() {
+		SmtpException exception = new SmtpException("Bad sequence", reply(503), new HostEndpoint("smtp.example.com", 587));
+		
+		String host = switch (exception.endpoint()) {
+			case HostEndpoint hostEndpoint -> hostEndpoint.hostname();
+			case IpEndpoint ipEndpoint -> ipEndpoint.address().toString();
+			case null -> "";
+		};
+		assertEquals("smtp.example.com", host);
 	}
 }

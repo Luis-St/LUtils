@@ -172,6 +172,8 @@ public class SqlGenericFunctionRenderer {
 	/**
 	 * Renders the given unsafe function into dialect-specific sql.<br>
 	 * The raw function expression is rendered as a literal, followed by its argument list.<br>
+	 * If the function has no arguments, the raw expression is rendered on its own without an empty argument list,<br>
+	 * which allows an unsafe function to express a bare literal or identifier.<br>
 	 *
 	 * @param function The unsafe function to render
 	 * @return The rendered sql
@@ -183,6 +185,10 @@ public class SqlGenericFunctionRenderer {
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal(function.expression());
+		if (function.arguments().isEmpty()) {
+			return renderer.toSql();
+		}
+		
 		SqlRendered args = SqlRenderingHelper.renderFunctionCallWithList(this.dialect, "", function.arguments());
 		renderer.rendered(args);
 		return renderer.toSql();

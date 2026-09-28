@@ -36,9 +36,9 @@ import java.util.Objects;
 public class SqlTypeRegistryBuilder {
 	
 	/**
-	 * The collected mappings from sql type to its type mapping.
+	 * The collected mappings from sql type to its type mapping, kept in registration order so that the reverse native type resolution of the built registry is deterministic.
 	 */
-	private final Map<SqlType<?>, SqlTypeMapping> mappings = Maps.newHashMap();
+	private final Map<SqlType<?>, SqlTypeMapping> mappings = Maps.newLinkedHashMap();
 	
 	/**
 	 * Constructs a new sql type registry builder.<br>

@@ -371,7 +371,6 @@ public final class Mth {
 		return DoubleStream.of(values).max().orElseThrow(() -> new IllegalStateException("Unable to determine maximum value"));
 	}
 	
-	
 	/**
 	 * Returns the average of the given integer values.<br>
 	 * If the given array is null or empty, {@link Double#NaN} will be returned.<br>

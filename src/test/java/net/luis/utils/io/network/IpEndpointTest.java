@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import java.net.Inet6Address;
 import java.net.InetSocketAddress;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,6 +47,15 @@ class IpEndpointTest {
 		IpEndpoint endpoint = new IpEndpoint(Ipv6Address.LOOPBACK, 443);
 		assertEquals(Ipv6Address.LOOPBACK, endpoint.address());
 		assertEquals(443, endpoint.port());
+	}
+	
+	@Test
+	void constructWithNonLoopbackIpv4() {
+		Ipv4Address address = Ipv4Address.fromOctets(192, 168, 1, 1);
+		
+		IpEndpoint endpoint = new IpEndpoint(address, 8080);
+		assertEquals(address, endpoint.address());
+		assertEquals(8080, endpoint.port());
 	}
 	
 	@Test
@@ -91,9 +101,15 @@ class IpEndpointTest {
 	}
 	
 	@Test
+	void toStringWithNonLoopbackIpv4Address() {
+		assertEquals("192.168.1.1:8080", new IpEndpoint(Ipv4Address.fromOctets(192, 168, 1, 1), 8080).toString());
+	}
+	
+	@Test
 	void fromIpv4SocketAddress() {
 		IpEndpoint endpoint = IpEndpoint.from(new InetSocketAddress("127.0.0.1", 8080));
 		assertEquals(8080, endpoint.port());
+		assertInstanceOf(Ipv4Address.class, endpoint.address());
 		assertEquals(4, endpoint.address().version());
 		assertEquals("127.0.0.1:8080", endpoint.toString());
 	}
@@ -102,7 +118,16 @@ class IpEndpointTest {
 	void fromIpv6SocketAddress() {
 		IpEndpoint endpoint = IpEndpoint.from(new InetSocketAddress("::1", 443));
 		assertEquals(443, endpoint.port());
+		assertInstanceOf(Ipv6Address.class, endpoint.address());
 		assertEquals(6, endpoint.address().version());
+	}
+	
+	@Test
+	void fromNonLoopbackIpv4SocketAddress() {
+		IpEndpoint endpoint = IpEndpoint.from(new InetSocketAddress("192.168.1.1", 8080));
+		assertEquals(8080, endpoint.port());
+		assertInstanceOf(Ipv4Address.class, endpoint.address());
+		assertEquals("192.168.1.1:8080", endpoint.toString());
 	}
 	
 	@Test
@@ -118,6 +143,13 @@ class IpEndpointTest {
 		assertEquals(443, socket.getPort());
 		assertInstanceOf(Inet6Address.class, socket.getAddress());
 		assertTrue(socket.getAddress().isLoopbackAddress());
+	}
+	
+	@Test
+	void toInetSocketAddressWithNonLoopbackIpv4() {
+		InetSocketAddress socket = new IpEndpoint(Ipv4Address.fromOctets(192, 168, 1, 1), 8080).toInetSocketAddress();
+		assertEquals(8080, socket.getPort());
+		assertEquals("192.168.1.1", socket.getAddress().getHostAddress());
 	}
 	
 	@Test
@@ -139,6 +171,14 @@ class IpEndpointTest {
 		InetSocketAddress roundTrip = IpEndpoint.from(original).toInetSocketAddress();
 		assertEquals(original.getAddress(), roundTrip.getAddress());
 		assertEquals(original.getPort(), roundTrip.getPort());
+	}
+	
+	@Test
+	void toInetSocketAddressRoundTripPreservesEndpoint() {
+		IpEndpoint original = new IpEndpoint(Ipv4Address.fromOctets(10, 0, 0, 1), 9999);
+		
+		IpEndpoint roundTrip = IpEndpoint.from(original.toInetSocketAddress());
+		assertEquals(original, roundTrip);
 	}
 	
 	@Test
@@ -166,5 +206,69 @@ class IpEndpointTest {
 		IpEndpoint first = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
 		IpEndpoint second = new IpEndpoint(Ipv6Address.LOOPBACK, 8080);
 		assertNotEquals(first, second);
+	}
+	
+	@Test
+	void fromWithUnresolvedSocketAddress() {
+		InetSocketAddress unresolved = InetSocketAddress.createUnresolved("example.invalid", 8080);
+		assertThrows(NullPointerException.class, () -> IpEndpoint.from(unresolved));
+	}
+	
+	@Test
+	void resolveReturnsSameInstance() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
+		
+		Optional<IpEndpoint> resolved = endpoint.resolve();
+		assertTrue(resolved.isPresent());
+		assertSame(endpoint, resolved.orElseThrow());
+	}
+	
+	@Test
+	void resolveWithIpv6ReturnsSameInstance() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv6Address.LOOPBACK, 443);
+		
+		Optional<IpEndpoint> resolved = endpoint.resolve();
+		assertTrue(resolved.isPresent());
+		assertSame(endpoint, resolved.orElseThrow());
+	}
+	
+	@Test
+	void resolveIsNeverEmpty() {
+		assertTrue(new IpEndpoint(Ipv4Address.LOOPBACK, 0).resolve().isPresent());
+		assertTrue(new IpEndpoint(Ipv4Address.LOOPBACK, 8080).resolve().isPresent());
+		assertTrue(new IpEndpoint(Ipv4Address.LOOPBACK, 65535).resolve().isPresent());
+	}
+	
+	@Test
+	void implementsEndpointInterface() {
+		assertInstanceOf(Endpoint.class, new IpEndpoint(Ipv4Address.LOOPBACK, 8080));
+	}
+	
+	@Test
+	void portConstantsAreInheritedFromEndpoint() {
+		assertEquals(Endpoint.MIN_PORT, IpEndpoint.MIN_PORT);
+		assertEquals(Endpoint.MAX_PORT, IpEndpoint.MAX_PORT);
+	}
+	
+	@Test
+	void endpointInterfaceMethodsWorkThroughSupertype() {
+		Endpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
+		
+		assertEquals(8080, endpoint.port());
+		assertEquals(8080, endpoint.toInetSocketAddress().getPort());
+		assertTrue(endpoint.resolve().isPresent());
+	}
+	
+	@Test
+	void resolveRoundTripPreservesEndpoint() {
+		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
+		
+		IpEndpoint twiceResolved = endpoint.resolve().orElseThrow().resolve().orElseThrow();
+		assertSame(endpoint, twiceResolved);
+	}
+	
+	@Test
+	void ipEndpointDoesNotEqualHostEndpoint() {
+		assertNotEquals(new IpEndpoint(Ipv4Address.LOOPBACK, 8080), new HostEndpoint("127.0.0.1", 8080));
 	}
 }

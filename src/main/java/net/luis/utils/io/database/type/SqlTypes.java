@@ -31,8 +31,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.time.*;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -99,7 +98,7 @@ public final class SqlTypes {
 	/**
 	 * The sql type for a single character, mapped onto a fixed-length string of length one.
 	 */
-	public static final SqlType<Character> CHARACTER = FIXED_STRING.configure(SqlParameter.length(1)).map(Character.class, nullable(String::valueOf), s -> {
+	public static final SqlType<Character> CHARACTER = FIXED_STRING.configure(SqlParameter.length(1)).map("character", Character.class, nullable(String::valueOf), s -> {
 		if (s.isEmpty()) {
 			throw new SqlClientException("Unable to read CHARACTER from an empty string value");
 		}
@@ -182,50 +181,79 @@ public final class SqlTypes {
 	/**
 	 * The sql type for a year, mapped onto {@link #INTEGER}.
 	 */
-	public static final SqlType<Year> YEAR = INTEGER.map(Year.class, nullable(Year::getValue), Year::of);
+	public static final SqlType<Year> YEAR = INTEGER.map("year", Year.class, nullable(Year::getValue), Year::of);
 	/**
 	 * The sql type for a month, mapped onto {@link #INTEGER} using the month number.
 	 */
-	public static final SqlType<Month> MONTH = INTEGER.map(Month.class, nullable(Month::getValue), Month::of);
+	public static final SqlType<Month> MONTH = INTEGER.map("month", Month.class, nullable(Month::getValue), Month::of);
 	/**
 	 * The sql type for a day of the week, mapped onto {@link #INTEGER} using the day number.
 	 */
-	public static final SqlType<DayOfWeek> DAY_OF_WEEK = INTEGER.map(DayOfWeek.class, nullable(DayOfWeek::getValue), DayOfWeek::of);
+	public static final SqlType<DayOfWeek> DAY_OF_WEEK = INTEGER.map("day_of_week", DayOfWeek.class, nullable(DayOfWeek::getValue), DayOfWeek::of);
 	/**
 	 * The sql type for a duration, mapped onto {@link #LONG} as a nanosecond count.
 	 */
-	public static final SqlType<Duration> DURATION = LONG.map(Duration.class, nullable(Duration::toNanos), Duration::ofNanos);
+	public static final SqlType<Duration> DURATION = LONG.map("duration", Duration.class, nullable(Duration::toNanos), Duration::ofNanos);
 	
 	/**
 	 * The sql type for a uuid, mapped onto a fixed-length string of length 36.
 	 */
-	public static final SqlType<UUID> UUID = FIXED_STRING.configure(SqlParameter.length(36)).map(UUID.class, nullable(java.util.UUID::toString), java.util.UUID::fromString);
+	public static final SqlType<UUID> UUID = FIXED_STRING.configure(SqlParameter.length(36)).map("uuid", UUID.class, nullable(java.util.UUID::toString), java.util.UUID::fromString);
 	
 	/**
 	 * The sql type for a json element, stored as its textual representation.
 	 */
-	public static final SqlType<JsonElement> JSON = TEXT.map(JsonElement.class, nullable(element -> element.toString(JsonConfig.DEFAULT)), string -> new JsonReader(string).readJson());
+	public static final SqlType<JsonElement> JSON = TEXT.map("json", JsonElement.class, nullable(element -> element.toString(JsonConfig.DEFAULT)), string -> new JsonReader(string).readJson());
 	/**
 	 * The sql type for an xml element, stored as its textual representation.
 	 */
-	public static final SqlType<XmlElement> XML = TEXT.map(XmlElement.class, nullable(element -> element.toString(XmlConfig.DEFAULT)), SqlTypes::readXml);
+	public static final SqlType<XmlElement> XML = TEXT.map("xml", XmlElement.class, nullable(element -> element.toString(XmlConfig.DEFAULT)), SqlTypes::readXml);
 	
 	/**
 	 * The sql type for an ip address, stored as its string representation in a string of length 64.
 	 */
 	@SuppressWarnings("unchecked")
-	public static final SqlType<IpAddress<?>> IP_ADDRESS = STRING.configure(SqlParameter.length(64)).map((Class<IpAddress<?>>) (Class<?>) IpAddress.class, nullable(IpAddress::toString), IpAddresses::parse);
+	public static final SqlType<IpAddress<?>> IP_ADDRESS = STRING.configure(SqlParameter.length(64)).map("ip_address", (Class<IpAddress<?>>) (Class<?>) IpAddress.class, nullable(IpAddress::toString), IpAddresses::parse);
 	/**
 	 * The sql type for an ip network, stored as its string representation in a string of length 64.
 	 */
 	@SuppressWarnings("unchecked")
-	public static final SqlType<IpNetwork<?, ?>> IP_NETWORK = STRING.configure(SqlParameter.length(64)).map((Class<IpNetwork<?, ?>>) (Class<?>) IpNetwork.class, nullable(IpNetwork::toString), IpAddresses::parseNetwork);
+	public static final SqlType<IpNetwork<?, ?>> IP_NETWORK = STRING.configure(SqlParameter.length(64)).map("ip_network", (Class<IpNetwork<?, ?>>) (Class<?>) IpNetwork.class, nullable(IpNetwork::toString), IpAddresses::parseNetwork);
+	
+	/**
+	 * The identified types of this class, mapped by their identifier.
+	 */
+	private static final Map<String, SqlType<?>> IDENTIFIED_TYPES = Map.ofEntries(
+		Map.entry("character", CHARACTER),
+		Map.entry("year", YEAR),
+		Map.entry("month", MONTH),
+		Map.entry("day_of_week", DAY_OF_WEEK),
+		Map.entry("duration", DURATION),
+		Map.entry("uuid", UUID),
+		Map.entry("json", JSON),
+		Map.entry("xml", XML),
+		Map.entry("ip_address", IP_ADDRESS),
+		Map.entry("ip_network", IP_NETWORK)
+	);
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 * This is a static holder class.<br>
 	 */
 	private SqlTypes() {}
+	
+	/**
+	 * Returns the identified sql type of this class with the given identifier.<br>
+	 * This is used to restore the exact type of a column from a stored schema snapshot, a type that was only reconstructed from its jdbc type code would lose the mapping it was defined with.<br>
+	 *
+	 * @param identifier The identifier of the type
+	 * @return An optional containing the type or an empty optional if no type of this class carries the identifier
+	 * @throws NullPointerException If the identifier is null
+	 */
+	public static @NonNull Optional<SqlType<?>> byIdentifier(@NonNull String identifier) {
+		Objects.requireNonNull(identifier, "Identifier must not be null");
+		return Optional.ofNullable(IDENTIFIED_TYPES.get(identifier));
+	}
 	
 	/**
 	 * Wraps the given function into a throwable function that passes {@code null} values through unchanged.<br>

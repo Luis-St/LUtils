@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect.renderer.expression;
 
+import net.luis.utils.io.database.dialect.MySqlValuesExpression;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnknownConstructException;
@@ -26,6 +27,7 @@ import net.luis.utils.io.database.expression.orderable.OrderedSqlExpression;
 import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
+import net.luis.utils.io.database.table.SqlAliasedColumn;
 import net.luis.utils.io.database.table.SqlColumn;
 import org.jspecify.annotations.NonNull;
 
@@ -69,6 +71,8 @@ public class SqlExpressionRenderer {
 		return switch (expression) {
 			case OrderedSqlExpression<?> expr -> this.renderOrdered(expr);
 			case SqlAliasedExpression<?> aliased -> this.renderAliased(aliased);
+			case SqlAliasedColumn<?, ?> aliasedColumn -> aliasedColumn.toSql(this.dialect);
+			case MySqlValuesExpression<?> mysqlValues -> mysqlValues.toSql(this.dialect);
 			case SqlColumn<?, ?> column -> column.toSql(this.dialect);
 			case SqlFunction<?> func -> this.dialect.renderFunction(func);
 			case SqlValueExpression<?> value -> this.renderValue(value);

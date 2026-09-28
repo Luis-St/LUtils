@@ -127,7 +127,7 @@ public class SqlMigrationOperationRenderer {
 			renderer.references().literal(this.dialect.quoteIdentifier(options.referencesTable().name()));
 		}
 		if (options.check() != null) {
-			SqlRendered checkRendered = this.dialect.renderCondition(options.check());
+			SqlRendered checkRendered = this.dialect.renderCheckCondition(options.check());
 			renderer.check().openingBracket().rendered(checkRendered).closingBracket();
 		}
 	}
@@ -251,7 +251,7 @@ public class SqlMigrationOperationRenderer {
 		Objects.requireNonNull(constraintName, "Sql constraint name must not be null");
 		Objects.requireNonNull(condition, "Sql condition must not be null");
 		
-		SqlRendered conditionRendered = this.dialect.renderCondition(condition);
+		SqlRendered conditionRendered = this.dialect.renderCheckCondition(condition);
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.alter().table().literal(this.dialect.quoteIdentifier(table.name())).add().constraint().literal(this.dialect.quoteIdentifier(constraintName)).check().openingBracket().rendered(conditionRendered).closingBracket();
 		return renderer.toSql();

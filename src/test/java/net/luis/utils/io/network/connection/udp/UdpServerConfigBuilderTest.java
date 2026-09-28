@@ -125,7 +125,7 @@ class UdpServerConfigBuilderTest {
 	@Test
 	void onErrorWithHandler() {
 		UdpServerConfig config = UdpServerConfig.builder()
-			.onError((type, msg, cause) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		assertNotNull(config.onError());
 	}
@@ -146,7 +146,7 @@ class UdpServerConfigBuilderTest {
 		assertSame(builder, builder.reuseAddress(true));
 		assertSame(builder, builder.executorStrategy(ClientExecutorStrategy.virtualThreads()));
 		assertSame(builder, builder.onMessage((server, datagram, data) -> {}));
-		assertSame(builder, builder.onError((type, msg, cause) -> {}));
+		assertSame(builder, builder.onError((connection, type, msg, cause) -> {}));
 	}
 	
 	@Test
@@ -158,7 +158,7 @@ class UdpServerConfigBuilderTest {
 			.reuseAddress(true)
 			.executorStrategy(strategy)
 			.onMessage((server, datagram, data) -> {})
-			.onError((type, msg, cause) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
 		assertEquals(2048, config.bufferSize());

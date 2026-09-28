@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.condition.conditions.comparison.SqlEqualToCondition;
 import net.luis.utils.io.database.exception.SqlException;
@@ -25,6 +26,7 @@ import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureExce
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlTypes;
@@ -103,5 +105,57 @@ class SqlServerIndexRendererTest {
 		String sql = RENDERER.renderDropIndex(SqlTestFixtures.sampleTable(), "idx").sql();
 		assertTrue(sql.contains("DROP INDEX"));
 		assertTrue(sql.contains("[test_table]"));
+	}
+	
+	@Test
+	void renderCreateIndexWithWhereConditionRendersLiteral() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, String> kind = table.column("kind", SqlTypes.TEXT, object -> "");
+		SqlIndex index = new SqlIndex("idx_kind", List.of(kind), false, Sql.equalTo(kind, "A"), SqlIndexMethod.BTREE);
+		SqlRendered rendered = RENDERER.renderCreateIndex(index);
+		assertTrue(rendered.sql().contains("WHERE"));
+		assertTrue(rendered.sql().contains("'A'"));
+		assertFalse(rendered.sql().contains("?"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateIndexWithoutWhereConditionOmitsWhere() throws SqlException {
+		SqlIndex index = new SqlIndex("idx", columns(), false, SqlIndexMethod.BTREE);
+		SqlRendered rendered = RENDERER.renderCreateIndex(index);
+		assertFalse(rendered.sql().contains("WHERE"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateIndexWithNumericWhereConditionRendersLiteral() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		SqlIndex index = new SqlIndex("idx_count", List.of(count), false, Sql.greaterThan(count, 10), SqlIndexMethod.BTREE);
+		SqlRendered rendered = RENDERER.renderCreateIndex(index);
+		assertTrue(rendered.sql().contains("> 10"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateIndexWithNullCheckWhereCondition() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, String> description = table.column("description", SqlTypes.TEXT, object -> "");
+		SqlIndex index = new SqlIndex("idx_desc", List.of(description), false, Sql.isNull(description).not(), SqlIndexMethod.BTREE);
+		SqlRendered rendered = RENDERER.renderCreateIndex(index);
+		assertTrue(rendered.sql().contains("NOT("));
+		assertTrue(rendered.sql().contains("IS NULL"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderCreateIndexUniqueWithWhereConditionRendersLiteral() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlColumn<Object, String> kind = table.column("kind", SqlTypes.TEXT, object -> "");
+		SqlIndex index = new SqlIndex("idx_kind", List.of(kind), true, Sql.equalTo(kind, "A"), SqlIndexMethod.BTREE);
+		SqlRendered rendered = RENDERER.renderCreateIndex(index);
+		assertTrue(rendered.sql().contains("UNIQUE"));
+		assertTrue(rendered.sql().contains("'A'"));
+		assertTrue(rendered.parameters().isEmpty());
 	}
 }

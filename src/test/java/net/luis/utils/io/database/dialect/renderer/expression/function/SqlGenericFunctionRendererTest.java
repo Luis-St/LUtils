@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect.renderer.expression.function;
 
+import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialects;
 import net.luis.utils.io.database.exception.SqlException;
@@ -28,6 +29,8 @@ import net.luis.utils.io.database.function.SqlFunction;
 import net.luis.utils.io.database.function.functions.generic.*;
 import net.luis.utils.io.database.function.functions.numeric.SqlAbsFunction;
 import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlType;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.util.SqlCaseWhenBranch;
@@ -210,6 +213,63 @@ class SqlGenericFunctionRendererTest {
 		assertTrue(rendered.sql().contains("ABS("));
 		assertTrue(rendered.sql().contains("ELSE"));
 		assertTrue(rendered.sql().contains("END"));
+	}
+	
+	@Test
+	void renderUnsafeWithoutArgumentsOmitsArgumentList() throws SqlException {
+		SqlUnsafeFunction<Integer> function = new SqlUnsafeFunction<>("0", List.of(), SqlTypes.INTEGER);
+		SqlRendered rendered = RENDERER.renderUnsafe(function);
+		assertEquals("0", rendered.sql());
+		assertFalse(rendered.sql().contains("("));
+		assertFalse(rendered.sql().contains(")"));
+	}
+	
+	@Test
+	void renderUnsafeWithoutArgumentsPreservesRawExpression() throws SqlException {
+		SqlUnsafeFunction<Integer> function = new SqlUnsafeFunction<>("CURRENT_DATE", List.of(), SqlTypes.INTEGER);
+		assertEquals("CURRENT_DATE", RENDERER.renderUnsafe(function).sql());
+	}
+	
+	@Test
+	void renderUnsafeWithoutArgumentsHasNoParameters() throws SqlException {
+		SqlUnsafeFunction<Integer> function = new SqlUnsafeFunction<>("0", List.of(), SqlTypes.INTEGER);
+		assertTrue(RENDERER.renderUnsafe(function).parameters().isEmpty());
+	}
+	
+	@Test
+	void renderUnsafeWithSingleArgument() throws SqlException {
+		SqlUnsafeFunction<Integer> function = new SqlUnsafeFunction<>("MY_FUNC", List.of(new SqlValueExpression<>(1)), SqlTypes.INTEGER);
+		String sql = RENDERER.renderUnsafe(function).sql();
+		assertTrue(sql.startsWith("MY_FUNC"));
+		assertTrue(sql.contains("("));
+		assertTrue(sql.contains(")"));
+		assertEquals(0, sql.chars().filter(c -> c == ',').count());
+	}
+	
+	@Test
+	void renderUnsafeWithMultipleArguments() throws SqlException {
+		SqlUnsafeFunction<Integer> function = new SqlUnsafeFunction<>("MY_FUNC", List.of(new SqlValueExpression<>(1), new SqlValueExpression<>(2)), SqlTypes.INTEGER);
+		String sql = RENDERER.renderUnsafe(function).sql();
+		assertTrue(sql.startsWith("MY_FUNC"));
+		assertEquals(1, sql.chars().filter(c -> c == ',').count());
+	}
+	
+	@Test
+	void renderUnsafeWithArgumentsCarryingParameters() throws SqlException {
+		SqlUnsafeFunction<Integer> function = new SqlUnsafeFunction<>("MY_FUNC", List.of(new SqlValueExpression<>(1)), SqlTypes.INTEGER);
+		SqlRendered rendered = RENDERER.renderUnsafe(function);
+		assertTrue(rendered.sql().contains("?"));
+		assertEquals(1, rendered.parameters().size());
+	}
+	
+	@Test
+	void renderUnsafeWithoutArgumentsInsideCondition() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "items");
+		SqlColumn<Object, Integer> count = table.column("count", SqlTypes.INTEGER, object -> 0);
+		SqlExpression<Integer> zero = new SqlUnsafeFunction<>("0", List.of(), SqlTypes.INTEGER);
+		SqlRendered rendered = SqlDialects.DEFAULT.renderCondition(Sql.greaterThanOrEqualTo(count, zero));
+		assertEquals("\"items\".\"count\" >= 0", rendered.sql());
+		assertFalse(rendered.sql().contains("()"));
 	}
 	
 	private static final class UnknownFunction implements SqlFunction<Object> {

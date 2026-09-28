@@ -35,12 +35,12 @@ import java.security.KeyStore;
  *
  * @author Luis-St
  */
-final class SslTestContext {
+public final class SslTestContext {
 	
 	/**
 	 * The password protecting the test keystore and its key entry.<br>
 	 */
-	static final String PASSWORD = "changeit";
+	public static final String PASSWORD = "changeit";
 	
 	private SslTestContext() {}
 	
@@ -50,7 +50,7 @@ final class SslTestContext {
 	 * @return The loaded keystore
 	 * @throws Exception If the keystore cannot be loaded
 	 */
-	static @NonNull KeyStore loadKeyStore() throws Exception {
+	public static @NonNull KeyStore loadKeyStore() throws Exception {
 		KeyStore keyStore = KeyStore.getInstance("PKCS12");
 		try (InputStream stream = SslTestContext.class.getResourceAsStream("/ssl/keystore.p12")) {
 			if (stream == null) {
@@ -69,7 +69,7 @@ final class SslTestContext {
 	 * @return A server SSL context
 	 * @throws Exception If the context cannot be created
 	 */
-	static @NonNull SSLContext serverContext() throws Exception {
+	public static @NonNull SSLContext serverContext() throws Exception {
 		return createContext(true, true);
 	}
 	
@@ -80,7 +80,7 @@ final class SslTestContext {
 	 * @return A client SSL context
 	 * @throws Exception If the context cannot be created
 	 */
-	static @NonNull SSLContext clientContext() throws Exception {
+	public static @NonNull SSLContext clientContext() throws Exception {
 		return createContext(true, true);
 	}
 	
@@ -91,7 +91,7 @@ final class SslTestContext {
 	 * @return A trust-only client SSL context
 	 * @throws Exception If the context cannot be created
 	 */
-	static @NonNull SSLContext trustOnlyClientContext() throws Exception {
+	public static @NonNull SSLContext trustOnlyClientContext() throws Exception {
 		return createContext(false, true);
 	}
 	

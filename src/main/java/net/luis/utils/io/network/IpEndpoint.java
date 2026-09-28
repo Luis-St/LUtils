@@ -24,10 +24,11 @@ import org.jspecify.annotations.NonNull;
 
 import java.net.*;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Represents a network endpoint consisting of an IP address and a port number.<br>
- * This record provides a convenient way to bundle an IP address with its associated port,
+ * This record provides a convenient way to bundle an IP address with its associated port,<br>
  * commonly used for specifying connection targets or server bindings.<br>
  * <p>
  *     The port number must be in the valid range of 0 to 65535 inclusive.<br>
@@ -56,16 +57,7 @@ import java.util.Objects;
  * @param address The IP address of the endpoint
  * @param port The port number (must be between 0 and 65535 inclusive)
  */
-public record IpEndpoint(@NonNull IpAddress<?> address, int port) {
-	
-	/**
-	 * The minimum valid port number.<br>
-	 */
-	public static final int MIN_PORT = 0;
-	/**
-	 * The maximum valid port number.<br>
-	 */
-	public static final int MAX_PORT = 65535;
+public record IpEndpoint(@NonNull IpAddress<?> address, int port) implements Endpoint {
 	
 	/**
 	 * Constructs a new IP endpoint with the specified address and port.<br>
@@ -102,15 +94,24 @@ public record IpEndpoint(@NonNull IpAddress<?> address, int port) {
 	 * Converts this endpoint to a {@link InetSocketAddress}.<br>
 	 * This method provides interoperability with the standard Java networking API.
 	 * <p>
-	 *     The returned socket address can be used with classes such as
-	 *     {@link Socket#connect(SocketAddress)} and
+	 *     The returned socket address can be used with classes such as {@link Socket#connect(SocketAddress)} and<br>
 	 *     {@link ServerSocket#bind(SocketAddress)}.
 	 * </p>
 	 *
 	 * @return An {@link InetSocketAddress} representing this endpoint
 	 */
+	@Override
 	public @NonNull InetSocketAddress toInetSocketAddress() {
 		return this.address.toSocketAddress(this.port);
+	}
+	
+	/**
+	 * Resolves this endpoint, which is a no-op because it already holds a literal IP address.<br>
+	 * @return This endpoint, never empty
+	 */
+	@Override
+	public @NonNull Optional<IpEndpoint> resolve() {
+		return Optional.of(this);
 	}
 	
 	/**

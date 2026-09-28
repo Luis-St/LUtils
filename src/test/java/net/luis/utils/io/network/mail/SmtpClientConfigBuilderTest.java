@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class SmtpClientConfigBuilderTest {
 	
-	private static final ErrorEventHandler NO_OP = (errorType, message, cause) -> {};
+	private static final ErrorEventHandler NO_OP = (connection, errorType, message, cause) -> {};
 	
 	@Test
 	void constructDefaultBuilder() {

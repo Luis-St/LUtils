@@ -91,4 +91,20 @@ class SqlAliasTest {
 		Supplier<String> supplier = SqlAlias.of("x");
 		assertEquals("x", supplier.get());
 	}
+	
+	@Test
+	void excludedConstantHasExpectedValue() {
+		assertEquals("excluded", SqlAlias.EXCLUDED.get());
+	}
+	
+	@Test
+	void excludedConstantRoundTripsThroughToString() {
+		assertEquals("excluded", SqlAlias.EXCLUDED.toString());
+	}
+	
+	@Test
+	void excludedConstantEqualsFactoryCreatedAlias() {
+		assertEquals(SqlAlias.of("excluded"), SqlAlias.EXCLUDED);
+		assertEquals(SqlAlias.of("excluded").hashCode(), SqlAlias.EXCLUDED.hashCode());
+	}
 }

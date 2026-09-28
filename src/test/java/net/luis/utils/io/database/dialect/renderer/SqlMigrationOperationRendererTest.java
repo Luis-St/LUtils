@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect.renderer;
 
+import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.audit.*;
 import net.luis.utils.io.database.condition.SqlCondition;
@@ -549,5 +550,92 @@ class SqlMigrationOperationRendererTest {
 				assertFalse(sql.contains("DEFAULT 0"));
 			}
 		}
+	}
+	
+	@Test
+	void renderAddCheckConstraintRendersLiteral() throws SqlException {
+		SqlTable<Object> users = usersTable();
+		SqlColumn<Object, Integer> count = idColumn(users);
+		SqlRendered rendered = RENDERER.renderAddCheckConstraint(users, "users_count_check", Sql.greaterThanOrEqualTo(count, 0));
+		assertTrue(rendered.sql().contains("ALTER TABLE"));
+		assertTrue(rendered.sql().contains("ADD CONSTRAINT"));
+		assertTrue(rendered.sql().contains("CHECK("));
+		assertTrue(rendered.sql().contains(">= 0"));
+		assertFalse(rendered.sql().contains("?"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderAddCheckConstraintWithStringCondition() throws SqlException {
+		SqlTable<Object> users = usersTable();
+		SqlColumn<Object, String> kind = users.column("kind", SqlTypes.TEXT, object -> "");
+		SqlRendered rendered = RENDERER.renderAddCheckConstraint(users, "users_kind_check", Sql.equalTo(kind, "O'Brien"));
+		assertTrue(rendered.sql().contains("'O''Brien'"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderAddCheckConstraintWithBetweenCondition() throws SqlException {
+		SqlTable<Object> users = usersTable();
+		SqlColumn<Object, Integer> count = idColumn(users);
+		SqlRendered rendered = RENDERER.renderAddCheckConstraint(users, "users_count_check", Sql.between(count, 1, 5));
+		assertTrue(rendered.sql().contains("1"));
+		assertTrue(rendered.sql().contains("5"));
+		assertFalse(rendered.sql().contains("?"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderAddCheckConstraintWithCombinedCondition() throws SqlException {
+		SqlTable<Object> users = usersTable();
+		SqlColumn<Object, Integer> count = idColumn(users);
+		SqlColumn<Object, String> kind = users.column("kind", SqlTypes.TEXT, object -> "");
+		SqlRendered rendered = RENDERER.renderAddCheckConstraint(users, "ck", SqlCondition.allOf(Sql.greaterThanOrEqualTo(count, 0), Sql.equalTo(kind, "A")));
+		assertTrue(rendered.sql().contains(">= 0"));
+		assertTrue(rendered.sql().contains("'A'"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderAddCheckConstraintWithNegatedCondition() throws SqlException {
+		SqlTable<Object> users = usersTable();
+		SqlColumn<Object, String> kind = users.column("kind", SqlTypes.TEXT, object -> "");
+		SqlRendered rendered = RENDERER.renderAddCheckConstraint(users, "ck", Sql.equalTo(kind, "A").not());
+		assertTrue(rendered.sql().contains("NOT"));
+		assertTrue(rendered.sql().contains("'A'"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderColumnOptionsWithCheckRendersLiteral() throws SqlException {
+		SqlTable<Object> users = usersTable();
+		SqlColumn<Object, Integer> count = idColumn(users);
+		SqlColumnOptions options = new SqlColumnOptions(false, false, false, Optional.empty(), null, Sql.greaterThanOrEqualTo(count, 0));
+		SqlRendered rendered = RENDERER.renderAddColumn(users, count, SqlTypes.INTEGER, options);
+		assertTrue(rendered.sql().contains("CHECK("));
+		assertTrue(rendered.sql().contains(">= 0"));
+		assertFalse(rendered.sql().contains("?"));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderColumnOptionsWithoutCheckOmitsCheckClause() throws SqlException {
+		SqlTable<Object> users = usersTable();
+		SqlColumn<Object, Integer> count = idColumn(users);
+		SqlRendered rendered = RENDERER.renderAddColumn(users, count, SqlTypes.INTEGER, SqlColumnOptions.EMPTY);
+		assertFalse(rendered.sql().contains("CHECK("));
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderColumnOptionsWithCheckAndDefaultValue() throws SqlException {
+		SqlTable<Object> users = usersTable();
+		SqlColumn<Object, Integer> count = idColumn(users);
+		SqlColumnOptions options = new SqlColumnOptions(false, false, false, Optional.of(0), null, Sql.greaterThanOrEqualTo(count, 0));
+		SqlRendered rendered = RENDERER.renderAddColumn(users, count, SqlTypes.INTEGER, options);
+		assertTrue(rendered.sql().contains("DEFAULT"));
+		assertTrue(rendered.sql().contains("CHECK("));
+		assertFalse(rendered.sql().contains("?"));
+		assertTrue(rendered.parameters().isEmpty());
 	}
 }

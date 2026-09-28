@@ -39,6 +39,7 @@ class TcpClientConfigBuilderTest {
 		assertEquals(Duration.ZERO, config.readTimeout());
 		assertEquals(Duration.ZERO, config.writeTimeout());
 		assertEquals(8192, config.bufferSize());
+		assertTrue(config.framing());
 		assertTrue(config.tcpNoDelay());
 		assertTrue(config.keepAlive());
 		assertNull(config.onConnect());
@@ -113,6 +114,74 @@ class TcpClientConfigBuilderTest {
 	}
 	
 	@Test
+	void framingTrue() {
+		TcpClientConfig config = TcpClientConfig.builder()
+			.framing(true)
+			.build();
+		assertTrue(config.framing());
+	}
+	
+	@Test
+	void framingFalse() {
+		TcpClientConfig config = TcpClientConfig.builder()
+			.framing(false)
+			.build();
+		assertFalse(config.framing());
+	}
+	
+	@Test
+	void framingDefaultsToEnabled() {
+		TcpClientConfig config = TcpClientConfig.builder().build();
+		assertTrue(config.framing());
+	}
+	
+	@Test
+	void framingReturnsSameBuilder() {
+		TcpClientConfigBuilder builder = TcpClientConfig.builder();
+		assertSame(builder, builder.framing(false));
+	}
+	
+	@Test
+	void framingSetMultipleTimes() {
+		TcpClientConfig config = TcpClientConfig.builder()
+			.framing(false)
+			.framing(true)
+			.framing(false)
+			.build();
+		assertFalse(config.framing());
+	}
+	
+	@Test
+	void framingSurvivesBuilderReuse() {
+		TcpClientConfigBuilder builder = TcpClientConfig.builder()
+			.framing(false);
+		
+		TcpClientConfig first = builder.build();
+		assertFalse(first.framing());
+		
+		builder.framing(true);
+		TcpClientConfig second = builder.build();
+		assertTrue(second.framing());
+		
+		assertFalse(first.framing());
+	}
+	
+	@Test
+	void framingCombinedWithOtherOptions() {
+		TcpClientConfig config = TcpClientConfig.builder()
+			.bufferSize(4096)
+			.framing(false)
+			.tcpNoDelay(true)
+			.keepAlive(false)
+			.build();
+		
+		assertEquals(4096, config.bufferSize());
+		assertFalse(config.framing());
+		assertTrue(config.tcpNoDelay());
+		assertFalse(config.keepAlive());
+	}
+	
+	@Test
 	void tcpNoDelayTrue() {
 		TcpClientConfig config = TcpClientConfig.builder()
 			.tcpNoDelay(true)
@@ -147,7 +216,7 @@ class TcpClientConfigBuilderTest {
 	@Test
 	void onConnectWithHandler() {
 		TcpClientConfig config = TcpClientConfig.builder()
-			.onConnect(event -> {})
+			.onConnect((connection, local, remote, timestamp) -> {})
 			.build();
 		assertNotNull(config.onConnect());
 	}
@@ -163,7 +232,7 @@ class TcpClientConfigBuilderTest {
 	@Test
 	void onDisconnectWithHandler() {
 		TcpClientConfig config = TcpClientConfig.builder()
-			.onDisconnect(event -> {})
+			.onDisconnect((connection, local, remote, timestamp) -> {})
 			.build();
 		assertNotNull(config.onDisconnect());
 	}
@@ -179,7 +248,7 @@ class TcpClientConfigBuilderTest {
 	@Test
 	void onErrorWithHandler() {
 		TcpClientConfig config = TcpClientConfig.builder()
-			.onError((type, msg, cause) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		assertNotNull(config.onError());
 	}
@@ -199,11 +268,12 @@ class TcpClientConfigBuilderTest {
 		assertSame(builder, builder.readTimeout(Duration.ofSeconds(5)));
 		assertSame(builder, builder.writeTimeout(Duration.ofSeconds(5)));
 		assertSame(builder, builder.bufferSize(4096));
+		assertSame(builder, builder.framing(false));
 		assertSame(builder, builder.tcpNoDelay(true));
 		assertSame(builder, builder.keepAlive(true));
-		assertSame(builder, builder.onConnect(event -> {}));
-		assertSame(builder, builder.onDisconnect(event -> {}));
-		assertSame(builder, builder.onError((type, msg, cause) -> {}));
+		assertSame(builder, builder.onConnect((connection, local, remote, timestamp) -> {}));
+		assertSame(builder, builder.onDisconnect((connection, local, remote, timestamp) -> {}));
+		assertSame(builder, builder.onError((connection, type, msg, cause) -> {}));
 	}
 	
 	@Test
@@ -213,17 +283,19 @@ class TcpClientConfigBuilderTest {
 			.readTimeout(Duration.ofSeconds(10))
 			.writeTimeout(Duration.ofSeconds(5))
 			.bufferSize(16384)
+			.framing(false)
 			.tcpNoDelay(false)
 			.keepAlive(false)
-			.onConnect(event -> {})
-			.onDisconnect(event -> {})
-			.onError((type, msg, cause) -> {})
+			.onConnect((connection, local, remote, timestamp) -> {})
+			.onDisconnect((connection, local, remote, timestamp) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
 		assertEquals(Duration.ofSeconds(15), config.connectTimeout());
 		assertEquals(Duration.ofSeconds(10), config.readTimeout());
 		assertEquals(Duration.ofSeconds(5), config.writeTimeout());
 		assertEquals(16384, config.bufferSize());
+		assertFalse(config.framing());
 		assertFalse(config.tcpNoDelay());
 		assertFalse(config.keepAlive());
 		assertNotNull(config.onConnect());

@@ -36,7 +36,7 @@ import java.util.Objects;
  * TcpServerConfig config = TcpServerConfig.builder()
  *     .backlog(100)
  *     .executorStrategy(ClientExecutorStrategy.virtualThreads())
- *     .onClientConnect(event -> System.out.println("Client connected: " + event.remoteEndpoint()))
+ *     .onClientConnect((connection, local, remote, timestamp) -> System.out.println("Client connected: " + remote))
  *     .onMessage((server, conn, data) -> {
  *         conn.send(("Echo: " + new String(data)).getBytes());
  *     })
@@ -54,6 +54,7 @@ import java.util.Objects;
  *
  * @param backlog Maximum number of pending connections in the queue
  * @param clientBufferSize Buffer size for each client connection in bytes
+ * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
  * @param clientReadTimeout Read timeout for client connections (Duration.ZERO for infinite)
  * @param tcpNoDelay Whether to disable Nagle's algorithm for client connections
  * @param keepAlive Whether to enable TCP keep-alive for client connections
@@ -61,18 +62,21 @@ import java.util.Objects;
  * @param onClientConnect Handler called when a client connects
  * @param onClientDisconnect Handler called when a client disconnects
  * @param onMessage Handler called when a message is received from a client
+ * @param onConnection Handler that takes over the whole connection instead of the built-in read loop
  * @param onError Handler called when an error occurs
  */
 public record TcpServerConfig(
 	int backlog,
 	int clientBufferSize,
+	boolean framing,
 	@NonNull Duration clientReadTimeout,
 	boolean tcpNoDelay,
 	boolean keepAlive,
 	@NonNull ClientExecutorStrategy executorStrategy,
-	@Nullable ConnectionEventHandler onClientConnect,
-	@Nullable ConnectionEventHandler onClientDisconnect,
+	@Nullable ConnectEventHandler onClientConnect,
+	@Nullable DisconnectEventHandler onClientDisconnect,
 	@Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage,
+	@Nullable ConnectionHandler<TcpServer, TcpConnection> onConnection,
 	@Nullable ErrorEventHandler onError
 ) {
 	
@@ -81,6 +85,7 @@ public record TcpServerConfig(
 	 * <ul>
 	 *     <li>{@link #backlog} = {@code 50}</li>
 	 *     <li>{@link #clientBufferSize} = {@code 8192}</li>
+	 *     <li>{@link #framing} = {@code true}</li>
 	 *     <li>{@link #clientReadTimeout} = {@code Duration.ZERO} (infinite)</li>
 	 *     <li>{@link #tcpNoDelay} = {@code true}</li>
 	 *     <li>{@link #keepAlive} = {@code true}</li>
@@ -88,13 +93,14 @@ public record TcpServerConfig(
 	 *     <li>All handlers = {@code null}</li>
 	 * </ul>
 	 */
-	public static final TcpServerConfig DEFAULT = new TcpServerConfig(50, 8192, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null);
+	public static final TcpServerConfig DEFAULT = new TcpServerConfig(50, 8192, true, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null);
 	
 	/**
 	 * Constructs a new TCP server configuration.<br>
 	 *
 	 * @param backlog Maximum number of pending connections
 	 * @param clientBufferSize Buffer size for client connections
+	 * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
 	 * @param clientReadTimeout Read timeout for client connections
 	 * @param tcpNoDelay Whether to disable Nagle's algorithm
 	 * @param keepAlive Whether to enable TCP keep-alive
@@ -102,9 +108,10 @@ public record TcpServerConfig(
 	 * @param onClientConnect Handler for client connections
 	 * @param onClientDisconnect Handler for client disconnections
 	 * @param onMessage Handler for incoming messages
+	 * @param onConnection Handler that takes over the whole connection
 	 * @param onError Handler for errors
 	 * @throws NullPointerException If clientReadTimeout or executorStrategy is null
-	 * @throws IllegalArgumentException If backlog or clientBufferSize is less than 1
+	 * @throws IllegalArgumentException If backlog or clientBufferSize is less than 1, or if both onMessage and onConnection are set
 	 */
 	public TcpServerConfig {
 		Objects.requireNonNull(clientReadTimeout, "Client read timeout must not be null");
@@ -115,6 +122,9 @@ public record TcpServerConfig(
 		}
 		if (clientBufferSize < 1) {
 			throw new IllegalArgumentException("Client buffer size must be at least 1: " + clientBufferSize);
+		}
+		if (onMessage != null && onConnection != null) {
+			throw new IllegalArgumentException("Message handler and connection handler must not be set at the same time");
 		}
 	}
 	

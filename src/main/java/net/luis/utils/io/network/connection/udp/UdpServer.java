@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.network.connection.udp;
 
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.*;
 import net.luis.utils.io.network.connection.NetworkServer;
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
@@ -142,6 +142,20 @@ public final class UdpServer implements NetworkServer {
 	}
 	
 	@Override
+	public boolean isRunning() {
+		return this.running.get() && this.socket != null && !this.socket.isClosed();
+	}
+	
+	@Override
+	public @NonNull IpEndpoint boundEndpoint() {
+		if (this.socket != null && this.socket.isBound()) {
+			InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
+			return IpEndpoint.from(address);
+		}
+		return this.bindEndpoint;
+	}
+	
+	@Override
 	public void start() {
 		if (this.running.getAndSet(true)) {
 			return;
@@ -184,39 +198,37 @@ public final class UdpServer implements NetworkServer {
 		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
 	}
 	
-	@Override
-	public boolean isRunning() {
-		return this.running.get() && this.socket != null && !this.socket.isClosed();
-	}
-	
-	@Override
-	public @NonNull IpEndpoint boundEndpoint() {
-		if (this.socket != null && this.socket.isBound()) {
-			InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
-			return IpEndpoint.from(address);
-		}
-		return this.bindEndpoint;
-	}
-	
 	/**
 	 * Sends a datagram to the specified endpoint.<br>
+	 * <p>
+	 *     A {@link HostEndpoint} destination is resolved before the datagram is sent,<br>
+	 *     because a datagram carries a literal address rather than a name.<br>
+	 *     Unlike TLS, UDP has no use for the hostname itself, so nothing is lost by resolving it here.
+	 * </p>
 	 *
 	 * @param destination The destination endpoint
 	 * @param data The data to send
 	 * @throws NullPointerException If destination or data is null
-	 * @throws NetworkConnectionException If sending fails or data exceeds buffer size
+	 * @throws NetworkConnectionException If the destination cannot be resolved, if the server is not running, if sending fails, or if data exceeds buffer size
 	 */
-	public void send(@NonNull IpEndpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
+	public void send(@NonNull Endpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(destination, "Destination must not be null");
 		Objects.requireNonNull(data, "Data must not be null");
-		this.validateMessageSize(data, destination);
+		NetworkUtils.validateMessageSize(data, this.config.bufferSize(), destination);
 		
 		if (!this.isRunning()) {
 			throw new NetworkConnectionException("Server is not running", NetworkErrorType.SOCKET_CLOSED);
 		}
 		
+		InetSocketAddress address = destination.toInetSocketAddress();
+		if (address.isUnresolved()) {
+			UnknownHostException cause = new UnknownHostException(address.getHostString());
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.HOST_UNREACHABLE, "Failed to resolve " + destination, cause);
+			throw new NetworkConnectionException("Failed to resolve " + destination, cause, NetworkErrorType.HOST_UNREACHABLE, destination);
+		}
+		
 		try {
-			DatagramPacket packet = new DatagramPacket(data, data.length, destination.toInetSocketAddress());
+			DatagramPacket packet = new DatagramPacket(data, data.length, address);
 			this.socket.send(packet);
 		} catch (IOException e) {
 			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to send datagram to " + destination, e);
@@ -242,19 +254,6 @@ public final class UdpServer implements NetworkServer {
 	}
 	
 	//region Helper methods
-	
-	/**
-	 * Validates that the message size does not exceed the configured buffer size.<br>
-	 *
-	 * @param data The data to validate
-	 * @param destination The destination endpoint for error reporting
-	 * @throws NetworkConnectionException If the data exceeds the buffer size
-	 */
-	private void validateMessageSize(byte @NonNull [] data, @NonNull IpEndpoint destination) throws NetworkConnectionException {
-		if (data.length > this.config.bufferSize()) {
-			throw new NetworkConnectionException("Message size " + data.length + " exceeds buffer size " + this.config.bufferSize(), NetworkErrorType.MESSAGE_TOO_LARGE, destination);
-		}
-	}
 	
 	/**
 	 * The main loop that receives incoming datagrams.<br>

@@ -61,6 +61,11 @@ public final class TcpServerConfigBuilder {
 	 */
 	private int clientBufferSize = 8192;
 	/**
+	 * Whether messages are framed with a length prefix on the wire.<br>
+	 * Enabled by default, so that every send is received as exactly one message.<br>
+	 */
+	private boolean framing = true;
+	/**
 	 * The read timeout for client connections.<br>
 	 */
 	private Duration clientReadTimeout = Duration.ZERO;
@@ -79,15 +84,19 @@ public final class TcpServerConfigBuilder {
 	/**
 	 * The handler called when a client connects.<br>
 	 */
-	private @Nullable ConnectionEventHandler onClientConnect;
+	private @Nullable ConnectEventHandler onClientConnect;
 	/**
 	 * The handler called when a client disconnects.<br>
 	 */
-	private @Nullable ConnectionEventHandler onClientDisconnect;
+	private @Nullable DisconnectEventHandler onClientDisconnect;
 	/**
 	 * The handler called when a message is received from a client.<br>
 	 */
 	private @Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage;
+	/**
+	 * The handler that takes over the whole connection instead of the built-in read loop.<br>
+	 */
+	private @Nullable ConnectionHandler<TcpServer, TcpConnection> onConnection;
 	/**
 	 * The handler called when an error occurs.<br>
 	 */
@@ -106,6 +115,26 @@ public final class TcpServerConfigBuilder {
 	 */
 	public @NonNull TcpServerConfigBuilder backlog(int backlog) {
 		this.backlog = backlog;
+		return this;
+	}
+	
+	/**
+	 * Sets whether messages are framed with a length prefix on the wire.<br>
+	 * <p>
+	 *     With framing enabled, each send is written as one length-prefixed frame and each receive returns exactly that message,
+	 *     regardless of how TCP fragments or coalesces the stream. This is the default and is required for message oriented protocols.
+	 * </p>
+	 * <p>
+	 *     Disabling it restores the raw byte stream, where a read returns whatever is currently available. This is only useful when
+	 *     talking to a peer that does not understand the frame header, or when the payload carries its own delimiters. Both peers
+	 *     have to agree, since a framed peer and an unframed peer cannot interoperate.
+	 * </p>
+	 *
+	 * @param framing Whether to frame messages with a length prefix
+	 * @return This builder
+	 */
+	public @NonNull TcpServerConfigBuilder framing(boolean framing) {
+		this.framing = framing;
 		return this;
 	}
 	
@@ -171,7 +200,7 @@ public final class TcpServerConfigBuilder {
 	 * @param onClientConnect The connection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull TcpServerConfigBuilder onClientConnect(@Nullable ConnectionEventHandler onClientConnect) {
+	public @NonNull TcpServerConfigBuilder onClientConnect(@Nullable ConnectEventHandler onClientConnect) {
 		this.onClientConnect = onClientConnect;
 		return this;
 	}
@@ -182,7 +211,7 @@ public final class TcpServerConfigBuilder {
 	 * @param onClientDisconnect The disconnection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull TcpServerConfigBuilder onClientDisconnect(@Nullable ConnectionEventHandler onClientDisconnect) {
+	public @NonNull TcpServerConfigBuilder onClientDisconnect(@Nullable DisconnectEventHandler onClientDisconnect) {
 		this.onClientDisconnect = onClientDisconnect;
 		return this;
 	}
@@ -199,6 +228,26 @@ public final class TcpServerConfigBuilder {
 	}
 	
 	/**
+	 * Sets the handler that takes over the whole connection.<br>
+	 * <p>
+	 *     The handler is called once per client on the thread the server assigned to it and owns the connection until it returns.<br>
+	 *     While it runs, the server does not read from the connection, so the handler can read from {@link TcpConnection#getInputStream()}
+	 *     and write to {@link TcpConnection#getOutputStream()} exactly as its protocol requires.
+	 * </p>
+	 * <p>
+	 *     This replaces the built-in read loop, so it cannot be combined with {@link #onMessage(MessageEventHandler)}.<br>
+	 *     Setting both makes {@link #build()} fail.
+	 * </p>
+	 *
+	 * @param onConnection The connection handler, or null to use the built-in read loop
+	 * @return This builder for method chaining
+	 */
+	public @NonNull TcpServerConfigBuilder onConnection(@Nullable ConnectionHandler<TcpServer, TcpConnection> onConnection) {
+		this.onConnection = onConnection;
+		return this;
+	}
+	
+	/**
 	 * Sets the error event handler.<br>
 	 *
 	 * @param onError The error handler, or null to disable
@@ -211,9 +260,13 @@ public final class TcpServerConfigBuilder {
 	
 	/**
 	 * Builds a new TCP server configuration with the configured values.<br>
+	 *
 	 * @return A new configuration instance
+	 * @throws IllegalArgumentException If both a message handler and a connection handler are set
 	 */
 	public @NonNull TcpServerConfig build() {
-		return new TcpServerConfig(this.backlog, this.clientBufferSize, this.clientReadTimeout, this.tcpNoDelay, this.keepAlive, this.executorStrategy, this.onClientConnect, this.onClientDisconnect, this.onMessage, this.onError);
+		return new TcpServerConfig(
+			this.backlog, this.clientBufferSize, this.framing, this.clientReadTimeout, this.tcpNoDelay, this.keepAlive, this.executorStrategy, this.onClientConnect, this.onClientDisconnect, this.onMessage, this.onConnection, this.onError
+		);
 	}
 }

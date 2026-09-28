@@ -170,6 +170,40 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		return new Ipv4Range(network.networkAddress(), network.broadcastAddress());
 	}
 	
+	/**
+	 * Finds the maximum prefix length (smallest network) that starts at the given address and does not extend beyond the end address.<br>
+	 *
+	 * @param start The start address of the potential network
+	 * @param end The maximum end address
+	 * @return The maximum prefix length
+	 */
+	private static int findMaxPrefixLength(@NonNull Ipv4Address start, @NonNull Ipv4Address end) {
+		Objects.requireNonNull(start, "Start address must not be null");
+		Objects.requireNonNull(end, "End address must not be null");
+		
+		int startValue = start.value();
+		long endValue = end.toUnsignedLong();
+		
+		int prefixLength = 32;
+		while (prefixLength > 0) {
+			int hostBits = 32 - prefixLength;
+			int mask = -(1 << hostBits);
+			
+			if ((startValue & mask) != startValue) {
+				prefixLength++;
+				break;
+			}
+			
+			long broadcastValue = Integer.toUnsignedLong(startValue | ((1 << hostBits) - 1));
+			if (broadcastValue > endValue) {
+				prefixLength++;
+				break;
+			}
+			prefixLength--;
+		}
+		return Math.max(0, prefixLength);
+	}
+	
 	@Override
 	public @NonNull BigInteger size() {
 		return this.end.toBigInteger().subtract(this.start.toBigInteger()).add(BigInteger.ONE);
@@ -288,40 +322,6 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 			current = nextAddr.get();
 		}
 		return networks;
-	}
-	
-	/**
-	 * Finds the maximum prefix length (smallest network) that starts at the given address and does not extend beyond the end address.<br>
-	 *
-	 * @param start The start address of the potential network
-	 * @param end The maximum end address
-	 * @return The maximum prefix length
-	 */
-	private static int findMaxPrefixLength(@NonNull Ipv4Address start, @NonNull Ipv4Address end) {
-		Objects.requireNonNull(start, "Start address must not be null");
-		Objects.requireNonNull(end, "End address must not be null");
-		
-		int startValue = start.value();
-		long endValue = end.toUnsignedLong();
-		
-		int prefixLength = 32;
-		while (prefixLength > 0) {
-			int hostBits = 32 - prefixLength;
-			int mask = -(1 << hostBits);
-			
-			if ((startValue & mask) != startValue) {
-				prefixLength++;
-				break;
-			}
-			
-			long broadcastValue = Integer.toUnsignedLong(startValue | ((1 << hostBits) - 1));
-			if (broadcastValue > endValue) {
-				prefixLength++;
-				break;
-			}
-			prefixLength--;
-		}
-		return Math.max(0, prefixLength);
 	}
 	
 	@Override

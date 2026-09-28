@@ -19,7 +19,6 @@
 package net.luis.utils.grammar.parser.action.transformers;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.grammar.token.*;
 import net.luis.utils.grammar.parser.TokenRuleMatch;
 import net.luis.utils.grammar.parser.action.TokenAction;
 import net.luis.utils.grammar.parser.context.TokenActionContext;

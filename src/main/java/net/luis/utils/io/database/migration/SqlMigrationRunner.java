@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.database.migration;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
@@ -37,9 +37,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import javax.sql.DataSource;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -131,78 +128,128 @@ public final class SqlMigrationRunner {
 		return new SqlMigrationRunner(context, store, schemaStore);
 	}
 	
-	//region Static helper methods
-	
 	/**
-	 * Computes a stable checksum over the given rendered sql statements.<br>
-	 * The sql text and the jdbc type, java type and stable string value of every parameter are concatenated and hashed
-	 * using SHA-256, yielding a hex encoded digest that can be used to detect changes to a migration.<br>
+	 * Joins the given rendered sql statements into the text that is recorded alongside an applied migration.<br>
+	 * Empty statements are skipped and the remaining ones are separated by {@code ";\n"}.<br>
 	 *
-	 * @param rendered The rendered sql statements to compute the checksum for
-	 * @return The hex encoded SHA-256 checksum of the rendered statements
+	 * @param rendered The rendered sql statements to join
+	 * @return The recorded statement text
 	 * @throws NullPointerException If the rendered list is null
-	 * @throws IllegalStateException If the SHA-256 algorithm is not available
 	 */
-	private static @NonNull String computeChecksum(@NonNull List<SqlRendered> rendered) {
+	private static @NonNull String joinStatements(@NonNull List<SqlRendered> rendered) {
 		Objects.requireNonNull(rendered, "Sql rendered list must not be null");
 		
-		StringBuilder content = new StringBuilder();
-		for (SqlRendered statement : rendered) {
-			content.append(statement.sql()).append('\n');
-			for (Pair<SqlType<?>, Object> parameter : statement.parameters()) {
-				SqlType<?> type = parameter.getFirst();
-				content.append(type.jdbcType()).append(':').append(type.javaType().getName()).append('=').append(stableParameterValue(parameter.getSecond())).append('\n');
-			}
-		}
-		
-		try {
-			byte[] hash = MessageDigest.getInstance("SHA-256").digest(content.toString().getBytes(StandardCharsets.UTF_8));
-			return HexFormat.of().formatHex(hash);
-		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalStateException("SHA-256 algorithm is not available", e);
-		}
+		return rendered.stream()
+			.map(SqlRendered::sql)
+			.filter(sql -> !sql.isEmpty())
+			.collect(Collectors.joining(";\n"));
 	}
 	
 	/**
-	 * Converts the given parameter value into a stable string representation for checksum computation.<br>
-	 * A {@code null} value is rendered as {@code "null"}, byte arrays are hex encoded and other arrays are rendered
-	 * element-wise, all remaining values use their {@link String#valueOf(Object)} representation.<br>
+	 * Validates that the check constraints of the recorded tables still match the schema snapshot.<br>
+	 * Only the names of the constraints are compared, their clauses are normalized differently by every engine and carry
+	 * no information the names do not already carry.<br>
 	 *
-	 * @param value The parameter value to convert
-	 * @return The stable string representation of the value
+	 * @param version The version of the schema snapshot the live schema is compared against
+	 * @param snapshot The schema snapshot recorded after the migration with the given version was applied
+	 * @param live The live schema of the database
+	 * @param recordedTables The names of the tables the snapshot records columns for
+	 * @throws SqlMigrationConflictException If the check constraints of a recorded table have drifted
 	 */
-	private static @NonNull String stableParameterValue(@Nullable Object value) {
-		return switch (value) {
-			case null -> "null";
-			case byte[] bytes -> HexFormat.of().formatHex(bytes);
-			default -> value.getClass().isArray() ? arrayToString(value) : String.valueOf(value);
-		};
-	}
-	
-	/**
-	 * Converts the given array into a stable string representation.<br>
-	 * Each element is converted via {@link #stableParameterValue(Object)} and the elements are joined with commas inside
-	 * square brackets.<br>
-	 *
-	 * @param array The array to convert
-	 * @return The stable string representation of the array
-	 * @throws NullPointerException If the array is null
-	 */
-	private static @NonNull String arrayToString(@NonNull Object array) {
-		Objects.requireNonNull(array, "Array must not be null");
+	private static void validateCheckConstraintDrift(@NonNull Version version, @NonNull SqlSchemaSnapshot snapshot, @NonNull SqlMigrationSchema live, @NonNull Set<String> recordedTables) throws SqlException {
+		Map<String, List<SqlCheckConstraintInfo>> liveConstraints = live.extractCheckConstraints();
 		
-		int length = java.lang.reflect.Array.getLength(array);
-		StringBuilder builder = new StringBuilder("[");
-		for (int i = 0; i < length; i++) {
-			if (i > 0) {
-				builder.append(", ");
+		for (String table : recordedTables) {
+			Set<String> expected = constraintNames(snapshot.checkConstraints().get(table));
+			Set<String> actual = constraintNames(liveConstraints.get(table));
+			if (expected.equals(actual)) {
+				continue;
 			}
 			
-			builder.append(stableParameterValue(java.lang.reflect.Array.get(array, i)));
+			throw new SqlMigrationConflictException(
+				"The check constraints of table '" + table + "' have drifted from the schema snapshot of version " + version + ", expected " + expected + " but found " + actual
+			);
 		}
-		return builder.append(']').toString();
 	}
-	//endregion
+	
+	/**
+	 * Returns the names of the given check constraints.<br>
+	 *
+	 * @param constraints The check constraints to collect the names of or {@code null} if there are none
+	 * @return The names of the given check constraints
+	 */
+	private static @NonNull Set<String> constraintNames(@Nullable List<SqlCheckConstraintInfo> constraints) {
+		if (constraints == null) {
+			return Set.of();
+		}
+		return constraints.stream().map(SqlCheckConstraintInfo::constraintName).collect(Collectors.toCollection(TreeSet::new));
+	}
+	
+	/**
+	 * Returns the key that identifies the given column within a schema.<br>
+	 *
+	 * @param column The column to build the key for
+	 * @return The key that identifies the column
+	 */
+	private static @NonNull String columnKey(@NonNull SqlSchemaColumnInfo column) {
+		return column.tableName() + '.' + column.columnName();
+	}
+	
+	/**
+	 * Describes the first difference between the recorded and the live state of a column.<br>
+	 * The ordinal position and the resolved type parameter are not compared, both are reported inconsistently across
+	 * driver versions and would turn harmless upgrades into validation failures.<br>
+	 *
+	 * @param expected The column as recorded in the schema snapshot
+	 * @param actual The column as found in the live database
+	 * @return The description of the first difference or {@code null} if the column matches the recorded state
+	 */
+	private static @Nullable String describeDifference(@NonNull SqlSchemaColumnInfo expected, @NonNull SqlSchemaColumnInfo actual) {
+		if (expected.jdbcType() != actual.jdbcType()) {
+			return "expected jdbc type " + expected.jdbcType() + " but found " + actual.jdbcType();
+		}
+		if (expected.nullable() != actual.nullable()) {
+			return "expected nullable " + expected.nullable() + " but found " + actual.nullable();
+		}
+		if (expected.autoIncrement() != actual.autoIncrement()) {
+			return "expected auto-increment " + expected.autoIncrement() + " but found " + actual.autoIncrement();
+		}
+		if (expected.primaryKey() != actual.primaryKey()) {
+			return "expected primary key " + expected.primaryKey() + " but found " + actual.primaryKey();
+		}
+		if (expected.unique() != actual.unique()) {
+			return "expected unique " + expected.unique() + " but found " + actual.unique();
+		}
+		return null;
+	}
+	
+	/**
+	 * Checks whether the given table belongs to the bookkeeping of the migration framework itself.<br>
+	 * Those tables are upgraded by the framework rather than by a migration, so they are not covered by any schema
+	 * snapshot and must be excluded from the drift check.<br>
+	 *
+	 * @param tableName The name of the table to check
+	 * @return True if the table belongs to the bookkeeping of the framework, false otherwise
+	 */
+	private static boolean isBookkeepingTable(@NonNull String tableName) {
+		return tableName.toLowerCase(Locale.ROOT).startsWith("_sql_");
+	}
+	
+	/**
+	 * Returns the hint that lists the sql which was executed when the given migration was applied.<br>
+	 * The hint is empty if no statements were recorded, which is the case for every migration that was applied before the
+	 * framework started recording them.<br>
+	 *
+	 * @param info The recorded info of the applied migration
+	 * @return The hint listing the executed sql or an empty string if none was recorded
+	 */
+	private static @NonNull String appliedStatementsHint(@NonNull SqlMigrationInfo info) {
+		String statements = info.statements();
+		if (statements == null || statements.isEmpty()) {
+			return "";
+		}
+		return ", the following sql was executed when it was applied:\n" + statements;
+	}
 	
 	/**
 	 * Registers the given migration with this runner.<br>
@@ -354,10 +401,26 @@ public final class SqlMigrationRunner {
 	
 	/**
 	 * Validates that all applied migrations still match their recorded state.<br>
-	 * For every applied migration the operations are rebuilt and rendered, the resulting checksum is compared against the
-	 * checksum that was stored when the migration was applied.<br>
+	 * <p>
+	 *     Two independent checks are performed. For every applied migration the operations are rebuilt and their structural
+	 *     checksum is compared against the checksum that was stored when the migration was applied, which detects a
+	 *     migration whose body has been edited. Afterwards the live database schema is compared against the schema snapshot
+	 *     that was recorded after the most recently applied migration, which detects a database that has drifted away from
+	 *     what the migrations produced.
+	 * </p>
+	 * <p>
+	 *     The checksum deliberately ignores the names and types of the tables and columns a migration references, because
+	 *     those are read from the live schema definitions and change whenever a later migration renames or retypes them.
+	 *     Such a change is detected by the drift check instead, which compares against the database rather than against the
+	 *     schema definitions.
+	 * </p>
+	 * <p>
+	 *     A migration whose recorded checksum was written by an earlier version of the library is skipped by the checksum
+	 *     check, because that checksum was computed over the rendered sql and cannot be compared against a structural one.
+	 *     Such a migration is validated again as soon as it is applied to a fresh database.
+	 * </p>
 	 *
-	 * @throws SqlMigrationConflictException If an applied migration has been modified since it was applied
+	 * @throws SqlMigrationConflictException If an applied migration has been modified since it was applied or the database has drifted from the recorded schema
 	 * @throws SqlException If the applied migrations could not be validated
 	 */
 	public void validate() throws SqlException {
@@ -371,14 +434,17 @@ public final class SqlMigrationRunner {
 			RegisteredSqlMigration registered = this.findRegistered(info.version());
 			List<SqlMigrationOperation> operations = this.buildOperations(registered.migration(), true, true, schema);
 			
-			if (info.checksum() != null) {
-				String checksum = computeChecksum(this.renderer.render(operations));
+			if (info.checksum() != null && SqlMigrationChecksum.isComparable(info.checksum())) {
+				String checksum = SqlMigrationChecksum.compute(operations, this.context.dialect());
 				if (!checksum.equals(info.checksum())) {
-					throw new SqlMigrationConflictException("Migration " + info.version() + " has been modified since it was applied (checksum mismatch)");
+					throw new SqlMigrationConflictException(
+						"Migration " + info.version() + " has been modified since it was applied (checksum mismatch)" + appliedStatementsHint(info)
+					);
 				}
 			}
 			schema = SqlMigrationSchema.applyOperations(schema, operations);
 		}
+		this.validateSchemaDrift(applied);
 	}
 	
 	/**
@@ -474,13 +540,15 @@ public final class SqlMigrationRunner {
 		Objects.requireNonNull(registered, "Registered sql migration must not be null");
 		this.ensureAtomicExecutionAllowed(registered.migration());
 		
-		List<SqlRendered> rendered = this.renderMigrationUp(registered.migration());
+		List<SqlMigrationOperation> operations = this.buildOperations(registered.migration(), true, false, this.latestAppliedSchema());
+		List<SqlRendered> rendered = this.renderer.render(operations);
 		SqlMigrationInfo info = new SqlMigrationInfo(
 			registered.migration().version(),
 			registered.migration().description(),
 			SqlMigrationStatus.APPLIED,
 			Instant.now(),
-			computeChecksum(rendered)
+			SqlMigrationChecksum.compute(operations, this.context.dialect()),
+			joinStatements(rendered)
 		);
 		this.context.executeAndSave(rendered, this.store, info, this.schemaStore);
 	}
@@ -522,16 +590,6 @@ public final class SqlMigrationRunner {
 			"Migration " + migration.version() + " cannot be executed atomically on dialect '" + this.context.dialect().name() + "' because it implicitly commits on DDL, " +
 				"a mid-migration failure may leave the schema half-applied without the possibility of a rollback. Override SqlMigration.allowsNonAtomicExecution() to accept this risk."
 		);
-	}
-	
-	/**
-	 * Renders the sql for the {@code up} step of the given migration.<br>
-	 * @param migration The migration to render the up step for
-	 * @return The rendered sql statements for the up step
-	 * @throws SqlException If the up step could not be rendered
-	 */
-	private @NonNull List<SqlRendered> renderMigrationUp(@NonNull SqlMigration migration) throws SqlException {
-		return this.renderMigration(migration, true, false);
 	}
 	
 	/**
@@ -588,6 +646,75 @@ public final class SqlMigrationRunner {
 			throw new SqlMigrationConflictException("Schema snapshot not found for applied version " + latestVersion);
 		}
 		return SqlMigrationSchema.fromSnapshot(snapshot.columns(), snapshot.checkConstraints());
+	}
+	
+	/**
+	 * Validates that the live database schema still matches the schema snapshot of the most recently applied migration.<br>
+	 * <p>
+	 *     The snapshot was introspected from the database right after the migration was applied and is therefore ground
+	 *     truth, unlike anything re-derived from the schema definitions. Only the tables the snapshot records are checked,
+	 *     tables created outside of the migrations are ignored, as is the bookkeeping of the framework itself.
+	 * </p>
+	 *
+	 * @param applied The applied migration infos ordered by version
+	 * @throws NullPointerException If the applied migration infos are null
+	 * @throws SqlMigrationConflictException If the database has drifted from the recorded schema snapshot
+	 * @throws SqlException If the schema snapshot or the live schema could not be loaded
+	 */
+	private void validateSchemaDrift(@NonNull List<SqlMigrationInfo> applied) throws SqlException {
+		Objects.requireNonNull(applied, "Applied sql migration infos must not be null");
+		
+		if (applied.isEmpty()) {
+			return;
+		}
+		
+		Version version = applied.getLast().version();
+		SqlSchemaSnapshot snapshot = this.schemaStore.load(version);
+		if (snapshot == null) {
+			return;
+		}
+		
+		SqlMigrationSchema live = SqlMigrationSchema.load(this.context.dataSource(), this.context.dialect());
+		List<SqlSchemaColumnInfo> liveColumns = live.extractColumnInfos();
+		Map<String, SqlSchemaColumnInfo> liveColumnsByKey = Maps.newLinkedHashMap();
+		for (SqlSchemaColumnInfo column : liveColumns) {
+			liveColumnsByKey.put(columnKey(column), column);
+		}
+		
+		Set<String> recordedTables = Sets.newLinkedHashSet();
+		Set<String> recordedColumns = Sets.newLinkedHashSet();
+		for (SqlSchemaColumnInfo expected : snapshot.columns()) {
+			if (isBookkeepingTable(expected.tableName())) {
+				continue;
+			}
+			recordedTables.add(expected.tableName());
+			recordedColumns.add(columnKey(expected));
+			
+			SqlSchemaColumnInfo actual = liveColumnsByKey.get(columnKey(expected));
+			if (actual == null) {
+				throw new SqlMigrationConflictException(
+					"Column '" + expected.columnName() + "' of table '" + expected.tableName() + "' is recorded in the schema snapshot of version " + version + " but is missing from the database"
+				);
+			}
+			
+			String difference = describeDifference(expected, actual);
+			if (difference != null) {
+				throw new SqlMigrationConflictException(
+					"Column '" + expected.columnName() + "' of table '" + expected.tableName() + "' has drifted from the schema snapshot of version " + version + ": " + difference
+				);
+			}
+		}
+		
+		for (SqlSchemaColumnInfo actual : liveColumns) {
+			if (!recordedTables.contains(actual.tableName()) || recordedColumns.contains(columnKey(actual))) {
+				continue;
+			}
+			
+			throw new SqlMigrationConflictException(
+				"Table '" + actual.tableName() + "' has the additional column '" + actual.columnName() + "' which the schema snapshot of version " + version + " does not record"
+			);
+		}
+		validateCheckConstraintDrift(version, snapshot, live, recordedTables);
 	}
 	
 	/**
@@ -697,6 +824,13 @@ public final class SqlMigrationRunner {
 					continue;
 				}
 				
+				if (!rendered.parameters().isEmpty()) {
+					throw new SqlMigrationConflictException(
+						"Migration statement '" + sql + "' carries " + rendered.parameters().size() + " bind parameter(s), but ddl is part of the schema definition and no engine accepts placeholders there. " +
+							"Every value of a migration statement must be rendered as a literal."
+					);
+				}
+				
 				try (PreparedStatement statement = connection.prepareStatement(sql)) {
 					List<Pair<SqlType<?>, Object>> params = rendered.parameters();
 					for (int i = 0; i < params.size(); i++) {
@@ -721,10 +855,7 @@ public final class SqlMigrationRunner {
 					this.executeStatements(connection, statements);
 					store.save(connection, info);
 					
-					String introspectionSchema = connection.getSchema();
-					if (introspectionSchema == null || introspectionSchema.isBlank()) {
-						introspectionSchema = "public";
-					}
+					String introspectionSchema = this.database.getDialect().defaultSchema(connection);
 					SqlMigrationSchema schema = SqlMigrationSchema.load(connection, this.database.getDialect(), introspectionSchema);
 					schemaStore.save(connection, info.version(), schema.extractColumnInfos(), schema.extractCheckConstraints());
 					

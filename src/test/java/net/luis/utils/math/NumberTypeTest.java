@@ -394,8 +394,8 @@ class NumberTypeTest {
 		assertEquals(Integer.MAX_VALUE, (int) NumberType.INTEGER.parseNumber("2147483647", Radix.DECIMAL));
 		assertEquals(Long.MAX_VALUE, (long) NumberType.LONG.parseNumber("9223372036854775807", Radix.DECIMAL));
 		assertEquals(BigInteger.valueOf(Long.MAX_VALUE), NumberType.BIG_INTEGER.parseNumber("9223372036854775807", Radix.DECIMAL));
-		assertEquals(3.14f, (float) NumberType.FLOAT.parseNumber("3.14", Radix.DECIMAL), 0.001f);
-		assertEquals(3.14, (double) NumberType.DOUBLE.parseNumber("3.14", Radix.DECIMAL), 0.001);
+		assertEquals(3.14f, NumberType.FLOAT.parseNumber("3.14", Radix.DECIMAL), 0.001f);
+		assertEquals(3.14, NumberType.DOUBLE.parseNumber("3.14", Radix.DECIMAL), 0.001);
 		assertEquals(new BigDecimal("3.14"), NumberType.BIG_DECIMAL.parseNumber("3.14", Radix.DECIMAL));
 	}
 	
@@ -439,8 +439,8 @@ class NumberTypeTest {
 		assertEquals(255, (int) NumberType.INTEGER.parseNumberStrict("FF", Radix.HEXADECIMAL));
 		assertEquals(64, (int) NumberType.INTEGER.parseNumberStrict("100", Radix.OCTAL));
 		
-		assertEquals(3.14f, (float) NumberType.FLOAT.parseNumberStrict("3.14", Radix.DECIMAL), 0.001f);
-		assertEquals(16.0f, (float) NumberType.FLOAT.parseNumberStrict("0x1.0p4", Radix.HEXADECIMAL), 0.001f);
+		assertEquals(3.14f, NumberType.FLOAT.parseNumberStrict("3.14", Radix.DECIMAL), 0.001f);
+		assertEquals(16.0f, NumberType.FLOAT.parseNumberStrict("0x1.0p4", Radix.HEXADECIMAL), 0.001f);
 	}
 	
 	@Test

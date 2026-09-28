@@ -23,7 +23,6 @@ import net.luis.utils.io.data.json.exception.JsonSyntaxException;
 import net.luis.utils.io.reader.StringReader;
 import org.jspecify.annotations.NonNull;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 

@@ -18,7 +18,8 @@
 
 package net.luis.utils.io.network.connection;
 
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.Endpoint;
+import net.luis.utils.io.network.connection.hybrid.HybridServer;
 import net.luis.utils.io.network.connection.ssl.SslServer;
 import net.luis.utils.io.network.connection.tcp.TcpServer;
 import net.luis.utils.io.network.connection.udp.UdpServer;
@@ -55,10 +56,11 @@ import org.jspecify.annotations.NonNull;
  * @see TcpServer
  * @see SslServer
  * @see UdpServer
+ * @see HybridServer
  *
  * @author Luis-St
  */
-public sealed interface NetworkServer extends AutoCloseable permits TcpServer, SslServer, UdpServer {
+public sealed interface NetworkServer extends AutoCloseable permits HybridServer, SslServer, TcpServer, UdpServer {
 	
 	/**
 	 * Returns whether this server is currently running.<br>
@@ -70,7 +72,7 @@ public sealed interface NetworkServer extends AutoCloseable permits TcpServer, S
 	 * Returns the endpoint this server is bound to.<br>
 	 * @return The bound endpoint
 	 */
-	@NonNull IpEndpoint boundEndpoint();
+	@NonNull Endpoint boundEndpoint();
 	
 	/**
 	 * Starts the server and begins accepting connections/datagrams.<br>

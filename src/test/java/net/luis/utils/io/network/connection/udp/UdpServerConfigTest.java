@@ -72,7 +72,7 @@ class UdpServerConfigTest {
 	void builderWithHandlers() {
 		UdpServerConfig config = UdpServerConfig.builder()
 			.onMessage((server, datagram, data) -> {})
-			.onError((type, msg, cause) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
 		assertNotNull(config.onMessage());

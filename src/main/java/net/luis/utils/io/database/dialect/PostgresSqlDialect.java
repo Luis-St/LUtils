@@ -39,7 +39,6 @@ import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlLengthParameter;
 import org.jspecify.annotations.NonNull;
@@ -139,6 +138,16 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 	 */
 	public PostgresSqlDialect() {}
 	
+	/**
+	 * Constructs a new PostgreSQL dialect that additionally knows the type mappings of the given registry.<br>
+	 *
+	 * @param additionalTypes The type mappings the dialect should know in addition to its own
+	 * @throws NullPointerException If the additional type mappings are null
+	 */
+	public PostgresSqlDialect(@NonNull SqlTypeRegistry additionalTypes) {
+		super(additionalTypes);
+	}
+	
 	@Override
 	public @NonNull String name() {
 		return "PostgreSQL";
@@ -178,6 +187,31 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 	}
 	
 	@Override
+	public @NonNull String renderValueLiteral(@NonNull Object value) throws SqlException {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		if (value instanceof Object[] elements) {
+			StringJoiner joiner = new StringJoiner(", ", "ARRAY[", "]");
+			for (Object element : elements) {
+				joiner.add(element == null ? "NULL" : this.renderValueLiteral(element));
+			}
+			return joiner.toString();
+		}
+		return super.renderValueLiteral(value);
+	}
+	
+	@Override
+	protected @NonNull Optional<SqlType<?>> resolveNativeType(@NonNull SqlNativeType nativeType) {
+		Objects.requireNonNull(nativeType, "Sql native type must not be null");
+		
+		return switch (nativeType.normalizedTypeName()) {
+			case "bytea" -> Optional.of(SqlTypes.LARGE_BYTES);
+			case "text" -> Optional.of(SqlTypes.TEXT);
+			default -> super.resolveNativeType(nativeType);
+		};
+	}
+	
+	@Override
 	protected @NonNull Optional<String> getScalarTypeName(int jdbcType) {
 		return switch (jdbcType) {
 			case Types.LONGVARBINARY, Types.BLOB -> Optional.of("BYTEA");
@@ -191,6 +225,7 @@ public class PostgresSqlDialect extends AbstractSqlDialect {
 		return switch (jdbcType) {
 			case Types.NCHAR -> Optional.of("CHAR(" + length.length() + ")");
 			case Types.NVARCHAR -> Optional.of("VARCHAR(" + length.length() + ")");
+			case Types.BINARY, Types.VARBINARY -> Optional.of("BYTEA");
 			default -> super.getLengthParameterizedTypeName(jdbcType, length);
 		};
 	}
@@ -337,15 +372,6 @@ class PostgresSqlTableRenderer extends SqlTableRenderer {
 		
 		renderer.keyword("GENERATED").keyword("BY").default_().as().keyword("IDENTITY");
 	}
-	
-	@Override
-	public @NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table) throws SqlException {
-		Objects.requireNonNull(table, "Sql table must not be null");
-		
-		SqlRenderer renderer = SqlRenderer.empty();
-		renderer.truncate().table().literal(this.dialect.quoteIdentifier(table.name())).cascade();
-		return renderer.toSql();
-	}
 }
 
 /**
@@ -391,6 +417,17 @@ class PostgresSqlTemporalFunctionRenderer extends SqlTemporalFunctionRenderer {
 		renderer.literal("TO_TIMESTAMP").openingBracket().rendered(function.expression().toSql(this.dialect)).closingBracket();
 		renderer.literal("AT").literal("TIME").literal("ZONE").literal("'UTC'");
 		renderer.closingBracket();
+		return renderer.toSql();
+	}
+	
+	@Override
+	protected @NonNull SqlRendered renderDateInZone(@NonNull SqlDateInZoneFunction<?> function) throws SqlException {
+		Objects.requireNonNull(function, "Sql function must not be null");
+		
+		SqlRenderer renderer = SqlRenderer.empty();
+		renderer.cast().openingBracket().openingBracket().rendered(function.expression().toSql(this.dialect));
+		renderer.literal("AT").literal("TIME").literal("ZONE").rendered(function.zoneId().toSql(this.dialect));
+		renderer.closingBracket().as().literal("DATE").closingBracket();
 		return renderer.toSql();
 	}
 	

@@ -56,18 +56,25 @@ public final class CodecGroup<O> implements Codec<O> {
 	/**
 	 * Constructs a new codec group using the given list of codecs and factory function.<br>
 	 * This constructor is intended for internal use only and should not be used directly.<br>
+	 * <p>
+	 *     Each field codec is copied and assigned the index of its position in the given list.<br>
+	 *     The index is used by type providers which address the fields of a data structure by position.
+	 * </p>
 	 *
 	 * @param codecs The list of codecs to group together
 	 * @param factory The factory function to create the final object from the encoded components
 	 * @throws NullPointerException If the codecs list or factory function is null
 	 */
 	public CodecGroup(@NonNull List<FieldCodec<?, O>> codecs, @NonNull ThrowableFunction<List<Object>, O, DecoderException> factory) {
-		this.codecs = Objects.requireNonNull(codecs, "Codecs list must not be null");
+		Objects.requireNonNull(codecs, "Codecs list must not be null");
 		this.factory = Objects.requireNonNull(factory, "Factory function must not be null");
 		
-		for (int i = 0; i < this.codecs.size(); i++) {
-			Objects.requireNonNull(this.codecs.get(i), "Codec of component " + i + " must not be null");
+		List<FieldCodec<?, O>> indexedCodecs = new ArrayList<>(codecs.size());
+		for (int i = 0; i < codecs.size(); i++) {
+			FieldCodec<?, O> codec = Objects.requireNonNull(codecs.get(i), "Codec of component " + i + " must not be null");
+			indexedCodecs.add(codec.withIndex(i));
 		}
+		this.codecs = List.copyOf(indexedCodecs);
 	}
 	
 	@Override
@@ -78,7 +85,7 @@ public final class CodecGroup<O> implements Codec<O> {
 			throw new EncoderException("Unable to encode null value", this);
 		}
 		
-		R map = provider.merge(current, provider.createMap(EncoderException::new), EncoderException::new);
+		R map = provider.merge(current, provider.createStruct(this.codecs.size(), EncoderException::new), EncoderException::new);
 		for (FieldCodec<?, O> codec : this.codecs) {
 			try {
 				codec.encode(provider, map, value);
@@ -97,7 +104,7 @@ public final class CodecGroup<O> implements Codec<O> {
 			throw new DecoderException("Unable to decode null value", this);
 		}
 		
-		provider.getMap(value, DecoderException::new); // Validate that value is a map
+		provider.validateStruct(value, DecoderException::new);
 		
 		List<Object> components = new ArrayList<>(this.codecs.size());
 		for (FieldCodec<?, O> codec : this.codecs) {

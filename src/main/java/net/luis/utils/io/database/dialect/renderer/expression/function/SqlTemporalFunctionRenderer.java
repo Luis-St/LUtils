@@ -71,6 +71,7 @@ public class SqlTemporalFunctionRenderer {
 			case SqlCurrentDateFunction<?> _ -> this.renderCurrentDate();
 			case SqlCurrentTimeFunction<?> _ -> this.renderCurrentTime();
 			case SqlCurrentTimestampFunction<?> _ -> this.renderCurrentTimestamp();
+			case SqlDateInZoneFunction<?> func -> this.renderDateInZone(func);
 			case SqlExtractFunction<?> func -> this.renderExtract(func);
 			case SqlFromEpochFunction<?> func -> this.renderFromEpoch(func);
 			case SqlMakeDateFunction<?> func -> this.renderMakeDate(func);
@@ -154,6 +155,18 @@ public class SqlTemporalFunctionRenderer {
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.literal("EXTRACT").openingBracket().keyword(function.part().name()).from().rendered(function.expression().toSql(this.dialect)).closingBracket();
 		return renderer.toSql();
+	}
+	
+	/**
+	 * Renders the given date-in-zone function into dialect-specific sql.<br>
+	 * This base implementation does not support the function and requires a dialect-specific override.<br>
+	 *
+	 * @param function The date-in-zone function to render
+	 * @return The rendered sql
+	 * @throws SqlException If the dialect does not support rendering this function
+	 */
+	protected @NonNull SqlRendered renderDateInZone(@NonNull SqlDateInZoneFunction<?> function) throws SqlException {
+		throw new SqlDialectUnsupportedRenderingException("DATE_IN_ZONE is not supported by dialect " + this.dialect.name() + ", requires dialect-specific override");
 	}
 	
 	/**

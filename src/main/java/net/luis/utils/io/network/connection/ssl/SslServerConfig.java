@@ -60,6 +60,7 @@ import java.util.Objects;
  *
  * @param backlog Maximum number of pending connections in the queue
  * @param clientBufferSize Buffer size for each client connection in bytes
+ * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
  * @param clientReadTimeout Read timeout for client connections (Duration.ZERO for infinite)
  * @param tcpNoDelay Whether to disable Nagle's algorithm for client connections
  * @param keepAlive Whether to enable TCP keep-alive for client connections
@@ -71,22 +72,25 @@ import java.util.Objects;
  * @param onClientConnect Handler called when a client connects (after a successful handshake)
  * @param onClientDisconnect Handler called when a client disconnects
  * @param onMessage Handler called when a message is received from a client
+ * @param onConnection Handler that takes over the whole connection instead of the built-in read loop
  * @param onError Handler called when an error occurs
  */
 public record SslServerConfig(
 	int backlog,
 	int clientBufferSize,
+	boolean framing,
 	@NonNull Duration clientReadTimeout,
 	boolean tcpNoDelay,
 	boolean keepAlive,
 	@NonNull SSLContext sslContext,
-	@NonNull List<String> enabledProtocols,
+	@NonNull List<TlsProtocol> enabledProtocols,
 	@NonNull List<String> enabledCipherSuites,
 	@NonNull SslClientAuth clientAuth,
 	@NonNull ClientExecutorStrategy executorStrategy,
-	@Nullable ConnectionEventHandler onClientConnect,
-	@Nullable ConnectionEventHandler onClientDisconnect,
+	@Nullable ConnectEventHandler onClientConnect,
+	@Nullable DisconnectEventHandler onClientDisconnect,
 	@Nullable MessageEventHandler<SslServer, SslConnection> onMessage,
+	@Nullable ConnectionHandler<SslServer, SslConnection> onConnection,
 	@Nullable ErrorEventHandler onError
 ) {
 	
@@ -96,6 +100,7 @@ public record SslServerConfig(
 	 *
 	 * @param backlog Maximum number of pending connections
 	 * @param clientBufferSize Buffer size for client connections
+	 * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
 	 * @param clientReadTimeout Read timeout for client connections
 	 * @param tcpNoDelay Whether to disable Nagle's algorithm
 	 * @param keepAlive Whether to enable TCP keep-alive
@@ -107,9 +112,10 @@ public record SslServerConfig(
 	 * @param onClientConnect Handler for client connections
 	 * @param onClientDisconnect Handler for client disconnections
 	 * @param onMessage Handler for incoming messages
+	 * @param onConnection Handler that takes over the whole connection
 	 * @param onError Handler for errors
-	 * @throws NullPointerException If clientReadTimeout, sslContext, enabledProtocols, enabledCipherSuites, clientAuth, or executorStrategy is null
-	 * @throws IllegalArgumentException If backlog or clientBufferSize is less than 1
+	 * @throws NullPointerException If clientReadTimeout, sslContext, enabledProtocols, enabledCipherSuites, clientAuth, or executorStrategy is null, or if enabledProtocols contains null
+	 * @throws IllegalArgumentException If backlog or clientBufferSize is less than 1, or if both onMessage and onConnection are set
 	 */
 	public SslServerConfig {
 		Objects.requireNonNull(clientReadTimeout, "Client read timeout must not be null");
@@ -124,6 +130,9 @@ public record SslServerConfig(
 		}
 		if (clientBufferSize < 1) {
 			throw new IllegalArgumentException("Client buffer size must be at least 1: " + clientBufferSize);
+		}
+		if (onMessage != null && onConnection != null) {
+			throw new IllegalArgumentException("Message handler and connection handler must not be set at the same time");
 		}
 		
 		enabledProtocols = List.copyOf(enabledProtocols);

@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
-import net.luis.utils.io.network.connection.event.ConnectionEventHandler;
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
+import net.luis.utils.io.network.connection.event.*;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -39,9 +38,9 @@ import java.util.Objects;
  * <pre>{@code
  * SslClientConfig config = SslClientConfig.builder()
  *     .connectTimeout(Duration.ofSeconds(10))
- *     .enabledProtocols(List.of("TLSv1.3", "TLSv1.2"))
+ *     .enabledProtocols(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2))
  *     .verifyHostname(true)
- *     .onConnect(event -> System.out.println("Secure connection established!"))
+ *     .onConnect((connection, local, remote, timestamp) -> System.out.println("Secure connection established!"))
  *     .build();
  *
  * try (SslClient client = new SslClient(config)) {
@@ -58,10 +57,11 @@ import java.util.Objects;
  * @param readTimeout Maximum time to wait for read operations (Duration.ZERO for infinite)
  * @param writeTimeout Maximum time to wait for write operations (Duration.ZERO for infinite)
  * @param bufferSize Size of the read/write buffers in bytes
+ * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
  * @param tcpNoDelay Whether to disable Nagle's algorithm (TCP_NODELAY)
  * @param keepAlive Whether to enable TCP keep-alive (SO_KEEPALIVE)
  * @param sslContext The SSL context to use, or null to use the JVM default ({@link SSLContext#getDefault()})
- * @param enabledProtocols The TLS protocols to enable (empty for the socket default), e.g. {@code "TLSv1.3"}
+ * @param enabledProtocols The TLS protocols to enable (empty for the socket default), e.g. {@link TlsProtocol#TLS_V1_3}
  * @param enabledCipherSuites The cipher suites to enable (empty for the socket default)
  * @param verifyHostname Whether to verify the server hostname against its certificate (HTTPS endpoint identification)
  * @param onConnect Handler called when the secure connection is established
@@ -73,14 +73,15 @@ public record SslClientConfig(
 	@NonNull Duration readTimeout,
 	@NonNull Duration writeTimeout,
 	int bufferSize,
+	boolean framing,
 	boolean tcpNoDelay,
 	boolean keepAlive,
 	@Nullable SSLContext sslContext,
-	@NonNull List<String> enabledProtocols,
+	@NonNull List<TlsProtocol> enabledProtocols,
 	@NonNull List<String> enabledCipherSuites,
 	boolean verifyHostname,
-	@Nullable ConnectionEventHandler onConnect,
-	@Nullable ConnectionEventHandler onDisconnect,
+	@Nullable ConnectEventHandler onConnect,
+	@Nullable DisconnectEventHandler onDisconnect,
 	@Nullable ErrorEventHandler onError
 ) {
 	
@@ -91,6 +92,7 @@ public record SslClientConfig(
 	 *     <li>{@link #readTimeout} = {@code Duration.ZERO} (infinite)</li>
 	 *     <li>{@link #writeTimeout} = {@code Duration.ZERO} (infinite)</li>
 	 *     <li>{@link #bufferSize} = {@code 8192}</li>
+	 *     <li>{@link #framing} = {@code true}</li>
 	 *     <li>{@link #tcpNoDelay} = {@code true}</li>
 	 *     <li>{@link #keepAlive} = {@code true}</li>
 	 *     <li>{@link #sslContext} = {@code null} (JVM default)</li>
@@ -100,7 +102,7 @@ public record SslClientConfig(
 	 *     <li>All handlers = {@code null}</li>
 	 * </ul>
 	 */
-	public static final SslClientConfig DEFAULT = new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, null, List.of(), List.of(), true, null, null, null);
+	public static final SslClientConfig DEFAULT = new SslClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, List.of(), List.of(), true, null, null, null);
 	
 	/**
 	 * Constructs a new SSL client configuration.<br>
@@ -110,6 +112,7 @@ public record SslClientConfig(
 	 * @param readTimeout Maximum time to wait for read operations
 	 * @param writeTimeout Maximum time to wait for write operations
 	 * @param bufferSize Size of the read/write buffers in bytes
+	 * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
 	 * @param tcpNoDelay Whether to disable Nagle's algorithm
 	 * @param keepAlive Whether to enable TCP keep-alive
 	 * @param sslContext The SSL context to use, or null for the JVM default
@@ -119,7 +122,7 @@ public record SslClientConfig(
 	 * @param onConnect Handler called when the connection is established
 	 * @param onDisconnect Handler called when the connection is closed
 	 * @param onError Handler called when an error occurs
-	 * @throws NullPointerException If connect timeout, read timeout, write timeout, enabled protocols, or enabled cipher suites is null
+	 * @throws NullPointerException If connect timeout, read timeout, write timeout, enabled protocols, or enabled cipher suites is null, or if enabled protocols contains null
 	 * @throws IllegalArgumentException If bufferSize is less than 1
 	 */
 	public SslClientConfig {
