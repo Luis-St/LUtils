@@ -102,30 +102,7 @@ tasks.register<JavaExec>("run") {
 	standardInput = System.`in`
 	args = listOf()
 	
-	classpath = files()
-	jvmArgs = listOf(
-		"--module-path", sourceSets["main"].runtimeClasspath.asPath,
-		"--add-modules", "com.fasterxml.jackson.databind", // Required so Log4j2 can read the JSON configuration
-		"-Dlog4j2.configurationFile=${sourceSets["main"].output.resourcesDir}/log4j2.json", // Resources are not visible on the module path
-		"--module", "net.luis.utils/net.luis.utils.Main"
-	)
-}
-
-tasks.register<JavaExec>("runDatabase") {
-	dependsOn(tasks.named("classes"))
-	
-	group = "runs"
-	mainClass.set("net.luis.utils.DatabaseTest")
-	
-	enableAssertions = true
-	standardInput = System.`in`
-	args = listOf()
-	
-	classpath = files()
-	jvmArgs = listOf(
-		"--module-path", sourceSets["main"].runtimeClasspath.asPath,
-		"--module", "net.luis.utils/net.luis.utils.DatabaseTest"
-	)
+	classpath = sourceSets["main"].runtimeClasspath
 }
 
 tasks.named<Test>("test") {
