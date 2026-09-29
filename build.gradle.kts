@@ -4,6 +4,7 @@ import java.time.Year
 val googleGuava: String by project
 val log4jAPI: String by project
 val log4jCore: String by project
+val jackson: String by project
 val apacheLang: String by project
 val hikaricp: String by project
 val postgresql: String by project
@@ -111,43 +112,6 @@ tasks.register<JavaExec>("run") {
 	)
 }
 
-// Second run configuration for the crypto provider matrix: the same code with BouncyCastle resolved.
-// The core must work without it, and the optional algorithms must become available with it.
-tasks.register<JavaExec>("runBouncyCastle") {
-	dependsOn(tasks.named("classes"))
-
-	group = "runs"
-	mainClass.set("net.luis.utils.Main")
-
-	enableAssertions = true
-	standardInput = System.`in`
-	args = listOf()
-
-	classpath = files()
-	jvmArgs = listOf(
-		"--module-path", (sourceSets["main"].runtimeClasspath + configurations["compileClasspath"]).asPath,
-		"--add-modules", "org.bouncycastle.provider",
-		"--module", "net.luis.utils/net.luis.utils.Main"
-	)
-}
-
-tasks.register<JavaExec>("runDatabase") {
-	dependsOn(tasks.named("classes"))
-	
-	group = "runs"
-	mainClass.set("net.luis.utils.DatabaseTest")
-	
-	enableAssertions = true
-	standardInput = System.`in`
-	args = listOf()
-	
-	classpath = files()
-	jvmArgs = listOf(
-		"--module-path", sourceSets["main"].runtimeClasspath.asPath,
-		"--module", "net.luis.utils/net.luis.utils.DatabaseTest"
-	)
-}
-
 tasks.named<Test>("test") {
 	useJUnitPlatform()
 	environment("env.default", "3")
@@ -226,4 +190,3 @@ tasks.named<Jar>("jar") {
 		)
 	}
 }
-
