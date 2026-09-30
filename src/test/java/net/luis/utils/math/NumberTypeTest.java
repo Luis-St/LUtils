@@ -53,6 +53,23 @@ class NumberTypeTest {
 	}
 	
 	@Test
+	void getByClassThrowsNullPointerExceptionForNull() {
+		assertThrows(NullPointerException.class, () -> NumberType.getByClass(null));
+	}
+	
+	@Test
+	void getByClassReturnsCorrectType() {
+		assertEquals(NumberType.BYTE, NumberType.getByClass(Byte.class));
+		assertEquals(NumberType.SHORT, NumberType.getByClass(Short.class));
+		assertEquals(NumberType.INTEGER, NumberType.getByClass(Integer.class));
+		assertEquals(NumberType.LONG, NumberType.getByClass(Long.class));
+		assertEquals(NumberType.BIG_INTEGER, NumberType.getByClass(BigInteger.class));
+		assertEquals(NumberType.FLOAT, NumberType.getByClass(Float.class));
+		assertEquals(NumberType.DOUBLE, NumberType.getByClass(Double.class));
+		assertEquals(NumberType.BIG_DECIMAL, NumberType.getByClass(BigDecimal.class));
+	}
+	
+	@Test
 	void getNumberClassReturnsCorrectClass() {
 		assertEquals(Byte.class, NumberType.BYTE.getNumberClass());
 		assertEquals(Short.class, NumberType.SHORT.getNumberClass());
