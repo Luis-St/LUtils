@@ -88,7 +88,7 @@ public class SqlIndexRenderer {
 		renderer.closingBracket();
 		
 		if (index.whereCondition() != null) {
-			renderer.where().rendered(index.whereCondition().toSql(this.dialect));
+			renderer.where().rendered(this.dialect.renderConditionInline(index.whereCondition()));
 		}
 		return renderer.toSql();
 	}

@@ -25,10 +25,12 @@ import net.luis.utils.io.database.audit.*;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.dialect.SqlFeature;
+import net.luis.utils.io.database.dialect.renderer.SqlRenderingHelper;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlResultCountException;
 import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
+import net.luis.utils.io.database.expression.SqlAliasedExpression;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.orderable.OrderedSqlExpression;
 import net.luis.utils.io.database.expression.orderable.SqlOrderable;
@@ -115,6 +117,38 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 	 */
 	SqlSelectQuery(@NonNull SqlSelectQueryConfig<E> config) {
 		this.config = Objects.requireNonNull(config, "Sql select query config must not be null");
+	}
+	
+	/**
+	 * Returns the names the columns of the given configuration are exposed under.<br>
+	 * If the configuration selects no expression the column names of its table are returned, otherwise the name of every selected
+	 * expression is derived from its alias or, for a plain column, from the column name.<br>
+	 *
+	 * @param cfg The configuration to derive the column names of
+	 * @return The derived column names, or an empty list if a selected expression exposes no name
+	 * @throws NullPointerException If the configuration is null
+	 */
+	private static @NonNull List<String> columnNames(@NonNull SqlSelectQueryConfig<?> cfg) {
+		Objects.requireNonNull(cfg, "Sql select query config must not be null");
+		
+		List<String> names = new ArrayList<>();
+		if (cfg.selectedExpressions().isEmpty()) {
+			for (SqlColumn<?, ?> column : cfg.table().columns().stream().sorted(Comparator.comparingInt(SqlColumn::index)).toList()) {
+				names.add(column.name());
+			}
+			return names;
+		}
+		
+		for (SqlExpression<?> expression : cfg.selectedExpressions()) {
+			switch (expression) {
+				case SqlAliasedExpression<?> aliased -> names.add(aliased.alias().get());
+				case SqlColumn<?, ?> column -> names.add(column.name());
+				default -> {
+					return List.of();
+				}
+			}
+		}
+		return names;
 	}
 	
 	/**
@@ -668,7 +702,7 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 		if (!cfg.commonTableExpressions().isEmpty()) {
 			renderer.with();
 			
-			if (cfg.commonTableExpressions().stream().anyMatch(SqlCommonTableExpression::recursive)) {
+			if (cfg.commonTableExpressions().stream().anyMatch(SqlCommonTableExpression::recursive) && dialect.usesRecursiveCteKeyword()) {
 				renderer.recursive();
 			}
 			
@@ -679,6 +713,20 @@ public class SqlSelectQuery<E> implements SqlJoinableQuery<E> {
 				
 				SqlCommonTableExpression commonTableExpression = cfg.commonTableExpressions().get(i);
 				renderer.literal(dialect.quoteIdentifier(commonTableExpression.alias().get()));
+				
+				if (commonTableExpression.recursive() && dialect.requiresRecursiveCteColumnList()) {
+					List<String> columnNames = columnNames(commonTableExpression.query().config);
+					if (columnNames.isEmpty()) {
+						throw new SqlStatementBuilderException(
+							"The column names of the recursive common table expression '" + commonTableExpression.alias().get() + "' cannot be derived from its select list, but dialect " + dialect.name() + " requires them. " +
+								"Alias every selected expression of the common table expression."
+						);
+					}
+					
+					renderer.openingBracket();
+					SqlRenderingHelper.renderList(renderer, columnNames, (r, name) -> r.literal(dialect.quoteIdentifier(name)));
+					renderer.closingBracket();
+				}
 				renderer.as().openingBracket();
 				renderer.rendered(commonTableExpression.query().toSql(dialect));
 				renderer.closingBracket();

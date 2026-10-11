@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.network.connection.exception;
 
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.Endpoint;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -74,7 +74,7 @@ public class NetworkTimeoutException extends NetworkConnectionException {
 	 * @param endpoint The endpoint involved in the failed operation
 	 * @throws NullPointerException If timeout is null
 	 */
-	public NetworkTimeoutException(@Nullable NetworkErrorType errorType, @NonNull Duration timeout, @Nullable IpEndpoint endpoint) {
+	public NetworkTimeoutException(@Nullable NetworkErrorType errorType, @NonNull Duration timeout, @Nullable Endpoint endpoint) {
 		super(errorType, endpoint);
 		this.timeout = Objects.requireNonNull(timeout, "Timeout must not be null");
 	}
@@ -101,7 +101,7 @@ public class NetworkTimeoutException extends NetworkConnectionException {
 	 * @param endpoint The endpoint involved in the failed operation
 	 * @throws NullPointerException If timeout is null
 	 */
-	public NetworkTimeoutException(@Nullable String message, @Nullable NetworkErrorType errorType, @NonNull Duration timeout, @Nullable IpEndpoint endpoint) {
+	public NetworkTimeoutException(@Nullable String message, @Nullable NetworkErrorType errorType, @NonNull Duration timeout, @Nullable Endpoint endpoint) {
 		super(message, errorType, endpoint);
 		this.timeout = Objects.requireNonNull(timeout, "Timeout must not be null");
 	}
@@ -116,7 +116,7 @@ public class NetworkTimeoutException extends NetworkConnectionException {
 	 * @param endpoint The endpoint involved in the failed operation
 	 * @throws NullPointerException If timeout is null
 	 */
-	public NetworkTimeoutException(@Nullable String message, @Nullable Throwable cause, @Nullable NetworkErrorType errorType, @NonNull Duration timeout, @Nullable IpEndpoint endpoint) {
+	public NetworkTimeoutException(@Nullable String message, @Nullable Throwable cause, @Nullable NetworkErrorType errorType, @NonNull Duration timeout, @Nullable Endpoint endpoint) {
 		super(message, cause, errorType, endpoint);
 		this.timeout = Objects.requireNonNull(timeout, "Timeout must not be null");
 	}

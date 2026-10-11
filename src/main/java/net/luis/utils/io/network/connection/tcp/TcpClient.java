@@ -18,16 +18,19 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
+import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.connection.NetworkClient;
-import net.luis.utils.io.network.connection.NetworkUtils;
-import net.luis.utils.io.network.connection.event.ConnectionEvent;
+import net.luis.utils.io.network.connection.*;
 import net.luis.utils.io.network.connection.exception.*;
-import org.apache.commons.lang3.ArrayUtils;
+import net.luis.utils.io.network.connection.ssl.SslClient;
+import net.luis.utils.io.network.connection.ssl.SslUpgradeConfig;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -56,20 +59,39 @@ import java.util.Optional;
  *
  * @author Luis-St
  */
-public final class TcpClient implements NetworkClient {
+public final class TcpClient implements NetworkClient<byte[]> {
 	
 	/**
 	 * The configuration for this client.<br>
 	 */
 	private final TcpClientConfig config;
 	/**
+	 * The reusable scratch buffer for unframed read operations.<br>
+	 * Allocated lazily and grown on demand, and unused while framing is enabled.<br>
+	 */
+	private byte @Nullable [] readBuffer;
+	/**
 	 * The underlying socket for communication.<br>
 	 */
 	private volatile Socket socket;
 	/**
+	 * The streams of the current socket, so that every caller gets the same instance.<br>
+	 * Replaced whenever a new connection is established.<br>
+	 */
+	private volatile @Nullable SocketStreams streams;
+	/**
+	 * The endpoint this client was connected to, or null if it was never connected.<br>
+	 * It is kept because the peer name is required to upgrade the connection to TLS.<br>
+	 */
+	private volatile @Nullable Endpoint endpoint;
+	/**
 	 * Whether this client is currently connected.<br>
 	 */
 	private volatile boolean connected;
+	/**
+	 * Whether the connection of this client was handed over to an SSL client by an upgrade.<br>
+	 */
+	private volatile boolean upgraded;
 	
 	/**
 	 * Constructs a new TCP client with default configuration.<br>
@@ -97,7 +119,7 @@ public final class TcpClient implements NetworkClient {
 	 * @throws NetworkConnectionException If connection fails
 	 * @throws NetworkTimeoutException If connection times out
 	 */
-	public static @NonNull TcpClient connectTo(@NonNull IpEndpoint endpoint) throws NetworkConnectionException {
+	public static @NonNull TcpClient connectTo(@NonNull Endpoint endpoint) throws NetworkConnectionException {
 		return connectTo(endpoint, TcpClientConfig.DEFAULT);
 	}
 	
@@ -112,7 +134,7 @@ public final class TcpClient implements NetworkClient {
 	 * @throws NetworkConnectionException If connection fails
 	 * @throws NetworkTimeoutException If connection times out
 	 */
-	public static @NonNull TcpClient connectTo(@NonNull IpEndpoint endpoint, @NonNull TcpClientConfig config) throws NetworkConnectionException {
+	public static @NonNull TcpClient connectTo(@NonNull Endpoint endpoint, @NonNull TcpClientConfig config) throws NetworkConnectionException {
 		Objects.requireNonNull(endpoint, "Endpoint must not be null");
 		Objects.requireNonNull(config, "Config must not be null");
 		
@@ -134,7 +156,7 @@ public final class TcpClient implements NetworkClient {
 	 * @throws NetworkConnectionException If connection fails
 	 * @throws NetworkTimeoutException If connection times out
 	 */
-	public void connect(@NonNull IpEndpoint endpoint) throws NetworkConnectionException {
+	public void connect(@NonNull Endpoint endpoint) throws NetworkConnectionException {
 		Objects.requireNonNull(endpoint, "Endpoint must not be null");
 		if (this.connected) {
 			throw new NetworkConnectionException("Client is already connected", NetworkErrorType.ALREADY_CONNECTED, endpoint);
@@ -142,6 +164,9 @@ public final class TcpClient implements NetworkClient {
 		
 		try {
 			this.socket = new Socket();
+			this.streams = new SocketStreams(this.socket);
+			this.endpoint = endpoint;
+			this.upgraded = false;
 			this.socket.setTcpNoDelay(this.config.tcpNoDelay());
 			this.socket.setKeepAlive(this.config.keepAlive());
 			
@@ -153,130 +178,80 @@ public final class TcpClient implements NetworkClient {
 			this.connected = true;
 			
 			if (this.config.onConnect() != null) {
-				ConnectionEvent event = ConnectionEvent.now(this.localEndpoint().orElse(endpoint), endpoint);
-				this.config.onConnect().handle(event);
+				IpEndpoint local = this.localEndpoint().orElse(null);
+				IpEndpoint remote = this.remoteEndpoint().orElse(null);
+				
+				this.config.onConnect().handle(null, local != null ? local : endpoint, remote != null ? remote : endpoint, Instant.now());
 			}
-		} catch (SocketTimeoutException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_TIMEOUT, "Connection timed out to " + endpoint, e);
-			throw new NetworkTimeoutException("Connection timed out to " + endpoint, NetworkErrorType.CONNECTION_TIMEOUT, this.config.connectTimeout(), endpoint);
-		} catch (ConnectException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_REFUSED, "Connection refused by " + endpoint, e);
-			throw new NetworkConnectionException("Connection refused by " + endpoint, e, NetworkErrorType.CONNECTION_REFUSED, endpoint);
-		} catch (NoRouteToHostException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.HOST_UNREACHABLE, "Host unreachable: " + endpoint, e);
-			throw new NetworkConnectionException("Host unreachable: " + endpoint, e, NetworkErrorType.HOST_UNREACHABLE, endpoint);
 		} catch (IOException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_FAILED, "Failed to connect to " + endpoint, e);
-			throw new NetworkConnectionException("Failed to connect to " + endpoint, e, NetworkErrorType.CONNECTION_FAILED, endpoint);
+			throw NetworkUtils.mapConnectFailure(e, endpoint, this.config.connectTimeout(), this.config.onError());
 		}
 	}
 	
 	/**
-	 * Sends data to the connected server.<br>
+	 * Upgrades this connection to TLS using the default upgrade configuration.<br>
 	 *
-	 * @param data The data to send
-	 * @throws NullPointerException If data is null
-	 * @throws NetworkConnectionException If sending fails or data exceeds buffer size
+	 * @return A secure client that owns the upgraded connection
+	 * @throws NetworkConnectionException If the client is not connected or the TLS handshake fails
+	 * @see #upgrade(SslUpgradeConfig)
 	 */
-	public void send(byte @NonNull [] data) throws NetworkConnectionException {
-		Objects.requireNonNull(data, "Data must not be null");
-		this.validateMessageSize(data);
+	public @NonNull SslClient upgrade() throws NetworkConnectionException {
+		return this.upgrade(SslUpgradeConfig.DEFAULT);
+	}
+	
+	/**
+	 * Upgrades this connection to TLS and returns a secure client for it.<br>
+	 * <p>
+	 *     The given upgrade configuration is combined with the configuration of this client into the configuration of the returned client, see {@link SslUpgradeConfig#toClientConfig(TcpClientConfig)}.<br>
+	 *     All transport settings such as timeouts, buffer size, framing, socket options and event handlers are therefore carried over, so that the secure connection behaves exactly like the plaintext connection it replaces.
+	 * </p>
+	 * <p>
+	 *     This is the client side of protocols that negotiate TLS on an existing connection, such as {@code STARTTLS}.<br>
+	 *     The negotiation itself is not part of this method, the upgrade is performed once the peer has agreed to it.
+	 * </p>
+	 * <p>
+	 *     The peer must not have sent anything beyond its agreement, because the secure client reads the raw socket and
+	 *     neither sees what a reader of this client has already buffered nor expects plaintext before the handshake.<br>
+	 *     Pending input is therefore rejected rather than silently dropped.
+	 * </p>
+	 * <p>
+	 *     On success the returned client owns the connection and this client is left inactive, so closing it becomes a no operation and the secure client has to be closed instead.<br>
+	 *     The connect handler is not called again, because the connection was already established.<br>
+	 *     If the upgrade fails, this client keeps the connection and has to be closed as usual.
+	 * </p>
+	 *
+	 * @param upgradeConfig The TLS options to upgrade with
+	 * @return A secure client that owns the upgraded connection
+	 * @throws NullPointerException If the upgrade config is null
+	 * @throws NetworkConnectionException If the client is not connected, unread plaintext is still pending, or the TLS handshake fails
+	 */
+	public @NonNull SslClient upgrade(@NonNull SslUpgradeConfig upgradeConfig) throws NetworkConnectionException {
+		Objects.requireNonNull(upgradeConfig, "Upgrade config must not be null");
 		this.ensureConnected();
 		
-		try {
-			OutputStream out = this.socket.getOutputStream();
-			out.write(data);
-			out.flush();
-		} catch (SocketException e) {
-			this.handleDisconnect();
-			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET);
-		} catch (IOException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to send data", e);
-			throw new NetworkConnectionException("Failed to send data", e, NetworkErrorType.IO_ERROR);
+		Endpoint endpoint = this.endpoint;
+		if (endpoint == null) {
+			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
 		}
-	}
-	
-	/**
-	 * Receives data from the connected server (blocking).<br>
-	 * Uses the buffer size from the configuration.<br>
-	 *
-	 * @return The received data, or an empty array if the connection was closed
-	 * @throws NetworkConnectionException If receiving fails
-	 * @throws NetworkTimeoutException If the receive times out
-	 */
-	public byte @NonNull [] receive() throws NetworkConnectionException {
-		return this.receive(this.config.bufferSize());
-	}
-	
-	/**
-	 * Receives data with a custom buffer size (blocking).<br>
-	 *
-	 * @param maxBytes The maximum number of bytes to receive
-	 * @return The received data, or an empty array if the connection was closed
-	 * @throws IllegalArgumentException If maxBytes is less than 1
-	 * @throws NetworkConnectionException If receiving fails
-	 * @throws NetworkTimeoutException If the receive times out
-	 */
-	public byte @NonNull [] receive(int maxBytes) throws NetworkConnectionException {
-		if (maxBytes < 1) {
-			throw new IllegalArgumentException("Max bytes must be at least 1: " + maxBytes);
+		if (this.streams().hasPendingInput()) {
+			throw new NetworkConnectionException("Unread plaintext is pending, it would be lost or misread as handshake data", NetworkErrorType.IO_ERROR, endpoint);
 		}
-		this.ensureConnected();
 		
-		try {
-			InputStream in = this.socket.getInputStream();
-			byte[] buffer = new byte[maxBytes];
-			int bytesRead = in.read(buffer);
-			
-			if (bytesRead == -1) {
-				this.handleDisconnect();
-				return ArrayUtils.EMPTY_BYTE_ARRAY;
-			}
-			
-			byte[] data = new byte[bytesRead];
-			System.arraycopy(buffer, 0, data, 0, bytesRead);
-			return data;
-		} catch (SocketTimeoutException e) {
-			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, this.config.readTimeout());
-		} catch (SocketException e) {
-			this.handleDisconnect();
-			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET);
-		} catch (IOException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to receive data", e);
-			throw new NetworkConnectionException("Failed to receive data", e, NetworkErrorType.IO_ERROR);
-		}
+		SslClient client = SslClient.upgrade(this.socket, endpoint, upgradeConfig.toClientConfig(this.config));
+		this.streams = null;
+		this.upgraded = true;
+		this.connected = false;
+		return client;
 	}
 	
 	/**
-	 * Returns the input stream for advanced reading.<br>
+	 * Checks whether the connection of this client was handed over to a secure client by {@link #upgrade(SslUpgradeConfig)}.<br>
+	 * An upgraded client is no longer active and closing it does not close the upgraded connection.<br>
 	 *
-	 * @return The input stream
-	 * @throws NetworkConnectionException If the stream cannot be obtained
+	 * @return True if this client was upgraded, false otherwise
 	 */
-	public @NonNull InputStream getInputStream() throws NetworkConnectionException {
-		this.ensureConnected();
-		
-		try {
-			return this.socket.getInputStream();
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to get input stream", e, NetworkErrorType.IO_ERROR);
-		}
-	}
-	
-	/**
-	 * Returns the output stream for advanced writing.<br>
-	 *
-	 * @return The output stream
-	 * @throws NetworkConnectionException If the stream cannot be obtained
-	 */
-	public @NonNull OutputStream getOutputStream() throws NetworkConnectionException {
-		this.ensureConnected();
-		
-		try {
-			return this.socket.getOutputStream();
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to get output stream", e, NetworkErrorType.IO_ERROR);
-		}
+	public boolean isUpgraded() {
+		return this.upgraded;
 	}
 	
 	@Override
@@ -294,10 +269,7 @@ public final class TcpClient implements NetworkClient {
 		return Optional.of(IpEndpoint.from(address));
 	}
 	
-	/**
-	 * Returns the remote endpoint this client is connected to.<br>
-	 * @return The remote endpoint, or empty if not connected
-	 */
+	@Override
 	public @NonNull Optional<IpEndpoint> remoteEndpoint() {
 		if (!this.isActive()) {
 			return Optional.empty();
@@ -308,8 +280,75 @@ public final class TcpClient implements NetworkClient {
 	}
 	
 	@Override
+	public void send(byte @NonNull [] data) throws NetworkConnectionException {
+		Objects.requireNonNull(data, "Data must not be null");
+		NetworkUtils.validateMessageSize(data, this.config.bufferSize(), null);
+		this.ensureConnected();
+		
+		NetworkUtils.writeAll(this.socket, data, this.config.framing(), this.config.onError(), null, this::handleDisconnect);
+	}
+	
+	@Override
+	public byte @NonNull [] receive() throws NetworkConnectionException {
+		return this.receive(this.config.bufferSize());
+	}
+	
+	@Override
+	public byte @NonNull [] receive(int maxBytes) throws NetworkConnectionException {
+		if (maxBytes < 1) {
+			throw new IllegalArgumentException("Max bytes must be at least 1: " + maxBytes);
+		}
+		this.ensureConnected();
+		
+		if (!this.config.framing()) {
+			this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
+		}
+		
+		InputStream in;
+		try {
+			in = this.streams().input();
+		} catch (NetworkConnectionException e) {
+			this.handleDisconnect();
+			throw e;
+		}
+		
+		return NetworkUtils.readMessage(in, this.readBuffer, maxBytes, this.config.framing(), this.config.readTimeout(), this.config.onError(), null, this::handleDisconnect);
+	}
+	
+	/**
+	 * Returns the input stream for advanced reading.<br>
+	 * The stream is buffered and the same instance is returned on every call, so it can be stored and read across calls.<br>
+	 * <p>
+	 *     {@link #receive()} reads through this same buffer, so the two can be mixed without skipping bytes.
+	 * </p>
+	 *
+	 * @return The input stream
+	 * @throws NetworkConnectionException If the client is not connected or the stream cannot be obtained
+	 */
+	public @NonNull InputStream getInputStream() throws NetworkConnectionException {
+		this.ensureConnected();
+		return this.streams().input();
+	}
+	
+	/**
+	 * Returns the output stream for advanced writing.<br>
+	 * The stream is not buffered and the same instance is returned on every call, so everything written to it goes to the peer immediately.<br>
+	 *
+	 * @return The output stream
+	 * @throws NetworkConnectionException If the client is not connected or the stream cannot be obtained
+	 */
+	public @NonNull OutputStream getOutputStream() throws NetworkConnectionException {
+		this.ensureConnected();
+		return this.streams().output();
+	}
+	
+	/**
+	 * Closes this client and its underlying socket.<br>
+	 * If the connection was handed over to a secure client by an upgrade, nothing is closed, because the secure client owns the connection.<br>
+	 */
+	@Override
 	public void close() {
-		if (this.socket != null && !this.socket.isClosed()) {
+		if (!this.upgraded && this.socket != null && !this.socket.isClosed()) {
 			this.handleDisconnect();
 			
 			try {
@@ -322,18 +361,6 @@ public final class TcpClient implements NetworkClient {
 	//region Helper methods
 	
 	/**
-	 * Validates that the message size does not exceed the configured buffer size.<br>
-	 *
-	 * @param data The data to validate
-	 * @throws NetworkConnectionException If the data exceeds the buffer size
-	 */
-	private void validateMessageSize(byte @NonNull [] data) throws NetworkConnectionException {
-		if (data.length > this.config.bufferSize()) {
-			throw new NetworkConnectionException("Message size " + data.length + " exceeds buffer size " + this.config.bufferSize(), NetworkErrorType.MESSAGE_TOO_LARGE);
-		}
-	}
-	
-	/**
 	 * Ensures that the client is connected before performing operations.<br>
 	 * @throws NetworkConnectionException If the client is not connected
 	 */
@@ -341,6 +368,20 @@ public final class TcpClient implements NetworkClient {
 		if (!this.connected || this.socket == null || this.socket.isClosed()) {
 			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
 		}
+	}
+	
+	/**
+	 * Returns the streams of the current connection.<br>
+	 *
+	 * @return The streams
+	 * @throws NetworkConnectionException If the client is not connected
+	 */
+	private @NonNull SocketStreams streams() throws NetworkConnectionException {
+		SocketStreams streams = this.streams;
+		if (streams == null) {
+			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
+		}
+		return streams;
 	}
 	
 	/**
@@ -353,8 +394,7 @@ public final class TcpClient implements NetworkClient {
 				IpEndpoint local = this.localEndpoint().orElse(null);
 				IpEndpoint remote = this.remoteEndpoint().orElse(null);
 				if (local != null && remote != null) {
-					ConnectionEvent event = ConnectionEvent.now(local, remote);
-					this.config.onDisconnect().handle(event);
+					this.config.onDisconnect().handle(null, local, remote, Instant.now());
 				}
 			} catch (Exception _) {}
 		}

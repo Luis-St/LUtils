@@ -24,9 +24,11 @@ import net.luis.utils.io.database.SqlConnectionHandle;
 import net.luis.utils.io.database.SqlConnectionSource;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.SqlExceptions;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.exception.database.SqlQueryExecutionException;
 import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.index.SqlIndex;
@@ -167,7 +169,22 @@ public class SqlTableProvider<E> {
 	 * @throws SqlException If the table could not be truncated
 	 */
 	public void truncate() throws SqlException {
-		this.executeStatement(this.dialect.tableRenderer().renderTruncateTable(this.table));
+		this.truncate(false);
+	}
+	
+	/**
+	 * Removes all rows from the table without dropping it, optionally cascading to the tables that reference it.<br>
+	 * A cascading truncate also removes all rows of every table that holds a foreign key on this table.<br>
+	 *
+	 * @param cascade Whether the truncate should cascade to the referencing tables
+	 * @throws SqlDialectFeatureException If cascading is requested but the dialect does not support it
+	 * @throws SqlException If the table could not be truncated
+	 */
+	public void truncate(boolean cascade) throws SqlException {
+		if (cascade && !this.dialect.isFeatureSupported(SqlFeature.TRUNCATE_CASCADE)) {
+			throw new SqlDialectFeatureException(SqlFeature.TRUNCATE_CASCADE, this.dialect);
+		}
+		this.executeStatement(this.dialect.tableRenderer().renderTruncateTable(this.table, cascade));
 	}
 	
 	/**

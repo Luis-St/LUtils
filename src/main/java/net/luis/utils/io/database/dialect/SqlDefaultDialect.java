@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.database.dialect;
 
+import net.luis.utils.io.database.type.SqlTypeRegistry;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -46,6 +47,16 @@ public class SqlDefaultDialect extends AbstractSqlDialect {
 	 * Constructs a new default sql dialect.<br>
 	 */
 	public SqlDefaultDialect() {}
+	
+	/**
+	 * Constructs a new default dialect that additionally knows the type mappings of the given registry.<br>
+	 *
+	 * @param additionalTypes The type mappings the dialect should know in addition to its own
+	 * @throws NullPointerException If the additional type mappings are null
+	 */
+	public SqlDefaultDialect(@NonNull SqlTypeRegistry additionalTypes) {
+		super(additionalTypes);
+	}
 	
 	@Override
 	public @NonNull String name() {

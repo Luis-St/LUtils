@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import net.luis.utils.io.network.connection.event.ConnectionEventHandler;
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
+import net.luis.utils.io.network.connection.event.*;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -40,8 +39,8 @@ import java.util.Objects;
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .readTimeout(Duration.ofSeconds(30))
  *     .tcpNoDelay(true)
- *     .onConnect(event -> System.out.println("Connected to " + event.remoteEndpoint()))
- *     .onDisconnect(event -> System.out.println("Disconnected"))
+ *     .onConnect((connection, local, remote, timestamp) -> System.out.println("Connected to " + remote))
+ *     .onDisconnect((connection, local, remote, timestamp) -> System.out.println("Disconnected"))
  *     .build();
  * }</pre>
  *
@@ -68,6 +67,11 @@ public final class TcpClientConfigBuilder {
 	 */
 	private int bufferSize = 8192;
 	/**
+	 * Whether messages are framed with a length prefix on the wire.<br>
+	 * Enabled by default, so that every send is received as exactly one message.<br>
+	 */
+	private boolean framing = true;
+	/**
 	 * Whether to disable Nagle's algorithm (TCP_NODELAY).<br>
 	 */
 	private boolean tcpNoDelay = true;
@@ -78,11 +82,11 @@ public final class TcpClientConfigBuilder {
 	/**
 	 * The handler called when connection is established.<br>
 	 */
-	private @Nullable ConnectionEventHandler onConnect;
+	private @Nullable ConnectEventHandler onConnect;
 	/**
 	 * The handler called when connection is closed.<br>
 	 */
-	private @Nullable ConnectionEventHandler onDisconnect;
+	private @Nullable DisconnectEventHandler onDisconnect;
 	/**
 	 * The handler called when an error occurs.<br>
 	 */
@@ -132,6 +136,26 @@ public final class TcpClientConfigBuilder {
 	}
 	
 	/**
+	 * Sets whether messages are framed with a length prefix on the wire.<br>
+	 * <p>
+	 *     With framing enabled, each send is written as one length-prefixed frame and each receive returns exactly that message,
+	 *     regardless of how TCP fragments or coalesces the stream. This is the default and is required for message oriented protocols.
+	 * </p>
+	 * <p>
+	 *     Disabling it restores the raw byte stream, where a read returns whatever is currently available. This is only useful when
+	 *     talking to a peer that does not understand the frame header, or when the payload carries its own delimiters. Both peers
+	 *     have to agree, since a framed peer and an unframed peer cannot interoperate.
+	 * </p>
+	 *
+	 * @param framing Whether to frame messages with a length prefix
+	 * @return This builder
+	 */
+	public @NonNull TcpClientConfigBuilder framing(boolean framing) {
+		this.framing = framing;
+		return this;
+	}
+	
+	/**
 	 * Sets the size of the read/write buffers in bytes.<br>
 	 *
 	 * @param bufferSize The buffer size (must be at least 1)
@@ -171,7 +195,7 @@ public final class TcpClientConfigBuilder {
 	 * @param onConnect The connection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull TcpClientConfigBuilder onConnect(@Nullable ConnectionEventHandler onConnect) {
+	public @NonNull TcpClientConfigBuilder onConnect(@Nullable ConnectEventHandler onConnect) {
 		this.onConnect = onConnect;
 		return this;
 	}
@@ -182,7 +206,7 @@ public final class TcpClientConfigBuilder {
 	 * @param onDisconnect The disconnection handler, or null to disable
 	 * @return This builder for method chaining
 	 */
-	public @NonNull TcpClientConfigBuilder onDisconnect(@Nullable ConnectionEventHandler onDisconnect) {
+	public @NonNull TcpClientConfigBuilder onDisconnect(@Nullable DisconnectEventHandler onDisconnect) {
 		this.onDisconnect = onDisconnect;
 		return this;
 	}
@@ -203,6 +227,6 @@ public final class TcpClientConfigBuilder {
 	 * @return A new configuration instance
 	 */
 	public @NonNull TcpClientConfig build() {
-		return new TcpClientConfig(this.connectTimeout, this.readTimeout, this.writeTimeout, this.bufferSize, this.tcpNoDelay, this.keepAlive, this.onConnect, this.onDisconnect, this.onError);
+		return new TcpClientConfig(this.connectTimeout, this.readTimeout, this.writeTimeout, this.bufferSize, this.framing, this.tcpNoDelay, this.keepAlive, this.onConnect, this.onDisconnect, this.onError);
 	}
 }

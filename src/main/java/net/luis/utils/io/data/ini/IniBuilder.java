@@ -419,7 +419,7 @@ public final class IniBuilder {
 	}
 	
 	//region Object overrides
-
+	
 	@Override
 	public String toString() {
 		return this.document.toString();

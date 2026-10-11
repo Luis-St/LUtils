@@ -19,6 +19,7 @@
 package net.luis.utils.io.data;
 
 import net.luis.utils.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.io.*;
@@ -108,6 +109,17 @@ public class InputProvider implements AutoCloseable {
 		} catch (IOException e) {
 			throw new UncheckedIOException("Unable to open resource: " + location, e);
 		}
+	}
+	
+	/**
+	 * Constructs a new input provider for the given byte array.<br>
+	 *
+	 * @param data The byte array to read data from
+	 * @throws NullPointerException If the byte array is null
+	 */
+	public InputProvider(byte @NotNull [] data) {
+		Objects.requireNonNull(data, "Data must not be null");
+		this.stream = new ByteArrayInputStream(data);
 	}
 	
 	/**

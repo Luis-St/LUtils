@@ -65,6 +65,12 @@ class SqlTemporalFunctionRendererTest {
 	}
 	
 	@Test
+	void renderDateInZoneUnsupportedByDefault() throws SqlException {
+		SqlDateInZoneFunction<?> function = new SqlDateInZoneFunction<>(new SqlValueExpression<>("2026-07-27 12:00:00"), new SqlValueExpression<>("UTC"), SqlTypes.LOCAL_DATE);
+		assertThrows(SqlDialectUnsupportedRenderingException.class, () -> RENDERER.render(function));
+	}
+	
+	@Test
 	void renderFromEpochUnsupported() throws SqlException {
 		SqlFromEpochFunction<?> function = new SqlFromEpochFunction<>(new SqlValueExpression<>(5), SqlTypes.LOCAL_DATE);
 		assertThrows(SqlDialectUnsupportedRenderingException.class, () -> RENDERER.render(function));

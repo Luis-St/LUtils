@@ -37,32 +37,20 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class FlatDiscriminatedCodecTest {
 	
-	private sealed interface Shape permits Circle, Rectangle {
-		
-		String type();
-	}
-	
-	private record Circle(String type, double radius) implements Shape {}
-	
-	private record Rectangle(String type, double width, double height) implements Shape {}
-	
 	private static final Codec<Circle> CIRCLE_CODEC = CodecBuilder.of(
 		STRING.fieldOf("type", Circle::type),
 		DOUBLE.fieldOf("radius", Circle::radius)
 	).create(Circle::new);
-	
 	private static final Codec<Rectangle> RECTANGLE_CODEC = CodecBuilder.of(
 		STRING.fieldOf("type", Rectangle::type),
 		DOUBLE.fieldOf("width", Rectangle::width),
 		DOUBLE.fieldOf("height", Rectangle::height)
 	).create(Rectangle::new);
-	
 	private static final DiscriminatedCodecProvider<Shape, String> SHAPE_PROVIDER = DiscriminatedCodecProvider.create(Shape.class, type -> switch (type) {
 		case "circle" -> CIRCLE_CODEC;
 		case "rectangle" -> RECTANGLE_CODEC;
 		default -> throw new IllegalArgumentException("Unknown type: " + type);
 	});
-	
 	private static final FlatDiscriminatedCodec<Shape, String> SHAPE_CODEC = new FlatDiscriminatedCodec<>("type", STRING, SHAPE_PROVIDER, Shape::type);
 	
 	@Test
@@ -282,4 +270,13 @@ class FlatDiscriminatedCodecTest {
 		assertTrue(result.endsWith("]"));
 		assertTrue(result.contains("type"));
 	}
+	
+	private sealed interface Shape permits Circle, Rectangle {
+		
+		String type();
+	}
+	
+	private record Circle(String type, double radius) implements Shape {}
+	
+	private record Rectangle(String type, double width, double height) implements Shape {}
 }

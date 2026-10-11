@@ -23,6 +23,7 @@ import net.luis.utils.io.database.dialect.SqlDialects;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
+import net.luis.utils.io.database.expression.SqlAliasedExpression;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.query.SqlCommonTableExpression;
@@ -67,6 +68,28 @@ class SqlSelectQueryTest {
 	
 	private static long markerCount(String sql) {
 		return sql.chars().filter(character -> character == '?').count();
+	}
+	
+	/**
+	 * Builds a select over the shared test table with the given selected expressions, rendered by the given dialect.
+	 *
+	 * @param dialect The dialect the query renders with
+	 * @param expressions The expressions the query selects
+	 * @return The built select query
+	 */
+	private static SqlSelectQuery<Object> selectExprOn(SqlDialect dialect, SqlExpression<?>... expressions) {
+		return new SqlSelectQuery<>(table(), dialect, SOURCE, TIMEOUT, resultSet -> null, List.of(expressions));
+	}
+	
+	/**
+	 * Wraps the given expression in an alias so it exposes a name to the recursive common table expression column list.
+	 *
+	 * @param expression The expression to alias
+	 * @param alias The alias to expose the expression under
+	 * @return The aliased expression
+	 */
+	private static SqlExpression<?> aliased(SqlExpression<?> expression, String alias) {
+		return new SqlAliasedExpression<>(expression, SqlAlias.of(alias));
 	}
 	
 	@Test
@@ -525,6 +548,135 @@ class SqlSelectQueryTest {
 		assertTrue(sql.contains("FOR UPDATE"));
 		assertTrue(sql.indexOf("WHERE") < sql.indexOf("GROUP BY"));
 		assertTrue(sql.indexOf("GROUP BY") < sql.indexOf("ORDER BY"));
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteRequiringColumnListAndUnnameableExpression() {
+		SqlSelectQuery<Object> query = selectOn(H2).with(selectExprOn(H2, integerExpression()).asCommonExpression(SqlAlias.of("cte"), true));
+		SqlStatementBuilderException thrown = assertThrows(SqlStatementBuilderException.class, () -> query.toSql(H2));
+		assertTrue(thrown.getMessage().contains("cte"), thrown.getMessage());
+		assertTrue(thrown.getMessage().contains(H2.name()), thrown.getMessage());
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteRequiringColumnListAndUnnameableExpressionAmongAliased() {
+		SqlSelectQuery<Object> cte = selectExprOn(H2, aliased(integerExpression(), "first"), integerExpression());
+		SqlSelectQuery<Object> query = selectOn(H2).with(cte.asCommonExpression(SqlAlias.of("cte"), true));
+		assertThrows(SqlStatementBuilderException.class, () -> query.toSql(H2));
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteOnDialectWithoutRecursiveKeyword() throws SqlException {
+		SqlDialect dialect = SqlDialects.SQL_SERVER;
+		String sql = selectOn(dialect).with(selectOn(dialect).asCommonExpression(SqlAlias.of("cte"), true)).toSql(dialect).sql();
+		assertTrue(sql.startsWith("WITH"), sql);
+		assertFalse(sql.contains("RECURSIVE"), sql);
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteOnDialectWithRecursiveKeyword() throws SqlException {
+		String sql = selectOn(PG).with(selectOn(PG).asCommonExpression(SqlAlias.of("cte"), true)).toSql(PG).sql();
+		assertTrue(sql.startsWith("WITH RECURSIVE"), sql);
+	}
+	
+	@Test
+	void toSqlWithNonRecursiveCteOnDialectWithRecursiveKeyword() throws SqlException {
+		String sql = selectOn(PG).with(selectOn(PG).asCommonExpression(SqlAlias.of("cte"), false)).toSql(PG).sql();
+		assertTrue(sql.startsWith("WITH"), sql);
+		assertFalse(sql.contains("RECURSIVE"), sql);
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteOnDialectRequiringColumnList() throws SqlException {
+		String sql = selectOn(H2).with(selectOn(H2).asCommonExpression(SqlAlias.of("cte"), true)).toSql(H2).sql();
+		assertTrue(sql.startsWith("WITH RECURSIVE \"cte\"(\"id\", \"name\") AS("), sql);
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteOnDialectNotRequiringColumnList() throws SqlException {
+		String sql = selectOn(PG).with(selectOn(PG).asCommonExpression(SqlAlias.of("cte"), true)).toSql(PG).sql();
+		assertTrue(sql.startsWith("WITH RECURSIVE \"cte\" AS("), sql);
+		assertFalse(sql.contains("\"cte\"("), sql);
+	}
+	
+	@Test
+	void toSqlWithNonRecursiveCteOnDialectRequiringColumnList() throws SqlException {
+		String sql = selectOn(H2).with(selectOn(H2).asCommonExpression(SqlAlias.of("cte"), false)).toSql(H2).sql();
+		assertTrue(sql.startsWith("WITH \"cte\" AS("), sql);
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteWithoutSelectedExpressionsUsesTableColumns() throws SqlException {
+		String sql = selectOn(H2).with(selectOn(H2).asCommonExpression(SqlAlias.of("cte"), true)).toSql(H2).sql();
+		assertTrue(sql.contains("(\"id\", \"name\")"), sql);
+		assertTrue(sql.indexOf("\"id\"") < sql.indexOf("\"name\""), sql);
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteWithAliasedExpressionsUsesAliases() throws SqlException {
+		SqlSelectQuery<Object> cte = selectExprOn(H2, aliased(integerExpression(), "total"), aliased(stringExpression(), "label"));
+		String sql = selectOn(H2).with(cte.asCommonExpression(SqlAlias.of("cte"), true)).toSql(H2).sql();
+		assertTrue(sql.contains("(\"total\", \"label\")"), sql);
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteWithPlainColumnsUsesColumnNames() throws SqlException {
+		SqlTable<Object> table = table();
+		SqlSelectQuery<Object> cte = new SqlSelectQuery<>(table, H2, SOURCE, TIMEOUT, resultSet -> null, List.of(table.columnForName("name"), table.columnForName("id")));
+		String sql = selectOn(H2).with(cte.asCommonExpression(SqlAlias.of("cte"), true)).toSql(H2).sql();
+		assertTrue(sql.contains("(\"name\", \"id\")"), sql);
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteColumnListQuotesNames() throws SqlException {
+		String sql = selectOn(H2).with(selectOn(H2).asCommonExpression(SqlAlias.of("cte"), true)).toSql(H2).sql();
+		assertTrue(sql.contains(H2.quoteIdentifier("id")), sql);
+		assertTrue(sql.contains(H2.quoteIdentifier("name")), sql);
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteColumnListSeparatesWithComma() throws SqlException {
+		SqlSelectQuery<Object> cte = selectExprOn(H2, aliased(integerExpression(), "a"), aliased(integerExpression(), "b"), aliased(integerExpression(), "c"));
+		String sql = selectOn(H2).with(cte.asCommonExpression(SqlAlias.of("cte"), true)).toSql(H2).sql();
+		assertTrue(sql.contains("(\"a\", \"b\", \"c\")"), sql);
+		assertFalse(sql.contains(", )"), sql);
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteSingleColumnList() throws SqlException {
+		SqlSelectQuery<Object> cte = selectExprOn(H2, aliased(integerExpression(), "id"));
+		String sql = selectOn(H2).with(cte.asCommonExpression(SqlAlias.of("cte"), true)).toSql(H2).sql();
+		assertTrue(sql.contains("\"cte\"(\"id\") AS("), sql);
+	}
+	
+	@Test
+	void toSqlWithMixedRecursiveAndNonRecursiveCtesOnDialectRequiringColumnList() throws SqlException {
+		String sql = selectOn(H2)
+			.with(selectOn(H2).asCommonExpression(SqlAlias.of("plain"), false))
+			.with(selectOn(H2).asCommonExpression(SqlAlias.of("rec"), true))
+			.toSql(H2).sql();
+		
+		assertEquals(1, sql.split("RECURSIVE", -1).length - 1, sql);
+		assertTrue(sql.contains("\"plain\" AS("), sql);
+		assertTrue(sql.contains("\"rec\"(\"id\", \"name\") AS("), sql);
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteMixingAliasedAndPlainColumns() throws SqlException {
+		SqlTable<Object> table = table();
+		SqlSelectQuery<Object> cte = new SqlSelectQuery<>(table, H2, SOURCE, TIMEOUT, resultSet -> null, List.of(aliased(integerExpression(), "total"), table.columnForName("name")));
+		String sql = selectOn(H2).with(cte.asCommonExpression(SqlAlias.of("cte"), true)).toSql(H2).sql();
+		assertTrue(sql.contains("(\"total\", \"name\")"), sql);
+	}
+	
+	@Test
+	void toSqlWithRecursiveCteOnSqlServerAndH2ProducesDialectSpecificForms() throws SqlException {
+		SqlDialect sqlServer = SqlDialects.SQL_SERVER;
+		String sqlServerSql = selectOn(sqlServer).with(selectOn(sqlServer).asCommonExpression(SqlAlias.of("cte"), true)).toSql(sqlServer).sql();
+		String h2Sql = selectOn(H2).with(selectOn(H2).asCommonExpression(SqlAlias.of("cte"), true)).toSql(H2).sql();
+		
+		assertTrue(sqlServerSql.startsWith("WITH [cte] AS("), sqlServerSql);
+		assertTrue(h2Sql.startsWith("WITH RECURSIVE \"cte\"(\"id\", \"name\") AS("), h2Sql);
 	}
 	
 	private record Projection(int value) {}

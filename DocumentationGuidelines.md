@@ -412,7 +412,7 @@ private Comparator<E> comparator;
 **Standard order for tags:**
 1. `@param` (in parameter order)
 2. `@return`
-3. `@throws` (in alphabetical order by exception type)
+3. `@throws` (in the order the exceptions can occur in the method)
 4. `@see`
 
 For class-level:

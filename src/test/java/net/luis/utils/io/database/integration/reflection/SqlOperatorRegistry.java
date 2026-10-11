@@ -23,6 +23,7 @@ import net.luis.utils.io.database.SqlDatabase;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.expression.SqlExpression;
+import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.aggregate.SqlCountFunction;
 import net.luis.utils.io.database.function.functions.aggregate.SqlSumFunction;
 import net.luis.utils.io.database.function.functions.generic.SqlCaseWhenFunction;
@@ -205,6 +206,7 @@ public final class SqlOperatorRegistry {
 		out.add(scalarNoOracle("toEpoch(2024-01-01)", "SqlToEpochFunction", Sql.toEpoch(ldt(LocalDateTime.of(2024, 1, 1, 0, 0, 0)), SqlTypes.LONG), Determinism.DETERMINISTIC));
 		out.add(scalarNoOracle("toDate(2024-03-15 10:00)", "SqlToDateFunction", Sql.toDate(ts, SqlTypes.LOCAL_DATE), Determinism.DETERMINISTIC));
 		out.add(scalarNoOracle("toTime(2024-03-15 10:30)", "SqlToTimeFunction", Sql.toTime(ts, SqlTypes.LOCAL_TIME.configure(SqlParameter.fractional(0))), Determinism.DETERMINISTIC));
+		out.add(scalarNoOracle("dateInZone(2024-03-15 10:30, UTC)", "SqlDateInZoneFunction", Sql.dateInZone(ts, new SqlValueExpression<>("UTC", SqlTypes.STRING.configure(SqlParameter.length(32)))), Determinism.DETERMINISTIC));
 		
 		out.add(nonDeterministic("now()", "SqlNowFunction", db -> Sql.now()));
 		out.add(nonDeterministic("currentDate()", "SqlCurrentDateFunction", db -> Sql.currentDate()));

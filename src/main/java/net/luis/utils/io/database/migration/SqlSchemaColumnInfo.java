@@ -38,6 +38,7 @@ import java.util.Objects;
  * @param primaryKey Whether the column is part of the primary key
  * @param unique Whether the column has a unique constraint
  * @param ordinalPosition The ordinal position of the column within the table
+ * @param typeIdentifier The identifier of the column type or {@code null} if the type is not identified
  */
 public record SqlSchemaColumnInfo(
 	@NonNull String tableName,
@@ -48,7 +49,8 @@ public record SqlSchemaColumnInfo(
 	boolean autoIncrement,
 	boolean primaryKey,
 	boolean unique,
-	int ordinalPosition
+	int ordinalPosition,
+	@Nullable String typeIdentifier
 ) {
 	
 	/**
@@ -58,5 +60,33 @@ public record SqlSchemaColumnInfo(
 	public SqlSchemaColumnInfo {
 		Objects.requireNonNull(tableName, "Table name must not be null");
 		Objects.requireNonNull(columnName, "Column name must not be null");
+	}
+	
+	/**
+	 * Constructs a new schema column info without a type identifier.<br>
+	 *
+	 * @param tableName The name of the table the column belongs to
+	 * @param columnName The name of the column
+	 * @param jdbcType The JDBC type code of the column
+	 * @param parameter The resolved parameter describing the column type or {@code null} if it could not be resolved
+	 * @param nullable Whether the column accepts {@code null} values
+	 * @param autoIncrement Whether the column is auto-incremented
+	 * @param primaryKey Whether the column is part of the primary key
+	 * @param unique Whether the column has a unique constraint
+	 * @param ordinalPosition The ordinal position of the column within the table
+	 * @throws NullPointerException If the table name or column name is null
+	 */
+	public SqlSchemaColumnInfo(
+		@NonNull String tableName,
+		@NonNull String columnName,
+		int jdbcType,
+		@Nullable SqlParameter parameter,
+		boolean nullable,
+		boolean autoIncrement,
+		boolean primaryKey,
+		boolean unique,
+		int ordinalPosition
+	) {
+		this(tableName, columnName, jdbcType, parameter, nullable, autoIncrement, primaryKey, unique, ordinalPosition, null);
 	}
 }

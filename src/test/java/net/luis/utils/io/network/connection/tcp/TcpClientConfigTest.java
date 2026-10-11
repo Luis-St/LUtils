@@ -48,23 +48,23 @@ class TcpClientConfigTest {
 	
 	@Test
 	void constructWithNullConnectTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpClientConfig(null, Duration.ZERO, Duration.ZERO, 8192, true, true, null, null, null));
+		assertThrows(NullPointerException.class, () -> new TcpClientConfig(null, Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullReadTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), null, Duration.ZERO, 8192, true, true, null, null, null));
+		assertThrows(NullPointerException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), null, Duration.ZERO, 8192, true, true, true, null, null, null));
 	}
 	
 	@Test
 	void constructWithNullWriteTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, null, 8192, true, true, null, null, null));
+		assertThrows(NullPointerException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, null, 8192, true, true, true, null, null, null));
 	}
 	
 	@Test
 	void constructWithInvalidBufferSizeThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 0, true, true, null, null, null));
-		assertThrows(IllegalArgumentException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, -1, true, true, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 0, true, true, true, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, -1, true, true, true, null, null, null));
 	}
 	
 	@Test
@@ -89,13 +89,25 @@ class TcpClientConfigTest {
 	@Test
 	void builderWithHandlers() {
 		TcpClientConfig config = TcpClientConfig.builder()
-			.onConnect(event -> {})
-			.onDisconnect(event -> {})
-			.onError((type, msg, cause) -> {})
+			.onConnect((connection, local, remote, timestamp) -> {})
+			.onDisconnect((connection, local, remote, timestamp) -> {})
+			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
 		assertNotNull(config.onConnect());
 		assertNotNull(config.onDisconnect());
 		assertNotNull(config.onError());
 	}
+	
+	@Test
+	void framingIsEnabledByDefault() {
+		assertTrue(TcpClientConfig.builder().build().framing());
+	}
+	
+	@Test
+	void framingCanBeDisabled() {
+		assertFalse(TcpClientConfig.builder().framing(false).build().framing());
+		assertTrue(TcpClientConfig.builder().framing(false).framing(true).build().framing());
+	}
+	
 }

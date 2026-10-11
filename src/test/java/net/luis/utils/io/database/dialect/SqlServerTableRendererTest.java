@@ -20,6 +20,7 @@ package net.luis.utils.io.database.dialect;
 
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import org.junit.jupiter.api.Test;
 
@@ -52,5 +53,25 @@ class SqlServerTableRendererTest {
 		assertTrue(sql.contains("IDENTITY"));
 		assertTrue(sql.contains("(1"));
 		assertTrue(sql.contains("1)"));
+	}
+	
+	@Test
+	void renderAutoIncrementKeywordProducesIdentity() throws SqlException {
+		SqlRendered rendered = RENDERER.renderAutoIncrementKeyword();
+		assertTrue(rendered.sql().startsWith("IDENTITY"), rendered.sql());
+		assertTrue(rendered.sql().contains("1"), rendered.sql());
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void renderAutoIncrementDelegatesToKeyword() throws SqlException {
+		SqlRenderer renderer = SqlRenderer.empty();
+		RENDERER.renderAutoIncrement(renderer, SqlTestFixtures.integerColumn());
+		assertEquals(RENDERER.renderAutoIncrementKeyword().sql(), renderer.toSql().sql());
+	}
+	
+	@Test
+	void renderAutoIncrementKeywordIsStableAcrossCalls() throws SqlException {
+		assertEquals(RENDERER.renderAutoIncrementKeyword().sql(), RENDERER.renderAutoIncrementKeyword().sql());
 	}
 }
