@@ -170,9 +170,47 @@ public final class CertificateRequests {
 		if (ca.getBasicConstraints() < 0) {
 			throw new IllegalArgumentException("Issuer " + ca.getSubjectX500Principal().getName() + " is not a certificate authority");
 		}
+		requireValidSignature(request);
+		
+		return issue(request, ca, caKey, algorithm, spec);
+	}
+	
+	/**
+	 * Ensures that the signature of the given request verifies.<br>
+	 *
+	 * @param request The request to check
+	 * @throws NullPointerException If the request is null
+	 * @throws AuthenticationException If the signature of the request does not verify
+	 * @throws CryptoException If the signature cannot be checked
+	 */
+	static void requireValidSignature(@NonNull CertificateRequest request) {
+		Objects.requireNonNull(request, "Request must not be null");
+		
 		if (!request.verify()) {
 			throw new AuthenticationException("Signature verification failed for the certificate request");
 		}
+	}
+	
+	/**
+	 * Issues a certificate for the given request without checking the request or the authority.<br>
+	 * The caller has to ensure that the signature of the request verifies and that the issuer is a certificate authority.<br>
+	 *
+	 * @param request The request to issue a certificate for
+	 * @param ca The certificate of the issuing authority
+	 * @param caKey The private key of the issuing authority
+	 * @param algorithm The scheme the authority signs with
+	 * @param spec What the certificate says apart from the subject's name and key
+	 * @return The issued certificate
+	 * @throws NullPointerException If any parameter is null
+	 * @throws UnsupportedAlgorithmException If the scheme cannot sign a certificate
+	 * @throws CryptoException If issuing fails
+	 */
+	static @NonNull X509Certificate issue(@NonNull CertificateRequest request, @NonNull X509Certificate ca, @NonNull PrivateKey caKey, @NonNull SignatureAlgorithm algorithm, @NonNull CertificateSpec spec) {
+		Objects.requireNonNull(request, "Request must not be null");
+		Objects.requireNonNull(ca, "Certificate authority must not be null");
+		Objects.requireNonNull(caKey, "Certificate authority key must not be null");
+		Objects.requireNonNull(algorithm, "Algorithm must not be null");
+		Objects.requireNonNull(spec, "Spec must not be null");
 		
 		PKCS10CertificationRequest parsed = request.request();
 		return X509Support.issue(

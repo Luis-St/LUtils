@@ -197,7 +197,7 @@ class SubjectAltNameTest {
 	
 	@Test
 	void constructEmailWithoutDomain() {
-		assertEquals("user@", new SubjectAltName.Email("user@").address());
+		assertThrows(IllegalArgumentException.class, () -> new SubjectAltName.Email("user@"));
 	}
 	
 	@Test

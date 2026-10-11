@@ -29,6 +29,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
 import org.jspecify.annotations.NonNull;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.*;
 import java.time.Duration;
@@ -75,6 +76,10 @@ public final class CertificateAuthority {
 	 * How far the not before instant of an issued certificate lies in the past, so a peer with a slightly late clock accepts it at once.<br>
 	 */
 	private static final Duration CLOCK_SKEW = Duration.ofMinutes(5);
+	/**
+	 * The message signed when restoring an authority, to check that the key belongs to the root certificate.<br>
+	 */
+	private static final byte[] KEY_PROBE = "lutils-certificate-authority-key-probe".getBytes(StandardCharsets.UTF_8);
 	
 	/**
 	 * The root certificate of this authority.<br>
@@ -156,11 +161,13 @@ public final class CertificateAuthority {
 	 * @param nextSerial The serial number the next certificate is issued with, see {@link #nextSerial()}
 	 * @return The restored authority
 	 * @throws NullPointerException If any parameter is null
-	 * @throws IllegalArgumentException If the certificate is not a certificate authority, or if the serial is not positive
+	 * @throws IllegalArgumentException If the certificate is not a certificate authority, if the serial is not positive, or if the key does not belong to the certificate
 	 * @throws UnsupportedAlgorithmException If the scheme cannot sign a certificate
+	 * @throws CryptoException If the key or the key of the certificate is not usable for the scheme
 	 */
 	public static @NonNull CertificateAuthority of(@NonNull X509Certificate certificate, @NonNull PrivateKey key, @NonNull SignatureAlgorithm algorithm, @NonNull BigInteger nextSerial) {
 		Objects.requireNonNull(certificate, "Certificate must not be null");
+		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(nextSerial, "Next serial must not be null");
 		X509Support.requireCertificateScheme(algorithm);
 		if (certificate.getBasicConstraints() < 0) {
@@ -168,6 +175,9 @@ public final class CertificateAuthority {
 		}
 		if (nextSerial.signum() <= 0) {
 			throw new IllegalArgumentException("Next serial must be positive, was " + nextSerial);
+		}
+		if (!Signatures.verify(algorithm, certificate.getPublicKey(), KEY_PROBE, Signatures.sign(algorithm, key, KEY_PROBE))) {
+			throw new IllegalArgumentException("Key does not belong to certificate " + certificate.getSubjectX500Principal().getName());
 		}
 		
 		return new CertificateAuthority(certificate, key, algorithm, nextSerial);
@@ -292,7 +302,9 @@ public final class CertificateAuthority {
 		Objects.requireNonNull(request, "Request must not be null");
 		Objects.requireNonNull(spec, "Spec must not be null");
 		
-		return CertificateRequests.sign(request, this.certificate, this.key, this.algorithm, spec.withSerial(this.takeSerial()));
+		CertificateRequests.requireValidSignature(request);
+		
+		return CertificateRequests.issue(request, this.certificate, this.key, this.algorithm, spec.withSerial(this.takeSerial()));
 	}
 	
 	/**

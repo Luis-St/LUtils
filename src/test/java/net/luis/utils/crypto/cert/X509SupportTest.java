@@ -258,9 +258,9 @@ class X509SupportTest {
 	
 	@Test
 	void contentSignerWithUnknownSignatureName() {
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> X509Support.contentSigner(FAKE, ed25519.getPrivate()));
-		assertTrue(exception.getMessage().contains("NoSuchSig"));
-		assertEquals(IllegalArgumentException.class, exception.getClass());
+		UnsupportedAlgorithmException exception = assertThrows(UnsupportedAlgorithmException.class, () -> X509Support.contentSigner(FAKE, ed25519.getPrivate()));
+		assertEquals("Signature scheme fake has no known certificate signature identifier", exception.getMessage());
+		assertInstanceOf(IllegalArgumentException.class, exception.getCause());
 	}
 	
 	@Test

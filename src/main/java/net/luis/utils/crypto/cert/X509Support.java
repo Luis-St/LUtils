@@ -257,15 +257,10 @@ final class X509Support {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		NativeSignatureAlgorithm n = requireCertificateScheme(algorithm);
-		JcaContentSignerBuilder builder;
 		try {
-			builder = new JcaContentSignerBuilder(n.jcaName());
+			return new JcaContentSignerBuilder(n.jcaName()).setSecureRandom(CryptoRandom.instance()).build(key);
 		} catch (IllegalArgumentException e) {
 			throw new UnsupportedAlgorithmException("Signature scheme " + n.name() + " has no known certificate signature identifier", e);
-		}
-		
-		try {
-			return builder.setSecureRandom(CryptoRandom.instance()).build(key);
 		} catch (OperatorCreationException e) {
 			if (e.getCause() instanceof NoSuchAlgorithmException) {
 				throw UnsupportedAlgorithmException.forAlgorithm(n.jcaName(), e);

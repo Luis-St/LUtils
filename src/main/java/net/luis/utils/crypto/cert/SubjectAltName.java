@@ -139,13 +139,13 @@ public sealed interface SubjectAltName permits SubjectAltName.Dns, SubjectAltNam
 		/**
 		 * Constructs a new email name.<br>
 		 * @throws NullPointerException If the address is null
-		 * @throws IllegalArgumentException If the address is blank, not ascii, or holds no at sign
+		 * @throws IllegalArgumentException If the address is blank, not ascii, or has no local part or no domain
 		 */
 		public Email {
 			Objects.requireNonNull(address, "Address must not be null");
 			requireAscii(address, "Email address");
 			
-			if (address.indexOf('@') <= 0) {
+			if (address.indexOf('@') <= 0 || address.endsWith("@")) {
 				throw new IllegalArgumentException("Email address must hold a local part and a domain, was '" + address + "'");
 			}
 		}

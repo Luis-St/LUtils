@@ -129,8 +129,8 @@ class CertificateRequestsTest {
 	@Test
 	void createWithUnknownAlgorithm() {
 		NativeSignatureAlgorithm unknown = new NativeSignatureAlgorithm("Unknown", "Unknown", "Unknown", null, 0, false, false);
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> CertificateRequests.create(SUBJECT, ed25519, unknown, NAMES));
-		assertEquals("Unknown signature type requested: Unknown", exception.getMessage());
+		UnsupportedAlgorithmException exception = assertThrows(UnsupportedAlgorithmException.class, () -> CertificateRequests.create(SUBJECT, ed25519, unknown, NAMES));
+		assertEquals("Signature scheme Unknown has no known certificate signature identifier", exception.getMessage());
 	}
 	
 	@Test

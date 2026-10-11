@@ -79,13 +79,14 @@ public sealed interface RevocationPolicy permits RevocationPolicy.None, Revocati
 	 * Revocation checking through the online certificate status protocol.<br>
 	 * <p>
 	 *     The responder is asked over the network during validation.<br>
-	 *     A soft failure accepts a certificate whose responder cannot be reached, which keeps a service up during a responder outage at the price of letting a revoked certificate through while it lasts.
+	 *     A soft failure accepts a certificate whose responder cannot be reached, which keeps a service up during a responder outage at the price of letting a revoked certificate through while it lasts.<br>
+	 *     A certificate that names no responder is rejected even with a soft failure when no responder is given here, since there is nothing to ask and this is a configuration error rather than an outage.
 	 * </p>
 	 *
 	 * @author Luis-St
 	 *
 	 * @param responder The responder to ask, or null to ask the responder each certificate names in its authority information access extension
-	 * @param softFail Whether a certificate whose status cannot be determined is accepted
+	 * @param softFail Whether a certificate whose responder cannot be reached is accepted
 	 */
 	record Ocsp(@Nullable URI responder, boolean softFail) implements RevocationPolicy {}
 }

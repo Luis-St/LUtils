@@ -174,7 +174,8 @@ class KeyStoresTest {
 	
 	@Test
 	void loadMissingFile() {
-		assertThrows(IllegalArgumentException.class, () -> KeyStores.load(DIRECTORY.resolve("missing.p12"), PASSWORD));
+		UncheckedIOException exception = assertThrows(UncheckedIOException.class, () -> KeyStores.load(DIRECTORY.resolve("missing.p12"), PASSWORD));
+		assertInstanceOf(NoSuchFileException.class, exception.getCause());
 	}
 	
 	@Test

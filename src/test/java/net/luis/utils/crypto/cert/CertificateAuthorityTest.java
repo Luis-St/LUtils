@@ -106,10 +106,10 @@ class CertificateAuthorityTest {
 	
 	@Test
 	void ofRestoresAuthority() {
-		CertificateAuthority original = newAuthority();
 		KeyPair pair = Signatures.generateKeyPair(SignatureAlgorithm.ED25519);
-		CertificateAuthority restored = CertificateAuthority.of(original.certificate(), pair.getPrivate(), SignatureAlgorithm.ED25519, BigInteger.valueOf(42));
-		assertSame(original.certificate(), restored.certificate());
+		X509Certificate root = Certificates.builder().subject(ROOT_NAME).selfSigned(pair).validity(Instant.now(), VALIDITY).ca(0).build(SignatureAlgorithm.ED25519);
+		CertificateAuthority restored = CertificateAuthority.of(root, pair.getPrivate(), SignatureAlgorithm.ED25519, BigInteger.valueOf(42));
+		assertSame(root, restored.certificate());
 		assertEquals(SignatureAlgorithm.ED25519, restored.algorithm());
 		assertEquals(BigInteger.valueOf(42), restored.nextSerial());
 	}
@@ -175,6 +175,13 @@ class CertificateAuthorityTest {
 	void ofWithNegativeSerial() {
 		X509Certificate root = newAuthority().certificate();
 		assertThrows(IllegalArgumentException.class, () -> CertificateAuthority.of(root, subjectPair.getPrivate(), SignatureAlgorithm.ED25519, BigInteger.valueOf(-5)));
+	}
+	
+	@Test
+	void ofWithKeyNotMatchingCertificate() {
+		X509Certificate root = newAuthority().certificate();
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> CertificateAuthority.of(root, subjectPair.getPrivate(), SignatureAlgorithm.ED25519, BigInteger.ONE));
+		assertEquals("Key does not belong to certificate CN=Test Root", exception.getMessage());
 	}
 	
 	@Test
@@ -294,7 +301,7 @@ class CertificateAuthorityTest {
 		CertificateRequest request = CertificateRequests.parse(der);
 		
 		assertThrows(AuthenticationException.class, () -> ca.sign(request, spec()));
-		assertEquals(BigInteger.TWO, ca.nextSerial());
+		assertEquals(BigInteger.ONE, ca.nextSerial());
 	}
 	
 	@Test
@@ -345,8 +352,8 @@ class CertificateAuthorityTest {
 	
 	@Test
 	void ofWithCaCertificate() {
-		CertificateAuthority original = newAuthority();
-		CertificateAuthority restored = CertificateAuthority.of(original.certificate(), subjectPair.getPrivate(), SignatureAlgorithm.ED25519, BigInteger.TEN);
+		X509Certificate root = Certificates.builder().subject(ROOT_NAME).selfSigned(subjectPair).validity(Instant.now(), VALIDITY).ca(0).build(SignatureAlgorithm.ED25519);
+		CertificateAuthority restored = CertificateAuthority.of(root, subjectPair.getPrivate(), SignatureAlgorithm.ED25519, BigInteger.TEN);
 		X509Certificate issued = restored.issueClient(SUBJECT, subjectPair.getPublic(), VALIDITY);
 		assertEquals(BigInteger.TEN, issued.getSerialNumber());
 		assertEquals(BigInteger.valueOf(11), restored.nextSerial());

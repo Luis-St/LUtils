@@ -22,8 +22,7 @@ import net.luis.utils.crypto.exception.*;
 import org.jspecify.annotations.NonNull;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.nio.file.attribute.*;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -123,11 +122,14 @@ public final class KeyStores {
 	 * @throws NullPointerException If the file or the password is null
 	 * @throws AuthenticationException If the password is wrong
 	 * @throws MalformedDataException If the file is not a key store
-	 * @throws UncheckedIOException If reading fails
+	 * @throws UncheckedIOException If the file does not exist, is not a regular file, or if reading fails
 	 */
 	public static @NonNull KeyStore load(@NonNull Path file, char @NonNull [] password) {
 		Objects.requireNonNull(file, "File must not be null");
 		Objects.requireNonNull(password, "Password must not be null");
+		if (!Files.isRegularFile(file)) {
+			throw new UncheckedIOException("Failed to read the key store: " + file, new NoSuchFileException(file.toString(), null, "Not a regular file"));
+		}
 		
 		try {
 			return KeyStore.getInstance(file.toFile(), password);
