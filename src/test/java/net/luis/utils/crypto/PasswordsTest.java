@@ -341,7 +341,7 @@ class PasswordsTest {
 		assertFalse(Passwords.verify("completely different".toCharArray(), encoded));
 		assertFalse(Passwords.verify("correct horse battery stapla".toCharArray(), encoded));
 		assertFalse(Passwords.verify("correct horse".toCharArray(), encoded));
-		assertThrows(IllegalArgumentException.class, () -> Passwords.verify(new char[0], encoded));
+		assertFalse(Passwords.verify(new char[0], encoded));
 	}
 	
 	@Test
@@ -412,8 +412,11 @@ class PasswordsTest {
 	
 	@Test
 	void hashWithEmptyPassword() {
-		assertEquals("password empty", assertThrows(IllegalArgumentException.class, () -> Passwords.hash(new char[0], CHEAP_ARGON2)).getMessage());
 		assertEquals("password empty", assertThrows(IllegalArgumentException.class, () -> Passwords.hash(new char[0], CHEAP_SCRYPT)).getMessage());
+		
+		String argon2 = assertDoesNotThrow(() -> Passwords.hash(new char[0], CHEAP_ARGON2));
+		assertTrue(Passwords.verify(new char[0], argon2));
+		assertFalse(Passwords.verify("x".toCharArray(), argon2));
 		
 		String encoded = assertDoesNotThrow(() -> Passwords.hash(new char[0], CHEAP_PBKDF2));
 		assertTrue(Passwords.verify(new char[0], encoded));
