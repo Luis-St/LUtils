@@ -55,6 +55,7 @@ dependencies {
 	runtimeOnly("org.xerial:sqlite-jdbc:${sqlite}") // SQLite Driver (embedded)
 	// Crypto
 	implementation("org.bouncycastle:bcprov-jdk18on:${bouncyCastle}") // PQ and AEAD extras, Argon2id and scrypt
+	implementation("org.bouncycastle:bcpkix-jdk18on:${bouncyCastle}") // Certificates, certificate requests and revocation lists
 	// Other
 	implementation("org.jspecify:jspecify:${jspecify}") // Nullability
 	implementation("org.jetbrains:annotations:${jetBrainsAnnotations}") // Annotations
