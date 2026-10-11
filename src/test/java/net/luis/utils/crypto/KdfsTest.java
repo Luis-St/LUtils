@@ -904,7 +904,7 @@ class KdfsTest {
 	@Test
 	void deriveKeyPairFromOneSharedSecret() {
 		KeyPair pair = Kems.generateKeyPair(CryptoSuite.current().kem());
-		try (Kems.Encapsulation encapsulated = Kems.encapsulate(CryptoSuite.current().kem(), pair.getPublic());
+		try (KemEncapsulation encapsulated = Kems.encapsulate(CryptoSuite.current().kem(), pair.getPublic());
 			 Secret shared = Kems.decapsulate(CryptoSuite.current().kem(), pair.getPrivate(), encapsulated.encapsulation())) {
 			SecretKey encryption = Kdfs.deriveKey(ALGORITHM, shared, SALT, "c2s".getBytes(StandardCharsets.UTF_8), AeadAlgorithm.AES_256_GCM);
 			SecretKey confirmation = Kdfs.deriveKey(ALGORITHM, shared, SALT, "c2s-finished".getBytes(StandardCharsets.UTF_8), MacAlgorithm.HMAC_SHA_256);
@@ -969,7 +969,7 @@ class KdfsTest {
 	@Test
 	void deriveKeyFromDecapsulatedSecretRoundTrips() {
 		KeyPair pair = Kems.generateKeyPair(CryptoSuite.current().kem());
-		try (Kems.Encapsulation encapsulated = Kems.encapsulate(CryptoSuite.current().kem(), pair.getPublic());
+		try (KemEncapsulation encapsulated = Kems.encapsulate(CryptoSuite.current().kem(), pair.getPublic());
 			 Secret received = Kems.decapsulate(CryptoSuite.current().kem(), pair.getPrivate(), encapsulated.encapsulation())) {
 			SecretKey sender = Kdfs.deriveKey(ALGORITHM, encapsulated.sharedSecret(), SALT, INFO, AeadAlgorithm.AES_256_GCM);
 			SecretKey recipient = Kdfs.deriveKey(ALGORITHM, received, SALT, INFO, AeadAlgorithm.AES_256_GCM);

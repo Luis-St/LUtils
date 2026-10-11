@@ -216,7 +216,7 @@ public final class CryptoMessages {
 		Objects.requireNonNull(recipient, "Recipient must not be null");
 		Objects.requireNonNull(plaintext, "Plaintext must not be null");
 		
-		try (Kems.Encapsulation encapsulated = Kems.encapsulate(suite.kem(), recipient)) {
+		try (KemEncapsulation encapsulated = Kems.encapsulate(suite.kem(), recipient)) {
 			UUID messageId = UUIDs.v7();
 			
 			try (Secret material = deriveMaterial(suite, encapsulated.sharedSecret(), messageId, encapsulated.encapsulation())) {
@@ -263,7 +263,7 @@ public final class CryptoMessages {
 		
 		ByteArrayOutputStream slots = new ByteArrayOutputStream();
 		for (PublicKey recipient : recipients) {
-			try (Kems.Encapsulation encapsulated = Kems.encapsulate(suite.kem(), recipient); Secret material = deriveMaterial(suite, encapsulated.sharedSecret(), messageId, encapsulated.encapsulation())) {
+			try (KemEncapsulation encapsulated = Kems.encapsulate(suite.kem(), recipient); Secret material = deriveMaterial(suite, encapsulated.sharedSecret(), messageId, encapsulated.encapsulation())) {
 				SecretKey wrappingKey = Aeads.key(suite.aead(), CryptoBytes.slice(material.material(), 0, suite.aead().keyLength()));
 				byte[] commitment = CryptoBytes.slice(material.material(), suite.aead().keyLength(), COMMITMENT_LENGTH);
 				byte[] wrapped = Aeads.encrypt(suite.aead(), wrappingKey, contentKey.getEncoded(), header);

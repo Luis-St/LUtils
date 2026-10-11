@@ -499,7 +499,7 @@ class PemsTest {
 		PublicKey restored = CryptoKeys.publicKey(KemAlgorithm.X25519_ML_KEM_768, document.content());
 		
 		assertEquals(hybrid.getPublic(), restored);
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519_ML_KEM_768, restored)) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.X25519_ML_KEM_768, restored)) {
 			assertEquals(KemAlgorithm.X25519_ML_KEM_768.encapsulationLength(), sent.encapsulation().length);
 		}
 	}

@@ -998,7 +998,7 @@ class CryptoMessagesTest {
 	void deriveMaterialFeedsBothKeyAndCommitment() {
 		UUID messageId = UUIDs.v7();
 		byte[] artifact;
-		try (Kems.Encapsulation encapsulated = Kems.encapsulate(suite().kem(), recipient().getPublic());
+		try (KemEncapsulation encapsulated = Kems.encapsulate(suite().kem(), recipient().getPublic());
 			 Secret material = CryptoMessages.deriveMaterial(suite(), encapsulated.sharedSecret(), messageId, encapsulated.encapsulation())) {
 			int keyLength = suite().aead().keyLength();
 			SecretKey key = Aeads.key(suite().aead(), Arrays.copyOf(material.material(), keyLength));

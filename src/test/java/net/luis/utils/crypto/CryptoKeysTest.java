@@ -504,7 +504,7 @@ class CryptoKeysTest {
 		PublicKey publicKey = CryptoKeys.publicKey(KemAlgorithm.X25519_ML_KEM_768, hybridKem.getPublic().getEncoded());
 		PrivateKey privateKey = CryptoKeys.privateKey(KemAlgorithm.X25519_ML_KEM_768, hybridKem.getPrivate().getEncoded());
 		
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519_ML_KEM_768, publicKey)) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.X25519_ML_KEM_768, publicKey)) {
 			try (Secret received = Kems.decapsulate(KemAlgorithm.X25519_ML_KEM_768, privateKey, sent.encapsulation()); Secret original = Kems.decapsulate(KemAlgorithm.X25519_ML_KEM_768, hybridKem.getPrivate(), sent.encapsulation())) {
 				assertArrayEquals(sent.sharedSecret().material(), received.material());
 				assertArrayEquals(sent.sharedSecret().material(), original.material());

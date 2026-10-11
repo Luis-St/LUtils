@@ -182,7 +182,7 @@ public class CryptoOutputStream extends OutputStream {
 		this.out = out;
 		this.suite = suite;
 		
-		try (Kems.Encapsulation encapsulated = Kems.encapsulate(suite.kem(), recipient)) {
+		try (KemEncapsulation encapsulated = Kems.encapsulate(suite.kem(), recipient)) {
 			UUID messageId = UUIDs.v7();
 			
 			try (Secret material = CryptoMessages.deriveMaterial(suite, encapsulated.sharedSecret(), messageId, encapsulated.encapsulation())) {

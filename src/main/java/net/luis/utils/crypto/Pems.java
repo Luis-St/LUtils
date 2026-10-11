@@ -18,8 +18,10 @@
 
 package net.luis.utils.crypto;
 
-import net.luis.utils.crypto.exception.CryptoException;
-import net.luis.utils.crypto.exception.MalformedDataException;
+import net.luis.utils.crypto.algorithm.SignatureAlgorithm;
+import net.luis.utils.crypto.exception.*;
+import net.luis.utils.crypto.key.Secret;
+import net.luis.utils.crypto.util.CryptoBytes;
 import net.luis.utils.crypto.util.PemDocument;
 import net.luis.utils.io.reader.StringReader;
 import net.luis.utils.resources.ResourceLocation;
@@ -34,8 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.*;
 import java.security.Key;
 import java.security.PrivateKey;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
+import java.security.cert.*;
 import java.util.*;
 
 /**
@@ -96,6 +97,18 @@ public final class Pems {
 	 * The label of a certificate document.<br>
 	 */
 	public static final String CERTIFICATE = "CERTIFICATE";
+	/**
+	 * The label of a PKCS#10 certificate signing request document.<br>
+	 */
+	public static final String CERTIFICATE_REQUEST = "CERTIFICATE REQUEST";
+	/**
+	 * The label of a certificate revocation list document.<br>
+	 */
+	public static final String X509_CRL = "X509 CRL";
+	/**
+	 * The label of a password encrypted PKCS#8 private key document.<br>
+	 */
+	public static final String ENCRYPTED_PRIVATE_KEY = "ENCRYPTED PRIVATE KEY";
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
@@ -151,6 +164,99 @@ public final class Pems {
 		} catch (CertificateEncodingException e) {
 			throw new CryptoException("Cannot encode certificate", e);
 		}
+	}
+	
+	/**
+	 * Encodes the given certificate chain as one document per certificate, in order.<br>
+	 * A chain is written leaf first, which is the order TLS servers and {@code openssl} expect.<br>
+	 *
+	 * @param chain The chain to encode
+	 * @return The encoded documents, concatenated
+	 * @throws NullPointerException If the chain is null or holds null
+	 * @throws CryptoException If a certificate cannot be encoded
+	 */
+	public static @NonNull String encodeChain(@NonNull List<X509Certificate> chain) {
+		Objects.requireNonNull(chain, "Chain must not be null");
+		
+		StringBuilder builder = new StringBuilder();
+		for (X509Certificate certificate : chain) {
+			builder.append(encode(certificate));
+		}
+		return builder.toString();
+	}
+	
+	/**
+	 * Encodes the given certificate revocation list.<br>
+	 *
+	 * @param crl The revocation list to encode
+	 * @return The encoded document
+	 * @throws NullPointerException If the revocation list is null
+	 * @throws CryptoException If the revocation list cannot be encoded
+	 */
+	public static @NonNull String encode(@NonNull X509CRL crl) {
+		Objects.requireNonNull(crl, "Revocation list must not be null");
+		
+		try {
+			return encode(X509_CRL, crl.getEncoded());
+		} catch (CRLException e) {
+			throw new CryptoException("Cannot encode revocation list", e);
+		}
+	}
+	
+	/**
+	 * Encodes the given private key encrypted under the given password.<br>
+	 * <p>
+	 *     The key is written as a PKCS#8 {@code EncryptedPrivateKeyInfo} with PBES2, deriving an AES-256-CBC key through PBKDF2 with HMAC-SHA256 at 600000 iterations.<br>
+	 *     OpenSSL and the other common tools read this format.<br>
+	 *     A hybrid private key is encrypted in its own composite encoding, which only this library can read back.
+	 * </p>
+	 * <p>
+	 *     The password is not retained, the caller stays responsible for wiping it.
+	 * </p>
+	 *
+	 * @param key The private key to encode
+	 * @param password The password to encrypt under
+	 * @return The encoded document
+	 * @throws NullPointerException If the key or the password is null
+	 * @throws CryptoException If the key does not expose an encoded form, or if the encryption fails
+	 */
+	public static @NonNull String encodeEncrypted(@NonNull PrivateKey key, char @NonNull [] password) {
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(password, "Password must not be null");
+		
+		byte[] encoded = key.getEncoded();
+		if (encoded == null) {
+			throw new CryptoException("Cannot encrypt a " + key.getAlgorithm() + " key without an encoded form");
+		}
+		try {
+			return encode(ENCRYPTED_PRIVATE_KEY, PrivateKeyEncryption.encrypt(encoded, password));
+		} finally {
+			CryptoBytes.wipe(encoded);
+		}
+	}
+	
+	/**
+	 * Decodes the first document in the given text as an encrypted private key and decrypts it.<br>
+	 * <p>
+	 *     Besides the format {@link #encodeEncrypted(PrivateKey, char[])} writes, every PBES2 variant OpenSSL writes is accepted.<br>
+	 *     That covers PBKDF2 with HMAC-SHA1 or HMAC-SHA2 and scrypt, each with AES-128, AES-192 or AES-256 in CBC mode.
+	 * </p>
+	 * <p>
+	 *     The result is the encoded private key, held in a secret so it can be wiped once it has been decoded.<br>
+	 *     Decode it with {@link CryptoKeys#privateKey(SignatureAlgorithm, byte[])} or its key encapsulation counterpart.
+	 * </p>
+	 *
+	 * @param pem The text to decode
+	 * @param password The password to decrypt with
+	 * @return The decrypted encoded private key
+	 * @throws NullPointerException If the text or the password is null
+	 * @throws MalformedDataException If the text holds no document, a malformed one, or one with another label
+	 * @throws UnsupportedAlgorithmException If the key is encrypted with a scheme other than PBES2 with AES-CBC
+	 * @throws AuthenticationException If the password is wrong
+	 */
+	public static @NonNull Secret decodeEncrypted(@NonNull String pem, char @NonNull [] password) {
+		Objects.requireNonNull(password, "Password must not be null");
+		return PrivateKeyEncryption.decrypt(decode(pem, ENCRYPTED_PRIVATE_KEY).content(), password);
 	}
 	
 	/**

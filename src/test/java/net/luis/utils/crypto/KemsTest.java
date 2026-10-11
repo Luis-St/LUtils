@@ -80,28 +80,6 @@ class KemsTest {
 	}
 	
 	@Test
-	void constructEncapsulation() {
-		Kems.Encapsulation encapsulation = new Kems.Encapsulation(new byte[] { 1, 2 }, Secret.copyOf(new byte[32]));
-		assertArrayEquals(new byte[] { 1, 2 }, encapsulation.encapsulation());
-		assertEquals(32, encapsulation.sharedSecret().length());
-	}
-	
-	@Test
-	void constructEncapsulationWithNullEncapsulation() {
-		assertEquals("Encapsulation must not be null", assertThrows(NullPointerException.class, () -> new Kems.Encapsulation(null, Secret.copyOf(new byte[32]))).getMessage());
-	}
-	
-	@Test
-	void constructEncapsulationWithNullSharedSecret() {
-		assertEquals("Shared secret must not be null", assertThrows(NullPointerException.class, () -> new Kems.Encapsulation(new byte[1], null)).getMessage());
-	}
-	
-	@Test
-	void constructEncapsulationWithBothNull() {
-		assertEquals("Encapsulation must not be null", assertThrows(NullPointerException.class, () -> new Kems.Encapsulation(null, null)).getMessage());
-	}
-	
-	@Test
 	void generateKeyPairWithNullAlgorithm() {
 		assertEquals("Algorithm must not be null", assertThrows(NullPointerException.class, () -> Kems.generateKeyPair(null)).getMessage());
 	}
@@ -148,7 +126,7 @@ class KemsTest {
 	
 	@Test
 	void encapsulateDhWithMismatchedCurve() {
-		try (Kems.Encapsulation sent = assertDoesNotThrow(() -> Kems.encapsulate(KemAlgorithm.X25519, x448.getPublic()))) {
+		try (KemEncapsulation sent = assertDoesNotThrow(() -> Kems.encapsulate(KemAlgorithm.X25519, x448.getPublic()))) {
 			assertEquals(KemAlgorithm.X448.encapsulationLength(), sent.encapsulation().length);
 			assertNotEquals(KemAlgorithm.X25519.encapsulationLength(), sent.encapsulation().length);
 			assertThrows(MalformedDataException.class, () -> Kems.decapsulate(KemAlgorithm.X25519, x448.getPrivate(), sent.encapsulation()));
@@ -195,7 +173,7 @@ class KemsTest {
 	
 	@Test
 	void decapsulateNativeWithWrongKey() {
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.ML_KEM_768, mlKem768.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.ML_KEM_768, mlKem768.getPublic())) {
 			AuthenticationException exception = assertThrows(AuthenticationException.class, () -> Kems.decapsulate(KemAlgorithm.ML_KEM_768, ed25519.getPrivate(), sent.encapsulation()));
 			assertTrue(exception.getMessage().contains("Decapsulation failed for ML-KEM-768"));
 			assertInstanceOf(CryptoException.class, exception);
@@ -204,7 +182,7 @@ class KemsTest {
 	
 	@Test
 	void decapsulateNativeWithGarbageEncapsulation() {
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.ML_KEM_768, mlKem768.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.ML_KEM_768, mlKem768.getPublic())) {
 			byte[] garbage = CryptoRandom.bytes(KemAlgorithm.ML_KEM_768.encapsulationLength());
 			byte[] expected = sent.sharedSecret().material();
 			try {
@@ -217,7 +195,7 @@ class KemsTest {
 	
 	@Test
 	void decapsulateDhWithGarbageEncapsulation() {
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
 			byte[] garbage = CryptoRandom.bytes(KemAlgorithm.X25519.encapsulationLength());
 			byte[] expected = sent.sharedSecret().material();
 			try {
@@ -230,7 +208,7 @@ class KemsTest {
 	
 	@Test
 	void decapsulateDhWithWrongPrivateKey() {
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
 			AuthenticationException exception = assertThrows(AuthenticationException.class, () -> Kems.decapsulate(KemAlgorithm.X25519, ed25519.getPrivate(), sent.encapsulation()));
 			assertEquals("Decapsulation failed for X25519", exception.getMessage());
 			assertInstanceOf(CryptoException.class, exception);
@@ -265,7 +243,7 @@ class KemsTest {
 	
 	@Test
 	void encapsulateAndDecapsulateNativeKem() {
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.ML_KEM_768, mlKem768.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.ML_KEM_768, mlKem768.getPublic())) {
 			assertEquals(KemAlgorithm.ML_KEM_768.encapsulationLength(), sent.encapsulation().length);
 			assertArrayEquals(sent.sharedSecret().material(), materialOf(Kems.decapsulate(KemAlgorithm.ML_KEM_768, mlKem768.getPrivate(), sent.encapsulation())));
 		}
@@ -275,7 +253,7 @@ class KemsTest {
 	void encapsulateAndDecapsulateDhKem() {
 		for (KemAlgorithm algorithm : List.of(KemAlgorithm.X25519, KemAlgorithm.X448)) {
 			KeyPair pair = KemAlgorithm.X25519.equals(algorithm) ? x25519 : x448;
-			try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
+			try (KemEncapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
 				assertEquals(algorithm.encapsulationLength(), sent.encapsulation().length);
 				assertEquals(algorithm.sharedSecretLength(), sent.sharedSecret().length());
 				assertArrayEquals(sent.sharedSecret().material(), materialOf(Kems.decapsulate(algorithm, pair.getPrivate(), sent.encapsulation())));
@@ -299,7 +277,7 @@ class KemsTest {
 		for (KemAlgorithm algorithm : List.of(KemAlgorithm.X25519_ML_KEM_768, KemAlgorithm.X448_ML_KEM_1024)) {
 			HybridKemAlgorithm hybridAlgorithm = assertInstanceOf(HybridKemAlgorithm.class, algorithm);
 			KeyPair pair = Kems.generateKeyPair(algorithm);
-			try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
+			try (KemEncapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
 				assertEquals(hybridAlgorithm.classical().encapsulationLength() + hybridAlgorithm.postQuantum().encapsulationLength(), sent.encapsulation().length);
 				assertArrayEquals(sent.sharedSecret().material(), materialOf(Kems.decapsulate(algorithm, pair.getPrivate(), sent.encapsulation())));
 			}
@@ -311,7 +289,7 @@ class KemsTest {
 		for (KemAlgorithm algorithm : KemAlgorithm.VALUES) {
 			assumeTrue(Providers.supports(algorithm));
 			KeyPair pair = Kems.generateKeyPair(algorithm);
-			try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
+			try (KemEncapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
 				assertEquals(algorithm.encapsulationLength(), sent.encapsulation().length);
 				assertDoesNotThrow(() -> materialOf(Kems.decapsulate(algorithm, pair.getPrivate(), sent.encapsulation())));
 			}
@@ -319,22 +297,11 @@ class KemsTest {
 	}
 	
 	@Test
-	void encapsulationCloseWipesSecret() {
-		Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic());
-		byte[] encapsulation = sent.encapsulation().clone();
-		
-		sent.close();
-		assertThrows(IllegalStateException.class, () -> sent.sharedSecret().material());
-		assertEquals(32, sent.sharedSecret().length());
-		assertArrayEquals(encapsulation, sent.encapsulation());
-	}
-	
-	@Test
 	void encapsulationLengthPerMechanism() {
 		for (KemAlgorithm algorithm : KemAlgorithm.VALUES) {
 			assumeTrue(Providers.supports(algorithm));
 			KeyPair pair = Kems.generateKeyPair(algorithm);
-			try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
+			try (KemEncapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
 				assertEquals(algorithm.encapsulationLength(), sent.encapsulation().length, algorithm.name());
 			}
 		}
@@ -345,7 +312,7 @@ class KemsTest {
 		for (KemAlgorithm algorithm : KemAlgorithm.VALUES) {
 			assumeTrue(Providers.supports(algorithm));
 			KeyPair pair = Kems.generateKeyPair(algorithm);
-			try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
+			try (KemEncapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
 				assertEquals(algorithm.sharedSecretLength(), sent.sharedSecret().length(), algorithm.name());
 			}
 		}
@@ -358,7 +325,7 @@ class KemsTest {
 		for (KemAlgorithm algorithm : KemAlgorithm.VALUES) {
 			assumeTrue(Providers.supports(algorithm));
 			KeyPair pair = Kems.generateKeyPair(algorithm);
-			try (Kems.Encapsulation first = Kems.encapsulate(algorithm, pair.getPublic()); Kems.Encapsulation second = Kems.encapsulate(algorithm, pair.getPublic())) {
+			try (KemEncapsulation first = Kems.encapsulate(algorithm, pair.getPublic()); KemEncapsulation second = Kems.encapsulate(algorithm, pair.getPublic())) {
 				assertFalse(Arrays.equals(first.encapsulation(), second.encapsulation()), algorithm.name());
 				assertFalse(Arrays.equals(first.sharedSecret().material(), second.sharedSecret().material()), algorithm.name());
 			}
@@ -373,44 +340,11 @@ class KemsTest {
 	}
 	
 	@Test
-	void encapsulationIsNotWipedOnClose() {
-		Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic());
-		byte[] before = sent.encapsulation().clone();
-		
-		sent.close();
-		assertArrayEquals(before, sent.encapsulation());
-		assertFalse(Arrays.equals(new byte[before.length], sent.encapsulation()));
-	}
-	
-	@Test
-	void encapsulationCloseIsIdempotent() {
-		Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic());
-		assertDoesNotThrow(() -> {
-			sent.close();
-			sent.close();
-		});
-	}
-	
-	@Test
-	void encapsulationInTryWithResources() {
-		byte[] captured;
-		Kems.Encapsulation escaped;
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
-			escaped = sent;
-			captured = sent.encapsulation();
-			assertNotNull(sent.sharedSecret().material());
-		}
-		
-		assertThrows(IllegalStateException.class, () -> escaped.sharedSecret().material());
-		assertArrayEquals(captured, escaped.encapsulation());
-	}
-	
-	@Test
 	void hybridEncapsulationConcatenatesComponents() {
 		HybridKemAlgorithm algorithm = assertInstanceOf(HybridKemAlgorithm.class, KemAlgorithm.X25519_ML_KEM_768);
 		HybridPrivateKey recipient = assertInstanceOf(HybridPrivateKey.class, hybrid.getPrivate());
 		
-		try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, hybrid.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(algorithm, hybrid.getPublic())) {
 			byte[] classicalPart = CryptoBytes.slice(sent.encapsulation(), 0, algorithm.classical().encapsulationLength());
 			assertEquals(32, classicalPart.length);
 			assertDoesNotThrow(() -> materialOf(Kems.decapsulate(algorithm.classical(), recipient.classical(), classicalPart)));
@@ -422,7 +356,7 @@ class KemsTest {
 		for (KemAlgorithm algorithm : KemAlgorithm.VALUES) {
 			assumeTrue(Providers.supports(algorithm));
 			KeyPair pair = Kems.generateKeyPair(algorithm);
-			try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
+			try (KemEncapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
 				assertArrayEquals(sent.sharedSecret().material(), materialOf(Kems.decapsulate(algorithm, pair.getPrivate(), sent.encapsulation())), algorithm.name());
 			}
 		}
@@ -435,7 +369,7 @@ class KemsTest {
 			KeyPair first = Kems.generateKeyPair(algorithm);
 			KeyPair second = Kems.generateKeyPair(algorithm);
 			
-			try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, first.getPublic())) {
+			try (KemEncapsulation sent = Kems.encapsulate(algorithm, first.getPublic())) {
 				byte[] expected = sent.sharedSecret().material().clone();
 				try {
 					assertFalse(CryptoBytes.equalsConstantTime(expected, materialOf(Kems.decapsulate(algorithm, second.getPrivate(), sent.encapsulation()))), algorithm.name());
@@ -451,7 +385,7 @@ class KemsTest {
 		HybridKemAlgorithm algorithm = assertInstanceOf(HybridKemAlgorithm.class, KemAlgorithm.X25519_ML_KEM_768);
 		int split = algorithm.classical().encapsulationLength();
 		
-		try (Kems.Encapsulation first = Kems.encapsulate(algorithm, hybrid.getPublic()); Kems.Encapsulation second = Kems.encapsulate(algorithm, hybrid.getPublic())) {
+		try (KemEncapsulation first = Kems.encapsulate(algorithm, hybrid.getPublic()); KemEncapsulation second = Kems.encapsulate(algorithm, hybrid.getPublic())) {
 			byte[] expected = materialOf(Kems.decapsulate(algorithm, hybrid.getPrivate(), first.encapsulation()));
 			byte[] swappedClassical = CryptoBytes.concat(CryptoBytes.slice(second.encapsulation(), 0, split), CryptoBytes.slice(first.encapsulation(), split, first.encapsulation().length - split));
 			byte[] swappedPostQuantum = CryptoBytes.concat(CryptoBytes.slice(first.encapsulation(), 0, split), CryptoBytes.slice(second.encapsulation(), split, second.encapsulation().length - split));
@@ -467,7 +401,7 @@ class KemsTest {
 		for (KemAlgorithm algorithm : List.of(KemAlgorithm.X25519_ML_KEM_768, KemAlgorithm.X448_ML_KEM_1024)) {
 			KeyPair pair = Kems.generateKeyPair(algorithm);
 			for (int i = 0; i < 5; i++) {
-				try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
+				try (KemEncapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
 					secrets.add(HexFormat.of().formatHex(sent.sharedSecret().material()));
 				}
 			}
@@ -481,7 +415,7 @@ class KemsTest {
 		HybridPrivateKey recipient = assertInstanceOf(HybridPrivateKey.class, hybrid.getPrivate());
 		int split = algorithm.classical().encapsulationLength();
 		
-		try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, hybrid.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(algorithm, hybrid.getPublic())) {
 			byte[] combined = sent.sharedSecret().material();
 			byte[] classical = materialOf(Kems.decapsulate(algorithm.classical(), recipient.classical(), CryptoBytes.slice(sent.encapsulation(), 0, split)));
 			byte[] postQuantum = materialOf(Kems.decapsulate(algorithm.postQuantum(), recipient.postQuantum(), CryptoBytes.slice(sent.encapsulation(), split, sent.encapsulation().length - split)));
@@ -497,7 +431,7 @@ class KemsTest {
 	void dhKemMatchesTheProviderDirectly() throws Exception {
 		for (KemAlgorithm algorithm : List.of(KemAlgorithm.X25519, KemAlgorithm.X448)) {
 			KeyPair pair = KemAlgorithm.X25519.equals(algorithm) ? x25519 : x448;
-			try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
+			try (KemEncapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
 				byte[] direct = KEM.getInstance("DHKEM").newDecapsulator(pair.getPrivate()).decapsulate(sent.encapsulation()).getEncoded();
 				assertArrayEquals(sent.sharedSecret().material(), direct, algorithm.name());
 			}
@@ -506,12 +440,12 @@ class KemsTest {
 	
 	@Test
 	void dhKemEncapsulationIsTheRawUCoordinate() {
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
 			assertEquals(32, sent.encapsulation().length);
 			assertEquals(KemAlgorithm.X25519.publicKeyLength(), sent.encapsulation().length);
 			assertNotEquals(44, sent.encapsulation().length);
 		}
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X448, x448.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.X448, x448.getPublic())) {
 			assertEquals(56, sent.encapsulation().length);
 			assertNotEquals(68, sent.encapsulation().length);
 		}
@@ -520,7 +454,7 @@ class KemsTest {
 	@Test
 	void dhKemBindsTheRecipientKey() {
 		KeyPair other = Kems.generateKeyPair(KemAlgorithm.X25519);
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
 			byte[] expected = sent.sharedSecret().material().clone();
 			try {
 				assertFalse(CryptoBytes.equalsConstantTime(expected, materialOf(Kems.decapsulate(KemAlgorithm.X25519, other.getPrivate(), sent.encapsulation()))));
@@ -533,7 +467,7 @@ class KemsTest {
 	@Test
 	void decapsulateDhWorksFromStoredPrivateKeyAlone() {
 		byte[] encoded = x25519.getPrivate().getEncoded();
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
 			PrivateKey restored = CryptoKeys.privateKey(KemAlgorithm.X25519, encoded);
 			assertArrayEquals(sent.sharedSecret().material(), materialOf(Kems.decapsulate(KemAlgorithm.X25519, restored, sent.encapsulation())));
 		}
@@ -542,16 +476,16 @@ class KemsTest {
 	@Test
 	void encapsulationRecordEqualsIsIdentityBased() {
 		byte[] bytes = { 1, 2 };
-		Kems.Encapsulation first = new Kems.Encapsulation(bytes, Secret.copyOf(new byte[32]));
+		KemEncapsulation first = new KemEncapsulation(bytes, Secret.copyOf(new byte[32]));
 		
-		assertNotEquals(new Kems.Encapsulation(bytes.clone(), Secret.copyOf(new byte[32])), first);
+		assertNotEquals(new KemEncapsulation(bytes.clone(), Secret.copyOf(new byte[32])), first);
 		assertEquals(first, first);
 	}
 	
 	@Test
 	void encapsulateDoesNotMutateRecipientKey() {
 		byte[] before = x25519.getPublic().getEncoded();
-		try (Kems.Encapsulation ignored = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
+		try (KemEncapsulation ignored = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic())) {
 			assertArrayEquals(before, x25519.getPublic().getEncoded());
 		}
 	}
@@ -561,7 +495,7 @@ class KemsTest {
 		for (KemAlgorithm algorithm : KemAlgorithm.VALUES) {
 			assumeTrue(Providers.supports(algorithm));
 			KeyPair pair = Kems.generateKeyPair(algorithm);
-			try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
+			try (KemEncapsulation sent = Kems.encapsulate(algorithm, pair.getPublic())) {
 				byte[] before = sent.encapsulation().clone();
 				materialOf(Kems.decapsulate(algorithm, pair.getPrivate(), sent.encapsulation()));
 				assertArrayEquals(before, sent.encapsulation(), algorithm.name());
@@ -570,21 +504,11 @@ class KemsTest {
 	}
 	
 	@Test
-	void secretsAreWipedOnClose() {
-		Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519, x25519.getPublic());
-		byte[] live = sent.sharedSecret().material();
-		
-		assertFalse(Arrays.equals(new byte[live.length], live));
-		sent.close();
-		assertArrayEquals(new byte[32], live);
-	}
-	
-	@Test
 	void keyPairFromKemsIsUsableWithCryptoKeys() {
 		PublicKey restoredPublic = CryptoKeys.publicKey(KemAlgorithm.X25519_ML_KEM_768, hybrid.getPublic().getEncoded());
 		PrivateKey restoredPrivate = CryptoKeys.privateKey(KemAlgorithm.X25519_ML_KEM_768, hybrid.getPrivate().getEncoded());
 		
-		try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519_ML_KEM_768, restoredPublic)) {
+		try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.X25519_ML_KEM_768, restoredPublic)) {
 			assertArrayEquals(sent.sharedSecret().material(), materialOf(Kems.decapsulate(KemAlgorithm.X25519_ML_KEM_768, restoredPrivate, sent.encapsulation())));
 			assertArrayEquals(sent.sharedSecret().material(), materialOf(Kems.decapsulate(KemAlgorithm.X25519_ML_KEM_768, hybrid.getPrivate(), sent.encapsulation())));
 		}
@@ -596,7 +520,7 @@ class KemsTest {
 		assertEquals(56, KemAlgorithm.X448.encapsulationLength());
 		
 		HybridKemAlgorithm algorithm = assertInstanceOf(HybridKemAlgorithm.class, KemAlgorithm.X25519_ML_KEM_768);
-		try (Kems.Encapsulation sent = Kems.encapsulate(algorithm, hybrid.getPublic())) {
+		try (KemEncapsulation sent = Kems.encapsulate(algorithm, hybrid.getPublic())) {
 			byte[] expected = materialOf(Kems.decapsulate(algorithm, hybrid.getPrivate(), sent.encapsulation()));
 			for (int index : new int[] { 31, 32 }) {
 				byte[] corrupted = sent.encapsulation().clone();

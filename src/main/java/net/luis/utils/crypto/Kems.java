@@ -48,7 +48,7 @@ import java.util.Objects;
  *
  * // Sender, produces a fresh shared secret plus the encapsulation carrying it
  * byte[] wire;
- * try (Kems.Encapsulation sent = Kems.encapsulate(KemAlgorithm.X25519_ML_KEM_768, pair.getPublic())) {
+ * try (KemEncapsulation sent = Kems.encapsulate(KemAlgorithm.X25519_ML_KEM_768, pair.getPublic())) {
  *     wire = sent.encapsulation();
  *     use(sent.sharedSecret().material());
  * }
@@ -117,7 +117,7 @@ public final class Kems {
 	 * @throws ClassCastException If a hybrid mechanism is given a key that is not a hybrid public key
 	 * @throws CryptoException If the encapsulation fails
 	 */
-	public static @NonNull Encapsulation encapsulate(@NonNull KemAlgorithm algorithm, @NonNull PublicKey recipient) {
+	public static @NonNull KemEncapsulation encapsulate(@NonNull KemAlgorithm algorithm, @NonNull PublicKey recipient) {
 		Objects.requireNonNull(algorithm, "Algorithm must not be null");
 		Objects.requireNonNull(recipient, "Recipient must not be null");
 		
@@ -174,14 +174,14 @@ public final class Kems {
 	 * @throws NullPointerException If the name, the jca name or the recipient key is null
 	 * @throws CryptoException If the encapsulation fails
 	 */
-	private static @NonNull Encapsulation encapsulateNative(@NonNull String name, @NonNull String jcaName, @NonNull PublicKey recipient) {
+	private static @NonNull KemEncapsulation encapsulateNative(@NonNull String name, @NonNull String jcaName, @NonNull PublicKey recipient) {
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(jcaName, "Jca name must not be null");
 		Objects.requireNonNull(recipient, "Recipient key must not be null");
 		
 		try {
 			KEM.Encapsulated encapsulated = Providers.kem(jcaName).newEncapsulator(recipient).encapsulate();
-			return new Encapsulation(encapsulated.encapsulation(), Secret.adopt(encapsulated.key().getEncoded()));
+			return new KemEncapsulation(encapsulated.encapsulation(), Secret.adopt(encapsulated.key().getEncoded()));
 		} catch (GeneralSecurityException e) {
 			throw new CryptoException("Encapsulation failed for " + name, e);
 		}
@@ -221,13 +221,13 @@ public final class Kems {
 	 * @throws NullPointerException If the algorithm or the recipient key is null
 	 * @throws CryptoException If either component fails
 	 */
-	private static @NonNull Encapsulation encapsulateHybrid(@NonNull HybridKemAlgorithm algorithm, @NonNull HybridPublicKey recipient) {
+	private static @NonNull KemEncapsulation encapsulateHybrid(@NonNull HybridKemAlgorithm algorithm, @NonNull HybridPublicKey recipient) {
 		Objects.requireNonNull(algorithm, "Algorithm must not be null");
 		Objects.requireNonNull(recipient, "Recipient key must not be null");
 		
-		try (Encapsulation classical = encapsulate(algorithm.classical(), recipient.classical()); Encapsulation postQuantum = encapsulate(algorithm.postQuantum(), recipient.postQuantum())) {
+		try (KemEncapsulation classical = encapsulate(algorithm.classical(), recipient.classical()); KemEncapsulation postQuantum = encapsulate(algorithm.postQuantum(), recipient.postQuantum())) {
 			byte[] encapsulation = CryptoBytes.concat(classical.encapsulation(), postQuantum.encapsulation());
-			return new Encapsulation(encapsulation, combine(algorithm, classical.sharedSecret(), postQuantum.sharedSecret(), encapsulation));
+			return new KemEncapsulation(encapsulation, combine(algorithm, classical.sharedSecret(), postQuantum.sharedSecret(), encapsulation));
 		}
 	}
 	
@@ -299,39 +299,6 @@ public final class Kems {
 			return KeyPairGenerator.getInstance(keyJcaName).generateKeyPair();
 		} catch (GeneralSecurityException e) {
 			throw UnsupportedAlgorithmException.forAlgorithm(keyJcaName, e);
-		}
-	}
-	
-	/**
-	 * An encapsulation and the shared secret it carries.<br>
-	 * Close it when done, which wipes the secret.<br>
-	 * The encapsulation is public and is not wiped.<br>
-	 *
-	 * @author Luis-St
-	 *
-	 * @param encapsulation The encapsulation to send to the recipient
-	 * @param sharedSecret The shared secret the recipient will recover
-	 */
-	public record Encapsulation(
-		byte @NonNull [] encapsulation,
-		@NonNull Secret sharedSecret
-	) implements AutoCloseable {
-		
-		/**
-		 * Constructs a new encapsulation.<br>
-		 * @throws NullPointerException If the encapsulation or the shared secret is null
-		 */
-		public Encapsulation {
-			Objects.requireNonNull(encapsulation, "Encapsulation must not be null");
-			Objects.requireNonNull(sharedSecret, "Shared secret must not be null");
-		}
-		
-		/**
-		 * Wipes the shared secret.<br>
-		 */
-		@Override
-		public void close() {
-			this.sharedSecret.close();
 		}
 	}
 }
