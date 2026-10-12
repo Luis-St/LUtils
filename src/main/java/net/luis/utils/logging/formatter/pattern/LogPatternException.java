@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 public class LogPatternException extends IllegalArgumentException {
 	
-	public LogPatternException() {	}
+	public LogPatternException() {}
 	
 	public LogPatternException(@Nullable String message) {
 		super(message);

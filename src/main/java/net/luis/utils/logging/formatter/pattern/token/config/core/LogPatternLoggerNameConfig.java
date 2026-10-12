@@ -18,11 +18,10 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
-import net.luis.utils.logging.formatter.pattern.LogPatternException;
+import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Casing;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
-import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -36,28 +35,16 @@ import java.util.*;
 public record LogPatternLoggerNameConfig(
 	@NonNull OptionalInt segments,
 	@NonNull Optional<Casing> casing,
-	@NonNull Optional<String> prefix,
-	@NonNull Optional<String> suffix,
 	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
-) {
-	
-	private static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
+) implements LogPatternTokenConfig {
 	
 	public LogPatternLoggerNameConfig {
 		Objects.requireNonNull(segments, "Segments must not be null");
 		Objects.requireNonNull(casing, "Casing must not be null");
-		Objects.requireNonNull(prefix, "Prefix must not be null");
-		Objects.requireNonNull(suffix, "Suffix must not be null");
 		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
 		
 		if (segments.isPresent() && segments.getAsInt() < 0) {
 			throw new IllegalArgumentException("Segments must not be negative");
-		}
-		if (prefix.isPresent() && Strings.CI.containsAny(prefix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Prefix must not contain newline, carriage return or tab");
-		}
-		if (suffix.isPresent() && Strings.CI.containsAny(suffix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Suffix must not contain newline, carriage return or tab");
 		}
 	}
 }

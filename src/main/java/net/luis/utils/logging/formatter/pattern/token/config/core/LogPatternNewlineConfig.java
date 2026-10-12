@@ -18,6 +18,7 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
+import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.LineEnding;
 import org.jspecify.annotations.NonNull;
 
@@ -32,7 +33,7 @@ import java.util.Optional;
 
 public record LogPatternNewlineConfig(
 	@NonNull Optional<LineEnding> style
-) {
+) implements LogPatternTokenConfig {
 	
 	public LogPatternNewlineConfig {
 		Objects.requireNonNull(style, "Line ending style must not be null");

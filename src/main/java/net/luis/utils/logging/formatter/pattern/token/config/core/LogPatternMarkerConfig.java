@@ -19,6 +19,7 @@
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
+import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
 import org.apache.commons.lang3.Strings;
@@ -36,18 +37,14 @@ import java.util.Optional;
 public record LogPatternMarkerConfig(
 	@NonNull Optional<Boolean> path,
 	@NonNull Optional<String> separator,
-	@NonNull Optional<String> prefix,
-	@NonNull Optional<String> suffix,
 	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
-) {
+) implements LogPatternTokenConfig {
 	
 	private static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
 	
 	public LogPatternMarkerConfig {
 		Objects.requireNonNull(path, "Path must not be null");
 		Objects.requireNonNull(separator, "Separator must not be null");
-		Objects.requireNonNull(prefix, "Prefix must not be null");
-		Objects.requireNonNull(suffix, "Suffix must not be null");
 		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
 		
 		if (separator.isPresent()) {
@@ -58,12 +55,6 @@ public record LogPatternMarkerConfig(
 			if (Strings.CI.containsAny(separator.get(), ILLEGAL_CHARS)) {
 				throw new LogPatternException("Separator must not contain newline, carriage return or tab");
 			}
-		}
-		if (prefix.isPresent() && Strings.CI.containsAny(prefix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Prefix must not contain newline, carriage return or tab");
-		}
-		if (suffix.isPresent() && Strings.CI.containsAny(suffix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Suffix must not contain newline, carriage return or tab");
 		}
 	}
 }

@@ -18,10 +18,9 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
-import net.luis.utils.logging.formatter.pattern.LogPatternException;
+import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
-import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
 
 import java.time.ZoneId;
@@ -36,28 +35,16 @@ import java.util.*;
 public record LogPatternTimestampConfig(
 	@NonNull Optional<String> format,
 	@NonNull Optional<ZoneId> timezone,
-	@NonNull Optional<String> prefix,
-	@NonNull Optional<String> suffix,
 	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
-) {
+) implements LogPatternTokenConfig {
 	
 	private static final Set<String> PRESETS = Set.of(
 		"ISO8601", "ISO8601_LOCAL", "UNIX_MILLIS", "UNIX_SECONDS", "RFC_2822", "RFC_1123"
 	);
-	private static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
 	
 	public LogPatternTimestampConfig {
 		Objects.requireNonNull(format, "Format must not be null");
 		Objects.requireNonNull(timezone, "Timezone must not be null");
-		Objects.requireNonNull(prefix, "Prefix must not be null");
-		Objects.requireNonNull(suffix, "Suffix must not be null");
 		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
-		
-		if (prefix.isPresent() && Strings.CI.containsAny(prefix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Prefix must not contain newline, carriage return or tab");
-		}
-		if (suffix.isPresent() && Strings.CI.containsAny(suffix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Suffix must not contain newline, carriage return or tab");
-		}
 	}
 }

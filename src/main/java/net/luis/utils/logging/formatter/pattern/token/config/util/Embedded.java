@@ -34,7 +34,5 @@ import java.lang.annotation.*;
 // ToDo: Move to root util package
 public @interface Embedded {
 	
-	@NonNull String namespace() default "";
-	
-	boolean namespaceRequired() default false;
+	@NonNull String namespace();
 }

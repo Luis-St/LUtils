@@ -18,6 +18,7 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
+import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -34,7 +35,7 @@ public record LogPatternExceptionConfig(
 	@NonNull Optional<Boolean> causes,
 	@NonNull OptionalInt maxCauseDepth,
 	@NonNull Optional<Boolean> suppressed
-) {
+) implements LogPatternTokenConfig {
 	
 	public LogPatternExceptionConfig {
 		Objects.requireNonNull(depth, "Depth must not be null");

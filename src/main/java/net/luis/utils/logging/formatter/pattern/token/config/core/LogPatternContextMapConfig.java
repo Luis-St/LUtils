@@ -19,6 +19,7 @@
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
+import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
 import net.luis.utils.util.Pair;
@@ -38,10 +39,8 @@ public record LogPatternContextMapConfig(
 	@NonNull List<String> exclude,
 	@NonNull Optional<String> kvSeparator,
 	@NonNull Optional<String> entrySeparator,
-	@NonNull Optional<String> prefix,
-	@NonNull Optional<String> suffix,
 	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
-) {
+) implements LogPatternTokenConfig {
 	
 	static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
 	
@@ -50,8 +49,6 @@ public record LogPatternContextMapConfig(
 		Objects.requireNonNull(exclude, "Exclude list must not be null");
 		Objects.requireNonNull(kvSeparator, "Key-value separator must not be null");
 		Objects.requireNonNull(entrySeparator, "Entry separator must not be null");
-		Objects.requireNonNull(prefix, "Prefix must not be null");
-		Objects.requireNonNull(suffix, "Suffix must not be null");
 		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
 		
 		if (include.stream().anyMatch(pair -> pair.getFirst() == null || pair.getFirst().isBlank())) {
@@ -77,12 +74,6 @@ public record LogPatternContextMapConfig(
 			if (Strings.CI.containsAny(entrySeparator.get(), ILLEGAL_CHARS)) {
 				throw new LogPatternException("Entry separator must not be a newline, carriage return or tab: " + entrySeparator.get());
 			}
-		}
-		if (prefix.isPresent() && Strings.CI.containsAny(prefix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Prefix must not contain newline, carriage return or tab");
-		}
-		if (suffix.isPresent() && Strings.CI.containsAny(suffix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Suffix must not contain newline, carriage return or tab");
 		}
 		
 		include = List.copyOf(include);

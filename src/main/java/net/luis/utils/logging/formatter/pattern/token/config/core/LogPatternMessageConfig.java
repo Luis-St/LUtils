@@ -19,6 +19,7 @@
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
+import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Casing;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
@@ -36,24 +37,20 @@ import java.util.*;
 public record LogPatternMessageConfig(
 	@NonNull OptionalInt maxLength,
 	@NonNull Optional<String> ellipsis,
-	@NonNull List<Character> escapeCharacters,
+	@NonNull List<Character> escapedCharacters,
 	@NonNull Optional<String> escapeSequence,
 	@NonNull Optional<Casing> casing,
-	@NonNull Optional<String> prefix,
-	@NonNull Optional<String> suffix,
 	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
-) {
+) implements LogPatternTokenConfig {
 	
 	private static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
 	
 	public LogPatternMessageConfig {
 		Objects.requireNonNull(maxLength, "Max length must not be null");
 		Objects.requireNonNull(ellipsis, "Ellipsis must not be null");
-		Objects.requireNonNull(escapeCharacters, "Escape characters must not be null");
+		Objects.requireNonNull(escapedCharacters, "Escaped characters must not be null");
 		Objects.requireNonNull(escapeSequence, "Escape sequence must not be null");
 		Objects.requireNonNull(casing, "Casing must not be null");
-		Objects.requireNonNull(prefix, "Prefix must not be null");
-		Objects.requireNonNull(suffix, "Suffix must not be null");
 		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
 		
 		if (maxLength.isPresent() && maxLength.getAsInt() < 0) {
@@ -72,12 +69,6 @@ public record LogPatternMessageConfig(
 		}
 		if (escapeSequence.isPresent() && Strings.CI.containsAny(escapeSequence.get(), ILLEGAL_CHARS)) {
 			throw new LogPatternException("Escape sequence must not contain newline, carriage return or tab");
-		}
-		if (prefix.isPresent() && Strings.CI.containsAny(prefix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Prefix must not contain newline, carriage return or tab");
-		}
-		if (suffix.isPresent() && Strings.CI.containsAny(suffix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Suffix must not contain newline, carriage return or tab");
 		}
 	}
 }

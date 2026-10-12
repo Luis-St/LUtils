@@ -18,12 +18,29 @@
 
 package net.luis.utils.logging.formatter.pattern;
 
+import net.luis.utils.logging.formatter.pattern.token.*;
+import org.jspecify.annotations.NonNull;
+
+import java.util.*;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-// Full layout, containing multiple pattern tokens
-public class LogPatternLayout {
+public record LogPatternLayout(@NonNull String rawPattern, @NonNull List<LogPatternToken> tokens) {
+	
+	public LogPatternLayout {
+		Objects.requireNonNull(rawPattern, "Raw pattern must not be null");
+		tokens = List.copyOf(Objects.requireNonNull(tokens, "Tokens must not be null"));
+	}
+	
+	public static @NonNull LogPatternLayout parse(@NonNull String rawPattern) {
+		return new LogPatternLayoutParser(Set.of(StandardLogPatternTokenType.values())).parse(rawPattern);
+	}
+	
+	public static @NonNull LogPatternLayout parse(@NonNull String rawPattern, @NonNull Set<LogPatternTokenType> tokenTypes) {
+		return new LogPatternLayoutParser(Objects.requireNonNull(tokenTypes, "Token types must not be null")).parse(rawPattern);
+	}
 }

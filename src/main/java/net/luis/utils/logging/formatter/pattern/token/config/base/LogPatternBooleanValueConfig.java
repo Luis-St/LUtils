@@ -18,9 +18,8 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.base;
 
-import net.luis.utils.logging.formatter.pattern.LogPatternException;
+import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
-import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -35,25 +34,12 @@ import java.util.Optional;
 public record LogPatternBooleanValueConfig(
 	@NonNull Optional<String> trueValue,
 	@NonNull Optional<String> falseValue,
-	@NonNull Optional<String> prefix,
-	@NonNull Optional<String> suffix,
 	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
-) {
-	
-	private static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
+) implements LogPatternTokenConfig {
 	
 	public LogPatternBooleanValueConfig {
 		Objects.requireNonNull(trueValue, "True value must not be null");
 		Objects.requireNonNull(falseValue, "False value must not be null");
-		Objects.requireNonNull(prefix, "Prefix must not be null");
-		Objects.requireNonNull(suffix, "Suffix must not be null");
 		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
-		
-		if (prefix.isPresent() && Strings.CI.containsAny(prefix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Prefix must not contain newline, carriage return or tab");
-		}
-		if (suffix.isPresent() && Strings.CI.containsAny(suffix.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Suffix must not contain newline, carriage return or tab");
-		}
 	}
 }
