@@ -309,14 +309,14 @@ public final class Pems {
 		StringReader reader = new StringReader(pem);
 		List<PemDocument> documents = new ArrayList<>();
 		while (reader.canRead()) {
-			reader.readUntil(BEGIN, true);
+			reader.readUntilSkip(BEGIN, true);
 			if (!reader.canRead()) {
 				break;
 			}
 			
 			try {
-				String label = reader.readUntil(DASHES, true);
-				String body = reader.readUntil(END, true);
+				String label = reader.readUntilSkip(DASHES, true);
+				String body = reader.readUntilSkip(END, true);
 				reader.readExpected(label + DASHES, true);
 				documents.add(new PemDocument(label, Base64.getMimeDecoder().decode(body.replaceAll("\\s", ""))));
 			} catch (MalformedDataException e) {
