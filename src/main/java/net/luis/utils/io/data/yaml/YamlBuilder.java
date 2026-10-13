@@ -437,7 +437,7 @@ public final class YamlBuilder {
 		}
 		return this;
 	}
-
+	
 	/**
 	 * Adds an element with an anchor to the current sequence.<br>
 	 *

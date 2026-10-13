@@ -18,13 +18,18 @@
 
 package net.luis.utils.io.network.connection;
 
+import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.connection.event.ErrorEventHandler;
-import net.luis.utils.io.network.connection.exception.FrameTooLargeException;
-import net.luis.utils.io.network.connection.exception.NetworkErrorType;
+import net.luis.utils.io.network.connection.exception.*;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.io.*;
+import java.net.*;
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +55,270 @@ public final class NetworkUtils {
 	 * Private constructor to prevent instantiation.<br>
 	 */
 	private NetworkUtils() {}
+	
+	/**
+	 * Returns a scratch buffer of at least the given size for an unframed read operation.<br>
+	 * The given buffer is reused when it is large enough, otherwise a larger one is allocated.<br>
+	 * <p>
+	 *     The returned buffer may be larger than requested, so reads must be bounded to the requested length.<br>
+	 *     Callers are expected to store the returned buffer and pass it back on the next call.
+	 * </p>
+	 * <p>
+	 *     Framed reads allocate an exact sized payload per message and do not need a scratch buffer,
+	 *     so this is only used when framing is disabled.
+	 * </p>
+	 *
+	 * @param current The buffer from the previous call, or null if none was allocated yet
+	 * @param maxBytes The minimum required buffer size
+	 * @return The buffer to read into, which is the given buffer if it was large enough
+	 */
+	public static byte @NonNull [] resizeBuffer(byte @Nullable [] current, int maxBytes) {
+		if (current == null || current.length < maxBytes) {
+			return new byte[maxBytes];
+		}
+		return current;
+	}
+	
+	/**
+	 * Validates that the given data does not exceed the configured buffer size.<br>
+	 *
+	 * @param data The data to validate
+	 * @param bufferSize The maximum allowed size in bytes
+	 * @param endpoint The endpoint to attach to the thrown exception, or null if not available
+	 * @throws NullPointerException If data is null
+	 * @throws NetworkConnectionException If the data exceeds the buffer size
+	 */
+	public static void validateMessageSize(byte @NonNull [] data, int bufferSize, @Nullable Endpoint endpoint) throws NetworkConnectionException {
+		Objects.requireNonNull(data, "Data must not be null");
+		if (data.length > bufferSize) {
+			throw new NetworkConnectionException("Message size " + data.length + " exceeds buffer size " + bufferSize, NetworkErrorType.MESSAGE_TOO_LARGE, endpoint);
+		}
+	}
+	
+	/**
+	 * Writes the given data to the socket and flushes it.<br>
+	 * This method contains the shared write path of the connection oriented clients and connections.<br>
+	 * <p>
+	 *     When framing is enabled, the data is written as a single length-prefixed frame by {@link #writeFrame(OutputStream, byte[])},
+	 *     so that the peer receives exactly these bytes as one message. When it is disabled, the bytes are written directly to the
+	 *     stream and message boundaries are not preserved, which requires the peer to delimit messages itself.
+	 * </p>
+	 *
+	 * @param socket The socket to write to
+	 * @param data The data to write
+	 * @param framing Whether to write the data as a length-prefixed frame
+	 * @param onError The handler to notify on an I/O error, or null if none is configured
+	 * @param endpoint The endpoint to attach to thrown exceptions, or null if not available
+	 * @param onDisconnect The action to run when the connection was reset, or null if the caller tracks no connection state
+	 * @throws NullPointerException If socket or data is null
+	 * @throws NetworkConnectionException If writing fails
+	 */
+	public static void writeAll(@NonNull Socket socket, byte @NonNull [] data, boolean framing, @Nullable ErrorEventHandler onError, @Nullable Endpoint endpoint, @Nullable Runnable onDisconnect) throws NetworkConnectionException {
+		Objects.requireNonNull(socket, "Socket must not be null");
+		Objects.requireNonNull(data, "Data must not be null");
+		
+		try {
+			OutputStream out = socket.getOutputStream();
+			if (framing) {
+				writeFrame(out, data);
+			} else {
+				out.write(data);
+				out.flush();
+			}
+		} catch (SocketException e) {
+			if (onDisconnect != null) {
+				onDisconnect.run();
+			}
+			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET, endpoint);
+		} catch (IOException e) {
+			handleError(onError, NetworkErrorType.IO_ERROR, "Failed to send data", e);
+			throw new NetworkConnectionException("Failed to send data", e, NetworkErrorType.IO_ERROR, endpoint);
+		}
+	}
+	
+	/**
+	 * Reads a single message from the socket (blocking).<br>
+	 * This method contains the shared read path of the connection oriented clients and connections.<br>
+	 * <p>
+	 *     When framing is enabled, one complete length-prefixed frame is read by {@link #readFrame(InputStream, int)}, so that exactly
+	 *     the bytes passed to the peers {@link #writeAll} call are returned, regardless of how the stream fragments or coalesces them.
+	 * </p>
+	 * <p>
+	 *     When it is disabled, whatever is currently available is returned instead, up to the given limit. A single read may then hold
+	 *     several messages or only part of one, so the caller has to delimit messages itself.
+	 * </p>
+	 *
+	 * @param socket The socket to read from
+	 * @param buffer The scratch buffer used for unframed reads, which must be at least maxBytes long, or null when framing is enabled
+	 * @param maxBytes The maximum payload length that is accepted
+	 * @param framing Whether to read a single length-prefixed frame
+	 * @param readTimeout The read timeout to report on a timeout
+	 * @param onError The handler to notify on an I/O error, or null if none is configured
+	 * @param endpoint The endpoint to attach to thrown exceptions, or null if not available
+	 * @param onDisconnect The action to run when the connection was closed or reset, or null if the caller tracks no connection state
+	 * @return The received message, or an empty array if the connection was closed cleanly between messages
+	 * @throws NullPointerException If socket or read timeout is null, or if framing is disabled and buffer is null
+	 * @throws NetworkConnectionException If receiving fails, or the declared frame length exceeds maxBytes
+	 * @throws NetworkTimeoutException If the read times out
+	 * @see #readMessage(InputStream, byte[], int, boolean, Duration, ErrorEventHandler, Endpoint, Runnable)
+	 */
+	public static byte @NonNull [] readAvailable(
+		@NonNull Socket socket,
+		byte @Nullable [] buffer,
+		int maxBytes,
+		boolean framing,
+		@NonNull Duration readTimeout,
+		@Nullable ErrorEventHandler onError,
+		@Nullable Endpoint endpoint,
+		@Nullable Runnable onDisconnect
+	) throws NetworkConnectionException {
+		Objects.requireNonNull(socket, "Socket must not be null");
+		
+		InputStream in;
+		try {
+			in = socket.getInputStream();
+		} catch (SocketException e) {
+			if (onDisconnect != null) {
+				onDisconnect.run();
+			}
+			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET, endpoint);
+		} catch (IOException e) {
+			handleError(onError, NetworkErrorType.IO_ERROR, "Failed to receive data", e);
+			throw new NetworkConnectionException("Failed to receive data", e, NetworkErrorType.IO_ERROR, endpoint);
+		}
+		
+		return readMessage(in, buffer, maxBytes, framing, readTimeout, onError, endpoint, onDisconnect);
+	}
+	
+	/**
+	 * Reads a single message from the given input stream (blocking).<br>
+	 * This is the stream based variant of {@link #readAvailable(Socket, byte[], int, boolean, Duration, ErrorEventHandler, Endpoint, Runnable)}.<br>
+	 * It lets the caller pass the buffered stream it also hands to the user, so that both read through the same buffer and no buffered bytes are skipped.<br>
+	 * <p>
+	 *     When framing is enabled, one complete length-prefixed frame is read by {@link #readFrame(InputStream, int)}, so that exactly
+	 *     the bytes passed to the peers {@link #writeAll} call are returned, regardless of how the stream fragments or coalesces them.
+	 * </p>
+	 * <p>
+	 *     When it is disabled, whatever is currently available is returned instead, up to the given limit. A single read may then hold
+	 *     several messages or only part of one, so the caller has to delimit messages itself.
+	 * </p>
+	 *
+	 * @param in The input stream to read from
+	 * @param buffer The scratch buffer used for unframed reads, which must be at least maxBytes long, or null when framing is enabled
+	 * @param maxBytes The maximum payload length that is accepted
+	 * @param framing Whether to read a single length-prefixed frame
+	 * @param readTimeout The read timeout to report on a timeout
+	 * @param onError The handler to notify on an I/O error, or null if none is configured
+	 * @param endpoint The endpoint to attach to thrown exceptions, or null if not available
+	 * @param onDisconnect The action to run when the connection was closed or reset, or null if the caller tracks no connection state
+	 * @return The received message, or an empty array if the connection was closed cleanly between messages
+	 * @throws NullPointerException If the input stream or read timeout is null, or if framing is disabled and buffer is null
+	 * @throws NetworkConnectionException If receiving fails, or the declared frame length exceeds maxBytes
+	 * @throws NetworkTimeoutException If the read times out
+	 */
+	public static byte @NonNull [] readMessage(
+		@NonNull InputStream in,
+		byte @Nullable [] buffer,
+		int maxBytes,
+		boolean framing,
+		@NonNull Duration readTimeout,
+		@Nullable ErrorEventHandler onError,
+		@Nullable Endpoint endpoint,
+		@Nullable Runnable onDisconnect
+	) throws NetworkConnectionException {
+		Objects.requireNonNull(in, "Input stream must not be null");
+		Objects.requireNonNull(readTimeout, "Read timeout must not be null");
+		if (!framing) {
+			Objects.requireNonNull(buffer, "Buffer must not be null when framing is disabled");
+		}
+		
+		try {
+			if (!framing) {
+				int bytesRead = in.read(buffer, 0, maxBytes);
+				
+				if (bytesRead == -1) {
+					if (onDisconnect != null) {
+						onDisconnect.run();
+					}
+					return ArrayUtils.EMPTY_BYTE_ARRAY;
+				}
+				
+				return Arrays.copyOf(buffer, bytesRead);
+			}
+			
+			byte[] data = readFrame(in, maxBytes);
+			
+			if (data == null) {
+				if (onDisconnect != null) {
+					onDisconnect.run();
+				}
+				return ArrayUtils.EMPTY_BYTE_ARRAY;
+			}
+			
+			return data;
+		} catch (FrameTooLargeException e) {
+			throw new NetworkConnectionException(e.getMessage(), e, NetworkErrorType.MESSAGE_TOO_LARGE, endpoint);
+		} catch (SocketTimeoutException e) {
+			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, readTimeout, endpoint);
+		} catch (EOFException e) {
+			if (onDisconnect != null) {
+				onDisconnect.run();
+			}
+			throw new NetworkConnectionException("Connection reset while receiving data", e, NetworkErrorType.CONNECTION_RESET, endpoint);
+		} catch (SocketException e) {
+			if (onDisconnect != null) {
+				onDisconnect.run();
+			}
+			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET, endpoint);
+		} catch (IOException e) {
+			handleError(onError, NetworkErrorType.IO_ERROR, "Failed to receive data", e);
+			throw new NetworkConnectionException("Failed to receive data", e, NetworkErrorType.IO_ERROR, endpoint);
+		}
+	}
+	
+	/**
+	 * Maps a failure raised while establishing a connection to the matching network exception.<br>
+	 * The failure is reported to the given error handler before the mapped exception is returned.<br>
+	 * <p>
+	 *     The returned exception is meant to be thrown by the caller, so that the compiler still sees
+	 *     the connect method as terminating.
+	 * </p>
+	 *
+	 * @param cause The failure that was caught
+	 * @param endpoint The endpoint that was being connected to
+	 * @param connectTimeout The configured connect timeout, reported on a timeout
+	 * @param onError The handler to notify, or null if none is configured
+	 * @return The mapped exception to throw
+	 * @throws NullPointerException If cause, endpoint, or connect timeout is null
+	 */
+	public static @NonNull NetworkConnectionException mapConnectFailure(@NonNull IOException cause, @NonNull Endpoint endpoint, @NonNull Duration connectTimeout, @Nullable ErrorEventHandler onError) {
+		Objects.requireNonNull(cause, "Cause must not be null");
+		Objects.requireNonNull(endpoint, "Endpoint must not be null");
+		Objects.requireNonNull(connectTimeout, "Connect timeout must not be null");
+		
+		return switch (cause) {
+			case SocketTimeoutException e -> {
+				handleError(onError, NetworkErrorType.CONNECTION_TIMEOUT, "Connection timed out to " + endpoint, e);
+				yield new NetworkTimeoutException("Connection timed out to " + endpoint, NetworkErrorType.CONNECTION_TIMEOUT, connectTimeout, endpoint);
+			}
+			case SSLHandshakeException e -> {
+				handleError(onError, NetworkErrorType.HANDSHAKE_FAILED, "SSL handshake failed with " + endpoint, e);
+				yield new NetworkConnectionException("SSL handshake failed with " + endpoint, e, NetworkErrorType.HANDSHAKE_FAILED, endpoint);
+			}
+			case ConnectException e -> {
+				handleError(onError, NetworkErrorType.CONNECTION_REFUSED, "Connection refused by " + endpoint, e);
+				yield new NetworkConnectionException("Connection refused by " + endpoint, e, NetworkErrorType.CONNECTION_REFUSED, endpoint);
+			}
+			case NoRouteToHostException e -> {
+				handleError(onError, NetworkErrorType.HOST_UNREACHABLE, "Host unreachable: " + endpoint, e);
+				yield new NetworkConnectionException("Host unreachable: " + endpoint, e, NetworkErrorType.HOST_UNREACHABLE, endpoint);
+			}
+			default -> {
+				handleError(onError, NetworkErrorType.CONNECTION_FAILED, "Failed to connect to " + endpoint, cause);
+				yield new NetworkConnectionException("Failed to connect to " + endpoint, cause, NetworkErrorType.CONNECTION_FAILED, endpoint);
+			}
+		};
+	}
 	
 	/**
 	 * Writes a single length-prefixed frame to the given output stream and flushes it.<br>

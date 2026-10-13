@@ -53,6 +53,53 @@ class SqlMigrationInfoTest {
 	}
 	
 	@Test
+	void constructWithStatements() {
+		Version version = Version.of(1, 0, 0);
+		Instant appliedAt = Instant.now();
+		SqlMigrationInfo info = new SqlMigrationInfo(version, "init", SqlMigrationStatus.APPLIED, appliedAt, "s1:abc", "CREATE TABLE a;\nCREATE TABLE b");
+		assertSame(version, info.version());
+		assertEquals("init", info.description());
+		assertSame(appliedAt, info.appliedAt());
+		assertEquals("s1:abc", info.checksum());
+		assertEquals("CREATE TABLE a;\nCREATE TABLE b", info.statements());
+	}
+	
+	@Test
+	void constructWithNullStatements() {
+		Version version = Version.of(1, 0, 0);
+		SqlMigrationInfo info = assertDoesNotThrow(() -> new SqlMigrationInfo(version, "init", SqlMigrationStatus.APPLIED, null, "s1:abc", null));
+		assertNull(info.statements());
+		assertEquals("s1:abc", info.checksum());
+	}
+	
+	@Test
+	void constructWithoutStatements() {
+		Version version = Version.of(1, 0, 0);
+		Instant appliedAt = Instant.now();
+		SqlMigrationInfo info = new SqlMigrationInfo(version, "init", SqlMigrationStatus.APPLIED, appliedAt, "s1:abc");
+		assertNull(info.statements());
+		assertSame(version, info.version());
+		assertEquals("init", info.description());
+		assertSame(appliedAt, info.appliedAt());
+		assertEquals("s1:abc", info.checksum());
+	}
+	
+	@Test
+	void constructWithEmptyStatements() {
+		SqlMigrationInfo info = new SqlMigrationInfo(Version.of(1, 0, 0), "init", SqlMigrationStatus.APPLIED, null, null, "");
+		assertNotNull(info.statements());
+		assertEquals("", info.statements());
+	}
+	
+	@Test
+	void constructWithMultiStatementText() {
+		String statements = "ALTER TABLE \"a\" ADD COLUMN \"b\" TEXT;\nCREATE INDEX \"i\" ON \"a\" (\"b\")";
+		SqlMigrationInfo info = new SqlMigrationInfo(Version.of(1, 0, 0), "init", SqlMigrationStatus.APPLIED, null, null, statements);
+		assertEquals(statements, info.statements());
+		assertTrue(info.statements().contains(";\n"));
+	}
+	
+	@Test
 	void constructWithNullVersion() {
 		assertThrows(NullPointerException.class, () -> new SqlMigrationInfo(null, "desc", SqlMigrationStatus.PENDING, null, null));
 	}
@@ -68,6 +115,21 @@ class SqlMigrationInfoTest {
 	}
 	
 	@Test
+	void constructWithStatementsAndNullVersion() {
+		assertThrows(NullPointerException.class, () -> new SqlMigrationInfo(null, "desc", SqlMigrationStatus.PENDING, null, null, "sql"));
+	}
+	
+	@Test
+	void constructWithStatementsAndNullDescription() {
+		assertThrows(NullPointerException.class, () -> new SqlMigrationInfo(Version.of(1, 0, 0), null, SqlMigrationStatus.PENDING, null, null, "sql"));
+	}
+	
+	@Test
+	void constructWithStatementsAndNullStatus() {
+		assertThrows(NullPointerException.class, () -> new SqlMigrationInfo(Version.of(1, 0, 0), "desc", null, null, null, "sql"));
+	}
+	
+	@Test
 	void equalInstancesAreEqual() {
 		Version version = Version.of(1, 0, 0);
 		Instant appliedAt = Instant.now();
@@ -77,5 +139,24 @@ class SqlMigrationInfoTest {
 		assertEquals(first, second);
 		assertEquals(first.hashCode(), second.hashCode());
 		assertNotEquals(first, different);
+	}
+	
+	@Test
+	void equalityIncludesStatements() {
+		Version version = Version.of(1, 0, 0);
+		SqlMigrationInfo withStatements = new SqlMigrationInfo(version, "init", SqlMigrationStatus.APPLIED, null, "s1:abc", "CREATE TABLE a");
+		SqlMigrationInfo withoutStatements = new SqlMigrationInfo(version, "init", SqlMigrationStatus.APPLIED, null, "s1:abc", null);
+		SqlMigrationInfo convenience = new SqlMigrationInfo(version, "init", SqlMigrationStatus.APPLIED, null, "s1:abc");
+		
+		assertNotEquals(withStatements, withoutStatements);
+		assertEquals(convenience, withoutStatements);
+		assertEquals(convenience.hashCode(), withoutStatements.hashCode());
+	}
+	
+	@Test
+	void toStringContainsStatements() {
+		SqlMigrationInfo info = new SqlMigrationInfo(Version.of(1, 0, 0), "init", SqlMigrationStatus.APPLIED, null, "s1:abc", "CREATE TABLE a");
+		assertTrue(info.toString().contains("statements="));
+		assertTrue(info.toString().contains("CREATE TABLE a"));
 	}
 }

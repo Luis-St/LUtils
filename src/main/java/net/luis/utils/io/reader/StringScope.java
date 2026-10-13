@@ -20,7 +20,6 @@ package net.luis.utils.io.reader;
 
 import com.google.common.collect.Maps;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**

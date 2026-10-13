@@ -14,6 +14,7 @@ val mssqlJdbc: String by project
 val h2: String by project
 val sqlite: String by project
 val jspecify: String by project
+val bouncyCastle: String by project
 val jetBrainsAnnotations: String by project
 val junitJupiter: String by project
 val junitPlatformLauncher: String by project
@@ -54,6 +55,9 @@ dependencies {
 	runtimeOnly("com.microsoft.sqlserver:mssql-jdbc:${mssqlJdbc}") // SQL Server Driver
 	runtimeOnly("com.h2database:h2:${h2}") // H2 Driver (embedded)
 	runtimeOnly("org.xerial:sqlite-jdbc:${sqlite}") // SQLite Driver (embedded)
+	// Crypto
+	implementation("org.bouncycastle:bcprov-jdk18on:${bouncyCastle}") // PQ and AEAD extras, Argon2id and scrypt
+	implementation("org.bouncycastle:bcpkix-jdk18on:${bouncyCastle}") // Certificates, certificate requests and revocation lists
 	// Other
 	implementation("org.jspecify:jspecify:${jspecify}") // Nullability
 	implementation("org.jetbrains:annotations:${jetBrainsAnnotations}") // Annotations

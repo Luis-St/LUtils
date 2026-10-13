@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.network.connection.event;
 
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.connection.Connection;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -59,5 +59,5 @@ public interface ConnectEventHandler {
 	 * @param remoteEndpoint The remote endpoint of the connection
 	 * @param timestamp When the event occurred
 	 */
-	void handle(@Nullable Connection connection, @NonNull IpEndpoint localEndpoint, @NonNull IpEndpoint remoteEndpoint, @NonNull Instant timestamp);
+	void handle(@Nullable Connection connection, @NonNull Endpoint localEndpoint, @NonNull Endpoint remoteEndpoint, @NonNull Instant timestamp);
 }

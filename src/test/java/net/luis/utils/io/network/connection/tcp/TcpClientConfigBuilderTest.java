@@ -39,6 +39,7 @@ class TcpClientConfigBuilderTest {
 		assertEquals(Duration.ZERO, config.readTimeout());
 		assertEquals(Duration.ZERO, config.writeTimeout());
 		assertEquals(8192, config.bufferSize());
+		assertTrue(config.framing());
 		assertTrue(config.tcpNoDelay());
 		assertTrue(config.keepAlive());
 		assertNull(config.onConnect());
@@ -110,6 +111,74 @@ class TcpClientConfigBuilderTest {
 			.bufferSize(4096)
 			.build();
 		assertEquals(4096, config.bufferSize());
+	}
+	
+	@Test
+	void framingTrue() {
+		TcpClientConfig config = TcpClientConfig.builder()
+			.framing(true)
+			.build();
+		assertTrue(config.framing());
+	}
+	
+	@Test
+	void framingFalse() {
+		TcpClientConfig config = TcpClientConfig.builder()
+			.framing(false)
+			.build();
+		assertFalse(config.framing());
+	}
+	
+	@Test
+	void framingDefaultsToEnabled() {
+		TcpClientConfig config = TcpClientConfig.builder().build();
+		assertTrue(config.framing());
+	}
+	
+	@Test
+	void framingReturnsSameBuilder() {
+		TcpClientConfigBuilder builder = TcpClientConfig.builder();
+		assertSame(builder, builder.framing(false));
+	}
+	
+	@Test
+	void framingSetMultipleTimes() {
+		TcpClientConfig config = TcpClientConfig.builder()
+			.framing(false)
+			.framing(true)
+			.framing(false)
+			.build();
+		assertFalse(config.framing());
+	}
+	
+	@Test
+	void framingSurvivesBuilderReuse() {
+		TcpClientConfigBuilder builder = TcpClientConfig.builder()
+			.framing(false);
+		
+		TcpClientConfig first = builder.build();
+		assertFalse(first.framing());
+		
+		builder.framing(true);
+		TcpClientConfig second = builder.build();
+		assertTrue(second.framing());
+		
+		assertFalse(first.framing());
+	}
+	
+	@Test
+	void framingCombinedWithOtherOptions() {
+		TcpClientConfig config = TcpClientConfig.builder()
+			.bufferSize(4096)
+			.framing(false)
+			.tcpNoDelay(true)
+			.keepAlive(false)
+			.build();
+		
+		assertEquals(4096, config.bufferSize());
+		assertFalse(config.framing());
+		assertTrue(config.tcpNoDelay());
+		assertFalse(config.keepAlive());
 	}
 	
 	@Test
@@ -199,6 +268,7 @@ class TcpClientConfigBuilderTest {
 		assertSame(builder, builder.readTimeout(Duration.ofSeconds(5)));
 		assertSame(builder, builder.writeTimeout(Duration.ofSeconds(5)));
 		assertSame(builder, builder.bufferSize(4096));
+		assertSame(builder, builder.framing(false));
 		assertSame(builder, builder.tcpNoDelay(true));
 		assertSame(builder, builder.keepAlive(true));
 		assertSame(builder, builder.onConnect((connection, local, remote, timestamp) -> {}));
@@ -213,6 +283,7 @@ class TcpClientConfigBuilderTest {
 			.readTimeout(Duration.ofSeconds(10))
 			.writeTimeout(Duration.ofSeconds(5))
 			.bufferSize(16384)
+			.framing(false)
 			.tcpNoDelay(false)
 			.keepAlive(false)
 			.onConnect((connection, local, remote, timestamp) -> {})
@@ -224,6 +295,7 @@ class TcpClientConfigBuilderTest {
 		assertEquals(Duration.ofSeconds(10), config.readTimeout());
 		assertEquals(Duration.ofSeconds(5), config.writeTimeout());
 		assertEquals(16384, config.bufferSize());
+		assertFalse(config.framing());
 		assertFalse(config.tcpNoDelay());
 		assertFalse(config.keepAlive());
 		assertNotNull(config.onConnect());

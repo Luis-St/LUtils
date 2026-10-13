@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.network.connection.udp;
 
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.*;
 import net.luis.utils.io.network.connection.NetworkClient;
 import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
@@ -56,7 +56,7 @@ import java.util.Optional;
  *
  * @author Luis-St
  */
-public final class UdpClient implements NetworkClient {
+public final class UdpClient implements NetworkClient<UdpDatagram> {
 	
 	/**
 	 * The configuration for this client.<br>
@@ -92,7 +92,7 @@ public final class UdpClient implements NetworkClient {
 	 * @throws NullPointerException If local endpoint is null
 	 * @throws NetworkConnectionException If binding fails
 	 */
-	public static @NonNull UdpClient bindTo(@NonNull IpEndpoint localEndpoint) throws NetworkConnectionException {
+	public static @NonNull UdpClient bindTo(@NonNull Endpoint localEndpoint) throws NetworkConnectionException {
 		return bindTo(localEndpoint, UdpClientConfig.DEFAULT);
 	}
 	
@@ -106,7 +106,7 @@ public final class UdpClient implements NetworkClient {
 	 * @throws NullPointerException If local endpoint or config is null
 	 * @throws NetworkConnectionException If binding fails
 	 */
-	public static @NonNull UdpClient bindTo(@NonNull IpEndpoint localEndpoint, @NonNull UdpClientConfig config) throws NetworkConnectionException {
+	public static @NonNull UdpClient bindTo(@NonNull Endpoint localEndpoint, @NonNull UdpClientConfig config) throws NetworkConnectionException {
 		Objects.requireNonNull(localEndpoint, "Local endpoint must not be null");
 		Objects.requireNonNull(config, "Config must not be null");
 		
@@ -128,7 +128,7 @@ public final class UdpClient implements NetworkClient {
 	 * @throws NullPointerException If local endpoint is null
 	 * @throws NetworkConnectionException If binding fails
 	 */
-	public void bind(@NonNull IpEndpoint localEndpoint) throws NetworkConnectionException {
+	public void bind(@NonNull Endpoint localEndpoint) throws NetworkConnectionException {
 		Objects.requireNonNull(localEndpoint, "Local endpoint must not be null");
 		if (this.socket != null && !this.socket.isClosed()) {
 			throw new NetworkConnectionException("Client is already bound", NetworkErrorType.ALREADY_CONNECTED, localEndpoint);
@@ -153,23 +153,55 @@ public final class UdpClient implements NetworkClient {
 		}
 	}
 	
+	@Override
+	public boolean isActive() {
+		return this.socket != null && !this.socket.isClosed();
+	}
+	
+	@Override
+	public @NonNull Optional<IpEndpoint> localEndpoint() {
+		if (this.socket == null || this.socket.isClosed() || !this.socket.isBound()) {
+			return Optional.empty();
+		}
+		
+		InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
+		return Optional.of(IpEndpoint.from(address));
+	}
+	
+	@Override
+	public @NonNull Optional<IpEndpoint> remoteEndpoint() {
+		return Optional.empty();
+	}
+	
 	/**
 	 * Sends a datagram to the specified endpoint.<br>
+	 * <p>
+	 *     A {@link HostEndpoint} destination is resolved before the datagram is sent,<br>
+	 *     because a datagram carries a literal address rather than a name.<br>
+	 *     Unlike TLS, UDP has no use for the hostname itself, so nothing is lost by resolving it here.
+	 * </p>
 	 *
 	 * @param destination The destination endpoint
 	 * @param data The data to send
 	 * @throws NullPointerException If destination or data is null
-	 * @throws NetworkConnectionException If sending fails or data exceeds buffer size
+	 * @throws NetworkConnectionException If the destination cannot be resolved, if sending fails, or if data exceeds buffer size
 	 */
-	public void send(@NonNull IpEndpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
+	public void send(@NonNull Endpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(destination, "Destination must not be null");
 		Objects.requireNonNull(data, "Data must not be null");
-		this.validateMessageSize(data, destination);
+		NetworkUtils.validateMessageSize(data, this.config.bufferSize(), destination);
 		
 		this.ensureSocketCreated();
 		
+		InetSocketAddress address = destination.toInetSocketAddress();
+		if (address.isUnresolved()) {
+			UnknownHostException cause = new UnknownHostException(address.getHostString());
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.HOST_UNREACHABLE, "Failed to resolve " + destination, cause);
+			throw new NetworkConnectionException("Failed to resolve " + destination, cause, NetworkErrorType.HOST_UNREACHABLE, destination);
+		}
+		
 		try {
-			DatagramPacket packet = new DatagramPacket(data, data.length, destination.toInetSocketAddress());
+			DatagramPacket packet = new DatagramPacket(data, data.length, address);
 			this.socket.send(packet);
 		} catch (IOException e) {
 			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to send datagram to " + destination, e);
@@ -177,39 +209,18 @@ public final class UdpClient implements NetworkClient {
 		}
 	}
 	
-	/**
-	 * Sends a datagram.<br>
-	 *
-	 * @param datagram The datagram to send
-	 * @throws NullPointerException If datagram is null
-	 * @throws NetworkConnectionException If sending fails
-	 */
+	@Override
 	public void send(@NonNull UdpDatagram datagram) throws NetworkConnectionException {
 		Objects.requireNonNull(datagram, "Datagram must not be null");
 		this.send(datagram.endpoint(), datagram.data());
 	}
 	
-	/**
-	 * Receives a datagram (blocking).<br>
-	 * Uses the buffer size from the configuration.<br>
-	 *
-	 * @return The received datagram
-	 * @throws NetworkConnectionException If receiving fails
-	 * @throws NetworkTimeoutException If the receive times out
-	 */
+	@Override
 	public @NonNull UdpDatagram receive() throws NetworkConnectionException {
 		return this.receive(this.config.bufferSize());
 	}
 	
-	/**
-	 * Receives a datagram with a custom buffer size (blocking).<br>
-	 *
-	 * @param maxBytes The maximum number of bytes to receive
-	 * @return The received datagram
-	 * @throws IllegalArgumentException If maxBytes is less than 1
-	 * @throws NetworkConnectionException If receiving fails
-	 * @throws NetworkTimeoutException If the receive times out
-	 */
+	@Override
 	public @NonNull UdpDatagram receive(int maxBytes) throws NetworkConnectionException {
 		if (maxBytes < 1) {
 			throw new IllegalArgumentException("Max bytes must be at least 1: " + maxBytes);
@@ -239,20 +250,6 @@ public final class UdpClient implements NetworkClient {
 	}
 	
 	@Override
-	public boolean isActive() {
-		return this.socket != null && !this.socket.isClosed();
-	}
-	
-	@Override
-	public @NonNull Optional<IpEndpoint> localEndpoint() {
-		if (this.socket == null || this.socket.isClosed() || !this.socket.isBound()) {
-			return Optional.empty();
-		}
-		InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
-		return Optional.of(IpEndpoint.from(address));
-	}
-	
-	@Override
 	public void close() {
 		if (this.socket != null && !this.socket.isClosed()) {
 			this.socket.close();
@@ -260,19 +257,6 @@ public final class UdpClient implements NetworkClient {
 	}
 	
 	//region Helper methods
-	
-	/**
-	 * Validates that the message size does not exceed the configured buffer size.<br>
-	 *
-	 * @param data The data to validate
-	 * @param destination The destination endpoint for error reporting
-	 * @throws NetworkConnectionException If the data exceeds the buffer size
-	 */
-	private void validateMessageSize(byte @NonNull [] data, @NonNull IpEndpoint destination) throws NetworkConnectionException {
-		if (data.length > this.config.bufferSize()) {
-			throw new NetworkConnectionException("Message size " + data.length + " exceeds buffer size " + this.config.bufferSize(), NetworkErrorType.MESSAGE_TOO_LARGE, destination);
-		}
-	}
 	
 	/**
 	 * Ensures that the socket is created before performing send operations.<br>
