@@ -571,6 +571,55 @@ public class ScopedStringReader extends StringReader {
 	}
 	
 	/**
+	 * Reads the next value as the best matching object.<br>
+	 * In addition to the types supported by the base method of {@link StringReader},<br>
+	 * this method can read collections, which are determined by their opening character:<br>
+	 * <ul>
+	 *     <li>
+	 *         <b>Lists</b>:<br>
+	 *         If the next character is {@code '['}, a {@link List} is returned (see {@link #readList(Function)}).
+	 *     </li>
+	 *     <li>
+	 *         <b>Sets</b>:<br>
+	 *         If the next character is {@code '('}, a {@link Set} is returned (see {@link #readSet(Function)}).
+	 *     </li>
+	 *     <li>
+	 *         <b>Maps</b>:<br>
+	 *         If the next character is <code>'{'</code>, a {@link Map} is returned (see {@link #readMap(Function, Function)}).
+	 *     </li>
+	 * </ul>
+	 * <p>
+	 *     The elements of lists and sets as well as the keys and values of maps are read recursively using this method.<br>
+	 *     Therefore, collections can be nested at any depth (e.g., a list of maps containing sets).
+	 * </p>
+	 *
+	 * @return The object which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If a collection is invalid or its scope is not closed
+	 * @see #readList(Function)
+	 * @see #readSet(Function)
+	 * @see #readMap(Function, Function)
+	 */
+	@Override
+	public @NonNull Object readObject() {
+		if (!this.canRead()) {
+			throw new StringIndexOutOfBoundsException("Expected a value but found nothing");
+		}
+		
+		char next = this.peek();
+		if (next == SQUARE_BRACKETS.open()) {
+			return this.readList(ScopedStringReader::readObject);
+		}
+		if (next == PARENTHESES.open()) {
+			return this.readSet(ScopedStringReader::readObject);
+		}
+		if (next == CURLY_BRACKETS.open()) {
+			return this.readMap(ScopedStringReader::readObject, ScopedStringReader::readObject);
+		}
+		return super.readObject();
+	}
+	
+	/**
 	 * Reads a collection like object from the string.<br>
 	 * <p>
 	 *     The collection is defined by an opening and a closing character.<br>

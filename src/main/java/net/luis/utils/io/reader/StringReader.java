@@ -1499,6 +1499,112 @@ public class StringReader {
 		}
 	}
 	
+	/**
+	 * Reads the next value as the best matching object.<br>
+	 * The type of the value is determined in the following order:<br>
+	 * <ol>
+	 *     <li>
+	 *         <b>Quoted values</b>:<br>
+	 *         If the next character is a single or double quote, the value is read as quoted string.<br>
+	 *         If the value is enclosed in single quotes and consists of exactly one character, a {@link Character} is returned,<br>
+	 *         otherwise a {@link String} is returned (see {@link #readQuotedString()}).
+	 *     </li>
+	 *     <li>
+	 *         <b>Booleans</b>:<br>
+	 *         If the next characters are {@code true} or {@code false} (case-insensitive)<br>
+	 *         and are not followed by another word character, a {@link Boolean} is returned.
+	 *     </li>
+	 *     <li>
+	 *         <b>Numbers</b>:<br>
+	 *         If the next character is a digit, a sign or a dot and the value can be read as a number<br>
+	 *         which is not followed by another word character, a {@link Number} is returned (see {@link #readNumber()}).<br>
+	 *         Numbers with a type suffix are returned as the specified type.<br>
+	 *         Numbers without a type suffix are returned as {@link Long} or {@link Double}.<br>
+	 *         If an integer number without suffix exceeds the range of a long, a {@link BigInteger} is returned.<br>
+	 *         If a decimal floating point number without suffix exceeds the range of a double, a {@link BigDecimal} is returned.
+	 *     </li>
+	 *     <li>
+	 *         <b>Unquoted strings</b>:<br>
+	 *         If none of the above matches, the value is read as unquoted string (see {@link #readUnquotedString()}).
+	 *     </li>
+	 * </ol>
+	 * <p>
+	 *     A word character is a letter, a digit, an underscore, or a dot.<br>
+	 *     If reading a boolean or number fails, the reader index is restored before the next type is tried.<br>
+	 *     The marked index of the reader is not modified by this method.
+	 * </p>
+	 *
+	 * @return The object which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @see #readQuotedString()
+	 * @see #readBoolean()
+	 * @see #readNumber()
+	 * @see #readUnquotedString()
+	 */
+	public @NonNull Object readObject() {
+		if (!this.canRead()) {
+			throw new StringIndexOutOfBoundsException("Expected a value but found nothing");
+		}
+		
+		char next = this.peek();
+		if (next == '"' || next == '\'') {
+			String value = this.readQuotedString();
+			if (next == '\'' && value.length() == 1) {
+				return value.charAt(0);
+			}
+			
+			return value;
+		}
+		
+		Predicate<Integer> isBoundary = i -> {
+			if (i >= this.string.length()) {
+				return true;
+			}
+			
+			char c = this.string.charAt(i);
+			return !Character.isLetterOrDigit(c) && c != '_' && c != '.';
+		};
+		
+		int start = this.index;
+		char lower = Character.toLowerCase(next);
+		if (lower == 't' || lower == 'f') {
+			String word = Boolean.toString(lower == 't');
+			
+			if (word.equalsIgnoreCase(this.peek(word.length())) && isBoundary.test(start + word.length())) {
+				this.skip(word.length());
+				return lower == 't';
+			}
+		}
+		
+		if (Character.isDigit(next) || next == '+' || next == '-' || next == '.') {
+			try {
+				ParsedNumber number = this.readNumberAsString(null);
+				
+				if (number != null && !number.value().isEmpty() && isBoundary.test(this.index)) {
+					char last = Character.toLowerCase(this.string.charAt(this.index - 1));
+					boolean explicitSuffix = NumberType.getBySuffix(last) != null && (number.radix() != Radix.HEXADECIMAL || Character.digit(last, 16) == -1);
+					
+					try {
+						Number value = number.type().parseNumber(number.getSignedValue(), number.radix());
+						if (!explicitSuffix && value instanceof Double d && d.isInfinite() && number.radix() == Radix.DECIMAL) {
+							return NumberType.BIG_DECIMAL.parseNumber(number.getSignedValue(), number.radix());
+						}
+						return value;
+					} catch (NumberFormatException e) {
+						if (explicitSuffix || number.type() != NumberType.LONG) {
+							throw e;
+						}
+						return NumberType.BIG_INTEGER.parseNumber(number.getSignedValue(), number.radix());
+					}
+				}
+			} catch (InvalidStringException | NumberFormatException _) {}
+			
+			this.index = start;
+		}
+		
+		return this.readUnquotedString();
+	}
+	
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {

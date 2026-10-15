@@ -221,6 +221,93 @@ class ScopedStringReaderTest {
 	}
 	
 	@Test
+	void readObjectWithEmptyString() {
+		ScopedStringReader reader = new ScopedStringReader("");
+		
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readObject);
+	}
+	
+	@Test
+	void readObjectWithPlainValues() {
+		ScopedStringReader reader = new ScopedStringReader("42 true 'c' \"str\"");
+		
+		assertEquals(42L, reader.readObject());
+		reader.skip();
+		assertEquals(true, reader.readObject());
+		reader.skip();
+		assertEquals('c', reader.readObject());
+		reader.skip();
+		assertEquals("str", reader.readObject());
+	}
+	
+	@Test
+	void readObjectListEmpty() {
+		ScopedStringReader reader = new ScopedStringReader("[]");
+		
+		assertEquals(List.of(), reader.readObject());
+	}
+	
+	@Test
+	void readObjectListWithMixedValues() {
+		ScopedStringReader reader = new ScopedStringReader("[1, true, \"str\", 'c', 2.5]");
+		
+		assertEquals(List.of(1L, true, "str", 'c', 2.5), reader.readObject());
+	}
+	
+	@Test
+	void readObjectSetEmpty() {
+		ScopedStringReader reader = new ScopedStringReader("()");
+		
+		assertEquals(Set.of(), reader.readObject());
+	}
+	
+	@Test
+	void readObjectSetWithDuplicates() {
+		ScopedStringReader reader = new ScopedStringReader("(1, 2, 2, 3)");
+		
+		assertEquals(Set.of(1L, 2L, 3L), reader.readObject());
+	}
+	
+	@Test
+	void readObjectMapEmpty() {
+		ScopedStringReader reader = new ScopedStringReader("{}");
+		
+		assertEquals(Map.of(), reader.readObject());
+	}
+	
+	@Test
+	void readObjectMapWithMixedKeysAndValues() {
+		ScopedStringReader reader = new ScopedStringReader("{key=10, 'k'=true, 1=\"value\"}");
+		
+		assertEquals(Map.of("key", 10L, 'k', true, 1L, "value"), reader.readObject());
+	}
+	
+	@Test
+	void readObjectNested() {
+		ScopedStringReader reader = new ScopedStringReader("[{a=[1, 2]}, (true), []]");
+		
+		assertEquals(List.of(Map.of("a", List.of(1L, 2L)), Set.of(true), List.of()), reader.readObject());
+	}
+	
+	@Test
+	void readObjectMultipleCollections() {
+		ScopedStringReader reader = new ScopedStringReader("[1] (2) {3=4}");
+		
+		assertEquals(List.of(1L), reader.readObject());
+		reader.skip();
+		assertEquals(Set.of(2L), reader.readObject());
+		reader.skip();
+		assertEquals(Map.of(3L, 4L), reader.readObject());
+	}
+	
+	@Test
+	void readObjectWithUnclosedScope() {
+		ScopedStringReader reader = new ScopedStringReader("[1, 2");
+		
+		assertThrows(InvalidStringException.class, reader::readObject);
+	}
+	
+	@Test
 	void readListEmpty() {
 		ScopedStringReader reader = new ScopedStringReader("[]");
 		
