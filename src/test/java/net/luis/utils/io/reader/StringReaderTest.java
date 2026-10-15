@@ -568,6 +568,47 @@ class StringReaderTest {
 	}
 	
 	@Test
+	void readObject() {
+		StringReader reader = new StringReader("\"hello world\" 'c' 'ab' true FALSE trueish 10 3b 2.5 1.5f 0x10 99999999999999999999 1.0e400 123abc word");
+		assertEquals("hello world", assertInstanceOf(String.class, reader.readObject()));
+		reader.skip();
+		assertEquals('c', assertInstanceOf(Character.class, reader.readObject()));
+		reader.skip();
+		assertEquals("ab", assertInstanceOf(String.class, reader.readObject()));
+		reader.skip();
+		assertTrue(assertInstanceOf(Boolean.class, reader.readObject()));
+		reader.skip();
+		assertFalse(assertInstanceOf(Boolean.class, reader.readObject()));
+		reader.skip();
+		assertEquals("trueish", assertInstanceOf(String.class, reader.readObject()));
+		assertEquals(10, assertInstanceOf(Long.class, reader.readObject()));
+		reader.skip();
+		assertEquals((byte) 3, assertInstanceOf(Byte.class, reader.readObject()));
+		reader.skip();
+		assertEquals(2.5, assertInstanceOf(Double.class, reader.readObject()), PRECISION);
+		reader.skip();
+		assertEquals(1.5, assertInstanceOf(Float.class, reader.readObject()), PRECISION);
+		reader.skip();
+		assertEquals(16, assertInstanceOf(Long.class, reader.readObject()));
+		reader.skip();
+		assertEquals(new BigInteger("99999999999999999999"), assertInstanceOf(BigInteger.class, reader.readObject()));
+		reader.skip();
+		assertEquals(0, new BigDecimal("1.0e400").compareTo(assertInstanceOf(BigDecimal.class, reader.readObject())));
+		reader.skip();
+		assertEquals("123abc", assertInstanceOf(String.class, reader.readObject()));
+		assertEquals("word", assertInstanceOf(String.class, reader.readObject()));
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readObject);
+		
+		reader.reset();
+		
+		reader.skip(14);
+		reader.mark();
+		assertEquals('c', assertInstanceOf(Character.class, reader.readObject()));
+		reader.reset();
+		assertEquals(14, reader.getIndex());
+	}
+	
+	@Test
 	void hashCodeForEqualReaders() {
 		StringReader reader1 = new StringReader("test");
 		StringReader reader2 = new StringReader("test");
