@@ -62,120 +62,110 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@Override
 	public <X extends Exception> @NonNull ToonElement createNull(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return ToonNull.INSTANCE;
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull ToonElement createBoolean(boolean value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new ToonValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull ToonElement createByte(byte value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new ToonValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull ToonElement createShort(short value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new ToonValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull ToonElement createInteger(int value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new ToonValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull ToonElement createLong(long value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new ToonValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull ToonElement createFloat(float value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new ToonValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull ToonElement createDouble(double value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new ToonValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull ToonElement createString(@Nullable String value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (value == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid string");
 		}
+		
 		return new ToonValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull ToonElement createList(@Nullable List<? extends ToonElement> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (values == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid list");
 		}
+		
 		return new ToonArray(values);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull ToonElement createMap(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new ToonObject();
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull ToonElement createMap(@Nullable Map<String, ? extends ToonElement> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (values == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
+		
 		return new ToonObject(values);
 	}
 	
 	@Override
 	public <X extends Exception> boolean isEmpty(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not empty");
 		}
+		
 		return type == EMPTY_ELEMENT;
 	}
 	
 	@Override
 	public <X extends Exception> boolean isNull(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not toon null");
 		}
+		
 		return type.isToonNull();
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a boolean");
 		}
@@ -193,7 +183,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@Override
 	public <X extends Exception> @NonNull Byte getByte(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a byte");
 		}
@@ -211,7 +200,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@Override
 	public <X extends Exception> @NonNull Short getShort(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a short");
 		}
@@ -229,7 +217,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@Override
 	public <X extends Exception> @NonNull Integer getInteger(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not an integer");
 		}
@@ -247,7 +234,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@Override
 	public <X extends Exception> @NonNull Long getLong(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a long");
 		}
@@ -265,7 +251,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@Override
 	public <X extends Exception> @NonNull Float getFloat(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a float");
 		}
@@ -283,7 +268,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@Override
 	public <X extends Exception> @NonNull Double getDouble(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a double");
 		}
@@ -301,7 +285,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@Override
 	public <X extends Exception> @NonNull String getString(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a string");
 		}
@@ -319,7 +302,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@Override
 	public <X extends Exception> @NonNull List<ToonElement> getList(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid list");
 		}
@@ -333,7 +315,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@Override
 	public <X extends Exception> @NonNull Map<String, ToonElement> getMap(@Nullable ToonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -350,7 +331,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> boolean has(@Nullable ToonElement type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -368,7 +348,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> @Nullable ToonElement get(@Nullable ToonElement type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -386,7 +365,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> void set(@Nullable ToonElement type, @Nullable String key, @Nullable ToonElement value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -406,7 +384,6 @@ public final class ToonTypeProvider implements TypeProvider<ToonElement> {
 	@Override
 	public <X extends Exception> @UnknownNullability ToonElement merge(@Nullable ToonElement current, @Nullable ToonElement value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (current == null) {
 			return value;
 		}
