@@ -62,120 +62,110 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@Override
 	public <X extends Exception> @NonNull YamlElement createNull(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return YamlNull.INSTANCE;
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull YamlElement createBoolean(boolean value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new YamlScalar(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull YamlElement createByte(byte value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new YamlScalar(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull YamlElement createShort(short value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new YamlScalar(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull YamlElement createInteger(int value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new YamlScalar(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull YamlElement createLong(long value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new YamlScalar(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull YamlElement createFloat(float value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new YamlScalar(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull YamlElement createDouble(double value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new YamlScalar(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull YamlElement createString(@Nullable String value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (value == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid string");
 		}
+		
 		return new YamlScalar(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull YamlElement createList(@Nullable List<? extends YamlElement> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (values == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid list");
 		}
+		
 		return new YamlSequence(values);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull YamlElement createMap(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new YamlMapping();
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull YamlElement createMap(@Nullable Map<String, ? extends YamlElement> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (values == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
+		
 		return new YamlMapping(values);
 	}
 	
 	@Override
 	public <X extends Exception> boolean isEmpty(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not empty");
 		}
+		
 		return type == EMPTY_ELEMENT;
 	}
 	
 	@Override
 	public <X extends Exception> boolean isNull(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not yaml null");
 		}
+		
 		return type.isYamlNull();
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a boolean");
 		}
@@ -193,7 +183,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@Override
 	public <X extends Exception> @NonNull Byte getByte(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a byte");
 		}
@@ -211,7 +200,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@Override
 	public <X extends Exception> @NonNull Short getShort(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a short");
 		}
@@ -229,7 +217,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@Override
 	public <X extends Exception> @NonNull Integer getInteger(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not an integer");
 		}
@@ -247,7 +234,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@Override
 	public <X extends Exception> @NonNull Long getLong(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a long");
 		}
@@ -265,7 +251,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@Override
 	public <X extends Exception> @NonNull Float getFloat(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a float");
 		}
@@ -283,7 +268,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@Override
 	public <X extends Exception> @NonNull Double getDouble(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a double");
 		}
@@ -301,7 +285,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@Override
 	public <X extends Exception> @NonNull String getString(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a string");
 		}
@@ -319,7 +302,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@Override
 	public <X extends Exception> @NonNull List<YamlElement> getList(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid list");
 		}
@@ -333,7 +315,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@Override
 	public <X extends Exception> @NonNull Map<String, YamlElement> getMap(@Nullable YamlElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -350,7 +331,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> boolean has(@Nullable YamlElement type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -368,7 +348,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> @Nullable YamlElement get(@Nullable YamlElement type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -386,7 +365,6 @@ public final class YamlTypeProvider implements TypeProvider<YamlElement> {
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> void set(@Nullable YamlElement type, @Nullable String key, @Nullable YamlElement value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}

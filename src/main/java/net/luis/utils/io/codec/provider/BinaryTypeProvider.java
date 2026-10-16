@@ -125,21 +125,18 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 	@Override
 	public <X extends Exception> @NonNull BinaryElement createNull(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return BinaryNull.INSTANCE;
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull BinaryElement createBoolean(boolean value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new BinaryPrimitive(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull BinaryElement createByte(byte value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new BinaryPrimitive(value);
 	}
 	
@@ -176,7 +173,6 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 	@Override
 	public <X extends Exception> @NonNull BinaryElement createFloat(float value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new BinaryPrimitive(value);
 	}
 	
@@ -213,7 +209,6 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 	@Override
 	public <X extends Exception> @NonNull BinaryElement createMap(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new BinaryMap();
 	}
 	
@@ -459,6 +454,8 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 		return TypeProvider.super.getField(type, field, exceptionConstructor);
 	}
 	
+	//region Helper methods
+	
 	/**
 	 * Returns the index of the given field in the given struct.<br>
 	 * The index of the field reference is used, the name of the field is only used for error messages.<br>
@@ -619,4 +616,5 @@ public final class BinaryTypeProvider implements TypeProvider<BinaryElement> {
 		}
 		return merged;
 	}
+	//endregion
 }
