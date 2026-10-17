@@ -869,13 +869,14 @@ public class StringReader {
 	 * </p>
 	 * <ul>
 	 *     <li>binary by prefixing with '0b'</li>
-	 *     <li>octal by prefixing with a single '0'</li>
+	 *     <li>octal by prefixing with '0'</li>
 	 *     <li>decimal by default</li>
 	 *     <li>hexadecimal by prefixing with '0x'</li>
 	 * </ul>
 	 * <p>
 	 *     The number can contain underscores to separate digits.<br>
-	 *     Floating point numbers can contain an exponent with 'e' or 'p' for hexadecimal floating point numbers.
+	 *     Floating point numbers can contain an exponent with 'e' or 'p' for hexadecimal floating point numbers.<br>
+	 *     Leading zeros of a floating point number do not make it octal, the number stays decimal.
 	 * </p>
 	 *
 	 * @param initialType The initial number type to read as
@@ -913,7 +914,7 @@ public class StringReader {
 			}
 			
 			if (Character.isDigit(c)) {
-				if (builder.length() == 1 && builder.charAt(0) == '0' && c != '0' && radix == Radix.DECIMAL) {
+				if (builder.length() == 1 && builder.charAt(0) == '0' && radix == Radix.DECIMAL) {
 					radix = Radix.OCTAL;
 				}
 			} else if (c == '.') {
@@ -922,6 +923,9 @@ public class StringReader {
 				}
 				if (!type.isFloatingPoint()) {
 					type = NumberType.DOUBLE; // Largest none infinite floating point type
+				}
+				if (radix == Radix.OCTAL) {
+					radix = Radix.DECIMAL; // Leading zeros of a floating point number are decimal
 				}
 				if (!type.isSupportedRadix(radix)) {
 					throw new InvalidStringException("Try to read number of type '" + type + "' which does not support radix '" + radix + "': '" + sign + builder + c + "'");
@@ -938,25 +942,23 @@ public class StringReader {
 				builder.setLength(0);
 				this.skip();
 				continue;
-			} else if (c == 'b') {
-				if (radix != Radix.DECIMAL) {
-					throw new InvalidStringException("Found invalid 'b' in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
-				}
-				
-				if (builder.length() == 1 && builder.charAt(0) == '0') {
+			} else if (c == 'b' && radix != Radix.HEXADECIMAL) { // 'b' is a digit in hexadecimal numbers
+				if (radix == Radix.DECIMAL && builder.length() == 1 && builder.charAt(0) == '0') {
 					radix = Radix.BINARY;
 					builder.setLength(0);
 					this.skip();
 					continue;
-				} else {
-					break; // 'b' is a valid suffix for byte
 				}
-			} else if (c == 'e' || c == 'p') {
+				break; // 'b' is a valid suffix for byte
+			} else if ((c == 'e' && radix != Radix.HEXADECIMAL) || c == 'p') { // 'e' is a digit in hexadecimal numbers, their exponent is 'p'
 				if (exponent) {
 					throw new InvalidStringException("Found invalid '" + c + "' exponent in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
 				}
 				if (!type.isFloatingPoint()) {
-					throw new InvalidStringException("Exponent is only allowed for floating point numbers but found in number of type '" + type + "': '" + sign + builder + c + "'");
+					type = NumberType.DOUBLE; // Largest none infinite floating point type
+				}
+				if (radix == Radix.OCTAL) {
+					radix = Radix.DECIMAL; // Leading zeros of a floating point number are decimal
 				}
 				if ('e' == c && radix != Radix.DECIMAL) {
 					throw new InvalidStringException("Found invalid 'e' exponent in number of type '" + type + "' with radix '" + radix + "' expected 'decimal' radix: '" + sign + builder + c + "'");
@@ -984,6 +986,19 @@ public class StringReader {
 				}
 			}
 			builder.append(this.read());
+		}
+		
+		if (exponent && "ep+-".indexOf(Character.toLowerCase(builder.charAt(builder.length() - 1))) >= 0) {
+			throw new InvalidStringException("Found exponent without digits in number of type '" + type + "': '" + sign + builder + "'");
+		}
+		
+		NumberType suffixType = this.canRead() ? NumberType.getBySuffix(Character.toLowerCase(this.peek())) : null;
+		if (radix == Radix.OCTAL) {
+			if (suffixType != null && suffixType.isFloatingPoint()) {
+				radix = Radix.DECIMAL;
+			} else if (builder.chars().anyMatch(digit -> digit == '8' || digit == '9')) {
+				throw new InvalidStringException("Found invalid digit in octal number, only the digits 0 to 7 are allowed: '" + sign + builder + "'");
+			}
 		}
 		
 		if (this.canRead()) {
