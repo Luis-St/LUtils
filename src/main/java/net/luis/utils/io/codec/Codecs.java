@@ -164,6 +164,21 @@ public final class Codecs {
 	 */
 	public static final DoubleStreamCodec DOUBLE_STREAM = new DoubleStreamCodec();
 	/**
+	 * A codec that encodes and decodes {@link OptionalInt optional integers}.<br>
+	 * The underlying optional is converted to and from its integer value.<br>
+	 */
+	public static final Codec<OptionalInt> OPTIONAL_INT = INTEGER.xmap(OptionalInt::getAsInt, OptionalInt::of);
+	/**
+	 * A codec that encodes and decodes {@link OptionalLong optional longs}.<br>
+	 * The underlying optional is converted to and from its long value.<br>
+	 */
+	public static final Codec<OptionalLong> OPTIONAL_LONG = LONG.xmap(OptionalLong::getAsLong, OptionalLong::of);
+	/**
+	 * A codec that encodes and decodes {@link OptionalDouble optional doubles}.<br>
+	 * The underlying optional is converted to and from its double value.<br>
+	 */
+	public static final Codec<OptionalDouble> OPTIONAL_DOUBLE = DOUBLE.xmap(OptionalDouble::getAsDouble, OptionalDouble::of);
+	/**
 	 * A keyable codec that encodes and decodes {@link UUID UUIDs}.<br>
 	 * The underlying UUID is converted to and from a string.<br>
 	 */
@@ -335,8 +350,31 @@ public final class Codecs {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<String, E> lookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::name, Function.identity()));
 		
-		return STRING.xmap(Enum::name, lookup::get).keyable(Enum::toString, key -> {
+		return STRING.xmap(Enum::name, lookup::get).keyable(Enum::name, key -> {
 			E value = lookup.get(key);
+			if (value == null) {
+				throw new DecoderException("Unable to decode enum value from name '" + key + "': No enum constant found");
+			}
+			return value;
+		});
+	}
+	
+	/**
+	 * Creates a new keyable codec for the given enum class.<br>
+	 * The enum value is encoded using its name in lower case.<br>
+	 * The decoder ignores the case of the name.<br>
+	 *
+	 * @param clazz The enum class
+	 * @param <E> The type of the enum
+	 * @return A new keyable codec
+	 * @throws NullPointerException If the enum class is null
+	 */
+	public static <E extends Enum<E>> @NonNull Codec<E> enumLowerName(@NonNull Class<E> clazz) {
+		Objects.requireNonNull(clazz, "Enum class must not be null");
+		Map<String, E> lookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::name, Function.identity()));
+		
+		return STRING.xmap(e -> e.name().toLowerCase(), s -> lookup.get(s.toUpperCase())).keyable(e -> e.name().toLowerCase(), key -> {
+			E value = lookup.get(key.toUpperCase());
 			if (value == null) {
 				throw new DecoderException("Unable to decode enum value from name '" + key + "': No enum constant found");
 			}

@@ -76,6 +76,10 @@ public class CodecsTest {
 		assertEquals(new JsonArray(List.of(new JsonPrimitive(42))), INT_STREAM.encode(provider, IntStream.of(42)));
 		assertEquals(new JsonArray(List.of(new JsonPrimitive(42L))), LONG_STREAM.encode(provider, LongStream.of(42)));
 		assertEquals(new JsonArray(List.of(new JsonPrimitive(42.0))), DOUBLE_STREAM.encode(provider, DoubleStream.of(42.0)));
+
+		assertEquals(new JsonPrimitive(42), OPTIONAL_INT.encode(provider, OptionalInt.of(42)));
+		assertEquals(new JsonPrimitive(42L), OPTIONAL_LONG.encode(provider, OptionalLong.of(42L)));
+		assertEquals(new JsonPrimitive(42.0), OPTIONAL_DOUBLE.encode(provider, OptionalDouble.of(42.0)));
 		
 		assertEquals(new JsonPrimitive(Utils.EMPTY_UUID.toString()), UUID.encode(provider, Utils.EMPTY_UUID));
 		
@@ -161,6 +165,10 @@ public class CodecsTest {
 		assertArrayEquals(new int[] { 42 }, INT_STREAM.decode(provider, new JsonArray(List.of(new JsonPrimitive(42)))).toArray());
 		assertArrayEquals(new long[] { 42 }, LONG_STREAM.decode(provider, new JsonArray(List.of(new JsonPrimitive(42L)))).toArray());
 		assertArrayEquals(new double[] { 42.0 }, DOUBLE_STREAM.decode(provider, new JsonArray(List.of(new JsonPrimitive(42.0)))).toArray());
+
+		assertEquals(OptionalInt.of(42), OPTIONAL_INT.decode(provider, new JsonPrimitive(42)));
+		assertEquals(OptionalLong.of(42L), OPTIONAL_LONG.decode(provider, new JsonPrimitive(42L)));
+		assertEquals(OptionalDouble.of(42.0), OPTIONAL_DOUBLE.decode(provider, new JsonPrimitive(42.0)));
 		
 		assertEquals(Utils.EMPTY_UUID, UUID.decode(provider, new JsonPrimitive(Utils.EMPTY_UUID.toString())));
 		
@@ -222,6 +230,7 @@ public class CodecsTest {
 	void enumCodecs() throws Exception {
 		assertThrows(NullPointerException.class, () -> enumOrdinal((Class<TestEnum>) null));
 		assertThrows(NullPointerException.class, () -> enumName((Class<TestEnum>) null));
+		assertThrows(NullPointerException.class, () -> enumLowerName((Class<TestEnum>) null));
 		assertThrows(NullPointerException.class, () -> dynamicEnum((Class<TestEnum>) null));
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
@@ -235,7 +244,13 @@ public class CodecsTest {
 		assertInstanceOf(Codec.class, nameCodec);
 		assertEquals(new JsonPrimitive("ONE"), nameCodec.encode(provider, TestEnum.ONE));
 		assertEquals(TestEnum.ONE, nameCodec.decode(provider, new JsonPrimitive("ONE")));
-		
+
+		Codec<TestEnum> lowerNameCodec = enumLowerName(TestEnum.class);
+		assertInstanceOf(Codec.class, lowerNameCodec);
+		assertEquals(new JsonPrimitive("one"), lowerNameCodec.encode(provider, TestEnum.ONE));
+		assertEquals(TestEnum.ONE, lowerNameCodec.decode(provider, new JsonPrimitive("one")));
+		assertEquals(TestEnum.ONE, lowerNameCodec.decode(provider, new JsonPrimitive("ONE")));
+
 		Codec<TestEnum> dynamicCodec = dynamicEnum(TestEnum.class);
 		assertInstanceOf(Codec.class, dynamicCodec);
 		assertEquals(new JsonPrimitive("ONE"), dynamicCodec.encode(provider, TestEnum.ONE));
