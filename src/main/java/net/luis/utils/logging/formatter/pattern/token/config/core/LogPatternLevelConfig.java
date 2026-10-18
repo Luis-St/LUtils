@@ -34,13 +34,13 @@ import java.util.*;
  */
 
 public record LogPatternLevelConfig(
-	@NonNull OptionalInt length,
+	@NonNull Optional<Integer> length,
 	@NonNull Optional<Casing> casing,
 	@NonNull Optional<LogPatternPaddingConfig> padding
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternLevelConfig> CODEC = CodecBuilder.of(
-		Codecs.OPTIONAL_INT.optionalFieldOf("length", OptionalInt.empty(), LogPatternLevelConfig::length),
+		Codecs.INTEGER.optional().optionalFieldOf("length", Optional.empty(), LogPatternLevelConfig::length),
 		Codecs.enumLowerName(Casing.class).optional().optionalFieldOf("casing", Optional.empty(), LogPatternLevelConfig::casing),
 		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternLevelConfig::padding)
 	).create(LogPatternLevelConfig::new);
@@ -50,7 +50,7 @@ public record LogPatternLevelConfig(
 		Objects.requireNonNull(casing, "Casing mus not be null");
 		Objects.requireNonNull(padding, "Padding config must not be null");
 		
-		if (length.isPresent() && length.getAsInt() < 0) {
+		if (length.isPresent() && length.get() < 0) {
 			throw new LogPatternException("Length must not be negative");
 		}
 	}

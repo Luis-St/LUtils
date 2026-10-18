@@ -31,18 +31,18 @@ import java.util.*;
  */
 
 public record LogPatternExceptionConfig(
-	@NonNull OptionalInt depth,
+	@NonNull Optional<Integer> depth,
 	@NonNull Optional<Boolean> omitCommonFrames,
 	@NonNull Optional<Boolean> causes,
-	@NonNull OptionalInt maxCauseDepth,
+	@NonNull Optional<Integer> maxCauseDepth,
 	@NonNull Optional<Boolean> suppressed
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternExceptionConfig> CODEC = CodecBuilder.of(
-		Codecs.OPTIONAL_INT.optionalFieldOf("depth", OptionalInt.empty(), LogPatternExceptionConfig::depth),
+		Codecs.INTEGER.optional().optionalFieldOf("depth", Optional.empty(), LogPatternExceptionConfig::depth),
 		Codecs.BOOLEAN.optional().optionalFieldOf("omitCommonFrames", Optional.empty(), LogPatternExceptionConfig::omitCommonFrames),
 		Codecs.BOOLEAN.optional().optionalFieldOf("causes", Optional.empty(), LogPatternExceptionConfig::causes),
-		Codecs.OPTIONAL_INT.optionalFieldOf("maxCauseDepth", OptionalInt.empty(), LogPatternExceptionConfig::maxCauseDepth),
+		Codecs.INTEGER.optional().optionalFieldOf("maxCauseDepth", Optional.empty(), LogPatternExceptionConfig::maxCauseDepth),
 		Codecs.BOOLEAN.optional().optionalFieldOf("suppressed", Optional.empty(), LogPatternExceptionConfig::suppressed)
 	).create(LogPatternExceptionConfig::new);
 	
@@ -53,10 +53,10 @@ public record LogPatternExceptionConfig(
 		Objects.requireNonNull(maxCauseDepth, "Max cause depth must not be null");
 		Objects.requireNonNull(suppressed, "Suppressed must not be null");
 		
-		if (depth.isPresent() && depth.getAsInt() < 0) {
+		if (depth.isPresent() && depth.get() < 0) {
 			throw new IllegalArgumentException("Depth must not be negative");
 		}
-		if (maxCauseDepth.isPresent() && maxCauseDepth.getAsInt() < 0) {
+		if (maxCauseDepth.isPresent() && maxCauseDepth.get() < 0) {
 			throw new IllegalArgumentException("Max cause depth must not be negative");
 		}
 	}

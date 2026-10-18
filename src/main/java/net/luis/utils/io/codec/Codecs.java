@@ -166,18 +166,30 @@ public final class Codecs {
 	/**
 	 * A codec that encodes and decodes {@link OptionalInt optional integers}.<br>
 	 * The underlying optional is converted to and from its integer value.<br>
+	 * An absent value decodes to an empty optional, and an empty optional encodes to nothing.<br>
 	 */
-	public static final Codec<OptionalInt> OPTIONAL_INT = INTEGER.xmap(OptionalInt::getAsInt, OptionalInt::of);
+	public static final Codec<OptionalInt> OPTIONAL_INT = INTEGER.optional().xmap(
+		value -> value.isPresent() ? Optional.of(value.getAsInt()) : Optional.empty(),
+		value -> value.map(OptionalInt::of).orElseGet(OptionalInt::empty)
+	);
 	/**
 	 * A codec that encodes and decodes {@link OptionalLong optional longs}.<br>
 	 * The underlying optional is converted to and from its long value.<br>
+	 * An absent value decodes to an empty optional, and an empty optional encodes to nothing.<br>
 	 */
-	public static final Codec<OptionalLong> OPTIONAL_LONG = LONG.xmap(OptionalLong::getAsLong, OptionalLong::of);
+	public static final Codec<OptionalLong> OPTIONAL_LONG = LONG.optional().xmap(
+		value -> value.isPresent() ? Optional.of(value.getAsLong()) : Optional.empty(),
+		value -> value.map(OptionalLong::of).orElseGet(OptionalLong::empty)
+	);
 	/**
 	 * A codec that encodes and decodes {@link OptionalDouble optional doubles}.<br>
 	 * The underlying optional is converted to and from its double value.<br>
+	 * An absent value decodes to an empty optional, and an empty optional encodes to nothing.<br>
 	 */
-	public static final Codec<OptionalDouble> OPTIONAL_DOUBLE = DOUBLE.xmap(OptionalDouble::getAsDouble, OptionalDouble::of);
+	public static final Codec<OptionalDouble> OPTIONAL_DOUBLE = DOUBLE.optional().xmap(
+		value -> value.isPresent() ? Optional.of(value.getAsDouble()) : Optional.empty(),
+		value -> value.map(OptionalDouble::of).orElseGet(OptionalDouble::empty)
+	);
 	/**
 	 * A keyable codec that encodes and decodes {@link UUID UUIDs}.<br>
 	 * The underlying UUID is converted to and from a string.<br>

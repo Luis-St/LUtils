@@ -20,6 +20,7 @@ package net.luis.utils.logging.formatter.pattern;
 
 import com.google.common.collect.*;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JavaTypeProvider;
 import net.luis.utils.io.reader.ScopedStringReader;
 import net.luis.utils.io.reader.StringReader;
@@ -134,6 +135,34 @@ public class LogPatternLayoutParser {
 		}
 		throw new LogPatternException("Config key '" + fullKey + "' conflicts with config key '" + path + "' which already defines a value");
 	}
+	
+	@SuppressWarnings("unchecked")
+	private static <C extends LogPatternTokenConfig> void validateConfigKeys(@NonNull Codec<C> codec, @NonNull LogPatternTokenConfig config, @NonNull Map<String, Object> configItems) throws EncoderException {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		Objects.requireNonNull(config, "Config must not be null");
+		Objects.requireNonNull(configItems, "Config items must not be null");
+		
+		Object encoded = codec.encode(JavaTypeProvider.DEFAULT, JavaTypeProvider.DEFAULT.empty(), (C) config);
+		validateConfigKeys(configItems, encoded instanceof Map<?, ?> map ? map : Map.of(), "");
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static void validateConfigKeys(@NonNull Map<String, Object> configItems, @NonNull Map<?, ?> encodedItems, @NonNull String prefix) {
+		Objects.requireNonNull(configItems, "Config items must not be null");
+		Objects.requireNonNull(encodedItems, "Encoded config items must not be null");
+		Objects.requireNonNull(prefix, "Prefix must not be null");
+		
+		for (Map.Entry<String, Object> entry : configItems.entrySet()) {
+			String fullKey = prefix.isEmpty() ? entry.getKey() : prefix + EMBEDDED_CONFIG_SEPARATOR + entry.getKey();
+			if (!encodedItems.containsKey(entry.getKey())) {
+				throw new LogPatternException("Config key '" + fullKey + "' is unknown or its value '" + entry.getValue() + "' is not valid");
+			}
+			
+			if (entry.getValue() instanceof Map<?, ?> nestedItems && encodedItems.get(entry.getKey()) instanceof Map<?, ?> nestedEncodedItems) {
+				validateConfigKeys((Map<String, Object>) nestedItems, nestedEncodedItems, fullKey);
+			}
+		}
+	}
 	//endregion
 	
 	public @NonNull LogPatternLayout parse(@NonNull String pattern) {
@@ -180,6 +209,7 @@ public class LogPatternLayoutParser {
 			try {
 				Map<String, Object> configItems = nestConfigItems(reader.readMap(StringReader::readRemaining, CONFIG_VALUE_PARSER));
 				LogPatternTokenConfig config = codec.get().decode(JavaTypeProvider.DEFAULT, configItems);
+				validateConfigKeys(codec.get(), config, configItems);
 				tokens.add(new LogPatternToken(tokenIdentifier, tokenType, Optional.of(config)));
 			} catch (Exception e) {
 				throw new LogPatternException("Failed to parse config for token '" + tokenIdentifier + "' at position" + reader.getIndex() + " skipping token", e);

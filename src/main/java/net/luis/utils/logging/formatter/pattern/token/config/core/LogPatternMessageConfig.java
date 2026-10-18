@@ -37,7 +37,7 @@ import java.util.*;
  */
 
 public record LogPatternMessageConfig(
-	@NonNull OptionalInt maxLength,
+	@NonNull Optional<Integer> maxLength,
 	@NonNull Optional<String> ellipsis,
 	@NonNull @Unmodifiable List<Character> escapedCharacters,
 	@NonNull Optional<String> escapeSequence,
@@ -46,7 +46,7 @@ public record LogPatternMessageConfig(
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternMessageConfig> CODEC = CodecBuilder.of(
-		Codecs.OPTIONAL_INT.optionalFieldOf("maxLength", OptionalInt.empty(), LogPatternMessageConfig::maxLength),
+		Codecs.INTEGER.optional().optionalFieldOf("maxLength", Optional.empty(), LogPatternMessageConfig::maxLength),
 		Codecs.STRING.optional().optionalFieldOf("ellipsis", Optional.empty(), LogPatternMessageConfig::ellipsis),
 		Codecs.CHARACTER.list().optionalFieldOf("escapedCharacters", Lists.newArrayList(), LogPatternMessageConfig::escapedCharacters),
 		Codecs.STRING.optional().optionalFieldOf("escapeSequence", Optional.empty(), LogPatternMessageConfig::escapeSequence),
@@ -63,7 +63,7 @@ public record LogPatternMessageConfig(
 		Objects.requireNonNull(casing, "Casing must not be null");
 		Objects.requireNonNull(padding, "Padding config must not be null");
 		
-		if (maxLength.isPresent() && maxLength.getAsInt() < 0) {
+		if (maxLength.isPresent() && maxLength.get() < 0) {
 			throw new LogPatternException("Max length must not be negative");
 		}
 		if (ellipsis.isPresent()) {
@@ -73,7 +73,7 @@ public record LogPatternMessageConfig(
 			if (maxLength.isEmpty()) {
 				throw new LogPatternException("Ellipsis can only be used with max length");
 			}
-			if (ellipsis.get().length() > maxLength.getAsInt()) {
+			if (ellipsis.get().length() > maxLength.get()) {
 				throw new LogPatternException("Ellipsis length must not be greater than max length");
 			}
 		}

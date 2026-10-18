@@ -34,16 +34,16 @@ import java.util.*;
  */
 
 public record LogPatternPaddingConfig(
-	@NonNull OptionalInt minWidth,
-	@NonNull OptionalInt maxWidth,
+	@NonNull Optional<Integer> minWidth,
+	@NonNull Optional<Integer> maxWidth,
 	@NonNull Optional<Align> align,
 	@NonNull Optional<Character> padChar,
 	@NonNull Optional<TruncateFrom> truncateFrom
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternPaddingConfig> CODEC = CodecBuilder.of(
-		Codecs.OPTIONAL_INT.optionalFieldOf("minWidth", OptionalInt.empty(), LogPatternPaddingConfig::minWidth),
-		Codecs.OPTIONAL_INT.optionalFieldOf("maxWidth", OptionalInt.empty(), LogPatternPaddingConfig::maxWidth),
+		Codecs.INTEGER.optional().optionalFieldOf("minWidth", Optional.empty(), LogPatternPaddingConfig::minWidth),
+		Codecs.INTEGER.optional().optionalFieldOf("maxWidth", Optional.empty(), LogPatternPaddingConfig::maxWidth),
 		Codecs.enumLowerName(Align.class).optional().optionalFieldOf("align", Optional.empty(), LogPatternPaddingConfig::align),
 		Codecs.CHARACTER.optional().optionalFieldOf("padChar", Optional.empty(), LogPatternPaddingConfig::padChar),
 		Codecs.enumLowerName(TruncateFrom.class).optional().optionalFieldOf("truncateFrom", Optional.empty(), LogPatternPaddingConfig::truncateFrom)
@@ -57,14 +57,14 @@ public record LogPatternPaddingConfig(
 		Objects.requireNonNull(padChar, "Pad char must not be null");
 		Objects.requireNonNull(truncateFrom, "Truncate from must not be null");
 		
-		if (minWidth.isPresent() && minWidth.getAsInt() < 0) {
-			throw new LogPatternException("Min width must be non-negative: " + minWidth.getAsInt());
+		if (minWidth.isPresent() && minWidth.get() < 0) {
+			throw new LogPatternException("Min width must be non-negative: " + minWidth.get());
 		}
-		if (maxWidth.isPresent() && maxWidth.getAsInt() < 0) {
-			throw new LogPatternException("Max width must be non-negative: " + maxWidth.getAsInt());
+		if (maxWidth.isPresent() && maxWidth.get() < 0) {
+			throw new LogPatternException("Max width must be non-negative: " + maxWidth.get());
 		}
-		if (minWidth.isPresent() && maxWidth.isPresent() && minWidth.getAsInt() > maxWidth.getAsInt()) {
-			throw new LogPatternException("Min width must not be greater than max width: " + minWidth.getAsInt() + " > " + maxWidth.getAsInt());
+		if (minWidth.isPresent() && maxWidth.isPresent() && minWidth.get() > maxWidth.get()) {
+			throw new LogPatternException("Min width must not be greater than max width: " + minWidth.get() + " > " + maxWidth.get());
 		}
 		if (padChar.isPresent() && ILLEGAL_PAD_CHARS.contains(padChar.get())) {
 			throw new LogPatternException("Pad char must not be a newline, carriage return or tab: " + padChar.get());
