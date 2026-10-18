@@ -18,9 +18,9 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.base;
 
+import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Casing;
-import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -34,11 +34,16 @@ import java.util.Optional;
 
 public record LogPatternStringValueConfig(
 	@NonNull Optional<Casing> casing,
-	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
+	@NonNull Optional<LogPatternPaddingConfig> padding
 ) implements LogPatternTokenConfig {
+	
+	public static final Codec<LogPatternStringValueConfig> CODEC = CodecBuilder.of(
+		Codecs.enumLowerName(Casing.class).optional().optionalFieldOf("casing", Optional.empty(), LogPatternStringValueConfig::casing),
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternStringValueConfig::padding)
+	).create(LogPatternStringValueConfig::new);
 	
 	public LogPatternStringValueConfig {
 		Objects.requireNonNull(casing, "Casing must not be null");
-		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
+		Objects.requireNonNull(padding, "Padding config must not be null");
 	}
 }

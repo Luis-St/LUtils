@@ -18,10 +18,10 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
+import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Casing;
-import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -35,13 +35,19 @@ import java.util.*;
 public record LogPatternLoggerNameConfig(
 	@NonNull OptionalInt segments,
 	@NonNull Optional<Casing> casing,
-	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
+	@NonNull Optional<LogPatternPaddingConfig> padding
 ) implements LogPatternTokenConfig {
+	
+	public static final Codec<LogPatternLoggerNameConfig> CODEC = CodecBuilder.of(
+		Codecs.OPTIONAL_INT.optionalFieldOf("segments", OptionalInt.empty(), LogPatternLoggerNameConfig::segments),
+		Codecs.enumLowerName(Casing.class).optional().optionalFieldOf("casing", Optional.empty(), LogPatternLoggerNameConfig::casing),
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternLoggerNameConfig::padding)
+	).create(LogPatternLoggerNameConfig::new);
 	
 	public LogPatternLoggerNameConfig {
 		Objects.requireNonNull(segments, "Segments must not be null");
 		Objects.requireNonNull(casing, "Casing must not be null");
-		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
+		Objects.requireNonNull(padding, "Padding config must not be null");
 		
 		if (segments.isPresent() && segments.getAsInt() < 0) {
 			throw new IllegalArgumentException("Segments must not be negative");

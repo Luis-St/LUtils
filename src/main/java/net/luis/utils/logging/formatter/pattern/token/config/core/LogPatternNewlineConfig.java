@@ -18,6 +18,7 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
+import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.LineEnding;
 import org.jspecify.annotations.NonNull;
@@ -34,6 +35,10 @@ import java.util.Optional;
 public record LogPatternNewlineConfig(
 	@NonNull Optional<LineEnding> style
 ) implements LogPatternTokenConfig {
+	
+	public static final Codec<LogPatternNewlineConfig> CODEC = CodecBuilder.of(
+		Codecs.enumLowerName(LineEnding.class).optional().optionalFieldOf("style", Optional.empty(), LogPatternNewlineConfig::style)
+	).create(LogPatternNewlineConfig::new);
 	
 	public LogPatternNewlineConfig {
 		Objects.requireNonNull(style, "Line ending style must not be null");

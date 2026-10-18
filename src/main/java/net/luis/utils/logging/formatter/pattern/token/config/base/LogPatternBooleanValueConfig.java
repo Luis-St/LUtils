@@ -18,8 +18,8 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.base;
 
+import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
-import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -34,12 +34,18 @@ import java.util.Optional;
 public record LogPatternBooleanValueConfig(
 	@NonNull Optional<String> trueValue,
 	@NonNull Optional<String> falseValue,
-	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
+	@NonNull Optional<LogPatternPaddingConfig> padding
 ) implements LogPatternTokenConfig {
+	
+	public static final Codec<LogPatternBooleanValueConfig> CODEC = CodecBuilder.of(
+		Codecs.STRING.optional().optionalFieldOf("trueValue", Optional.empty(), LogPatternBooleanValueConfig::trueValue),
+		Codecs.STRING.optional().optionalFieldOf("falseValue", Optional.empty(), LogPatternBooleanValueConfig::falseValue),
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternBooleanValueConfig::padding)
+	).create(LogPatternBooleanValueConfig::new);
 	
 	public LogPatternBooleanValueConfig {
 		Objects.requireNonNull(trueValue, "True value must not be null");
 		Objects.requireNonNull(falseValue, "False value must not be null");
-		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
+		Objects.requireNonNull(padding, "Padding config must not be null");
 	}
 }

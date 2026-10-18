@@ -18,9 +18,11 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.base;
 
+import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
-import net.luis.utils.logging.formatter.pattern.token.config.util.*;
+import net.luis.utils.logging.formatter.pattern.token.config.util.Align;
+import net.luis.utils.logging.formatter.pattern.token.config.util.TruncateFrom;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -31,7 +33,6 @@ import java.util.*;
  *
  */
 
-@Embeddable
 public record LogPatternPaddingConfig(
 	@NonNull OptionalInt minWidth,
 	@NonNull OptionalInt maxWidth,
@@ -40,6 +41,13 @@ public record LogPatternPaddingConfig(
 	@NonNull Optional<TruncateFrom> truncateFrom
 ) implements LogPatternTokenConfig {
 	
+	public static final Codec<LogPatternPaddingConfig> CODEC = CodecBuilder.of(
+		Codecs.OPTIONAL_INT.optionalFieldOf("minWidth", OptionalInt.empty(), LogPatternPaddingConfig::minWidth),
+		Codecs.OPTIONAL_INT.optionalFieldOf("maxWidth", OptionalInt.empty(), LogPatternPaddingConfig::maxWidth),
+		Codecs.enumLowerName(Align.class).optional().optionalFieldOf("align", Optional.empty(), LogPatternPaddingConfig::align),
+		Codecs.CHARACTER.optional().optionalFieldOf("padChar", Optional.empty(), LogPatternPaddingConfig::padChar),
+		Codecs.enumLowerName(TruncateFrom.class).optional().optionalFieldOf("truncateFrom", Optional.empty(), LogPatternPaddingConfig::truncateFrom)
+	).create(LogPatternPaddingConfig::new);
 	static final Set<Character> ILLEGAL_PAD_CHARS = Set.of('\n', '\r', '\t');
 	
 	public LogPatternPaddingConfig {

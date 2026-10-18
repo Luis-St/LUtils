@@ -18,10 +18,10 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
+import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
-import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
 import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
 
@@ -37,15 +37,20 @@ import java.util.Optional;
 public record LogPatternMarkerConfig(
 	@NonNull Optional<Boolean> path,
 	@NonNull Optional<String> separator,
-	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
+	@NonNull Optional<LogPatternPaddingConfig> padding
 ) implements LogPatternTokenConfig {
 	
-	private static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
+	public static final Codec<LogPatternMarkerConfig> CODEC = CodecBuilder.of(
+		Codecs.BOOLEAN.optional().optionalFieldOf("path", Optional.empty(), LogPatternMarkerConfig::path),
+		Codecs.STRING.optional().optionalFieldOf("separator", Optional.empty(), LogPatternMarkerConfig::separator),
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternMarkerConfig::padding)
+	).create(LogPatternMarkerConfig::new);
+	static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
 	
 	public LogPatternMarkerConfig {
 		Objects.requireNonNull(path, "Path must not be null");
 		Objects.requireNonNull(separator, "Separator must not be null");
-		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
+		Objects.requireNonNull(padding, "Padding config must not be null");
 		
 		if (separator.isPresent()) {
 			if (separator.get().isBlank()) {

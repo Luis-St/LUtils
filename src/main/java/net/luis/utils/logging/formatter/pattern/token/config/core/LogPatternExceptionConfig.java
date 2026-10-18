@@ -18,6 +18,7 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
+import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import org.jspecify.annotations.NonNull;
 
@@ -36,6 +37,14 @@ public record LogPatternExceptionConfig(
 	@NonNull OptionalInt maxCauseDepth,
 	@NonNull Optional<Boolean> suppressed
 ) implements LogPatternTokenConfig {
+	
+	public static final Codec<LogPatternExceptionConfig> CODEC = CodecBuilder.of(
+		Codecs.OPTIONAL_INT.optionalFieldOf("depth", OptionalInt.empty(), LogPatternExceptionConfig::depth),
+		Codecs.BOOLEAN.optional().optionalFieldOf("omitCommonFrames", Optional.empty(), LogPatternExceptionConfig::omitCommonFrames),
+		Codecs.BOOLEAN.optional().optionalFieldOf("causes", Optional.empty(), LogPatternExceptionConfig::causes),
+		Codecs.OPTIONAL_INT.optionalFieldOf("maxCauseDepth", OptionalInt.empty(), LogPatternExceptionConfig::maxCauseDepth),
+		Codecs.BOOLEAN.optional().optionalFieldOf("suppressed", Optional.empty(), LogPatternExceptionConfig::suppressed)
+	).create(LogPatternExceptionConfig::new);
 	
 	public LogPatternExceptionConfig {
 		Objects.requireNonNull(depth, "Depth must not be null");

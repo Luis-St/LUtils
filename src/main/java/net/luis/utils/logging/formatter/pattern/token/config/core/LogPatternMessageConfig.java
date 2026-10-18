@@ -18,12 +18,14 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
+import com.google.common.collect.Lists;
+import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Casing;
-import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
 import org.apache.commons.lang3.Strings;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -37,13 +39,21 @@ import java.util.*;
 public record LogPatternMessageConfig(
 	@NonNull OptionalInt maxLength,
 	@NonNull Optional<String> ellipsis,
-	@NonNull List<Character> escapedCharacters,
+	@NonNull @Unmodifiable List<Character> escapedCharacters,
 	@NonNull Optional<String> escapeSequence,
 	@NonNull Optional<Casing> casing,
-	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
+	@NonNull Optional<LogPatternPaddingConfig> padding
 ) implements LogPatternTokenConfig {
 	
-	private static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
+	public static final Codec<LogPatternMessageConfig> CODEC = CodecBuilder.of(
+		Codecs.OPTIONAL_INT.optionalFieldOf("maxLength", OptionalInt.empty(), LogPatternMessageConfig::maxLength),
+		Codecs.STRING.optional().optionalFieldOf("ellipsis", Optional.empty(), LogPatternMessageConfig::ellipsis),
+		Codecs.CHARACTER.list().optionalFieldOf("escapedCharacters", Lists.newArrayList(), LogPatternMessageConfig::escapedCharacters),
+		Codecs.STRING.optional().optionalFieldOf("escapeSequence", Optional.empty(), LogPatternMessageConfig::escapeSequence),
+		Codecs.enumLowerName(Casing.class).optional().optionalFieldOf("casing", Optional.empty(), LogPatternMessageConfig::casing),
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternMessageConfig::padding)
+	).create(LogPatternMessageConfig::new);
+	static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
 	
 	public LogPatternMessageConfig {
 		Objects.requireNonNull(maxLength, "Max length must not be null");
@@ -51,7 +61,7 @@ public record LogPatternMessageConfig(
 		Objects.requireNonNull(escapedCharacters, "Escaped characters must not be null");
 		Objects.requireNonNull(escapeSequence, "Escape sequence must not be null");
 		Objects.requireNonNull(casing, "Casing must not be null");
-		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
+		Objects.requireNonNull(padding, "Padding config must not be null");
 		
 		if (maxLength.isPresent() && maxLength.getAsInt() < 0) {
 			throw new LogPatternException("Max length must not be negative");

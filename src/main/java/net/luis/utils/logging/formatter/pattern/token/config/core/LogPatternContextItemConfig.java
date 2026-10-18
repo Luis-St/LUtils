@@ -18,10 +18,10 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
+import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
-import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -36,13 +36,19 @@ import java.util.Optional;
 public record LogPatternContextItemConfig(
 	@NonNull String key,
 	@NonNull Optional<String> defaultValue,
-	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
+	@NonNull Optional<LogPatternPaddingConfig> padding
 ) implements LogPatternTokenConfig {
+	
+	public static final Codec<LogPatternContextItemConfig> CODEC = CodecBuilder.of(
+		Codecs.STRING.fieldOf("key", LogPatternContextItemConfig::key),
+		Codecs.STRING.optional().optionalFieldOf("defaultValue", Optional.empty(), LogPatternContextItemConfig::defaultValue),
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternContextItemConfig::padding)
+	).create(LogPatternContextItemConfig::new);
 	
 	public LogPatternContextItemConfig {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(defaultValue, "Default value must not be null");
-		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
+		Objects.requireNonNull(padding, "Padding config must not be null");
 		
 		if (key.isBlank()) {
 			throw new LogPatternException("Key must not be empty or blank");

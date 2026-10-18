@@ -18,12 +18,14 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
-import net.luis.utils.logging.formatter.pattern.token.config.util.Embedded;
-import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.Strings;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -35,13 +37,20 @@ import java.util.*;
  */
 
 public record LogPatternContextMapConfig(
-	@NonNull List<Pair</*Key*/ String, /*Default value*/ String>> include,
-	@NonNull List<String> exclude,
+	@NonNull @Unmodifiable Map</*Key*/ String, /*Default value*/ String> include,
+	@NonNull @Unmodifiable List<String> exclude,
 	@NonNull Optional<String> kvSeparator,
 	@NonNull Optional<String> entrySeparator,
-	@NonNull @Embedded(namespace = "padding") Optional<LogPatternPaddingConfig> paddingConfig
+	@NonNull Optional<LogPatternPaddingConfig> padding
 ) implements LogPatternTokenConfig {
 	
+	public static final Codec<LogPatternContextMapConfig> CODEC = CodecBuilder.of(
+		Codecs.map(Codecs.STRING).optionalFieldOf("include", Maps.newHashMap(), LogPatternContextMapConfig::include),
+		Codecs.STRING.list().optionalFieldOf("exclude", Lists.newArrayList(), LogPatternContextMapConfig::exclude),
+		Codecs.STRING.optional().optionalFieldOf("kvSeparator", Optional.empty(), LogPatternContextMapConfig::kvSeparator),
+		Codecs.STRING.optional().optionalFieldOf("entrySeparator", Optional.empty(), LogPatternContextMapConfig::entrySeparator),
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternContextMapConfig::padding)
+	).create(LogPatternContextMapConfig::new);
 	static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
 	
 	public LogPatternContextMapConfig {
@@ -49,9 +58,9 @@ public record LogPatternContextMapConfig(
 		Objects.requireNonNull(exclude, "Exclude list must not be null");
 		Objects.requireNonNull(kvSeparator, "Key-value separator must not be null");
 		Objects.requireNonNull(entrySeparator, "Entry separator must not be null");
-		Objects.requireNonNull(paddingConfig, "Padding config must not be null");
+		Objects.requireNonNull(padding, "Padding config must not be null");
 		
-		if (include.stream().anyMatch(pair -> pair.getFirst() == null || pair.getFirst().isBlank())) {
+		if (include.entrySet().stream().anyMatch(pair -> pair.getValue() == null || pair.getValue().isBlank())) {
 			throw new LogPatternException("Include list must not contain null or blank keys");
 		}
 		if (exclude.stream().anyMatch(Objects::isNull)) {
@@ -76,7 +85,7 @@ public record LogPatternContextMapConfig(
 			}
 		}
 		
-		include = List.copyOf(include);
+		include = Map.copyOf(include);
 		exclude = List.copyOf(exclude);
 	}
 }

@@ -18,6 +18,8 @@
 
 package net.luis.utils.logging.formatter.pattern.token;
 
+import net.luis.utils.io.codec.Codec;
+import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternBooleanValueConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternStringValueConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.core.*;
@@ -36,29 +38,29 @@ import java.util.*;
 public enum StandardLogPatternTokenType implements LogPatternTokenType {
 	
 	PLAIN_TEXT("PlainText", Set.of()),
-	LOGGER_NAME("LoggerName", Set.of("logger", "name", "loggerName", "ln"), true, false, LogPatternLoggerNameConfig.class),
-	LEVEL("Level", Set.of("level", "lvl", "l"), true, false, LogPatternLevelConfig.class),
-	MARKER("Marker", Set.of("marker", "m"), true, false, LogPatternMarkerConfig.class),
-	THREAD_NAME("ThreadName", Set.of("threadName", "tn"), true, false, LogPatternStringValueConfig.class),
+	LOGGER_NAME("LoggerName", Set.of("logger", "name", "loggerName", "ln"), true, false, LogPatternLoggerNameConfig.CODEC),
+	LEVEL("Level", Set.of("level", "lvl", "l"), true, false, LogPatternLevelConfig.CODEC),
+	MARKER("Marker", Set.of("marker", "mk"), true, false, LogPatternMarkerConfig.CODEC),
+	THREAD_NAME("ThreadName", Set.of("threadName", "tn"), true, false, LogPatternStringValueConfig.CODEC),
 	THREAD_ID("ThreadId", Set.of("threadId", "ti")),
-	THREAD_GROUP("ThreadGroup", Set.of("threadGroup", "tg"), true, false, LogPatternStringValueConfig.class),
-	THREAD_PRIORITY("ThreadPriority", Set.of("threadPriority", "tp"), true, false, null),
-	THREAD_VIRTUAL("ThreadVirtual", Set.of("threadVirtual", "tv"), true, false, LogPatternBooleanValueConfig.class),
-	THREAD_DAEMON("ThreadDaemon", Set.of("threadDaemon", "td"), true, false, LogPatternBooleanValueConfig.class),
-	THREAD_STATE("ThreadState", Set.of("threadSet", "ts"), true, false, LogPatternStringValueConfig.class),
-	TIMESTAMP("Timestamp", Set.of("timestamp", "time", "date", "ts", "t"), true, false, LogPatternTimestampConfig.class),
-	CONTEXT_MAP("ContextMap", Set.of("context", "ctx"), true, false, LogPatternContextMapConfig.class),
-	CONTEXT_ITEM("ContextItem", Set.of(), true, false, LogPatternContextItemConfig.class),
-	EXCEPTION("Exception", Set.of("exception", "ex", "e"), true, false, LogPatternExceptionConfig.class),
-	MESSAGE("Message", Set.of("message", "msg", "m"), true, false, LogPatternMessageConfig.class),
+	THREAD_GROUP("ThreadGroup", Set.of("threadGroup", "tg"), true, false, LogPatternStringValueConfig.CODEC),
+	THREAD_PRIORITY("ThreadPriority", Set.of("threadPriority", "tp")),
+	THREAD_VIRTUAL("ThreadVirtual", Set.of("threadVirtual", "tv"), true, false, LogPatternBooleanValueConfig.CODEC),
+	THREAD_DAEMON("ThreadDaemon", Set.of("threadDaemon", "td"), true, false, LogPatternBooleanValueConfig.CODEC),
+	THREAD_STATE("ThreadState", Set.of("threadState", "ts"), true, false, LogPatternStringValueConfig.CODEC),
+	TIMESTAMP("Timestamp", Set.of("timestamp", "time", "date", "t"), true, false, LogPatternTimestampConfig.CODEC),
+	CONTEXT_MAP("ContextMap", Set.of("context", "ctx"), true, false, LogPatternContextMapConfig.CODEC),
+	CONTEXT_ITEM("ContextItem", Set.of(), true, false, LogPatternContextItemConfig.CODEC),
+	EXCEPTION("Exception", Set.of("exception", "ex", "e"), true, false, LogPatternExceptionConfig.CODEC),
+	MESSAGE("Message", Set.of("message", "msg", "m"), true, false, LogPatternMessageConfig.CODEC),
 	SEQUENCE_NUMBER("SequenceNumber", Set.of("sequenceNumber", "sequence", "sqn")),
-	NEWLINE("Newline", Set.of("newline", "nl"), true, false, LogPatternNewlineConfig.class);
+	NEWLINE("Newline", Set.of("newline", "nl"), true, false, LogPatternNewlineConfig.CODEC);
 	
 	private final String name;
 	private final Set<String> identifiers;
 	private final boolean supportsConfiguration;
 	private final boolean requiresConfiguration;
-	private final Optional<Class<?>> configurationType;
+	private final Optional<Codec<? extends LogPatternTokenConfig>> codec;
 	
 	StandardLogPatternTokenType(
 		@NonNull String name, @NonNull Set<String> identifiers
@@ -67,13 +69,13 @@ public enum StandardLogPatternTokenType implements LogPatternTokenType {
 	}
 	
 	StandardLogPatternTokenType(
-		@NonNull String name, @NonNull Set<String> identifiers, boolean supportsConfiguration, boolean requiresConfiguration, @Nullable Class<?> configurationType
+		@NonNull String name, @NonNull Set<String> identifiers, boolean supportsConfiguration, boolean requiresConfiguration, @Nullable Codec<? extends LogPatternTokenConfig> codec
 	) {
 		this.name = Objects.requireNonNull(name, "Name must not be null");
 		this.identifiers = Set.copyOf(Objects.requireNonNull(identifiers, "Identifiers must not be null"));
 		this.supportsConfiguration = supportsConfiguration;
 		this.requiresConfiguration = requiresConfiguration;
-		this.configurationType = Optional.ofNullable(configurationType);
+		this.codec = Optional.ofNullable(codec);
 	}
 	
 	@Override
@@ -97,7 +99,7 @@ public enum StandardLogPatternTokenType implements LogPatternTokenType {
 	}
 	
 	@Override
-	public @NonNull Optional<Class<?>> getConfigurationType() {
-		return this.configurationType;
+	public @NonNull Optional<Codec<? extends LogPatternTokenConfig>> codec() {
+		return this.codec;
 	}
 }
