@@ -26,6 +26,7 @@ import org.junit.jupiter.api.parallel.ResourceLock;
 import java.io.Reader;
 import java.util.*;
 
+import static net.luis.utils.io.reader.StringReadingOption.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -50,6 +51,15 @@ class ScopedStringReaderTest {
 	void constructorWithValidInputs() {
 		assertDoesNotThrow(() -> new ScopedStringReader("test"));
 		assertDoesNotThrow(() -> new ScopedStringReader(new java.io.StringReader("test")));
+		assertDoesNotThrow(() -> new ScopedStringReader("test", IGNORE_ESCAPES, IGNORE_SINGLE_QUOTES, IGNORE_DOUBLE_QUOTES));
+		assertDoesNotThrow(() -> new ScopedStringReader(new java.io.StringReader("test"), IGNORE_ESCAPES));
+	}
+	
+	@Test
+	void constructorWithNullOptions() {
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", (StringReadingOption[]) null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", (StringReadingOption) null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader(new java.io.StringReader("test"), (StringReadingOption[]) null));
 	}
 	
 	@Test
@@ -181,6 +191,68 @@ class ScopedStringReaderTest {
 		ScopedStringReader reader = new ScopedStringReader("(escaped \\) character)");
 		
 		assertEquals("(escaped \\) character)", reader.readScope(StringScope.PARENTHESES));
+	}
+	
+	@Test
+	void readScopeWithIgnoredEscapes() {
+		ScopedStringReader reader = new ScopedStringReader("(escaped \\) character)", IGNORE_ESCAPES);
+		
+		assertEquals("(escaped \\)", reader.readScope(StringScope.PARENTHESES));
+		assertEquals(" character)", reader.readRemaining());
+	}
+	
+	@Test
+	void readScopeWithIgnoredSingleQuotes() {
+		ScopedStringReader reader = new ScopedStringReader("('string with ) inside')", IGNORE_SINGLE_QUOTES);
+		
+		assertEquals("('string with )", reader.readScope(StringScope.PARENTHESES));
+		assertEquals(" inside')", reader.readRemaining());
+	}
+	
+	@Test
+	void readScopeWithIgnoredDoubleQuotes() {
+		ScopedStringReader reader = new ScopedStringReader("(\"string with ) inside\")", IGNORE_DOUBLE_QUOTES);
+		
+		assertEquals("(\"string with )", reader.readScope(StringScope.PARENTHESES));
+		assertEquals(" inside\")", reader.readRemaining());
+	}
+	
+	@Test
+	void readScopeWithIgnoredQuotesKeepsOtherQuotes() {
+		ScopedStringReader reader = new ScopedStringReader("(\"a ) b\" 'c ) d')", IGNORE_SINGLE_QUOTES);
+		
+		assertEquals("(\"a ) b\" 'c )", reader.readScope(StringScope.PARENTHESES));
+	}
+	
+	@Test
+	void readUntilWithIgnoredEscapes() {
+		ScopedStringReader reader = new ScopedStringReader("a\\,b (c\\, d), e", IGNORE_ESCAPES);
+		
+		assertEquals("a\\", reader.readUntilSkip(','));
+		assertEquals("b (c\\, d)", reader.readUntilSkip(','));
+		assertEquals(" e", reader.readRemaining());
+	}
+	
+	@Test
+	void readUntilWithIgnoredQuotes() {
+		ScopedStringReader defaultReader = new ScopedStringReader("say 'a, b', (c, d), e");
+		assertEquals("say 'a, b'", defaultReader.readUntilSkip(','));
+		
+		ScopedStringReader reader = new ScopedStringReader("say 'a, b', (c, d), e", IGNORE_SINGLE_QUOTES);
+		assertEquals("say 'a", reader.readUntilSkip(','));
+		assertEquals(" b'", reader.readUntilSkip(','));
+		assertEquals(" (c, d)", reader.readUntilSkip(','));
+		assertEquals(" e", reader.readRemaining());
+	}
+	
+	@Test
+	void readUntilStringWithIgnoredQuotes() {
+		ScopedStringReader defaultReader = new ScopedStringReader("x \"y end\" (end) end");
+		assertEquals("x \"y end\" (end) ", defaultReader.readUntil("end", true));
+		
+		ScopedStringReader reader = new ScopedStringReader("x \"y end\" (end) end", IGNORE_DOUBLE_QUOTES);
+		assertEquals("x \"y ", reader.readUntil("end", true));
+		assertEquals("end\" (end) end", reader.readRemaining());
 	}
 	
 	@Test
@@ -359,8 +431,7 @@ class ScopedStringReaderTest {
 	void readListWithEmptyOnNoContent() {
 		ScopedStringReader reader = new ScopedStringReader("");
 		
-		List<String> result = reader.readList(StringReader::readString);
-		assertTrue(result.isEmpty());
+		assertThrows(InvalidStringException.class, () -> reader.readList(StringReader::readString));
 	}
 	
 	@Test
@@ -399,6 +470,13 @@ class ScopedStringReaderTest {
 		ScopedStringReader reader = new ScopedStringReader("(1,2,3)");
 		
 		assertThrows(NullPointerException.class, () -> reader.readSet(null));
+	}
+	
+	@Test
+	void readSetWithEmptyOnNoContent() {
+		ScopedStringReader reader = new ScopedStringReader("");
+		
+		assertThrows(InvalidStringException.class, () -> reader.readSet(StringReader::readString));
 	}
 	
 	@Test
@@ -468,7 +546,6 @@ class ScopedStringReaderTest {
 	void readMapWithEmptyOnNoContent() {
 		ScopedStringReader reader = new ScopedStringReader("");
 		
-		Map<String, String> result = reader.readMap(StringReader::readString, StringReader::readString);
-		assertTrue(result.isEmpty());
+		assertThrows(InvalidStringException.class, () -> reader.readMap(StringReader::readString, StringReader::readString));
 	}
 }
