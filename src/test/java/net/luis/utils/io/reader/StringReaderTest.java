@@ -27,6 +27,7 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.function.Predicate;
 
+import static net.luis.utils.io.reader.StringReadingOption.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -42,6 +43,12 @@ class StringReaderTest {
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new StringReader((String) null));
 		assertThrows(NullPointerException.class, () -> new StringReader((Reader) null));
+		assertThrows(NullPointerException.class, () -> new StringReader("test", (StringReadingOption[]) null));
+		assertThrows(NullPointerException.class, () -> new StringReader("test", (StringReadingOption) null));
+		assertThrows(NullPointerException.class, () -> new StringReader("test", IGNORE_ESCAPES, null));
+		assertThrows(NullPointerException.class, () -> new StringReader(new java.io.StringReader("test"), (StringReadingOption[]) null));
+		assertDoesNotThrow(() -> new StringReader("test", IGNORE_ESCAPES, IGNORE_SINGLE_QUOTES, IGNORE_DOUBLE_QUOTES));
+		assertDoesNotThrow(() -> new StringReader(new java.io.StringReader("test"), IGNORE_ESCAPES, IGNORE_ESCAPES));
 	}
 	
 	@Test
@@ -460,6 +467,148 @@ class StringReaderTest {
 		assertEquals("'string for the'", reader.readUntilSkip(" ", true));
 		reader.skip(9);
 		assertEquals("reader", reader.readUntilSkip("r", false));
+	}
+	
+	@Test
+	void readQuotedStringWithIgnoredEscapes() {
+		StringReader defaultReader = new StringReader("\"a\\\"b\" c");
+		assertEquals("a\\\"b", defaultReader.readQuotedString());
+		
+		StringReader reader = new StringReader("\"a\\\"b\" c", IGNORE_ESCAPES);
+		assertEquals("a\\", reader.readQuotedString());
+		assertEquals('b', reader.peek());
+	}
+	
+	@Test
+	void readQuotedStringWithIgnoredQuotes() {
+		StringReader singleReader = new StringReader("'single' \"double\"", IGNORE_SINGLE_QUOTES);
+		assertThrows(InvalidStringException.class, singleReader::readQuotedString);
+		singleReader.skip(9);
+		assertEquals("double", singleReader.readQuotedString());
+		
+		StringReader doubleReader = new StringReader("\"double\" 'single'", IGNORE_DOUBLE_QUOTES);
+		assertThrows(InvalidStringException.class, doubleReader::readQuotedString);
+		doubleReader.skip(9);
+		assertEquals("single", doubleReader.readQuotedString());
+	}
+	
+	@Test
+	void readStringWithIgnoredQuotes() {
+		StringReader doubleReader = new StringReader("\"is a\" test", IGNORE_DOUBLE_QUOTES);
+		assertEquals("\"is", doubleReader.readString());
+		assertEquals("a\"", doubleReader.readString());
+		assertEquals("test", doubleReader.readString());
+		
+		StringReader singleReader = new StringReader("'is a' \"test string\"", IGNORE_SINGLE_QUOTES);
+		assertEquals("'is", singleReader.readString());
+		assertEquals("a'", singleReader.readString());
+		assertEquals("test string", singleReader.readString());
+	}
+	
+	@Test
+	void readNumberWithIgnoredQuotes() {
+		assertEquals(10, new StringReader("\"10\"").readInt());
+		assertEquals(10, new StringReader("'10'", IGNORE_DOUBLE_QUOTES).readInt());
+		assertEquals(10, new StringReader("\"10\"", IGNORE_SINGLE_QUOTES).readInt());
+		assertThrows(InvalidStringException.class, () -> new StringReader("\"10\"", IGNORE_DOUBLE_QUOTES).readInt());
+		assertThrows(InvalidStringException.class, () -> new StringReader("'10'", IGNORE_SINGLE_QUOTES).readInt());
+	}
+	
+	@Test
+	void readObjectWithIgnoredQuotes() {
+		StringReader singleReader = new StringReader("'c' \"text\"", IGNORE_SINGLE_QUOTES);
+		assertEquals("'c'", assertInstanceOf(String.class, singleReader.readObject()));
+		assertEquals("text", assertInstanceOf(String.class, singleReader.readObject()));
+		
+		StringReader doubleReader = new StringReader("\"text\" 'c'", IGNORE_DOUBLE_QUOTES);
+		assertEquals("\"text\"", assertInstanceOf(String.class, doubleReader.readObject()));
+		assertEquals('c', assertInstanceOf(Character.class, doubleReader.readObject()));
+	}
+	
+	@Test
+	void readObjectWithIgnoredEscapes() {
+		StringReader defaultReader = new StringReader("'a\\'b' x");
+		assertEquals("a\\'b", assertInstanceOf(String.class, defaultReader.readObject()));
+		
+		StringReader reader = new StringReader("'a\\'b' x", IGNORE_ESCAPES);
+		assertEquals("a\\", assertInstanceOf(String.class, reader.readObject()));
+		assertEquals('b', reader.peek());
+	}
+	
+	@Test
+	void readUntilWithIgnoredEscapes() {
+		StringReader defaultReader = new StringReader("a\\,b,c");
+		assertEquals("a,b", defaultReader.readUntilSkip(','));
+		assertEquals("c", defaultReader.readRemaining());
+		
+		StringReader reader = new StringReader("a\\,b,c", IGNORE_ESCAPES);
+		assertEquals("a\\", reader.readUntilSkip(','));
+		assertEquals("b", reader.readUntilSkip(','));
+		assertEquals("c", reader.readRemaining());
+	}
+	
+	@Test
+	void readUntilWithIgnoredSingleQuotes() {
+		StringReader defaultReader = new StringReader("it's a test, 'quoted, part', end");
+		assertEquals("it's a test, 'quoted", defaultReader.readUntilSkip(','));
+		
+		StringReader reader = new StringReader("it's a test, 'quoted, part', end", IGNORE_SINGLE_QUOTES);
+		assertEquals("it's a test", reader.readUntilSkip(','));
+		assertEquals(" 'quoted", reader.readUntilSkip(','));
+		assertEquals(" part'", reader.readUntilSkip(','));
+		assertEquals(" end", reader.readRemaining());
+	}
+	
+	@Test
+	void readUntilWithIgnoredDoubleQuotes() {
+		StringReader defaultReader = new StringReader("say \"a, b\", done");
+		assertEquals("say \"a, b\"", defaultReader.readUntilSkip(','));
+		
+		StringReader reader = new StringReader("say \"a, b\", done", IGNORE_DOUBLE_QUOTES);
+		assertEquals("say \"a", reader.readUntilSkip(','));
+		assertEquals(" b\"", reader.readUntilSkip(','));
+		assertEquals(" done", reader.readRemaining());
+	}
+	
+	@Test
+	void readUntilWithIgnoredQuotesKeepsOtherQuotes() {
+		StringReader reader = new StringReader("\"a, b\" it's, c", IGNORE_SINGLE_QUOTES);
+		assertEquals("\"a, b\" it's", reader.readUntilSkip(','));
+		assertEquals(" c", reader.readRemaining());
+	}
+	
+	@Test
+	void readUntilInclusiveWithIgnoredQuotes() {
+		StringReader defaultReader = new StringReader("'a;b';c");
+		assertEquals("'a;b';", defaultReader.readUntilInclusive(';'));
+		
+		StringReader reader = new StringReader("'a;b';c", IGNORE_SINGLE_QUOTES);
+		assertEquals("'a;", reader.readUntilInclusive(';'));
+		assertEquals("b';", reader.readUntilInclusive(';'));
+		assertEquals("c", reader.readRemaining());
+	}
+	
+	@Test
+	void readUntilStringWithIgnoredEscapes() {
+		StringReader defaultReader = new StringReader("a\\b end");
+		assertEquals("ab ", defaultReader.readUntil("end", true));
+		
+		StringReader reader = new StringReader("a\\b end", IGNORE_ESCAPES);
+		assertEquals("a\\b ", reader.readUntil("end", true));
+		assertEquals("end", reader.readRemaining());
+	}
+	
+	@Test
+	void readUntilStringWithIgnoredQuotes() {
+		StringReader defaultReader = new StringReader("x 'y end' end");
+		assertEquals("x 'y end' ", defaultReader.readUntil("end", true));
+		
+		StringReader reader = new StringReader("x 'y end' end", IGNORE_SINGLE_QUOTES);
+		assertEquals("x 'y ", reader.readUntil("end", true));
+		assertEquals("end' end", reader.readRemaining());
+		
+		StringReader doubleReader = new StringReader("x \"y end\" end", IGNORE_DOUBLE_QUOTES);
+		assertEquals("x \"y end", doubleReader.readUntilInclusive("end", true));
 	}
 	
 	@Test

@@ -45,6 +45,10 @@ import java.util.stream.Collectors;
  *     <li>Big numbers (BigInteger, BigDecimal)</li>
  * </ul>
  * <p>
+ *     By default, the reader handles escaped characters and quoted parts while reading until a terminator.<br>
+ *     This behavior can be modified by passing {@link StringReadingOption}s on construction.
+ * </p>
+ * <p>
  *     This reader implementation is not performance optimized,<br>
  *     it reads the string character by character in {@code O(n)}.
  * </p>
@@ -58,6 +62,10 @@ public class StringReader {
 	 */
 	private final String string;
 	/**
+	 * The options which modify the handling of escaped characters and quoted parts.<br>
+	 */
+	private final Set<StringReadingOption> options;
+	/**
 	 * The current index of the reader.<br>
 	 */
 	private int index;
@@ -67,31 +75,89 @@ public class StringReader {
 	private int markedIndex = -1;
 	
 	/**
-	 * Constructs a new string reader with the given string.<br>
+	 * Constructs a new string reader with the given string and options.<br>
+	 * If no options are given, escaped characters and quoted parts are handled by default.<br>
 	 *
 	 * @param string The string to read from
-	 * @throws NullPointerException If the string is null
+	 * @param options The options which modify the handling of escaped characters and quoted parts
+	 * @throws NullPointerException If the string, the options array or any option is null
+	 * @see StringReadingOption
 	 */
-	public StringReader(@NonNull String string) {
+	public StringReader(@NonNull String string, StringReadingOption @NonNull ... options) {
 		this.string = Objects.requireNonNull(string, "String must not be null");
+		this.options = createOptions(options);
 	}
 	
 	/**
-	 * Constructs a new string reader from the given reader.<br>
+	 * Constructs a new string reader from the given reader with the given options.<br>
 	 * The reader is closed after reading the string.<br>
+	 * If no options are given, escaped characters and quoted parts are handled by default.<br>
 	 *
 	 * @param reader The reader to read from
-	 * @throws NullPointerException If the reader is null
+	 * @param options The options which modify the handling of escaped characters and quoted parts
+	 * @throws NullPointerException If the reader, the options array or any option is null
 	 * @throws UncheckedIOException If an I/O error occurs while reading the string
+	 * @see StringReadingOption
 	 */
-	public StringReader(@NonNull Reader reader) {
+	public StringReader(@NonNull Reader reader, StringReadingOption @NonNull ... options) {
 		Objects.requireNonNull(reader, "Reader must not be null");
+		this.options = createOptions(options);
 		
 		try {
 			this.string = FileUtils.readString(reader);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Failed to read string from reader", e);
 		}
+	}
+	
+	/**
+	 * Creates a set of the given options.<br>
+	 *
+	 * @param options The options to create the set from
+	 * @return The set of options
+	 * @throws NullPointerException If the options array or any option is null
+	 */
+	private static @NonNull Set<StringReadingOption> createOptions(StringReadingOption @NonNull ... options) {
+		Objects.requireNonNull(options, "Options must not be null");
+		
+		Set<StringReadingOption> set = EnumSet.noneOf(StringReadingOption.class);
+		for (StringReadingOption option : options) {
+			set.add(Objects.requireNonNull(option, "Option must not be null"));
+		}
+		return set;
+	}
+	
+	/**
+	 * Checks whether the given character is an escape character.<br>
+	 * A backslash ('\\') is an escape character, unless {@link StringReadingOption#IGNORE_ESCAPES} is set.<br>
+	 *
+	 * @param c The character to check
+	 * @return True if the character is an escape character, otherwise false
+	 */
+	protected boolean isEscapeCharacter(char c) {
+		return c == '\\' && !this.options.contains(StringReadingOption.IGNORE_ESCAPES);
+	}
+	
+	/**
+	 * Checks whether the given character is a single quote which starts or ends a quoted part.<br>
+	 * A single quote (') is only handled, if {@link StringReadingOption#IGNORE_SINGLE_QUOTES} is not set.<br>
+	 *
+	 * @param c The character to check
+	 * @return True if the character is a handled single quote, otherwise false
+	 */
+	protected boolean isSingleQuote(char c) {
+		return c == '\'' && !this.options.contains(StringReadingOption.IGNORE_SINGLE_QUOTES);
+	}
+	
+	/**
+	 * Checks whether the given character is a double quote which starts or ends a quoted part.<br>
+	 * A double quote (") is only handled, if {@link StringReadingOption#IGNORE_DOUBLE_QUOTES} is not set.<br>
+	 *
+	 * @param c The character to check
+	 * @return True if the character is a handled double quote, otherwise false
+	 */
+	protected boolean isDoubleQuote(char c) {
+		return c == '"' && !this.options.contains(StringReadingOption.IGNORE_DOUBLE_QUOTES);
 	}
 	
 	/**
@@ -393,10 +459,14 @@ public class StringReader {
 	 * Reads a quoted string.<br>
 	 * A quoted string is a string enclosed in single or double quotes.<br>
 	 * The quotes are read but not included in the result.<br>
+	 * <p>
+	 *     Quotes ignored by the {@link StringReadingOption}s of this reader are not accepted as quotes.<br>
+	 *     If escaping is enabled, an escaped quote does not end the quoted string.
+	 * </p>
 	 *
 	 * @return The quoted string which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
-	 * @throws InvalidStringException If the next read character is not a single or double quote
+	 * @throws InvalidStringException If the next read character is not a (handled) single or double quote
 	 */
 	public @NonNull String readQuotedString() {
 		if (!this.canRead()) {
@@ -404,7 +474,7 @@ public class StringReader {
 		}
 		
 		char next = this.peek();
-		if (next != '"' && next != '\'') {
+		if (!this.isSingleQuote(next) && !this.isDoubleQuote(next)) {
 			throw new InvalidStringException("Expected a single or double quote as next character, but found: '" + next + "'");
 		}
 		
@@ -416,7 +486,7 @@ public class StringReader {
 			if (escaped) {
 				builder.append(c);
 				escaped = false;
-			} else if (c == '\\') {
+			} else if (this.isEscapeCharacter(c)) {
 				builder.append(c);
 				escaped = true;
 			} else if (c == next) {
@@ -431,7 +501,7 @@ public class StringReader {
 	/**
 	 * Reads a string.<br>
 	 * <p>
-	 *     If the next character is a single or double quote,<br>
+	 *     If the next character is a (handled) single or double quote,<br>
 	 *     {@link #readQuotedString()} is called otherwise {@link #readUnquotedString()} is called.<br>
 	 *     If there are no more characters to read, an empty string is returned.
 	 * </p>
@@ -447,7 +517,7 @@ public class StringReader {
 		}
 		
 		char next = this.peek();
-		if (next == '"' || next == '\'') {
+		if (this.isSingleQuote(next) || this.isDoubleQuote(next)) {
 			this.skip();
 			return this.readUntilSkip(next);
 		}
@@ -746,7 +816,7 @@ public class StringReader {
 			char c = this.peek();
 			if (escaped) {
 				escaped = false;
-			} else if (c == '\\') {
+			} else if (this.isEscapeCharacter(c)) {
 				escaped = true;
 				this.skip();
 				continue;
@@ -755,9 +825,9 @@ public class StringReader {
 					builder.append(this.read());
 				}
 				break;
-			} else if (c == '\'') {
+			} else if (this.isSingleQuote(c)) {
 				inSingleQuotes = !inSingleQuotes;
-			} else if (c == '\"') {
+			} else if (this.isDoubleQuote(c)) {
 				inDoubleQuotes = !inDoubleQuotes;
 			}
 			builder.append(this.read());
@@ -901,13 +971,13 @@ public class StringReader {
 			char c = this.peek();
 			if (escaped) {
 				escaped = false;
-			} else if (c == '\\') {
+			} else if (this.isEscapeCharacter(c)) {
 				escaped = true;
 				this.skip();
 				continue;
-			} else if (c == '\'') {
+			} else if (this.isSingleQuote(c)) {
 				inSingleQuotes = !inSingleQuotes;
-			} else if (c == '"') {
+			} else if (this.isDoubleQuote(c)) {
 				inDoubleQuotes = !inDoubleQuotes;
 			}
 			
@@ -1124,9 +1194,9 @@ public class StringReader {
 		}
 		
 		char next = this.peek();
-		if (next == '"' || next == '\'') {
+		if (this.isSingleQuote(next) || this.isDoubleQuote(next)) {
 			String number = this.readQuotedString();
-			return new StringReader(number).readNumberAsString(initialType);
+			return new StringReader(number, this.options.toArray(StringReadingOption[]::new)).readNumberAsString(initialType);
 		}
 		
 		char sign = '+';
@@ -1562,7 +1632,7 @@ public class StringReader {
 		}
 		
 		char next = this.peek();
-		if (next == '"' || next == '\'') {
+		if (this.isSingleQuote(next) || this.isDoubleQuote(next)) {
 			String value = this.readQuotedString();
 			if (next == '\'' && value.length() == 1) {
 				return value.charAt(0);

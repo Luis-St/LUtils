@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.reader;
 
+import com.google.common.collect.*;
 import net.luis.utils.exception.InvalidStringException;
 import org.jspecify.annotations.NonNull;
 
@@ -33,31 +34,41 @@ import static net.luis.utils.io.reader.StringScope.*;
 /**
  * A utility class to read strings with scopes.<br>
  * A scope is defined by two characters, an opening and a closing character.<br>
+ * <p>
+ *     The handling of escaped characters and quoted parts can be modified<br>
+ *     by passing {@link StringReadingOption}s on construction.
+ * </p>
  *
  * @author Luis-St
  */
 public class ScopedStringReader extends StringReader {
 	
 	/**
-	 * Constructs a new scoped string reader with the given string.<br>
+	 * Constructs a new scoped string reader with the given string and options.<br>
+	 * If no options are given, escaped characters and quoted parts are handled by default.<br>
 	 *
 	 * @param string The string to read from
-	 * @throws NullPointerException If the string is null
+	 * @param options The options which modify the handling of escaped characters and quoted parts
+	 * @throws NullPointerException If the string, the options array or any option is null
+	 * @see StringReadingOption
 	 */
-	public ScopedStringReader(@NonNull String string) {
-		super(string);
+	public ScopedStringReader(@NonNull String string, StringReadingOption @NonNull ... options) {
+		super(string, options);
 	}
 	
 	/**
-	 * Constructs a new scoped string reader with the given reader.<br>
+	 * Constructs a new scoped string reader from the given reader with the given options.<br>
 	 * The reader is closed after reading the string.<br>
+	 * If no options are given, escaped characters and quoted parts are handled by default.<br>
 	 *
 	 * @param reader The reader to read from
-	 * @throws NullPointerException If the reader is null
+	 * @param options The options which modify the handling of escaped characters and quoted parts
+	 * @throws NullPointerException If the reader, the options array or any option is null
 	 * @throws UncheckedIOException If an I/O error occurs while reading the string
+	 * @see StringReadingOption
 	 */
-	public ScopedStringReader(@NonNull Reader reader) {
-		super(reader);
+	public ScopedStringReader(@NonNull Reader reader, StringReadingOption @NonNull ... options) {
+		super(reader, options);
 	}
 	
 	/**
@@ -97,15 +108,15 @@ public class ScopedStringReader extends StringReader {
 		while (this.canRead()) {
 			char c = this.read();
 			
-			if (c == '\\' && !escaped) {
+			if (this.isEscapeCharacter(c) && !escaped) {
 				builder.append(c);
 				escaped = true;
 				continue;
 			}
 			
-			if (c == '\'' && !escaped) {
+			if (this.isSingleQuote(c) && !escaped) {
 				inSingleQuotes = !inSingleQuotes;
-			} else if (c == '\"' && !escaped) {
+			} else if (this.isDoubleQuote(c) && !escaped) {
 				inDoubleQuotes = !inDoubleQuotes;
 			}
 			
@@ -393,7 +404,7 @@ public class ScopedStringReader extends StringReader {
 			char c = this.peek();
 			if (escaped) {
 				escaped = false;
-			} else if (c == '\\') {
+			} else if (this.isEscapeCharacter(c)) {
 				escaped = true;
 				this.skip();
 				continue;
@@ -402,9 +413,9 @@ public class ScopedStringReader extends StringReader {
 					builder.append(this.read());
 				}
 				break;
-			} else if (c == '\'') {
+			} else if (this.isSingleQuote(c)) {
 				inSingleQuotes = !inSingleQuotes;
-			} else if (c == '\"') {
+			} else if (this.isDoubleQuote(c)) {
 				inDoubleQuotes = !inDoubleQuotes;
 			} else if (SCOPE_REGISTRY.containsKey(c)) {
 				stack.push(c);
@@ -546,13 +557,13 @@ public class ScopedStringReader extends StringReader {
 			char c = this.peek();
 			if (escaped) {
 				escaped = false;
-			} else if (c == '\\') {
+			} else if (this.isEscapeCharacter(c)) {
 				escaped = true;
 				this.skip();
 				continue;
-			} else if (c == '\'') {
+			} else if (this.isSingleQuote(c)) {
 				inSingleQuotes = !inSingleQuotes;
-			} else if (c == '"') {
+			} else if (this.isDoubleQuote(c)) {
 				inDoubleQuotes = !inDoubleQuotes;
 			} else if (SCOPE_REGISTRY.containsKey(c)) {
 				stack.push(c);
@@ -636,11 +647,14 @@ public class ScopedStringReader extends StringReader {
 	 * @return The read collection
 	 * @param <T> The type of the elements
 	 * @throws NullPointerException If the scope or parser is null
-	 * @throws IllegalArgumentException If an error occurs while reading the collection
+	 * @throws InvalidStringException If an error occurs while reading the collection
 	 */
 	private <T> @NonNull Collection<T> readCollection(@NonNull StringScope scope, @NonNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(scope, "Scope must not be null");
 		Objects.requireNonNull(parser, "Parser must not be null");
+		if (!this.canRead()) {
+			throw new InvalidStringException("No more characters to read");
+		}
 		
 		ScopedStringReader reader = new ScopedStringReader(this.readScope(scope));
 		char next = reader.peek();
@@ -687,10 +701,7 @@ public class ScopedStringReader extends StringReader {
 	 */
 	public <T> @NonNull List<T> readList(@NonNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(parser, "List element parser must not be null");
-		if (!this.canRead()) {
-			return new ArrayList<>();
-		}
-		return new ArrayList<>(this.readCollection(SQUARE_BRACKETS, parser));
+		return Lists.newArrayList(this.readCollection(SQUARE_BRACKETS, parser));
 	}
 	
 	/**
@@ -702,7 +713,7 @@ public class ScopedStringReader extends StringReader {
 	 * </p>
 	 *
 	 * @param parser The parser to parse the elements
-	 * @return The read set as an {@link HashSet}
+	 * @return The read set as an {@link LinkedHashSet}
 	 * @param <T> The type of the elements
 	 * @throws NullPointerException If the parser is null
 	 * @throws InvalidStringException If an error occurs while reading the set
@@ -710,10 +721,7 @@ public class ScopedStringReader extends StringReader {
 	 */
 	public <T> @NonNull Set<T> readSet(@NonNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(parser, "Set element parser must not be null");
-		if (!this.canRead()) {
-			return new HashSet<>();
-		}
-		return new HashSet<>(this.readCollection(PARENTHESES, parser));
+		return Sets.newLinkedHashSet(this.readCollection(PARENTHESES, parser));
 	}
 	
 	/**
@@ -729,7 +737,7 @@ public class ScopedStringReader extends StringReader {
 	 *
 	 * @param keyParser The parser to parse the keys
 	 * @param valueParser The parser to parse the values
-	 * @return The read map as a {@link HashMap}
+	 * @return The read map as a {@link LinkedHashMap}
 	 * @param <K> The type of the keys
 	 * @param <V> The type of the values
 	 * @throws NullPointerException If the key or value parser is null
@@ -739,11 +747,8 @@ public class ScopedStringReader extends StringReader {
 	public <K, V> @NonNull Map<K, V> readMap(@NonNull Function<ScopedStringReader, K> keyParser, @NonNull Function<ScopedStringReader, V> valueParser) {
 		Objects.requireNonNull(keyParser, "Map key parser must not be null");
 		Objects.requireNonNull(valueParser, "Map value parser must not be null");
-		if (!this.canRead()) {
-			return new HashMap<>();
-		}
 		
-		Map<K, V> map = new HashMap<>();
+		Map<K, V> map = Maps.newLinkedHashMap();
 		Collection<String> entries = this.readCollection(CURLY_BRACKETS, reader -> reader.readUntilSkip(',').strip());
 		for (String entry : entries) {
 			if (!entry.contains("=")) {
