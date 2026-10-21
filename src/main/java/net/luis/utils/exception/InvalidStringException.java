@@ -50,6 +50,7 @@ public class InvalidStringException extends RuntimeException {
 	
 	/**
 	 * Constructs a new invalid string exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
