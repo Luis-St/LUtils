@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.mail;
 
+import net.luis.utils.io.network.HostEndpoint;
 import net.luis.utils.io.network.connection.exception.*;
 import net.luis.utils.io.network.connection.ssl.*;
 import net.luis.utils.io.network.mail.message.*;
@@ -31,6 +32,7 @@ import java.security.KeyStore;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -186,15 +188,13 @@ class SmtpClientTest {
 	
 	@Test
 	void connectRefusedMapsToConnectionRefused() throws Exception {
-		int port;
-		try (ServerSocket probe = new ServerSocket()) {
-			probe.bind(new InetSocketAddress(HOST, 0));
-			port = probe.getLocalPort();
+		try (Socket unlistened = new Socket()) {
+			unlistened.bind(new InetSocketAddress(HOST, 0));
+			
+			SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()));
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect(HOST, unlistened.getLocalPort()));
+			assertEquals(NetworkErrorType.CONNECTION_REFUSED, exception.errorType());
 		}
-		
-		SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()));
-		NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect(HOST, port));
-		assertEquals(NetworkErrorType.CONNECTION_REFUSED, exception.errorType());
 	}
 	
 	@Test
@@ -213,7 +213,8 @@ class SmtpClientTest {
 	void connectRejectsBadGreeting() throws Exception {
 		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> session.send("554 Service unavailable"))) {
 			try (SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()))) {
-				assertThrows(SmtpException.class, () -> client.connect(HOST, server.port()));
+				SmtpException exception = assertThrows(SmtpException.class, () -> client.connect(HOST, server.port()));
+				assertEquals(NetworkErrorType.PROTOCOL_ERROR, exception.errorType());
 			}
 		}
 	}
@@ -228,6 +229,7 @@ class SmtpClientTest {
 				SmtpException exception = assertThrows(SmtpException.class, () -> client.connect(HOST, server.port()));
 				assertTrue(exception.getMessage().contains("does not advertise STARTTLS"));
 				assertEquals(NetworkErrorType.PROTOCOL_ERROR, exception.errorType());
+				assertEquals(new HostEndpoint(HOST, server.port()), exception.endpoint());
 			}
 		}
 	}
@@ -401,41 +403,37 @@ class SmtpClientTest {
 	}
 	
 	@Test
-	void readReplyIoErrorMapsToIoError() throws Exception {
-		AtomicReference<NetworkErrorType> errorRef = new AtomicReference<>();
+	void readReplyAbortMapsToConnectionReset() throws Exception {
 		try (FakeSmtpServer server = new FakeSmtpServer(false, Session::abort)) {
-			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).onError((_, type, _, _) -> errorRef.set(type)).build();
+			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).build();
 			
 			try (SmtpClient client = new SmtpClient(config)) {
 				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect(HOST, server.port()));
-				assertEquals(NetworkErrorType.IO_ERROR, exception.errorType());
-				assertEquals(NetworkErrorType.IO_ERROR, errorRef.get());
+				assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
 			}
 		}
 	}
 	
 	@Test
-	void sendWriteLineIoErrorMapsToIoError() throws Exception {
-		AtomicReference<NetworkErrorType> errorRef = new AtomicReference<>();
+	void sendWriteLineAbortMapsToConnectionReset() throws Exception {
 		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> {
 			handshakeNone(session);
 			session.abort();
 		})) {
-			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).onError((_, type, _, _) -> errorRef.set(type)).build();
+			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).build();
 			
 			try (SmtpClient client = new SmtpClient(config)) {
 				client.connect(HOST, server.port());
 				Thread.sleep(200);
 				
 				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.send(simpleMessage()));
-				assertEquals(NetworkErrorType.IO_ERROR, exception.errorType());
-				assertEquals(NetworkErrorType.IO_ERROR, errorRef.get());
+				assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
 			}
 		}
 	}
 	
 	@Test
-	void sendWriteDataIoErrorMapsToIoError() throws Exception {
+	void sendWriteDataAbortMapsToConnectionReset() throws Exception {
 		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> {
 			handshakeNone(session);
 			session.readLine();
@@ -451,13 +449,105 @@ class SmtpClientTest {
 			try (SmtpClient client = new SmtpClient(config)) {
 				client.connect(HOST, server.port());
 				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.send(simpleMessage()));
-				assertEquals(NetworkErrorType.IO_ERROR, exception.errorType());
+				assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
 			}
 		}
 	}
 	
 	@Test
-	void connectPlaintextUsesPlainSocket() throws Exception {
+	void connectWithInvalidHostOrPort() throws Exception {
+		try (FakeSmtpServer server = new FakeSmtpServer(false, SmtpClientTest::handshakeNone)) {
+			try (SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()))) {
+				assertThrows(IllegalArgumentException.class, () -> client.connect("", server.port()));
+				assertThrows(IllegalArgumentException.class, () -> client.connect("a b", server.port()));
+				assertThrows(IllegalArgumentException.class, () -> client.connect(HOST, -1));
+				assertThrows(IllegalArgumentException.class, () -> client.connect(HOST, 65536));
+				assertFalse(client.isConnected());
+				
+				client.connect(HOST, server.port());
+				assertTrue(client.isConnected());
+			}
+		}
+	}
+	
+	@Test
+	void readReplyLineLongerThanBufferSize() throws Exception {
+		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> session.send("220 " + "x".repeat(36)))) {
+			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).bufferSize(16).build();
+			
+			try (SmtpClient client = new SmtpClient(config)) {
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect(HOST, server.port()));
+				assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void sendCommandLongerThanBufferSize() throws Exception {
+		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> {
+			handshakeNone(session);
+			if ("QUIT".equals(session.readLine())) {
+				session.send("221 Bye");
+			}
+		})) {
+			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).bufferSize(64).build();
+			MailMessage message = MailMessage.builder().from(Mailbox.parse("a".repeat(60) + "@example.com")).to(Mailbox.parse("bob@example.com"))
+				.subject("Hi").content(TextContent.of("Hello")).build();
+			
+			try (SmtpClient client = new SmtpClient(config)) {
+				client.connect(HOST, server.port());
+				
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.send(message));
+				assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
+				assertTrue(client.isConnected());
+			}
+		}
+	}
+	
+	@Test
+	void connectUnknownHost() {
+		try (SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()))) {
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect("does-not-exist.invalid", 587));
+			assertEquals(NetworkErrorType.HOST_UNREACHABLE, exception.errorType());
+		}
+	}
+	
+	@Test
+	@Tag("tls")
+	void connectStartTlsWithPipelinedDataFails() throws Exception {
+		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> {
+			session.send("220 smtp.test ready");
+			session.readLine();
+			session.send("250-smtp.test");
+			session.send("250 STARTTLS");
+			session.readLine();
+			session.sendRaw("220 Ready to start TLS\r\n250 pipelined\r\n");
+			session.readLine();
+		})) {
+			try (SmtpClient client = new SmtpClient(startTlsConfig(new SmtpAuth.None()))) {
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect(HOST, server.port()));
+				assertEquals(NetworkErrorType.PROTOCOL_ERROR, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	@Tag("network")
+	@Tag("tls")
+	void connectStartTlsHandshakeFails() throws Exception {
+		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> startTlsHandshake(session, "STARTTLS"))) {
+			SmtpClientConfig config = SmtpClientConfig.builder().security(SmtpSecurity.STARTTLS).auth(new SmtpAuth.None()).ehloHostname("client.test")
+				.tlsConfig(tlsBuilder().verifyHostname(false).build()).build();
+			
+			try (SmtpClient client = new SmtpClient(config)) {
+				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect(HOST, server.port()));
+				assertEquals(NetworkErrorType.HANDSHAKE_FAILED, exception.errorType());
+			}
+		}
+	}
+	
+	@Test
+	void connectPlaintextOpensTcpConnection() throws Exception {
 		try (FakeSmtpServer server = new FakeSmtpServer(false, SmtpClientTest::handshakeNone)) {
 			try (SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()))) {
 				client.connect(HOST, server.port());
@@ -469,7 +559,7 @@ class SmtpClientTest {
 	@Test
 	@Tag("network")
 	@Tag("tls")
-	void connectImplicitTlsUsesSslSocket() throws Exception {
+	void connectImplicitTlsOpensSslConnection() throws Exception {
 		try (FakeSmtpServer server = new FakeSmtpServer(true, SmtpClientTest::handshakeNone)) {
 			try (SmtpClient client = new SmtpClient(implicitTlsConfig(new SmtpAuth.None(), tlsBuilder().sslContext(sslContext).verifyHostname(false)))) {
 				client.connect(HOST, server.port());
@@ -516,7 +606,7 @@ class SmtpClientTest {
 	}
 	
 	@Test
-	void connectAppliesReadTimeoutWhenNonZero() throws Exception {
+	void connectAppliesReadTimeout() throws Exception {
 		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> {
 			session.send("220 smtp.test ready");
 			session.readLine();
@@ -533,14 +623,16 @@ class SmtpClientTest {
 	}
 	
 	@Test
-	void connectSkipsReadTimeoutWhenZero() throws Exception {
+	void connectWithoutReadTimeoutWaits() throws Exception {
 		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> {
 			session.send("220 smtp.test ready");
 			session.readLine();
 			Thread.sleep(400);
 			session.send("250 smtp.test");
 		})) {
-			try (SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()))) {
+			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).tlsConfig(tlsBuilder().noReadTimeout().build()).build();
+			
+			try (SmtpClient client = new SmtpClient(config)) {
 				assertDoesNotThrow(() -> client.connect(HOST, server.port()));
 				assertTrue(client.isConnected());
 			}
@@ -581,17 +673,6 @@ class SmtpClientTest {
 			try (SmtpClient client = new SmtpClient(config)) {
 				NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.connect(HOST, server.port()));
 				assertEquals(NetworkErrorType.HANDSHAKE_FAILED, exception.errorType());
-			}
-		}
-	}
-	
-	@Test
-	void connectRethrowsNetworkConnectionException() throws Exception {
-		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> session.send("554 Service unavailable"))) {
-			try (SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()))) {
-				// A bad greeting throws an SmtpException inside the try; the passthrough branch must not re-wrap it as CONNECTION_FAILED.
-				SmtpException exception = assertThrows(SmtpException.class, () -> client.connect(HOST, server.port()));
-				assertEquals(NetworkErrorType.PROTOCOL_ERROR, exception.errorType());
 			}
 		}
 	}
@@ -941,6 +1022,81 @@ class SmtpClientTest {
 	}
 	
 	@Test
+	void readReplyAcceptsBareLineFeed() throws Exception {
+		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> {
+			session.sendRaw("220 smtp.test ESMTP ready\n");
+			session.readLine();
+			session.sendRaw("250 smtp.test\n");
+		})) {
+			try (SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()))) {
+				client.connect(HOST, server.port());
+				assertTrue(client.isConnected());
+			}
+		}
+	}
+	
+	@Test
+	void sendBodyLongerThanBufferSize() throws Exception {
+		String text = "b".repeat(2000);
+		AtomicReference<String> body = new AtomicReference<>();
+		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> {
+			handshakeNone(session);
+			body.set(acceptTransaction(session, 1));
+		})) {
+			SmtpClientConfig config = plaintextBuilder(new SmtpAuth.None()).bufferSize(64).build();
+			
+			try (SmtpClient client = new SmtpClient(config)) {
+				client.connect(HOST, server.port());
+				assertDoesNotThrow(() -> client.send(messageWithBody(text)));
+				server.awaitScript();
+				
+				assertTrue(body.get().length() > 2000);
+				assertTrue(body.get().endsWith("\r\n.\r\n"));
+			}
+		}
+	}
+	
+	@Test
+	void isConnectedFalseAfterServerClosed() throws Exception {
+		try (FakeSmtpServer server = new FakeSmtpServer(false, SmtpClientTest::handshakeNone)) {
+			SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()));
+			client.connect(HOST, server.port());
+			server.awaitScript();
+			
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> client.send(simpleMessage()));
+			assertEquals(NetworkErrorType.CONNECTION_RESET, exception.errorType());
+			assertTrue(client.isConnected());
+			
+			client.close();
+			assertFalse(client.isConnected());
+		}
+	}
+	
+	@Test
+	void closeAfterFailedConnectClosesConnection() throws Exception {
+		AtomicBoolean endOfStream = new AtomicBoolean(false);
+		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> {
+			session.send("554 Service unavailable");
+			String line;
+			while ((line = session.readLine()) != null) {
+				if ("QUIT".equals(line)) {
+					session.send("221 Bye");
+				}
+			}
+			endOfStream.set(true);
+		})) {
+			SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()));
+			assertThrows(SmtpException.class, () -> client.connect(HOST, server.port()));
+			
+			client.close();
+			server.awaitScript();
+			
+			assertTrue(endOfStream.get());
+			assertFalse(client.isConnected());
+		}
+	}
+	
+	@Test
 	void connectPlaintextNoAuthSucceeds() throws Exception {
 		try (FakeSmtpServer server = new FakeSmtpServer(false, SmtpClientTest::handshakeNone)) {
 			try (SmtpClient client = new SmtpClient(plaintextConfig(new SmtpAuth.None()))) {
@@ -1211,6 +1367,42 @@ class SmtpClientTest {
 		}
 	}
 	
+	@Test
+	@Tag("network")
+	@Tag("tls")
+	void connectStartTlsWithHostnameVerification() throws Exception {
+		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> startTlsHandshake(session, "STARTTLS"))) {
+			SmtpClientConfig config = SmtpClientConfig.builder().security(SmtpSecurity.STARTTLS).auth(new SmtpAuth.None()).ehloHostname("client.test")
+				.tlsConfig(tlsBuilder().sslContext(sslContext).verifyHostname(true).build()).build();
+			
+			try (SmtpClient client = new SmtpClient(config)) {
+				client.connect("localhost", server.port());
+				assertTrue(client.isConnected());
+			}
+		}
+	}
+	
+	@Test
+	@Tag("network")
+	@Tag("tls")
+	void sendAfterStartTlsUsesUpgradedConnection() throws Exception {
+		AtomicReference<String> protocol = new AtomicReference<>();
+		try (FakeSmtpServer server = new FakeSmtpServer(false, session -> {
+			startTlsHandshake(session, "STARTTLS");
+			protocol.set(session.tlsProtocol());
+			acceptTransaction(session, 1);
+		})) {
+			try (SmtpClient client = new SmtpClient(startTlsConfig(new SmtpAuth.None()))) {
+				client.connect(HOST, server.port());
+				client.send(simpleMessage());
+				server.awaitScript();
+				
+				assertNotNull(protocol.get());
+				assertTrue(server.received().stream().anyMatch(line -> line.startsWith("MAIL FROM")));
+			}
+		}
+	}
+	
 	//region Loopback SMTP server harness
 	@FunctionalInterface
 	private interface ServerScript {
@@ -1269,6 +1461,11 @@ class SmtpClientTest {
 		
 		private void send(String line) throws IOException {
 			this.out.write((line + "\r\n").getBytes(StandardCharsets.ISO_8859_1));
+			this.out.flush();
+		}
+		
+		private void sendRaw(String text) throws IOException {
+			this.out.write(text.getBytes(StandardCharsets.ISO_8859_1));
 			this.out.flush();
 		}
 		

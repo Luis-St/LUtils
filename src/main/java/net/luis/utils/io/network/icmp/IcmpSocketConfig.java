@@ -18,16 +18,14 @@
 
 package net.luis.utils.io.network.icmp;
 
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.Objects;
 
 /**
  * Configuration options for ICMP sockets.<br>
- * This record provides settings for the socket type, timeouts, buffer size, time to live and error handling.<br>
+ * This record provides settings for the socket type, timeouts, buffer size and time to live.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -52,14 +50,12 @@ import java.util.Objects;
  * @param receiveTimeout Maximum time to wait for receive operations (Duration.ZERO for infinite)
  * @param bufferSize Size of the receive buffer in bytes
  * @param timeToLive Time to live or hop limit of outgoing packets (0 for the system default)
- * @param onError Handler called when an error occurs
  */
 public record IcmpSocketConfig(
 	@NonNull IcmpSocketType socketType,
 	@NonNull Duration receiveTimeout,
 	int bufferSize,
-	int timeToLive,
-	@Nullable ErrorEventHandler onError
+	int timeToLive
 ) {
 	
 	/**
@@ -69,10 +65,9 @@ public record IcmpSocketConfig(
 	 *     <li>{@link #receiveTimeout} = {@code Duration.ZERO} (infinite)</li>
 	 *     <li>{@link #bufferSize} = {@code 65535} (max IP packet size)</li>
 	 *     <li>{@link #timeToLive} = {@code 0} (system default)</li>
-	 *     <li>{@link #onError} = {@code null}</li>
 	 * </ul>
 	 */
-	public static final IcmpSocketConfig DEFAULT = new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 65535, 0, null);
+	public static final IcmpSocketConfig DEFAULT = new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 65535, 0);
 	
 	/**
 	 * Constructs a new ICMP socket configuration.<br>
@@ -81,7 +76,6 @@ public record IcmpSocketConfig(
 	 * @param receiveTimeout Maximum time to wait for receive operations
 	 * @param bufferSize Size of the receive buffer in bytes
 	 * @param timeToLive Time to live or hop limit of outgoing packets
-	 * @param onError Handler called when an error occurs
 	 * @throws NullPointerException If the socket type or receive timeout is null
 	 * @throws IllegalArgumentException If the receive timeout is negative, the buffer size is less than the ICMP header size or the time to live is not between 0 and 255
 	 */

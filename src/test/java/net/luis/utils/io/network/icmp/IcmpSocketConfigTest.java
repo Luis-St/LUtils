@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.network.icmp;
 
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -32,73 +31,64 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class IcmpSocketConfigTest {
 	
-	private static final ErrorEventHandler HANDLER = (connection, type, message, cause) -> {};
-	
 	@Test
 	void constructWithValidValues() {
-		IcmpSocketConfig config = new IcmpSocketConfig(IcmpSocketType.RAW, Duration.ofSeconds(1), 1500, 64, HANDLER);
+		IcmpSocketConfig config = new IcmpSocketConfig(IcmpSocketType.RAW, Duration.ofSeconds(1), 1500, 64);
 		assertEquals(IcmpSocketType.RAW, config.socketType());
 		assertEquals(Duration.ofSeconds(1), config.receiveTimeout());
 		assertEquals(1500, config.bufferSize());
 		assertEquals(64, config.timeToLive());
-		assertSame(HANDLER, config.onError());
-	}
-	
-	@Test
-	void constructWithNullErrorHandler() {
-		IcmpSocketConfig config = assertDoesNotThrow(() -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 1500, 0, null));
-		assertNull(config.onError());
 	}
 	
 	@Test
 	void constructWithNullSocketType() {
-		assertThrows(NullPointerException.class, () -> new IcmpSocketConfig(null, Duration.ZERO, 1500, 0, null));
+		assertThrows(NullPointerException.class, () -> new IcmpSocketConfig(null, Duration.ZERO, 1500, 0));
 	}
 	
 	@Test
 	void constructWithNullReceiveTimeout() {
-		assertThrows(NullPointerException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, null, 1500, 0, null));
+		assertThrows(NullPointerException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, null, 1500, 0));
 	}
 	
 	@Test
 	void constructWithNegativeReceiveTimeout() {
-		assertThrows(IllegalArgumentException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofMillis(-1), 1500, 0, null));
+		assertThrows(IllegalArgumentException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofMillis(-1), 1500, 0));
 	}
 	
 	@Test
 	void constructWithBufferSizeBelowHeaderSize() {
-		assertThrows(IllegalArgumentException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, IcmpPacket.HEADER_SIZE - 1, 0, null));
+		assertThrows(IllegalArgumentException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, IcmpPacket.HEADER_SIZE - 1, 0));
 	}
 	
 	@Test
 	void constructWithNegativeTimeToLive() {
-		assertThrows(IllegalArgumentException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 1500, -1, null));
+		assertThrows(IllegalArgumentException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 1500, -1));
 	}
 	
 	@Test
 	void constructWithTimeToLiveAboveMax() {
-		assertThrows(IllegalArgumentException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 1500, 256, null));
+		assertThrows(IllegalArgumentException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 1500, 256));
 	}
 	
 	@Test
 	void constructWithZeroReceiveTimeout() {
-		IcmpSocketConfig config = assertDoesNotThrow(() -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 1500, 0, null));
+		IcmpSocketConfig config = assertDoesNotThrow(() -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 1500, 0));
 		assertTrue(config.receiveTimeout().isZero());
 	}
 	
 	@Test
 	void constructWithBufferSizeAtHeaderSize() {
-		assertEquals(8, new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 8, 0, null).bufferSize());
+		assertEquals(8, new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 8, 0).bufferSize());
 	}
 	
 	@Test
 	void constructWithMinTimeToLiveBoundary() {
-		assertEquals(0, new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 1500, 0, null).timeToLive());
+		assertEquals(0, new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 1500, 0).timeToLive());
 	}
 	
 	@Test
 	void constructWithMaxTimeToLiveBoundary() {
-		assertEquals(255, new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 1500, 255, null).timeToLive());
+		assertEquals(255, new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ZERO, 1500, 255).timeToLive());
 	}
 	
 	@Test
@@ -108,7 +98,6 @@ class IcmpSocketConfigTest {
 		assertEquals(Duration.ZERO, config.receiveTimeout());
 		assertEquals(65535, config.bufferSize());
 		assertEquals(0, config.timeToLive());
-		assertNull(config.onError());
 	}
 	
 	@Test
@@ -125,26 +114,25 @@ class IcmpSocketConfigTest {
 	
 	@Test
 	void constructWithLargeValues() {
-		IcmpSocketConfig config = assertDoesNotThrow(() -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofDays(1), Integer.MAX_VALUE, 255, null));
+		IcmpSocketConfig config = assertDoesNotThrow(() -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofDays(1), Integer.MAX_VALUE, 255));
 		assertEquals(IcmpSocketType.DATAGRAM, config.socketType());
 		assertEquals(Duration.ofDays(1), config.receiveTimeout());
 		assertEquals(Integer.MAX_VALUE, config.bufferSize());
 		assertEquals(255, config.timeToLive());
-		assertNull(config.onError());
 	}
 	
 	@Test
 	void validationOrderReportsReceiveTimeoutFirst() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofMillis(-1), 0, -1, null));
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofMillis(-1), 0, -1));
 		assertTrue(e.getMessage().startsWith("Receive timeout"));
 	}
 	
 	@Test
 	void equalConfigsWithSameValues() {
-		IcmpSocketConfig first = new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofSeconds(1), 1500, 64, HANDLER);
-		IcmpSocketConfig second = new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofSeconds(1), 1500, 64, HANDLER);
+		IcmpSocketConfig first = new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofSeconds(1), 1500, 64);
+		IcmpSocketConfig second = new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofSeconds(1), 1500, 64);
 		assertEquals(first, second);
 		assertEquals(first.hashCode(), second.hashCode());
-		assertNotEquals(first, new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofSeconds(1), 1500, 32, HANDLER));
+		assertNotEquals(first, new IcmpSocketConfig(IcmpSocketType.DATAGRAM, Duration.ofSeconds(1), 1500, 32));
 	}
 }

@@ -456,7 +456,7 @@ public final class IcmpPing {
 	 * @throws NetworkConnectionException If the socket cannot be opened
 	 */
 	private @NonNull IcmpSocket open(@NonNull Duration timeout) throws NetworkConnectionException {
-		IcmpSocketConfig config = new IcmpSocketConfig(this.socketConfig.socketType(), timeout, this.socketConfig.bufferSize(), this.socketConfig.timeToLive(), this.socketConfig.onError());
+		IcmpSocketConfig config = new IcmpSocketConfig(this.socketConfig.socketType(), timeout, this.socketConfig.bufferSize(), this.socketConfig.timeToLive());
 		return new IcmpSocket(IcmpVersion.of(this.address), config);
 	}
 }

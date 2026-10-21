@@ -133,14 +133,26 @@ public final class SocketStreams {
 	 * Checks whether unread input is pending, either in the buffer of the input stream or in the socket itself.<br>
 	 * This is used before the connection is handed to another owner, such as a TLS upgrade, because the new owner
 	 * reads from the raw socket and would neither see the buffered bytes nor expect the pending ones.<br>
+	 * <p>
+	 *     The socket is checked even if the input stream has not been accessed yet, so bytes that already arrived are reported as well.<br>
+	 *     A closed or unconnected socket has no pending input, because nothing can be read from it.
+	 * </p>
 	 *
 	 * @return True if input is pending
+	 * @throws NetworkConnectionException If the socket was reset or the pending input cannot be determined
 	 */
-	public synchronized boolean hasPendingInput() {
-		try {
-			return this.input != null && this.input.available() > 0;
-		} catch (IOException _) {
+	public synchronized boolean hasPendingInput() throws NetworkConnectionException {
+		if (this.socket.isClosed() || !this.socket.isConnected()) {
 			return false;
+		}
+		
+		InputStream input = this.input();
+		try {
+			return input.available() > 0;
+		} catch (SocketException e) {
+			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET);
+		} catch (IOException e) {
+			throw new NetworkConnectionException("Failed to determine the pending input", e, NetworkErrorType.IO_ERROR);
 		}
 	}
 }

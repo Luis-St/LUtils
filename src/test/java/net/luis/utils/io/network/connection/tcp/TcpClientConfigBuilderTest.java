@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
+import net.luis.utils.io.network.connection.Framing;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -32,326 +33,145 @@ import static org.junit.jupiter.api.Assertions.*;
 class TcpClientConfigBuilderTest {
 	
 	@Test
-	void builderDefaultValues() {
-		TcpClientConfig config = TcpClientConfig.builder().build();
+	void builderStartsWithDefaults() {
+		assertEquals(TcpClientConfig.DEFAULT, TcpClientConfig.builder().build());
+	}
+	
+	@Test
+	void connectTimeoutWithNull() {
+		assertThrows(NullPointerException.class, () -> TcpClientConfig.builder().connectTimeout(null));
+	}
+	
+	@Test
+	void readTimeoutWithNull() {
+		assertThrows(NullPointerException.class, () -> TcpClientConfig.builder().readTimeout(null));
+		assertNull(TcpClientConfig.builder().readTimeout(Duration.ofSeconds(1)).noReadTimeout().build().readTimeout());
+	}
+	
+	@Test
+	void framingWithNull() {
+		assertThrows(NullPointerException.class, () -> TcpClientConfig.builder().framing(null));
+	}
+	
+	@Test
+	void buildWithInvalidMaxMessageSize() {
+		TcpClientConfigBuilder builder = assertDoesNotThrow(() -> TcpClientConfig.builder().maxMessageSize(0));
 		
-		assertEquals(Duration.ofSeconds(30), config.connectTimeout());
-		assertEquals(Duration.ZERO, config.readTimeout());
-		assertEquals(Duration.ZERO, config.writeTimeout());
-		assertEquals(8192, config.bufferSize());
-		assertTrue(config.framing());
-		assertTrue(config.tcpNoDelay());
-		assertTrue(config.keepAlive());
-		assertNull(config.onConnect());
-		assertNull(config.onDisconnect());
-		assertNull(config.onError());
+		assertThrows(IllegalArgumentException.class, builder::build);
 	}
 	
 	@Test
-	void connectTimeoutWithValidDuration() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.connectTimeout(Duration.ofSeconds(10))
-			.build();
-		assertEquals(Duration.ofSeconds(10), config.connectTimeout());
+	void buildWithZeroConnectTimeout() {
+		TcpClientConfigBuilder builder = assertDoesNotThrow(() -> TcpClientConfig.builder().connectTimeout(Duration.ZERO));
+		
+		assertThrows(IllegalArgumentException.class, builder::build);
 	}
 	
 	@Test
-	void connectTimeoutWithNullThrows() {
+	void buildWithNegativeReadTimeout() {
+		TcpClientConfigBuilder builder = assertDoesNotThrow(() -> TcpClientConfig.builder().readTimeout(Duration.ofSeconds(-1)));
+		
+		assertThrows(IllegalArgumentException.class, builder::build);
+	}
+	
+	@Test
+	void noReadTimeoutClearsTimeout() {
+		TcpClientConfig config = TcpClientConfig.builder().readTimeout(Duration.ofSeconds(5)).noReadTimeout().build();
+		
+		assertNull(config.readTimeout());
+	}
+	
+	@Test
+	void readTimeoutAfterNoReadTimeout() {
+		TcpClientConfig config = TcpClientConfig.builder().noReadTimeout().readTimeout(Duration.ofSeconds(3)).build();
+		
+		assertEquals(Duration.ofSeconds(3), config.readTimeout());
+	}
+	
+	@Test
+	void connectTimeoutSetsValue() {
 		TcpClientConfigBuilder builder = TcpClientConfig.builder();
-		assertThrows(NullPointerException.class, () -> builder.connectTimeout(null));
+		
+		assertSame(builder, builder.connectTimeout(Duration.ofSeconds(2)));
+		assertEquals(Duration.ofSeconds(2), builder.build().connectTimeout());
 	}
 	
 	@Test
-	void readTimeoutWithValidDuration() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.readTimeout(Duration.ofSeconds(5))
-			.build();
-		assertEquals(Duration.ofSeconds(5), config.readTimeout());
-	}
-	
-	@Test
-	void readTimeoutWithNullThrows() {
+	void readTimeoutSetsValue() {
 		TcpClientConfigBuilder builder = TcpClientConfig.builder();
-		assertThrows(NullPointerException.class, () -> builder.readTimeout(null));
+		
+		assertSame(builder, builder.readTimeout(Duration.ofSeconds(7)));
+		assertEquals(Duration.ofSeconds(7), builder.build().readTimeout());
 	}
 	
 	@Test
-	void readTimeoutWithZero() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.readTimeout(Duration.ZERO)
-			.build();
-		assertEquals(Duration.ZERO, config.readTimeout());
-	}
-	
-	@Test
-	void writeTimeoutWithValidDuration() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.writeTimeout(Duration.ofSeconds(5))
-			.build();
-		assertEquals(Duration.ofSeconds(5), config.writeTimeout());
-	}
-	
-	@Test
-	void writeTimeoutWithNullThrows() {
+	void maxMessageSizeSetsValue() {
 		TcpClientConfigBuilder builder = TcpClientConfig.builder();
-		assertThrows(NullPointerException.class, () -> builder.writeTimeout(null));
+		
+		assertSame(builder, builder.maxMessageSize(256));
+		assertEquals(256, builder.build().maxMessageSize());
 	}
 	
 	@Test
-	void writeTimeoutWithZero() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.writeTimeout(Duration.ZERO)
-			.build();
-		assertEquals(Duration.ZERO, config.writeTimeout());
-	}
-	
-	@Test
-	void bufferSizeWithValidValue() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.bufferSize(4096)
-			.build();
-		assertEquals(4096, config.bufferSize());
-	}
-	
-	@Test
-	void framingTrue() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.framing(true)
-			.build();
-		assertTrue(config.framing());
-	}
-	
-	@Test
-	void framingFalse() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.framing(false)
-			.build();
-		assertFalse(config.framing());
-	}
-	
-	@Test
-	void framingDefaultsToEnabled() {
-		TcpClientConfig config = TcpClientConfig.builder().build();
-		assertTrue(config.framing());
-	}
-	
-	@Test
-	void framingReturnsSameBuilder() {
+	void framingSetsValue() {
 		TcpClientConfigBuilder builder = TcpClientConfig.builder();
-		assertSame(builder, builder.framing(false));
-	}
-	
-	@Test
-	void framingSetMultipleTimes() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.framing(false)
-			.framing(true)
-			.framing(false)
-			.build();
-		assertFalse(config.framing());
-	}
-	
-	@Test
-	void framingSurvivesBuilderReuse() {
-		TcpClientConfigBuilder builder = TcpClientConfig.builder()
-			.framing(false);
 		
-		TcpClientConfig first = builder.build();
-		assertFalse(first.framing());
-		
-		builder.framing(true);
-		TcpClientConfig second = builder.build();
-		assertTrue(second.framing());
-		
-		assertFalse(first.framing());
+		assertSame(builder, builder.framing(Framing.lines()));
+		assertEquals(Framing.lines(), builder.build().framing());
 	}
 	
 	@Test
-	void framingCombinedWithOtherOptions() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.bufferSize(4096)
-			.framing(false)
-			.tcpNoDelay(true)
-			.keepAlive(false)
-			.build();
+	void tcpNoDelaySetsValue() {
+		TcpClientConfigBuilder builder = TcpClientConfig.builder();
 		
-		assertEquals(4096, config.bufferSize());
-		assertFalse(config.framing());
-		assertTrue(config.tcpNoDelay());
-		assertFalse(config.keepAlive());
+		assertSame(builder, builder.tcpNoDelay(false));
+		assertFalse(builder.build().tcpNoDelay());
 	}
 	
 	@Test
-	void tcpNoDelayTrue() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.tcpNoDelay(true)
-			.build();
-		assertTrue(config.tcpNoDelay());
+	void keepAliveSetsValue() {
+		TcpClientConfigBuilder builder = TcpClientConfig.builder();
+		
+		assertSame(builder, builder.keepAlive(false));
+		assertFalse(builder.build().keepAlive());
 	}
 	
 	@Test
-	void tcpNoDelayFalse() {
+	void buildWithAllValues() {
 		TcpClientConfig config = TcpClientConfig.builder()
+			.connectTimeout(Duration.ofSeconds(1))
+			.readTimeout(Duration.ofSeconds(2))
+			.maxMessageSize(100)
+			.framing(Framing.none())
 			.tcpNoDelay(false)
-			.build();
-		assertFalse(config.tcpNoDelay());
-	}
-	
-	@Test
-	void keepAliveTrue() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.keepAlive(true)
-			.build();
-		assertTrue(config.keepAlive());
-	}
-	
-	@Test
-	void keepAliveFalse() {
-		TcpClientConfig config = TcpClientConfig.builder()
 			.keepAlive(false)
 			.build();
-		assertFalse(config.keepAlive());
+		
+		assertEquals(new TcpClientConfig(Duration.ofSeconds(1), Duration.ofSeconds(2), 100, Framing.none(), false, false), config);
 	}
 	
 	@Test
-	void onConnectWithHandler() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.onConnect((connection, local, remote, timestamp) -> {})
-			.build();
-		assertNotNull(config.onConnect());
-	}
-	
-	@Test
-	void onConnectWithNull() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.onConnect(null)
-			.build();
-		assertNull(config.onConnect());
-	}
-	
-	@Test
-	void onDisconnectWithHandler() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.onDisconnect((connection, local, remote, timestamp) -> {})
-			.build();
-		assertNotNull(config.onDisconnect());
-	}
-	
-	@Test
-	void onDisconnectWithNull() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.onDisconnect(null)
-			.build();
-		assertNull(config.onDisconnect());
-	}
-	
-	@Test
-	void onErrorWithHandler() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.onError((connection, type, msg, cause) -> {})
-			.build();
-		assertNotNull(config.onError());
-	}
-	
-	@Test
-	void onErrorWithNull() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.onError(null)
-			.build();
-		assertNull(config.onError());
+	void builderReuseAfterBuild() {
+		TcpClientConfigBuilder builder = TcpClientConfig.builder().maxMessageSize(100);
+		TcpClientConfig first = builder.build();
+		
+		builder.maxMessageSize(200);
+		TcpClientConfig second = builder.build();
+		
+		assertEquals(100, first.maxMessageSize());
+		assertEquals(200, second.maxMessageSize());
 	}
 	
 	@Test
 	void methodChainingConsistency() {
 		TcpClientConfigBuilder builder = TcpClientConfig.builder();
-		assertSame(builder, builder.connectTimeout(Duration.ofSeconds(10)));
-		assertSame(builder, builder.readTimeout(Duration.ofSeconds(5)));
-		assertSame(builder, builder.writeTimeout(Duration.ofSeconds(5)));
-		assertSame(builder, builder.bufferSize(4096));
-		assertSame(builder, builder.framing(false));
+		
+		assertSame(builder, builder.connectTimeout(Duration.ofSeconds(1)));
+		assertSame(builder, builder.readTimeout(Duration.ofSeconds(1)));
+		assertSame(builder, builder.noReadTimeout());
+		assertSame(builder, builder.maxMessageSize(10));
+		assertSame(builder, builder.framing(Framing.lines()));
 		assertSame(builder, builder.tcpNoDelay(true));
 		assertSame(builder, builder.keepAlive(true));
-		assertSame(builder, builder.onConnect((connection, local, remote, timestamp) -> {}));
-		assertSame(builder, builder.onDisconnect((connection, local, remote, timestamp) -> {}));
-		assertSame(builder, builder.onError((connection, type, msg, cause) -> {}));
-	}
-	
-	@Test
-	void builderSetsAllValues() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.connectTimeout(Duration.ofSeconds(15))
-			.readTimeout(Duration.ofSeconds(10))
-			.writeTimeout(Duration.ofSeconds(5))
-			.bufferSize(16384)
-			.framing(false)
-			.tcpNoDelay(false)
-			.keepAlive(false)
-			.onConnect((connection, local, remote, timestamp) -> {})
-			.onDisconnect((connection, local, remote, timestamp) -> {})
-			.onError((connection, type, msg, cause) -> {})
-			.build();
-		
-		assertEquals(Duration.ofSeconds(15), config.connectTimeout());
-		assertEquals(Duration.ofSeconds(10), config.readTimeout());
-		assertEquals(Duration.ofSeconds(5), config.writeTimeout());
-		assertEquals(16384, config.bufferSize());
-		assertFalse(config.framing());
-		assertFalse(config.tcpNoDelay());
-		assertFalse(config.keepAlive());
-		assertNotNull(config.onConnect());
-		assertNotNull(config.onDisconnect());
-		assertNotNull(config.onError());
-	}
-	
-	@Test
-	void builderReuseAfterBuild() {
-		TcpClientConfigBuilder builder = TcpClientConfig.builder()
-			.connectTimeout(Duration.ofSeconds(10));
-		
-		TcpClientConfig first = builder.build();
-		assertEquals(Duration.ofSeconds(10), first.connectTimeout());
-		
-		builder.connectTimeout(Duration.ofSeconds(20));
-		TcpClientConfig second = builder.build();
-		assertEquals(Duration.ofSeconds(20), second.connectTimeout());
-		
-		assertEquals(Duration.ofSeconds(10), first.connectTimeout());
-	}
-	
-	@Test
-	void builderMultipleBuilds() {
-		TcpClientConfigBuilder builder = TcpClientConfig.builder();
-		
-		TcpClientConfig config1 = builder.build();
-		TcpClientConfig config2 = builder.build();
-		
-		assertEquals(config1, config2);
-		assertNotSame(config1, config2);
-	}
-	
-	@Test
-	void builderOverwriteValues() {
-		TcpClientConfig config = TcpClientConfig.builder()
-			.connectTimeout(Duration.ofSeconds(10))
-			.connectTimeout(Duration.ofSeconds(20))
-			.build();
-		
-		assertEquals(Duration.ofSeconds(20), config.connectTimeout());
-	}
-	
-	@Test
-	void buildMatchesDefaultConstant() {
-		TcpClientConfig fromBuilder = TcpClientConfig.builder().build();
-		TcpClientConfig defaultConfig = TcpClientConfig.DEFAULT;
-		
-		assertEquals(defaultConfig.connectTimeout(), fromBuilder.connectTimeout());
-		assertEquals(defaultConfig.readTimeout(), fromBuilder.readTimeout());
-		assertEquals(defaultConfig.writeTimeout(), fromBuilder.writeTimeout());
-		assertEquals(defaultConfig.bufferSize(), fromBuilder.bufferSize());
-		assertEquals(defaultConfig.tcpNoDelay(), fromBuilder.tcpNoDelay());
-		assertEquals(defaultConfig.keepAlive(), fromBuilder.keepAlive());
-		assertEquals(defaultConfig.onConnect(), fromBuilder.onConnect());
-		assertEquals(defaultConfig.onDisconnect(), fromBuilder.onDisconnect());
-		assertEquals(defaultConfig.onError(), fromBuilder.onError());
 	}
 }

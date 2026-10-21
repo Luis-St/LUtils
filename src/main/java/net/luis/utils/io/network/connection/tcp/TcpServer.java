@@ -19,64 +19,29 @@
 package net.luis.utils.io.network.connection.tcp;
 
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.connection.NetworkServer;
-import net.luis.utils.io.network.connection.NetworkUtils;
-import net.luis.utils.io.network.connection.event.ConnectionHandler;
+import net.luis.utils.io.network.connection.ConnectionHandler;
+import net.luis.utils.io.network.connection.StreamServer;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
-import net.luis.utils.io.network.connection.exception.NetworkErrorType;
-import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.jspecify.annotations.NonNull;
 
-import java.io.IOException;
-import java.net.*;
-import java.time.Instant;
+import java.net.Socket;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * A blocking TCP server that accepts client connections.<br>
- * This class provides a simple server that dispatches incoming connections to a message handler.<br>
+ * A server that accepts plain TCP connections.<br>
  * <p>
- *     Every accepted client is handled on its own thread, taken from the configured {@link ClientExecutorStrategy}.<br>
- *     By default the server drives the read loop itself and reports each received message to the configured message handler.<br>
- *     A {@link ConnectionHandler} can be configured instead, which is called once per client and owns the connection and its
- *     streams for the whole session, while the server keeps managing the thread, the connection registry, and the shutdown.
+ *     Every accepted connection is handed to the {@link ConnectionHandler} of the server on its own thread.<br>
+ *     The handler can upgrade a connection to TLS with {@link TcpConnection#upgrade(net.luis.utils.io.network.connection.ssl.SslServerConfig)},
+ *     which is how a server implements {@code STARTTLS}.
  * </p>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
  * IpEndpoint bindAddress = new IpEndpoint(Ipv4Address.ANY, 8080);
- * TcpServerConfig config = TcpServerConfig.builder()
- *     .executorStrategy(ClientExecutorStrategy.virtualThreads())
- *     .onClientConnect(event -> System.out.println("Client connected: " + event.remoteEndpoint()))
- *     .onMessage((server, connection, data) -> {
- *         System.out.println("Received: " + new String(data));
- *         connection.send("Echo: ".getBytes());
- *         connection.send(data);
- *     })
- *     .build();
- *
- * try (TcpServer server = new TcpServer(bindAddress, config)) {
- *     server.start();
- *     // Server runs until stopped or closed
+ * try (TcpServer server = TcpServer.startOn(bindAddress, ConnectionHandler.perMessage((srv, connection, data) -> connection.send(data)))) {
+ *     // Server runs until it is stopped or closed
  * }
- * }</pre>
- * <p>
- *     Example usage with a connection handler that reads the stream itself:
- * </p>
- * <pre>{@code
- * TcpServerConfig config = TcpServerConfig.builder()
- *     .framing(false)
- *     .onConnection((server, connection) -> {
- *         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
- *         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
- *         // Drive the protocol conversation on wrappers the handler owns
- *     })
- *     .build();
  * }</pre>
  *
  * @see TcpServerConfig
@@ -85,316 +50,84 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Luis-St
  */
-public final class TcpServer implements NetworkServer {
+public final class TcpServer extends StreamServer<TcpServer, TcpConnection> {
 	
 	/**
-	 * The endpoint to bind the server to.<br>
+	 * The configuration of this server.<br>
 	 */
-	private final IpEndpoint bindEndpoint;
-	/**
-	 * The configuration for this server.<br>
-	 */
-	private final @NonNull TcpServerConfig config;
-	/**
-	 * Whether the server is currently running.<br>
-	 */
-	private final AtomicBoolean running = new AtomicBoolean(false);
-	/**
-	 * The set of currently active client connections.<br>
-	 */
-	private final Set<TcpConnection> connections = ConcurrentHashMap.newKeySet();
-	/**
-	 * The underlying server socket for accepting connections.<br>
-	 */
-	private volatile ServerSocket serverSocket;
-	/**
-	 * The executor service for handling client connections.<br>
-	 */
-	private volatile ExecutorService executor;
-	/**
-	 * The thread that accepts incoming connections.<br>
-	 */
-	private volatile Thread acceptThread;
+	private final TcpServerConfig config;
 	
 	/**
-	 * Constructs a new TCP server with the specified bind endpoint and default configuration.<br>
+	 * Constructs a new TCP server with the default configuration.<br>
+	 * The server is not started.<br>
 	 *
-	 * @param bindEndpoint The endpoint to bind to
-	 * @throws NullPointerException If bind endpoint is null
+	 * @param bindEndpoint The endpoint the server binds to
+	 * @param handler The handler every accepted connection is handed to
+	 * @throws NullPointerException If the bind endpoint or the handler is null
 	 */
-	public TcpServer(@NonNull IpEndpoint bindEndpoint) {
-		this(bindEndpoint, TcpServerConfig.DEFAULT);
+	public TcpServer(@NonNull IpEndpoint bindEndpoint, @NonNull ConnectionHandler<TcpServer, TcpConnection> handler) {
+		this(bindEndpoint, TcpServerConfig.DEFAULT, handler);
 	}
 	
 	/**
-	 * Constructs a new TCP server with the specified bind endpoint and configuration.<br>
+	 * Constructs a new TCP server with the given configuration.<br>
+	 * The server is not started.<br>
 	 *
-	 * @param bindEndpoint The endpoint to bind to
-	 * @param config The server configuration
-	 * @throws NullPointerException If bind endpoint or config is null
+	 * @param bindEndpoint The endpoint the server binds to
+	 * @param config The configuration of the server
+	 * @param handler The handler every accepted connection is handed to
+	 * @throws NullPointerException If the bind endpoint, the configuration or the handler is null
 	 */
-	public TcpServer(@NonNull IpEndpoint bindEndpoint, @NonNull TcpServerConfig config) {
-		this.bindEndpoint = Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
-		this.config = Objects.requireNonNull(config, "Config must not be null");
+	public TcpServer(@NonNull IpEndpoint bindEndpoint, @NonNull TcpServerConfig config, @NonNull ConnectionHandler<TcpServer, TcpConnection> handler) {
+		super(bindEndpoint, config, handler);
+		this.config = config;
 	}
 	
 	/**
-	 * Creates a new TCP server with default configuration and starts it on the specified bind endpoint.<br>
+	 * Creates a new TCP server with the default configuration and starts it.<br>
 	 *
-	 * @param bindEndpoint The endpoint to bind to
+	 * @param bindEndpoint The endpoint the server binds to
+	 * @param handler The handler every accepted connection is handed to
 	 * @return The started server
-	 * @throws NullPointerException If bind endpoint is null
+	 * @throws NullPointerException If the bind endpoint or the handler is null
+	 * @throws NetworkConnectionException If the server cannot be bound or started
 	 */
-	public static @NonNull TcpServer startOn(@NonNull IpEndpoint bindEndpoint) {
-		return startOn(bindEndpoint, TcpServerConfig.DEFAULT);
+	public static @NonNull TcpServer startOn(@NonNull IpEndpoint bindEndpoint, @NonNull ConnectionHandler<TcpServer, TcpConnection> handler) throws NetworkConnectionException {
+		return startOn(bindEndpoint, TcpServerConfig.DEFAULT, handler);
 	}
 	
 	/**
-	 * Creates a new TCP server with the specified configuration and starts it on the specified bind endpoint.<br>
-	 * Startup failures are reported to the configured error handler, use {@link #isRunning()} to check whether the server came up.<br>
+	 * Creates a new TCP server with the given configuration and starts it.<br>
 	 *
-	 * @param bindEndpoint The endpoint to bind to
-	 * @param config The server configuration
+	 * @param bindEndpoint The endpoint the server binds to
+	 * @param config The configuration of the server
+	 * @param handler The handler every accepted connection is handed to
 	 * @return The started server
-	 * @throws NullPointerException If bind endpoint or config is null
+	 * @throws NullPointerException If the bind endpoint, the configuration or the handler is null
+	 * @throws NetworkConnectionException If the server cannot be bound or started
 	 */
-	public static @NonNull TcpServer startOn(@NonNull IpEndpoint bindEndpoint, @NonNull TcpServerConfig config) {
-		Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
-		Objects.requireNonNull(config, "Config must not be null");
-		
-		TcpServer server = new TcpServer(bindEndpoint, config);
-		try {
-			server.start();
-			return server;
-		} catch (Throwable e) {
-			server.close();
-			throw e;
-		}
+	public static @NonNull TcpServer startOn(@NonNull IpEndpoint bindEndpoint, @NonNull TcpServerConfig config, @NonNull ConnectionHandler<TcpServer, TcpConnection> handler) throws NetworkConnectionException {
+		TcpServer server = new TcpServer(bindEndpoint, config, handler);
+		server.start();
+		return server;
+	}
+	
+	/**
+	 * Returns the configuration of this server.<br>
+	 * @return The configuration
+	 */
+	public @NonNull TcpServerConfig config() {
+		return this.config;
 	}
 	
 	@Override
-	public boolean isRunning() {
-		return this.running.get() && this.serverSocket != null && !this.serverSocket.isClosed();
+	protected @NonNull TcpServer self() {
+		return this;
 	}
 	
 	@Override
-	public @NonNull IpEndpoint boundEndpoint() {
-		if (this.serverSocket != null && this.serverSocket.isBound()) {
-			return IpEndpoint.from((InetSocketAddress) this.serverSocket.getLocalSocketAddress());
-		}
-		return this.bindEndpoint;
+	protected @NonNull TcpConnection open(@NonNull Socket socket) throws NetworkConnectionException {
+		Objects.requireNonNull(socket, "Socket must not be null");
+		return new TcpConnection(socket, this.config.framing(), this.config.maxMessageSize(), this.config.clientReadTimeout());
 	}
-	
-	@Override
-	public void start() {
-		if (this.running.getAndSet(true)) {
-			return;
-		}
-		
-		try {
-			this.serverSocket = new ServerSocket();
-			this.serverSocket.setReuseAddress(true);
-			this.serverSocket.bind(this.bindEndpoint.toInetSocketAddress(), this.config.backlog());
-			
-			this.executor = this.config.executorStrategy().createExecutor();
-			
-			this.acceptThread = new Thread(this::acceptLoop, "TcpServer-Accept");
-			this.acceptThread.setDaemon(true);
-			this.acceptThread.start();
-		} catch (BindException e) {
-			this.running.set(false);
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.ADDRESS_IN_USE, "Address already in use: " + this.bindEndpoint, e);
-		} catch (IOException e) {
-			this.running.set(false);
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to start server on " + this.bindEndpoint, e);
-		}
-	}
-	
-	@Override
-	public void stop() {
-		if (!this.running.getAndSet(false)) {
-			return;
-		}
-		
-		for (TcpConnection connection : this.connections) {
-			connection.close();
-		}
-		this.connections.clear();
-		
-		if (this.serverSocket != null && !this.serverSocket.isClosed()) {
-			try {
-				this.serverSocket.close();
-			} catch (IOException _) {}
-		}
-		
-		if (this.acceptThread != null) {
-			this.acceptThread.interrupt();
-		}
-		
-		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
-	}
-	
-	/**
-	 * Returns the number of currently connected clients.<br>
-	 * Connections that were upgraded to TLS are not counted, because they are no longer plain TCP clients.<br>
-	 *
-	 * @return The number of active connections
-	 */
-	public int getClientCount() {
-		return (int) this.connections.stream().filter(connection -> !connection.isUpgraded()).count();
-	}
-	
-	/**
-	 * Broadcasts data to all connected clients.<br>
-	 * Connections that were upgraded to TLS are skipped, because plain data would corrupt their TLS stream.<br>
-	 *
-	 * @param data The data to broadcast
-	 * @throws NullPointerException If data is null
-	 */
-	public void broadcast(byte @NonNull [] data) {
-		Objects.requireNonNull(data, "Data must not be null");
-		
-		for (TcpConnection connection : this.connections) {
-			if (connection.isActive() && !connection.isUpgraded()) {
-				try {
-					connection.send(data);
-				} catch (NetworkConnectionException e) {
-					NetworkUtils.handleError(this.config.onError(), connection, NetworkErrorType.IO_ERROR, "Failed to broadcast to " + connection.remoteEndpoint(), e);
-				}
-			}
-		}
-	}
-	
-	@Override
-	public void close() {
-		this.stop();
-	}
-	
-	//region Helper methods
-	
-	/**
-	 * The main loop that accepts incoming client connections.<br>
-	 * This method runs on a dedicated thread and handles new connections.<br>
-	 */
-	private void acceptLoop() {
-		while (this.running.get() && !Thread.currentThread().isInterrupted()) {
-			try {
-				Socket clientSocket = this.serverSocket.accept();
-				
-				clientSocket.setTcpNoDelay(this.config.tcpNoDelay());
-				clientSocket.setKeepAlive(this.config.keepAlive());
-				if (!this.config.clientReadTimeout().isZero()) {
-					clientSocket.setSoTimeout((int) this.config.clientReadTimeout().toMillis());
-				}
-				
-				TcpConnection connection = new TcpConnection(clientSocket, this.config.clientBufferSize(), this.config.framing(), this.config.clientReadTimeout());
-				this.connections.add(connection);
-				
-				if (this.config.onClientConnect() != null) {
-					this.config.onClientConnect().handle(connection, connection.localEndpoint(), connection.remoteEndpoint(), Instant.now());
-				}
-				
-				if (this.isRunning()) {
-					this.executor.submit(() -> this.handleClient(connection));
-				} else {
-					connection.close();
-					this.connections.remove(connection);
-					break;
-				}
-			} catch (SocketException e) {
-				if (this.running.get()) {
-					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.SOCKET_CLOSED, "Server socket closed unexpectedly", e);
-				}
-				break;
-			} catch (IOException e) {
-				if (this.running.get()) {
-					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Error accepting client", e);
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Handles communication with a connected client.<br>
-	 * This method runs on the executor and either hands the connection to the configured connection handler or processes incoming messages.<br>
-	 *
-	 * @param connection The client connection to handle
-	 * @throws NullPointerException If connection is null
-	 */
-	private void handleClient(@NonNull TcpConnection connection) {
-		Objects.requireNonNull(connection, "Connection must not be null");
-		
-		try {
-			ConnectionHandler<TcpServer, TcpConnection> handler = this.config.onConnection();
-			if (handler != null) {
-				this.runConnectionHandler(handler, connection);
-			} else {
-				this.receiveLoop(connection);
-			}
-		} catch (NetworkConnectionException e) {
-			if (e.errorType() != NetworkErrorType.READ_TIMEOUT) {
-				NetworkUtils.handleError(this.config.onError(), connection, e.errorType(), "Client error: " + e.getMessage(), e);
-			}
-		} finally {
-			if (this.config.onClientDisconnect() != null && connection.isActive()) {
-				try {
-					this.config.onClientDisconnect().handle(connection, connection.localEndpoint(), connection.remoteEndpoint(), Instant.now());
-				} catch (Exception _) {}
-			}
-			
-			this.connections.remove(connection);
-			connection.close();
-		}
-	}
-	
-	/**
-	 * Hands the given connection to the configured connection handler and waits until the handler returns.<br>
-	 * Failures of the handler are reported to the configured error handler, network failures are passed on to the caller.<br>
-	 *
-	 * @param handler The connection handler to run
-	 * @param connection The client connection to hand over
-	 * @throws NullPointerException If handler or connection is null
-	 * @throws NetworkConnectionException If the handler failed with a network error
-	 */
-	private void runConnectionHandler(@NonNull ConnectionHandler<TcpServer, TcpConnection> handler, @NonNull TcpConnection connection) throws NetworkConnectionException {
-		Objects.requireNonNull(handler, "Handler must not be null");
-		Objects.requireNonNull(connection, "Connection must not be null");
-		
-		try {
-			handler.handle(this, connection);
-		} catch (NetworkConnectionException e) {
-			throw e;
-		} catch (Exception e) {
-			NetworkUtils.handleError(this.config.onError(), connection, NetworkErrorType.IO_ERROR, "Error in connection handler", e);
-		}
-	}
-	
-	/**
-	 * Reads messages from the given connection until it is closed and dispatches them to the configured message handler.<br>
-	 * This is the built-in read loop that is used when no connection handler is configured.<br>
-	 *
-	 * @param connection The client connection to read from
-	 * @throws NullPointerException If connection is null
-	 * @throws NetworkConnectionException If receiving fails
-	 */
-	private void receiveLoop(@NonNull TcpConnection connection) throws NetworkConnectionException {
-		Objects.requireNonNull(connection, "Connection must not be null");
-		
-		while (this.running.get() && connection.isActive()) {
-			byte[] data = connection.receive();
-			
-			if (data.length == 0) {
-				break;
-			}
-			
-			if (this.config.onMessage() != null) {
-				try {
-					this.config.onMessage().handle(this, connection, data);
-				} catch (Exception e) {
-					NetworkUtils.handleError(this.config.onError(), connection, NetworkErrorType.IO_ERROR, "Error in message handler", e);
-				}
-			}
-		}
-	}
-	//endregion
 }

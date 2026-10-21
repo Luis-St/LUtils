@@ -18,234 +18,200 @@
 
 package net.luis.utils.io.network.connection.udp;
 
-import net.luis.utils.io.network.*;
-import net.luis.utils.io.network.connection.NetworkServer;
-import net.luis.utils.io.network.connection.NetworkUtils;
+import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.connection.*;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
-import net.luis.utils.io.network.connection.exception.NetworkErrorType;
+import net.luis.utils.io.network.connection.exception.NetworkTimeoutException;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
-import java.net.*;
+import java.time.Duration;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
- * A UDP server that receives datagrams on a bound port.<br>
- * This class provides a simple blocking server that dispatches incoming datagrams to a message handler.<br>
+ * A server that receives datagrams on a {@link UdpPeer} and hands each one to a {@link DatagramHandler}.<br>
+ * <p>
+ *     The server owns its peer, which is bound when the server starts and closed when it stops.<br>
+ *     The receive loop runs on a virtual thread, every datagram is handled on a thread of the configured executor.<br>
+ *     Replies and other datagrams are sent through {@link #peer()}.
+ * </p>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
  * IpEndpoint bindAddress = new IpEndpoint(Ipv4Address.ANY, 9999);
- * UdpServerConfig config = UdpServerConfig.builder()
- *     .onMessage((server, datagram, data) -> {
- *         System.out.println("From " + datagram.endpoint() + ": " + new String(data));
- *         server.send(datagram.endpoint(), "Pong".getBytes());
- *     })
- *     .build();
- *
- * try (UdpServer server = new UdpServer(bindAddress, config)) {
- *     server.start();
- *     Thread.sleep(60000); // Run for 1 minute
- *     server.stop();
+ * try (UdpServer server = UdpServer.startOn(bindAddress, (srv, datagram) -> srv.peer().send(datagram))) {
+ *     // Server runs until it is stopped or closed
  * }
  * }</pre>
  *
  * @see UdpServerConfig
- * @see UdpDatagram
+ * @see UdpPeer
+ * @see DatagramHandler
  *
  * @author Luis-St
  */
 public final class UdpServer implements NetworkServer {
 	
 	/**
-	 * The endpoint to bind the server to.<br>
+	 * The endpoint the server binds to.<br>
 	 */
 	private final IpEndpoint bindEndpoint;
 	/**
-	 * The configuration for this server.<br>
+	 * The configuration of this server.<br>
 	 */
 	private final UdpServerConfig config;
 	/**
-	 * Whether the server is currently running.<br>
+	 * The handler every received datagram is handed to.<br>
 	 */
-	private final AtomicBoolean running = new AtomicBoolean(false);
+	private final DatagramHandler handler;
 	/**
-	 * The underlying datagram socket for receiving packets.<br>
+	 * The tracker of the running handlers, used by a graceful stop.<br>
 	 */
-	private volatile DatagramSocket socket;
+	private final TaskTracker tracker = new TaskTracker();
 	/**
-	 * The executor service for handling incoming datagrams.<br>
+	 * Whether the server is running.<br>
 	 */
-	private volatile ExecutorService executor;
+	private volatile boolean running;
 	/**
-	 * The thread that receives incoming datagrams.<br>
+	 * The peer the server receives on, or null if the server was never started.<br>
 	 */
-	private volatile Thread acceptThread;
+	private volatile @Nullable UdpPeer peer;
+	/**
+	 * The executor the datagrams are handled on.<br>
+	 */
+	private volatile @Nullable ExecutorService executor;
 	
 	/**
-	 * Constructs a new UDP server with the specified bind endpoint and default configuration.<br>
+	 * Constructs a new UDP server with the default configuration.<br>
+	 * The server is not started.<br>
 	 *
-	 * @param bindEndpoint The endpoint to bind to
-	 * @throws NullPointerException If bind endpoint is null
+	 * @param bindEndpoint The endpoint the server binds to
+	 * @param handler The handler every received datagram is handed to
+	 * @throws NullPointerException If the bind endpoint or the handler is null
 	 */
-	public UdpServer(@NonNull IpEndpoint bindEndpoint) {
-		this(bindEndpoint, UdpServerConfig.DEFAULT);
+	public UdpServer(@NonNull IpEndpoint bindEndpoint, @NonNull DatagramHandler handler) {
+		this(bindEndpoint, UdpServerConfig.DEFAULT, handler);
 	}
 	
 	/**
-	 * Constructs a new UDP server with the specified bind endpoint and configuration.<br>
+	 * Constructs a new UDP server with the given configuration.<br>
+	 * The server is not started.<br>
 	 *
-	 * @param bindEndpoint The endpoint to bind to
-	 * @param config The server configuration
-	 * @throws NullPointerException If bind endpoint or config is null
+	 * @param bindEndpoint The endpoint the server binds to
+	 * @param config The configuration of the server
+	 * @param handler The handler every received datagram is handed to
+	 * @throws NullPointerException If the bind endpoint, the configuration or the handler is null
 	 */
-	public UdpServer(@NonNull IpEndpoint bindEndpoint, @NonNull UdpServerConfig config) {
+	public UdpServer(@NonNull IpEndpoint bindEndpoint, @NonNull UdpServerConfig config, @NonNull DatagramHandler handler) {
 		this.bindEndpoint = Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
 		this.config = Objects.requireNonNull(config, "Config must not be null");
+		this.handler = Objects.requireNonNull(handler, "Handler must not be null");
 	}
 	
 	/**
-	 * Creates a new UDP server with default configuration and starts it on the specified bind endpoint.<br>
+	 * Creates a new UDP server with the default configuration and starts it.<br>
 	 *
-	 * @param bindEndpoint The endpoint to bind to
+	 * @param bindEndpoint The endpoint the server binds to
+	 * @param handler The handler every received datagram is handed to
 	 * @return The started server
-	 * @throws NullPointerException If bind endpoint is null
+	 * @throws NullPointerException If the bind endpoint or the handler is null
+	 * @throws NetworkConnectionException If the server cannot be bound or started
 	 */
-	public static @NonNull UdpServer startOn(@NonNull IpEndpoint bindEndpoint) {
-		return startOn(bindEndpoint, UdpServerConfig.DEFAULT);
+	public static @NonNull UdpServer startOn(@NonNull IpEndpoint bindEndpoint, @NonNull DatagramHandler handler) throws NetworkConnectionException {
+		return startOn(bindEndpoint, UdpServerConfig.DEFAULT, handler);
 	}
 	
 	/**
-	 * Creates a new UDP server with the specified configuration and starts it on the specified bind endpoint.<br>
-	 * Startup failures are reported to the configured error handler, use {@link #isRunning()} to check whether the server came up.<br>
+	 * Creates a new UDP server with the given configuration and starts it.<br>
 	 *
-	 * @param bindEndpoint The endpoint to bind to
-	 * @param config The server configuration
+	 * @param bindEndpoint The endpoint the server binds to
+	 * @param config The configuration of the server
+	 * @param handler The handler every received datagram is handed to
 	 * @return The started server
-	 * @throws NullPointerException If bind endpoint or config is null
+	 * @throws NullPointerException If the bind endpoint, the configuration or the handler is null
+	 * @throws NetworkConnectionException If the server cannot be bound or started
 	 */
-	public static @NonNull UdpServer startOn(@NonNull IpEndpoint bindEndpoint, @NonNull UdpServerConfig config) {
-		Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
-		Objects.requireNonNull(config, "Config must not be null");
-		
-		UdpServer server = new UdpServer(bindEndpoint, config);
-		try {
-			server.start();
-			return server;
-		} catch (Throwable e) {
-			server.close();
-			throw e;
+	public static @NonNull UdpServer startOn(@NonNull IpEndpoint bindEndpoint, @NonNull UdpServerConfig config, @NonNull DatagramHandler handler) throws NetworkConnectionException {
+		UdpServer server = new UdpServer(bindEndpoint, config, handler);
+		server.start();
+		return server;
+	}
+	
+	/**
+	 * Returns the configuration of this server.<br>
+	 * @return The configuration
+	 */
+	public @NonNull UdpServerConfig config() {
+		return this.config;
+	}
+	
+	/**
+	 * Returns the peer this server receives on, which is also used to send replies.<br>
+	 *
+	 * @return The peer of the server
+	 * @throws IllegalStateException If the server was never started
+	 */
+	public @NonNull UdpPeer peer() {
+		UdpPeer peer = this.peer;
+		if (peer == null) {
+			throw new IllegalStateException("Server was never started");
 		}
+		return peer;
 	}
 	
 	@Override
 	public boolean isRunning() {
-		return this.running.get() && this.socket != null && !this.socket.isClosed();
+		UdpPeer peer = this.peer;
+		return this.running && peer != null && peer.isActive();
 	}
 	
 	@Override
 	public @NonNull IpEndpoint boundEndpoint() {
-		if (this.socket != null && this.socket.isBound()) {
-			InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
-			return IpEndpoint.from(address);
+		UdpPeer peer = this.peer;
+		if (peer != null) {
+			return peer.localEndpoint().orElse(this.bindEndpoint);
 		}
 		return this.bindEndpoint;
 	}
 	
 	@Override
-	public void start() {
-		if (this.running.getAndSet(true)) {
+	public synchronized void start() throws NetworkConnectionException {
+		if (this.running) {
 			return;
 		}
 		
-		try {
-			this.socket = new DatagramSocket(null);
-			this.socket.setReuseAddress(this.config.reuseAddress());
-			this.socket.setBroadcast(this.config.broadcast());
-			this.socket.bind(this.bindEndpoint.toInetSocketAddress());
-			
-			this.executor = this.config.executorStrategy().createExecutor();
-			
-			this.acceptThread = new Thread(this::acceptLoop, "UdpServer-Accept");
-			this.acceptThread.setDaemon(true);
-			this.acceptThread.start();
-		} catch (BindException e) {
-			this.running.set(false);
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.ADDRESS_IN_USE, "Address already in use: " + this.bindEndpoint, e);
-		} catch (IOException e) {
-			this.running.set(false);
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to start server on " + this.bindEndpoint, e);
-		}
+		UdpPeer peer = UdpPeer.bindTo(this.bindEndpoint, this.config.peer());
+		this.peer = peer;
+		this.executor = this.config.executorStrategy().createExecutor();
+		this.running = true;
+		Thread.ofVirtual().name("UdpServer-Receive").start(() -> this.receiveLoop(peer));
 	}
 	
 	@Override
 	public void stop() {
-		if (!this.running.getAndSet(false)) {
+		this.stop(Duration.ZERO);
+	}
+	
+	@Override
+	public synchronized void stop(@NonNull Duration gracePeriod) {
+		NetworkUtils.validateGracePeriod(gracePeriod);
+		if (!this.running) {
 			return;
 		}
 		
-		if (this.socket != null && !this.socket.isClosed()) {
-			this.socket.close();
-		}
+		this.running = false;
+		this.tracker.awaitIdle(gracePeriod);
 		
-		if (this.acceptThread != null) {
-			this.acceptThread.interrupt();
+		UdpPeer peer = this.peer;
+		if (peer != null) {
+			peer.close();
 		}
-		
 		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
-	}
-	
-	/**
-	 * Sends a datagram to the specified endpoint.<br>
-	 * <p>
-	 *     A {@link HostEndpoint} destination is resolved before the datagram is sent,<br>
-	 *     because a datagram carries a literal address rather than a name.<br>
-	 *     Unlike TLS, UDP has no use for the hostname itself, so nothing is lost by resolving it here.
-	 * </p>
-	 *
-	 * @param destination The destination endpoint
-	 * @param data The data to send
-	 * @throws NullPointerException If destination or data is null
-	 * @throws NetworkConnectionException If the destination cannot be resolved, if the server is not running, if sending fails, or if data exceeds buffer size
-	 */
-	public void send(@NonNull Endpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
-		Objects.requireNonNull(destination, "Destination must not be null");
-		Objects.requireNonNull(data, "Data must not be null");
-		NetworkUtils.validateMessageSize(data, this.config.bufferSize(), destination);
-		
-		if (!this.isRunning()) {
-			throw new NetworkConnectionException("Server is not running", NetworkErrorType.SOCKET_CLOSED);
-		}
-		
-		InetSocketAddress address = destination.toInetSocketAddress();
-		if (address.isUnresolved()) {
-			UnknownHostException cause = new UnknownHostException(address.getHostString());
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.HOST_UNREACHABLE, "Failed to resolve " + destination, cause);
-			throw new NetworkConnectionException("Failed to resolve " + destination, cause, NetworkErrorType.HOST_UNREACHABLE, destination);
-		}
-		
-		try {
-			DatagramPacket packet = new DatagramPacket(data, data.length, address);
-			this.socket.send(packet);
-		} catch (IOException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to send datagram to " + destination, e);
-			throw new NetworkConnectionException("Failed to send datagram to " + destination, e, NetworkErrorType.IO_ERROR, destination);
-		}
-	}
-	
-	/**
-	 * Sends a datagram.<br>
-	 *
-	 * @param datagram The datagram to send
-	 * @throws NullPointerException If datagram is null
-	 * @throws NetworkConnectionException If sending fails
-	 */
-	public void send(@NonNull UdpDatagram datagram) throws NetworkConnectionException {
-		Objects.requireNonNull(datagram, "Datagram must not be null");
-		this.send(datagram.endpoint(), datagram.data());
+		this.executor = null;
 	}
 	
 	@Override
@@ -253,52 +219,66 @@ public final class UdpServer implements NetworkServer {
 		this.stop();
 	}
 	
-	//region Helper methods
-	
 	/**
-	 * The main loop that receives incoming datagrams.<br>
-	 * This method runs on a dedicated thread and dispatches datagrams to handlers.<br>
+	 * Receives datagrams on the given peer until the server is stopped and hands them to the handler.<br>
+	 * <p>
+	 *     A graceful stop only clears the running flag, so the loop may still be blocked in a receive.<br>
+	 *     Datagrams that arrive after the stop was requested are dropped.
+	 * </p>
+	 *
+	 * @param peer The peer to receive on
+	 * @throws NullPointerException If the peer is null
 	 */
-	private void acceptLoop() {
-		byte[] buffer = new byte[this.config.bufferSize()];
+	private void receiveLoop(@NonNull UdpPeer peer) {
+		Objects.requireNonNull(peer, "Peer must not be null");
 		
-		while (this.running.get() && !Thread.currentThread().isInterrupted()) {
+		while (this.running && peer.isActive()) {
+			Optional<UdpDatagram> datagram;
 			try {
-				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-				this.socket.receive(packet);
-				
-				InetSocketAddress address = (InetSocketAddress) packet.getSocketAddress();
-				IpEndpoint sourceEndpoint = IpEndpoint.from(address);
-				
-				byte[] data = new byte[packet.getLength()];
-				System.arraycopy(packet.getData(), packet.getOffset(), data, 0, packet.getLength());
-				
-				UdpDatagram datagram = new UdpDatagram(sourceEndpoint, data);
-				
-				if (this.config.onMessage() != null) {
-					if (!this.isRunning()) {
-						break;
-					}
-					
-					this.executor.submit(() -> {
-						try {
-							this.config.onMessage().handle(this, datagram, data);
-						} catch (Exception e) {
-							NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Error in message handler", e);
-						}
-					});
+				datagram = peer.receive();
+			} catch (NetworkTimeoutException e) {
+				continue;
+			} catch (NetworkConnectionException e) {
+				if (this.running) {
+					NetworkUtils.reportError(this.config.onError(), peer, e);
 				}
-			} catch (SocketException e) {
-				if (this.running.get()) {
-					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.SOCKET_CLOSED, "Socket closed unexpectedly", e);
-				}
-				break;
-			} catch (IOException e) {
-				if (this.running.get()) {
-					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Error receiving datagram", e);
-				}
+				continue;
 			}
+			
+			ExecutorService executor = this.executor;
+			if (datagram.isEmpty() || !this.running || executor == null) {
+				break;
+			}
+			this.dispatch(executor, peer, datagram.get());
 		}
 	}
-	//endregion
+	
+	/**
+	 * Hands the given datagram to the handler on a thread of the given executor.<br>
+	 *
+	 * @param executor The executor to run the handler on
+	 * @param peer The peer the datagram was received on
+	 * @param datagram The received datagram
+	 * @throws NullPointerException If the executor, the peer or the datagram is null
+	 */
+	private void dispatch(@NonNull ExecutorService executor, @NonNull UdpPeer peer, @NonNull UdpDatagram datagram) {
+		Objects.requireNonNull(executor, "Executor must not be null");
+		Objects.requireNonNull(peer, "Peer must not be null");
+		Objects.requireNonNull(datagram, "Datagram must not be null");
+		
+		this.tracker.started();
+		try {
+			executor.execute(() -> {
+				try {
+					this.handler.handle(this, datagram);
+				} catch (Exception e) {
+					NetworkUtils.reportError(this.config.onError(), peer, e);
+				} finally {
+					this.tracker.finished();
+				}
+			});
+		} catch (RejectedExecutionException e) {
+			this.tracker.finished();
+		}
+	}
 }

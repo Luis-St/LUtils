@@ -18,36 +18,37 @@
 
 package net.luis.utils.io.network.mail;
 
-import net.luis.utils.io.network.connection.NetworkUtils;
+import net.luis.utils.io.network.HostEndpoint;
+import net.luis.utils.io.network.connection.*;
 import net.luis.utils.io.network.connection.exception.*;
 import net.luis.utils.io.network.connection.ssl.SslClientConfig;
-import net.luis.utils.io.network.connection.ssl.TlsProtocol;
+import net.luis.utils.io.network.connection.ssl.SslConnection;
+import net.luis.utils.io.network.connection.tcp.TcpClientConfig;
+import net.luis.utils.io.network.connection.tcp.TcpConnection;
 import net.luis.utils.io.network.mail.message.MailMessage;
 import net.luis.utils.io.network.mail.message.MailRecipient;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
-import javax.net.ssl.*;
 import java.io.*;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
- * A blocking, RFC 5321 compliant SMTP submission client built on the SSL/TLS transport stack.<br>
- * The client manages its own {@link Socket}/{@link SSLSocket} rather than wrapping an existing SSL client,<br>
- * because the {@code STARTTLS} flow requires upgrading a live plaintext socket to TLS.<br>
+ * A blocking, RFC 5321 compliant SMTP submission client built on the connections of the network package.<br>
+ * The client reads and writes SMTP lines through a {@link Connection} with {@link Framing#lines() line framing}.<br>
  * <br>
- * It still reuses the {@link SslClientConfig} carried by its {@link SmtpClientConfig} for all TLS<br>
- * parameters (SSL context, protocols, cipher suites, timeouts, and hostname verification).<br>
+ * Implicit TLS opens an {@link SslConnection}, {@code STARTTLS} opens a {@link TcpConnection} and upgrades it in place.<br>
+ * The {@link SslClientConfig} carried by the {@link SmtpClientConfig} supplies the transport and TLS settings of both.<br>
  * <p>
  *     A connection follows the standard submission flow: read the greeting, {@code EHLO},<br>
  *     optionally upgrade via {@code STARTTLS}, and authenticate.<br>
- *     Each {@link #send(MailMessage)} call runs one mail transaction and the client may be reused for multiple messages on one connection.
+ *     Each {@link #send(MailMessage)} call runs one mail transaction, and the client may be reused for multiple messages on one connection.
  * </p>
  * <p>
  *     Example usage:
@@ -77,32 +78,16 @@ public final class SmtpClient implements AutoCloseable {
 	 */
 	private final @NonNull SmtpClientConfig config;
 	/**
-	 * The underlying socket, which is upgraded to an {@link SSLSocket} for TLS.<br>
+	 * The connection to the server, which is replaced by the secured connection after a {@code STARTTLS} upgrade.<br>
 	 */
-	private volatile Socket socket;
-	/**
-	 * The buffered reader over the socket input, used to read replies as ASCII lines.<br>
-	 */
-	private volatile BufferedReader reader;
-	/**
-	 * The buffered output stream over the socket, used to write commands and message data.<br>
-	 */
-	private volatile OutputStream output;
-	/**
-	 * The host this client is connected to.<br>
-	 */
-	private volatile String host = "";
-	/**
-	 * The port this client is connected to.<br>
-	 */
-	private volatile int port;
+	private volatile @Nullable Connection connection;
 	/**
 	 * Whether this client is currently connected.<br>
 	 */
 	private volatile boolean connected;
 	
 	/**
-	 * Constructs a new SMTP client with default configuration.<br>
+	 * Constructs a new SMTP client with the default configuration.<br>
 	 */
 	public SmtpClient() {
 		this(SmtpClientConfig.DEFAULT);
@@ -234,6 +219,10 @@ public final class SmtpClient implements AutoCloseable {
 	/**
 	 * Connects to the specified SMTP server and performs the greeting, EHLO, optional STARTTLS upgrade,<br>
 	 * and authentication handshake according to the configured security mode.<br>
+	 * <p>
+	 *     The client only counts as connected once the authentication has succeeded.<br>
+	 *     If any step fails, the connection is closed and the client stays disconnected.
+	 * </p>
 	 *
 	 * @param host The server host to connect to
 	 * @param port The server port to connect to
@@ -247,72 +236,23 @@ public final class SmtpClient implements AutoCloseable {
 		if (this.connected) {
 			throw new NetworkConnectionException("Client is already connected", NetworkErrorType.ALREADY_CONNECTED);
 		}
-		this.host = host;
-		this.port = port;
+		HostEndpoint endpoint = new HostEndpoint(host, port);
 		SslClientConfig tls = this.config.tlsConfig();
+		TcpClientConfig transport = tls.transport().withFraming(Framing.lines()).withMaxMessageSize(this.config.bufferSize());
+		
+		if (this.config.security() == SmtpSecurity.IMPLICIT_TLS) {
+			this.connection = SslConnection.connectTo(endpoint, new SslClientConfig(transport, tls.tls()));
+		} else {
+			this.connection = TcpConnection.connectTo(endpoint, transport);
+		}
 		
 		try {
-			Socket transport;
-			if (this.config.security() == SmtpSecurity.IMPLICIT_TLS) {
-				SSLSocket sslSocket = (SSLSocket) tls.resolveSslContext().getSocketFactory().createSocket();
-				this.configureSslSocket(sslSocket);
-				transport = sslSocket;
-			} else {
-				transport = new Socket();
-			}
-			
-			this.socket = transport;
-			transport.setTcpNoDelay(tls.tcpNoDelay());
-			transport.setKeepAlive(tls.keepAlive());
-			transport.connect(new InetSocketAddress(host, port), (int) tls.connectTimeout().toMillis());
-			
-			if (!tls.readTimeout().isZero()) {
-				transport.setSoTimeout((int) tls.readTimeout().toMillis());
-			}
-			if (transport instanceof SSLSocket sslSocket) {
-				sslSocket.startHandshake();
-			}
-			
-			this.initStreams();
-			this.connected = true;
-			
-			this.expect(this.readReply(), 220);
-			List<String> capabilities = this.ehlo();
-			
-			if (this.config.security() == SmtpSecurity.STARTTLS) {
-				if (!hasCapability(capabilities)) {
-					SmtpReply reply = new SmtpReply(454, List.of("STARTTLS not advertised by server"));
-					throw new SmtpException("Server does not advertise STARTTLS", reply, NetworkErrorType.PROTOCOL_ERROR, null);
-				}
-				
-				this.sendCommand("STARTTLS");
-				this.expect(this.readReply(), 220);
-				this.upgradeToTls();
-				capabilities = this.ehlo();
-			}
-			
-			this.authenticate();
-		} catch (NetworkConnectionException e) {
+			this.handshake(endpoint, tls);
+		} catch (NetworkConnectionException | RuntimeException e) {
+			this.abort();
 			throw e;
-		} catch (SocketTimeoutException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_TIMEOUT, "Connection timed out to " + host + ":" + port, e);
-			throw new NetworkTimeoutException("Connection timed out to " + host + ":" + port, NetworkErrorType.CONNECTION_TIMEOUT, tls.connectTimeout());
-		} catch (SSLHandshakeException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.HANDSHAKE_FAILED, "SSL handshake failed with " + host + ":" + port, e);
-			throw new NetworkConnectionException("SSL handshake failed with " + host + ":" + port, e, NetworkErrorType.HANDSHAKE_FAILED);
-		} catch (ConnectException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_REFUSED, "Connection refused by " + host + ":" + port, e);
-			throw new NetworkConnectionException("Connection refused by " + host + ":" + port, e, NetworkErrorType.CONNECTION_REFUSED);
-		} catch (NoRouteToHostException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.HOST_UNREACHABLE, "Host unreachable: " + host + ":" + port, e);
-			throw new NetworkConnectionException("Host unreachable: " + host + ":" + port, e, NetworkErrorType.HOST_UNREACHABLE);
-		} catch (NoSuchAlgorithmException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_FAILED, "Failed to initialize SSL context", e);
-			throw new NetworkConnectionException("Failed to initialize SSL context", e, NetworkErrorType.CONNECTION_FAILED);
-		} catch (IOException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_FAILED, "Failed to connect to " + host + ":" + port, e);
-			throw new NetworkConnectionException("Failed to connect to " + host + ":" + port, e, NetworkErrorType.CONNECTION_FAILED);
 		}
+		this.connected = true;
 	}
 	
 	/**
@@ -349,25 +289,24 @@ public final class SmtpClient implements AutoCloseable {
 	 * @return True if the client holds an open connection
 	 */
 	public boolean isConnected() {
-		return this.connected && !this.socket.isClosed();
+		Connection connection = this.connection;
+		return this.connected && connection != null && connection.isActive();
 	}
 	
 	/**
-	 * Sends a best-effort {@code QUIT} command and closes the underlying socket.<br>
+	 * Sends a best-effort {@code QUIT} command and closes the underlying connection.<br>
 	 */
 	@Override
 	public void close() {
-		if (this.socket != null && !this.socket.isClosed()) {
-			if (this.connected) {
+		Connection connection = this.connection;
+		if (connection != null) {
+			if (this.isConnected()) {
 				try {
 					this.sendCommand("QUIT");
 					this.readReply();
 				} catch (NetworkConnectionException _) {}
 			}
-			
-			try {
-				this.socket.close();
-			} catch (IOException _) {}
+			connection.close();
 		}
 		this.connected = false;
 	}
@@ -375,48 +314,63 @@ public final class SmtpClient implements AutoCloseable {
 	//region Helper methods
 	
 	/**
-	 * Initializes the buffered reader and output stream from the current socket.<br>
-	 * The reader decodes replies as ISO-8859-1 so any byte sequence maps cleanly to characters.<br>
+	 * Performs the greeting, EHLO, optional STARTTLS upgrade and authentication on the freshly opened connection.<br>
 	 *
-	 * @throws IOException If the socket streams cannot be obtained
+	 * @param endpoint The endpoint of the server
+	 * @param tls The TLS configuration used for a STARTTLS upgrade
+	 * @throws NullPointerException If the endpoint or the TLS configuration is null
+	 * @throws NetworkConnectionException If reading, writing or the TLS upgrade fails
+	 * @throws SmtpException If the server returns an unexpected reply or authentication fails
 	 */
-	private void initStreams() throws IOException {
-		this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), StandardCharsets.ISO_8859_1));
-		this.output = new BufferedOutputStream(this.socket.getOutputStream());
+	private void handshake(@NonNull HostEndpoint endpoint, @NonNull SslClientConfig tls) throws NetworkConnectionException {
+		Objects.requireNonNull(endpoint, "Endpoint must not be null");
+		Objects.requireNonNull(tls, "Tls config must not be null");
+		
+		this.expect(this.readReply(), 220);
+		List<String> capabilities = this.ehlo();
+		
+		if (this.config.security() == SmtpSecurity.STARTTLS) {
+			if (!hasCapability(capabilities)) {
+				SmtpReply reply = new SmtpReply(454, List.of("STARTTLS not advertised by server"));
+				throw new SmtpException("Server does not advertise STARTTLS", reply, NetworkErrorType.PROTOCOL_ERROR, endpoint);
+			}
+			
+			this.sendCommand("STARTTLS");
+			this.expect(this.readReply(), 220);
+			if (this.connection() instanceof TcpConnection plain) {
+				this.connection = plain.upgrade(tls.tls());
+			}
+			this.ehlo();
+		}
+		
+		this.authenticate();
 	}
 	
 	/**
-	 * Applies the configured TLS protocols, cipher suites, and hostname verification to the socket.<br>
-	 *
-	 * @param sslSocket The SSL socket to configure
+	 * Closes the current connection without sending {@code QUIT} and resets the client to the disconnected state.<br>
+	 * This is used when connecting fails, so that a later connect starts from a clean state.<br>
 	 */
-	private void configureSslSocket(@NonNull SSLSocket sslSocket) {
-		SslClientConfig tls = this.config.tlsConfig();
-		if (!tls.enabledProtocols().isEmpty()) {
-			sslSocket.setEnabledProtocols(TlsProtocol.toProtocolNames(tls.enabledProtocols()));
-		}
-		if (!tls.enabledCipherSuites().isEmpty()) {
-			sslSocket.setEnabledCipherSuites(tls.enabledCipherSuites().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
-		}
-		if (tls.verifyHostname()) {
-			SSLParameters parameters = sslSocket.getSSLParameters();
-			parameters.setEndpointIdentificationAlgorithm("HTTPS");
-			sslSocket.setSSLParameters(parameters);
+	private void abort() {
+		Connection connection = this.connection;
+		this.connection = null;
+		this.connected = false;
+		if (connection != null) {
+			connection.close();
 		}
 	}
 	
 	/**
-	 * Upgrades the current plaintext socket to TLS by layering an {@link SSLSocket} over it.<br>
+	 * Returns the current connection to the server.<br>
 	 *
-	 * @throws IOException If the TLS handshake fails
-	 * @throws NoSuchAlgorithmException If the SSL context cannot be resolved
+	 * @return The connection
+	 * @throws NetworkConnectionException If the client is not connected
 	 */
-	private void upgradeToTls() throws IOException, NoSuchAlgorithmException {
-		SSLSocket sslSocket = (SSLSocket) this.config.tlsConfig().resolveSslContext().getSocketFactory().createSocket(this.socket, this.host, this.port, true);
-		this.configureSslSocket(sslSocket);
-		sslSocket.startHandshake();
-		this.socket = sslSocket;
-		this.initStreams();
+	private @NonNull Connection connection() throws NetworkConnectionException {
+		Connection connection = this.connection;
+		if (connection == null) {
+			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
+		}
+		return connection;
 	}
 	
 	/**
@@ -482,7 +436,7 @@ public final class SmtpClient implements AutoCloseable {
 	 *
 	 * @param auth The PLAIN authentication strategy
 	 * @throws NetworkConnectionException If reading or writing fails
-	 * @throws SmtpException If authentication is rejected by the server
+	 * @throws SmtpException If the server rejects authentication
 	 */
 	private void authPlain(SmtpAuth.@NonNull Plain auth) throws NetworkConnectionException {
 		byte[] userBytes = auth.username().getBytes(this.config.defaultCharset());
@@ -506,7 +460,7 @@ public final class SmtpClient implements AutoCloseable {
 	 *
 	 * @param auth The LOGIN authentication strategy
 	 * @throws NetworkConnectionException If reading or writing fails
-	 * @throws SmtpException If authentication is rejected by the server
+	 * @throws SmtpException If the server rejects authentication
 	 */
 	private void authLogin(SmtpAuth.@NonNull Login auth) throws NetworkConnectionException {
 		this.sendCommand("AUTH LOGIN");
@@ -522,7 +476,7 @@ public final class SmtpClient implements AutoCloseable {
 	 *
 	 * @param auth The XOAUTH2 authentication strategy
 	 * @throws NetworkConnectionException If reading or writing fails
-	 * @throws SmtpException If authentication is rejected by the server
+	 * @throws SmtpException If the server rejects authentication
 	 */
 	private void authOAuth(SmtpAuth.@NonNull OAuth auth) throws NetworkConnectionException {
 		byte[] head = ("user=" + auth.username() + "\u0001auth=Bearer ").getBytes(this.config.defaultCharset());
@@ -547,40 +501,33 @@ public final class SmtpClient implements AutoCloseable {
 	 * @throws NetworkTimeoutException If the read times out
 	 */
 	private @NonNull SmtpReply readReply() throws NetworkConnectionException {
-		try {
-			List<String> lines = new ArrayList<>();
-			int code = -1;
-			
-			while (true) {
-				String line = this.reader.readLine();
-				if (line == null) {
-					throw new NetworkConnectionException("Connection closed while reading reply", NetworkErrorType.CONNECTION_RESET);
-				}
-				if (line.length() < 3) {
-					throw new NetworkConnectionException("Malformed SMTP reply: " + line, NetworkErrorType.PROTOCOL_ERROR);
-				}
-				
-				try {
-					code = Integer.parseInt(line.substring(0, 3));
-				} catch (NumberFormatException e) {
-					throw new NetworkConnectionException("Malformed SMTP reply: " + line, e, NetworkErrorType.PROTOCOL_ERROR);
-				}
-				
-				lines.add(line.length() > 4 ? line.substring(4) : "");
-				char separator = line.length() > 3 ? line.charAt(3) : ' ';
-				if (separator != '-') {
-					break;
-				}
+		List<String> lines = new ArrayList<>();
+		int code;
+		
+		while (true) {
+			Optional<byte[]> received = this.connection().receive();
+			if (received.isEmpty()) {
+				throw new NetworkConnectionException("Connection closed while reading reply", NetworkErrorType.CONNECTION_RESET);
 			}
-			return new SmtpReply(code, lines);
-		} catch (SocketTimeoutException e) {
-			throw new NetworkTimeoutException("Read timed out", NetworkErrorType.READ_TIMEOUT, this.config.tlsConfig().readTimeout());
-		} catch (NetworkConnectionException e) {
-			throw e;
-		} catch (IOException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to read reply", e);
-			throw new NetworkConnectionException("Failed to read reply", e, NetworkErrorType.IO_ERROR);
+			
+			String line = new String(received.get(), StandardCharsets.ISO_8859_1);
+			if (line.length() < 3) {
+				throw new NetworkConnectionException("Malformed SMTP reply: " + line, NetworkErrorType.PROTOCOL_ERROR);
+			}
+			
+			try {
+				code = Integer.parseInt(line.substring(0, 3));
+			} catch (NumberFormatException e) {
+				throw new NetworkConnectionException("Malformed SMTP reply: " + line, e, NetworkErrorType.PROTOCOL_ERROR);
+			}
+			
+			lines.add(line.length() > 4 ? line.substring(4) : "");
+			char separator = line.length() > 3 ? line.charAt(3) : ' ';
+			if (separator != '-') {
+				break;
+			}
 		}
+		return new SmtpReply(code, lines);
 	}
 	
 	/**
@@ -600,39 +547,31 @@ public final class SmtpClient implements AutoCloseable {
 	 * @throws NetworkConnectionException If writing fails
 	 */
 	private void writeLine(byte @NonNull [] line) throws NetworkConnectionException {
-		try {
-			this.output.write(line);
-			this.output.write('\r');
-			this.output.write('\n');
-			this.output.flush();
-		} catch (IOException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to send command", e);
-			throw new NetworkConnectionException("Failed to send command", e, NetworkErrorType.IO_ERROR);
-		}
+		this.connection().send(line);
 	}
 	
 	/**
 	 * Writes the serialized message body during a {@code DATA} transaction.<br>
-	 * Dot-stuffing is applied, and the body is terminated by a line containing a single dot.<br>
+	 * Dot stuffing is applied, and the body is terminated by a line containing a single dot.<br>
+	 * The body is written to the raw output stream of the connection, so it is not limited by the maximum line length.<br>
 	 *
 	 * @param data The serialized message
 	 * @throws NetworkConnectionException If writing fails
 	 */
 	private void writeData(@NonNull String data) throws NetworkConnectionException {
+		ByteArrayOutputStream body = new ByteArrayOutputStream(data.length() + 16);
+		body.writeBytes(dotStuff(data).getBytes(this.config.defaultCharset()));
+		if (!data.endsWith("\r\n")) {
+			body.writeBytes("\r\n".getBytes(StandardCharsets.US_ASCII));
+		}
+		body.writeBytes(".\r\n".getBytes(StandardCharsets.US_ASCII));
+		
 		try {
-			this.output.write(dotStuff(data).getBytes(this.config.defaultCharset()));
-			if (!data.endsWith("\r\n")) {
-				this.output.write('\r');
-				this.output.write('\n');
-			}
-			
-			this.output.write('.');
-			this.output.write('\r');
-			this.output.write('\n');
-			this.output.flush();
+			OutputStream output = this.connection().getOutputStream();
+			output.write(body.toByteArray());
+			output.flush();
 		} catch (IOException e) {
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to send message data", e);
-			throw new NetworkConnectionException("Failed to send message data", e, NetworkErrorType.IO_ERROR);
+			throw NetworkUtils.mapIoFailure(e, "Failed to send message data", null);
 		}
 	}
 	
@@ -662,10 +601,7 @@ public final class SmtpClient implements AutoCloseable {
 			}
 		}
 		
-		String message = "Unexpected SMTP reply " + reply.code() + ": " + reply.message();
-		SmtpException exception = new SmtpException(message, reply, errorType, null);
-		NetworkUtils.handleError(this.config.onError(), errorType, message, exception);
-		throw exception;
+		throw new SmtpException("Unexpected SMTP reply " + reply.code() + ": " + reply.message(), reply, errorType, null);
 	}
 	
 	/**
@@ -673,7 +609,7 @@ public final class SmtpClient implements AutoCloseable {
 	 * @throws NetworkConnectionException If the client is not connected
 	 */
 	private void ensureConnected() throws NetworkConnectionException {
-		if (!this.connected || this.socket.isClosed()) {
+		if (!this.isConnected()) {
 			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
 		}
 	}

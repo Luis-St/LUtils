@@ -18,7 +18,8 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import net.luis.utils.io.network.connection.event.*;
+import net.luis.utils.io.network.connection.Framing;
+import net.luis.utils.io.network.connection.NetworkUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -26,8 +27,8 @@ import java.time.Duration;
 import java.util.Objects;
 
 /**
- * Configuration options for TCP clients.<br>
- * This record provides settings for TCP socket behavior such as timeouts, buffer sizes, and event handlers.<br>
+ * Configuration options for connections opened by {@link TcpConnection#connectTo}.<br>
+ * This record only holds transport settings, what happens on the connection is decided by the code that uses it.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -35,90 +36,97 @@ import java.util.Objects;
  * TcpClientConfig config = TcpClientConfig.builder()
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .readTimeout(Duration.ofSeconds(30))
- *     .tcpNoDelay(true)
- *     .onConnect((connection, local, remote, timestamp) -> System.out.println("Connected!"))
+ *     .framing(Framing.lines())
  *     .build();
  *
- * try (TcpClient client = new TcpClient(config)) {
- *     client.connect(serverEndpoint);
+ * try (TcpConnection connection = TcpConnection.connectTo(endpoint, config)) {
+ *     connection.send("Hello".getBytes());
  * }
  * }</pre>
  *
  * @see TcpClientConfigBuilder
- * @see TcpClient
+ * @see TcpConnection
  *
  * @author Luis-St
  *
- * @param connectTimeout Maximum time to wait for connection establishment
- * @param readTimeout Maximum time to wait for read operations (Duration.ZERO for infinite)
- * @param writeTimeout Maximum time to wait for write operations (Duration.ZERO for infinite)
- * @param bufferSize Size of the read/write buffers in bytes
- * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
+ * @param connectTimeout The maximum time to wait for the connection to be established
+ * @param readTimeout The maximum time a receive waits for data, or null to wait forever
+ * @param maxMessageSize The maximum length of a message in bytes
+ * @param framing The framing that delimits messages on the stream
  * @param tcpNoDelay Whether to disable Nagle's algorithm (TCP_NODELAY)
  * @param keepAlive Whether to enable TCP keep-alive (SO_KEEPALIVE)
- * @param onConnect Handler called when connection is established
- * @param onDisconnect Handler called when connection is closed
- * @param onError Handler called when an error occurs
  */
 public record TcpClientConfig(
 	@NonNull Duration connectTimeout,
-	@NonNull Duration readTimeout,
-	@NonNull Duration writeTimeout,
-	int bufferSize,
-	boolean framing,
+	@Nullable Duration readTimeout,
+	int maxMessageSize,
+	@NonNull Framing framing,
 	boolean tcpNoDelay,
-	boolean keepAlive,
-	@Nullable ConnectEventHandler onConnect,
-	@Nullable DisconnectEventHandler onDisconnect,
-	@Nullable ErrorEventHandler onError
+	boolean keepAlive
 ) {
 	
 	/**
-	 * Default configuration for TCP clients.<br>
+	 * Default configuration for TCP connections.<br>
 	 * <ul>
 	 *     <li>{@link #connectTimeout} = {@code 30 seconds}</li>
-	 *     <li>{@link #readTimeout} = {@code Duration.ZERO} (infinite)</li>
-	 *     <li>{@link #writeTimeout} = {@code Duration.ZERO} (infinite)</li>
-	 *     <li>{@link #bufferSize} = {@code 8192}</li>
-	 *     <li>{@link #framing} = {@code true}</li>
+	 *     <li>{@link #readTimeout} = {@code null} (wait forever)</li>
+	 *     <li>{@link #maxMessageSize} = {@code 8192}</li>
+	 *     <li>{@link #framing} = {@link Framing#lengthPrefixed()}</li>
 	 *     <li>{@link #tcpNoDelay} = {@code true}</li>
 	 *     <li>{@link #keepAlive} = {@code true}</li>
-	 *     <li>All handlers = {@code null}</li>
 	 * </ul>
 	 */
-	public static final TcpClientConfig DEFAULT = new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, true, null, null, null);
+	public static final TcpClientConfig DEFAULT = new TcpClientConfig(Duration.ofSeconds(30), null, 8192, Framing.lengthPrefixed(), true, true);
 	
 	/**
 	 * Constructs a new TCP client configuration.<br>
 	 *
-	 * @param connectTimeout Maximum time to wait for connection establishment
-	 * @param readTimeout Maximum time to wait for read operations
-	 * @param writeTimeout Maximum time to wait for write operations
-	 * @param bufferSize Size of the read/write buffers in bytes
-	 * @param framing Whether messages are framed with a length prefix on the wire, so that each receive returns exactly one send
+	 * @param connectTimeout The maximum time to wait for the connection to be established
+	 * @param readTimeout The maximum time a receive waits for data, or null to wait forever
+	 * @param maxMessageSize The maximum length of a message in bytes
+	 * @param framing The framing that delimits messages on the stream
 	 * @param tcpNoDelay Whether to disable Nagle's algorithm
 	 * @param keepAlive Whether to enable TCP keep-alive
-	 * @param onConnect Handler called when connection is established
-	 * @param onDisconnect Handler called when connection is closed
-	 * @param onError Handler called when an error occurs
-	 * @throws NullPointerException If connect timeout, read timeout, or write timeout is null
-	 * @throws IllegalArgumentException If bufferSize is less than 1
+	 * @throws NullPointerException If the connect timeout or the framing is null
+	 * @throws IllegalArgumentException If a timeout is not positive or the max message size is less than 1
 	 */
 	public TcpClientConfig {
 		Objects.requireNonNull(connectTimeout, "Connect timeout must not be null");
-		Objects.requireNonNull(readTimeout, "Read timeout must not be null");
-		Objects.requireNonNull(writeTimeout, "Write timeout must not be null");
-		
-		if (bufferSize < 1) {
-			throw new IllegalArgumentException("Buffer size must be at least 1: " + bufferSize);
+		Objects.requireNonNull(framing, "Framing must not be null");
+		NetworkUtils.validateTimeout(connectTimeout, "Connect timeout");
+		NetworkUtils.validateTimeout(readTimeout, "Read timeout");
+		if (maxMessageSize < 1) {
+			throw new IllegalArgumentException("Max message size must be at least 1: " + maxMessageSize);
 		}
 	}
 	
 	/**
-	 * Creates a new builder for constructing TCP client configuration.<br>
+	 * Creates a new builder for constructing a TCP client configuration.<br>
 	 * @return A new builder with default values
 	 */
 	public static @NonNull TcpClientConfigBuilder builder() {
 		return new TcpClientConfigBuilder();
+	}
+	
+	/**
+	 * Returns a copy of this configuration that uses the given framing.<br>
+	 *
+	 * @param framing The framing of the copy
+	 * @return The copy with the given framing
+	 * @throws NullPointerException If the framing is null
+	 */
+	public @NonNull TcpClientConfig withFraming(@NonNull Framing framing) {
+		return new TcpClientConfig(this.connectTimeout, this.readTimeout, this.maxMessageSize, framing, this.tcpNoDelay, this.keepAlive);
+	}
+	
+	/**
+	 * Returns a copy of this configuration that uses the given maximum message size.<br>
+	 *
+	 * @param maxMessageSize The maximum message size of the copy
+	 * @return The copy with the given maximum message size
+	 * @throws IllegalArgumentException If the max message size is less than 1
+	 */
+	public @NonNull TcpClientConfig withMaxMessageSize(int maxMessageSize) {
+		return new TcpClientConfig(this.connectTimeout, this.readTimeout, maxMessageSize, this.framing, this.tcpNoDelay, this.keepAlive);
 	}
 }

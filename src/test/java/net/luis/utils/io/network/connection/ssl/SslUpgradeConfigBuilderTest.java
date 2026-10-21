@@ -19,12 +19,10 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
-import net.luis.utils.io.network.connection.tcp.TcpClientConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLContext;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -209,23 +207,5 @@ class SslUpgradeConfigBuilderTest {
 		
 		assertEquals(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2), config.enabledProtocols());
 		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add(TlsProtocol.TLS_V1_1));
-	}
-	
-	@Test
-	void buildFeedsToClientConfig() {
-		SslUpgradeConfig config = SslUpgradeConfig.builder()
-			.sslContext(context)
-			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
-			.verifyHostname(false)
-			.build();
-		TcpClientConfig base = TcpClientConfig.builder().bufferSize(1024).readTimeout(Duration.ofSeconds(5)).build();
-		
-		SslClientConfig result = config.toClientConfig(base);
-		
-		assertSame(context, result.sslContext());
-		assertEquals(List.of(TlsProtocol.TLS_V1_3), result.enabledProtocols());
-		assertFalse(result.verifyHostname());
-		assertEquals(1024, result.bufferSize());
-		assertEquals(Duration.ofSeconds(5), result.readTimeout());
 	}
 }

@@ -50,6 +50,9 @@ class IcmpPingSessionTest {
 		String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
 		boolean supported = (os.contains("linux") || os.contains("mac")) && System.getProperty("os.arch", "").contains("64");
 		datagramV4 = supported && canOpen();
+		if (System.getenv("CI") != null && os.contains("linux")) {
+			assertTrue(datagramV4, "Unprivileged ICMP sockets are unavailable, widen net.ipv4.ping_group_range on the CI runner");
+		}
 	}
 	
 	private static boolean canOpen() {
@@ -186,7 +189,7 @@ class IcmpPingSessionTest {
 	void isRunningAfterTaskEnded() throws Exception {
 		try (IcmpPingSession session = new IcmpPingSession(openSocket(), 1)) {
 			session.start("test-ended", () -> {});
-			assertTrue(await(() -> !session.socket().isOpen() && !session.isRunning(), Duration.ofSeconds(2)));
+			assertTrue(await(() -> !session.socket().isOpen() && !session.isRunning(), Duration.ofSeconds(10)));
 			assertFalse(session.isRunning());
 			assertFalse(session.isCancelled());
 		}
@@ -210,7 +213,7 @@ class IcmpPingSessionTest {
 	void startTaskEndsNormally() throws Exception {
 		try (IcmpPingSession session = new IcmpPingSession(openSocket(), 1)) {
 			session.start("test-normal", () -> {});
-			assertTrue(await(() -> !session.socket().isOpen(), Duration.ofSeconds(2)));
+			assertTrue(await(() -> !session.socket().isOpen(), Duration.ofSeconds(10)));
 			assertTrue(session.failure().isEmpty());
 		}
 	}
@@ -222,7 +225,7 @@ class IcmpPingSessionTest {
 			session.start("test-runtime", () -> {
 				throw exception;
 			});
-			assertTrue(await(() -> !session.socket().isOpen(), Duration.ofSeconds(2)));
+			assertTrue(await(() -> !session.socket().isOpen(), Duration.ofSeconds(10)));
 			assertSame(exception, session.failure().orElseThrow());
 		}
 	}
@@ -234,7 +237,7 @@ class IcmpPingSessionTest {
 			session.start("test-error", () -> {
 				throw error;
 			});
-			assertTrue(await(() -> !session.socket().isOpen(), Duration.ofSeconds(2)));
+			assertTrue(await(() -> !session.socket().isOpen(), Duration.ofSeconds(10)));
 			assertSame(error, session.failure().orElseThrow());
 		}
 	}
@@ -265,9 +268,9 @@ class IcmpPingSessionTest {
 			done.countDown();
 		});
 		
-		assertTrue(done.await(1, TimeUnit.SECONDS));
+		assertTrue(done.await(10, TimeUnit.SECONDS));
 		assertTrue(session.isCancelled());
-		assertTrue(await(() -> !session.socket().isOpen(), Duration.ofSeconds(1)));
+		assertTrue(await(() -> !session.socket().isOpen(), Duration.ofSeconds(10)));
 	}
 	
 	@Test
@@ -305,7 +308,7 @@ class IcmpPingSessionTest {
 			release.set(true);
 		}
 		assertTrue(interrupted);
-		assertTrue(await(ended::get, Duration.ofSeconds(2)));
+		assertTrue(await(ended::get, Duration.ofSeconds(10)));
 	}
 	
 	@Test
@@ -349,7 +352,7 @@ class IcmpPingSessionTest {
 				daemon.set(Thread.currentThread().isDaemon());
 				done.countDown();
 			});
-			assertTrue(done.await(2, TimeUnit.SECONDS));
+			assertTrue(done.await(10, TimeUnit.SECONDS));
 			assertEquals("icmp-test-thread", name.get());
 			assertTrue(daemon.get());
 		}

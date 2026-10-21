@@ -24,8 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class SocketStreamsTest {
 	
 	private static void withPair(PairConsumer body) throws Exception {
-		try (ServerSocket serverSocket = new ServerSocket(0)) {
+		try (ServerSocket serverSocket = new ServerSocket(0, 50, InetAddress.getLoopbackAddress())) {
 			int port = serverSocket.getLocalPort();
 			try (
 				Socket peer = new Socket("127.0.0.1", port);
@@ -60,8 +59,9 @@ class SocketStreamsTest {
 		return new String(stream.readNBytes(length), StandardCharsets.US_ASCII);
 	}
 	
-	private static boolean awaitPendingInput(SocketStreams streams) throws InterruptedException {
-		for (int attempt = 0; attempt < 200; attempt++) {
+	private static boolean awaitPendingInput(SocketStreams streams) throws Exception {
+		long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+		while (System.nanoTime() < deadline) {
 			if (streams.hasPendingInput()) {
 				return true;
 			}
@@ -215,7 +215,7 @@ class SocketStreamsTest {
 			
 			SocketStreams streams = new SocketStreams(local);
 			
-			assertFalse(streams.hasPendingInput());
+			assertTrue(awaitPendingInput(streams));
 		});
 	}
 	

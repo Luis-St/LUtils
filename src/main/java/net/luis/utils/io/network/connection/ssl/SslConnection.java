@@ -18,255 +18,117 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.connection.*;
-import net.luis.utils.io.network.connection.context.ConnectionContext;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
-import net.luis.utils.io.network.connection.exception.NetworkErrorType;
-import org.apache.commons.lang3.ArrayUtils;
+import net.luis.utils.io.network.connection.exception.NetworkTimeoutException;
+import net.luis.utils.io.network.connection.tcp.TcpClientConfig;
+import net.luis.utils.io.network.connection.tcp.TcpConnection;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import javax.net.ssl.*;
-import java.io.*;
-import java.net.InetSocketAddress;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.Objects;
 
 /**
- * Represents an active SSL/TLS connection from a client to an {@link SslServer}.<br>
- * This class wraps an {@link SSLSocket} and provides convenient send/receive operations.<br>
+ * A TLS secured connection.<br>
  * <p>
- *     Instances of this class are created by {@link SslServer} when clients connect and are passed to the message handler for processing.
+ *     A client opens a secured connection with {@link #connectTo(Endpoint)} or upgrades a plain one with {@link TcpConnection#upgrade(SslUpgradeConfig)},
+ *     an {@link SslServer} accepts secured connections and hands them to its handler.<br>
+ *     The TLS handshake has always completed when a secured connection is handed out.
  * </p>
  * <p>
- *     Example usage in a message handler:
+ *     Example usage:
  * </p>
  * <pre>{@code
- * SslServerConfig config = SslServerConfig.builder(sslContext)
- *     .onMessage((server, connection, data) -> {
- *         System.out.println("From " + connection.remoteEndpoint() + ": " + new String(data));
- *         connection.send("Response".getBytes());
- *     })
- *     .build();
+ * try (SslConnection connection = SslConnection.connectTo(new HostEndpoint("example.com", 8443))) {
+ *     System.out.println("Protocol: " + connection.getSession().getProtocol());
+ *     connection.send("Hello".getBytes());
+ * }
  * }</pre>
  *
+ * @see SslClientConfig
  * @see SslServer
- * @see SslServerConfig
  *
  * @author Luis-St
  */
-public final class SslConnection implements Connection {
+public final class SslConnection extends Connection {
 	
 	/**
-	 * The underlying client SSL socket.<br>
+	 * The underlying SSL socket.<br>
 	 */
-	private final SSLSocket socket;
-	/**
-	 * The buffer size for read operations.<br>
-	 */
-	private final int bufferSize;
-	/**
-	 * The read timeout for blocking operations.<br>
-	 */
-	private final Duration readTimeout;
-	/**
-	 * Whether messages are framed with a length prefix on the wire.<br>
-	 */
-	private final boolean framing;
-	/**
-	 * The reusable scratch buffer for unframed read operations.<br>
-	 * Allocated lazily and grown on demand, and unused while framing is enabled.<br>
-	 * The context storing user data attached to this connection.<br>
-	 */
-	private final ConnectionContext context = new ConnectionContext();
-	/**
-	 * The streams of the socket, so that every caller gets the same instance.<br>
-	 */
-	private final SocketStreams streams;
-	/**
-	 * The reusable scratch buffer for read operations.<br>
-	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
-	 */
-	private byte @Nullable [] readBuffer;
+	private final SSLSocket sslSocket;
 	
 	/**
-	 * Constructs a new SSL connection wrapping the given socket.<br>
+	 * Constructs a new secured connection over the given SSL socket.<br>
+	 * <p>
+	 *     The constructor does not perform the handshake.<br>
+	 *     If the handshake of the socket has not been performed yet, it is performed on the first read or write.<br>
+	 *     The connections created by this package are only constructed after their handshake has completed.
+	 * </p>
 	 *
-	 * @param socket The client SSL socket
-	 * @param bufferSize The buffer size for read operations
-	 * @param framing Whether messages are framed with a length prefix on the wire
-	 * @param readTimeout The read timeout
-	 * @throws NullPointerException If socket or read timeout is null
+	 * @param socket The connected SSL socket
+	 * @param framing The framing that delimits messages on the stream
+	 * @param maxMessageSize The maximum length of a message in bytes
+	 * @param readTimeout The read timeout, or null if a receive waits forever
+	 * @throws NullPointerException If the socket or the framing is null
+	 * @throws IllegalArgumentException If the socket is not connected, the max message size is less than 1 or the read timeout is not positive
+	 * @throws NetworkConnectionException If the read timeout cannot be applied to the socket
 	 */
-	SslConnection(@NonNull SSLSocket socket, int bufferSize, boolean framing, @NonNull Duration readTimeout) {
-		this.socket = Objects.requireNonNull(socket, "Socket must not be null");
-		this.streams = new SocketStreams(socket);
-		this.bufferSize = bufferSize;
-		this.framing = framing;
-		this.readTimeout = Objects.requireNonNull(readTimeout, "Read timeout must not be null");
+	public SslConnection(@NonNull SSLSocket socket, @NonNull Framing framing, int maxMessageSize, @Nullable Duration readTimeout) throws NetworkConnectionException {
+		super(socket, framing, maxMessageSize, readTimeout);
+		this.sslSocket = socket;
 	}
 	
 	/**
-	 * Layers TLS over an already connected plaintext socket in server mode and returns the secured connection.<br>
-	 * <p>
-	 *     This is how a server that accepted a connection as plaintext switches it to TLS, for example after it detected a TLS handshake on a port shared with plaintext.<br>
-	 *     The given consumed bytes are the input that was already read from the socket, they are processed before any further input of the socket.<br>
-	 *     The enabled protocols, the enabled cipher suites, the client authentication mode and the client socket options are taken from the given configuration.<br>
-	 *     The TLS handshake is not started here, it is performed by the server that serves the connection or implicitly on the first read or write.
-	 * </p>
-	 * <p>
-	 *     The returned connection owns the socket, so closing it closes the underlying socket.<br>
-	 *     If the upgrade fails, ownership stays with the caller, which is responsible for closing the socket.
-	 * </p>
+	 * Opens a secured connection to the given endpoint with the default configuration.<br>
 	 *
-	 * @param socket The connected plaintext socket to upgrade
-	 * @param consumed The input that was already read from the socket
-	 * @param config The configuration of the secured connection
-	 * @return The secured connection
-	 * @throws NullPointerException If socket, consumed, or config is null
-	 * @throws NetworkConnectionException If the socket is not connected or cannot be layered with TLS
-	 * @see SslServer#serve(SslConnection)
+	 * @param endpoint The endpoint to connect to
+	 * @return The open connection
+	 * @throws NullPointerException If the endpoint is null
+	 * @throws NetworkTimeoutException If connecting or the handshake times out
+	 * @throws NetworkConnectionException If connecting or the handshake fails
 	 */
-	public static @NonNull SslConnection upgrade(@NonNull Socket socket, byte @NonNull [] consumed, @NonNull SslServerConfig config) throws NetworkConnectionException {
-		Objects.requireNonNull(socket, "Socket must not be null");
-		Objects.requireNonNull(consumed, "Consumed data must not be null");
+	public static @NonNull SslConnection connectTo(@NonNull Endpoint endpoint) throws NetworkConnectionException {
+		return connectTo(endpoint, SslClientConfig.DEFAULT);
+	}
+	
+	/**
+	 * Opens a secured connection to the given endpoint with the given configuration.<br>
+	 * A plain connection is opened with the transport settings and secured with the TLS settings of the configuration.<br>
+	 *
+	 * @param endpoint The endpoint to connect to
+	 * @param config The configuration of the connection
+	 * @return The open connection
+	 * @throws NullPointerException If the endpoint or the configuration is null
+	 * @throws NetworkTimeoutException If connecting or the handshake times out
+	 * @throws NetworkConnectionException If connecting or the handshake fails
+	 */
+	public static @NonNull SslConnection connectTo(@NonNull Endpoint endpoint, @NonNull SslClientConfig config) throws NetworkConnectionException {
+		Objects.requireNonNull(endpoint, "Endpoint must not be null");
 		Objects.requireNonNull(config, "Config must not be null");
-		if (socket.isClosed() || !socket.isConnected()) {
-			throw new NetworkConnectionException("Socket is not connected", NetworkErrorType.NOT_CONNECTED);
-		}
 		
-		IpEndpoint endpoint = IpEndpoint.from((InetSocketAddress) socket.getRemoteSocketAddress());
+		TcpClientConfig transport = config.transport();
+		Socket socket = NetworkUtils.connectSocket(endpoint, transport);
 		try {
-			SSLSocket sslSocket = (SSLSocket) config.sslContext().getSocketFactory().createSocket(socket, new ByteArrayInputStream(consumed), true);
-			if (!config.enabledProtocols().isEmpty()) {
-				sslSocket.setEnabledProtocols(TlsProtocol.toProtocolNames(config.enabledProtocols()));
-			}
-			if (!config.enabledCipherSuites().isEmpty()) {
-				sslSocket.setEnabledCipherSuites(config.enabledCipherSuites().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
-			}
-			switch (config.clientAuth()) {
-				case NONE -> {}
-				case REQUESTED -> sslSocket.setWantClientAuth(true);
-				case REQUIRED -> sslSocket.setNeedClientAuth(true);
-			}
-			
-			sslSocket.setTcpNoDelay(config.tcpNoDelay());
-			sslSocket.setKeepAlive(config.keepAlive());
-			sslSocket.setSoTimeout((int) Math.min(Integer.MAX_VALUE, config.clientReadTimeout().toMillis()));
-			return new SslConnection(sslSocket, config.clientBufferSize(), config.framing(), config.clientReadTimeout());
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to upgrade connection to TLS", e, NetworkErrorType.IO_ERROR, endpoint);
+			SSLSocket sslSocket = SslSockets.layerClient(socket, endpoint, config.tls());
+			return new SslConnection(sslSocket, transport.framing(), transport.maxMessageSize(), transport.readTimeout());
+		} catch (NetworkConnectionException e) {
+			NetworkUtils.closeQuietly(socket);
+			throw e;
 		}
 	}
 	
 	/**
-	 * Ensures that this connection is still active before its streams are handed out.<br>
-	 * @throws NetworkConnectionException If the connection is closed
-	 */
-	private void ensureActive() throws NetworkConnectionException {
-		if (!this.isActive()) {
-			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED);
-		}
-	}
-	
-	/**
-	 * Performs the TLS handshake on this connection (blocking).<br>
-	 * This method is called by the server before any data is exchanged to ensure the secure
-	 * channel is established and to surface handshake failures early.<br>
-	 *
-	 * @throws NetworkConnectionException If the handshake fails
-	 */
-	void startHandshake() throws NetworkConnectionException {
-		try {
-			this.socket.startHandshake();
-		} catch (SSLHandshakeException e) {
-			throw new NetworkConnectionException("SSL handshake failed", e, NetworkErrorType.HANDSHAKE_FAILED, this.remoteEndpoint());
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed during SSL handshake", e, NetworkErrorType.IO_ERROR, this.remoteEndpoint());
-		}
-	}
-	
-	@Override
-	public boolean isActive() {
-		return !this.socket.isClosed() && this.socket.isConnected();
-	}
-	
-	/**
-	 * Returns the TLS session associated with this connection.<br>
-	 * The session provides details such as the negotiated protocol, cipher suite, and peer certificates.<br>
+	 * Returns the TLS session of this connection.<br>
+	 * The session provides details such as the negotiated protocol, the cipher suite and the peer certificates.<br>
 	 *
 	 * @return The SSL session
 	 */
 	public @NonNull SSLSession getSession() {
-		return this.socket.getSession();
-	}
-	
-	@Override
-	public @NonNull ConnectionContext context() {
-		return this.context;
-	}
-	
-	@Override
-	public @NonNull IpEndpoint remoteEndpoint() {
-		return IpEndpoint.from((InetSocketAddress) this.socket.getRemoteSocketAddress());
-	}
-	
-	@Override
-	public @NonNull IpEndpoint localEndpoint() {
-		return IpEndpoint.from((InetSocketAddress) this.socket.getLocalSocketAddress());
-	}
-	
-	@Override
-	public void send(byte @NonNull [] data) throws NetworkConnectionException {
-		Objects.requireNonNull(data, "Data must not be null");
-		NetworkUtils.validateMessageSize(data, this.bufferSize, this.remoteEndpoint());
-		if (!this.isActive()) {
-			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
-		}
-		
-		NetworkUtils.writeAll(this.socket, data, this.framing, null, this.remoteEndpoint(), null);
-	}
-	
-	@Override
-	public byte @NonNull [] receive() throws NetworkConnectionException {
-		return this.receive(this.bufferSize);
-	}
-	
-	@Override
-	public byte @NonNull [] receive(int maxBytes) throws NetworkConnectionException {
-		if (maxBytes < 1) {
-			throw new IllegalArgumentException("Max bytes must be at least 1: " + maxBytes);
-		}
-		if (!this.isActive()) {
-			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
-		}
-		
-		if (!this.framing) {
-			this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
-		}
-		return NetworkUtils.readMessage(this.streams.input(), this.readBuffer, maxBytes, this.framing, this.readTimeout, null, this.remoteEndpoint(), null);
-	}
-	
-	@Override
-	public @NonNull InputStream getInputStream() throws NetworkConnectionException {
-		this.ensureActive();
-		return this.streams.input();
-	}
-	
-	@Override
-	public @NonNull OutputStream getOutputStream() throws NetworkConnectionException {
-		this.ensureActive();
-		return this.streams.output();
-	}
-	
-	@Override
-	public void close() {
-		if (!this.socket.isClosed()) {
-			try {
-				this.socket.close();
-			} catch (IOException _) {}
-		}
+		return this.sslSocket.getSession();
 	}
 }

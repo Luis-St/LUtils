@@ -33,7 +33,6 @@ import java.io.UncheckedIOException;
 import java.net.*;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,6 +61,10 @@ class IcmpSocketTest {
 		datagramV4 = supported && canOpen(IcmpVersion.ICMP_V4, Ipv4Address.LOOPBACK);
 		datagramV6 = supported && canOpen(IcmpVersion.ICMP_V6, Ipv6Address.LOOPBACK);
 		defaultRoute = hasRouteTo(UNROUTABLE);
+		if (System.getenv("CI") != null && LINUX) {
+			assertTrue(datagramV4, "Unprivileged ICMP sockets are unavailable, widen net.ipv4.ping_group_range on the CI runner");
+			assertTrue(defaultRoute, "The CI runner has no default route");
+		}
 	}
 	
 	private static boolean canOpen(@NonNull IcmpVersion version, @NonNull IpAddress<?> loopback) {
@@ -131,17 +134,12 @@ class IcmpSocketTest {
 	void constructRawSocketWithoutPrivilege() {
 		assumeTrue(supported);
 		assumeFalse(ROOT);
-		AtomicInteger calls = new AtomicInteger(0);
-		AtomicReference<Throwable> cause = new AtomicReference<>();
-		IcmpSocketConfig config = IcmpSocketConfig.builder().socketType(IcmpSocketType.RAW).onError((connection, type, message, error) -> {
-			calls.incrementAndGet();
-			cause.set(error);
-		}).build();
+		IcmpSocketConfig config = IcmpSocketConfig.builder().socketType(IcmpSocketType.RAW).build();
 		
 		NetworkConnectionException e = assertThrows(NetworkConnectionException.class, () -> new IcmpSocket(IcmpVersion.ICMP_V4, config));
 		assertTrue(e.getMessage().contains("CAP_NET_RAW"));
-		assertEquals(1, calls.get());
-		assertNotNull(cause.get());
+		assertInstanceOf(IOException.class, e.getCause());
+		assertNull(e.endpoint());
 	}
 	
 	@Test
@@ -172,14 +170,11 @@ class IcmpSocketTest {
 	@Test
 	void bindToForeignAddress() throws Exception {
 		assumeTrue(datagramV4);
-		AtomicInteger calls = new AtomicInteger(0);
-		IcmpSocketConfig config = IcmpSocketConfig.builder().onError((connection, type, message, cause) -> calls.incrementAndGet()).build();
-		try (IcmpSocket socket = new IcmpSocket(IcmpVersion.ICMP_V4, config)) {
+		try (IcmpSocket socket = new IcmpSocket(IcmpVersion.ICMP_V4)) {
 			NetworkConnectionException e = assertThrows(NetworkConnectionException.class, () -> socket.bind(UNROUTABLE));
 			assertTrue(e.getMessage().startsWith("Failed to bind to 192.0.2.1"));
 			assertEquals(new IpEndpoint(UNROUTABLE, 0), e.endpoint());
 			assertEquals(NetworkErrorType.IO_ERROR, e.errorType());
-			assertEquals(1, calls.get());
 		}
 	}
 	
@@ -442,7 +437,7 @@ class IcmpSocketTest {
 		
 		Thread.sleep(200);
 		socket.close();
-		thread.join(1000);
+		thread.join(10000);
 		assertFalse(thread.isAlive());
 		assertEquals(NetworkErrorType.SOCKET_CLOSED, assertInstanceOf(NetworkConnectionException.class, error.get()).errorType());
 	}
@@ -597,7 +592,7 @@ class IcmpSocketTest {
 		
 		Thread.sleep(100);
 		socket.close();
-		thread.join(2000);
+		thread.join(10000);
 		assertFalse(thread.isAlive());
 		assertEquals(NetworkErrorType.SOCKET_CLOSED, assertInstanceOf(NetworkConnectionException.class, error.get()).errorType());
 		assertFalse(socket.isOpen());

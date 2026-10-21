@@ -18,74 +18,88 @@
 
 package net.luis.utils.io.network.connection;
 
-import net.luis.utils.io.network.Endpoint;
-import net.luis.utils.io.network.connection.hybrid.HybridServer;
-import net.luis.utils.io.network.connection.ssl.SslServer;
-import net.luis.utils.io.network.connection.tcp.TcpServer;
+import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.udp.UdpServer;
 import org.jspecify.annotations.NonNull;
 
+import java.time.Duration;
+
 /**
  * Base interface for network servers.<br>
- * This sealed interface provides common operations for TCP, SSL, and UDP servers.<br>
  * <p>
- *     This interface is sealed and permits only {@link TcpServer}, {@link SslServer}, and {@link UdpServer}<br>
- *     as implementations, ensuring type safety when working with network servers polymorphically.
+ *     A server is a loop that receives from the network and feeds a handler.<br>
+ *     The stream servers accept connections and hand every {@link Connection} to a {@link ConnectionHandler},
+ *     the {@link UdpServer} receives datagrams and hands each one to its handler.
  * </p>
  * <p>
- *     All implementations support try-with-resources through the {@link AutoCloseable} interface.
+ *     All implementations support try-with-resources through the {@link AutoCloseable} interface,
+ *     closing a server stops it immediately.
  * </p>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
- * NetworkServer server = ...; // TcpServer or UdpServer
- * try (server) {
- *     server.start();
- *     System.out.println("Server running on: " + server.boundEndpoint());
- *     // Wait for shutdown signal
- * }
- *
- * // Pattern matching
- * switch (server) {
- *     case TcpServer tcp -> System.out.println("Clients: " + tcp.getClientCount());
- *     case UdpServer udp -> System.out.println("UDP server");
+ * try (NetworkServer server = TcpServer.startOn(endpoint, ConnectionHandler.perMessage((srv, connection, data) -> connection.send(data)))) {
+ *     // Server runs until it is stopped or closed
  * }
  * }</pre>
  *
- * @see TcpServer
- * @see SslServer
+ * @see StreamServer
  * @see UdpServer
- * @see HybridServer
  *
  * @author Luis-St
  */
-public sealed interface NetworkServer extends AutoCloseable permits HybridServer, SslServer, TcpServer, UdpServer {
+public sealed interface NetworkServer extends AutoCloseable permits StreamServer, UdpServer {
 	
 	/**
-	 * Returns whether this server is currently running.<br>
+	 * Returns whether the server is currently running.<br>
 	 * @return True if the server is running
 	 */
 	boolean isRunning();
 	
 	/**
 	 * Returns the endpoint this server is bound to.<br>
-	 * @return The bound endpoint
+	 * While the server is running, the endpoint is observed from the socket, so an ephemeral port is resolved to the actual port.<br>
+	 *
+	 * @return The bound endpoint, or the configured bind endpoint if the server is not running
 	 */
-	@NonNull Endpoint boundEndpoint();
+	@NonNull IpEndpoint boundEndpoint();
 	
 	/**
-	 * Starts the server and begins accepting connections/datagrams.<br>
-	 * This method returns immediately; the server runs in background threads.
+	 * Starts the server.<br>
+	 * Calling this method on a running server has no effect.<br>
+	 *
+	 * @throws NetworkConnectionException If the server cannot be bound or started
 	 */
-	void start();
+	void start() throws NetworkConnectionException;
 	
 	/**
-	 * Stops the server gracefully.<br>
-	 * This method blocks until all active operations complete or timeout.
+	 * Stops the server immediately.<br>
+	 * All handlers are interrupted by closing their sockets.<br>
+	 * Calling this method on a server that is not running has no effect.<br>
 	 */
 	void stop();
 	
+	/**
+	 * Stops the server gracefully.<br>
+	 * <p>
+	 *     The server stops receiving new connections or datagrams right away,
+	 *     afterward it waits up to the given grace period for the running handlers to finish.<br>
+	 *     Handlers that are still running when the grace period has elapsed are interrupted by closing their sockets.<br>
+	 *     A handler that blocks in a receive only finishes in time if its remote side closes the connection.
+	 * </p>
+	 *
+	 * @param gracePeriod The maximum time to wait for running handlers
+	 * @throws NullPointerException If the grace period is null
+	 * @throws IllegalArgumentException If the grace period is negative
+	 */
+	void stop(@NonNull Duration gracePeriod);
+	
+	/**
+	 * Stops the server immediately.<br>
+	 * @see #stop()
+	 */
 	@Override
 	void close();
 }

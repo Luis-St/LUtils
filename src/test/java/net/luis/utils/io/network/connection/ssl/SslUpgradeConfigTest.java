@@ -19,13 +19,10 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
-import net.luis.utils.io.network.connection.event.*;
-import net.luis.utils.io.network.connection.tcp.TcpClientConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLContext;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,11 +88,6 @@ class SslUpgradeConfigTest {
 	}
 	
 	@Test
-	void toClientConfigWithNullConfigThrows() {
-		assertThrows(NullPointerException.class, () -> SslUpgradeConfig.DEFAULT.toClientConfig(null));
-	}
-	
-	@Test
 	void defaultConfigValues() {
 		SslUpgradeConfig config = SslUpgradeConfig.DEFAULT;
 		
@@ -140,191 +132,34 @@ class SslUpgradeConfigTest {
 	}
 	
 	@Test
-	void toClientConfigTakesTransportSettingsFromTcpConfig() {
-		TcpClientConfig base = TcpClientConfig.builder()
-			.connectTimeout(Duration.ofSeconds(10))
-			.readTimeout(Duration.ofSeconds(5))
-			.writeTimeout(Duration.ofSeconds(15))
-			.bufferSize(16384)
-			.framing(false)
-			.tcpNoDelay(false)
-			.keepAlive(false)
-			.build();
+	void resolveSslContextReturnsConfiguredContext() throws Exception {
+		SSLContext configured = SslTestContext.clientContext();
+		SslUpgradeConfig config = new SslUpgradeConfig(configured, List.of(), List.of(), true);
 		
-		SslClientConfig result = SslUpgradeConfig.DEFAULT.toClientConfig(base);
-		
-		assertEquals(Duration.ofSeconds(10), result.connectTimeout());
-		assertEquals(Duration.ofSeconds(5), result.readTimeout());
-		assertEquals(Duration.ofSeconds(15), result.writeTimeout());
-		assertEquals(16384, result.bufferSize());
-		assertFalse(result.framing());
-		assertFalse(result.tcpNoDelay());
-		assertFalse(result.keepAlive());
+		assertSame(configured, config.resolveSslContext());
+		assertNotSame(SSLContext.getDefault(), config.resolveSslContext());
 	}
 	
 	@Test
-	void toClientConfigTakesTlsSettingsFromUpgradeConfig() {
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(context, List.of(TlsProtocol.TLS_V1_3), List.of("TLS_AES_256_GCM_SHA384"), false);
-		
-		SslClientConfig result = upgradeConfig.toClientConfig(TcpClientConfig.DEFAULT);
-		
-		assertSame(context, result.sslContext());
-		assertEquals(List.of(TlsProtocol.TLS_V1_3), result.enabledProtocols());
-		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), result.enabledCipherSuites());
-		assertFalse(result.verifyHostname());
+	void resolveSslContextReturnsDefaultWhenNull() throws Exception {
+		assertSame(SSLContext.getDefault(), SslUpgradeConfig.DEFAULT.resolveSslContext());
 	}
 	
 	@Test
-	void toClientConfigCarriesHandlers() {
-		ConnectEventHandler onConnect = (connection, local, remote, timestamp) -> {};
-		DisconnectEventHandler onDisconnect = (connection, local, remote, timestamp) -> {};
-		ErrorEventHandler onError = (connection, errorType, message, cause) -> {};
-		TcpClientConfig base = TcpClientConfig.builder().onConnect(onConnect).onDisconnect(onDisconnect).onError(onError).build();
+	void resolveSslContextDoesNotChangeComponent() throws Exception {
+		SslUpgradeConfig.DEFAULT.resolveSslContext();
 		
-		SslClientConfig result = SslUpgradeConfig.DEFAULT.toClientConfig(base);
-		
-		assertSame(onConnect, result.onConnect());
-		assertSame(onDisconnect, result.onDisconnect());
-		assertSame(onError, result.onError());
+		assertNull(SslUpgradeConfig.DEFAULT.sslContext());
 	}
 	
 	@Test
-	void toClientConfigWithoutHandlers() {
-		SslClientConfig result = SslUpgradeConfig.DEFAULT.toClientConfig(TcpClientConfig.DEFAULT);
-		
-		assertNull(result.onConnect());
-		assertNull(result.onDisconnect());
-		assertNull(result.onError());
-	}
-	
-	@Test
-	void toClientConfigCarriesFramingEnabled() {
-		TcpClientConfig base = TcpClientConfig.builder().framing(true).build();
-		
-		assertTrue(SslUpgradeConfig.DEFAULT.toClientConfig(base).framing());
-	}
-	
-	@Test
-	void toClientConfigCarriesFramingDisabled() {
-		TcpClientConfig base = TcpClientConfig.builder().framing(false).build();
-		
-		assertFalse(SslUpgradeConfig.DEFAULT.toClientConfig(base).framing());
-	}
-	
-	@Test
-	void toClientConfigCarriesVerifyHostnameEnabled() {
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(null, List.of(), List.of(), true);
-		
-		assertTrue(upgradeConfig.toClientConfig(TcpClientConfig.DEFAULT).verifyHostname());
-	}
-	
-	@Test
-	void toClientConfigCarriesVerifyHostnameDisabled() {
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(null, List.of(), List.of(), false);
-		
-		assertFalse(upgradeConfig.toClientConfig(TcpClientConfig.DEFAULT).verifyHostname());
-	}
-	
-	@Test
-	void toClientConfigOfDefaultsMatchesSslClientConfigDefault() {
-		assertEquals(SslClientConfig.DEFAULT, SslUpgradeConfig.DEFAULT.toClientConfig(TcpClientConfig.DEFAULT));
-	}
-	
-	@Test
-	void toClientConfigResolvesConfiguredSslContext() throws Exception {
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(context, List.of(), List.of(), true);
-		
-		SslClientConfig result = upgradeConfig.toClientConfig(TcpClientConfig.DEFAULT);
-		
-		assertSame(context, result.resolveSslContext());
-	}
-	
-	@Test
-	void toClientConfigResolvesDefaultSslContextWhenNull() throws Exception {
-		SslClientConfig result = SslUpgradeConfig.DEFAULT.toClientConfig(TcpClientConfig.DEFAULT);
-		
-		assertNull(result.sslContext());
-		assertNotNull(result.resolveSslContext());
-	}
-	
-	@Test
-	void toClientConfigReturnsNewInstanceEachCall() {
-		SslClientConfig first = SslUpgradeConfig.DEFAULT.toClientConfig(TcpClientConfig.DEFAULT);
-		SslClientConfig second = SslUpgradeConfig.DEFAULT.toClientConfig(TcpClientConfig.DEFAULT);
+	void equalityAndHashCode() {
+		SslUpgradeConfig first = new SslUpgradeConfig(context, List.of(TlsProtocol.TLS_V1_3), List.of("TLS_AES_256_GCM_SHA384"), true);
+		SslUpgradeConfig second = new SslUpgradeConfig(context, List.of(TlsProtocol.TLS_V1_3), List.of("TLS_AES_256_GCM_SHA384"), true);
+		SslUpgradeConfig other = new SslUpgradeConfig(context, List.of(TlsProtocol.TLS_V1_3), List.of("TLS_AES_256_GCM_SHA384"), false);
 		
 		assertEquals(first, second);
-		assertNotSame(first, second);
-	}
-	
-	@Test
-	void toClientConfigKeepsListsImmutable() {
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(null, List.of(TlsProtocol.TLS_V1_3), List.of("TLS_AES_256_GCM_SHA384"), true);
-		
-		SslClientConfig result = upgradeConfig.toClientConfig(TcpClientConfig.DEFAULT);
-		
-		assertEquals(List.of(TlsProtocol.TLS_V1_3), result.enabledProtocols());
-		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), result.enabledCipherSuites());
-		assertThrows(UnsupportedOperationException.class, () -> result.enabledProtocols().add(TlsProtocol.TLS_V1_2));
-		assertThrows(UnsupportedOperationException.class, () -> result.enabledCipherSuites().add("TLS_AES_128_GCM_SHA256"));
-	}
-	
-	@Test
-	void toClientConfigIsIndependentOfSourceListMutation() {
-		List<TlsProtocol> protocols = new ArrayList<>(List.of(TlsProtocol.TLS_V1_3));
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(null, protocols, List.of(), true);
-		
-		protocols.add(TlsProtocol.TLS_V1_2);
-		SslClientConfig result = upgradeConfig.toClientConfig(TcpClientConfig.DEFAULT);
-		
-		assertEquals(1, result.enabledProtocols().size());
-		assertEquals(List.of(TlsProtocol.TLS_V1_3), result.enabledProtocols());
-	}
-	
-	@Test
-	void toClientConfigAppliedToMultipleBaseConfigs() {
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(context, List.of(TlsProtocol.TLS_V1_3), List.of(), false);
-		TcpClientConfig first = TcpClientConfig.builder().framing(false).bufferSize(1024).build();
-		TcpClientConfig second = TcpClientConfig.builder().framing(true).bufferSize(8192).build();
-		
-		SslClientConfig firstResult = upgradeConfig.toClientConfig(first);
-		SslClientConfig secondResult = upgradeConfig.toClientConfig(second);
-		
-		assertFalse(firstResult.framing());
-		assertEquals(1024, firstResult.bufferSize());
-		assertTrue(secondResult.framing());
-		assertEquals(8192, secondResult.bufferSize());
-		assertSame(firstResult.sslContext(), secondResult.sslContext());
-		assertEquals(firstResult.enabledProtocols(), secondResult.enabledProtocols());
-	}
-	
-	@Test
-	void toClientConfigWithFullyCustomisedInputs() {
-		ConnectEventHandler onConnect = (connection, local, remote, timestamp) -> {};
-		DisconnectEventHandler onDisconnect = (connection, local, remote, timestamp) -> {};
-		ErrorEventHandler onError = (connection, errorType, message, cause) -> {};
-		TcpClientConfig base = TcpClientConfig.builder()
-			.connectTimeout(Duration.ofSeconds(10))
-			.readTimeout(Duration.ofSeconds(5))
-			.writeTimeout(Duration.ofSeconds(15))
-			.bufferSize(16384)
-			.framing(false)
-			.tcpNoDelay(false)
-			.keepAlive(false)
-			.onConnect(onConnect)
-			.onDisconnect(onDisconnect)
-			.onError(onError)
-			.build();
-		SslUpgradeConfig upgradeConfig = new SslUpgradeConfig(context, List.of(TlsProtocol.TLS_V1_3), List.of("TLS_AES_256_GCM_SHA384"), false);
-		
-		SslClientConfig result = upgradeConfig.toClientConfig(base);
-		
-		assertEquals(List.of(Duration.ofSeconds(10), Duration.ofSeconds(5), Duration.ofSeconds(15)), List.of(result.connectTimeout(), result.readTimeout(), result.writeTimeout()));
-		assertEquals(16384, result.bufferSize());
-		assertEquals(List.of(false, false, false), List.of(result.framing(), result.tcpNoDelay(), result.keepAlive()));
-		assertSame(context, result.sslContext());
-		assertEquals(List.of(TlsProtocol.TLS_V1_3), result.enabledProtocols());
-		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), result.enabledCipherSuites());
-		assertFalse(result.verifyHostname());
-		assertEquals(List.of(onConnect, onDisconnect, onError), List.of(result.onConnect(), result.onDisconnect(), result.onError()));
+		assertEquals(first.hashCode(), second.hashCode());
+		assertNotEquals(first, other);
 	}
 }

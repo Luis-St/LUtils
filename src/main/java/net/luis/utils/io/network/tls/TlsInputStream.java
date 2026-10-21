@@ -65,9 +65,9 @@ import java.util.Optional;
  *     Example usage:
  * </p>
  * <pre>{@code
- * TcpClient client = TcpClient.connectTo(endpoint);
- * TlsInputStream in = new TlsInputStream(client.getInputStream());
- * TlsOutputStream out = new TlsOutputStream(client.getOutputStream());
+ * TcpConnection connection = TcpConnection.connectTo(endpoint);
+ * TlsInputStream in = new TlsInputStream(connection.getInputStream());
+ * TlsOutputStream out = new TlsOutputStream(connection.getOutputStream());
  *
  * TlsCipherSuite suite = TlsCipherSuite.TLS_AES_128_GCM_SHA256;
  * KdfAlgorithm kdf = KdfAlgorithm.HKDF_SHA_256; // HKDF over suite.hash()
