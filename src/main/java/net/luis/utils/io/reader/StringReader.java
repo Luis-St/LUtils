@@ -20,6 +20,7 @@ package net.luis.utils.io.reader;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import net.luis.utils.exception.ConcurrentInteractionException;
 import net.luis.utils.exception.InvalidStringException;
 import net.luis.utils.io.FileUtils;
 import net.luis.utils.math.NumberType;
@@ -32,6 +33,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -55,7 +57,7 @@ import java.util.stream.Collectors;
  *
  * @author Luis-St
  */
-public class StringReader {
+public class StringReader implements AutoCloseable {
 	
 	/**
 	 * The string to read from.<br>
@@ -68,7 +70,7 @@ public class StringReader {
 	/**
 	 * The current index of the reader.<br>
 	 */
-	private int index;
+	protected int index;
 	/**
 	 * The marked index of the reader.<br>
 	 */
@@ -127,6 +129,41 @@ public class StringReader {
 		return set;
 	}
 	
+	protected @Nullable StringReader parent;
+	protected @Nullable StringReader child;
+	
+	public <R extends StringReader> @NonNull R createSubReader(@NonNull Function<String, R> creator) {
+		Objects.requireNonNull(creator, "Creator must not be null");
+		if (this.child != null) {
+			throw new IllegalStateException("Cannot create a sub reader while another sub reader is already active");
+		}
+		if (this.markedIndex != -1) {
+			throw new IllegalStateException("Cannot create a sub reader while this reader marked a position");
+		}
+		
+		R reader = creator.apply(this.string);
+		reader.index = this.index;
+		reader.parent = this;
+		this.child = reader;
+		return reader;
+	}
+	
+	protected void ensureUsable() {
+		if (this.child != null) {
+			throw new ConcurrentInteractionException("Interactions on the parent reader are not allowed while a child reader is active");
+		}
+	}
+	
+	@Override
+	public void close() {
+		if (this.parent == null) {
+			throw new IllegalStateException("Cannot close a reader which is not a child reader");
+		}
+		
+		this.parent.index = this.index;
+		this.parent.child = null;
+	}
+	
 	/**
 	 * Checks whether the given character is an escape character.<br>
 	 * A backslash ('\\') is an escape character, unless {@link StringReadingOption#IGNORE_ESCAPES} is set.<br>
@@ -180,9 +217,11 @@ public class StringReader {
 	 * Reads the next character from the string.<br>
 	 *
 	 * @return The next character
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IndexOutOfBoundsException If there are no more characters to read ({@link #canRead()} returns false)
 	 */
 	public char read() {
+		this.ensureUsable();
 		return this.string.charAt(this.index++);
 	}
 	
@@ -191,10 +230,12 @@ public class StringReader {
 	 *
 	 * @param amount The number of characters to read
 	 * @return The read characters as a string
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 * @throws IndexOutOfBoundsException If there are not enough characters to read ({@link #canRead(int)} returns false)
 	 */
 	public @NonNull String read(int amount) {
+		this.ensureUsable();
 		if (0 >= amount) {
 			throw new IllegalArgumentException("Amount must be greater than zero");
 		}
@@ -214,20 +255,26 @@ public class StringReader {
 	 *
 	 * @param amount The number of characters to read
 	 * @return True if there is at least a given number of characters to read, otherwise false
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 */
 	public boolean canRead(int amount) {
+		this.ensureUsable();
 		if (0 >= amount) {
 			throw new IllegalArgumentException("Amount must be greater than zero");
 		}
+		
 		return this.index + amount <= this.string.length();
 	}
 	
 	/**
 	 * Checks whether there are more characters to read.<br>
+	 *
 	 * @return True if there are more characters to read, otherwise false
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public boolean canRead() {
+		this.ensureUsable();
 		return this.canRead(1);
 	}
 	
@@ -237,9 +284,13 @@ public class StringReader {
 	 * @param amount The number of characters to read
 	 * @param predicate The predicate to match the characters
 	 * @return True if the number of characters to read matches the predicate, otherwise false
+	 * @throws NullPointerException If the predicate is null
+	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 */
 	public boolean canRead(int amount, @NonNull Predicate<Character> predicate) {
 		Objects.requireNonNull(predicate, "Predicate must not be null");
+		this.ensureUsable();
 		if (0 >= amount) {
 			throw new IllegalArgumentException("Amount must be greater than zero");
 		}
@@ -254,9 +305,12 @@ public class StringReader {
 	
 	/**
 	 * Peeks the current character without incrementing the index.<br>
+	 *
 	 * @return The current character
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public char peek() {
+		this.ensureUsable();
 		return this.string.charAt(this.index);
 	}
 	
@@ -266,9 +320,11 @@ public class StringReader {
 	 *
 	 * @param amount The number of characters to peek
 	 * @return The peeked characters as a string
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 */
 	public @NonNull String peek(int amount) {
+		this.ensureUsable();
 		if (0 >= amount) {
 			throw new IllegalArgumentException("Amount must be greater than zero");
 		}
@@ -282,8 +338,11 @@ public class StringReader {
 	/**
 	 * Skips the next character.<br>
 	 * Increments the index by one.<br>
+	 *
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public void skip() {
+		this.ensureUsable();
 		this.index++;
 	}
 	
@@ -291,12 +350,15 @@ public class StringReader {
 	 * Skips the given number of characters.<br>
 	 *
 	 * @param amount The number of characters to skip
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 */
 	public void skip(int amount) {
+		this.ensureUsable();
 		if (0 >= amount) {
 			throw new IllegalArgumentException("Amount must be greater than zero");
 		}
+		
 		this.index += amount;
 	}
 	
@@ -306,8 +368,11 @@ public class StringReader {
 	 * or there are no more characters to read, nothing happens.<br>
 	 *
 	 * @param c The character to skip
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public void skip(char c) {
+		this.ensureUsable();
+		
 		while (this.canRead() && this.peek() == c) {
 			this.skip();
 		}
@@ -320,9 +385,11 @@ public class StringReader {
 	 *
 	 * @param predicate The predicate to match
 	 * @throws NullPointerException If the predicate is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public void skip(@NonNull Predicate<Character> predicate) {
 		Objects.requireNonNull(predicate, "Predicate must not be null");
+		this.ensureUsable();
 		
 		while (this.canRead() && predicate.test(this.peek())) {
 			this.skip();
@@ -332,8 +399,11 @@ public class StringReader {
 	/**
 	 * Skips all whitespaces.<br>
 	 * A whitespace is a character that returns true when calling {@link Character#isWhitespace(char)}.<br>
+	 *
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public void skipWhitespaces() {
+		this.ensureUsable();
 		this.skip(Character::isWhitespace);
 	}
 	
@@ -341,16 +411,23 @@ public class StringReader {
 	 * Marks the current index of the reader.<br>
 	 * The marked index can be reset to by calling {@link #reset()}.<br>
 	 * After calling {@link #reset()}, the marked index will be reset.<br>
+	 *
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public void mark() {
+		this.ensureUsable();
 		this.markedIndex = this.index;
 	}
 	
 	/**
 	 * Resets the index of the reader to zero or if set to the marked index.<br>
 	 * If the marked index is set, it will be reset after calling this method.<br>
+	 *
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public void reset() {
+		this.ensureUsable();
+		
 		if (this.markedIndex == -1) {
 			this.index = 0;
 		} else {
@@ -365,8 +442,10 @@ public class StringReader {
 	 *
 	 * @param includeLineBreak Whether the line break should be included in the result or not
 	 * @return The line which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public @NonNull String readLine(boolean includeLineBreak) {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			return "";
 		}
@@ -407,9 +486,12 @@ public class StringReader {
 	
 	/**
 	 * Reads the remaining string.<br>
+	 *
 	 * @return The remaining string
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public @NonNull String readRemaining() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			return "";
 		}
@@ -424,6 +506,7 @@ public class StringReader {
 	 * The whitespace is read but not included in the result.<br>
 	 *
 	 * @return The string read until the default terminator
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @see #readUnquotedString(char)
 	 */
 	public @NonNull String readUnquotedString() {
@@ -437,9 +520,11 @@ public class StringReader {
 	 *
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 */
 	public @NonNull String readUnquotedString(char terminator) {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected an unquoted string but found nothing");
 		}
@@ -465,10 +550,12 @@ public class StringReader {
 	 * </p>
 	 *
 	 * @return The quoted string which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the next read character is not a (handled) single or double quote
 	 */
 	public @NonNull String readQuotedString() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a quoted string but found nothing");
 		}
@@ -507,11 +594,13 @@ public class StringReader {
 	 * </p>
 	 *
 	 * @return The string which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @see #readQuotedString()
 	 * @see #readUnquotedString()
 	 */
 	public @NonNull String readString() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a string value but found nothing");
 		}
@@ -541,12 +630,15 @@ public class StringReader {
 	 *
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 */
 	public @NonNull String readUntil(char terminator) {
+		this.ensureUsable();
 		if (terminator == '\\') {
 			throw new IllegalArgumentException("Terminator must not be a backslash");
 		}
+		
 		return this.readUntil(c -> c == terminator, false);
 	}
 	
@@ -567,12 +659,15 @@ public class StringReader {
 	 *
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator is found, inclusive of the terminator
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 */
 	public @NonNull String readUntilInclusive(char terminator) {
+		this.ensureUsable();
 		if (terminator == '\\') {
 			throw new IllegalArgumentException("Terminator must not be a backslash");
 		}
+		
 		return this.readUntil(c -> c == terminator, true);
 	}
 	
@@ -593,9 +688,11 @@ public class StringReader {
 	 *
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 */
 	public @NonNull String readUntilSkip(char terminator) {
+		this.ensureUsable();
 		if (terminator == '\\') {
 			throw new IllegalArgumentException("Terminator must not be a backslash");
 		}
@@ -625,11 +722,13 @@ public class StringReader {
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator array is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
 	@SuppressWarnings("DuplicatedCode")
 	public @NonNull String readUntil(char @NonNull ... terminators) {
 		Objects.requireNonNull(terminators, "Terminators must not be null");
+		this.ensureUsable();
 		
 		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
 		if (uniqueTerminators.isEmpty()) {
@@ -659,11 +758,13 @@ public class StringReader {
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator is found, inclusive of the terminator
 	 * @throws NullPointerException If the terminator array is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
 	@SuppressWarnings("DuplicatedCode")
 	public @NonNull String readUntilInclusive(char @NonNull ... terminators) {
 		Objects.requireNonNull(terminators, "Terminators must not be null");
+		this.ensureUsable();
 		
 		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
 		if (uniqueTerminators.isEmpty()) {
@@ -693,11 +794,13 @@ public class StringReader {
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator array is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
 	@SuppressWarnings("DuplicatedCode")
 	public @NonNull String readUntilSkip(char @NonNull ... terminators) {
 		Objects.requireNonNull(terminators, "Terminators must not be null");
+		this.ensureUsable();
 		
 		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
 		if (uniqueTerminators.isEmpty()) {
@@ -732,6 +835,7 @@ public class StringReader {
 	 * @param predicate The predicate to match the characters
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public @NonNull String readUntil(@NonNull Predicate<Character> predicate) {
 		return this.readUntil(predicate, false);
@@ -755,6 +859,7 @@ public class StringReader {
 	 * @param predicate The predicate to match the characters is found, inclusive of the terminator
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public @NonNull String readUntilInclusive(@NonNull Predicate<Character> predicate) {
 		return this.readUntil(predicate, true);
@@ -778,6 +883,7 @@ public class StringReader {
 	 * @param predicate The predicate to match the characters
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 */
 	public @NonNull String readUntilSkip(@NonNull Predicate<Character> predicate) {
 		String str = this.readUntil(predicate, false);
@@ -794,6 +900,7 @@ public class StringReader {
 	 * @param inclusive Whether the character which matches the predicate should be included in the result or not
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @see #readUntil(char)
 	 * @see #readUntilInclusive(char)
 	 * @see #readUntilSkip(char)
@@ -806,6 +913,7 @@ public class StringReader {
 	 */
 	protected @NonNull String readUntil(@NonNull Predicate<Character> predicate, boolean inclusive) {
 		Objects.requireNonNull(predicate, "Predicate must not be null");
+		this.ensureUsable();
 		
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
@@ -853,16 +961,19 @@ public class StringReader {
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator string is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 */
 	public @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		this.ensureUsable();
 		if (terminator.isEmpty()) {
 			throw new IllegalArgumentException("Terminator string must not be empty");
 		}
 		if (terminator.length() == 1) {
 			return this.readUntil(terminator.charAt(0));
 		}
+		
 		return this.readUntil(terminator, caseSensitive, false);
 	}
 	
@@ -884,16 +995,19 @@ public class StringReader {
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @return The string which was read until the terminator is found, inclusive of the terminator
 	 * @throws NullPointerException If the terminator string is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 */
 	public @NonNull String readUntilInclusive(@NonNull String terminator, boolean caseSensitive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		this.ensureUsable();
 		if (terminator.isEmpty()) {
 			throw new IllegalArgumentException("Terminators string must not be empty");
 		}
 		if (terminator.length() == 1) {
 			return this.readUntilInclusive(terminator.charAt(0));
 		}
+		
 		return this.readUntil(terminator, caseSensitive, true);
 	}
 	
@@ -915,10 +1029,12 @@ public class StringReader {
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator string is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 */
 	public @NonNull String readUntilSkip(@NonNull String terminator, boolean caseSensitive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		this.ensureUsable();
 		
 		int terminatorLength = terminator.length();
 		String str = terminatorLength == 1 ? this.readUntil(terminator.charAt(0)) : this.readUntil(terminator, caseSensitive, false);
@@ -936,6 +1052,7 @@ public class StringReader {
 	 * @param inclusive Whether the terminator string should be included in the result or not
 	 * @return The string which was read until the equals predicate is true
 	 * @throws NullPointerException If the terminator string is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 * @see #readUntil(String, boolean)
 	 * @see #readUntilInclusive(String, boolean)
@@ -944,6 +1061,7 @@ public class StringReader {
 	@SuppressWarnings("DuplicatedCode")
 	protected @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive, boolean inclusive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		this.ensureUsable();
 		if (terminator.isEmpty()) {
 			throw new IllegalArgumentException("Terminators string must not be empty");
 		}
@@ -998,12 +1116,15 @@ public class StringReader {
 	 * @param expected The expected string
 	 * @param caseSensitive Whether the expected string should be case-sensitive or not
 	 * @return The expected string which was read
+	 * @throws NullPointerException  If the expected string is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws IllegalArgumentException If the expected string is empty
 	 * @throws InvalidStringException If the string read does not match the expected string
 	 */
 	public @NonNull String readExpected(@NonNull String expected, boolean caseSensitive) {
 		Objects.requireNonNull(expected, "Expected string must not be null");
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected '" + expected + "' but found nothing");
 		}
@@ -1054,12 +1175,15 @@ public class StringReader {
 	 * @param expected The list of expected strings
 	 * @param caseSensitive Whether the expected strings should be case-sensitive or not
 	 * @return The expected string which was read
+	 * @throws NullPointerException  If the list of expected strings is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws IllegalArgumentException If the list of expected strings is empty
 	 * @throws InvalidStringException If the string read does not match any of the expected strings
 	 */
 	public @NonNull String readExpected(@NonNull List<String> expected, boolean caseSensitive) {
 		Objects.requireNonNull(expected, "Expected strings must not be null");
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected one of '" + expected + "' but found nothing");
 		}
@@ -1125,10 +1249,12 @@ public class StringReader {
 	 * The boolean is read as an unquoted string and then parsed case-insensitive.<br>
 	 *
 	 * @return The boolean value which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a boolean
 	 */
 	public boolean readBoolean() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a boolean value but found nothing");
 		}
@@ -1186,9 +1312,11 @@ public class StringReader {
 	 *
 	 * @param initialType The initial number type to read as
 	 * @return The number as a string which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws InvalidStringException If the read value is not a (valid) number
 	 */
 	private @Nullable ParsedNumber readNumberAsString(@Nullable NumberType initialType) {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			return null;
 		}
@@ -1331,11 +1459,13 @@ public class StringReader {
 	 * By default, the number is parsed as a double if it contains a dot otherwise as a long.<br>
 	 *
 	 * @return The number value which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) number
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public @NonNull Number readNumber() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a number but found nothing");
 		}
@@ -1352,11 +1482,13 @@ public class StringReader {
 	 * The number can be suffixed with a {@code b} (case-insensitive) to indicate that it is a byte.<br>
 	 *
 	 * @return The byte value which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) byte
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public byte readByte() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a byte value but found nothing");
 		}
@@ -1382,11 +1514,13 @@ public class StringReader {
 	 * The number can be suffixed with an {@code s} (case-insensitive) to indicate that it is a short.<br>
 	 *
 	 * @return The short value which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) short
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public short readShort() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a short value but found nothing");
 		}
@@ -1412,10 +1546,12 @@ public class StringReader {
 	 * The number can be suffixed with an {@code i} (case-insensitive) to indicate that it is an integer.<br>
 	 *
 	 * @return The integer value which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws InvalidStringException If the read value is not a (valid) integer
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public int readInt() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected an integer value but found nothing");
 		}
@@ -1441,11 +1577,13 @@ public class StringReader {
 	 * The number can be suffixed with an {@code l} (case-insensitive) to indicate that it is a long.<br>
 	 *
 	 * @return The long value which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) long
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public long readLong() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a long value but found nothing");
 		}
@@ -1471,11 +1609,13 @@ public class StringReader {
 	 * The number can be suffixed with an {@code f} (case-insensitive) to indicate that it is a float.<br>
 	 *
 	 * @return The float value which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) float
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public float readFloat() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a float value but found nothing");
 		}
@@ -1501,11 +1641,13 @@ public class StringReader {
 	 * The number can be suffixed with a {@code d} (case-insensitive) to indicate that it is a double.<br>
 	 *
 	 * @return The double value which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) double
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public double readDouble() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a double value but found nothing");
 		}
@@ -1530,11 +1672,13 @@ public class StringReader {
 	 * Reads a big integer.<br>
 	 *
 	 * @return The big integer value which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) big integer
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public @NonNull BigInteger readBigInteger() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a big integer value but found nothing");
 		}
@@ -1559,11 +1703,13 @@ public class StringReader {
 	 * Reads a big decimal.<br>
 	 *
 	 * @return The big decimal value which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) big decimal
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public @NonNull BigDecimal readBigDecimal() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a big decimal value but found nothing");
 		}
@@ -1620,6 +1766,7 @@ public class StringReader {
 	 * </p>
 	 *
 	 * @return The object which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @see #readQuotedString()
 	 * @see #readBoolean()
@@ -1627,6 +1774,7 @@ public class StringReader {
 	 * @see #readUnquotedString()
 	 */
 	public @NonNull Object readObject() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a value but found nothing");
 		}

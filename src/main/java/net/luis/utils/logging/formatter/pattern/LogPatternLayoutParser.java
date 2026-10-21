@@ -22,8 +22,7 @@ import com.google.common.collect.*;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.encoder.EncoderException;
 import net.luis.utils.io.codec.provider.JavaTypeProvider;
-import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.reader.StringReader;
+import net.luis.utils.io.reader.*;
 import net.luis.utils.logging.formatter.pattern.token.*;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import org.jspecify.annotations.NonNull;
@@ -172,7 +171,7 @@ public class LogPatternLayoutParser {
 		}
 		
 		List<LogPatternToken> tokens = Lists.newArrayList();
-		ScopedStringReader reader = new ScopedStringReader(pattern);
+		ScopedStringReader reader = new ScopedStringReader(pattern, StringReadingOption.IGNORE_ESCAPES, StringReadingOption.IGNORE_SINGLE_QUOTES, StringReadingOption.IGNORE_DOUBLE_QUOTES);
 		while (reader.canRead()) {
 			String str = reader.readUntil(TOKEN_START_CHAR);
 			if (!str.isEmpty()) {
@@ -183,15 +182,17 @@ public class LogPatternLayoutParser {
 			}
 			
 			reader.skip();
+			
+			int position = reader.getIndex();
 			String tokenIdentifier = reader.readUntil(LogPatternLayoutParser::isTokenIdentifierEndChar);
 			LogPatternTokenType tokenType = this.parseTokenType(tokenIdentifier);
 			if (tokenType == null) {
-				throw new LogPatternException("Unknown token identifier '" + tokenIdentifier + "' at position " + (reader.getIndex() - tokenIdentifier.length()));
+				throw new LogPatternException("Unknown token identifier '" + tokenIdentifier + "' at position " + position);
 			}
 			
 			if (!reader.canRead() || reader.peek() != '{') {
 				if (tokenType.requiresConfiguration()) {
-					throw new LogPatternException("Token '" + tokenIdentifier + "' at position " + (reader.getIndex() - tokenIdentifier.length()) + " requires configuration, but none was provided");
+					throw new LogPatternException("Token '" + tokenIdentifier + "' at position " + position + " requires configuration, but none was provided");
 				}
 				
 				tokens.add(new LogPatternToken(tokenIdentifier, tokenType));
@@ -200,10 +201,10 @@ public class LogPatternLayoutParser {
 			
 			Optional<Codec<? extends LogPatternTokenConfig>> codec = tokenType.codec();
 			if (!tokenType.supportsConfiguration()) {
-				throw new LogPatternException("Token '" + tokenIdentifier + "' at position " + (reader.getIndex() - tokenIdentifier.length()) + " does not support configuration, but configuration was provided");
+				throw new LogPatternException("Token '" + tokenIdentifier + "' at position " + position + " does not support configuration, but configuration was provided");
 			}
 			if (codec.isEmpty()) {
-				throw new LogPatternException("Token '" + tokenIdentifier + "' at position " + (reader.getIndex() - tokenIdentifier.length()) + " does not need a configuration, but configuration was provided");
+				throw new LogPatternException("Token '" + tokenIdentifier + "' at position " + position + " does not need a configuration, but configuration was provided");
 			}
 			
 			try {
@@ -212,7 +213,7 @@ public class LogPatternLayoutParser {
 				validateConfigKeys(codec.get(), config, configItems);
 				tokens.add(new LogPatternToken(tokenIdentifier, tokenType, Optional.of(config)));
 			} catch (Exception e) {
-				throw new LogPatternException("Failed to parse config for token '" + tokenIdentifier + "' at position" + reader.getIndex() + " skipping token", e);
+				throw new LogPatternException("Failed to parse config for token '" + tokenIdentifier + "' at position " + position + " skipping token", e);
 			}
 		}
 		return new LogPatternLayout(pattern, tokens);

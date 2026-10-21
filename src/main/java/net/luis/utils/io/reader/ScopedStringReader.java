@@ -19,6 +19,7 @@
 package net.luis.utils.io.reader;
 
 import com.google.common.collect.*;
+import net.luis.utils.exception.ConcurrentInteractionException;
 import net.luis.utils.exception.InvalidStringException;
 import org.jspecify.annotations.NonNull;
 
@@ -86,11 +87,13 @@ public class ScopedStringReader extends StringReader {
 	 * @param scope The scope to use
 	 * @return The read string
 	 * @throws NullPointerException If the scope is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the next character is not the opening character of the scope
 	 * @throws InvalidStringException If the scope is invalid
 	 */
 	public @NonNull String readScope(@NonNull StringScope scope) {
 		Objects.requireNonNull(scope, "Scope must not be null");
+		this.ensureUsable();
 		if (!this.canRead()) {
 			return "";
 		}
@@ -161,6 +164,7 @@ public class ScopedStringReader extends StringReader {
 	 *
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 */
@@ -186,6 +190,7 @@ public class ScopedStringReader extends StringReader {
 	 *
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator is found, inclusive of the terminator
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 */
@@ -211,6 +216,7 @@ public class ScopedStringReader extends StringReader {
 	 *
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 */
@@ -237,6 +243,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator array is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 */
@@ -263,6 +270,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator is found, inclusive of the terminator
 	 * @throws NullPointerException If the terminator array is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 */
@@ -289,6 +297,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator array is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 */
@@ -315,6 +324,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param predicate The predicate to match the characters
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws InvalidStringException If the scope is invalid
 	 */
 	@Override
@@ -340,6 +350,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param predicate The predicate to match the characters is found, inclusive of the terminator
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws InvalidStringException If the scope is invalid
 	 */
 	@Override
@@ -365,6 +376,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param predicate The predicate to match the characters
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws InvalidStringException If the scope is invalid
 	 */
 	@Override
@@ -379,6 +391,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param inclusive Whether the character which matches the predicate should be included in the result or not
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @see #readUntil(char)
 	 * @see #readUntilInclusive(char)
 	 * @see #readUntilSkip(char)
@@ -393,6 +406,7 @@ public class ScopedStringReader extends StringReader {
 	@SuppressWarnings("DuplicatedCode")
 	protected @NonNull String readUntil(@NonNull Predicate<Character> predicate, boolean inclusive) {
 		Objects.requireNonNull(predicate, "Predicate must not be null");
+		this.ensureUsable();
 		
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
@@ -450,6 +464,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator string is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 */
@@ -476,6 +491,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @return The string which was read until the terminator is found, inclusive of the terminator
 	 * @throws NullPointerException If the terminator string is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 */
@@ -502,6 +518,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator string is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 */
@@ -518,6 +535,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param inclusive Whether the terminator string should be included in the result or not
 	 * @return The string which was read until the equals predicate is true
 	 * @throws NullPointerException If the terminator string is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 * @throws InvalidStringException If the scope is invalid
 	 * @see #readUntil(String, boolean)
@@ -528,6 +546,7 @@ public class ScopedStringReader extends StringReader {
 	@SuppressWarnings("DuplicatedCode")
 	protected @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive, boolean inclusive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		this.ensureUsable();
 		if (terminator.isEmpty()) {
 			throw new IllegalArgumentException("Terminators string must not be empty");
 		}
@@ -605,6 +624,7 @@ public class ScopedStringReader extends StringReader {
 	 * </p>
 	 *
 	 * @return The object which was read
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If a collection is invalid or its scope is not closed
 	 * @see #readList(Function)
@@ -613,6 +633,7 @@ public class ScopedStringReader extends StringReader {
 	 */
 	@Override
 	public @NonNull Object readObject() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a value but found nothing");
 		}
@@ -647,11 +668,13 @@ public class ScopedStringReader extends StringReader {
 	 * @return The read collection
 	 * @param <T> The type of the elements
 	 * @throws NullPointerException If the scope or parser is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws InvalidStringException If an error occurs while reading the collection
 	 */
 	private <T> @NonNull Collection<T> readCollection(@NonNull StringScope scope, @NonNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(scope, "Scope must not be null");
 		Objects.requireNonNull(parser, "Parser must not be null");
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new InvalidStringException("No more characters to read");
 		}
@@ -696,11 +719,14 @@ public class ScopedStringReader extends StringReader {
 	 * @return The read list as an {@link ArrayList}
 	 * @param <T> The type of the elements
 	 * @throws NullPointerException If the parser is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws InvalidStringException If an error occurs while reading the list
 	 * @see #readCollection(StringScope, Function)
 	 */
 	public <T> @NonNull List<T> readList(@NonNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(parser, "List element parser must not be null");
+		this.ensureUsable();
+		
 		return Lists.newArrayList(this.readCollection(SQUARE_BRACKETS, parser));
 	}
 	
@@ -716,11 +742,14 @@ public class ScopedStringReader extends StringReader {
 	 * @return The read set as an {@link LinkedHashSet}
 	 * @param <T> The type of the elements
 	 * @throws NullPointerException If the parser is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws InvalidStringException If an error occurs while reading the set
 	 * @see #readCollection(StringScope, Function)
 	 */
 	public <T> @NonNull Set<T> readSet(@NonNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(parser, "Set element parser must not be null");
+		this.ensureUsable();
+		
 		return Sets.newLinkedHashSet(this.readCollection(PARENTHESES, parser));
 	}
 	
@@ -741,12 +770,14 @@ public class ScopedStringReader extends StringReader {
 	 * @param <K> The type of the keys
 	 * @param <V> The type of the values
 	 * @throws NullPointerException If the key or value parser is null
+	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws InvalidStringException If an error occurs while reading the map
 	 * @see #readCollection(StringScope, Function)
 	 */
 	public <K, V> @NonNull Map<K, V> readMap(@NonNull Function<ScopedStringReader, K> keyParser, @NonNull Function<ScopedStringReader, V> valueParser) {
 		Objects.requireNonNull(keyParser, "Map key parser must not be null");
 		Objects.requireNonNull(valueParser, "Map value parser must not be null");
+		this.ensureUsable();
 		
 		Map<K, V> map = Maps.newLinkedHashMap();
 		Collection<String> entries = this.readCollection(CURLY_BRACKETS, reader -> reader.readUntilSkip(',').strip());
