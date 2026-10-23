@@ -171,7 +171,7 @@ public class LogPatternLayoutParser {
 		}
 		
 		List<LogPatternToken> tokens = Lists.newArrayList();
-		ScopedStringReader reader = new ScopedStringReader(pattern, StringReadingOption.IGNORE_ESCAPES, StringReadingOption.IGNORE_SINGLE_QUOTES, StringReadingOption.IGNORE_DOUBLE_QUOTES);
+		ScopedStringReader reader = new ScopedStringReader(pattern, null, StringQuoting.NONE);
 		while (reader.canRead()) {
 			String str = reader.readUntil(TOKEN_START_CHAR);
 			if (!str.isEmpty()) {

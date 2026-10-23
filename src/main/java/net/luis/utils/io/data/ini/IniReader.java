@@ -21,6 +21,7 @@ package net.luis.utils.io.data.ini;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.ini.exception.IniSyntaxException;
 import net.luis.utils.io.reader.StringReader;
+import net.luis.utils.io.reader.ValueStringReader;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -295,7 +296,7 @@ public class IniReader implements AutoCloseable {
 			}
 			
 			try {
-				StringReader reader = new StringReader(value);
+				ValueStringReader reader = new ValueStringReader(value);
 				Number number = reader.readNumber();
 				reader.skipWhitespaces();
 				

@@ -20,13 +20,11 @@ package net.luis.utils.io.reader;
 
 import net.luis.utils.exception.InvalidStringException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.ResourceAccessMode;
-import org.junit.jupiter.api.parallel.ResourceLock;
 
 import java.io.Reader;
 import java.util.*;
 
-import static net.luis.utils.io.reader.StringReadingOption.*;
+import static net.luis.utils.io.reader.StringScope.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -34,518 +32,439 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
-@ResourceLock(value = "net.luis.utils.io.reader.StringScope.SCOPE_REGISTRY", mode = ResourceAccessMode.READ)
 class ScopedStringReaderTest {
 	
+	private static final Map<Character, StringScope> TRACKED_SCOPES = Map.of('(', PARENTHESES, '[', SQUARE_BRACKETS);
+	
 	@Test
-	void constructorWithNullString() {
+	void constructWithString() {
+		ScopedStringReader reader = new ScopedStringReader("test");
+		assertEquals(ScopedStringReader.DEFAULT_SCOPES, reader.getScopes());
+		assertEquals(StringQuoting.DEFAULT, reader.getQuoting());
+		assertEquals('\\', reader.getEscapeCharacter());
+	}
+	
+	@Test
+	void constructWithQuoting() {
+		ScopedStringReader reader = new ScopedStringReader("test", null, StringQuoting.NONE);
+		assertNull(reader.getEscapeCharacter());
+		assertEquals(StringQuoting.NONE, reader.getQuoting());
+		assertEquals(ScopedStringReader.DEFAULT_SCOPES, reader.getScopes());
+	}
+	
+	@Test
+	void constructWithScopes() {
+		ScopedStringReader reader = new ScopedStringReader("test", '\\', StringQuoting.DEFAULT, Set.of(SQUARE_BRACKETS));
+		assertEquals(Set.of(SQUARE_BRACKETS), reader.getScopes());
+	}
+	
+	@Test
+	void constructWithReader() {
+		assertEquals("content", new ScopedStringReader(new java.io.StringReader("content")).getString());
+		
+		ScopedStringReader quoted = new ScopedStringReader(new java.io.StringReader("content"), null, StringQuoting.NONE);
+		assertEquals(StringQuoting.NONE, quoted.getQuoting());
+		
+		ScopedStringReader scoped = new ScopedStringReader(new java.io.StringReader("content"), '\\', StringQuoting.DEFAULT, Set.of(PARENTHESES));
+		assertEquals(Set.of(PARENTHESES), scoped.getScopes());
+	}
+	
+	@Test
+	void constructWithNullArguments() {
 		assertThrows(NullPointerException.class, () -> new ScopedStringReader((String) null));
-	}
-	
-	@Test
-	void constructorWithNullReader() {
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", '\\', null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", '\\', StringQuoting.DEFAULT, null));
 		assertThrows(NullPointerException.class, () -> new ScopedStringReader((Reader) null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader(new java.io.StringReader("test"), '\\', null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader(new java.io.StringReader("test"), '\\', StringQuoting.DEFAULT, null));
 	}
 	
 	@Test
-	void constructorWithValidInputs() {
-		assertDoesNotThrow(() -> new ScopedStringReader("test"));
-		assertDoesNotThrow(() -> new ScopedStringReader(new java.io.StringReader("test")));
-		assertDoesNotThrow(() -> new ScopedStringReader("test", IGNORE_ESCAPES, IGNORE_SINGLE_QUOTES, IGNORE_DOUBLE_QUOTES));
-		assertDoesNotThrow(() -> new ScopedStringReader(new java.io.StringReader("test"), IGNORE_ESCAPES));
+	void constructWithNullScope() {
+		Set<StringScope> scopes = new HashSet<>();
+		scopes.add(null);
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", '\\', StringQuoting.DEFAULT, scopes));
 	}
 	
 	@Test
-	void constructorWithNullOptions() {
-		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", (StringReadingOption[]) null));
-		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", (StringReadingOption) null));
-		assertThrows(NullPointerException.class, () -> new ScopedStringReader(new java.io.StringReader("test"), (StringReadingOption[]) null));
+	void constructWithDuplicateOpeningCharacter() {
+		Set<StringScope> scopes = Set.of(new StringScope('(', ')'), new StringScope('(', ']'));
+		assertThrows(IllegalArgumentException.class, () -> new ScopedStringReader("test", '\\', StringQuoting.DEFAULT, scopes));
 	}
 	
 	@Test
 	void readScopeWithNullScope() {
-		ScopedStringReader reader = new ScopedStringReader("(test)");
-		
-		assertThrows(NullPointerException.class, () -> reader.readScope(null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader("(a)").readScope(null));
 	}
 	
 	@Test
-	void readScopeWithWrongOpeningCharacter() {
-		ScopedStringReader reader = new ScopedStringReader("test");
-		
-		assertThrows(IllegalArgumentException.class, () -> reader.readScope(StringScope.PARENTHESES));
+	void readScopeWithWrongFirstCharacter() {
+		assertThrows(IllegalArgumentException.class, () -> new ScopedStringReader("a(b)").readScope(PARENTHESES));
 	}
 	
 	@Test
-	void readScopeWithEmptyString() {
-		ScopedStringReader reader = new ScopedStringReader("");
+	void readScopeNotClosed() {
+		InvalidStringException single = assertThrows(InvalidStringException.class, () -> new ScopedStringReader("(a").readScope(PARENTHESES));
+		assertTrue(single.getMessage().contains("scope is not closed"));
 		
-		assertEquals("", reader.readScope(StringScope.PARENTHESES));
+		InvalidStringException multiple = assertThrows(InvalidStringException.class, () -> new ScopedStringReader("((a").readScope(PARENTHESES));
+		assertTrue(multiple.getMessage().contains("scopes are not closed"));
 	}
 	
 	@Test
-	void readScopeAfterReadRemaining() {
-		ScopedStringReader reader = new ScopedStringReader(" (test)");
-		reader.readRemaining();
-		
-		assertEquals("", reader.readScope(StringScope.PARENTHESES));
+	void readObjectAtEnd() {
+		assertThrows(StringIndexOutOfBoundsException.class, () -> new ScopedStringReader("").readObject());
 	}
 	
 	@Test
-	void readScopeParenthesesSimple() {
-		ScopedStringReader reader = new ScopedStringReader("(Hello)");
-		
-		assertEquals("(Hello)", reader.readScope(StringScope.PARENTHESES));
+	void readCollectionWithNullArguments() {
+		ScopedStringReader reader = new ScopedStringReader("[1]");
+		assertThrows(NullPointerException.class, () -> reader.readList(null));
+		assertThrows(NullPointerException.class, () -> reader.readSet(null));
+		assertThrows(NullPointerException.class, () -> reader.readList(null, StringReader::readRemaining));
+		assertThrows(NullPointerException.class, () -> reader.readList(StringReader::new, null));
+		assertThrows(NullPointerException.class, () -> reader.readSet(null, StringReader::readRemaining));
+		assertThrows(NullPointerException.class, () -> reader.readSet(StringReader::new, null));
 	}
 	
 	@Test
-	void readScopeParenthesesNested() {
-		ScopedStringReader reader = new ScopedStringReader("(World it is (nice here))");
-		
-		assertEquals("(World it is (nice here))", reader.readScope(StringScope.PARENTHESES));
+	void readCollectionAtEnd() {
+		assertThrows(InvalidStringException.class, () -> new ScopedStringReader("").readList(ScopedStringReader::readObject));
+		assertThrows(InvalidStringException.class, () -> new ScopedStringReader("").readSet(ScopedStringReader::readObject));
+		assertThrows(InvalidStringException.class, () -> new ScopedStringReader("").readMap(ScopedStringReader::readObject, ScopedStringReader::readObject));
 	}
 	
 	@Test
-	void readScopeParenthesesMultiple() {
-		ScopedStringReader reader = new ScopedStringReader("(Hello) (World)");
-		
-		assertEquals("(Hello)", reader.readScope(StringScope.PARENTHESES));
-		assertEquals(' ', reader.read());
-		assertEquals("(World)", reader.readScope(StringScope.PARENTHESES));
+	void readCollectionWithWrongOpener() {
+		assertThrows(IllegalArgumentException.class, () -> new ScopedStringReader("(1)").readList(ScopedStringReader::readObject));
 	}
 	
 	@Test
-	void readScopeParenthesesMissingClosing() {
-		ScopedStringReader reader = new ScopedStringReader("(Hello (World)");
-		
-		assertThrows(InvalidStringException.class, () -> reader.readScope(StringScope.PARENTHESES));
+	void readCollectionWithUnclosedScope() {
+		assertThrows(InvalidStringException.class, () -> new ScopedStringReader("[1, 2").readList(ScopedStringReader::readObject));
 	}
 	
 	@Test
-	void readScopeParenthesesExtraClosing() {
-		ScopedStringReader reader = new ScopedStringReader("(Hello) World)");
-		
-		assertEquals("(Hello)", reader.readScope(StringScope.PARENTHESES));
-		assertEquals(' ', reader.read());
-		assertThrows(IllegalArgumentException.class, () -> reader.readScope(StringScope.PARENTHESES));
+	void readCollectionWithUnclosedInnerScope() {
+		assertThrows(InvalidStringException.class, () -> new ScopedStringReader("[(1, 2]").readList(StringReader::readRemaining));
 	}
 	
 	@Test
-	void readScopeCurlyBracketsSimple() {
-		ScopedStringReader reader = new ScopedStringReader("{Hello}");
-		
-		assertEquals("{Hello}", reader.readScope(StringScope.CURLY_BRACKETS));
+	void readCollectionWithInvalidFactory() {
+		ScopedStringReader reader = new ScopedStringReader("[1]");
+		assertThrows(IllegalArgumentException.class, () -> reader.readList(string -> new StringReader("other"), StringReader::readRemaining));
 	}
 	
 	@Test
-	void readScopeCurlyBracketsNested() {
-		ScopedStringReader reader = new ScopedStringReader("{World it is {nice here}}");
-		
-		assertEquals("{World it is {nice here}}", reader.readScope(StringScope.CURLY_BRACKETS));
+	void readMapWithNullArguments() {
+		ScopedStringReader reader = new ScopedStringReader("{a=1}");
+		assertThrows(NullPointerException.class, () -> reader.readMap(null, StringReader::readRemaining));
+		assertThrows(NullPointerException.class, () -> reader.readMap(StringReader::readRemaining, null));
+		assertThrows(NullPointerException.class, () -> reader.readMap(null, StringReader::readRemaining, StringReader::readRemaining));
+		assertThrows(NullPointerException.class, () -> reader.readMap(StringReader::new, null, StringReader::readRemaining));
+		assertThrows(NullPointerException.class, () -> reader.readMap(StringReader::new, StringReader::readRemaining, null));
 	}
 	
 	@Test
-	void readScopeCurlyBracketsMissingClosing() {
-		ScopedStringReader reader = new ScopedStringReader("{Hello {World}");
-		
-		assertThrows(InvalidStringException.class, () -> reader.readScope(StringScope.CURLY_BRACKETS));
+	void readMapEntryWithoutSeparator() {
+		ScopedStringReader reader = new ScopedStringReader("{\n  a=1,\n  b\n}");
+		InvalidStringException exception = assertThrows(InvalidStringException.class, () -> reader.readMap(StringReader::readRemaining, StringReader::readRemaining));
+		assertTrue(exception.getMessage().contains("'b'"));
+		assertTrue(exception.getMessage().endsWith("at line 3, column 3"));
 	}
 	
 	@Test
-	void readScopeSquareBracketsSimple() {
-		ScopedStringReader reader = new ScopedStringReader("[Hello]");
-		
-		assertEquals("[Hello]", reader.readScope(StringScope.SQUARE_BRACKETS));
+	void constructScopeTrackerWithNullArguments() {
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader.ScopeTracker(null, TRACKED_SCOPES));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader.ScopeTracker(StringQuoting.DEFAULT, null));
 	}
 	
 	@Test
-	void readScopeSquareBracketsNested() {
-		ScopedStringReader reader = new ScopedStringReader("[World it is [nice here]]");
-		
-		assertEquals("[World it is [nice here]]", reader.readScope(StringScope.SQUARE_BRACKETS));
+	void createTrackerTracksScopes() {
+		StringReader.NestingTracker tracker = new ScopedStringReader("").createTracker();
+		assertInstanceOf(ScopedStringReader.ScopeTracker.class, tracker);
+		tracker.accept('[');
+		assertTrue(tracker.isNested());
 	}
 	
 	@Test
-	void readScopeAngleBracketsSimple() {
-		ScopedStringReader reader = new ScopedStringReader("<Hello>");
-		
-		assertEquals("<Hello>", reader.readScope(StringScope.ANGLE_BRACKETS));
+	void createElementReaderUsesSameConfiguration() {
+		ScopedStringReader reader = new ScopedStringReader("x", null, StringQuoting.SINGLE_ONLY, Set.of(PARENTHESES));
+		ScopedStringReader element = reader.createElementReader("y");
+		assertEquals("y", element.getString());
+		assertNull(element.getEscapeCharacter());
+		assertEquals(StringQuoting.SINGLE_ONLY, element.getQuoting());
+		assertEquals(Set.of(PARENTHESES), element.getScopes());
 	}
 	
 	@Test
-	void readScopeAngleBracketsNested() {
-		ScopedStringReader reader = new ScopedStringReader("<World it is <nice here>>");
-		
-		assertEquals("<World it is <nice here>>", reader.readScope(StringScope.ANGLE_BRACKETS));
+	void readScopeAtEnd() {
+		assertEquals("", new ScopedStringReader("").readScope(PARENTHESES));
 	}
 	
 	@Test
-	void readScopeWithQuotedContent() {
-		ScopedStringReader reader = new ScopedStringReader("('string with ) inside')");
-		
-		assertEquals("('string with ) inside')", reader.readScope(StringScope.PARENTHESES));
+	void readScopeSimple() {
+		ScopedStringReader reader = new ScopedStringReader("(a) b");
+		assertEquals("(a)", reader.readScope(PARENTHESES));
+		assertEquals(3, reader.getIndex());
 	}
 	
 	@Test
-	void readScopeWithEscapedCharacters() {
-		ScopedStringReader reader = new ScopedStringReader("(escaped \\) character)");
-		
-		assertEquals("(escaped \\) character)", reader.readScope(StringScope.PARENTHESES));
+	void readScopeNested() {
+		ScopedStringReader reader = new ScopedStringReader("(a(b)c) d");
+		assertEquals("(a(b)c)", reader.readScope(PARENTHESES));
 	}
 	
 	@Test
-	void readScopeWithIgnoredEscapes() {
-		ScopedStringReader reader = new ScopedStringReader("(escaped \\) character)", IGNORE_ESCAPES);
-		
-		assertEquals("(escaped \\)", reader.readScope(StringScope.PARENTHESES));
-		assertEquals(" character)", reader.readRemaining());
+	void readScopeWithQuotedScopeCharacters() {
+		ScopedStringReader reader = new ScopedStringReader("(a')'b) c");
+		assertEquals("(a')'b)", reader.readScope(PARENTHESES));
 	}
 	
 	@Test
-	void readScopeWithIgnoredSingleQuotes() {
-		ScopedStringReader reader = new ScopedStringReader("('string with ) inside')", IGNORE_SINGLE_QUOTES);
-		
-		assertEquals("('string with )", reader.readScope(StringScope.PARENTHESES));
-		assertEquals(" inside')", reader.readRemaining());
+	void readScopeWithEscapedScopeCharacters() {
+		ScopedStringReader reader = new ScopedStringReader("(a\\)b) c");
+		assertEquals("(a\\)b)", reader.readScope(PARENTHESES));
 	}
 	
 	@Test
-	void readScopeWithIgnoredDoubleQuotes() {
-		ScopedStringReader reader = new ScopedStringReader("(\"string with ) inside\")", IGNORE_DOUBLE_QUOTES);
-		
-		assertEquals("(\"string with )", reader.readScope(StringScope.PARENTHESES));
-		assertEquals(" inside\")", reader.readRemaining());
+	void readScopeOfUnhandledScope() {
+		ScopedStringReader reader = new ScopedStringReader("aBz", '\\', StringQuoting.DEFAULT, Set.of());
+		assertEquals("aBz", reader.readScope(new StringScope('a', 'z')));
 	}
 	
 	@Test
-	void readScopeWithIgnoredQuotesKeepsOtherQuotes() {
-		ScopedStringReader reader = new ScopedStringReader("(\"a ) b\" 'c ) d')", IGNORE_SINGLE_QUOTES);
-		
-		assertEquals("(\"a ) b\" 'c )", reader.readScope(StringScope.PARENTHESES));
+	void readObjectList() {
+		assertEquals(List.of(1L, 2L), new ScopedStringReader("[1, 2]").readObject());
 	}
 	
 	@Test
-	void readUntilWithIgnoredEscapes() {
-		ScopedStringReader reader = new ScopedStringReader("a\\,b (c\\, d), e", IGNORE_ESCAPES);
-		
-		assertEquals("a\\", reader.readUntilSkip(','));
-		assertEquals("b (c\\, d)", reader.readUntilSkip(','));
-		assertEquals(" e", reader.readRemaining());
+	void readObjectSet() {
+		assertEquals(Set.of(1L, 2L), new ScopedStringReader("(1, 2)").readObject());
 	}
 	
 	@Test
-	void readUntilWithIgnoredQuotes() {
-		ScopedStringReader defaultReader = new ScopedStringReader("say 'a, b', (c, d), e");
-		assertEquals("say 'a, b'", defaultReader.readUntilSkip(','));
-		
-		ScopedStringReader reader = new ScopedStringReader("say 'a, b', (c, d), e", IGNORE_SINGLE_QUOTES);
-		assertEquals("say 'a", reader.readUntilSkip(','));
-		assertEquals(" b'", reader.readUntilSkip(','));
-		assertEquals(" (c, d)", reader.readUntilSkip(','));
-		assertEquals(" e", reader.readRemaining());
+	void readObjectMap() {
+		assertEquals(Map.of("a", 1L), new ScopedStringReader("{a=1}").readObject());
 	}
 	
 	@Test
-	void readUntilStringWithIgnoredQuotes() {
-		ScopedStringReader defaultReader = new ScopedStringReader("x \"y end\" (end) end");
-		assertEquals("x \"y end\" (end) ", defaultReader.readUntil("end", true));
-		
-		ScopedStringReader reader = new ScopedStringReader("x \"y end\" (end) end", IGNORE_DOUBLE_QUOTES);
-		assertEquals("x \"y ", reader.readUntil("end", true));
-		assertEquals("end\" (end) end", reader.readRemaining());
-	}
-	
-	@Test
-	void readUntilInheritedMethods() {
-		ScopedStringReader reader = new ScopedStringReader("this is a 'test string' (with scope) {and more}");
-		
-		assertEquals("this is a ", reader.readUntil('\''));
-		reader.skip();
-		assertEquals("test string", reader.readUntil('\''));
-		reader.skip(2);
-		assertEquals("(with scope)", reader.readUntil(' '));
-		reader.skip();
-		assertEquals("{and more}", reader.readUntil(' '));
-	}
-	
-	@Test
-	void readUntilWithScopeAwareness() {
-		ScopedStringReader reader = new ScopedStringReader("before (scope with , comma) after");
-		
-		assertEquals("before (scope with , comma) after", reader.readUntil(','));
-	}
-	
-	@Test
-	void readUntilInclusiveWithScopeAwareness() {
-		ScopedStringReader reader = new ScopedStringReader("before (scope) , after");
-		
-		assertEquals("before (scope) ,", reader.readUntilInclusive(','));
-		assertEquals(" after", reader.readRemaining());
-	}
-	
-	@Test
-	void readUntilStringWithScopeAwareness() {
-		ScopedStringReader reader = new ScopedStringReader("text (with test inside) test here");
-		
-		assertEquals("text (with test inside) ", reader.readUntil("test", true));
-		reader.skip(4);
-		assertEquals(" here", reader.readRemaining());
-	}
-	
-	@Test
-	void readObjectWithEmptyString() {
-		ScopedStringReader reader = new ScopedStringReader("");
-		
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readObject);
-	}
-	
-	@Test
-	void readObjectWithPlainValues() {
-		ScopedStringReader reader = new ScopedStringReader("42 true 'c' \"str\"");
-		
-		assertEquals(42L, reader.readObject());
-		reader.skip();
-		assertEquals(true, reader.readObject());
-		reader.skip();
-		assertEquals('c', reader.readObject());
-		reader.skip();
-		assertEquals("str", reader.readObject());
-	}
-	
-	@Test
-	void readObjectListEmpty() {
-		ScopedStringReader reader = new ScopedStringReader("[]");
-		
-		assertEquals(List.of(), reader.readObject());
-	}
-	
-	@Test
-	void readObjectListWithMixedValues() {
-		ScopedStringReader reader = new ScopedStringReader("[1, true, \"str\", 'c', 2.5]");
-		
-		assertEquals(List.of(1L, true, "str", 'c', 2.5), reader.readObject());
-	}
-	
-	@Test
-	void readObjectSetEmpty() {
-		ScopedStringReader reader = new ScopedStringReader("()");
-		
-		assertEquals(Set.of(), reader.readObject());
-	}
-	
-	@Test
-	void readObjectSetWithDuplicates() {
-		ScopedStringReader reader = new ScopedStringReader("(1, 2, 2, 3)");
-		
-		assertEquals(Set.of(1L, 2L, 3L), reader.readObject());
-	}
-	
-	@Test
-	void readObjectMapEmpty() {
-		ScopedStringReader reader = new ScopedStringReader("{}");
-		
-		assertEquals(Map.of(), reader.readObject());
-	}
-	
-	@Test
-	void readObjectMapWithMixedKeysAndValues() {
-		ScopedStringReader reader = new ScopedStringReader("{key=10, 'k'=true, 1=\"value\"}");
-		
-		assertEquals(Map.of("key", 10L, 'k', true, 1L, "value"), reader.readObject());
-	}
-	
-	@Test
-	void readObjectNested() {
-		ScopedStringReader reader = new ScopedStringReader("[{a=[1, 2]}, (true), []]");
-		
-		assertEquals(List.of(Map.of("a", List.of(1L, 2L)), Set.of(true), List.of()), reader.readObject());
-	}
-	
-	@Test
-	void readObjectMultipleCollections() {
-		ScopedStringReader reader = new ScopedStringReader("[1] (2) {3=4}");
-		
-		assertEquals(List.of(1L), reader.readObject());
-		reader.skip();
-		assertEquals(Set.of(2L), reader.readObject());
-		reader.skip();
-		assertEquals(Map.of(3L, 4L), reader.readObject());
-	}
-	
-	@Test
-	void readObjectWithUnclosedScope() {
-		ScopedStringReader reader = new ScopedStringReader("[1, 2");
-		
-		assertThrows(InvalidStringException.class, reader::readObject);
+	void readObjectScalar() {
+		assertEquals(true, new ScopedStringReader("true").readObject());
 	}
 	
 	@Test
 	void readListEmpty() {
-		ScopedStringReader reader = new ScopedStringReader("[]");
-		
-		List<Boolean> result = reader.readList(StringReader::readBoolean);
-		assertTrue(result.isEmpty());
+		assertEquals(List.of(), new ScopedStringReader("[]").readList(ScopedStringReader::readObject));
+		assertEquals(List.of(), new ScopedStringReader("[ ]").readList(ScopedStringReader::readObject));
 	}
 	
 	@Test
-	void readListWithBooleans() {
-		ScopedStringReader reader = new ScopedStringReader("[ true , false ]");
-		
-		List<Boolean> result = reader.readList(StringReader::readBoolean);
-		assertEquals(List.of(true, false), result);
+	void readListSingleElement() {
+		assertEquals(List.of(1), new ScopedStringReader("[1]").readList(ValueStringReader::readInt));
 	}
 	
 	@Test
-	void readListWithDoubles() {
-		ScopedStringReader reader = new ScopedStringReader("[  10.0  ,  15.5  ,  20.6  ]");
-		
-		List<Double> result = reader.readList(StringReader::readDouble);
-		assertEquals(List.of(10.0, 15.5, 20.6), result);
+	void readListMultipleElements() {
+		assertEquals(List.of(1, 2, 3), new ScopedStringReader("[1 ,2,  3 ]").readList(ValueStringReader::readInt));
 	}
 	
 	@Test
-	void readListWithIntegers() {
-		ScopedStringReader reader = new ScopedStringReader("[10,15,20,25]");
-		
-		List<Integer> result = reader.readList(StringReader::readInt);
-		assertEquals(List.of(10, 15, 20, 25), result);
+	void readListSkipsEmptyElements() {
+		assertEquals(List.of(1, 2), new ScopedStringReader("[1,,2,]").readList(ValueStringReader::readInt));
 	}
 	
 	@Test
-	void readListWithStrings() {
-		ScopedStringReader reader = new ScopedStringReader("[\"Hello\", \"World\"]");
-		
-		List<String> result = reader.readList(StringReader::readString);
-		assertEquals(List.of("Hello", "World"), result);
+	void readListWithSeparatorInQuotes() {
+		assertEquals(List.of("a,b", "c"), new ScopedStringReader("['a,b', c]").readList(QuotedStringReader::readString));
 	}
 	
 	@Test
-	void readListNested() {
-		ScopedStringReader reader = new ScopedStringReader("[[\"str1\"], [\"str1\", \"str2\"]]");
-		
-		List<List<String>> result = reader.readList(r -> r.readList(StringReader::readString));
-		assertEquals(List.of(List.of("str1"), List.of("str1", "str2")), result);
+	void readListWithSeparatorInScope() {
+		List<String> list = new ScopedStringReader("[(1, 2), 3]").readList(StringReader::readRemaining);
+		assertEquals(2, list.size());
+		assertEquals(List.of("(1, 2)", "3"), list);
 	}
 	
 	@Test
-	void readListWithEmptyOnNoContent() {
-		ScopedStringReader reader = new ScopedStringReader("");
-		
-		assertThrows(InvalidStringException.class, () -> reader.readList(StringReader::readString));
+	void readListWithEscapedSeparator() {
+		assertEquals(List.of("a\\,b"), new ScopedStringReader("[a\\,b]").readList(StringReader::readRemaining));
 	}
 	
 	@Test
-	void readListWithNullParser() {
-		ScopedStringReader reader = new ScopedStringReader("[1,2,3]");
-		
-		assertThrows(NullPointerException.class, () -> reader.readList(null));
+	void readListElementReaderIsLimited() {
+		List<Integer> lengths = new ScopedStringReader("[ab, cde]").readList(reader -> reader.readRemaining().length());
+		assertEquals(List.of(2, 3), lengths);
 	}
 	
 	@Test
-	void readSetEmpty() {
-		ScopedStringReader reader = new ScopedStringReader("()");
-		
-		Set<Boolean> result = reader.readSet(StringReader::readBoolean);
-		assertTrue(result.isEmpty());
+	void readListWithFactory() {
+		ScopedStringReader reader = new ScopedStringReader("['a ${b}', \"c\"]");
+		assertEquals(List.of("'a ${b}'", "\"c\""), reader.readList(StringReader::new, StringReader::readRemaining));
 	}
 	
 	@Test
-	void readSetWithBooleans() {
-		ScopedStringReader reader = new ScopedStringReader("( true , false )");
-		
-		Set<Boolean> result = reader.readSet(StringReader::readBoolean);
-		assertEquals(Set.of(true, false), result);
+	void readListPositionAfterList() {
+		ScopedStringReader reader = new ScopedStringReader("[ab, cd] rest");
+		assertEquals(List.of('a', 'c'), reader.readList(StringReader::read));
+		assertEquals(8, reader.getIndex());
+		assertEquals(' ', reader.peek());
 	}
 	
 	@Test
-	void readSetWithDuplicates() {
-		ScopedStringReader reader = new ScopedStringReader("(10, 20, 10, 30)");
-		
-		Set<Integer> result = reader.readSet(StringReader::readInt);
-		assertEquals(Set.of(10, 20, 30), result);
+	void readListParserException() {
+		ScopedStringReader reader = new ScopedStringReader("[1, x] rest");
+		assertThrows(IllegalStateException.class, () -> reader.readList(element -> {
+			throw new IllegalStateException("Failed to parse element");
+		}));
+		assertDoesNotThrow(() -> reader.canRead());
 	}
 	
 	@Test
-	void readSetWithNullParser() {
-		ScopedStringReader reader = new ScopedStringReader("(1,2,3)");
-		
-		assertThrows(NullPointerException.class, () -> reader.readSet(null));
+	void readSetRemovesDuplicates() {
+		Set<Integer> set = new ScopedStringReader("(1, 2, 1)").readSet(ValueStringReader::readInt);
+		assertEquals(List.of(1, 2), new ArrayList<>(set));
 	}
 	
 	@Test
-	void readSetWithEmptyOnNoContent() {
-		ScopedStringReader reader = new ScopedStringReader("");
-		
-		assertThrows(InvalidStringException.class, () -> reader.readSet(StringReader::readString));
+	void readSetWithFactory() {
+		ScopedStringReader reader = new ScopedStringReader("(a, b)");
+		assertEquals(Set.of("a", "b"), reader.readSet(StringReader::new, StringReader::readRemaining));
 	}
 	
 	@Test
 	void readMapEmpty() {
-		ScopedStringReader reader = new ScopedStringReader("{}");
-		
-		Map<String, String> result = reader.readMap(StringReader::readString, StringReader::readString);
-		assertTrue(result.isEmpty());
+		assertEquals(Map.of(), new ScopedStringReader("{}").readMap(StringReader::readRemaining, StringReader::readRemaining));
 	}
 	
 	@Test
-	void readMapWithStringValues() {
-		ScopedStringReader reader = new ScopedStringReader("{key1= value1, key2= value2}");
-		
-		Map<String, String> result = reader.readMap(StringReader::readString, StringReader::readString);
-		assertEquals(Map.of("key1", "value1", "key2", "value2"), result);
+	void readMapSplitsAtFirstSeparator() {
+		ScopedStringReader reader = new ScopedStringReader("{a=b=c}");
+		assertEquals(Map.of("a", "b=c"), reader.readMap(StringReader::readRemaining, StringReader::readRemaining));
 	}
 	
 	@Test
-	void readMapWithIntegerValues() {
-		ScopedStringReader reader = new ScopedStringReader("{key1=10, key2=20}");
+	void readMapWithSeparatorInNestedParts() {
+		ScopedStringReader quoted = new ScopedStringReader("{'a=b'=1}");
+		assertEquals(Map.of("'a=b'", "1"), quoted.readMap(StringReader::readRemaining, StringReader::readRemaining));
 		
-		Map<String, Integer> result = reader.readMap(StringReader::readString, StringReader::readInt);
-		assertEquals(Map.of("key1", 10, "key2", 20), result);
+		ScopedStringReader scoped = new ScopedStringReader("{k={x=1}}");
+		assertEquals(Map.of("k", "{x=1}"), scoped.readMap(StringReader::readRemaining, StringReader::readRemaining));
 	}
 	
 	@Test
-	void readMapWithIntegerKeys() {
-		ScopedStringReader reader = new ScopedStringReader("{0=\"Hello\", 1=\"World\"}");
-		
-		Map<Integer, String> result = reader.readMap(StringReader::readInt, StringReader::readString);
-		assertEquals(Map.of(0, "Hello", 1, "World"), result);
+	void readMapDuplicateKeys() {
+		ScopedStringReader reader = new ScopedStringReader("{a=1, a=2}");
+		assertEquals(Map.of("a", 2L), reader.readMap(StringReader::readRemaining, ValueStringReader::readNumber));
 	}
 	
 	@Test
-	void readMapWithComplexValues() {
-		ScopedStringReader reader = new ScopedStringReader("{ 0.0 = [ \"str1\" ], 1.0 = [ \"str1\" , \"str2\" ] }");
-		
-		Map<Double, List<String>> result = reader.readMap(StringReader::readDouble, r -> r.readList(StringReader::readString));
-		assertEquals(Map.of(0.0, List.of("str1"), 1.0, List.of("str1", "str2")), result);
+	void readMapWithFactory() {
+		ScopedStringReader reader = new ScopedStringReader("{a=1}");
+		assertEquals(Map.of("a", "1"), reader.readMap(StringReader::new, StringReader::readRemaining, StringReader::readRemaining));
 	}
 	
 	@Test
-	void readMapWithDuplicateKeys() {
-		ScopedStringReader reader = new ScopedStringReader("{key=value1, key=value2}");
-		
-		Map<String, String> result = reader.readMap(StringReader::readString, StringReader::readString);
-		assertEquals(Map.of("key", "value2"), result);
+	void readUntilIgnoresTerminatorInScope() {
+		ScopedStringReader reader = new ScopedStringReader("(a,b),c");
+		assertEquals("(a,b)", reader.readUntil(','));
+		assertEquals(',', reader.peek());
 	}
 	
 	@Test
-	void readMapWithInvalidEntry() {
-		ScopedStringReader reader = new ScopedStringReader("{key_without_value, key2=value2}");
-		
-		assertThrows(InvalidStringException.class, () -> reader.readMap(StringReader::readString, StringReader::readString));
+	void readUntilWithUnclosedScope() {
+		assertThrows(InvalidStringException.class, () -> new ScopedStringReader("(a,b").readUntil(','));
 	}
 	
 	@Test
-	void readMapWithNullParsers() {
-		ScopedStringReader reader = new ScopedStringReader("{key=value}");
-		
-		assertThrows(NullPointerException.class, () -> reader.readMap(null, StringReader::readString));
-		assertThrows(NullPointerException.class, () -> reader.readMap(StringReader::readString, null));
+	void readUntilIgnoresScopeInQuotes() {
+		assertEquals("'('", new ScopedStringReader("'(',b").readUntil(','));
 	}
 	
 	@Test
-	void readMapWithEmptyOnNoContent() {
-		ScopedStringReader reader = new ScopedStringReader("");
+	void scopeTrackerBranches() {
+		ScopedStringReader.ScopeTracker tracker = new ScopedStringReader.ScopeTracker(StringQuoting.DEFAULT, TRACKED_SCOPES);
+		tracker.accept('(');
+		assertTrue(tracker.isNested());
+		tracker.accept(']');
+		assertTrue(tracker.isNested());
+		tracker.accept(')');
+		assertFalse(tracker.isNested());
+		tracker.accept('a');
+		assertFalse(tracker.isNested());
 		
-		assertThrows(InvalidStringException.class, () -> reader.readMap(StringReader::readString, StringReader::readString));
+		tracker.accept('"');
+		tracker.accept('(');
+		tracker.accept('"');
+		assertFalse(tracker.isNested());
+	}
+	
+	@Test
+	void scopeTrackerFinishMessage() {
+		ScopedStringReader.ScopeTracker single = new ScopedStringReader.ScopeTracker(StringQuoting.DEFAULT, TRACKED_SCOPES);
+		single.accept('(');
+		InvalidStringException singleException = assertThrows(InvalidStringException.class, single::finish);
+		assertTrue(singleException.getMessage().contains("1 scope is not closed"));
+		assertTrue(singleException.getMessage().contains("')'"));
+		
+		ScopedStringReader.ScopeTracker multiple = new ScopedStringReader.ScopeTracker(StringQuoting.DEFAULT, TRACKED_SCOPES);
+		multiple.accept('(');
+		multiple.accept('[');
+		InvalidStringException multipleException = assertThrows(InvalidStringException.class, multiple::finish);
+		assertTrue(multipleException.getMessage().contains("2 scopes are not closed"));
+		assertTrue(multipleException.getMessage().contains("']', ')'"));
+	}
+	
+	@Test
+	void scopeTrackerFinishWithoutOpenScope() {
+		ScopedStringReader.ScopeTracker tracker = new ScopedStringReader.ScopeTracker(StringQuoting.DEFAULT, TRACKED_SCOPES);
+		assertDoesNotThrow(tracker::finish);
+	}
+	
+	@Test
+	void equalReadersWithSameScopes() {
+		ScopedStringReader first = new ScopedStringReader("abc");
+		ScopedStringReader second = new ScopedStringReader("abc");
+		assertEquals(first, second);
+		assertEquals(first.hashCode(), second.hashCode());
+	}
+	
+	@Test
+	void unequalReadersWithOtherScopes() {
+		ScopedStringReader reader = new ScopedStringReader("abc");
+		assertNotEquals(reader, new ScopedStringReader("abc", '\\', StringQuoting.DEFAULT, Set.of(PARENTHESES)));
+	}
+	
+	@Test
+	void readListOfStrings() {
+		ScopedStringReader reader = new ScopedStringReader("[a, 'b c', \"d\"]");
+		assertEquals(List.of("a", "b c", "d"), reader.readList(QuotedStringReader::readString));
+	}
+	
+	@Test
+	void readMapOfStrings() {
+		ScopedStringReader reader = new ScopedStringReader("{ a = 1 , b=2 }");
+		assertEquals(Map.of("a", "1", "b", "2"), reader.readMap(StringReader::readRemaining, StringReader::readRemaining));
+	}
+	
+	@Test
+	void readObjectDeeplyNested() {
+		ScopedStringReader reader = new ScopedStringReader("[1, \"a,b\", [2, 3], {k=v}, (true), 0x1F]");
+		List<Object> expected = List.of(1L, "a,b", List.of(2L, 3L), Map.of("k", "v"), Set.of(true), 31L);
+		assertEquals(expected, reader.readObject());
+		assertFalse(reader.canRead());
+	}
+	
+	@Test
+	void readListErrorPositionInOriginalString() {
+		ScopedStringReader reader = new ScopedStringReader("[1,\n 2,\n x3y]");
+		InvalidStringException exception = assertThrows(InvalidStringException.class, () -> reader.readList(ValueStringReader::readInt));
+		assertTrue(exception.getMessage().endsWith("at line 3, column 2"));
+	}
+	
+	@Test
+	void readMapWithoutQuoting() {
+		ScopedStringReader reader = new ScopedStringReader("{a=1, b='x'}", null, StringQuoting.NONE);
+		assertEquals(Map.of("a", "1", "b", "'x'"), reader.readMap(StringReader::readRemaining, StringReader::readRemaining));
 	}
 }

@@ -143,7 +143,7 @@ public class XmlReader implements AutoCloseable {
 			}
 			
 			this.reader.skipWhitespaces();
-			StringReader declarationReader = new StringReader(this.reader.readScope(StringScope.ANGLE_BRACKETS));
+			QuotedStringReader declarationReader = new QuotedStringReader(this.reader.readScope(StringScope.ANGLE_BRACKETS));
 			String type = declarationReader.readUntilSkip(' ');
 			if (!"<?xml".equalsIgnoreCase(type)) {
 				throw new XmlSyntaxException("Expected xml declaration, but found: '" + declarationReader.getString() + "'");
@@ -232,7 +232,7 @@ public class XmlReader implements AutoCloseable {
 	private @NonNull XmlElement readXmlElement(@NonNull ScopedStringReader xmlReader) {
 		try {
 			xmlReader.skipWhitespaces();
-			StringReader elementReader = new StringReader(xmlReader.readScope(StringScope.ANGLE_BRACKETS));
+			QuotedStringReader elementReader = new QuotedStringReader(xmlReader.readScope(StringScope.ANGLE_BRACKETS));
 			elementReader.skip();
 			
 			if (!this.config.strict()) {
@@ -311,7 +311,7 @@ public class XmlReader implements AutoCloseable {
 	 * @return The xml attributes read
 	 * @throws XmlSyntaxException If the xml attributes are invalid
 	 */
-	private @NonNull XmlAttributes readXmlAttributes(@NonNull StringReader attributeReader) {
+	private @NonNull XmlAttributes readXmlAttributes(@NonNull QuotedStringReader attributeReader) {
 		XmlAttributes attributes = new XmlAttributes();
 		attributeReader.skipWhitespaces();
 		while (attributeReader.peek() != '>' && attributeReader.peek() != '/') {
@@ -361,7 +361,7 @@ public class XmlReader implements AutoCloseable {
 	 */
 	private int getClosingElement(@NonNull ScopedStringReader xmlReader, @NonNull String name) {
 		String remaining = xmlReader.getString().substring(xmlReader.getIndex());
-		StringReader reader = new StringReader(remaining);
+		QuotedStringReader reader = new QuotedStringReader(remaining);
 		Deque<String> scope = new ArrayDeque<>();
 		while (reader.canRead()) {
 			reader.skipWhitespaces();
