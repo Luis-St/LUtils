@@ -118,6 +118,66 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		return new Ipv6Range(network.networkAddress(), network.lastAddress());
 	}
 	
+	/**
+	 * Finds the optimal prefix length for a CIDR block starting at the given value.<br>
+	 *
+	 * @param startValue The starting address value
+	 * @param endValue The ending address value (inclusive)
+	 * @return The optimal prefix length
+	 * @throws NullPointerException If start value or end value is null
+	 */
+	private static int findOptimalPrefixLength(@NonNull BigInteger startValue, @NonNull BigInteger endValue) {
+		Objects.requireNonNull(startValue, "Start value must not be null");
+		Objects.requireNonNull(endValue, "End value must not be null");
+		BigInteger remaining = endValue.subtract(startValue).add(BigInteger.ONE);
+		
+		// Iterate from largest block (prefix 0) to smallest (prefix 128)
+		// Return the first (largest) aligned block that fits within remaining
+		for (int prefixLength = 0; prefixLength <= 128; prefixLength++) {
+			BigInteger blockSize = BigInteger.ONE.shiftLeft(128 - prefixLength);
+			
+			// Skip if start address is not aligned to this block size
+			if (!startValue.mod(blockSize).equals(BigInteger.ZERO)) {
+				continue;
+			}
+			
+			// Return this prefix if the block fits within remaining addresses
+			if (blockSize.compareTo(remaining) <= 0) {
+				return prefixLength;
+			}
+		}
+		return 128;
+	}
+	
+	/**
+	 * Converts a BigInteger to an IPv6 address.<br>
+	 *
+	 * @param value The BigInteger value
+	 * @return The corresponding IPv6 address
+	 * @throws NullPointerException If value is null
+	 */
+	private static @NonNull Ipv6Address bigIntegerToIpv6(@NonNull BigInteger value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		byte[] bytes = value.toByteArray();
+		byte[] addressBytes = new byte[16];
+		
+		if (bytes.length <= 16) {
+			System.arraycopy(bytes, 0, addressBytes, 16 - bytes.length, bytes.length);
+		} else {
+			System.arraycopy(bytes, bytes.length - 16, addressBytes, 0, 16);
+		}
+		
+		long highBits = 0;
+		for (int i = 0; i < 8; i++) {
+			highBits = (highBits << 8) | (addressBytes[i] & 0xFFL);
+		}
+		long lowBits = 0;
+		for (int i = 8; i < 16; i++) {
+			lowBits = (lowBits << 8) | (addressBytes[i] & 0xFFL);
+		}
+		return new Ipv6Address(highBits, lowBits);
+	}
+	
 	@Override
 	public @NonNull BigInteger size() {
 		return this.end.toBigInteger().subtract(this.start.toBigInteger()).add(BigInteger.ONE);
@@ -232,66 +292,6 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 			currentValue = currentValue.add(blockSize);
 		}
 		return networks;
-	}
-	
-	/**
-	 * Finds the optimal prefix length for a CIDR block starting at the given value.<br>
-	 *
-	 * @param startValue The starting address value
-	 * @param endValue The ending address value (inclusive)
-	 * @return The optimal prefix length
-	 * @throws NullPointerException If start value or end value is null
-	 */
-	private static int findOptimalPrefixLength(@NonNull BigInteger startValue, @NonNull BigInteger endValue) {
-		Objects.requireNonNull(startValue, "Start value must not be null");
-		Objects.requireNonNull(endValue, "End value must not be null");
-		BigInteger remaining = endValue.subtract(startValue).add(BigInteger.ONE);
-		
-		// Iterate from largest block (prefix 0) to smallest (prefix 128)
-		// Return the first (largest) aligned block that fits within remaining
-		for (int prefixLength = 0; prefixLength <= 128; prefixLength++) {
-			BigInteger blockSize = BigInteger.ONE.shiftLeft(128 - prefixLength);
-			
-			// Skip if start address is not aligned to this block size
-			if (!startValue.mod(blockSize).equals(BigInteger.ZERO)) {
-				continue;
-			}
-			
-			// Return this prefix if the block fits within remaining addresses
-			if (blockSize.compareTo(remaining) <= 0) {
-				return prefixLength;
-			}
-		}
-		return 128;
-	}
-	
-	/**
-	 * Converts a BigInteger to an IPv6 address.<br>
-	 *
-	 * @param value The BigInteger value
-	 * @return The corresponding IPv6 address
-	 * @throws NullPointerException If value is null
-	 */
-	private static @NonNull Ipv6Address bigIntegerToIpv6(@NonNull BigInteger value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		byte[] bytes = value.toByteArray();
-		byte[] addressBytes = new byte[16];
-		
-		if (bytes.length <= 16) {
-			System.arraycopy(bytes, 0, addressBytes, 16 - bytes.length, bytes.length);
-		} else {
-			System.arraycopy(bytes, bytes.length - 16, addressBytes, 0, 16);
-		}
-		
-		long highBits = 0;
-		for (int i = 0; i < 8; i++) {
-			highBits = (highBits << 8) | (addressBytes[i] & 0xFFL);
-		}
-		long lowBits = 0;
-		for (int i = 8; i < 16; i++) {
-			lowBits = (lowBits << 8) | (addressBytes[i] & 0xFFL);
-		}
-		return new Ipv6Address(highBits, lowBits);
 	}
 	
 	@Override

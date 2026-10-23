@@ -81,87 +81,76 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@Override
 	public <X extends Exception> @NonNull IniElement createNull(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return IniNull.INSTANCE;
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull IniElement createBoolean(boolean value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new IniValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull IniElement createByte(byte value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new IniValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull IniElement createShort(short value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new IniValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull IniElement createInteger(int value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new IniValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull IniElement createLong(long value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new IniValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull IniElement createFloat(float value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new IniValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull IniElement createDouble(double value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new IniValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull IniElement createString(@Nullable String value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (value == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid string");
 		}
+		
 		return new IniValue(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull IniElement createList(@Nullable List<? extends IniElement> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		throw exceptionConstructor.apply("Ini format does not support lists");
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull IniElement createMap(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new IniSection(GENERATED_SECTION + COUNTER.getAndIncrement());
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull IniElement createMap(@Nullable Map<String, ? extends IniElement> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (values == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -174,27 +163,26 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@Override
 	public <X extends Exception> boolean isEmpty(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not empty");
 		}
+		
 		return type == EMPTY_ELEMENT;
 	}
 	
 	@Override
 	public <X extends Exception> boolean isNull(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not ini null");
 		}
+		
 		return type.isIniNull();
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a boolean");
 		}
@@ -212,7 +200,6 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@Override
 	public <X extends Exception> @NonNull Byte getByte(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a byte");
 		}
@@ -230,7 +217,6 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@Override
 	public <X extends Exception> @NonNull Short getShort(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a short");
 		}
@@ -248,7 +234,6 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@Override
 	public <X extends Exception> @NonNull Integer getInteger(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not an integer");
 		}
@@ -266,7 +251,6 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@Override
 	public <X extends Exception> @NonNull Long getLong(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a long");
 		}
@@ -284,7 +268,6 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@Override
 	public <X extends Exception> @NonNull Float getFloat(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a float");
 		}
@@ -302,7 +285,6 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@Override
 	public <X extends Exception> @NonNull Double getDouble(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a double");
 		}
@@ -320,7 +302,6 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@Override
 	public <X extends Exception> @NonNull String getString(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a string");
 		}
@@ -338,14 +319,12 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@Override
 	public <X extends Exception> @NonNull List<IniElement> getList(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		throw exceptionConstructor.apply("Ini format does not support lists");
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull Map<String, IniElement> getMap(@Nullable IniElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -362,7 +341,6 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> boolean has(@Nullable IniElement type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -380,7 +358,6 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> @Nullable IniElement get(@Nullable IniElement type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -398,7 +375,6 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> void set(@Nullable IniElement type, @Nullable String key, @Nullable IniElement value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -418,7 +394,6 @@ public final class IniTypeProvider implements TypeProvider<IniElement> {
 	@Override
 	public <X extends Exception> @UnknownNullability IniElement merge(@Nullable IniElement current, @Nullable IniElement value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (current == null) {
 			return value;
 		}

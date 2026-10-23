@@ -33,7 +33,7 @@ import java.util.Objects;
  */
 @FunctionalInterface
 public interface ThrowableRunnable<X extends Throwable> {
-
+	
 	/**
 	 * Converts a throwable runnable into a runnable that throws a runtime exception when an exception is thrown.<br>
 	 *
@@ -52,14 +52,14 @@ public interface ThrowableRunnable<X extends Throwable> {
 			}
 		};
 	}
-
+	
 	/**
 	 * Functional method that performs an action.<br>
 	 *
 	 * @throws X The exception that can be thrown
 	 */
 	void run() throws X;
-
+	
 	/**
 	 * Returns a composed runnable of same type that performs,
 	 * in sequence, this operation followed by the {@code after} operation.<br>

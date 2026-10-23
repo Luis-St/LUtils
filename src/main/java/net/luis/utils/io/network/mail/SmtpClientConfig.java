@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.network.mail;
 
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
 import net.luis.utils.io.network.connection.ssl.SslClientConfig;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -58,8 +57,7 @@ import java.util.Objects;
  * @param ehloHostname The hostname announced in the EHLO command, or null to resolve the local host
  * @param tlsConfig The SSL/TLS configuration reused for secure transport
  * @param defaultCharset The character set used to encode SMTP commands and authentication tokens
- * @param bufferSize The size of the read/write buffers in bytes
- * @param onError The handler called when an error occurs, or null
+ * @param bufferSize The maximum length of a reply or command line in bytes
  */
 public record SmtpClientConfig(
 	@NonNull SmtpSecurity security,
@@ -67,8 +65,7 @@ public record SmtpClientConfig(
 	@Nullable String ehloHostname,
 	@NonNull SslClientConfig tlsConfig,
 	@NonNull Charset defaultCharset,
-	int bufferSize,
-	@Nullable ErrorEventHandler onError
+	int bufferSize
 ) {
 	
 	/**
@@ -80,10 +77,9 @@ public record SmtpClientConfig(
 	 *     <li>{@link #tlsConfig} = {@link SslClientConfig#DEFAULT}</li>
 	 *     <li>{@link #defaultCharset} = {@code UTF-8}</li>
 	 *     <li>{@link #bufferSize} = {@code 8192}</li>
-	 *     <li>{@link #onError} = {@code null}</li>
 	 * </ul>
 	 */
-	public static final SmtpClientConfig DEFAULT = new SmtpClientConfig(SmtpSecurity.STARTTLS, new SmtpAuth.None(), null, SslClientConfig.DEFAULT, StandardCharsets.UTF_8, 8192, null);
+	public static final SmtpClientConfig DEFAULT = new SmtpClientConfig(SmtpSecurity.STARTTLS, new SmtpAuth.None(), null, SslClientConfig.DEFAULT, StandardCharsets.UTF_8, 8192);
 	
 	/**
 	 * Constructs a new SMTP client configuration.<br>
@@ -93,8 +89,7 @@ public record SmtpClientConfig(
 	 * @param ehloHostname The hostname announced in the EHLO command, or null to resolve the local host
 	 * @param tlsConfig The SSL/TLS configuration reused for secure transport
 	 * @param defaultCharset The character set used to encode SMTP commands and authentication tokens
-	 * @param bufferSize The size of the read/write buffers in bytes
-	 * @param onError The handler called when an error occurs, or null
+	 * @param bufferSize The maximum length of a reply or command line in bytes
 	 * @throws NullPointerException If security, auth, tlsConfig, or defaultCharset is null
 	 * @throws IllegalArgumentException If bufferSize is less than 1 or the EHLO hostname contains whitespace
 	 */

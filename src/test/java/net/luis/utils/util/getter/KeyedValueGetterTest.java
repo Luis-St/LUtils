@@ -32,6 +32,12 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class KeyedValueGetterTest {
 	
+	private static @NonNull KeyedValueGetter createGetter(@NonNull String key, @NonNull String value) {
+		MapKeyedValueGetter getter = new MapKeyedValueGetter();
+		getter.put(key, value);
+		return getter;
+	}
+	
 	@Test
 	void getAsStringReturnsValue() {
 		KeyedValueGetter getter = createGetter("key", "value");
@@ -238,12 +244,6 @@ class KeyedValueGetterTest {
 		assertEquals("John", getter.getAsString("name"));
 		assertEquals(30, getter.getAsInteger("age"));
 		assertTrue(getter.getAsBoolean("active"));
-	}
-	
-	private static @NonNull KeyedValueGetter createGetter(@NonNull String key, @NonNull String value) {
-		MapKeyedValueGetter getter = new MapKeyedValueGetter();
-		getter.put(key, value);
-		return getter;
 	}
 	
 	private static class MapKeyedValueGetter implements KeyedValueGetter {

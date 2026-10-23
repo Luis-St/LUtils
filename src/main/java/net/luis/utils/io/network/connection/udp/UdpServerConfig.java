@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.network.connection.udp;
 
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
-import net.luis.utils.io.network.connection.event.MessageEventHandler;
+import net.luis.utils.io.network.connection.ErrorHandler;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -28,21 +27,19 @@ import java.util.Objects;
 
 /**
  * Configuration options for UDP servers.<br>
- * This record provides settings for UDP server behavior such as buffer sizes, executor strategy, and event handlers.<br>
+ * <p>
+ *     This record combines the settings of the peer the server receives on with the settings of the receive loop.<br>
+ *     The only callback is the error handler, which receives the failures that occur on the threads of the server.<br>
+ *     What happens with a datagram is decided by the {@link DatagramHandler} the server is created with.
+ * </p>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
  * UdpServerConfig config = UdpServerConfig.builder()
- *     .executorStrategy(ClientExecutorStrategy.virtualThreads())
- *     .onMessage((server, datagram, data) -> {
- *         server.send(datagram.endpoint(), "Pong".getBytes());
- *     })
+ *     .maxDatagramSize(1024)
+ *     .executorStrategy(ClientExecutorStrategy.fixedPool(4))
  *     .build();
- *
- * try (UdpServer server = new UdpServer(bindEndpoint, config)) {
- *     server.start();
- * }
  * }</pre>
  *
  * @see UdpServerConfigBuilder
@@ -50,57 +47,41 @@ import java.util.Objects;
  *
  * @author Luis-St
  *
- * @param bufferSize Size of the receive buffer in bytes
- * @param broadcast Whether to allow receiving broadcast packets
- * @param reuseAddress Whether to allow address reuse (SO_REUSEADDR)
- * @param executorStrategy How to handle concurrent datagram processing
- * @param onMessage Handler called when a datagram is received
- * @param onError Handler called when an error occurs
+ * @param peer The settings of the peer the server receives on
+ * @param executorStrategy The strategy that creates the executor the datagrams are handled on
+ * @param onError The handler for failures on the threads of the server, or null to use the uncaught exception handler
  */
 public record UdpServerConfig(
-	int bufferSize,
-	boolean broadcast,
-	boolean reuseAddress,
+	@NonNull UdpPeerConfig peer,
 	@NonNull ClientExecutorStrategy executorStrategy,
-	@Nullable MessageEventHandler<UdpServer, UdpDatagram> onMessage,
-	@Nullable ErrorEventHandler onError
+	@Nullable ErrorHandler onError
 ) {
 	
 	/**
 	 * Default configuration for UDP servers.<br>
 	 * <ul>
-	 *     <li>{@link #bufferSize} = {@code 65535} (max UDP payload)</li>
-	 *     <li>{@link #broadcast} = {@code false}</li>
-	 *     <li>{@link #reuseAddress} = {@code false}</li>
-	 *     <li>{@link #executorStrategy} = {@code virtualThreads()}</li>
-	 *     <li>{@link #onMessage} = {@code null}</li>
-	 *     <li>{@link #onError} = {@code null}</li>
+	 *     <li>{@link #peer} = {@link UdpPeerConfig#DEFAULT}</li>
+	 *     <li>{@link #executorStrategy} = {@link ClientExecutorStrategy#virtualThreads()}</li>
+	 *     <li>{@link #onError} = {@code null} (uncaught exception handler)</li>
 	 * </ul>
 	 */
-	public static final UdpServerConfig DEFAULT = new UdpServerConfig(65535, false, false, ClientExecutorStrategy.virtualThreads(), null, null);
+	public static final UdpServerConfig DEFAULT = new UdpServerConfig(UdpPeerConfig.DEFAULT, ClientExecutorStrategy.virtualThreads(), null);
 	
 	/**
 	 * Constructs a new UDP server configuration.<br>
 	 *
-	 * @param bufferSize Size of the receive buffer in bytes
-	 * @param broadcast Whether to allow broadcast packets
-	 * @param reuseAddress Whether to allow address reuse
-	 * @param executorStrategy How to handle concurrent datagram processing
-	 * @param onMessage Handler called when a datagram is received
-	 * @param onError Handler called when an error occurs
-	 * @throws NullPointerException If executor strategy is null
-	 * @throws IllegalArgumentException If buffer size is less than 1
+	 * @param peer The settings of the peer the server receives on
+	 * @param executorStrategy The strategy that creates the executor the datagrams are handled on
+	 * @param onError The handler for failures on the threads of the server, or null to use the uncaught exception handler
+	 * @throws NullPointerException If the peer settings or the executor strategy is null
 	 */
 	public UdpServerConfig {
+		Objects.requireNonNull(peer, "Peer config must not be null");
 		Objects.requireNonNull(executorStrategy, "Executor strategy must not be null");
-		
-		if (bufferSize < 1) {
-			throw new IllegalArgumentException("Buffer size must be at least 1: " + bufferSize);
-		}
 	}
 	
 	/**
-	 * Creates a new builder for constructing UDP server configuration.<br>
+	 * Creates a new builder for constructing a UDP server configuration.<br>
 	 * @return A new builder with default values
 	 */
 	public static @NonNull UdpServerConfigBuilder builder() {

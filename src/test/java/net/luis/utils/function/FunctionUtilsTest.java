@@ -334,13 +334,13 @@ class FunctionUtilsTest {
 	void memorizeWithWeakReferences() {
 		Function<String, String> function = FunctionUtils.memorize(str -> str.toUpperCase());
 		
-		String input = new String("test");
+		String input = "test";
 		assertEquals("TEST", function.apply(input));
 		
 		input = null;
 		System.gc();
 		
-		String newInput = new String("test");
+		String newInput = "test";
 		assertEquals("TEST", function.apply(newInput));
 	}
 }

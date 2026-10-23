@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data;
 
-import net.luis.utils.io.reader.StringReader;
+import net.luis.utils.io.reader.ValueStringReader;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -59,12 +59,12 @@ public final class DataHelper {
 	 * @param string The string
 	 * @return The parsed number or the string if it could not be parsed
 	 * @throws NullPointerException If the string is null
-	 * @see StringReader#readNumber()
+	 * @see ValueStringReader#readNumber()
 	 */
 	public static @NonNull Object tryParseNumber(@NonNull String string) {
 		Objects.requireNonNull(string, "String must not be null");
 		
-		StringReader reader = new StringReader(string);
+		ValueStringReader reader = new ValueStringReader(string);
 		try {
 			Number number = reader.readNumber();
 			reader.skipWhitespaces();

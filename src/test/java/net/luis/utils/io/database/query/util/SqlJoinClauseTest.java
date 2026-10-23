@@ -18,9 +18,12 @@
 
 package net.luis.utils.io.database.query.util;
 
+import net.luis.utils.io.database.Sql;
+import net.luis.utils.io.database.dialect.SqlDialects;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.query.SqlAlias;
 import net.luis.utils.io.database.query.crud.SqlSelectQuery;
+import net.luis.utils.io.database.rendering.SqlRendered;
 import org.junit.jupiter.api.Test;
 
 import static net.luis.utils.io.database.SqlTestFixtures.*;
@@ -156,5 +159,68 @@ class SqlJoinClauseTest {
 		String sql = clause.toSql(DIALECT).sql();
 		assertTrue(sql.contains("LATERAL"));
 		assertTrue(sql.contains("AS"));
+	}
+	
+	@Test
+	void toSqlLateralInnerJoinAppendsOnTrue() throws SqlException {
+		SqlJoinClause clause = new SqlJoinClause(SqlJoinType.INNER, sampleSelect(), SqlAlias.of("sub"));
+		String sql = clause.toSql(DIALECT).sql();
+		assertTrue(sql.contains("AS \"sub\""), sql);
+		assertTrue(sql.endsWith("ON " + DIALECT.renderBooleanLiteral(true).sql()), sql);
+	}
+	
+	@Test
+	void toSqlLateralLeftJoinAppendsOnTrue() throws SqlException {
+		SqlJoinClause clause = new SqlJoinClause(SqlJoinType.LEFT, sampleSelect(), SqlAlias.of("sub"));
+		String sql = clause.toSql(DIALECT).sql();
+		assertTrue(sql.startsWith("LEFT JOIN"), sql);
+		assertTrue(sql.endsWith("ON " + DIALECT.renderBooleanLiteral(true).sql()), sql);
+	}
+	
+	@Test
+	void toSqlLateralCrossJoinOmitsOn() throws SqlException {
+		SqlJoinClause clause = new SqlJoinClause(SqlJoinType.CROSS, sampleSelect(), SqlAlias.of("sub"));
+		String sql = clause.toSql(DIALECT).sql();
+		assertTrue(sql.endsWith("AS \"sub\""), sql);
+		assertFalse(sql.contains(" ON "), sql);
+	}
+	
+	@Test
+	void toSqlTableJoinIsUnaffectedByLateralBranch() throws SqlException {
+		SqlJoinClause clause = new SqlJoinClause(SqlJoinType.INNER, sampleTable(), Sql.equalTo(stringColumn(), "value"));
+		SqlRendered rendered = clause.toSql(DIALECT);
+		assertFalse(rendered.sql().contains("LATERAL"), rendered.sql());
+		assertFalse(rendered.sql().endsWith("ON " + DIALECT.renderBooleanLiteral(true).sql()), rendered.sql());
+		assertFalse(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void toSqlLateralJoinOnDialectWithNumericBooleanLiteral() throws SqlException {
+		SqlJoinClause clause = new SqlJoinClause(SqlJoinType.INNER, sampleSelect(), SqlAlias.of("sub"));
+		String sql = clause.toSql(SqlDialects.SQL_SERVER).sql();
+		assertTrue(sql.endsWith("ON " + SqlDialects.SQL_SERVER.renderBooleanLiteral(true).sql()), sql);
+		assertNotEquals(DIALECT.renderBooleanLiteral(true).sql(), SqlDialects.SQL_SERVER.renderBooleanLiteral(true).sql());
+	}
+	
+	@Test
+	void toSqlLateralJoinKeepsSubqueryParameters() throws SqlException {
+		SqlSelectQuery<Object> subquery = sampleSelect().where(Sql.equalTo(stringColumn(), "value"));
+		SqlJoinClause clause = new SqlJoinClause(SqlJoinType.INNER, subquery, SqlAlias.of("sub"));
+		SqlRendered rendered = clause.toSql(DIALECT);
+		assertEquals(subquery.toSql(DIALECT).parameters().size(), rendered.parameters().size());
+		assertFalse(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void toSqlLateralJoinWithCorrelatedSubqueryAndWhere() throws SqlException {
+		SqlSelectQuery<Object> subquery = sampleSelect().where(Sql.equalTo(stringColumn(), "value"));
+		SqlJoinClause clause = new SqlJoinClause(SqlJoinType.INNER, subquery, SqlAlias.of("a"));
+		SqlRendered rendered = clause.toSql(DIALECT);
+		String sql = rendered.sql();
+		
+		assertTrue(sql.startsWith("INNER JOIN LATERAL("), sql);
+		assertTrue(sql.contains(") AS \"a\""), sql);
+		assertTrue(sql.endsWith("ON " + DIALECT.renderBooleanLiteral(true).sql()), sql);
+		assertEquals(subquery.toSql(DIALECT).parameters(), rendered.parameters());
 	}
 }

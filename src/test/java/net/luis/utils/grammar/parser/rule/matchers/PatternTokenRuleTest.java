@@ -23,7 +23,6 @@ import net.luis.utils.grammar.parser.context.TokenRuleContext;
 import net.luis.utils.grammar.parser.rule.TokenRule;
 import net.luis.utils.grammar.parser.stream.TokenStream;
 import net.luis.utils.grammar.token.SimpleToken;
-import net.luis.utils.grammar.token.Token;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

@@ -20,10 +20,9 @@ package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.json.exception.JsonSyntaxException;
-import net.luis.utils.io.reader.StringReader;
+import net.luis.utils.io.reader.ValueStringReader;
 import org.jspecify.annotations.NonNull;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
@@ -47,7 +46,7 @@ public class JsonReader implements AutoCloseable {
 	/**
 	 * The internal reader used to read the json content.<br>
 	 */
-	private final StringReader reader;
+	private final ValueStringReader reader;
 	
 	/**
 	 * Constructs a new json reader with the given string and the default configuration.<br>
@@ -68,7 +67,7 @@ public class JsonReader implements AutoCloseable {
 	 */
 	public JsonReader(@NonNull String string, @NonNull JsonConfig config) {
 		this.config = Objects.requireNonNull(config, "Json config must not be null");
-		this.reader = new StringReader(Objects.requireNonNull(string, "String must not be null"));
+		this.reader = new ValueStringReader(Objects.requireNonNull(string, "String must not be null"));
 	}
 	
 	/**
@@ -90,7 +89,7 @@ public class JsonReader implements AutoCloseable {
 	 */
 	public JsonReader(@NonNull InputProvider input, @NonNull JsonConfig config) {
 		this.config = Objects.requireNonNull(config, "Json config must not be null");
-		this.reader = new StringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
+		this.reader = new ValueStringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
 	
 	/**

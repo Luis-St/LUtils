@@ -21,22 +21,29 @@ package net.luis.utils.io.database.dialect;
 import net.luis.utils.io.data.json.JsonConfig;
 import net.luis.utils.io.data.json.JsonObject;
 import net.luis.utils.io.data.xml.*;
+import net.luis.utils.io.database.Sql;
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.condition.conditions.comparison.SqlInListCondition;
 import net.luis.utils.io.database.exception.SqlException;
+import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.numeric.SqlNumericTruncateFunction;
+import net.luis.utils.io.database.function.functions.temporal.SqlDateInZoneFunction;
 import net.luis.utils.io.database.index.SqlIndexMethod;
-import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.rendering.SqlRendered;
+import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import net.luis.utils.io.network.address.*;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
 import java.sql.*;
-import java.util.List;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -48,6 +55,70 @@ import static org.junit.jupiter.api.Assertions.*;
 class PostgresSqlDialectTest {
 	
 	private static final PostgresSqlDialect DIALECT = new PostgresSqlDialect();
+	
+	private static PreparedStatement recordingStatement(Captured captured, SQLXML xmlToCreate) {
+		return (PreparedStatement) Proxy.newProxyInstance(
+			PreparedStatement.class.getClassLoader(),
+			new Class<?>[] { PreparedStatement.class },
+			(proxy, method, args) -> {
+				switch (method.getName()) {
+					case "setObject" -> {
+						if (args.length == 3) {
+							captured.objectIndex = (Integer) args[0];
+							captured.objectValue = args[1];
+							captured.objectSqlType = (Integer) args[2];
+						}
+					}
+					case "setNull" -> {
+						captured.nullIndex = (Integer) args[0];
+						captured.nullSqlType = (Integer) args[1];
+					}
+					case "setSQLXML" -> {
+						captured.sqlXmlIndex = (Integer) args[0];
+						captured.sqlXmlValue = (SQLXML) args[1];
+					}
+					case "getConnection" -> {
+						return connectionReturning(xmlToCreate);
+					}
+				}
+				return null;
+			}
+		);
+	}
+	
+	private static Connection connectionReturning(SQLXML xml) {
+		return (Connection) Proxy.newProxyInstance(
+			Connection.class.getClassLoader(),
+			new Class<?>[] { Connection.class },
+			(proxy, method, args) -> "createSQLXML".equals(method.getName()) ? xml : null
+		);
+	}
+	
+	private static SQLXML fakeSqlXml(String[] content) {
+		return (SQLXML) Proxy.newProxyInstance(
+			SQLXML.class.getClassLoader(),
+			new Class<?>[] { SQLXML.class },
+			(proxy, method, args) -> {
+				if ("setString".equals(method.getName())) {
+					content[0] = (String) args[0];
+					return null;
+				}
+				return "getString".equals(method.getName()) ? content[0] : null;
+			}
+		);
+	}
+	
+	private static ResultSet readerResultSet(String stringValue, SQLXML xmlValue) {
+		return (ResultSet) Proxy.newProxyInstance(
+			ResultSet.class.getClassLoader(),
+			new Class<?>[] { ResultSet.class },
+			(proxy, method, args) -> switch (method.getName()) {
+				case "getString" -> stringValue;
+				case "getSQLXML" -> xmlValue;
+				default -> null;
+			}
+		);
+	}
 	
 	@Test
 	void isTypeSupportedNullType() {
@@ -243,6 +314,22 @@ class PostgresSqlDialectTest {
 	}
 	
 	@Test
+	void dateInZoneRoutesThroughPostgresRenderer() throws SqlException {
+		SqlValueExpression<LocalDateTime> expression = new SqlValueExpression<>(LocalDateTime.of(2024, 1, 1, 0, 0), SqlTypes.LOCAL_DATE_TIME.configure(SqlParameter.fractional(0)));
+		SqlValueExpression<String> zoneId = new SqlValueExpression<>("UTC", SqlTypes.STRING.configure(SqlParameter.length(64)));
+		SqlDateInZoneFunction<LocalDate> function = new SqlDateInZoneFunction<>(expression, zoneId, SqlTypes.LOCAL_DATE);
+		String sql = DIALECT.renderFunction(function).sql();
+		assertTrue(sql.contains("CAST("));
+		assertTrue(sql.contains("AT TIME ZONE"));
+		assertTrue(sql.contains("AS DATE"));
+	}
+	
+	@Test
+	void renderDateInZoneNullFunction() {
+		assertThrows(NullPointerException.class, () -> DIALECT.renderFunction(null));
+	}
+	
+	@Test
 	void uuidBinderSetsObjectAsOther() throws Exception {
 		UUID uuid = UUID.randomUUID();
 		Captured captured = new Captured();
@@ -368,68 +455,194 @@ class PostgresSqlDialectTest {
 		assertEquals(element, result);
 	}
 	
-	private static PreparedStatement recordingStatement(Captured captured, SQLXML xmlToCreate) {
-		return (PreparedStatement) Proxy.newProxyInstance(
-			PreparedStatement.class.getClassLoader(),
-			new Class<?>[] { PreparedStatement.class },
-			(proxy, method, args) -> {
-				switch (method.getName()) {
-					case "setObject" -> {
-						if (args.length == 3) {
-							captured.objectIndex = (Integer) args[0];
-							captured.objectValue = args[1];
-							captured.objectSqlType = (Integer) args[2];
-						}
-					}
-					case "setNull" -> {
-						captured.nullIndex = (Integer) args[0];
-						captured.nullSqlType = (Integer) args[1];
-					}
-					case "setSQLXML" -> {
-						captured.sqlXmlIndex = (Integer) args[0];
-						captured.sqlXmlValue = (SQLXML) args[1];
-					}
-					case "getConnection" -> {
-						return connectionReturning(xmlToCreate);
-					}
-				}
-				return null;
-			}
-		);
+	@Test
+	void resolveNativeTypeWithNullNativeType() {
+		assertThrows(NullPointerException.class, () -> DIALECT.resolveType(null));
 	}
 	
-	private static Connection connectionReturning(SQLXML xml) {
-		return (Connection) Proxy.newProxyInstance(
-			Connection.class.getClassLoader(),
-			new Class<?>[] { Connection.class },
-			(proxy, method, args) -> "createSQLXML".equals(method.getName()) ? xml : null
-		);
+	@Test
+	void getTypeNameForFixedBytesRendersBytea() throws SqlException {
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.FIXED_BYTES.configure(SqlParameter.length(16))));
 	}
 	
-	private static SQLXML fakeSqlXml(String[] content) {
-		return (SQLXML) Proxy.newProxyInstance(
-			SQLXML.class.getClassLoader(),
-			new Class<?>[] { SQLXML.class },
-			(proxy, method, args) -> {
-				if ("setString".equals(method.getName())) {
-					content[0] = (String) args[0];
-					return null;
-				}
-				return "getString".equals(method.getName()) ? content[0] : null;
-			}
-		);
+	@Test
+	void getTypeNameForBytesRendersBytea() throws SqlException {
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.BYTES.configure(SqlParameter.length(64))));
 	}
 	
-	private static ResultSet readerResultSet(String stringValue, SQLXML xmlValue) {
-		return (ResultSet) Proxy.newProxyInstance(
-			ResultSet.class.getClassLoader(),
-			new Class<?>[] { ResultSet.class },
-			(proxy, method, args) -> switch (method.getName()) {
-				case "getString" -> stringValue;
-				case "getSQLXML" -> xmlValue;
-				default -> null;
-			}
-		);
+	@Test
+	void getTypeNameForLengthTypesUnaffected() throws SqlException {
+		assertEquals("VARCHAR(64)", DIALECT.getTypeName(SqlTypes.STRING.configure(SqlParameter.length(64))));
+		assertEquals("CHAR(36)", DIALECT.getTypeName(SqlTypes.FIXED_STRING.configure(SqlParameter.length(36))));
+		assertEquals("VARCHAR(64)", DIALECT.getTypeName(SqlTypes.UNICODE_STRING.configure(SqlParameter.length(64))));
+	}
+	
+	@Test
+	void getTypeNameForLargeBytesRendersBytea() throws SqlException {
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.LARGE_BYTES));
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.BLOB));
+	}
+	
+	@Test
+	void resolveNativeTypeForBytea() {
+		assertEquals(Optional.of(SqlTypes.LARGE_BYTES), DIALECT.resolveType(new SqlNativeType(Types.BINARY, "bytea", Integer.MAX_VALUE, 0)));
+	}
+	
+	@Test
+	void resolveNativeTypeForText() {
+		assertEquals(Optional.of(SqlTypes.TEXT), DIALECT.resolveType(new SqlNativeType(Types.VARCHAR, "text", Integer.MAX_VALUE, 0)));
+	}
+	
+	@Test
+	void resolveNativeTypeForUnknownNameDelegatesToSuper() {
+		assertEquals(Optional.of(SqlTypes.INTEGER), DIALECT.resolveType(new SqlNativeType(Types.INTEGER, "int4", 10, 0)));
+	}
+	
+	@Test
+	void resolveTypeForRegisteredNativeTypes() {
+		assertEquals(Optional.of(SqlTypes.UUID), DIALECT.resolveType(new SqlNativeType(Types.OTHER, "uuid", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.JSON), DIALECT.resolveType(new SqlNativeType(Types.OTHER, "jsonb", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.IP_ADDRESS), DIALECT.resolveType(new SqlNativeType(Types.OTHER, "inet", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.IP_NETWORK), DIALECT.resolveType(new SqlNativeType(Types.OTHER, "cidr", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.XML), DIALECT.resolveType(new SqlNativeType(Types.SQLXML, "xml", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeForUuidWasPreviouslyUnsupported() {
+		assertTrue(DIALECT.resolveType(new SqlNativeType(Types.OTHER, "uuid", 0, 0)).isPresent());
+		assertTrue(DIALECT.resolveType(new SqlNativeType(Types.OTHER, "geometry", 0, 0)).isEmpty());
+	}
+	
+	@Test
+	void binaryTypesAllRenderBytea() throws SqlException {
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.FIXED_BYTES.configure(SqlParameter.length(16))));
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.BYTES.configure(SqlParameter.length(64))));
+		assertEquals("BYTEA", DIALECT.getTypeName(SqlTypes.LARGE_BYTES));
+	}
+	
+	@Test
+	void byteaRoundTripsThroughResolveType() throws SqlException {
+		String rendered = DIALECT.getTypeName(SqlTypes.BYTES.configure(SqlParameter.length(64)));
+		SqlType<?> resolved = DIALECT.resolveType(new SqlNativeType(Types.BINARY, rendered, Integer.MAX_VALUE, 0)).orElseThrow();
+		assertEquals(rendered, DIALECT.getTypeName(resolved));
+	}
+	
+	@Test
+	void resolveTypeInvertsGetTypeNameForRegisteredTypes() throws SqlException {
+		List<SqlType<?>> types = List.of(SqlTypes.UUID, SqlTypes.JSON, SqlTypes.XML, SqlTypes.IP_ADDRESS, SqlTypes.IP_NETWORK);
+		for (SqlType<?> type : types) {
+			String rendered = DIALECT.getTypeName(type);
+			assertEquals(Optional.of(type), DIALECT.resolveType(new SqlNativeType(Types.OTHER, rendered, 0, 0)), "No inverse for " + rendered);
+		}
+	}
+	
+	@Test
+	void renderValueLiteralWithNull() {
+		assertThrows(NullPointerException.class, () -> DIALECT.renderValueLiteral(null));
+	}
+	
+	@Test
+	void renderValueLiteralWithByteArrayThrows() {
+		assertThrows(SqlDialectUnsupportedRenderingException.class, () -> DIALECT.renderValueLiteral(new byte[] { 1, 2 }));
+	}
+	
+	@Test
+	void renderValueLiteralWithSingleElementArray() throws SqlException {
+		assertEquals("ARRAY['A']", DIALECT.renderValueLiteral(new String[] { "A" }));
+	}
+	
+	@Test
+	void renderValueLiteralWithMultipleElementArray() throws SqlException {
+		assertEquals("ARRAY['A', 'B']", DIALECT.renderValueLiteral(new String[] { "A", "B" }));
+	}
+	
+	@Test
+	void renderValueLiteralWithEmptyArray() throws SqlException {
+		assertEquals("ARRAY[]", DIALECT.renderValueLiteral(new String[0]));
+	}
+	
+	@Test
+	void renderValueLiteralWithNullElementInArray() throws SqlException {
+		assertEquals("ARRAY['A', NULL]", DIALECT.renderValueLiteral(new String[] { "A", null }));
+	}
+	
+	@Test
+	void renderValueLiteralWithNumericArray() throws SqlException {
+		assertEquals("ARRAY[1, 2]", DIALECT.renderValueLiteral(new Integer[] { 1, 2 }));
+	}
+	
+	@Test
+	void renderValueLiteralWithStringDelegatesToSuper() throws SqlException {
+		assertEquals("'A'", DIALECT.renderValueLiteral("A"));
+	}
+	
+	@Test
+	void renderValueLiteralWithNumberDelegatesToSuper() throws SqlException {
+		assertEquals("42", DIALECT.renderValueLiteral(42));
+	}
+	
+	@Test
+	void renderValueLiteralWithArrayContainingQuotedString() throws SqlException {
+		assertEquals("ARRAY['O''Brien']", DIALECT.renderValueLiteral(new String[] { "O'Brien" }));
+	}
+	
+	@Test
+	void renderValueLiteralWithBooleanArray() throws SqlException {
+		assertEquals("ARRAY[TRUE, FALSE]", DIALECT.renderValueLiteral(new Boolean[] { true, false }));
+	}
+	
+	@Test
+	void renderValueLiteralWithNestedArray() throws SqlException {
+		assertEquals("ARRAY[ARRAY['A'], ARRAY['B']]", DIALECT.renderValueLiteral(new String[][] { { "A" }, { "B" } }));
+	}
+	
+	@Test
+	void renderValueLiteralWithArrayOfOnlyNullElements() throws SqlException {
+		assertEquals("ARRAY[NULL, NULL]", DIALECT.renderValueLiteral(new String[] { null, null }));
+	}
+	
+	@Test
+	void renderConditionInlineWithInListProducesAnyArray() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "t");
+		SqlColumn<Object, String> kind = table.column("kind", SqlTypes.TEXT, object -> "");
+		SqlRendered rendered = DIALECT.renderConditionInline(Sql.in(kind, "A", "B"));
+		assertEquals("\"t\".\"kind\" = ANY(ARRAY['A', 'B'])", rendered.sql());
+		assertTrue(rendered.parameters().isEmpty());
+	}
+	
+	@Test
+	void constructWithAdditionalTypes() throws SqlException {
+		PostgresSqlDialect dialect = new PostgresSqlDialect(SqlTypeRegistry.builder().register(SqlTypes.DURATION, "MACADDR").build());
+		assertEquals("PostgreSQL", dialect.name());
+		assertEquals("MACADDR", dialect.getTypeName(SqlTypes.DURATION));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesOverridingOwnMapping() throws SqlException {
+		PostgresSqlDialect dialect = new PostgresSqlDialect(SqlTypeRegistry.builder().register(SqlTypes.JSON, "JSON").build());
+		assertEquals("JSONB", DIALECT.getTypeName(SqlTypes.JSON));
+		assertEquals("JSON", dialect.getTypeName(SqlTypes.JSON));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new PostgresSqlDialect(null));
+	}
+	
+	@Test
+	void truncateTableWithoutCascadeOmitsCascade() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlRendered rendered = DIALECT.tableRenderer().renderTruncateTable(table);
+		assertEquals("TRUNCATE TABLE \"users\"", rendered.sql());
+		assertFalse(rendered.sql().contains("CASCADE"));
+	}
+	
+	@Test
+	void truncateTableWithCascadeAppendsCascade() throws SqlException {
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		SqlRendered rendered = DIALECT.tableRenderer().renderTruncateTable(table, true);
+		assertTrue(rendered.sql().endsWith("CASCADE"));
+		assertTrue(rendered.sql().startsWith("TRUNCATE TABLE \"users\""));
 	}
 	
 	private static final class Captured {

@@ -22,6 +22,7 @@ import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.audit.SqlAuditColumn;
 import net.luis.utils.io.database.condition.SqlCondition;
 import net.luis.utils.io.database.dialect.SqlDialect;
+import net.luis.utils.io.database.dialect.SqlFeature;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectUnsupportedRenderingException;
 import net.luis.utils.io.database.rendering.SqlRendered;
@@ -69,6 +70,27 @@ public class SqlTableRenderer {
 	 */
 	public @NonNull SqlRendered renderCreateTable(@NonNull SqlTable<?> table, boolean ifNotExists) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
+		return this.renderCreateTable(table, table.columns(), List.of(), ifNotExists);
+	}
+	
+	/**
+	 * Renders a {@code CREATE TABLE} statement for the given table using the given columns and primary key columns.<br>
+	 * The given columns replace the columns declared by the table, which allows a caller such as a migration to create the table from its own column definitions.<br>
+	 * If more than one primary key column is given, the primary key is rendered as a table-level constraint and the inline primary key markers of the columns are skipped.<br>
+	 * If no primary key column is given, the primary key and all other table-level constraints of the table declaration are used.<br>
+	 *
+	 * @param table The table to create
+	 * @param columns The columns the created table should have
+	 * @param primaryKeyColumns The columns that form the primary key, or an empty list to use the primary key of the table declaration
+	 * @param ifNotExists Whether an {@code IF NOT EXISTS} clause should be added
+	 * @return The rendered statement
+	 * @throws NullPointerException If the table, the columns or the primary key columns are null
+	 * @throws SqlException If rendering fails
+	 */
+	public @NonNull SqlRendered renderCreateTable(@NonNull SqlTable<?> table, @NonNull List<? extends SqlColumn<?, ?>> columns, @NonNull List<? extends SqlColumn<?, ?>> primaryKeyColumns, boolean ifNotExists) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		Objects.requireNonNull(columns, "Sql columns must not be null");
+		Objects.requireNonNull(primaryKeyColumns, "Sql primary key columns must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		renderer.create().table();
@@ -79,8 +101,8 @@ public class SqlTableRenderer {
 		renderer.literal(this.dialect.quoteIdentifier(table.name()));
 		renderer.openingBracket();
 		
-		boolean hasCompositeKey = table.compositePrimaryKey().isPresent();
-		List<? extends SqlColumn<?, ?>> columns = table.columns();
+		boolean compositeKeyGiven = primaryKeyColumns.size() > 1;
+		boolean hasCompositeKey = compositeKeyGiven || (primaryKeyColumns.isEmpty() && table.compositePrimaryKey().isPresent());
 		for (int i = 0; i < columns.size(); i++) {
 			if (i > 0) {
 				renderer.comma();
@@ -94,7 +116,13 @@ public class SqlTableRenderer {
 			}
 		}
 		
-		SqlRendered tableConstraints = this.renderTableConstraints(table);
+		if (compositeKeyGiven) {
+			renderer.comma().primary().key().openingBracket();
+			SqlRenderingHelper.renderList(renderer, primaryKeyColumns, (r, column) -> r.literal(this.dialect.quoteIdentifier(column.name())));
+			renderer.closingBracket();
+		}
+		
+		SqlRendered tableConstraints = this.renderTableConstraints(table, primaryKeyColumns.isEmpty());
 		if (!tableConstraints.sql().isEmpty()) {
 			renderer.comma().rendered(tableConstraints);
 		}
@@ -158,6 +186,27 @@ public class SqlTableRenderer {
 	}
 	
 	/**
+	 * Renders a {@code TRUNCATE TABLE} statement for the given table that optionally cascades to the referencing tables.<br>
+	 * A cascading truncate also empties every table that holds a foreign key on the given table,<br>
+	 * it must only be requested for dialects that report {@link SqlFeature#TRUNCATE_CASCADE}.<br>
+	 *
+	 * @param table The table to truncate
+	 * @param cascade Whether the truncate should cascade to the referencing tables
+	 * @return The rendered statement
+	 * @throws NullPointerException If the table is null
+	 * @throws SqlException If rendering fails
+	 */
+	public @NonNull SqlRendered renderTruncateTable(@NonNull SqlTable<?> table, boolean cascade) throws SqlException {
+		Objects.requireNonNull(table, "Sql table must not be null");
+		
+		SqlRendered truncate = this.renderTruncateTable(table);
+		if (!cascade) {
+			return truncate;
+		}
+		return SqlRenderer.empty().rendered(truncate).cascade().toSql();
+	}
+	
+	/**
 	 * Renders the keyword sequence used to mark a column as auto-incrementing.<br>
 	 *
 	 * @return The rendered keyword sequence
@@ -213,7 +262,7 @@ public class SqlTableRenderer {
 		}
 		
 		for (SqlCondition check : column.checks()) {
-			renderer.check().openingBracket().rendered(check.toSql(this.dialect)).closingBracket();
+			renderer.check().openingBracket().rendered(this.dialect.renderCheckCondition(check)).closingBracket();
 		}
 		return renderer.toSql();
 	}
@@ -308,12 +357,27 @@ public class SqlTableRenderer {
 	 * @throws SqlException If rendering fails
 	 */
 	protected @NonNull SqlRendered renderTableConstraints(@NonNull SqlTable<?> table) throws SqlException {
+		return this.renderTableConstraints(table, true);
+	}
+	
+	/**
+	 * Renders the table-level constraints of the given table for use inside a {@code CREATE TABLE} statement.<br>
+	 * This includes the foreign keys, unique constraints and check constraints of the table as well as its composite primary key if it should be included.<br>
+	 * The returned rendered SQL is empty if the table has no matching table-level constraints.<br>
+	 *
+	 * @param table The table whose constraints should be rendered
+	 * @param includeCompositePrimaryKey Whether the composite primary key of the table should be rendered, this is skipped when the caller renders its own primary key
+	 * @return The rendered constraints, or an empty rendered SQL if there are none
+	 * @throws NullPointerException If the table is null
+	 * @throws SqlException If rendering fails
+	 */
+	protected @NonNull SqlRendered renderTableConstraints(@NonNull SqlTable<?> table, boolean includeCompositePrimaryKey) throws SqlException {
 		Objects.requireNonNull(table, "Sql table must not be null");
 		
 		SqlRenderer renderer = SqlRenderer.empty();
 		boolean first = true;
 		
-		if (table.compositePrimaryKey().isPresent()) {
+		if (includeCompositePrimaryKey && table.compositePrimaryKey().isPresent()) {
 			SqlCompositePrimaryKey<?> pk = table.compositePrimaryKey().get();
 			
 			renderer.primary().key().openingBracket();
@@ -352,7 +416,7 @@ public class SqlTableRenderer {
 			if (!first) {
 				renderer.comma();
 			}
-			renderer.check().openingBracket().rendered(check.toSql(this.dialect)).closingBracket();
+			renderer.check().openingBracket().rendered(this.dialect.renderCheckCondition(check)).closingBracket();
 			first = false;
 		}
 		

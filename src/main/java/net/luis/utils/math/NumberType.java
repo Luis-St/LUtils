@@ -281,8 +281,28 @@ public enum NumberType {
 		if (suffix == '\0') {
 			return null;
 		}
+		
 		for (NumberType numberType : values()) {
 			if (numberType.suffix == suffix) {
+				return numberType;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets the number type by the given java number class.<br>
+	 * Will return null if the number class is not a valid number type.<br>
+	 *
+	 * @param numberClass The java number class to get the number type for
+	 * @return The number type with the given java number class or null
+	 * @throws NullPointerException If the number class is null
+	 */
+	public static @Nullable NumberType getByClass(@NonNull Class<?> numberClass) {
+		Objects.requireNonNull(numberClass, "Number class must not be null");
+		
+		for (NumberType numberType : values()) {
+			if (numberType.numberClass == numberClass) {
 				return numberType;
 			}
 		}
@@ -339,6 +359,7 @@ public enum NumberType {
 	 */
 	public boolean isInRange(@NonNull Number number) {
 		Objects.requireNonNull(number, "Number must not be null");
+		
 		if (this.minValue == null || this.maxValue == null) {
 			return true;
 		}
@@ -406,6 +427,7 @@ public enum NumberType {
 		if (this == targetType) {
 			return true;
 		}
+		
 		if (this.isFloatingPoint() && !targetType.isFloatingPoint()) {
 			return false;
 		}
@@ -447,14 +469,17 @@ public enum NumberType {
 		if (!this.isSupportedRadix(radix)) {
 			return false;
 		}
+		
 		try {
 			value = removeTypeSuffix(value, this, radix);
 		} catch (IllegalArgumentException e) {
 			return false;
 		}
+		
 		if (!this.isFloatingPoint()) {
 			value = removeRadixPrefixes(value, Radix.BINARY, Radix.HEXADECIMAL);
 		}
+		
 		try {
 			this.parser.apply(value, radix);
 			return true;
@@ -487,6 +512,7 @@ public enum NumberType {
 			if (StringUtils.isBlank(value)) {
 				return this.parseNumberStrict("0", Radix.DECIMAL);
 			}
+			
 			if (StringUtils.containsIgnoreCase(value, Radix.HEXADECIMAL.getPrefix())) {
 				radix = Radix.HEXADECIMAL;
 			} else if (StringUtils.containsIgnoreCase(value, Radix.BINARY.getPrefix())) {
@@ -495,6 +521,7 @@ public enum NumberType {
 				radix = Radix.DECIMAL;
 			}
 		}
+		
 		if (!this.isSupportedRadix(radix)) {
 			throw new IllegalArgumentException("Radix " + radix + " is not supported by " + this);
 		}
@@ -527,6 +554,7 @@ public enum NumberType {
 		if (!this.isSupportedRadix(radix)) {
 			throw new IllegalArgumentException("Radix " + radix + " is not supported by " + this);
 		}
+		
 		char typeSuffix = Character.toLowerCase(value.charAt(value.length() - 1));
 		if (Character.isAlphabetic(typeSuffix)) {
 			if (radix == Radix.HEXADECIMAL) {

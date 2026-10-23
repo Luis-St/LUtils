@@ -62,120 +62,110 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public <X extends Exception> @NonNull JsonElement createNull(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return JsonNull.INSTANCE;
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull JsonElement createBoolean(boolean value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull JsonElement createByte(byte value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull JsonElement createShort(short value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull JsonElement createInteger(int value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull JsonElement createLong(long value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull JsonElement createFloat(float value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull JsonElement createDouble(double value, @NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull JsonElement createString(@Nullable String value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (value == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid string");
 		}
+		
 		return new JsonPrimitive(value);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull JsonElement createList(@Nullable List<? extends JsonElement> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (values == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid list");
 		}
+		
 		return new JsonArray(values);
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull JsonElement createMap(@NonNull Function<String, X> exceptionConstructor) {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		return new JsonObject();
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull JsonElement createMap(@Nullable Map<String, ? extends JsonElement> values, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (values == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
+		
 		return new JsonObject(values);
 	}
 	
 	@Override
 	public <X extends Exception> boolean isEmpty(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
+		
 		return type == EMPTY_ELEMENT;
 	}
 	
 	@Override
 	public <X extends Exception> boolean isNull(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not valid");
 		}
+		
 		return type.isJsonNull();
 	}
 	
 	@Override
 	public <X extends Exception> @NonNull Boolean getBoolean(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a boolean");
 		}
@@ -193,7 +183,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public <X extends Exception> @NonNull Byte getByte(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a byte");
 		}
@@ -211,7 +200,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public <X extends Exception> @NonNull Short getShort(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a short");
 		}
@@ -229,7 +217,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public <X extends Exception> @NonNull Integer getInteger(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not an integer");
 		}
@@ -247,7 +234,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public <X extends Exception> @NonNull Long getLong(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a long");
 		}
@@ -265,7 +251,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public <X extends Exception> @NonNull Float getFloat(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a float");
 		}
@@ -283,7 +268,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public <X extends Exception> @NonNull Double getDouble(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a double");
 		}
@@ -301,7 +285,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public <X extends Exception> @NonNull String getString(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a string");
 		}
@@ -319,7 +302,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public <X extends Exception> @NonNull List<JsonElement> getList(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid list");
 		}
@@ -333,7 +315,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public <X extends Exception> @NonNull Map<String, JsonElement> getMap(@Nullable JsonElement type, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -347,9 +328,9 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
+	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> boolean has(@Nullable JsonElement type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -367,7 +348,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> @Nullable JsonElement get(@Nullable JsonElement type, @Nullable String key, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}
@@ -385,7 +365,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@SuppressWarnings("DuplicatedCode")
 	public <X extends Exception> void set(@Nullable JsonElement type, @Nullable String key, @Nullable JsonElement value, @NonNull Function<String, X> exceptionConstructor) throws X {
 		Objects.requireNonNull(exceptionConstructor, "Exception constructor must not be null");
-		
 		if (type == null) {
 			throw exceptionConstructor.apply("Value 'null' is not a valid map");
 		}

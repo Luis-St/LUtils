@@ -4,6 +4,7 @@ import java.time.Year
 val googleGuava: String by project
 val log4jAPI: String by project
 val log4jCore: String by project
+val jackson: String by project
 val apacheLang: String by project
 val hikaricp: String by project
 val postgresql: String by project
@@ -13,6 +14,7 @@ val mssqlJdbc: String by project
 val h2: String by project
 val sqlite: String by project
 val jspecify: String by project
+val bouncyCastle: String by project
 val jetBrainsAnnotations: String by project
 val junitJupiter: String by project
 val junitPlatformLauncher: String by project
@@ -52,6 +54,9 @@ dependencies {
 	runtimeOnly("com.microsoft.sqlserver:mssql-jdbc:${mssqlJdbc}") // SQL Server Driver
 	runtimeOnly("com.h2database:h2:${h2}") // H2 Driver (embedded)
 	runtimeOnly("org.xerial:sqlite-jdbc:${sqlite}") // SQLite Driver (embedded)
+	// Crypto
+	implementation("org.bouncycastle:bcprov-jdk18on:${bouncyCastle}") // PQ and AEAD extras, Argon2id and scrypt
+	implementation("org.bouncycastle:bcpkix-jdk18on:${bouncyCastle}") // Certificates, certificate requests and revocation lists
 	// Other
 	implementation("org.jspecify:jspecify:${jspecify}") // Nullability
 	implementation("org.jetbrains:annotations:${jetBrainsAnnotations}") // Annotations
@@ -104,23 +109,6 @@ tasks.register<JavaExec>("run") {
 	jvmArgs = listOf(
 		"--module-path", sourceSets["main"].runtimeClasspath.asPath,
 		"--module", "net.luis.utils/net.luis.utils.Main"
-	)
-}
-
-tasks.register<JavaExec>("runDatabase") {
-	dependsOn(tasks.named("classes"))
-	
-	group = "runs"
-	mainClass.set("net.luis.utils.DatabaseTest")
-	
-	enableAssertions = true
-	standardInput = System.`in`
-	args = listOf()
-	
-	classpath = files()
-	jvmArgs = listOf(
-		"--module-path", sourceSets["main"].runtimeClasspath.asPath,
-		"--module", "net.luis.utils/net.luis.utils.DatabaseTest"
 	)
 }
 

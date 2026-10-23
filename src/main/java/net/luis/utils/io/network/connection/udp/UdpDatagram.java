@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.connection.udp;
 
+import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.IpEndpoint;
 import org.jspecify.annotations.NonNull;
 
@@ -28,25 +29,36 @@ import java.util.Objects;
  * For received datagrams, the endpoint represents the source address.<br>
  * For outgoing datagrams, the endpoint represents the destination address.<br>
  * <p>
+ *     The endpoint is an {@link IpEndpoint} rather than the more general {@link Endpoint},
+ *     because a received datagram is always read from a socket and therefore always carries a literal address.<br>
+ *     A record component has a single type for both directions, so widening it would give up that guarantee<br>
+ *     on the receiving side, which is the side this type is mostly used on:<br>
+ *     it is the message type of {@link UdpPeer#receive()} and the datagram passed to a {@link DatagramHandler}.
+ * </p>
+ * <p>
+ *     To send to a host named by a DNS hostname, use {@link UdpPeer#send(Endpoint, byte[])},<br>
+ *     which accepts any {@link Endpoint} and resolves it before sending.
+ * </p>
+ * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
  * // Receiving a datagram
- * UdpDatagram received = client.receive();
+ * UdpDatagram received = peer.receive().orElseThrow();
  * System.out.println("From: " + received.endpoint());
  * System.out.println("Data: " + new String(received.data()));
  *
  * // Creating a datagram to send
  * UdpDatagram toSend = new UdpDatagram(targetEndpoint, "Hello".getBytes());
- * client.send(toSend);
+ * peer.send(toSend);
  * }</pre>
  *
- * @see UdpClient
+ * @see UdpPeer
  * @see UdpServer
  *
  * @author Luis-St
  *
- * @param endpoint The remote endpoint (source for received, destination for sending)
+ * @param endpoint The remote endpoint (source for received, destination for sending), always a literal address
  * @param data The payload data
  */
 public record UdpDatagram(

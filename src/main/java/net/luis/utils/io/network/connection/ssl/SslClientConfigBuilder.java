@@ -18,21 +18,21 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
-import net.luis.utils.io.network.connection.event.ConnectionEventHandler;
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
+import net.luis.utils.io.network.connection.Framing;
+import net.luis.utils.io.network.connection.tcp.TcpClientConfig;
+import net.luis.utils.io.network.connection.tcp.TcpClientConfigBuilder;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import javax.net.ssl.SSLContext;
 import java.time.Duration;
 import java.util.List;
-import java.util.Objects;
 
 /**
- * Builder class for constructing SSL client configuration.<br>
- * Provides a fluent API for setting individual configuration options.<br>
+ * Builder class for constructing an SSL client configuration.<br>
+ * Provides a fluent API for the transport and the TLS options of a secured connection.<br>
  * <p>
- *     All options default to values matching {@link SslClientConfig#DEFAULT}.
+ *     All options default to the values of {@link SslClientConfig#DEFAULT}.
  * </p>
  * <p>
  *     Example usage:
@@ -41,9 +41,7 @@ import java.util.Objects;
  * SslClientConfig config = SslClientConfig.builder()
  *     .connectTimeout(Duration.ofSeconds(10))
  *     .sslContext(myContext)
- *     .enabledProtocols(List.of("TLSv1.3"))
- *     .verifyHostname(true)
- *     .onConnect(event -> System.out.println("Connected to " + event.remoteEndpoint()))
+ *     .enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
  *     .build();
  * }</pre>
  *
@@ -54,57 +52,13 @@ import java.util.Objects;
 public final class SslClientConfigBuilder {
 	
 	/**
-	 * The maximum time to wait for connection establishment.<br>
+	 * The builder of the transport settings.<br>
 	 */
-	private Duration connectTimeout = Duration.ofSeconds(30);
+	private final TcpClientConfigBuilder transport = TcpClientConfig.builder();
 	/**
-	 * The maximum time to wait for read operations.<br>
+	 * The builder of the TLS settings.<br>
 	 */
-	private Duration readTimeout = Duration.ZERO;
-	/**
-	 * The maximum time to wait for write operations.<br>
-	 */
-	private Duration writeTimeout = Duration.ZERO;
-	/**
-	 * The size of the read/write buffers in bytes.<br>
-	 */
-	private int bufferSize = 8192;
-	/**
-	 * Whether to disable Nagle's algorithm (TCP_NODELAY).<br>
-	 */
-	private boolean tcpNoDelay = true;
-	/**
-	 * Whether to enable TCP keep-alive (SO_KEEPALIVE).<br>
-	 */
-	private boolean keepAlive = true;
-	/**
-	 * The SSL context to use, or null for the JVM default.<br>
-	 */
-	private @Nullable SSLContext sslContext;
-	/**
-	 * The TLS protocols to enable.<br>
-	 */
-	private List<String> enabledProtocols = List.of();
-	/**
-	 * The cipher suites to enable.<br>
-	 */
-	private List<String> enabledCipherSuites = List.of();
-	/**
-	 * Whether to verify the server hostname against its certificate.<br>
-	 */
-	private boolean verifyHostname = true;
-	/**
-	 * The handler called when the connection is established.<br>
-	 */
-	private @Nullable ConnectionEventHandler onConnect;
-	/**
-	 * The handler called when the connection is closed.<br>
-	 */
-	private @Nullable ConnectionEventHandler onDisconnect;
-	/**
-	 * The handler called when an error occurs.<br>
-	 */
-	private @Nullable ErrorEventHandler onError;
+	private final SslUpgradeConfigBuilder tls = SslUpgradeConfig.builder();
 	
 	/**
 	 * Constructs a new builder with default values.<br>
@@ -112,63 +66,69 @@ public final class SslClientConfigBuilder {
 	SslClientConfigBuilder() {}
 	
 	/**
-	 * Sets the maximum time to wait for connection establishment.<br>
+	 * Sets the maximum time to wait for the connection to be established.<br>
 	 *
-	 * @param connectTimeout The connect timeout
+	 * @param connectTimeout The connect timeout, which must be positive
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the connect timeout is null
 	 */
 	public @NonNull SslClientConfigBuilder connectTimeout(@NonNull Duration connectTimeout) {
-		this.connectTimeout = Objects.requireNonNull(connectTimeout, "Connect timeout must not be null");
+		this.transport.connectTimeout(connectTimeout);
 		return this;
 	}
 	
 	/**
-	 * Sets the maximum time to wait for read operations.<br>
-	 * Use {@link Duration#ZERO} for infinite timeout.<br>
+	 * Sets the maximum time a receive or the handshake waits for data.<br>
 	 *
-	 * @param readTimeout The read timeout
+	 * @param readTimeout The read timeout, which must be positive
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the read timeout is null
 	 */
 	public @NonNull SslClientConfigBuilder readTimeout(@NonNull Duration readTimeout) {
-		this.readTimeout = Objects.requireNonNull(readTimeout, "Read timeout must not be null");
+		this.transport.readTimeout(readTimeout);
 		return this;
 	}
 	
 	/**
-	 * Sets the maximum time to wait for write operations.<br>
-	 * Use {@link Duration#ZERO} for infinite timeout.<br>
-	 *
-	 * @param writeTimeout The write timeout
+	 * Removes the read timeout, so that a receive waits forever.<br>
 	 * @return This builder for method chaining
-	 * @throws NullPointerException If the write timeout is null
 	 */
-	public @NonNull SslClientConfigBuilder writeTimeout(@NonNull Duration writeTimeout) {
-		this.writeTimeout = Objects.requireNonNull(writeTimeout, "Write timeout must not be null");
+	public @NonNull SslClientConfigBuilder noReadTimeout() {
+		this.transport.noReadTimeout();
 		return this;
 	}
 	
 	/**
-	 * Sets the size of the read/write buffers in bytes.<br>
+	 * Sets the maximum length of a message in bytes.<br>
 	 *
-	 * @param bufferSize The buffer size (must be at least 1)
+	 * @param maxMessageSize The max message size, which must be at least 1
 	 * @return This builder for method chaining
 	 */
-	public @NonNull SslClientConfigBuilder bufferSize(int bufferSize) {
-		this.bufferSize = bufferSize;
+	public @NonNull SslClientConfigBuilder maxMessageSize(int maxMessageSize) {
+		this.transport.maxMessageSize(maxMessageSize);
+		return this;
+	}
+	
+	/**
+	 * Sets the framing that delimits messages on the stream.<br>
+	 *
+	 * @param framing The framing
+	 * @return This builder for method chaining
+	 * @throws NullPointerException If the framing is null
+	 */
+	public @NonNull SslClientConfigBuilder framing(@NonNull Framing framing) {
+		this.transport.framing(framing);
 		return this;
 	}
 	
 	/**
 	 * Sets whether to disable Nagle's algorithm (TCP_NODELAY).<br>
-	 * When enabled, small packets are sent immediately without waiting.<br>
 	 *
 	 * @param tcpNoDelay True to disable Nagle's algorithm
 	 * @return This builder for method chaining
 	 */
 	public @NonNull SslClientConfigBuilder tcpNoDelay(boolean tcpNoDelay) {
-		this.tcpNoDelay = tcpNoDelay;
+		this.transport.tcpNoDelay(tcpNoDelay);
 		return this;
 	}
 	
@@ -179,19 +139,18 @@ public final class SslClientConfigBuilder {
 	 * @return This builder for method chaining
 	 */
 	public @NonNull SslClientConfigBuilder keepAlive(boolean keepAlive) {
-		this.keepAlive = keepAlive;
+		this.transport.keepAlive(keepAlive);
 		return this;
 	}
 	
 	/**
 	 * Sets the SSL context to use for creating secure sockets.<br>
-	 * If null, the JVM default context ({@link SSLContext#getDefault()}) is used.<br>
 	 *
 	 * @param sslContext The SSL context, or null to use the JVM default
 	 * @return This builder for method chaining
 	 */
 	public @NonNull SslClientConfigBuilder sslContext(@Nullable SSLContext sslContext) {
-		this.sslContext = sslContext;
+		this.tls.sslContext(sslContext);
 		return this;
 	}
 	
@@ -199,12 +158,12 @@ public final class SslClientConfigBuilder {
 	 * Sets the TLS protocols to enable on the socket.<br>
 	 * An empty list uses the socket default.<br>
 	 *
-	 * @param enabledProtocols The protocols to enable, e.g. {@code List.of("TLSv1.3", "TLSv1.2")}
+	 * @param enabledProtocols The protocols to enable
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the enabled protocols list is null
 	 */
-	public @NonNull SslClientConfigBuilder enabledProtocols(@NonNull List<String> enabledProtocols) {
-		this.enabledProtocols = Objects.requireNonNull(enabledProtocols, "Enabled protocols must not be null");
+	public @NonNull SslClientConfigBuilder enabledProtocols(@NonNull List<TlsProtocol> enabledProtocols) {
+		this.tls.enabledProtocols(enabledProtocols);
 		return this;
 	}
 	
@@ -217,60 +176,28 @@ public final class SslClientConfigBuilder {
 	 * @throws NullPointerException If the enabled cipher suites list is null
 	 */
 	public @NonNull SslClientConfigBuilder enabledCipherSuites(@NonNull List<String> enabledCipherSuites) {
-		this.enabledCipherSuites = Objects.requireNonNull(enabledCipherSuites, "Enabled cipher suites must not be null");
+		this.tls.enabledCipherSuites(enabledCipherSuites);
 		return this;
 	}
 	
 	/**
 	 * Sets whether to verify the server hostname against its certificate.<br>
-	 * When enabled, HTTPS endpoint identification is applied, rejecting certificates that do not match the target host.<br>
 	 *
 	 * @param verifyHostname True to enable hostname verification
 	 * @return This builder for method chaining
 	 */
 	public @NonNull SslClientConfigBuilder verifyHostname(boolean verifyHostname) {
-		this.verifyHostname = verifyHostname;
-		return this;
-	}
-	
-	/**
-	 * Sets the handler called when the connection is established.<br>
-	 *
-	 * @param onConnect The connection handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull SslClientConfigBuilder onConnect(@Nullable ConnectionEventHandler onConnect) {
-		this.onConnect = onConnect;
-		return this;
-	}
-	
-	/**
-	 * Sets the handler called when the connection is closed.<br>
-	 *
-	 * @param onDisconnect The disconnection handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull SslClientConfigBuilder onDisconnect(@Nullable ConnectionEventHandler onDisconnect) {
-		this.onDisconnect = onDisconnect;
-		return this;
-	}
-	
-	/**
-	 * Sets the error event handler.<br>
-	 *
-	 * @param onError The error handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull SslClientConfigBuilder onError(@Nullable ErrorEventHandler onError) {
-		this.onError = onError;
+		this.tls.verifyHostname(verifyHostname);
 		return this;
 	}
 	
 	/**
 	 * Builds a new SSL client configuration with the configured values.<br>
+	 *
 	 * @return A new configuration instance
+	 * @throws IllegalArgumentException If a timeout is not positive or the max message size is less than 1
 	 */
 	public @NonNull SslClientConfig build() {
-		return new SslClientConfig(this.connectTimeout, this.readTimeout, this.writeTimeout, this.bufferSize, this.tcpNoDelay, this.keepAlive, this.sslContext, this.enabledProtocols, this.enabledCipherSuites, this.verifyHostname, this.onConnect, this.onDisconnect, this.onError);
+		return new SslClientConfig(this.transport.build(), this.tls.build());
 	}
 }

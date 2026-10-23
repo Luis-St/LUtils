@@ -20,6 +20,8 @@ package net.luis.utils.io.database.type;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static net.luis.utils.io.database.SqlTestFixtures.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -135,5 +137,52 @@ class SqlTypeRegistryBuilderTest {
 		assertTrue(second.resolve(STRING_TYPE).isPresent());
 		assertTrue(second.resolve(INTEGER_TYPE).isPresent());
 		assertTrue(first.resolve(INTEGER_TYPE).isEmpty());
+	}
+	
+	@Test
+	void buildKeepsFirstTypeForDuplicateNativeName() {
+		SqlTypeRegistry registry = SqlTypeRegistry.builder()
+			.register(SqlTypes.JSON, "JSON")
+			.register(SqlTypes.XML, "JSON")
+			.build();
+		assertEquals(Optional.of(SqlTypes.JSON), registry.resolveNative("json"));
+		assertTrue(registry.resolve(SqlTypes.JSON).isPresent());
+		assertTrue(registry.resolve(SqlTypes.XML).isPresent());
+	}
+	
+	@Test
+	void registerSameTypeTwiceReplacesMapping() {
+		SqlTypeRegistry registry = SqlTypeRegistry.builder()
+			.register(SqlTypes.UUID, "UUID")
+			.register(SqlTypes.UUID, "UNIQUEIDENTIFIER")
+			.build();
+		assertEquals("UNIQUEIDENTIFIER", registry.resolve(SqlTypes.UUID).orElseThrow().nativeTypeName());
+		assertEquals(Optional.of(SqlTypes.UUID), registry.resolveNative("uniqueidentifier"));
+		assertEquals(Optional.empty(), registry.resolveNative("uuid"));
+	}
+	
+	@Test
+	void buildPreservesRegistrationOrderAcrossOverloads() {
+		SqlValueBinder binder = (statement, index, value) -> {};
+		SqlValueReader reader = (resultSet, index) -> null;
+		SqlTypeRegistry registry = SqlTypeRegistry.builder()
+			.register(SqlTypes.UUID, "UUID")
+			.register(SqlTypes.JSON, "JSONB", binder)
+			.register(SqlTypes.XML, "XML", binder, reader)
+			.register(SqlTypes.IP_ADDRESS, new SqlTypeMapping("INET"))
+			.build();
+		assertEquals(Optional.of(SqlTypes.UUID), registry.resolveNative("uuid"));
+		assertEquals(Optional.of(SqlTypes.JSON), registry.resolveNative("jsonb"));
+		assertEquals(Optional.of(SqlTypes.XML), registry.resolveNative("xml"));
+		assertEquals(Optional.of(SqlTypes.IP_ADDRESS), registry.resolveNative("inet"));
+	}
+	
+	@Test
+	void buildRepeatedlyProducesEqualRegistries() {
+		SqlTypeRegistryBuilder builder = SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID");
+		SqlTypeRegistry first = builder.build();
+		SqlTypeRegistry second = builder.build();
+		assertEquals(first, second);
+		assertEquals(first.resolveNative("uuid"), second.resolveNative("uuid"));
 	}
 }

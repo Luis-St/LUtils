@@ -28,6 +28,7 @@ import net.luis.utils.io.database.exception.database.SqlResultMappingException;
 import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.query.crud.*;
 import net.luis.utils.io.database.query.row.*;
+import net.luis.utils.io.database.query.util.SqlSetClause;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import net.luis.utils.io.database.type.SqlType;
@@ -47,6 +48,7 @@ import java.util.*;
  * <ul>
  *     <li>{@link #select()} and its overloads for read queries</li>
  *     <li>{@link #insert(Object)} and its overloads for insert queries</li>
+ *     <li>{@link #insertOrIgnore(Object, List)} and {@link #upsert(Object, SqlColumn)} and their overloads for conflict handling insert queries</li>
  *     <li>{@link #update()} for update queries</li>
  *     <li>{@link #delete()} for delete queries</li>
  * </ul>
@@ -1018,7 +1020,7 @@ public class SqlQueryProvider<E> {
 		Objects.requireNonNull(entity, "Entity must not be null");
 		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
 		
-		return SqlInsertQuery.insertOrIgnore(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper, List.of(entity), List.of(conflictColumns));
+		return this.insertOrIgnore(List.of(entity), List.of(conflictColumns));
 	}
 	
 	/**
@@ -1033,6 +1035,142 @@ public class SqlQueryProvider<E> {
 		Objects.requireNonNull(query, "Sql select query must not be null");
 		
 		return SqlInsertQuery.insertFromSelect(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper, query);
+	}
+	
+	/**
+	 * Creates an insert query for the given entity that ignores rows conflicting on the given columns.<br>
+	 * If a row with the same values in the conflict columns already exists, the insert is skipped instead of failing.<br>
+	 *
+	 * @param entity The entity to insert
+	 * @param conflictColumns The columns that define a conflict
+	 * @return An insert-or-ignore query for the entity
+	 * @throws NullPointerException If the entity or the conflict column list is null
+	 * @throws SqlException If the insert statement could not be built
+	 */
+	public @NonNull SqlInsertQuery<E> insertOrIgnore(@NonNull E entity, @NonNull List<SqlColumn<E, ?>> conflictColumns) throws SqlException {
+		Objects.requireNonNull(entity, "Entity must not be null");
+		
+		return this.insertOrIgnore(List.of(entity), conflictColumns);
+	}
+	
+	/**
+	 * Creates an insert query for the given collection of entities that ignores rows conflicting on the given columns.<br>
+	 * If a row with the same values in the conflict columns already exists, the insert of that row is skipped instead of failing.<br>
+	 *
+	 * @param entities The entities to insert
+	 * @param conflictColumns The columns that define a conflict
+	 * @return An insert-or-ignore query for the entities
+	 * @throws NullPointerException If the entity collection or the conflict column list is null
+	 * @throws SqlException If the insert statement could not be built
+	 */
+	public @NonNull SqlInsertQuery<E> insertOrIgnore(@NonNull Collection<E> entities, @NonNull List<SqlColumn<E, ?>> conflictColumns) throws SqlException {
+		Objects.requireNonNull(entities, "Entity collection must not be null");
+		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
+		
+		return SqlInsertQuery.insertOrIgnore(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper, List.copyOf(entities), conflictColumns).auditedBy(this.auditUserProvider);
+	}
+	
+	/**
+	 * Creates an upsert query for the given entity that updates the existing row instead of failing on a conflict on the given column.<br>
+	 * Every non-conflict column is updated with its proposed value.<br>
+	 *
+	 * @param entity The entity to insert or update
+	 * @param conflictColumn The column that defines a conflict triggering the update
+	 * @return An upsert query for the entity
+	 * @throws NullPointerException If the entity or the conflict column is null
+	 * @throws SqlException If the insert statement could not be built
+	 */
+	public @NonNull SqlInsertQuery<E> upsert(@NonNull E entity, @NonNull SqlColumn<E, ?> conflictColumn) throws SqlException {
+		Objects.requireNonNull(conflictColumn, "Sql conflict column must not be null");
+		
+		return this.upsert(entity, List.of(conflictColumn));
+	}
+	
+	/**
+	 * Creates an upsert query for the given entity that updates the existing row instead of failing on a conflict on the given columns.<br>
+	 * Supports a composite conflict key. Every non-conflict column is updated with its proposed value.<br>
+	 *
+	 * @param entity The entity to insert or update
+	 * @param conflictColumns The columns that define a conflict triggering the update
+	 * @return An upsert query for the entity
+	 * @throws NullPointerException If the entity or the conflict column list is null
+	 * @throws SqlException If the insert statement could not be built
+	 */
+	public @NonNull SqlInsertQuery<E> upsert(@NonNull E entity, @NonNull List<SqlColumn<E, ?>> conflictColumns) throws SqlException {
+		Objects.requireNonNull(entity, "Entity must not be null");
+		
+		return this.upsert(List.of(entity), conflictColumns);
+	}
+	
+	/**
+	 * Creates an upsert query for the given entity that updates the existing row using the given set clauses instead of failing on a<br>
+	 * conflict on the given columns.<br>
+	 *
+	 * @param entity The entity to insert or update
+	 * @param conflictColumns The columns that define a conflict triggering the update
+	 * @param updateClauses The set clauses to apply on conflict
+	 * @return An upsert query for the entity
+	 * @throws NullPointerException If the entity, the conflict column list or the update clause list is null
+	 * @throws SqlException If the insert statement could not be built
+	 */
+	public @NonNull SqlInsertQuery<E> upsert(@NonNull E entity, @NonNull List<SqlColumn<E, ?>> conflictColumns, @NonNull List<SqlSetClause<E, ?>> updateClauses) throws SqlException {
+		Objects.requireNonNull(entity, "Entity must not be null");
+		
+		return this.upsert(List.of(entity), conflictColumns, updateClauses);
+	}
+	
+	/**
+	 * Creates an upsert query for the given collection of entities that updates the existing rows instead of failing on a conflict on the given column.<br>
+	 * Every non-conflict column is updated with its proposed value.<br>
+	 *
+	 * @param entities The entities to insert or update
+	 * @param conflictColumn The column that defines a conflict triggering the update
+	 * @return An upsert query for the entities
+	 * @throws NullPointerException If the entity collection or the conflict column is null
+	 * @throws SqlException If the insert statement could not be built
+	 */
+	public @NonNull SqlInsertQuery<E> upsert(@NonNull Collection<E> entities, @NonNull SqlColumn<E, ?> conflictColumn) throws SqlException {
+		Objects.requireNonNull(conflictColumn, "Sql conflict column must not be null");
+		
+		return this.upsert(entities, List.of(conflictColumn));
+	}
+	
+	/**
+	 * Creates an upsert query for the given collection of entities that updates the existing rows instead of failing on a conflict on the given columns.<br>
+	 * Supports a composite conflict key. Every non-conflict column is updated with its proposed value.<br>
+	 *
+	 * @param entities The entities to insert or update
+	 * @param conflictColumns The columns that define a conflict triggering the update
+	 * @return An upsert query for the entities
+	 * @throws NullPointerException If the entity collection or the conflict column list is null
+	 * @throws SqlException If the insert statement could not be built
+	 */
+	public @NonNull SqlInsertQuery<E> upsert(@NonNull Collection<E> entities, @NonNull List<SqlColumn<E, ?>> conflictColumns) throws SqlException {
+		Objects.requireNonNull(entities, "Entity collection must not be null");
+		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
+		
+		return SqlInsertQuery.upsert(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper, List.copyOf(entities), conflictColumns).auditedBy(this.auditUserProvider);
+	}
+	
+	/**
+	 * Creates an upsert query for the given collection of entities that updates the existing rows using the given set clauses instead<br>
+	 * of failing on a conflict on the given columns.<br>
+	 * Use {@link SqlColumn#of(SqlAlias) column.of(SqlAlias.EXCLUDED)} to reference the proposed row's value within an update clause expression,<br>
+	 * e.g. to build {@code col = LEAST(table.col, EXCLUDED.col)}.<br>
+	 *
+	 * @param entities The entities to insert or update
+	 * @param conflictColumns The columns that define a conflict triggering the update
+	 * @param updateClauses The set clauses to apply on conflict
+	 * @return An upsert query for the entities
+	 * @throws NullPointerException If the entity collection, the conflict column list or the update clause list is null
+	 * @throws SqlException If the insert statement could not be built
+	 */
+	public @NonNull SqlInsertQuery<E> upsert(@NonNull Collection<E> entities, @NonNull List<SqlColumn<E, ?>> conflictColumns, @NonNull List<SqlSetClause<E, ?>> updateClauses) throws SqlException {
+		Objects.requireNonNull(entities, "Entity collection must not be null");
+		Objects.requireNonNull(conflictColumns, "Sql conflict columns must not be null");
+		Objects.requireNonNull(updateClauses, "Sql update clauses must not be null");
+		
+		return SqlInsertQuery.upsert(this.table, this.dialect, this.connectionSource, this.queryTimeout, this.entityRowMapper, List.copyOf(entities), conflictColumns, updateClauses).auditedBy(this.auditUserProvider);
 	}
 	
 	/**

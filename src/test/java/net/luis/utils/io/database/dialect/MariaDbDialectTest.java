@@ -22,6 +22,7 @@ import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
 import net.luis.utils.io.database.query.SqlLockMode;
+import net.luis.utils.io.database.type.SqlTypeRegistry;
 import net.luis.utils.io.database.type.SqlTypes;
 import org.junit.jupiter.api.Test;
 
@@ -147,5 +148,44 @@ class MariaDbDialectTest {
 		assertFalse(mySql.isFeatureSupported(SqlFeature.RETURNING));
 		assertFalse(DIALECT.isFeatureSupported(SqlFeature.SCHEMAS));
 		assertTrue(mySql.isFeatureSupported(SqlFeature.SCHEMAS));
+	}
+	
+	@Test
+	void constructWithAdditionalTypes() throws SqlException {
+		MariaDbDialect dialect = new MariaDbDialect(SqlTypeRegistry.builder().register(SqlTypes.IP_ADDRESS, "INET6").build());
+		assertEquals("MariaDB", dialect.name());
+		assertEquals("INET6", dialect.getTypeName(SqlTypes.IP_ADDRESS));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new MariaDbDialect(null));
+	}
+	
+	@Test
+	void supportsOffsetTemporalTypesReturnsFalse() {
+		assertFalse(DIALECT.supportsOffsetTemporalTypes());
+	}
+	
+	@Test
+	void requiresJoinedDeleteTargetReturnsTrue() {
+		assertTrue(DIALECT.requiresJoinedDeleteTarget());
+	}
+	
+	@Test
+	void introspectionCatalogReturnsSchema() {
+		assertEquals("app", DIALECT.introspectionCatalog("app"));
+	}
+	
+	@Test
+	void introspectionSchemaReturnsNull() {
+		assertNull(DIALECT.introspectionSchema("app"));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesOverridingOwnMapping() throws SqlException {
+		MariaDbDialect dialect = new MariaDbDialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "MY_UUID").build());
+		assertEquals("UUID", DIALECT.getTypeName(SqlTypes.UUID));
+		assertEquals("MY_UUID", dialect.getTypeName(SqlTypes.UUID));
 	}
 }

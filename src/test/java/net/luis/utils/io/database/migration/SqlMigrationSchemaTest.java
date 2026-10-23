@@ -20,18 +20,25 @@ package net.luis.utils.io.database.migration;
 
 import net.luis.utils.io.database.SqlReferentialAction;
 import net.luis.utils.io.database.SqlTestFixtures;
+import net.luis.utils.io.database.SqlTestFixtures.RecordingDataSource;
 import net.luis.utils.io.database.audit.SqlAuditConfig;
+import net.luis.utils.io.database.dialect.SqlDialects;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlSchemaObjectNotFoundException;
+import net.luis.utils.io.database.exception.database.SqlSchemaIntrospectionException;
 import net.luis.utils.io.database.index.SqlIndex;
 import net.luis.utils.io.database.index.SqlIndexMethod;
 import net.luis.utils.io.database.migration.operation.*;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.type.parameter.SqlParameter;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Connection;
-import java.sql.Types;
+import javax.sql.DataSource;
+import java.lang.reflect.Proxy;
+import java.sql.*;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -59,6 +66,14 @@ class SqlMigrationSchemaTest {
 	
 	private static SqlSchemaColumnInfo columnInfo(String table, String column, int jdbcType, boolean nullable, boolean primaryKey, int ordinal) {
 		return new SqlSchemaColumnInfo(table, column, jdbcType, null, nullable, false, primaryKey, false, ordinal);
+	}
+	
+	private static void enqueueSchema(@NonNull RecordingDataSource dataSource, @NonNull Map<String, ?> column) {
+		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(Map.of("TABLE_NAME", "it_table"))));
+		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of()));
+		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of()));
+		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(column)));
+		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of()));
 	}
 	
 	@Test
@@ -568,5 +583,384 @@ class SqlMigrationSchemaTest {
 		assertThrows(NullPointerException.class, () -> SqlMigrationSchema.load(null));
 	}
 	
+	@Test
+	void loadWithUnsupportedColumnTypeThrows() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		enqueueSchema(dataSource, Map.of("COLUMN_NAME", "id", "DATA_TYPE", 1111, "TYPE_NAME", "geometry", "COLUMN_SIZE", 0, "DECIMAL_DIGITS", 0, "NULLABLE", 1, "IS_AUTOINCREMENT", "NO"));
+		
+		try (Connection connection = dataSource.getConnection()) {
+			SqlSchemaIntrospectionException exception = assertThrows(SqlSchemaIntrospectionException.class,
+				() -> SqlMigrationSchema.load(connection, SqlTestFixtures.DIALECT, "public"));
+			assertTrue(exception.getMessage().contains("geometry"));
+			assertTrue(exception.getMessage().contains("1111"));
+			assertTrue(exception.getMessage().contains("id"));
+			assertTrue(exception.getMessage().contains("it_table"));
+		}
+	}
+	
+	@Test
+	void loadResolvesColumnTypeThroughDialect() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		enqueueSchema(dataSource, Map.of("COLUMN_NAME", "id", "DATA_TYPE", 1111, "TYPE_NAME", "uuid", "COLUMN_SIZE", 0, "DECIMAL_DIGITS", 0, "NULLABLE", 1, "IS_AUTOINCREMENT", "NO"));
+		
+		try (Connection connection = dataSource.getConnection()) {
+			SqlMigrationSchema schema = SqlMigrationSchema.load(connection, SqlDialects.POSTGRESQL, "public");
+			assertSame(SqlTypes.UUID, schema.column("it_table", "id").type());
+		}
+	}
+	
+	@Test
+	void loadResolvesPortableColumnType() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		enqueueSchema(dataSource, Map.of("COLUMN_NAME", "id", "DATA_TYPE", Types.INTEGER, "TYPE_NAME", "int4", "COLUMN_SIZE", 10, "DECIMAL_DIGITS", 0, "NULLABLE", 1, "IS_AUTOINCREMENT", "NO"));
+		
+		try (Connection connection = dataSource.getConnection()) {
+			SqlMigrationSchema schema = SqlMigrationSchema.load(connection, SqlTestFixtures.DIALECT, "public");
+			assertSame(SqlTypes.INTEGER, schema.column("it_table", "id").type());
+		}
+	}
+	
+	@Test
+	void loadWithNullTypeNameFromDriver() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		Map<String, Object> column = new HashMap<>();
+		column.put("COLUMN_NAME", "name");
+		column.put("DATA_TYPE", Types.VARCHAR);
+		column.put("TYPE_NAME", null);
+		column.put("COLUMN_SIZE", 64);
+		column.put("DECIMAL_DIGITS", 0);
+		column.put("NULLABLE", 1);
+		column.put("IS_AUTOINCREMENT", "NO");
+		enqueueSchema(dataSource, column);
+		
+		try (Connection connection = dataSource.getConnection()) {
+			SqlMigrationSchema schema = assertDoesNotThrow(() -> SqlMigrationSchema.load(connection, SqlTestFixtures.DIALECT, "public"));
+			assertEquals(SqlTypes.STRING.configure(SqlParameter.length(64)), schema.column("it_table", "name").type());
+		}
+	}
+	
+	@Test
+	void loadPreservesColumnFlags() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		enqueueSchema(dataSource, Map.of("COLUMN_NAME", "id", "DATA_TYPE", Types.INTEGER, "TYPE_NAME", "int4", "COLUMN_SIZE", 10, "DECIMAL_DIGITS", 0, "NULLABLE", 0, "IS_AUTOINCREMENT", "YES"));
+		
+		try (Connection connection = dataSource.getConnection()) {
+			SqlColumn<?, ?> column = SqlMigrationSchema.load(connection, SqlTestFixtures.DIALECT, "public").column("it_table", "id");
+			assertFalse(column.nullable());
+			assertTrue(column.autoIncrement());
+		}
+	}
+	
+	@Test
+	void loadMultipleTablesWithDialectSpecificTypes() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(Map.of("TABLE_NAME", "first"), Map.of("TABLE_NAME", "second"))));
+		for (String typeName : List.of("uuid", "jsonb")) {
+			dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of()));
+			dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of()));
+			dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of(
+				Map.of("COLUMN_NAME", "value", "DATA_TYPE", 1111, "TYPE_NAME", typeName, "COLUMN_SIZE", 0, "DECIMAL_DIGITS", 0, "NULLABLE", 1, "IS_AUTOINCREMENT", "NO")
+			)));
+			dataSource.enqueueResultSet(SqlTestFixtures.labeledResultSet(List.of()));
+		}
+		
+		try (Connection connection = dataSource.getConnection()) {
+			SqlMigrationSchema schema = SqlMigrationSchema.load(connection, SqlDialects.POSTGRESQL, "public");
+			assertEquals(List.of("first", "second"), List.copyOf(schema.tableNames()));
+			assertSame(SqlTypes.UUID, schema.column("first", "value").type());
+			assertSame(SqlTypes.JSON, schema.column("second", "value").type());
+		}
+	}
+	
+	@Test
+	void loadThenExtractProducesResolvableIdentifiers() throws Exception {
+		RecordingDataSource dataSource = SqlTestFixtures.recordingDataSource();
+		enqueueSchema(dataSource, Map.of("COLUMN_NAME", "id", "DATA_TYPE", 1111, "TYPE_NAME", "uuid", "COLUMN_SIZE", 0, "DECIMAL_DIGITS", 0, "NULLABLE", 1, "IS_AUTOINCREMENT", "NO"));
+		
+		try (Connection connection = dataSource.getConnection()) {
+			SqlMigrationSchema schema = SqlMigrationSchema.load(connection, SqlDialects.POSTGRESQL, "public");
+			SqlSchemaColumnInfo info = schema.extractColumnInfos().getFirst();
+			assertEquals("uuid", info.typeIdentifier());
+			assertSame(SqlTypes.UUID, SqlTypes.byIdentifier(info.typeIdentifier()).orElseThrow());
+		}
+	}
+	
+	@Test
+	void extractColumnInfosStoresTypeIdentifier() throws Exception {
+		SqlMigrationSchema schema = SqlMigrationSchema.fromSnapshot(List.of(
+			new SqlSchemaColumnInfo("it_table", "id", SqlTypes.UUID.jdbcType(), SqlParameter.length(36), true, false, false, false, 0, "uuid")
+		), Map.of());
+		assertEquals("uuid", schema.extractColumnInfos().getFirst().typeIdentifier());
+	}
+	
+	@Test
+	void extractColumnInfosWithoutTypeIdentifier() throws Exception {
+		SqlMigrationSchema schema = SqlMigrationSchema.fromSnapshot(List.of(
+			new SqlSchemaColumnInfo("it_table", "id", Types.INTEGER, null, true, false, false, false, 0),
+			new SqlSchemaColumnInfo("it_table", "name", Types.VARCHAR, SqlParameter.length(64), true, false, false, false, 1)
+		), Map.of());
+		for (SqlSchemaColumnInfo info : schema.extractColumnInfos()) {
+			assertNull(info.typeIdentifier());
+		}
+	}
+	
+	@Test
+	void extractColumnInfosForAnonymousMappedType() throws Exception {
+		SqlTable<Void> table = SqlTable.create(Void.class, "it_table");
+		table.column("id", SqlTypes.INTEGER.map(String.class, Integer::parseInt, value -> Integer.toString(value)), value -> null);
+		SqlMigrationSchema schema = SqlMigrationSchema.fromSnapshot(List.of(
+			new SqlSchemaColumnInfo("it_table", "id", Types.INTEGER, null, true, false, false, false, 0, null)
+		), Map.of());
+		assertNull(schema.extractColumnInfos().getFirst().typeIdentifier());
+	}
+	
+	@Test
+	void fromSnapshotRestoresIdentifiedType() throws Exception {
+		SqlMigrationSchema schema = SqlMigrationSchema.fromSnapshot(List.of(
+			new SqlSchemaColumnInfo("it_table", "id", Types.CHAR, SqlParameter.length(36), true, false, false, false, 0, "uuid")
+		), Map.of());
+		assertSame(SqlTypes.UUID, schema.column("it_table", "id").type());
+	}
+	
+	@Test
+	void fromSnapshotRestoresUnidentifiedType() throws Exception {
+		SqlMigrationSchema schema = SqlMigrationSchema.fromSnapshot(List.of(
+			new SqlSchemaColumnInfo("it_table", "id", Types.CHAR, SqlParameter.length(36), true, false, false, false, 0, null)
+		), Map.of());
+		assertEquals(SqlTypes.FIXED_STRING.configure(SqlParameter.length(36)), schema.column("it_table", "id").type());
+	}
+	
+	@Test
+	void extractAndRebuildRoundTripsIdentifiedColumns() throws Exception {
+		List<SqlSchemaColumnInfo> infos = List.of(
+			new SqlSchemaColumnInfo("it_table", "id", Types.CHAR, SqlParameter.length(36), false, false, true, false, 0, "uuid"),
+			new SqlSchemaColumnInfo("it_table", "payload", Types.LONGVARCHAR, null, true, false, false, false, 1, "json"),
+			new SqlSchemaColumnInfo("it_table", "name", Types.VARCHAR, SqlParameter.length(64), true, false, false, false, 2, null),
+			new SqlSchemaColumnInfo("it_table", "amount", Types.DECIMAL, SqlParameter.precision(10, 2), true, false, false, false, 3, null),
+			new SqlSchemaColumnInfo("it_table", "data", Types.LONGVARBINARY, null, true, false, false, false, 4, null)
+		);
+		SqlMigrationSchema schema = SqlMigrationSchema.fromSnapshot(infos, Map.of());
+		SqlMigrationSchema rebuilt = SqlMigrationSchema.fromSnapshot(schema.extractColumnInfos(), Map.of());
+		
+		assertSame(SqlTypes.UUID, rebuilt.column("it_table", "id").type());
+		assertSame(SqlTypes.JSON, rebuilt.column("it_table", "payload").type());
+		assertEquals(SqlTypes.STRING.configure(SqlParameter.length(64)), rebuilt.column("it_table", "name").type());
+		assertEquals(SqlTypes.DECIMAL.configure(SqlParameter.precision(10, 2)), rebuilt.column("it_table", "amount").type());
+		assertSame(SqlTypes.LARGE_BYTES, rebuilt.column("it_table", "data").type());
+	}
+	
+	@Test
+	void loadWithDataSourceAndDialectFailingConnection() {
+		SqlSchemaIntrospectionException thrown = assertThrows(SqlSchemaIntrospectionException.class, () -> SqlMigrationSchema.load(SqlTestFixtures.failingDataSource(), SqlTestFixtures.DIALECT));
+		assertTrue(thrown.getMessage().contains("default schema"), thrown.getMessage());
+		assertInstanceOf(SQLException.class, thrown.getCause());
+	}
+	
+	@Test
+	void loadWithDataSourceAndDialectFailingDefaultSchema() {
+		IntrospectionRecorder recorder = new IntrospectionRecorder("app", "catalog", true);
+		assertThrows(SqlSchemaIntrospectionException.class, () -> SqlMigrationSchema.load(recorder.dataSource(), SqlTestFixtures.DIALECT));
+	}
+	
+	@Test
+	void loadWithDataSourceUsesDialectDefaultSchema() throws Exception {
+		IntrospectionRecorder recorder = new IntrospectionRecorder("app", "catalog", false);
+		recorder.enqueueTable("it_table");
+		
+		SqlMigrationSchema schema = SqlMigrationSchema.load(recorder.dataSource(), SqlTestFixtures.DIALECT);
+		assertEquals(List.of("it_table"), List.copyOf(schema.tableNames()));
+		assertFalse(recorder.schemaPatterns.isEmpty());
+		assertTrue(recorder.schemaPatterns.stream().allMatch("app"::equals), String.valueOf(recorder.schemaPatterns));
+	}
+	
+	@Test
+	void loadWithDataSourceFallsBackToPublicWhenConnectionReportsNoSchema() throws Exception {
+		IntrospectionRecorder recorder = new IntrospectionRecorder(null, null, false);
+		recorder.enqueueTable("it_table");
+		
+		SqlMigrationSchema.load(recorder.dataSource(), SqlTestFixtures.DIALECT);
+		assertTrue(recorder.schemaPatterns.stream().allMatch("public"::equals), String.valueOf(recorder.schemaPatterns));
+	}
+	
+	@Test
+	void loadWithDatabaseDelegatesToDialectDefaultSchema() throws Exception {
+		IntrospectionRecorder recorder = new IntrospectionRecorder("app", "catalog", false);
+		recorder.enqueueTable("it_table");
+		
+		SqlMigrationSchema.load(net.luis.utils.io.database.SqlDatabase.builder(recorder.dataSource(), SqlTestFixtures.DIALECT).build());
+		assertTrue(recorder.schemaPatterns.stream().allMatch("app"::equals), String.valueOf(recorder.schemaPatterns));
+	}
+	
+	@Test
+	void loadPassesSchemaAsSchemaPatternForDefaultDialect() throws Exception {
+		IntrospectionRecorder recorder = new IntrospectionRecorder("app", "catalog", false);
+		recorder.enqueueTable("it_table");
+		
+		SqlMigrationSchema.load(recorder.dataSource(), SqlTestFixtures.DIALECT);
+		assertEquals(List.of("getTables", "getPrimaryKeys", "getIndexInfo", "getColumns"), recorder.calls);
+		assertTrue(recorder.catalogs.stream().allMatch(Objects::isNull), String.valueOf(recorder.catalogs));
+		assertTrue(recorder.schemaPatterns.stream().allMatch("app"::equals), String.valueOf(recorder.schemaPatterns));
+	}
+	
+	@Test
+	void loadPassesSchemaAsCatalogForMySqlDialect() throws Exception {
+		IntrospectionRecorder recorder = new IntrospectionRecorder("app", "catalog", false);
+		recorder.enqueueTable("it_table");
+		
+		SqlMigrationSchema.load(recorder.dataSource(), SqlDialects.MYSQL);
+		assertTrue(recorder.catalogs.stream().allMatch("app"::equals), String.valueOf(recorder.catalogs));
+		assertTrue(recorder.schemaPatterns.stream().allMatch(Objects::isNull), String.valueOf(recorder.schemaPatterns));
+	}
+	
+	@Test
+	void loadClosesConnectionAfterLoading() throws Exception {
+		IntrospectionRecorder recorder = new IntrospectionRecorder("app", "catalog", false);
+		recorder.enqueueTable("it_table");
+		
+		SqlMigrationSchema.load(recorder.dataSource(), SqlTestFixtures.DIALECT);
+		assertTrue(recorder.closed);
+	}
+	
+	@Test
+	void loadWithDataSourceAndDialectReturnsSameResultAsExplicitSchema() throws Exception {
+		IntrospectionRecorder resolved = new IntrospectionRecorder("app", "catalog", false);
+		IntrospectionRecorder explicit = new IntrospectionRecorder("app", "catalog", false);
+		resolved.enqueueTable("it_table");
+		explicit.enqueueTable("it_table");
+		
+		SqlMigrationSchema fromDefault = SqlMigrationSchema.load(resolved.dataSource(), SqlTestFixtures.DIALECT);
+		SqlMigrationSchema fromExplicit = SqlMigrationSchema.load(explicit.dataSource(), SqlTestFixtures.DIALECT, "app");
+		assertEquals(List.copyOf(fromExplicit.tableNames()), List.copyOf(fromDefault.tableNames()));
+		assertEquals(fromExplicit.column("it_table", "id").type(), fromDefault.column("it_table", "id").type());
+	}
+	
+	@Test
+	void loadWithEmptyMetadataProducesEmptySnapshot() throws Exception {
+		IntrospectionRecorder recorder = new IntrospectionRecorder("app", "catalog", false);
+		SqlMigrationSchema schema = SqlMigrationSchema.load(recorder.dataSource(), SqlTestFixtures.DIALECT);
+		assertTrue(schema.tableNames().isEmpty());
+		assertEquals(List.of("getTables"), recorder.calls);
+	}
+	
+	@Test
+	void loadWithCatalogScopedDialectStillResolvesColumnsAndKeys() throws Exception {
+		IntrospectionRecorder recorder = new IntrospectionRecorder("app", "catalog", false);
+		recorder.enqueue(SqlTestFixtures.labeledResultSet(List.of(Map.of("TABLE_NAME", "it_table"))));
+		recorder.enqueue(SqlTestFixtures.labeledResultSet(List.of(Map.of("COLUMN_NAME", "id"))));
+		recorder.enqueue(SqlTestFixtures.labeledResultSet(List.of(Map.of("INDEX_NAME", "ux_code", "COLUMN_NAME", "code"))));
+		recorder.enqueue(SqlTestFixtures.labeledResultSet(List.of(
+			Map.of("COLUMN_NAME", "id", "DATA_TYPE", Types.INTEGER, "TYPE_NAME", "int", "COLUMN_SIZE", 10, "DECIMAL_DIGITS", 0, "NULLABLE", 0, "IS_AUTOINCREMENT", "NO"),
+			Map.of("COLUMN_NAME", "code", "DATA_TYPE", Types.VARCHAR, "TYPE_NAME", "varchar", "COLUMN_SIZE", 64, "DECIMAL_DIGITS", 0, "NULLABLE", 1, "IS_AUTOINCREMENT", "NO")
+		)));
+		
+		SqlMigrationSchema schema = SqlMigrationSchema.load(recorder.dataSource(), SqlDialects.MYSQL);
+		assertTrue(recorder.catalogs.stream().allMatch("app"::equals), String.valueOf(recorder.catalogs));
+		assertTrue(schema.column("it_table", "id").primaryKey());
+		assertFalse(schema.column("it_table", "id").nullable());
+		assertTrue(schema.column("it_table", "code").unique());
+	}
+	
 	private record Fixture(SqlTable<Object> table, SqlColumn<Object, Integer> id, SqlColumn<Object, String> name, SqlMigrationSchema base) {}
+	
+	/**
+	 * Hand-written {@link DataSource} whose connection reports a configurable schema and catalog and whose
+	 * {@link java.sql.DatabaseMetaData} records the {@code (catalog, schemaPattern)} pair of every lookup, which is what
+	 * the dialect routing through {@code introspectionCatalog} / {@code introspectionSchema} has to get right.<br>
+	 */
+	private static final class IntrospectionRecorder {
+		
+		private final List<String> calls = new ArrayList<>();
+		private final List<String> catalogs = new ArrayList<>();
+		private final List<String> schemaPatterns = new ArrayList<>();
+		private final Deque<ResultSet> resultSets = new ArrayDeque<>();
+		private final String schema;
+		private final String catalog;
+		private final boolean failOnSchema;
+		private boolean closed;
+		
+		private IntrospectionRecorder(String schema, String catalog, boolean failOnSchema) {
+			this.schema = schema;
+			this.catalog = catalog;
+			this.failOnSchema = failOnSchema;
+		}
+		
+		private void enqueue(ResultSet resultSet) {
+			this.resultSets.add(resultSet);
+		}
+		
+		private void enqueueTable(String tableName) {
+			this.enqueue(SqlTestFixtures.labeledResultSet(List.of(Map.of("TABLE_NAME", tableName))));
+			this.enqueue(SqlTestFixtures.labeledResultSet(List.of()));
+			this.enqueue(SqlTestFixtures.labeledResultSet(List.of()));
+			this.enqueue(SqlTestFixtures.labeledResultSet(List.of(
+				Map.of("COLUMN_NAME", "id", "DATA_TYPE", Types.INTEGER, "TYPE_NAME", "int4", "COLUMN_SIZE", 10, "DECIMAL_DIGITS", 0, "NULLABLE", 1, "IS_AUTOINCREMENT", "NO")
+			)));
+		}
+		
+		private ResultSet next() {
+			ResultSet queued = this.resultSets.poll();
+			return queued != null ? queued : SqlTestFixtures.labeledResultSet(List.of());
+		}
+		
+		private DataSource dataSource() {
+			return (DataSource) Proxy.newProxyInstance(DataSource.class.getClassLoader(), new Class<?>[] { DataSource.class }, (proxy, method, args) ->
+				"getConnection".equals(method.getName()) ? this.connection() : null
+			);
+		}
+		
+		private Connection connection() {
+			return (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(), new Class<?>[] { Connection.class }, (proxy, method, args) -> switch (method.getName()) {
+				case "getSchema" -> {
+					if (this.failOnSchema) {
+						throw new SQLException("Schema lookup failed in tests");
+					}
+					yield this.schema;
+				}
+				case "getCatalog" -> this.catalog;
+				case "getMetaData" -> this.metaData();
+				case "close" -> {
+					this.closed = true;
+					yield null;
+				}
+				case "isClosed" -> this.closed;
+				case "isValid", "getAutoCommit", "isReadOnly", "isWrapperFor" -> false;
+				case "prepareStatement" -> this.statement();
+				case "toString" -> "IntrospectionConnection";
+				default -> null;
+			});
+		}
+		
+		private Object metaData() {
+			return Proxy.newProxyInstance(DatabaseMetaData.class.getClassLoader(), new Class<?>[] { DatabaseMetaData.class }, (proxy, method, args) -> {
+				String name = method.getName();
+				if (List.of("getTables", "getColumns", "getPrimaryKeys", "getIndexInfo").contains(name)) {
+					this.calls.add(name);
+					this.catalogs.add((String) args[0]);
+					this.schemaPatterns.add((String) args[1]);
+					return this.next();
+				}
+				if (method.getReturnType() == ResultSet.class) {
+					return this.next();
+				}
+				return switch (name) {
+					case "getIdentifierQuoteString" -> "\"";
+					case "getDatabaseProductName" -> "RecordingDB";
+					case "getURL" -> "jdbc:recording:test";
+					case "isWrapperFor" -> false;
+					case "toString" -> "IntrospectionMetaData";
+					default -> method.getReturnType().isPrimitive() ? false : null;
+				};
+			});
+		}
+		
+		private Object statement() {
+			return Proxy.newProxyInstance(PreparedStatement.class.getClassLoader(), new Class<?>[] { PreparedStatement.class }, (proxy, method, args) -> switch (method.getName()) {
+				case "executeQuery" -> this.next();
+				case "executeUpdate" -> 0;
+				case "execute", "isClosed", "isWrapperFor" -> false;
+				case "toString" -> "IntrospectionStatement";
+				default -> null;
+			});
+		}
+	}
 }
