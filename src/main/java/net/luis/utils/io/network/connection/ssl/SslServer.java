@@ -19,41 +19,23 @@
 package net.luis.utils.io.network.connection.ssl;
 
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.connection.NetworkServer;
-import net.luis.utils.io.network.connection.NetworkUtils;
-import net.luis.utils.io.network.connection.event.ConnectionHandler;
+import net.luis.utils.io.network.connection.ConnectionHandler;
+import net.luis.utils.io.network.connection.StreamServer;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
-import net.luis.utils.io.network.connection.exception.NetworkErrorType;
-import net.luis.utils.io.network.connection.tcp.TcpConnection;
+import net.luis.utils.io.network.connection.tcp.TcpServerConfig;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 
-import javax.net.ssl.*;
-import java.io.IOException;
-import java.net.*;
-import java.time.Instant;
+import javax.net.ssl.SSLSocket;
+import java.net.Socket;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * A blocking SSL/TLS server that accepts secure client connections.<br>
- * This class mirrors the plain TCP server but wraps every accepted connection in a TLS session negotiated from the configured {@link SSLContext}.<br>
+ * A server that accepts TLS secured connections.<br>
  * <p>
- *     The TLS handshake for each client is performed on the client's worker thread (not the accept thread),<br>
- *     so a slow or failing handshake does not block other incoming connections.<br>
- *     The {@code onClientConnect} handler is only invoked after a successful handshake.
- * </p>
- * <p>
- *     By default, the server drives the read loop itself and reports each received message to the configured message handler.<br>
- *     A {@link ConnectionHandler} can be configured instead, which is called once per client after the handshake and owns the connection and its decrypted streams for the whole session,
- *     while the server keeps managing the thread, the connection registry, and the shutdown.
- * </p>
- * <p>
- *     Connections that were established outside of this server, such as plain TCP connections upgraded to TLS, can be served through {@link #serve(SslConnection)}.<br>
- *     They are handled like accepted connections, even if the server itself was never started.
+ *     Every accepted connection is secured with the TLS settings of the configuration before it is handed to the {@link ConnectionHandler}.<br>
+ *     The handshake is performed on the thread that serves the connection, so a slow or failing handshake does not block other connections.<br>
+ *     A failed handshake is reported to the error handler of the configuration and the handler is not called.
  * </p>
  * <p>
  *     Example usage:
@@ -61,17 +43,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <pre>{@code
  * IpEndpoint bindAddress = new IpEndpoint(Ipv4Address.ANY, 8443);
  * SslServerConfig config = SslServerConfig.builder(sslContext)
- *     .executorStrategy(ClientExecutorStrategy.virtualThreads())
- *     .onClientConnect(event -> System.out.println("Client connected: " + event.remoteEndpoint()))
- *     .onMessage((server, connection, data) -> {
- *         connection.send("Echo: ".getBytes());
- *         connection.send(data);
- *     })
+ *     .clientAuth(SslClientAuth.REQUESTED)
  *     .build();
  *
- * try (SslServer server = new SslServer(bindAddress, config)) {
- *     server.start();
- *     // Server runs until stopped or closed
+ * try (SslServer server = SslServer.startOn(bindAddress, config, ConnectionHandler.perMessage((srv, connection, data) -> connection.send(data)))) {
+ *     // Server runs until it is stopped or closed
  * }
  * }</pre>
  *
@@ -81,337 +57,62 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Luis-St
  */
-public final class SslServer implements NetworkServer {
+public final class SslServer extends StreamServer<SslServer, SslConnection> {
 	
 	/**
-	 * The endpoint to bind the server to.<br>
+	 * The configuration of this server.<br>
 	 */
-	private final IpEndpoint bindEndpoint;
-	/**
-	 * The configuration for this server.<br>
-	 */
-	private final @NonNull SslServerConfig config;
-	/**
-	 * Whether the server is currently running.<br>
-	 */
-	private final AtomicBoolean running = new AtomicBoolean(false);
-	/**
-	 * The set of currently active client connections.<br>
-	 */
-	private final Set<SslConnection> connections = ConcurrentHashMap.newKeySet();
-	/**
-	 * The underlying SSL server socket for accepting connections.<br>
-	 */
-	private volatile SSLServerSocket serverSocket;
-	/**
-	 * The executor service for handling client connections.<br>
-	 */
-	private volatile ExecutorService executor;
-	/**
-	 * The thread that accepts incoming connections.<br>
-	 */
-	private volatile Thread acceptThread;
+	private final SslServerConfig config;
 	
 	/**
-	 * Constructs a new SSL server with the specified bind endpoint and configuration.<br>
+	 * Constructs a new SSL server with the given configuration.<br>
+	 * The server is not started.<br>
 	 *
-	 * @param bindEndpoint The endpoint to bind to
-	 * @param config The server configuration
-	 * @throws NullPointerException If bind endpoint or config is null
+	 * @param bindEndpoint The endpoint the server binds to
+	 * @param config The configuration of the server
+	 * @param handler The handler every accepted connection is handed to
+	 * @throws NullPointerException If the bind endpoint, the configuration or the handler is null
 	 */
-	public SslServer(@NonNull IpEndpoint bindEndpoint, @NonNull SslServerConfig config) {
-		this.bindEndpoint = Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
-		this.config = Objects.requireNonNull(config, "Config must not be null");
+	public SslServer(@NonNull IpEndpoint bindEndpoint, @NonNull SslServerConfig config, @NonNull ConnectionHandler<SslServer, SslConnection> handler) {
+		super(bindEndpoint, Objects.requireNonNull(config, "Config must not be null").transport(), handler);
+		this.config = config;
 	}
 	
 	/**
-	 * Creates a new SSL server with the specified configuration and starts it on the specified bind endpoint.<br>
-	 * Startup failures are reported to the configured error handler, use {@link #isRunning()} to check whether the server came up.<br>
+	 * Creates a new SSL server with the given configuration and starts it.<br>
 	 *
-	 * @param bindEndpoint The endpoint to bind to
-	 * @param config The server configuration
+	 * @param bindEndpoint The endpoint the server binds to
+	 * @param config The configuration of the server
+	 * @param handler The handler every accepted connection is handed to
 	 * @return The started server
-	 * @throws NullPointerException If bind endpoint or config is null
+	 * @throws NullPointerException If the bind endpoint, the configuration or the handler is null
+	 * @throws NetworkConnectionException If the server cannot be bound or started
 	 */
-	public static @NonNull SslServer startOn(@NonNull IpEndpoint bindEndpoint, @NonNull SslServerConfig config) {
-		Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
-		Objects.requireNonNull(config, "Config must not be null");
-		
-		SslServer server = new SslServer(bindEndpoint, config);
-		try {
-			server.start();
-			return server;
-		} catch (Throwable e) {
-			server.close();
-			throw e;
-		}
+	public static @NonNull SslServer startOn(@NonNull IpEndpoint bindEndpoint, @NonNull SslServerConfig config, @NonNull ConnectionHandler<SslServer, SslConnection> handler) throws NetworkConnectionException {
+		SslServer server = new SslServer(bindEndpoint, config, handler);
+		server.start();
+		return server;
+	}
+	
+	/**
+	 * Returns the configuration of this server.<br>
+	 * @return The configuration
+	 */
+	public @NonNull SslServerConfig config() {
+		return this.config;
 	}
 	
 	@Override
-	public boolean isRunning() {
-		return this.running.get() && this.serverSocket != null && !this.serverSocket.isClosed();
+	protected @NonNull SslServer self() {
+		return this;
 	}
 	
 	@Override
-	public @NonNull IpEndpoint boundEndpoint() {
-		if (this.serverSocket != null && this.serverSocket.isBound()) {
-			return IpEndpoint.from((InetSocketAddress) this.serverSocket.getLocalSocketAddress());
-		}
-		return this.bindEndpoint;
-	}
-	
-	@Override
-	public void start() {
-		if (this.running.getAndSet(true)) {
-			return;
-		}
+	protected @NonNull SslConnection open(@NonNull Socket socket) throws NetworkConnectionException {
+		Objects.requireNonNull(socket, "Socket must not be null");
 		
-		try {
-			SSLServerSocket sslServerSocket = (SSLServerSocket) this.config.sslContext().getServerSocketFactory().createServerSocket();
-			this.serverSocket = sslServerSocket;
-			sslServerSocket.setReuseAddress(true);
-			
-			if (!this.config.enabledProtocols().isEmpty()) {
-				sslServerSocket.setEnabledProtocols(TlsProtocol.toProtocolNames(this.config.enabledProtocols()));
-			}
-			if (!this.config.enabledCipherSuites().isEmpty()) {
-				sslServerSocket.setEnabledCipherSuites(this.config.enabledCipherSuites().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
-			}
-			switch (this.config.clientAuth()) {
-				case NONE -> {}
-				case REQUESTED -> sslServerSocket.setWantClientAuth(true);
-				case REQUIRED -> sslServerSocket.setNeedClientAuth(true);
-			}
-			
-			sslServerSocket.bind(this.bindEndpoint.toInetSocketAddress(), this.config.backlog());
-			
-			this.executor = this.config.executorStrategy().createExecutor();
-			
-			this.acceptThread = new Thread(this::acceptLoop, "SSLServer-Accept");
-			this.acceptThread.setDaemon(true);
-			this.acceptThread.start();
-		} catch (BindException e) {
-			this.running.set(false);
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.ADDRESS_IN_USE, "Address already in use: " + this.bindEndpoint, e);
-		} catch (IOException e) {
-			this.running.set(false);
-			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to start server on " + this.bindEndpoint, e);
-		}
+		TcpServerConfig transport = this.config.transport();
+		SSLSocket sslSocket = SslSockets.layerServer(socket, ArrayUtils.EMPTY_BYTE_ARRAY, this.config);
+		return new SslConnection(sslSocket, transport.framing(), transport.maxMessageSize(), transport.clientReadTimeout());
 	}
-	
-	@Override
-	public void stop() {
-		boolean wasRunning = this.running.getAndSet(false);
-		
-		for (SslConnection connection : this.connections) {
-			connection.close();
-		}
-		this.connections.clear();
-		
-		if (!wasRunning) {
-			return;
-		}
-		
-		if (this.serverSocket != null && !this.serverSocket.isClosed()) {
-			try {
-				this.serverSocket.close();
-			} catch (IOException _) {}
-		}
-		
-		if (this.acceptThread != null) {
-			this.acceptThread.interrupt();
-		}
-		
-		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
-	}
-	
-	/**
-	 * Serves a client connection that was established outside of this server on the calling thread.<br>
-	 * <p>
-	 *     This is how a connection that was accepted as plain TCP and upgraded with {@link TcpConnection#upgrade(SslServerConfig)} is served.<br>
-	 *     The connection is handled exactly like an accepted one.<br>
-	 *     The TLS handshake is performed and the connect handler is called.<br>
-	 *     Afterward the connection is handed to the connection handler or read by the built-in read loop.<br>
-	 *     The disconnect handler is called before the connection is closed.<br>
-	 *     While it is served, the connection is registered with this server, so it is part of {@link #broadcast(byte[])} and {@link #getClientCount()}.
-	 * </p>
-	 * <p>
-	 *     The server does not have to be started to serve connections, and {@link #stop()} closes the served connections in either case.<br>
-	 *     This method returns once the connection ended.
-	 * </p>
-	 *
-	 * @param connection The established connection to serve
-	 * @throws NullPointerException If connection is null
-	 */
-	public void serve(@NonNull SslConnection connection) {
-		Objects.requireNonNull(connection, "Connection must not be null");
-		
-		this.connections.add(connection);
-		this.handleClient(connection);
-	}
-	
-	/**
-	 * Returns the number of currently connected clients.<br>
-	 * @return The number of active connections
-	 */
-	public int getClientCount() {
-		return this.connections.size();
-	}
-	
-	/**
-	 * Broadcasts data to all connected clients.<br>
-	 *
-	 * @param data The data to broadcast
-	 * @throws NullPointerException If data is null
-	 */
-	public void broadcast(byte @NonNull [] data) {
-		Objects.requireNonNull(data, "Data must not be null");
-		
-		for (SslConnection connection : this.connections) {
-			if (connection.isActive()) {
-				try {
-					connection.send(data);
-				} catch (NetworkConnectionException e) {
-					NetworkUtils.handleError(this.config.onError(), connection, NetworkErrorType.IO_ERROR, "Failed to broadcast to " + connection.remoteEndpoint(), e);
-				}
-			}
-		}
-	}
-	
-	@Override
-	public void close() {
-		this.stop();
-	}
-	
-	//region Helper methods
-	
-	/**
-	 * The main loop that accepts incoming client connections.<br>
-	 * This method runs on a dedicated thread and handles new connections.<br>
-	 */
-	private void acceptLoop() {
-		while (this.running.get() && !Thread.currentThread().isInterrupted()) {
-			try {
-				SSLSocket clientSocket = (SSLSocket) this.serverSocket.accept();
-				
-				clientSocket.setTcpNoDelay(this.config.tcpNoDelay());
-				clientSocket.setKeepAlive(this.config.keepAlive());
-				if (!this.config.clientReadTimeout().isZero()) {
-					clientSocket.setSoTimeout((int) this.config.clientReadTimeout().toMillis());
-				}
-				
-				SslConnection connection = new SslConnection(clientSocket, this.config.clientBufferSize(), this.config.framing(), this.config.clientReadTimeout());
-				this.connections.add(connection);
-				
-				if (this.isRunning()) {
-					this.executor.submit(() -> this.handleClient(connection));
-				} else {
-					connection.close();
-					this.connections.remove(connection);
-					break;
-				}
-			} catch (SocketException e) {
-				if (this.running.get()) {
-					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.SOCKET_CLOSED, "Server socket closed unexpectedly", e);
-				}
-				break;
-			} catch (IOException e) {
-				if (this.running.get()) {
-					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Error accepting client", e);
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Handles communication with a connected client.<br>
-	 * This method runs on the executor, performs the TLS handshake, and then either hands the connection to the configured connection handler or processes incoming messages.<br>
-	 *
-	 * @param connection The client connection to handle
-	 * @throws NullPointerException If connection is null
-	 */
-	private void handleClient(@NonNull SslConnection connection) {
-		Objects.requireNonNull(connection, "Connection must not be null");
-		
-		boolean connected = false;
-		try {
-			connection.startHandshake();
-			connected = true;
-			
-			if (this.config.onClientConnect() != null) {
-				this.config.onClientConnect().handle(connection, connection.localEndpoint(), connection.remoteEndpoint(), Instant.now());
-			}
-			
-			ConnectionHandler<SslServer, SslConnection> handler = this.config.onConnection();
-			if (handler != null) {
-				this.runConnectionHandler(handler, connection);
-			} else {
-				this.receiveLoop(connection);
-			}
-		} catch (NetworkConnectionException e) {
-			if (e.errorType() != NetworkErrorType.READ_TIMEOUT) {
-				NetworkUtils.handleError(this.config.onError(), connection, e.errorType(), "Client error: " + e.getMessage(), e);
-			}
-		} finally {
-			if (connected && this.config.onClientDisconnect() != null && connection.isActive()) {
-				try {
-					this.config.onClientDisconnect().handle(connection, connection.localEndpoint(), connection.remoteEndpoint(), Instant.now());
-				} catch (Exception _) {}
-			}
-			
-			this.connections.remove(connection);
-			connection.close();
-		}
-	}
-	
-	/**
-	 * Hands the given connection to the configured connection handler and waits until the handler returns.<br>
-	 * Failures of the handler are reported to the configured error handler, network failures are passed on to the caller.<br>
-	 *
-	 * @param handler The connection handler to run
-	 * @param connection The client connection to hand over
-	 * @throws NullPointerException If handler or connection is null
-	 * @throws NetworkConnectionException If the handler failed with a network error
-	 */
-	private void runConnectionHandler(@NonNull ConnectionHandler<SslServer, SslConnection> handler, @NonNull SslConnection connection) throws NetworkConnectionException {
-		Objects.requireNonNull(handler, "Handler must not be null");
-		Objects.requireNonNull(connection, "Connection must not be null");
-		
-		try {
-			handler.handle(this, connection);
-		} catch (NetworkConnectionException e) {
-			throw e;
-		} catch (Exception e) {
-			NetworkUtils.handleError(this.config.onError(), connection, NetworkErrorType.IO_ERROR, "Error in connection handler", e);
-		}
-	}
-	
-	/**
-	 * Reads messages from the given connection until it is closed and dispatches them to the configured message handler.<br>
-	 * This is the built-in read loop that is used when no connection handler is configured.<br>
-	 *
-	 * @param connection The client connection to read from
-	 * @throws NullPointerException If connection is null
-	 * @throws NetworkConnectionException If receiving fails
-	 */
-	private void receiveLoop(@NonNull SslConnection connection) throws NetworkConnectionException {
-		Objects.requireNonNull(connection, "Connection must not be null");
-		
-		while (connection.isActive()) {
-			byte[] data = connection.receive();
-			
-			if (data.length == 0) {
-				break;
-			}
-			
-			if (this.config.onMessage() != null) {
-				try {
-					this.config.onMessage().handle(this, connection, data);
-				} catch (Exception e) {
-					NetworkUtils.handleError(this.config.onError(), connection, NetworkErrorType.IO_ERROR, "Error in message handler", e);
-				}
-			}
-		}
-	}
-	//endregion
 }

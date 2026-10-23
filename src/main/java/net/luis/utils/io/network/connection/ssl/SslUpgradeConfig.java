@@ -18,28 +18,22 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
-import net.luis.utils.io.network.connection.tcp.TcpClient;
-import net.luis.utils.io.network.connection.tcp.TcpClientConfig;
+import net.luis.utils.io.network.connection.tcp.TcpConnection;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import javax.net.ssl.SSLContext;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * Configuration options for upgrading an established plaintext connection to TLS.<br>
- * This record holds only the TLS specific options, everything else is taken from the transport configuration of the connection that is upgraded.<br>
+ * The TLS settings of the client side of a secured connection.<br>
  * <p>
- *     An upgrade configuration is combined with a {@link TcpClientConfig} through {@link #toClientConfig(TcpClientConfig)},
- *     which yields the {@link SslClientConfig} that describes the secured connection.<br>
- *     The transport settings such as timeouts, buffer size, framing,<br>
- *     socket options and event handlers are carried over unchanged, while the TLS settings are taken from this configuration.
- * </p>
- * <p>
- *     This is the configuration type accepted by {@link TcpClient#upgrade(SslUpgradeConfig)},<br>
- *     which layers TLS over an already connected client and hands the secured connection over as an {@link SslClient}.<br>
- *     Protocols such as {@code STARTTLS} use this to switch to a secure channel after the connection was established.
+ *     This record holds only TLS specific options, the transport settings are taken from the connection that is secured.<br>
+ *     It is used by {@link TcpConnection#upgrade(SslUpgradeConfig)} to upgrade an open plain connection,
+ *     which is how protocols such as {@code STARTTLS} switch to a secure channel,
+ *     and it is the TLS part of an {@link SslClientConfig}.
  * </p>
  * <p>
  *     Example usage:
@@ -50,10 +44,10 @@ import java.util.Objects;
  *     .verifyHostname(true)
  *     .build();
  *
- * try (TcpClient client = TcpClient.connectTo(server)) {
- *     client.send("STARTTLS".getBytes());
- *     if (isPositiveReply(client.receive())) {
- *         try (SslClient secure = client.upgrade(upgrade)) {
+ * try (TcpConnection connection = TcpConnection.connectTo(server)) {
+ *     connection.send("STARTTLS".getBytes());
+ *     if (isPositiveReply(connection.receive())) {
+ *         try (SslConnection secure = connection.upgrade(upgrade)) {
  *             secure.send("Hello, Server!".getBytes());
  *         }
  *     }
@@ -62,7 +56,7 @@ import java.util.Objects;
  *
  * @see SslUpgradeConfigBuilder
  * @see SslClientConfig
- * @see TcpClient#upgrade(SslUpgradeConfig)
+ * @see TcpConnection#upgrade(SslUpgradeConfig)
  *
  * @author Luis-St
  *
@@ -116,34 +110,13 @@ public record SslUpgradeConfig(
 	}
 	
 	/**
-	 * Combines this upgrade configuration with the given TCP client configuration into an SSL client configuration.<br>
-	 * <p>
-	 *     The connect timeout, read timeout, write timeout, buffer size, framing flag and socket options are taken from the given configuration, together with its event handlers.<br>
-	 *     The SSL context, enabled protocols, enabled cipher suites and hostname verification are taken from this configuration.
-	 * </p>
+	 * Resolves the SSL context to use for this configuration.<br>
+	 * If no context was configured, the JVM default context is returned.<br>
 	 *
-	 * @param config The TCP client configuration to take the transport settings from
-	 * @return A new SSL client configuration combining both configurations
-	 * @throws NullPointerException If config is null
+	 * @return The configured SSL context, or the JVM default if none was set
+	 * @throws NoSuchAlgorithmException If the default SSL context cannot be created
 	 */
-	public @NonNull SslClientConfig toClientConfig(@NonNull TcpClientConfig config) {
-		Objects.requireNonNull(config, "Config must not be null");
-		
-		return new SslClientConfig(
-			config.connectTimeout(),
-			config.readTimeout(),
-			config.writeTimeout(),
-			config.bufferSize(),
-			config.framing(),
-			config.tcpNoDelay(),
-			config.keepAlive(),
-			this.sslContext,
-			this.enabledProtocols,
-			this.enabledCipherSuites,
-			this.verifyHostname,
-			config.onConnect(),
-			config.onDisconnect(),
-			config.onError()
-		);
+	public @NonNull SSLContext resolveSslContext() throws NoSuchAlgorithmException {
+		return this.sslContext != null ? this.sslContext : SSLContext.getDefault();
 	}
 }

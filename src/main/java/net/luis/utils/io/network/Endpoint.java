@@ -46,7 +46,7 @@ import java.util.Optional;
  * Endpoint byAddress = IpAddresses.parseIpv4("192.168.1.1").toEndpoint(8080);
  *
  * // Both can be used wherever a connection target is expected
- * SslClient client = SslClient.connectTo(byName);
+ * SslConnection connection = SslConnection.connectTo(byName);
  *
  * // The host part can be recovered by pattern matching
  * String host = switch (byName) {

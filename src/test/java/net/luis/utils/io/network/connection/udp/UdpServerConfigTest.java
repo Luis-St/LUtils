@@ -18,9 +18,12 @@
 
 package net.luis.utils.io.network.connection.udp;
 
+import net.luis.utils.io.network.connection.ErrorHandler;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import net.luis.utils.io.network.connection.executor.VirtualThreadStrategy;
 import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,50 +35,63 @@ import static org.junit.jupiter.api.Assertions.*;
 class UdpServerConfigTest {
 	
 	@Test
-	void defaultConfig() {
-		UdpServerConfig config = UdpServerConfig.DEFAULT;
+	void constructWithAllValues() {
+		UdpPeerConfig peer = new UdpPeerConfig(Duration.ofSeconds(1), 512, true, true);
+		ClientExecutorStrategy strategy = ClientExecutorStrategy.fixedPool(2);
+		ErrorHandler onError = (client, error) -> {};
 		
-		assertEquals(65535, config.bufferSize());
-		assertFalse(config.broadcast());
-		assertFalse(config.reuseAddress());
-		assertInstanceOf(VirtualThreadStrategy.class, config.executorStrategy());
-		assertNull(config.onMessage());
+		UdpServerConfig config = new UdpServerConfig(peer, strategy, onError);
+		
+		assertSame(peer, config.peer());
+		assertSame(strategy, config.executorStrategy());
+		assertSame(onError, config.onError());
+	}
+	
+	@Test
+	void constructWithNullErrorHandler() {
+		UdpServerConfig config = assertDoesNotThrow(() -> new UdpServerConfig(UdpPeerConfig.DEFAULT, ClientExecutorStrategy.virtualThreads(), null));
+		
 		assertNull(config.onError());
 	}
 	
 	@Test
-	void constructWithNullExecutorStrategyThrows() {
-		assertThrows(NullPointerException.class, () -> new UdpServerConfig(65535, false, false, null, null, null));
+	void constructWithNullPeer() {
+		assertThrows(NullPointerException.class, () -> new UdpServerConfig(null, ClientExecutorStrategy.virtualThreads(), null));
 	}
 	
 	@Test
-	void constructWithInvalidBufferSizeThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new UdpServerConfig(0, false, false, ClientExecutorStrategy.virtualThreads(), null, null));
-		assertThrows(IllegalArgumentException.class, () -> new UdpServerConfig(-1, false, false, ClientExecutorStrategy.virtualThreads(), null, null));
+	void constructWithNullExecutorStrategy() {
+		assertThrows(NullPointerException.class, () -> new UdpServerConfig(UdpPeerConfig.DEFAULT, null, null));
 	}
 	
 	@Test
-	void builder() {
-		UdpServerConfig config = UdpServerConfig.builder()
-			.bufferSize(1024)
-			.broadcast(true)
-			.reuseAddress(true)
-			.executorStrategy(ClientExecutorStrategy.fixedPool(4))
-			.build();
+	void defaultValues() {
+		UdpServerConfig config = UdpServerConfig.DEFAULT;
 		
-		assertEquals(1024, config.bufferSize());
-		assertTrue(config.broadcast());
-		assertTrue(config.reuseAddress());
+		assertSame(UdpPeerConfig.DEFAULT, config.peer());
+		assertInstanceOf(VirtualThreadStrategy.class, config.executorStrategy());
+		assertNull(config.onError());
 	}
 	
 	@Test
-	void builderWithHandlers() {
-		UdpServerConfig config = UdpServerConfig.builder()
-			.onMessage((server, datagram, data) -> {})
-			.onError((connection, type, msg, cause) -> {})
-			.build();
+	void builderReturnsNewInstanceEachCall() {
+		assertNotSame(UdpServerConfig.builder(), UdpServerConfig.builder());
+	}
+	
+	@Test
+	void builderWithoutChangesBuildsDefault() {
+		assertEquals(UdpServerConfig.DEFAULT, UdpServerConfig.builder().build());
+	}
+	
+	@Test
+	void equalityAndHashCode() {
+		ClientExecutorStrategy strategy = ClientExecutorStrategy.virtualThreads();
+		UdpServerConfig first = new UdpServerConfig(new UdpPeerConfig(null, 512, false, false), strategy, null);
+		UdpServerConfig second = new UdpServerConfig(new UdpPeerConfig(null, 512, false, false), strategy, null);
+		UdpServerConfig other = new UdpServerConfig(new UdpPeerConfig(null, 1024, false, false), strategy, null);
 		
-		assertNotNull(config.onMessage());
-		assertNotNull(config.onError());
+		assertEquals(first, second);
+		assertEquals(first.hashCode(), second.hashCode());
+		assertNotEquals(first, other);
 	}
 }

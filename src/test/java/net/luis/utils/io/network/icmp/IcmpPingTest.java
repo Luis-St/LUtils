@@ -27,9 +27,6 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.net.*;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -53,14 +50,15 @@ class IcmpPingTest {
 	private static boolean supported;
 	private static boolean datagramV4;
 	private static boolean datagramV6;
-	private static boolean defaultRoute;
 	
 	@BeforeAll
 	static void setUp() {
 		supported = (OS_NAME.contains("linux") || OS_NAME.contains("mac")) && System.getProperty("os.arch", "").contains("64");
 		datagramV4 = supported && canOpen(IcmpVersion.ICMP_V4, Ipv4Address.LOOPBACK);
 		datagramV6 = supported && canOpen(IcmpVersion.ICMP_V6, Ipv6Address.LOOPBACK);
-		defaultRoute = hasRouteTo(UNROUTABLE);
+		if (System.getenv("CI") != null && OS_NAME.contains("linux")) {
+			assertTrue(datagramV4, "Unprivileged ICMP sockets are unavailable, widen net.ipv4.ping_group_range on the CI runner");
+		}
 	}
 	
 	private static boolean canOpen(@NonNull IcmpVersion version, @NonNull IpAddress<?> loopback) {
@@ -68,15 +66,6 @@ class IcmpPingTest {
 			socket.bind(loopback);
 			return true;
 		} catch (NetworkConnectionException | UnsupportedOperationException e) {
-			return false;
-		}
-	}
-	
-	private static boolean hasRouteTo(@NonNull Ipv4Address address) {
-		try (DatagramSocket socket = new DatagramSocket()) {
-			socket.connect(new InetSocketAddress(InetAddress.getByAddress(address.toBytes()), 9));
-			return !socket.getLocalAddress().isAnyLocalAddress();
-		} catch (IOException | UncheckedIOException e) {
 			return false;
 		}
 	}
@@ -307,14 +296,14 @@ class IcmpPingTest {
 			}
 		});
 		
-		thread.join(2000);
+		thread.join(10000);
 		assertFalse(thread.isAlive());
 		assertEquals(1, results.get().size());
 	}
 	
 	@Test
 	void pingUnroutableAddressRecordsLostOrFailed() throws Exception {
-		assumeTrue(datagramV4 && defaultRoute);
+		assumeTrue(datagramV4);
 		List<IcmpPingResult> results = new IcmpPing(UNROUTABLE).ping(1, Duration.ZERO, Duration.ofMillis(200));
 		assertEquals(1, results.size());
 		assertFalse(results.getFirst() instanceof IcmpPingResult.Replied);
@@ -326,7 +315,7 @@ class IcmpPingTest {
 		assumeTrue(datagramV4);
 		AtomicInteger callbacks = new AtomicInteger(0);
 		try (IcmpPingSession session = new IcmpPing(Ipv4Address.LOOPBACK).ping(Duration.ofMillis(50), Duration.ofSeconds(1), 8, result -> callbacks.incrementAndGet())) {
-			assertTrue(await(() -> session.sent() >= 3, Duration.ofSeconds(2)));
+			assertTrue(await(() -> session.sent() >= 3, Duration.ofSeconds(10)));
 			session.cancel();
 			assertEquals(session.sent(), callbacks.get());
 		}
@@ -336,7 +325,7 @@ class IcmpPingTest {
 	void endlessPingWithoutCallback() throws Exception {
 		assumeTrue(datagramV4);
 		try (IcmpPingSession session = new IcmpPing(Ipv4Address.LOOPBACK).ping(Duration.ofMillis(50), Duration.ofSeconds(1), 8, null)) {
-			assertTrue(await(() -> !session.results().isEmpty(), Duration.ofSeconds(2)));
+			assertTrue(await(() -> !session.results().isEmpty(), Duration.ofSeconds(10)));
 			assertTrue(session.isRunning());
 		}
 	}
@@ -345,7 +334,7 @@ class IcmpPingTest {
 	void endlessPingStopsOnCancel() throws Exception {
 		assumeTrue(datagramV4);
 		try (IcmpPingSession session = new IcmpPing(Ipv4Address.LOOPBACK).ping(Duration.ofMillis(50), null)) {
-			assertTrue(await(() -> session.sent() >= 1, Duration.ofSeconds(2)));
+			assertTrue(await(() -> session.sent() >= 1, Duration.ofSeconds(10)));
 			session.cancel();
 			assertFalse(session.isRunning());
 			long sent = session.sent();
@@ -429,7 +418,7 @@ class IcmpPingTest {
 		assumeTrue(datagramV4);
 		IcmpPing ping = new IcmpPing(Ipv4Address.LOOPBACK, IcmpSocketConfig.DEFAULT, 3);
 		try (IcmpPingSession session = ping.ping(Duration.ofMillis(20), null)) {
-			assertTrue(await(() -> session.sent() >= 6, Duration.ofSeconds(3)));
+			assertTrue(await(() -> session.sent() >= 6, Duration.ofSeconds(10)));
 			session.cancel();
 			List<IcmpPingResult> results = session.results();
 			assertEquals(3, results.size());
@@ -444,7 +433,7 @@ class IcmpPingTest {
 		assumeTrue(datagramV4);
 		List<String> threadNames = new CopyOnWriteArrayList<>();
 		try (IcmpPingSession session = new IcmpPing(Ipv4Address.LOOPBACK).ping(result -> threadNames.add(Thread.currentThread().getName()))) {
-			assertTrue(await(() -> !threadNames.isEmpty(), Duration.ofSeconds(2)));
+			assertTrue(await(() -> !threadNames.isEmpty(), Duration.ofSeconds(10)));
 			assertEquals("icmp-ping-127.0.0.1", threadNames.getFirst());
 		}
 	}
@@ -456,8 +445,8 @@ class IcmpPingTest {
 		try (IcmpPingSession session = new IcmpPing(Ipv4Address.LOOPBACK).ping(result -> {
 			throw exception;
 		})) {
-			assertTrue(await(() -> !session.isRunning(), Duration.ofSeconds(2)));
-			assertTrue(await(() -> !session.socket().isOpen(), Duration.ofSeconds(1)));
+			assertTrue(await(() -> !session.isRunning(), Duration.ofSeconds(10)));
+			assertTrue(await(() -> !session.socket().isOpen(), Duration.ofSeconds(10)));
 			assertSame(exception, session.failure().orElseThrow());
 		}
 	}

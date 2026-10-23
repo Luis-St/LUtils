@@ -16,30 +16,24 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 package net.luis.utils.io.network.connection.ssl;
 
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
-import net.luis.utils.io.network.address.ipv6.Ipv6Address;
-import net.luis.utils.io.network.connection.NetworkServer;
-import net.luis.utils.io.network.connection.NetworkUtils;
+import net.luis.utils.io.network.connection.*;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
-import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.parallel.Isolated;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import java.io.*;
-import java.net.*;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -48,1087 +42,246 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
-@Isolated
-@Timeout(value = 60, unit = TimeUnit.SECONDS)
+@Tag("tls")
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 class SslServerTest {
 	
 	private static final IpEndpoint EPHEMERAL = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
-	
-	private static SSLContext serverContext;
-	private static SSLContext clientContext;
-	private static TlsProtocol supportedProtocol;
-	private static String supportedCipherSuite;
+	private static final ConnectionHandler<SslServer, SslConnection> NO_OP = (server, connection) -> {};
+	private static final ConnectionHandler<SslServer, SslConnection> BLOCKING = (server, connection) -> connection.receive();
+	private static SslServerConfig serverConfig;
+	private static SslClientConfig clientConfig;
 	
 	@BeforeAll
 	static void setUp() throws Exception {
-		serverContext = SslTestContext.serverContext();
-		clientContext = SslTestContext.clientContext();
-		supportedProtocol = TlsProtocol.byName(serverContext.getSupportedSSLParameters().getProtocols()[0]).orElseThrow();
-		supportedCipherSuite = serverContext.getSupportedSSLParameters().getCipherSuites()[0];
+		serverConfig = SslServerConfig.builder(SslTestContext.serverContext()).build();
+		clientConfig = SslClientConfig.builder().sslContext(SslTestContext.clientContext()).build();
 	}
 	
-	private static @NonNull SslServerConfig defaultConfig() {
-		return SslServerConfig.builder(serverContext).build();
+	private static SslServerConfigBuilder serverBuilder() throws Exception {
+		return SslServerConfig.builder(SslTestContext.serverContext());
 	}
 	
-	private static void withServer(@NonNull SslServerConfig config, @NonNull ServerBody body) throws Exception {
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			server.start();
-			body.accept(server);
+	private static SslConnection connect(SslServer server) throws NetworkConnectionException {
+		return SslConnection.connectTo(server.boundEndpoint(), clientConfig);
+	}
+	
+	private static boolean awaitConnections(SslServer server, int expected) throws InterruptedException {
+		long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+		while (System.nanoTime() < deadline && server.connections().size() != expected) {
+			Thread.sleep(10);
 		}
+		return server.connections().size() == expected;
 	}
 	
-	private static @NonNull SSLSocket connect(@NonNull SslServer server) throws Exception {
-		SSLSocket socket = (SSLSocket) clientContext.getSocketFactory().createSocket("127.0.0.1", server.boundEndpoint().port());
-		socket.startHandshake();
-		return socket;
+	private static byte[] bytes(String value) {
+		return value.getBytes(StandardCharsets.UTF_8);
 	}
 	
-	private static void awaitClientCount(@NonNull SslServer server, int expected) throws Exception {
-		for (int attempt = 0; attempt < 400 && server.getClientCount() != expected; attempt++) {
-			Thread.sleep(25);
-		}
-		assertEquals(expected, server.getClientCount());
-	}
-	
-	private static @NonNull SslServerConfig echoConfig() {
-		return SslServerConfig.builder(serverContext).onMessage((server, connection, data) -> {
-			try {
-				connection.send(data);
-			} catch (NetworkConnectionException _) {}
-		}).build();
-	}
-	
-	private static @NonNull ServedClient serveClient(@NonNull SslServer server) throws Exception {
-		Socket plain;
-		Socket accepted;
-		try (ServerSocket listener = new ServerSocket(0, 50, InetAddress.getLoopbackAddress())) {
-			plain = new Socket("127.0.0.1", listener.getLocalPort());
-			accepted = listener.accept();
-		}
-		
-		SslConnection connection = SslConnection.upgrade(accepted, new byte[0], defaultConfig());
-		Thread serving = Thread.ofVirtual().start(() -> server.serve(connection));
-		SSLSocket socket = (SSLSocket) clientContext.getSocketFactory().createSocket(plain, "127.0.0.1", plain.getPort(), true);
-		socket.setSoTimeout(5000);
-		return new ServedClient(socket, connection, serving);
-	}
-	
-	private static void assertClosedByServer(@NonNull SSLSocket socket) {
-		try {
-			assertEquals(-1, socket.getInputStream().read());
-		} catch (IOException _) {}
+	private static String string(byte[] value) {
+		return new String(value, StandardCharsets.UTF_8);
 	}
 	
 	@Test
-	void constructWithBindEndpointAndConfig() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
+	void constructWithConfig() {
+		try (SslServer server = new SslServer(EPHEMERAL, serverConfig, NO_OP)) {
+			assertSame(serverConfig, server.config());
 			assertFalse(server.isRunning());
-			assertEquals(0, server.getClientCount());
-			assertEquals(EPHEMERAL, server.boundEndpoint());
 		}
-	}
-	
-	@Test
-	void constructWithNullBindEndpoint() {
-		assertThrows(NullPointerException.class, () -> new SslServer(null, defaultConfig()));
 	}
 	
 	@Test
 	void constructWithNullConfig() {
-		assertThrows(NullPointerException.class, () -> new SslServer(EPHEMERAL, null));
-	}
-	
-	@Test
-	void startOnWithNullBindEndpoint() {
-		assertThrows(NullPointerException.class, () -> SslServer.startOn(null, defaultConfig()));
-	}
-	
-	@Test
-	void startOnWithNullConfig() {
-		assertThrows(NullPointerException.class, () -> SslServer.startOn(EPHEMERAL, null));
-	}
-	
-	@Test
-	void broadcastWithNullData() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			assertThrows(NullPointerException.class, () -> server.broadcast(null));
-		}
-	}
-	
-	@Test
-	void startOnWithInvalidCipherSuiteClosesServerAndRethrows() {
-		SslServerConfig config = SslServerConfig.builder(serverContext).enabledCipherSuites(List.of("NO-SUCH-SUITE")).build();
+		NullPointerException exception = assertThrows(NullPointerException.class, () -> new SslServer(EPHEMERAL, null, NO_OP));
 		
-		assertThrows(IllegalArgumentException.class, () -> SslServer.startOn(EPHEMERAL, config));
+		assertEquals("Config must not be null", exception.getMessage());
 	}
 	
 	@Test
-	void isRunningFalseBeforeStart() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			assertFalse(server.isRunning());
-		}
+	void constructWithNullBindEndpoint() {
+		assertThrows(NullPointerException.class, () -> new SslServer(null, serverConfig, NO_OP));
 	}
 	
 	@Test
-	void isRunningTrueAfterStart() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			server.start();
-			assertTrue(server.isRunning());
-		}
+	void constructWithNullHandler() {
+		assertThrows(NullPointerException.class, () -> new SslServer(EPHEMERAL, serverConfig, null));
 	}
 	
 	@Test
-	void isRunningFalseAfterStop() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			server.start();
-			server.stop();
+	void startOnWithNullArguments() {
+		assertThrows(NullPointerException.class, () -> SslServer.startOn(null, serverConfig, NO_OP));
+		assertThrows(NullPointerException.class, () -> SslServer.startOn(EPHEMERAL, null, NO_OP));
+		assertThrows(NullPointerException.class, () -> SslServer.startOn(EPHEMERAL, serverConfig, null));
+	}
+	
+	@Test
+	void startOnPortInUse() throws Exception {
+		try (SslServer first = SslServer.startOn(EPHEMERAL, serverConfig, NO_OP)) {
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> SslServer.startOn(first.boundEndpoint(), serverConfig, NO_OP));
 			
-			assertFalse(server.isRunning());
+			assertEquals(NetworkErrorType.ADDRESS_IN_USE, exception.errorType());
 		}
 	}
 	
 	@Test
-	void boundEndpointReturnsConfiguredEndpointBeforeStart() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			assertEquals(EPHEMERAL, server.boundEndpoint());
-			assertEquals(0, server.boundEndpoint().port());
-		}
-	}
-	
-	@Test
-	void boundEndpointReturnsActualPortAfterStart() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			server.start();
-			
-			assertNotEquals(0, server.boundEndpoint().port());
-			assertEquals(Ipv4Address.LOOPBACK, server.boundEndpoint().address());
-		}
-	}
-	
-	@Test
-	void startTwiceIsNoOp() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			server.start();
-			IpEndpoint bound = server.boundEndpoint();
-			
-			assertDoesNotThrow(server::start);
-			assertTrue(server.isRunning());
-			assertEquals(bound, server.boundEndpoint());
-		}
-	}
-	
-	@Test
-	void startWithoutEnabledProtocolsUsesContextDefaults() {
-		SslServerConfig config = SslServerConfig.builder(serverContext).build();
-		assertTrue(config.enabledProtocols().isEmpty());
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			server.start();
-			assertTrue(server.isRunning());
-		}
-	}
-	
-	@Test
-	void startWithEnabledProtocolsApplied() {
-		SslServerConfig config = SslServerConfig.builder(serverContext).enabledProtocols(List.of(supportedProtocol)).build();
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			server.start();
-			
-			assertTrue(server.isRunning());
-			assertNotEquals(0, server.boundEndpoint().port());
-		}
-	}
-	
-	@Test
-	void startWithoutEnabledCipherSuitesUsesContextDefaults() {
-		SslServerConfig config = SslServerConfig.builder(serverContext).build();
-		assertTrue(config.enabledCipherSuites().isEmpty());
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			server.start();
-			assertTrue(server.isRunning());
-		}
-	}
-	
-	@Test
-	void startWithEnabledCipherSuitesApplied() {
-		SslServerConfig config = SslServerConfig.builder(serverContext).enabledCipherSuites(List.of(supportedCipherSuite)).build();
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			server.start();
-			
-			assertTrue(server.isRunning());
-			assertNotEquals(0, server.boundEndpoint().port());
-		}
-	}
-	
-	@Test
-	void startWithClientAuthNone() {
-		SslServerConfig config = SslServerConfig.builder(serverContext).clientAuth(SslClientAuth.NONE).build();
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			server.start();
-			assertTrue(server.isRunning());
-		}
-	}
-	
-	@Test
-	void startWithClientAuthRequested() {
-		SslServerConfig config = SslServerConfig.builder(serverContext).clientAuth(SslClientAuth.REQUESTED).build();
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			server.start();
-			assertTrue(server.isRunning());
-		}
-	}
-	
-	@Test
-	void startWithClientAuthRequired() {
-		SslServerConfig config = SslServerConfig.builder(serverContext).clientAuth(SslClientAuth.REQUIRED).build();
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			server.start();
-			assertTrue(server.isRunning());
-		}
-	}
-	
-	@Test
-	void startOnPortAlreadyInUseReportsAddressInUse() {
-		AtomicReference<NetworkErrorType> reported = new AtomicReference<>();
-		SslServerConfig config = SslServerConfig.builder(serverContext).onError((conn, type, message, cause) -> reported.set(type)).build();
-		
-		try (SslServer first = new SslServer(EPHEMERAL, defaultConfig())) {
-			first.start();
-			
-			try (SslServer second = new SslServer(first.boundEndpoint(), config)) {
-				assertDoesNotThrow(second::start);
-				assertFalse(second.isRunning());
-				assertEquals(NetworkErrorType.ADDRESS_IN_USE, reported.get());
-			}
-		}
-	}
-	
-	@Test
-	void stopBeforeStartIsNoOp() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			assertDoesNotThrow(server::stop);
-			assertFalse(server.isRunning());
-		}
-	}
-	
-	@Test
-	void stopTwiceIsNoOp() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			server.start();
-			
-			assertDoesNotThrow(server::stop);
-			assertDoesNotThrow(server::stop);
-			assertFalse(server.isRunning());
-		}
-	}
-	
-	@Test
-	void stopLeavesCustomExecutorRunning() {
-		ExecutorService custom = Executors.newSingleThreadExecutor();
-		SslServerConfig config = SslServerConfig.builder(serverContext).executorStrategy(ClientExecutorStrategy.custom(custom)).build();
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			server.start();
-			server.stop();
-			
-			assertFalse(custom.isShutdown());
-		} finally {
-			custom.shutdownNow();
-		}
-	}
-	
-	@Test
-	void broadcastWithoutConnectionsDoesNothing() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			server.start();
-			
-			assertDoesNotThrow(() -> server.broadcast("data".getBytes()));
-			assertEquals(0, server.getClientCount());
-		}
-	}
-	
-	@Test
-	void closeDelegatesToStop() {
-		SslServer server = new SslServer(EPHEMERAL, defaultConfig());
-		server.start();
-		assertTrue(server.isRunning());
-		
-		server.close();
-		assertFalse(server.isRunning());
-	}
-	
-	@Test
-	void getClientCountZeroBeforeStart() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			assertEquals(0, server.getClientCount());
-		}
-	}
-	
-	@Test
-	void getClientCountZeroWhileRunningWithoutClients() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			server.start();
-			
-			assertEquals(0, server.getClientCount());
-		}
-	}
-	
-	@Test
-	void getClientCountZeroAfterStop() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			server.start();
-			server.stop();
-			
-			assertEquals(0, server.getClientCount());
-		}
-	}
-	
-	@Test
-	void startOnReturnsRunningServer() {
-		try (SslServer server = SslServer.startOn(EPHEMERAL, defaultConfig())) {
-			assertTrue(server.isRunning());
-			assertNotEquals(0, server.boundEndpoint().port());
-		}
-	}
-	
-	@Test
-	void closeBeforeStartIsNoOp() {
-		SslServer server = new SslServer(EPHEMERAL, defaultConfig());
-		
-		assertDoesNotThrow(server::close);
-		assertFalse(server.isRunning());
-	}
-	
-	@Test
-	void implementsNetworkServer() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			assertInstanceOf(NetworkServer.class, server);
-		}
-	}
-	
-	@Test
-	void startOnIpv6LoopbackEndpoint() {
-		try (SslServer server = new SslServer(new IpEndpoint(Ipv6Address.LOOPBACK, 0), defaultConfig())) {
-			server.start();
-			
-			assertTrue(server.isRunning());
-			assertEquals(6, server.boundEndpoint().address().version());
-		}
-	}
-	
-	@Test
-	void startStopRestartCycleConsistency() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			server.start();
-			assertTrue(server.isRunning());
-			
-			server.stop();
-			assertFalse(server.isRunning());
-			
-			server.start();
-			assertTrue(server.isRunning());
-			assertNotEquals(0, server.boundEndpoint().port());
-		}
-	}
-	
-	@Test
-	void startWithProtocolsCipherSuitesAndClientAuthCombined() {
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.enabledProtocols(List.of(supportedProtocol))
-			.enabledCipherSuites(List.of(supportedCipherSuite))
-			.clientAuth(SslClientAuth.REQUIRED)
-			.build();
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			server.start();
-			
-			assertTrue(server.isRunning());
-			assertNotEquals(0, server.boundEndpoint().port());
-		}
-	}
-	
-	@Test
-	void broadcastAndClientCountConsistencyAcrossLifecycle() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			assertEquals(0, server.getClientCount());
-			assertDoesNotThrow(() -> server.broadcast(new byte[1]));
-			assertThrows(NullPointerException.class, () -> server.broadcast(null));
-			
-			server.start();
-			assertEquals(0, server.getClientCount());
-			assertDoesNotThrow(() -> server.broadcast(new byte[1]));
-			
-			server.stop();
-			assertEquals(0, server.getClientCount());
-			assertThrows(NullPointerException.class, () -> server.broadcast(null));
-		}
-	}
-	
-	@Test
-	void startWithUnsupportedCipherSuiteRejectedAtStart() {
-		SslServerConfig config = SslServerConfig.builder(serverContext).enabledCipherSuites(List.of("TLS_NO_SUCH_SUITE")).build();
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			assertThrows(IllegalArgumentException.class, server::start);
-			assertEquals(EPHEMERAL, server.boundEndpoint());
-		}
-	}
-	
-	@Test
-	void connectionHandlerFailureReportedToErrorHandler() throws Exception {
-		AtomicReference<NetworkErrorType> reportedType = new AtomicReference<>();
-		AtomicReference<String> reportedMessage = new AtomicReference<>();
-		AtomicReference<Throwable> reportedCause = new AtomicReference<>();
-		CountDownLatch reported = new CountDownLatch(1);
-		IllegalStateException failure = new IllegalStateException("handler failed");
-		
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onConnection((server, connection) -> {
-				throw failure;
-			})
-			.onError((connection, errorType, message, cause) -> {
-				reportedType.set(errorType);
-				reportedMessage.set(message);
-				reportedCause.set(cause);
-				reported.countDown();
-			})
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				assertTrue(reported.await(10, TimeUnit.SECONDS));
-			}
-		});
-		
-		assertEquals(NetworkErrorType.IO_ERROR, reportedType.get());
-		assertEquals("Error in connection handler", reportedMessage.get());
-		assertSame(failure, reportedCause.get());
-	}
-	
-	@Test
-	void connectionHandlerNetworkFailureReportedAsClientError() throws Exception {
-		AtomicReference<NetworkErrorType> reportedType = new AtomicReference<>();
-		AtomicReference<String> reportedMessage = new AtomicReference<>();
-		CountDownLatch reported = new CountDownLatch(1);
-		
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onConnection((server, connection) -> {
-				throw new NetworkConnectionException("peer vanished", NetworkErrorType.CONNECTION_RESET);
-			})
-			.onError((connection, errorType, message, cause) -> {
-				reportedType.set(errorType);
-				reportedMessage.set(message);
-				reported.countDown();
-			})
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				assertTrue(reported.await(10, TimeUnit.SECONDS));
-			}
-		});
-		
-		assertEquals(NetworkErrorType.CONNECTION_RESET, reportedType.get());
-		assertTrue(reportedMessage.get().startsWith("Client error: "));
-	}
-	
-	@Test
-	void connectionHandlerReadTimeoutIsSuppressed() throws Exception {
-		AtomicBoolean errored = new AtomicBoolean(false);
-		CountDownLatch finished = new CountDownLatch(1);
-		
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.clientReadTimeout(Duration.ofMillis(100))
-			.onConnection((server, connection) -> {
-				try {
-					connection.receive();
-				} finally {
-					finished.countDown();
-				}
-			})
-			.onError((connection, errorType, message, cause) -> errored.set(true))
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				assertTrue(finished.await(10, TimeUnit.SECONDS));
-				Thread.sleep(250);
-			}
-		});
-		
-		assertFalse(errored.get());
-	}
-	
-	@Test
-	void connectionHandlerFailureStillClosesConnection() throws Exception {
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onConnection((server, connection) -> {
-				throw new IllegalStateException("handler failed");
-			})
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				assertEquals(-1, client.getInputStream().read());
-			}
-			awaitClientCount(server, 0);
-		});
-	}
-	
-	@Test
-	void handleClientWithConnectionHandler() throws Exception {
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.framing(false)
-			.onConnection((server, connection) -> {
-				OutputStream writer = connection.getOutputStream();
-				writer.write("220 Ready\r\n".getBytes(StandardCharsets.US_ASCII));
-				writer.flush();
-				
-				BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.US_ASCII));
-				reader.readLine();
-			})
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.US_ASCII));
-				
-				assertEquals("220 Ready", reader.readLine());
-				
-				client.getOutputStream().write("QUIT\r\n".getBytes(StandardCharsets.US_ASCII));
-				client.getOutputStream().flush();
-			}
-		});
-	}
-	
-	@Test
-	void handleClientWithoutConnectionHandler() throws Exception {
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.framing(false)
-			.onMessage((server, connection, data) -> assertDoesNotThrow(() -> connection.send(data)))
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				client.getOutputStream().write("ping".getBytes(StandardCharsets.US_ASCII));
-				client.getOutputStream().flush();
-				
-				assertEquals("ping", new String(client.getInputStream().readNBytes(4), StandardCharsets.US_ASCII));
-			}
-		});
-	}
-	
-	@Test
-	void connectionHandlerReturnClosesConnection() throws Exception {
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onConnection((server, connection) -> {})
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				assertEquals(-1, client.getInputStream().read());
-			}
-		});
-	}
-	
-	@Test
-	void connectionHandlerRunsOnServerManagedThread() throws Exception {
-		AtomicReference<Thread> captured = new AtomicReference<>();
-		CountDownLatch invoked = new CountDownLatch(1);
-		
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onConnection((server, connection) -> {
-				captured.set(Thread.currentThread());
-				invoked.countDown();
-			})
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				assertTrue(invoked.await(10, TimeUnit.SECONDS));
-			}
-		});
-		
-		assertNotSame(Thread.currentThread(), captured.get());
-		assertTrue(captured.get().isVirtual());
-	}
-	
-	@Test
-	void connectionHandlerFiresConnectAndDisconnectEvents() throws Exception {
-		List<String> events = Collections.synchronizedList(new ArrayList<>());
-		CountDownLatch disconnected = new CountDownLatch(1);
-		
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onClientConnect((connection, local, remote, timestamp) -> events.add("connect"))
-			.onConnection((server, connection) -> events.add("handle"))
-			.onClientDisconnect((connection, local, remote, timestamp) -> {
-				events.add("disconnect");
-				disconnected.countDown();
-			})
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				assertTrue(disconnected.await(10, TimeUnit.SECONDS));
-			}
-		});
-		
-		assertEquals(List.of("connect", "handle", "disconnect"), events);
-	}
-	
-	@Test
-	void connectionHandlerClosingConnectionSkipsDisconnectEvent() throws Exception {
-		AtomicBoolean disconnected = new AtomicBoolean(false);
-		CountDownLatch handled = new CountDownLatch(1);
-		
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onConnection((server, connection) -> {
-				connection.close();
-				handled.countDown();
-			})
-			.onClientDisconnect((connection, local, remote, timestamp) -> disconnected.set(true))
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				assertTrue(handled.await(10, TimeUnit.SECONDS));
-			}
-			awaitClientCount(server, 0);
-		});
-		
-		assertFalse(disconnected.get());
-	}
-	
-	@Test
-	void connectionHandlerEchoesOneLine() throws Exception {
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.framing(false)
-			.onConnection((server, connection) -> {
-				BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.US_ASCII));
-				OutputStream writer = connection.getOutputStream();
-				
-				writer.write(("250 " + reader.readLine() + "\r\n").getBytes(StandardCharsets.US_ASCII));
-				writer.flush();
-			})
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				client.getOutputStream().write("HELO\r\n".getBytes(StandardCharsets.US_ASCII));
-				client.getOutputStream().flush();
-				
-				BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.US_ASCII));
-				assertEquals("250 HELO", reader.readLine());
-			}
-		});
-	}
-	
-	@Test
-	void connectionHandlerReadsRawStream() throws Exception {
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.framing(false)
-			.onConnection((server, connection) -> {
-				byte[] received = connection.getInputStream().readNBytes(4);
-				connection.getOutputStream().write(received);
-				connection.getOutputStream().flush();
-			})
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				client.getOutputStream().write(new byte[] { 1, 2, 3, 4 });
-				client.getOutputStream().flush();
-				
-				assertArrayEquals(new byte[] { 1, 2, 3, 4 }, client.getInputStream().readNBytes(4));
-			}
-		});
-	}
-	
-	@Test
-	void connectionHandlerServesMultipleClientsConcurrently() throws Exception {
-		AtomicInteger invocations = new AtomicInteger(0);
-		
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.framing(false)
-			.onConnection((server, connection) -> {
-				invocations.incrementAndGet();
-				OutputStream writer = connection.getOutputStream();
-				writer.write("220 Ready\r\n".getBytes(StandardCharsets.US_ASCII));
-				writer.flush();
-				
-				BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.US_ASCII));
-				writer.write(("250 " + reader.readLine() + "\r\n").getBytes(StandardCharsets.US_ASCII));
-				writer.flush();
-			})
-			.build();
-		
-		withServer(config, server -> {
-			for (int index = 0; index < 3; index++) {
-				try (SSLSocket client = connect(server)) {
-					BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.US_ASCII));
-					assertEquals("220 Ready", reader.readLine());
-					
-					client.getOutputStream().write(("CMD" + index + "\r\n").getBytes(StandardCharsets.US_ASCII));
-					client.getOutputStream().flush();
-					assertEquals("250 CMD" + index, reader.readLine());
-				}
-			}
-			
-			awaitClientCount(server, 0);
-			assertEquals(3, invocations.get());
-		});
-	}
-	
-	@Test
-	void connectionHandlerMultiStepConversation() throws Exception {
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.framing(false)
-			.onConnection((server, connection) -> {
-				BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.US_ASCII));
-				OutputStream writer = connection.getOutputStream();
-				writer.write("220 Ready\r\n".getBytes(StandardCharsets.US_ASCII));
-				writer.flush();
-				
-				String line;
-				while ((line = reader.readLine()) != null) {
-					boolean quit = line.startsWith("QUIT");
-					writer.write((quit ? "221 Bye\r\n" : "250 Ok\r\n").getBytes(StandardCharsets.US_ASCII));
-					writer.flush();
-					if (quit) {
-						break;
-					}
-				}
-			})
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.US_ASCII));
-				OutputStream writer = client.getOutputStream();
-				assertEquals("220 Ready", reader.readLine());
-				
-				for (String command : List.of("HELO\r\n", "MAIL\r\n")) {
-					writer.write(command.getBytes(StandardCharsets.US_ASCII));
-					writer.flush();
-					assertEquals("250 Ok", reader.readLine());
-				}
-				
-				writer.write("QUIT\r\n".getBytes(StandardCharsets.US_ASCII));
-				writer.flush();
-				assertEquals("221 Bye", reader.readLine());
-				assertNull(reader.readLine());
-			}
-		});
-	}
-	
-	@Test
-	void connectionHandlerSurvivesStopWhileRunning() throws Exception {
-		CountDownLatch started = new CountDownLatch(1);
-		CountDownLatch ended = new CountDownLatch(1);
-		
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.framing(false)
-			.onConnection((server, connection) -> {
-				started.countDown();
-				try {
-					connection.getInputStream().read();
-				} catch (IOException _) {
-				} finally {
-					ended.countDown();
-				}
-			})
-			.build();
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config)) {
-			server.start();
-			try (SSLSocket client = connect(server)) {
-				assertTrue(started.await(10, TimeUnit.SECONDS));
-				
-				server.stop();
-				
-				assertTrue(ended.await(10, TimeUnit.SECONDS));
-				assertFalse(server.isRunning());
-			}
-		}
-	}
-	
-	@Test
-	void connectionHandlerRunsAfterHandshake() throws Exception {
-		AtomicReference<String> cipherSuite = new AtomicReference<>();
-		CountDownLatch invoked = new CountDownLatch(1);
-		
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onConnection((server, connection) -> {
-				cipherSuite.set(connection.getSession().getCipherSuite());
-				invoked.countDown();
-			})
-			.build();
-		
-		withServer(config, server -> {
-			try (SSLSocket client = connect(server)) {
-				assertTrue(invoked.await(10, TimeUnit.SECONDS));
-			}
-		});
-		
-		assertNotNull(cipherSuite.get());
-		assertNotEquals("SSL_NULL_WITH_NULL_NULL", cipherSuite.get());
-	}
-	
-	@Test
-	void connectionHandlerNotInvokedOnHandshakeFailure() throws Exception {
-		AtomicBoolean invoked = new AtomicBoolean(false);
-		AtomicReference<NetworkErrorType> reported = new AtomicReference<>();
-		CountDownLatch errored = new CountDownLatch(1);
-		
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.clientAuth(SslClientAuth.REQUIRED)
-			.onConnection((server, connection) -> invoked.set(true))
-			.onError((connection, errorType, message, cause) -> {
-				reported.set(errorType);
-				errored.countDown();
-			})
-			.build();
-		
-		withServer(config, server -> {
-			SSLContext trustOnly = SslTestContext.trustOnlyClientContext();
-			try (SSLSocket client = (SSLSocket) trustOnly.getSocketFactory().createSocket("127.0.0.1", server.boundEndpoint().port())) {
-				client.startHandshake();
-				client.getInputStream().read();
-			} catch (IOException _) {}
-			
-			assertTrue(errored.await(10, TimeUnit.SECONDS));
-		});
-		
-		assertFalse(invoked.get());
-		assertEquals(NetworkErrorType.HANDSHAKE_FAILED, reported.get());
-	}
-	
-	@Test
-	void serveWithNullConnection() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			assertThrows(NullPointerException.class, () -> server.serve(null));
-		}
-	}
-	
-	@Test
-	void serveWithoutStartRunsReceiveLoop() throws Exception {
-		try (SslServer server = new SslServer(EPHEMERAL, echoConfig()); ServedClient served = serveClient(server)) {
-			served.socket().startHandshake();
-			
-			NetworkUtils.writeFrame(served.socket().getOutputStream(), "served".getBytes());
-			assertArrayEquals("served".getBytes(), NetworkUtils.readFrame(served.socket().getInputStream(), 1024));
-			assertFalse(server.isRunning());
-		}
-	}
-	
-	@Test
-	void serveOnStartedServer() throws Exception {
-		withServer(echoConfig(), server -> {
-			try (SSLSocket accepted = connect(server); ServedClient served = serveClient(server)) {
-				served.socket().startHandshake();
-				awaitClientCount(server, 2);
-				
-				NetworkUtils.writeFrame(served.socket().getOutputStream(), "served".getBytes());
-				assertArrayEquals("served".getBytes(), NetworkUtils.readFrame(served.socket().getInputStream(), 1024));
-				assertTrue(accepted.isConnected());
-			}
-		});
-	}
-	
-	@Test
-	void serveWithConnectionHandler() throws Exception {
-		AtomicReference<SslServer> serverRef = new AtomicReference<>();
-		AtomicReference<SslConnection> connectionRef = new AtomicReference<>();
-		SslServerConfig config = SslServerConfig.builder(serverContext).onConnection((server, connection) -> {
-			serverRef.set(server);
-			connectionRef.set(connection);
+	void failedHandshakeIsReportedAndHandlerNotCalled() throws Exception {
+		CompletableFuture<Throwable> error = new CompletableFuture<>();
+		CompletableFuture<Optional<NetworkClient<?>>> errorClient = new CompletableFuture<>();
+		AtomicInteger handled = new AtomicInteger();
+		SslServerConfig config = serverBuilder().onError((client, throwable) -> {
+			errorClient.complete(Optional.ofNullable(client));
+			error.complete(throwable);
 		}).build();
 		
-		try (SslServer server = new SslServer(EPHEMERAL, config); ServedClient served = serveClient(server)) {
-			served.socket().startHandshake();
-			served.serving().join(5000);
-			
-			assertFalse(served.serving().isAlive());
-			assertSame(server, serverRef.get());
-			assertSame(served.connection(), connectionRef.get());
-			assertFalse(served.connection().isActive());
-		}
-	}
-	
-	@Test
-	void serveFiresConnectAndDisconnectHandlers() throws Exception {
-		List<Object> connects = new CopyOnWriteArrayList<>();
-		List<Object> disconnects = new CopyOnWriteArrayList<>();
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onClientConnect((connection, local, remote, timestamp) -> connects.add(connection))
-			.onClientDisconnect((connection, local, remote, timestamp) -> disconnects.add(connection))
-			.build();
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config); ServedClient served = serveClient(server)) {
-			served.socket().startHandshake();
-			served.socket().close();
-			served.serving().join(5000);
-			
-			assertEquals(List.of(served.connection()), connects);
-			assertEquals(List.of(served.connection()), disconnects);
-		}
-	}
-	
-	@Test
-	void serveHandshakeFailureReportedToErrorHandler() throws Exception {
-		AtomicInteger connects = new AtomicInteger();
-		CountDownLatch errored = new CountDownLatch(1);
-		SslServerConfig config = SslServerConfig.builder(serverContext)
-			.onClientConnect((connection, local, remote, timestamp) -> connects.incrementAndGet())
-			.onError((connection, errorType, message, cause) -> errored.countDown())
-			.build();
-		
-		try (SslServer server = new SslServer(EPHEMERAL, config); ServerSocket listener = new ServerSocket(0, 50, InetAddress.getLoopbackAddress());
-			 Socket plain = new Socket("127.0.0.1", listener.getLocalPort()); Socket accepted = listener.accept()) {
-			SslConnection connection = SslConnection.upgrade(accepted, new byte[0], config);
-			Thread serving = Thread.ofVirtual().start(() -> server.serve(connection));
-			
-			plain.getOutputStream().write("NOT-TLS\n".getBytes());
+		try (SslServer server = SslServer.startOn(EPHEMERAL, config, (s, connection) -> handled.incrementAndGet());
+			 Socket plain = new Socket("127.0.0.1", server.boundEndpoint().port())) {
+			plain.getOutputStream().write(bytes("GARBAGE PLAINTEXT THAT IS NOT A CLIENT HELLO\r\n"));
 			plain.getOutputStream().flush();
-			serving.join(5000);
 			
-			assertFalse(serving.isAlive());
-			assertTrue(errored.await(5, TimeUnit.SECONDS));
-			assertEquals(0, connects.get());
+			NetworkConnectionException exception = assertInstanceOf(NetworkConnectionException.class, error.get(5, TimeUnit.SECONDS));
+			assertEquals(NetworkErrorType.HANDSHAKE_FAILED, exception.errorType());
+			assertTrue(errorClient.get(5, TimeUnit.SECONDS).isEmpty());
+			assertEquals(0, handled.get());
 		}
 	}
 	
 	@Test
-	void serveRegistersConnectionWhileServed() throws Exception {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig()); ServedClient served = serveClient(server)) {
-			served.socket().startHandshake();
+	void requiredClientAuthRejectsClientWithoutCertificate() throws Exception {
+		CompletableFuture<Throwable> error = new CompletableFuture<>();
+		AtomicInteger handled = new AtomicInteger();
+		SslServerConfig config = serverBuilder().clientAuth(SslClientAuth.REQUIRED).onError((client, throwable) -> error.complete(throwable)).build();
+		SslClientConfig trustOnly = SslClientConfig.builder().sslContext(SslTestContext.trustOnlyClientContext()).build();
+		
+		try (SslServer server = SslServer.startOn(EPHEMERAL, config, (s, connection) -> handled.incrementAndGet())) {
+			boolean clientFailed;
+			try (SslConnection connection = SslConnection.connectTo(server.boundEndpoint(), trustOnly)) {
+				clientFailed = connection.receive().isEmpty();
+			} catch (NetworkConnectionException e) {
+				clientFailed = true;
+			}
 			
-			awaitClientCount(server, 1);
+			assertTrue(clientFailed);
+			NetworkConnectionException exception = assertInstanceOf(NetworkConnectionException.class, error.get(5, TimeUnit.SECONDS));
+			assertEquals(NetworkErrorType.HANDSHAKE_FAILED, exception.errorType());
+			assertEquals(0, handled.get());
 		}
 	}
 	
 	@Test
-	void serveRemovesConnectionAfterReturn() throws Exception {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig()); ServedClient served = serveClient(server)) {
-			served.socket().startHandshake();
-			awaitClientCount(server, 1);
+	void startOnReturnsRunningServer() throws Exception {
+		try (SslServer server = SslServer.startOn(EPHEMERAL, serverConfig, NO_OP)) {
+			assertTrue(server.isRunning());
+			assertTrue(server.boundEndpoint().port() > 0);
+		}
+	}
+	
+	@Test
+	void handlerReceivesThisServer() throws Exception {
+		CompletableFuture<SslServer> received = new CompletableFuture<>();
+		
+		try (SslServer server = SslServer.startOn(EPHEMERAL, serverConfig, (s, connection) -> received.complete(s)); SslConnection _ = connect(server)) {
+			assertSame(server, received.get(5, TimeUnit.SECONDS));
+		}
+	}
+	
+	@Test
+	void handlerReceivesCompletedHandshake() throws Exception {
+		CompletableFuture<Boolean> valid = new CompletableFuture<>();
+		
+		try (SslServer server = SslServer.startOn(EPHEMERAL, serverConfig, (s, connection) -> valid.complete(connection.getSession().isValid())); SslConnection _ = connect(server)) {
+			assertTrue(valid.get(5, TimeUnit.SECONDS));
+		}
+	}
+	
+	@Test
+	void requestedClientAuthAcceptsClientWithoutCertificate() throws Exception {
+		SslServerConfig config = serverBuilder().clientAuth(SslClientAuth.REQUESTED).build();
+		SslClientConfig trustOnly = SslClientConfig.builder().sslContext(SslTestContext.trustOnlyClientContext()).build();
+		CompletableFuture<Throwable> peerCertificates = new CompletableFuture<>();
+		ConnectionHandler<SslServer, SslConnection> handler = (s, connection) -> {
+			try {
+				connection.getSession().getPeerCertificates();
+				peerCertificates.complete(null);
+			} catch (SSLPeerUnverifiedException e) {
+				peerCertificates.complete(e);
+			}
+		};
+		
+		try (SslServer server = SslServer.startOn(EPHEMERAL, config, handler); SslConnection _ = SslConnection.connectTo(server.boundEndpoint(), trustOnly)) {
+			assertInstanceOf(SSLPeerUnverifiedException.class, peerCertificates.get(5, TimeUnit.SECONDS));
+		}
+	}
+	
+	@Test
+	void requiredClientAuthWithCertificate() throws Exception {
+		SslServerConfig config = serverBuilder().clientAuth(SslClientAuth.REQUIRED).build();
+		CompletableFuture<Integer> certificates = new CompletableFuture<>();
+		
+		try (SslServer server = SslServer.startOn(EPHEMERAL, config, (s, connection) -> certificates.complete(connection.getSession().getPeerCertificates().length));
+			 SslConnection _ = connect(server)) {
+			assertTrue(certificates.get(5, TimeUnit.SECONDS) > 0);
+		}
+	}
+	
+	@Test
+	void openAppliesTransportSettings() throws Exception {
+		SslServerConfig config = serverBuilder().framing(Framing.lines()).maxMessageSize(64).clientReadTimeout(Duration.ofSeconds(2)).build();
+		CompletableFuture<SslConnection> received = new CompletableFuture<>();
+		
+		try (SslServer server = SslServer.startOn(EPHEMERAL, config, (s, connection) -> received.complete(connection)); SslConnection _ = connect(server)) {
+			SslConnection connection = received.get(5, TimeUnit.SECONDS);
 			
-			served.socket().close();
-			served.serving().join(5000);
-			assertEquals(0, server.getClientCount());
+			assertEquals(Framing.lines(), connection.framing());
+			assertEquals(64, connection.maxMessageSize());
+			assertEquals(Optional.of(Duration.ofSeconds(2)), connection.readTimeout());
 		}
 	}
 	
 	@Test
-	void serveReturnsWhenConnectionEnds() throws Exception {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig()); ServedClient served = serveClient(server)) {
-			served.socket().startHandshake();
-			assertTrue(served.serving().isAlive());
+	void openAppliesEnabledProtocols() throws Exception {
+		SslServerConfig config = serverBuilder().enabledProtocols(List.of(TlsProtocol.TLS_V1_2)).build();
+		
+		try (SslServer server = SslServer.startOn(EPHEMERAL, config, BLOCKING); SslConnection connection = connect(server)) {
+			assertEquals("TLSv1.2", connection.getSession().getProtocol());
+		}
+	}
+	
+	@Test
+	void echoOverTls() throws Exception {
+		ConnectionHandler<SslServer, SslConnection> echo = ConnectionHandler.perMessage((s, connection, data) -> connection.send(data));
+		
+		try (SslServer server = SslServer.startOn(EPHEMERAL, serverConfig, echo); SslConnection connection = connect(server)) {
+			connection.send(bytes("echo"));
 			
-			served.socket().close();
-			served.serving().join(5000);
-			assertFalse(served.serving().isAlive());
+			assertEquals("echo", string(connection.receive().orElseThrow()));
 		}
 	}
 	
 	@Test
-	void stopBeforeStartClosesServedConnections() throws Exception {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig()); ServedClient served = serveClient(server)) {
-			served.socket().startHandshake();
-			awaitClientCount(server, 1);
-			
-			server.stop();
-			assertClosedByServer(served.socket());
-			assertEquals(0, server.getClientCount());
-			assertFalse(server.isRunning());
-		}
-	}
-	
-	@Test
-	void stopBeforeStartWithoutConnectionsIsNoOp() {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig())) {
-			assertDoesNotThrow(server::stop);
-			assertEquals(0, server.getClientCount());
-			assertFalse(server.isRunning());
-		}
-	}
-	
-	@Test
-	void stopAfterStartClosesServedAndAcceptedConnections() throws Exception {
-		withServer(defaultConfig(), server -> {
-			try (SSLSocket accepted = connect(server); ServedClient served = serveClient(server)) {
-				served.socket().startHandshake();
-				awaitClientCount(server, 2);
+	void slowHandshakeDoesNotBlockOtherClients() throws Exception {
+		ConnectionHandler<SslServer, SslConnection> echo = ConnectionHandler.perMessage((s, connection, data) -> connection.send(data));
+		
+		try (SslServer server = SslServer.startOn(EPHEMERAL, serverConfig, echo); Socket silent = new Socket("127.0.0.1", server.boundEndpoint().port())) {
+			try (SslConnection connection = connect(server)) {
+				connection.send(bytes("served"));
 				
-				server.stop();
-				assertClosedByServer(accepted);
-				assertClosedByServer(served.socket());
-				assertFalse(server.isRunning());
-			}
-		});
-	}
-	
-	@Test
-	void broadcastReachesServedConnection() throws Exception {
-		try (SslServer server = new SslServer(EPHEMERAL, defaultConfig()); ServedClient served = serveClient(server)) {
-			served.socket().startHandshake();
-			awaitClientCount(server, 1);
-			
-			server.broadcast("broadcast".getBytes());
-			assertArrayEquals("broadcast".getBytes(), NetworkUtils.readFrame(served.socket().getInputStream(), 1024));
-		}
-	}
-	
-	@Test
-	void serveMultipleConnectionsConcurrently() throws Exception {
-		try (SslServer server = new SslServer(EPHEMERAL, echoConfig());
-			 ServedClient first = serveClient(server); ServedClient second = serveClient(server); ServedClient third = serveClient(server)) {
-			List<ServedClient> clients = List.of(first, second, third);
-			for (ServedClient served : clients) {
-				served.socket().startHandshake();
-			}
-			awaitClientCount(server, 3);
-			
-			for (int i = 0; i < clients.size(); i++) {
-				byte[] data = ("client-" + i).getBytes();
-				NetworkUtils.writeFrame(clients.get(i).socket().getOutputStream(), data);
-				assertArrayEquals(data, NetworkUtils.readFrame(clients.get(i).socket().getInputStream(), 1024));
+				assertEquals("served", string(connection.receive().orElseThrow()));
+				assertFalse(silent.isClosed());
 			}
 		}
 	}
 	
 	@Test
-	void serveAfterStopStillWorks() throws Exception {
-		try (SslServer server = new SslServer(EPHEMERAL, echoConfig())) {
-			server.start();
-			server.stop();
+	void broadcastToTlsConnections() throws Exception {
+		try (SslServer server = SslServer.startOn(EPHEMERAL, serverConfig, BLOCKING);
+			 SslConnection first = connect(server); SslConnection second = connect(server); SslConnection third = connect(server)) {
+			assertTrue(awaitConnections(server, 3));
 			
-			try (ServedClient served = serveClient(server)) {
-				served.socket().startHandshake();
-				NetworkUtils.writeFrame(served.socket().getOutputStream(), "after".getBytes());
-				assertArrayEquals("after".getBytes(), NetworkUtils.readFrame(served.socket().getInputStream(), 1024));
-			}
-		}
-	}
-	
-	@FunctionalInterface
-	private interface ServerBody {
-		
-		void accept(SslServer server) throws Exception;
-	}
-	
-	private record ServedClient(@NonNull SSLSocket socket, @NonNull SslConnection connection, @NonNull Thread serving) implements AutoCloseable {
-		
-		@Override
-		public void close() throws IOException {
-			this.socket.close();
+			server.broadcast(bytes("broadcast"));
+			
+			assertEquals("broadcast", string(first.receive().orElseThrow()));
+			assertEquals("broadcast", string(second.receive().orElseThrow()));
+			assertEquals("broadcast", string(third.receive().orElseThrow()));
 		}
 	}
 }

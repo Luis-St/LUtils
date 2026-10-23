@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.network.icmp;
 
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -32,8 +31,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class IcmpSocketConfigBuilderTest {
 	
-	private static final ErrorEventHandler HANDLER = (connection, type, message, cause) -> {};
-	
 	@Test
 	void constructWithDefaults() {
 		IcmpSocketConfig config = IcmpSocketConfig.builder().build();
@@ -41,7 +38,6 @@ class IcmpSocketConfigBuilderTest {
 		assertEquals(Duration.ZERO, config.receiveTimeout());
 		assertEquals(65535, config.bufferSize());
 		assertEquals(0, config.timeToLive());
-		assertNull(config.onError());
 		assertEquals(IcmpSocketConfig.DEFAULT, config);
 	}
 	
@@ -72,12 +68,6 @@ class IcmpSocketConfigBuilderTest {
 	void buildWithTimeToLiveOutOfRange() {
 		assertThrows(IllegalArgumentException.class, () -> IcmpSocketConfig.builder().timeToLive(-1).build());
 		assertThrows(IllegalArgumentException.class, () -> IcmpSocketConfig.builder().timeToLive(256).build());
-	}
-	
-	@Test
-	void onErrorWithNullDisablesHandler() {
-		IcmpSocketConfig config = IcmpSocketConfig.builder().onError(HANDLER).onError(null).build();
-		assertNull(config.onError());
 	}
 	
 	@Test
@@ -115,21 +105,13 @@ class IcmpSocketConfigBuilderTest {
 	}
 	
 	@Test
-	void onErrorSetsValue() {
-		IcmpSocketConfigBuilder builder = IcmpSocketConfig.builder();
-		assertSame(builder, builder.onError(HANDLER));
-		assertSame(HANDLER, builder.build().onError());
-	}
-	
-	@Test
 	void methodChainingConsistency() {
 		IcmpSocketConfigBuilder builder = IcmpSocketConfig.builder();
 		assertSame(builder, builder.socketType(IcmpSocketType.RAW));
 		assertSame(builder, builder.receiveTimeout(Duration.ofSeconds(2)));
 		assertSame(builder, builder.bufferSize(2048));
 		assertSame(builder, builder.timeToLive(32));
-		assertSame(builder, builder.onError(HANDLER));
-		assertEquals(new IcmpSocketConfig(IcmpSocketType.RAW, Duration.ofSeconds(2), 2048, 32, HANDLER), builder.build());
+		assertEquals(new IcmpSocketConfig(IcmpSocketType.RAW, Duration.ofSeconds(2), 2048, 32), builder.build());
 	}
 	
 	@Test

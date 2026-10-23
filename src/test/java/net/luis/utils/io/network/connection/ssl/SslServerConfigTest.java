@@ -18,15 +18,11 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
-import net.luis.utils.io.network.connection.event.ConnectionHandler;
-import net.luis.utils.io.network.connection.event.MessageEventHandler;
-import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
-import net.luis.utils.io.network.connection.executor.VirtualThreadStrategy;
+import net.luis.utils.io.network.connection.tcp.TcpServerConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLContext;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,273 +35,116 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class SslServerConfigTest {
 	
-	private static final ClientExecutorStrategy STRATEGY = ClientExecutorStrategy.virtualThreads();
-	
 	private static SSLContext context;
 	
 	@BeforeAll
 	static void setUp() throws Exception {
-		context = SSLContext.getDefault();
-	}
-	
-	private static SslServerConfig withHandlers(MessageEventHandler<SslServer, SslConnection> onMessage, ConnectionHandler<SslServer, SslConnection> onConnection) {
-		return new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, STRATEGY, null, null, onMessage, onConnection, null);
+		context = SslTestContext.serverContext();
 	}
 	
 	@Test
-	void constructWithNullClientReadTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, null, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null));
-	}
-	
-	@Test
-	void constructWithNullSslContextThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, null, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null));
-	}
-	
-	@Test
-	void constructWithNullEnabledProtocolsThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, null, List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null));
-	}
-	
-	@Test
-	void constructWithNullEnabledCipherSuitesThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, List.of(), null, SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null));
-	}
-	
-	@Test
-	void constructWithNullClientAuthThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, List.of(), List.of(), null, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null));
-	}
-	
-	@Test
-	void constructWithNullExecutorStrategyThrows() {
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, null, null, null, null, null, null));
-	}
-	
-	@Test
-	void constructWithInvalidBacklogThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(0, 8192, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null));
-		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(-1, 8192, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null));
-	}
-	
-	@Test
-	void constructWithInvalidClientBufferSizeThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(50, 0, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null));
-		assertThrows(IllegalArgumentException.class, () -> new SslServerConfig(50, -1, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null));
-	}
-	
-	@Test
-	void constructWithNullProtocolElementThrows() {
-		List<TlsProtocol> protocols = new ArrayList<>();
-		protocols.add(null);
+	void constructWithAllValues() {
+		TcpServerConfig transport = TcpServerConfig.builder().backlog(5).build();
+		SslServerConfig config = new SslServerConfig(transport, context, List.of(TlsProtocol.TLS_V1_3), List.of("TLS_AES_256_GCM_SHA384"), SslClientAuth.REQUIRED);
 		
-		assertThrows(NullPointerException.class, () -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, protocols, List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null));
-	}
-	
-	@Test
-	void constructCopiesProtocolsDefensively() {
-		List<TlsProtocol> protocols = new ArrayList<>(List.of(TlsProtocol.TLS_V1_3));
-		SslServerConfig config = new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, protocols, List.of(), SslClientAuth.NONE, ClientExecutorStrategy.virtualThreads(), null, null, null, null, null);
-		
-		protocols.add(TlsProtocol.TLS_V1_2);
-		assertEquals(1, config.enabledProtocols().size());
-		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add(TlsProtocol.TLS_V1_2));
-	}
-	
-	@Test
-	void builderDefaultValues() {
-		SslServerConfig config = SslServerConfig.builder(context).build();
-		
-		assertEquals(50, config.backlog());
-		assertEquals(8192, config.clientBufferSize());
-		assertEquals(Duration.ZERO, config.clientReadTimeout());
-		assertTrue(config.tcpNoDelay());
-		assertTrue(config.keepAlive());
+		assertSame(transport, config.transport());
 		assertSame(context, config.sslContext());
-		assertTrue(config.enabledProtocols().isEmpty());
-		assertTrue(config.enabledCipherSuites().isEmpty());
-		assertEquals(SslClientAuth.NONE, config.clientAuth());
-		assertInstanceOf(VirtualThreadStrategy.class, config.executorStrategy());
-		assertNull(config.onClientConnect());
-		assertNull(config.onClientDisconnect());
-		assertNull(config.onMessage());
-		assertNull(config.onConnection());
-		assertNull(config.onError());
-	}
-	
-	@Test
-	void builderWithNullSslContextThrows() {
-		assertThrows(NullPointerException.class, () -> SslServerConfig.builder(null));
-	}
-	
-	@Test
-	void builder() {
-		SslServerConfig config = SslServerConfig.builder(context)
-			.backlog(100)
-			.clientBufferSize(16384)
-			.clientReadTimeout(Duration.ofSeconds(60))
-			.tcpNoDelay(false)
-			.keepAlive(false)
-			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
-			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
-			.clientAuth(SslClientAuth.REQUIRED)
-			.executorStrategy(ClientExecutorStrategy.fixedPool(8))
-			.build();
-		
-		assertEquals(100, config.backlog());
-		assertEquals(16384, config.clientBufferSize());
-		assertEquals(Duration.ofSeconds(60), config.clientReadTimeout());
-		assertFalse(config.tcpNoDelay());
-		assertFalse(config.keepAlive());
 		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
 		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
 		assertEquals(SslClientAuth.REQUIRED, config.clientAuth());
 	}
 	
 	@Test
-	void builderWithHandlers() {
-		SslServerConfig config = SslServerConfig.builder(context)
-			.onClientConnect((connection, local, remote, timestamp) -> {})
-			.onClientDisconnect((connection, local, remote, timestamp) -> {})
-			.onMessage((server, conn, data) -> {})
-			.onError((connection, type, msg, cause) -> {})
-			.build();
-		
-		assertNotNull(config.onClientConnect());
-		assertNotNull(config.onClientDisconnect());
-		assertNotNull(config.onMessage());
-		assertNotNull(config.onError());
+	void constructWithNullTransport() {
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(null, context, List.of(), List.of(), SslClientAuth.NONE));
 	}
 	
 	@Test
-	void framingIsEnabledByDefault() {
-		assertTrue(SslServerConfig.builder(context).build().framing());
+	void constructWithNullSslContext() {
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(TcpServerConfig.DEFAULT, null, List.of(), List.of(), SslClientAuth.NONE));
 	}
 	
 	@Test
-	void framingCanBeDisabled() {
-		assertFalse(SslServerConfig.builder(context).framing(false).build().framing());
-		assertTrue(SslServerConfig.builder(context).framing(false).framing(true).build().framing());
+	void constructWithNullEnabledProtocols() {
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(TcpServerConfig.DEFAULT, context, null, List.of(), SslClientAuth.NONE));
 	}
 	
 	@Test
-	void constructWithConnectionHandler() {
-		ConnectionHandler<SslServer, SslConnection> handler = (server, connection) -> {};
-		
-		SslServerConfig config = withHandlers(null, handler);
-		
-		assertSame(handler, config.onConnection());
-		assertNull(config.onMessage());
-		assertEquals(50, config.backlog());
-		assertSame(context, config.sslContext());
+	void constructWithNullEnabledCipherSuites() {
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(TcpServerConfig.DEFAULT, context, List.of(), null, SslClientAuth.NONE));
 	}
 	
 	@Test
-	void constructWithNullConnectionHandler() {
-		SslServerConfig config = assertDoesNotThrow(() -> withHandlers(null, null));
-		
-		assertNull(config.onConnection());
+	void constructWithNullClientAuth() {
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(TcpServerConfig.DEFAULT, context, List.of(), List.of(), null));
 	}
 	
 	@Test
-	void constructWithBothMessageAndConnectionHandler() {
-		MessageEventHandler<SslServer, SslConnection> onMessage = (server, connection, data) -> {};
-		ConnectionHandler<SslServer, SslConnection> onConnection = (server, connection) -> {};
-		
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> withHandlers(onMessage, onConnection));
-		assertTrue(exception.getMessage().contains("must not be set at the same time"));
-	}
-	
-	@Test
-	void constructWithOnlyMessageHandler() {
-		MessageEventHandler<SslServer, SslConnection> onMessage = (server, connection, data) -> {};
-		
-		SslServerConfig config = assertDoesNotThrow(() -> withHandlers(onMessage, null));
-		
-		assertSame(onMessage, config.onMessage());
-		assertNull(config.onConnection());
-	}
-	
-	@Test
-	void constructWithOnlyConnectionHandler() {
-		ConnectionHandler<SslServer, SslConnection> onConnection = (server, connection) -> {};
-		
-		SslServerConfig config = assertDoesNotThrow(() -> withHandlers(null, onConnection));
-		
-		assertSame(onConnection, config.onConnection());
-		assertNull(config.onMessage());
-	}
-	
-	@Test
-	void constructWithNeitherHandler() {
-		SslServerConfig config = assertDoesNotThrow(() -> withHandlers(null, null));
-		
-		assertNull(config.onMessage());
-		assertNull(config.onConnection());
-	}
-	
-	@Test
-	void constructValidatesSizeBeforeHandlerConflict() {
-		MessageEventHandler<SslServer, SslConnection> onMessage = (server, connection, data) -> {};
-		ConnectionHandler<SslServer, SslConnection> onConnection = (server, connection) -> {};
-		
-		IllegalArgumentException exception = assertThrows(
-			IllegalArgumentException.class,
-			() -> new SslServerConfig(50, 0, true, Duration.ZERO, true, true, context, List.of(), List.of(), SslClientAuth.NONE, STRATEGY, null, null, onMessage, onConnection, null)
-		);
-		assertTrue(exception.getMessage().contains("Client buffer size"));
-		assertFalse(exception.getMessage().contains("must not be set at the same time"));
-	}
-	
-	@Test
-	void constructRejectsHandlerConflictBeforeCopyingProtocols() {
-		MessageEventHandler<SslServer, SslConnection> onMessage = (server, connection, data) -> {};
-		ConnectionHandler<SslServer, SslConnection> onConnection = (server, connection) -> {};
+	void constructWithNullProtocolElement() {
 		List<TlsProtocol> protocols = new ArrayList<>();
 		protocols.add(null);
 		
-		IllegalArgumentException exception = assertThrows(
-			IllegalArgumentException.class,
-			() -> new SslServerConfig(50, 8192, true, Duration.ZERO, true, true, context, protocols, List.of(), SslClientAuth.NONE, STRATEGY, null, null, onMessage, onConnection, null)
-		);
-		assertTrue(exception.getMessage().contains("must not be set at the same time"));
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(TcpServerConfig.DEFAULT, context, protocols, List.of(), SslClientAuth.NONE));
 	}
 	
 	@Test
-	void connectionHandlerIsReturnedUnchanged() {
-		ConnectionHandler<SslServer, SslConnection> handler = (server, connection) -> {};
+	void constructWithNullCipherSuiteElement() {
+		List<String> cipherSuites = new ArrayList<>();
+		cipherSuites.add(null);
 		
-		assertSame(handler, withHandlers(null, handler).onConnection());
+		assertThrows(NullPointerException.class, () -> new SslServerConfig(TcpServerConfig.DEFAULT, context, List.of(), cipherSuites, SslClientAuth.NONE));
 	}
 	
 	@Test
-	void equalityIncludesConnectionHandler() {
-		ConnectionHandler<SslServer, SslConnection> first = (server, connection) -> {};
-		ConnectionHandler<SslServer, SslConnection> second = (server, connection) -> {};
+	void constructCopiesProtocolsDefensively() {
+		List<TlsProtocol> protocols = new ArrayList<>(List.of(TlsProtocol.TLS_V1_3));
+		SslServerConfig config = new SslServerConfig(TcpServerConfig.DEFAULT, context, protocols, List.of(), SslClientAuth.NONE);
 		
-		SslServerConfig config = withHandlers(null, first);
+		protocols.add(TlsProtocol.TLS_V1_2);
 		
-		assertNotEquals(config, withHandlers(null, second));
-		assertEquals(config, config);
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
+		assertThrows(UnsupportedOperationException.class, () -> config.enabledProtocols().add(TlsProtocol.TLS_V1_1));
 	}
 	
 	@Test
-	void equalityWithSameConnectionHandler() {
-		ConnectionHandler<SslServer, SslConnection> handler = (server, connection) -> {};
+	void constructCopiesCipherSuitesDefensively() {
+		List<String> cipherSuites = new ArrayList<>(List.of("TLS_AES_256_GCM_SHA384"));
+		SslServerConfig config = new SslServerConfig(TcpServerConfig.DEFAULT, context, List.of(), cipherSuites, SslClientAuth.NONE);
 		
-		SslServerConfig first = withHandlers(null, handler);
-		SslServerConfig second = withHandlers(null, handler);
+		cipherSuites.add("TLS_AES_128_GCM_SHA256");
+		
+		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
+		assertThrows(UnsupportedOperationException.class, () -> config.enabledCipherSuites().add("TLS_AES_128_GCM_SHA256"));
+	}
+	
+	@Test
+	void constructWithEmptyLists() {
+		SslServerConfig config = new SslServerConfig(TcpServerConfig.DEFAULT, context, List.of(), List.of(), SslClientAuth.NONE);
+		
+		assertTrue(config.enabledProtocols().isEmpty());
+		assertTrue(config.enabledCipherSuites().isEmpty());
+	}
+	
+	@Test
+	void builderWithNullSslContext() {
+		assertThrows(NullPointerException.class, () -> SslServerConfig.builder(null));
+	}
+	
+	@Test
+	void builderReturnsNewInstanceEachCall() {
+		assertNotSame(SslServerConfig.builder(context), SslServerConfig.builder(context));
+	}
+	
+	@Test
+	void equalityAndHashCode() {
+		SslServerConfig first = new SslServerConfig(TcpServerConfig.DEFAULT, context, List.of(TlsProtocol.TLS_V1_3), List.of(), SslClientAuth.NONE);
+		SslServerConfig second = new SslServerConfig(TcpServerConfig.DEFAULT, context, List.of(TlsProtocol.TLS_V1_3), List.of(), SslClientAuth.NONE);
+		SslServerConfig otherClientAuth = new SslServerConfig(TcpServerConfig.DEFAULT, context, List.of(TlsProtocol.TLS_V1_3), List.of(), SslClientAuth.REQUESTED);
+		SslServerConfig otherTransport = new SslServerConfig(TcpServerConfig.builder().backlog(3).build(), context, List.of(TlsProtocol.TLS_V1_3), List.of(), SslClientAuth.NONE);
 		
 		assertEquals(first, second);
-		assertEquals(second, first);
 		assertEquals(first.hashCode(), second.hashCode());
+		assertNotEquals(first, otherClientAuth);
+		assertNotEquals(first, otherTransport);
 	}
-	
-	@Test
-	void toStringContainsConnectionHandler() {
-		ConnectionHandler<SslServer, SslConnection> handler = (server, connection) -> {};
-		
-		assertTrue(withHandlers(null, handler).toString().contains("onConnection"));
-	}
-	
 }

@@ -49,8 +49,8 @@ import java.util.Optional;
  * // Resolve explicitly, for example to inspect the address
  * Optional<IpEndpoint> resolved = endpoint.resolve();
  *
- * // Or hand it to a client, which resolves it while connecting
- * SslClient client = SslClient.connectTo(endpoint);
+ * // Or hand it to a connection, which resolves it while connecting
+ * SslConnection connection = SslConnection.connectTo(endpoint);
  * }</pre>
  *
  * @see Endpoint

@@ -21,7 +21,6 @@ package net.luis.utils.io.network.icmp;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.IpAddress;
 import net.luis.utils.io.network.address.ipv6.Ipv6Address;
-import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.*;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -434,7 +433,7 @@ public final class IcmpSocket implements AutoCloseable {
 						return null;
 					}
 					
-					wait = (int) Math.clamp(Duration.ofNanos(remaining).toMillis(), 1, POLL_SLICE_MILLIS);
+					wait = Math.clamp(Duration.ofNanos(remaining).toMillis(), 1, POLL_SLICE_MILLIS);
 				}
 				
 				try (Arena call = Arena.ofConfined()) {
@@ -632,7 +631,7 @@ public final class IcmpSocket implements AutoCloseable {
 	}
 	
 	/**
-	 * Creates the exception for a failed native call and reports it to the error handler.<br>
+	 * Creates the exception for a failed native call.<br>
 	 *
 	 * @param message The message describing the failed operation
 	 * @param errno The error number of the call
@@ -645,7 +644,6 @@ public final class IcmpSocket implements AutoCloseable {
 		
 		NetworkErrorType errorType = this.platform.errorType(errno);
 		IOException cause = new IOException(IcmpNative.describe(errno));
-		NetworkUtils.handleError(this.config.onError(), errorType, message, cause);
 		return new NetworkConnectionException(message + ": " + cause.getMessage(), cause, errorType, address == null ? null : new IpEndpoint(address, 0));
 	}
 }

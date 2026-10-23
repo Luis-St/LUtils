@@ -18,9 +18,7 @@
 
 package net.luis.utils.io.network.icmp;
 
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -39,7 +37,6 @@ import java.util.Objects;
  *     .socketType(IcmpSocketType.DATAGRAM)
  *     .receiveTimeout(Duration.ofSeconds(1))
  *     .timeToLive(64)
- *     .onError((connection, type, msg, cause) -> System.err.println(msg))
  *     .build();
  * }</pre>
  *
@@ -65,10 +62,6 @@ public final class IcmpSocketConfigBuilder {
 	 * The time to live or hop limit of outgoing packets.<br>
 	 */
 	private int timeToLive;
-	/**
-	 * The handler called when an error occurs.<br>
-	 */
-	private @Nullable ErrorEventHandler onError;
 	
 	/**
 	 * Constructs a new builder with default values.<br>
@@ -124,21 +117,10 @@ public final class IcmpSocketConfigBuilder {
 	}
 	
 	/**
-	 * Sets the error event handler.<br>
-	 *
-	 * @param onError The error handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull IcmpSocketConfigBuilder onError(@Nullable ErrorEventHandler onError) {
-		this.onError = onError;
-		return this;
-	}
-	
-	/**
 	 * Builds a new ICMP socket configuration with the configured values.<br>
 	 * @return A new configuration instance
 	 */
 	public @NonNull IcmpSocketConfig build() {
-		return new IcmpSocketConfig(this.socketType, this.receiveTimeout, this.bufferSize, this.timeToLive, this.onError);
+		return new IcmpSocketConfig(this.socketType, this.receiveTimeout, this.bufferSize, this.timeToLive);
 	}
 }

@@ -33,27 +33,27 @@ import java.util.Objects;
  *     because a received datagram is always read from a socket and therefore always carries a literal address.<br>
  *     A record component has a single type for both directions, so widening it would give up that guarantee<br>
  *     on the receiving side, which is the side this type is mostly used on:<br>
- *     it is the message type of {@link UdpClient#receive()} and the context type of the server message handler.
+ *     it is the message type of {@link UdpPeer#receive()} and the datagram passed to a {@link DatagramHandler}.
  * </p>
  * <p>
- *     To send to a host named by a DNS hostname, use {@link UdpClient#send(Endpoint, byte[])} or {@link UdpServer#send(Endpoint, byte[])},<br>
- *     which accept any {@link Endpoint} and resolve it before sending.
+ *     To send to a host named by a DNS hostname, use {@link UdpPeer#send(Endpoint, byte[])},<br>
+ *     which accepts any {@link Endpoint} and resolves it before sending.
  * </p>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
  * // Receiving a datagram
- * UdpDatagram received = client.receive();
+ * UdpDatagram received = peer.receive().orElseThrow();
  * System.out.println("From: " + received.endpoint());
  * System.out.println("Data: " + new String(received.data()));
  *
  * // Creating a datagram to send
  * UdpDatagram toSend = new UdpDatagram(targetEndpoint, "Hello".getBytes());
- * client.send(toSend);
+ * peer.send(toSend);
  * }</pre>
  *
- * @see UdpClient
+ * @see UdpPeer
  * @see UdpServer
  *
  * @author Luis-St

@@ -18,223 +18,209 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import net.luis.utils.io.network.IpEndpoint;
+import net.luis.utils.io.network.Endpoint;
 import net.luis.utils.io.network.connection.*;
-import net.luis.utils.io.network.connection.context.ConnectionContext;
-import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
-import net.luis.utils.io.network.connection.exception.NetworkErrorType;
-import net.luis.utils.io.network.connection.ssl.SslConnection;
-import net.luis.utils.io.network.connection.ssl.SslServerConfig;
+import net.luis.utils.io.network.connection.exception.*;
+import net.luis.utils.io.network.connection.ssl.*;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.io.*;
-import java.net.InetSocketAddress;
+import javax.net.ssl.SSLSocket;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.Objects;
 
 /**
- * Represents an active TCP connection from a client to a server.<br>
- * This class wraps a client socket and provides convenient send/receive operations.<br>
+ * A plain TCP connection.<br>
  * <p>
- *     Instances of this class are created by {@link TcpServer} when clients connect and are passed to the message handler for processing.
+ *     A client opens a connection with {@link #connectTo(Endpoint)}, a {@link TcpServer} accepts connections and hands them to its handler.<br>
+ *     Both sides use the same type with the same operations.
  * </p>
  * <p>
- *     A connection can be switched to TLS on the server side through {@link #upgrade(SslServerConfig)}, which yields an {@link SslConnection} sharing the same socket.
+ *     A connection can be upgraded to TLS while it is open, which is how protocols such as {@code STARTTLS} switch to a secure channel.<br>
+ *     The client side calls {@link #upgrade(SslUpgradeConfig)}, the server side calls {@link #upgrade(SslServerConfig)}.<br>
+ *     Both return a new {@link SslConnection} that owns the socket from then on, while this connection becomes inactive.<br>
+ *     The upgraded connection keeps the framing, the maximum message size and the read timeout of this connection.
  * </p>
  * <p>
- *     Example usage in a message handler:
+ *     Example usage:
  * </p>
  * <pre>{@code
- * TcpServerConfig config = TcpServerConfig.builder().onMessage((server, connection, data) -> {
- *     System.out.println("From " + connection.remoteEndpoint() + ": " + new String(data));
- *     connection.send("Response".getBytes());
- * }).build();
+ * try (TcpConnection connection = TcpConnection.connectTo(endpoint)) {
+ *     connection.send("STARTTLS".getBytes());
+ *     if (isPositiveReply(connection.receive())) {
+ *         try (SslConnection secure = connection.upgrade()) {
+ *             secure.send("Hello".getBytes());
+ *         }
+ *     }
+ * }
  * }</pre>
  *
+ * @see TcpClientConfig
  * @see TcpServer
- * @see TcpServerConfig
+ * @see SslConnection
  *
  * @author Luis-St
  */
-public final class TcpConnection implements Connection {
+public final class TcpConnection extends Connection {
 	
 	/**
-	 * The underlying client socket.<br>
+	 * The endpoint that names the peer for server name indication and hostname verification of a client side upgrade.<br>
 	 */
-	private final Socket socket;
-	/**
-	 * The buffer size for read operations.<br>
-	 */
-	private final int bufferSize;
-	/**
-	 * The read timeout for blocking operations.<br>
-	 */
-	private final Duration readTimeout;
-	/**
-	 * Whether messages are framed with a length prefix on the wire.<br>
-	 */
-	private final boolean framing;
-	/**
-	 * The reusable scratch buffer for unframed read operations.<br>
-	 * Allocated lazily and grown on demand, and unused while framing is enabled.<br>
-	 * The context storing user data attached to this connection.<br>
-	 */
-	private final ConnectionContext context = new ConnectionContext();
-	/**
-	 * The streams of the socket, so that every caller gets the same instance.<br>
-	 */
-	private final SocketStreams streams;
-	/**
-	 * The reusable scratch buffer for read operations.<br>
-	 * Allocated lazily and grown on demand, so that repeated receives do not allocate a new buffer each time.<br>
-	 */
-	private byte @Nullable [] readBuffer;
-	/**
-	 * Whether this connection was upgraded to TLS, after which it no longer counts as a plain TCP client.<br>
-	 */
-	private volatile boolean upgraded;
+	private final Endpoint peer;
 	
 	/**
-	 * Constructs a new TCP connection wrapping the given socket.<br>
+	 * Constructs a new TCP connection over the given connected socket.<br>
+	 * The remote address of the socket names the peer of a client side upgrade.<br>
 	 *
-	 * @param socket The client socket
-	 * @param bufferSize The buffer size for read operations
-	 * @param framing Whether messages are framed with a length prefix on the wire
-	 * @param readTimeout The read timeout
-	 * @throws NullPointerException If socket or read timeout is null
+	 * @param socket The connected socket
+	 * @param framing The framing that delimits messages on the stream
+	 * @param maxMessageSize The maximum length of a message in bytes
+	 * @param readTimeout The read timeout, or null if a receive waits forever
+	 * @throws NullPointerException If the socket or the framing is null
+	 * @throws IllegalArgumentException If the socket is not connected, the max message size is less than 1 or the read timeout is not positive
+	 * @throws NetworkConnectionException If the read timeout cannot be applied to the socket
 	 */
-	TcpConnection(@NonNull Socket socket, int bufferSize, boolean framing, @NonNull Duration readTimeout) {
-		this.socket = Objects.requireNonNull(socket, "Socket must not be null");
-		this.streams = new SocketStreams(socket);
-		this.bufferSize = bufferSize;
-		this.framing = framing;
-		this.readTimeout = Objects.requireNonNull(readTimeout, "Read timeout must not be null");
+	public TcpConnection(@NonNull Socket socket, @NonNull Framing framing, int maxMessageSize, @Nullable Duration readTimeout) throws NetworkConnectionException {
+		this(socket, null, framing, maxMessageSize, readTimeout);
 	}
 	
 	/**
-	 * Ensures that this connection is still active before its streams are handed out.<br>
-	 * @throws NetworkConnectionException If the connection is closed
-	 */
-	private void ensureActive() throws NetworkConnectionException {
-		if (!this.isActive()) {
-			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED);
-		}
-	}
-	
-	@Override
-	public boolean isActive() {
-		return !this.socket.isClosed() && this.socket.isConnected();
-	}
-	
-	@Override
-	public @NonNull ConnectionContext context() {
-		return this.context;
-	}
-	
-	@Override
-	public @NonNull IpEndpoint remoteEndpoint() {
-		return IpEndpoint.from((InetSocketAddress) this.socket.getRemoteSocketAddress());
-	}
-	
-	@Override
-	public @NonNull IpEndpoint localEndpoint() {
-		return IpEndpoint.from((InetSocketAddress) this.socket.getLocalSocketAddress());
-	}
-	
-	@Override
-	public void send(byte @NonNull [] data) throws NetworkConnectionException {
-		Objects.requireNonNull(data, "Data must not be null");
-		NetworkUtils.validateMessageSize(data, this.bufferSize, this.remoteEndpoint());
-		if (!this.isActive()) {
-			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
-		}
-		
-		NetworkUtils.writeAll(this.socket, data, this.framing, null, this.remoteEndpoint(), null);
-	}
-	
-	@Override
-	public byte @NonNull [] receive() throws NetworkConnectionException {
-		return this.receive(this.bufferSize);
-	}
-	
-	@Override
-	public byte @NonNull [] receive(int maxBytes) throws NetworkConnectionException {
-		if (maxBytes < 1) {
-			throw new IllegalArgumentException("Max bytes must be at least 1: " + maxBytes);
-		}
-		if (!this.isActive()) {
-			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
-		}
-		
-		if (!this.framing) {
-			this.readBuffer = NetworkUtils.resizeBuffer(this.readBuffer, maxBytes);
-		}
-		return NetworkUtils.readMessage(this.streams.input(), this.readBuffer, maxBytes, this.framing, this.readTimeout, null, this.remoteEndpoint(), null);
-	}
-	
-	/**
-	 * Layers TLS over this connection in server mode and returns the secured connection.<br>
-	 * <p>
-	 *     Input that was already read ahead, such as a peeked first byte of the handshake, is passed on to the secured connection.<br>
-	 *     The TLS handshake is not started here, it is performed by the server that serves the secured connection or implicitly on its first read or write.
-	 * </p>
-	 * <p>
-	 *     Both connections share the underlying socket, so closing either of them closes it.<br>
-	 *     This connection must not be used to send or receive data afterward.<br>
-	 *     It is no longer counted or broadcast to by the {@link TcpServer} that accepted it.
-	 * </p>
+	 * Constructs a new TCP connection over the given connected socket.<br>
 	 *
-	 * @param config The configuration of the secured connection
+	 * @param socket The connected socket
+	 * @param peer The endpoint the socket was connected to, or null to use the remote address of the socket
+	 * @param framing The framing that delimits messages on the stream
+	 * @param maxMessageSize The maximum length of a message in bytes
+	 * @param readTimeout The read timeout, or null if a receive waits forever
+	 * @throws NullPointerException If the socket or the framing is null
+	 * @throws IllegalArgumentException If the socket is not connected, the max message size is less than 1 or the read timeout is not positive
+	 * @throws NetworkConnectionException If the read timeout cannot be applied to the socket
+	 */
+	private TcpConnection(@NonNull Socket socket, @Nullable Endpoint peer, @NonNull Framing framing, int maxMessageSize, @Nullable Duration readTimeout) throws NetworkConnectionException {
+		super(socket, framing, maxMessageSize, readTimeout);
+		this.peer = peer != null ? peer : this.remoteEndpoint().orElseThrow();
+	}
+	
+	/**
+	 * Opens a TCP connection to the given endpoint with the default configuration.<br>
+	 *
+	 * @param endpoint The endpoint to connect to
+	 * @return The open connection
+	 * @throws NullPointerException If the endpoint is null
+	 * @throws NetworkTimeoutException If connecting times out
+	 * @throws NetworkConnectionException If connecting fails
+	 */
+	public static @NonNull TcpConnection connectTo(@NonNull Endpoint endpoint) throws NetworkConnectionException {
+		return connectTo(endpoint, TcpClientConfig.DEFAULT);
+	}
+	
+	/**
+	 * Opens a TCP connection to the given endpoint with the given configuration.<br>
+	 *
+	 * @param endpoint The endpoint to connect to
+	 * @param config The configuration of the connection
+	 * @return The open connection
+	 * @throws NullPointerException If the endpoint or the configuration is null
+	 * @throws NetworkTimeoutException If connecting times out
+	 * @throws NetworkConnectionException If connecting fails
+	 */
+	public static @NonNull TcpConnection connectTo(@NonNull Endpoint endpoint, @NonNull TcpClientConfig config) throws NetworkConnectionException {
+		Socket socket = NetworkUtils.connectSocket(endpoint, config);
+		try {
+			return new TcpConnection(socket, endpoint, config.framing(), config.maxMessageSize(), config.readTimeout());
+		} catch (NetworkConnectionException e) {
+			NetworkUtils.closeQuietly(socket);
+			throw e;
+		}
+	}
+	
+	/**
+	 * Upgrades this connection to TLS as the client side, using the default upgrade configuration.<br>
+	 *
 	 * @return The secured connection
-	 * @throws NullPointerException If config is null
-	 * @throws NetworkConnectionException If the connection is closed or cannot be layered with TLS
-	 * @see SslConnection#upgrade(Socket, byte[], SslServerConfig)
+	 * @throws NetworkConnectionException If this connection is not active, unread input is pending or the TLS handshake fails
+	 * @see #upgrade(SslUpgradeConfig)
+	 */
+	public @NonNull SslConnection upgrade() throws NetworkConnectionException {
+		return this.upgrade(SslUpgradeConfig.DEFAULT);
+	}
+	
+	/**
+	 * Upgrades this connection to TLS as the client side.<br>
+	 * <p>
+	 *     TLS is layered over the socket of this connection and the handshake is performed before this method returns.<br>
+	 *     The endpoint this connection was opened with names the server for server name indication and hostname verification.<br>
+	 *     The upgrade is rejected while unread input is pending, because those bytes would be lost or misread as handshake data.
+	 * </p>
+	 * <p>
+	 *     On success the returned connection owns the socket and this connection becomes inactive.<br>
+	 *     If the TLS settings cannot be applied or the handshake fails, the socket is closed, because a partially performed handshake leaves the plain stream unusable.<br>
+	 *     If the upgrade is rejected before TLS is layered, for example because unread input is pending, this connection keeps the socket and the caller decides whether to close it.
+	 * </p>
+	 *
+	 * @param config The TLS settings of the upgrade
+	 * @return The secured connection
+	 * @throws NullPointerException If the configuration is null
+	 * @throws NetworkConnectionException If this connection is not active, unread input is pending or the TLS handshake fails
+	 */
+	public @NonNull SslConnection upgrade(@NonNull SslUpgradeConfig config) throws NetworkConnectionException {
+		Objects.requireNonNull(config, "Config must not be null");
+		
+		return this.handOver(() -> {
+			if (this.streams().hasPendingInput()) {
+				throw new NetworkConnectionException("Unread plaintext is pending, it would be lost or misread as handshake data", NetworkErrorType.PROTOCOL_ERROR, this.peer);
+			}
+			
+			SSLSocket sslSocket = SslSockets.layerClient(this.socket(), this.peer, config);
+			return new SslConnection(sslSocket, this.framing(), this.maxMessageSize(), this.readTimeout().orElse(null));
+		});
+	}
+	
+	/**
+	 * Upgrades this connection to TLS as the server side.<br>
+	 * <p>
+	 *     TLS is layered over the socket of this connection in server mode and the handshake is performed before this method returns.<br>
+	 *     Input that was already buffered by this connection is passed to the TLS layer, so a handshake that arrived early is not lost.<br>
+	 *     Only the TLS settings of the configuration are used, the transport settings of this connection are kept.
+	 * </p>
+	 * <p>
+	 *     On success the returned connection owns the socket and this connection becomes inactive.<br>
+	 *     If the TLS settings cannot be applied or the handshake fails, the socket is closed, because a partially performed handshake leaves the plain stream unusable.<br>
+	 *     If the upgrade fails before TLS is layered, this connection keeps the socket and the caller decides whether to close it.
+	 * </p>
+	 *
+	 * @param config The configuration that provides the TLS settings of the upgrade
+	 * @return The secured connection
+	 * @throws NullPointerException If the configuration is null
+	 * @throws NetworkConnectionException If this connection is not active or the TLS handshake fails
 	 */
 	public @NonNull SslConnection upgrade(@NonNull SslServerConfig config) throws NetworkConnectionException {
 		Objects.requireNonNull(config, "Config must not be null");
-		this.ensureActive();
 		
-		InputStream input = this.streams.input();
-		byte[] consumed;
-		try {
-			consumed = input.readNBytes(input.available());
-		} catch (IOException e) {
-			throw new NetworkConnectionException("Failed to read pending input", e, NetworkErrorType.IO_ERROR, this.remoteEndpoint());
-		}
-		
-		SslConnection secured = SslConnection.upgrade(this.socket, consumed, config);
-		this.upgraded = true;
-		return secured;
+		return this.handOver(() -> {
+			byte[] consumed;
+			try {
+				InputStream input = this.streams().input();
+				consumed = input.readNBytes(this.streams().hasPendingInput() ? input.available() : 0);
+			} catch (IOException e) {
+				throw NetworkUtils.mapIoFailure(e, "Failed to read pending input", this.peer);
+			}
+			
+			SSLSocket sslSocket = SslSockets.layerServer(this.socket(), consumed, config);
+			return new SslConnection(sslSocket, this.framing(), this.maxMessageSize(), this.readTimeout().orElse(null));
+		});
 	}
 	
 	/**
-	 * Returns whether this connection was upgraded to TLS through {@link #upgrade(SslServerConfig)}.<br>
-	 * @return True if this connection was upgraded, false otherwise
+	 * Returns whether this connection was upgraded to TLS.<br>
+	 * An upgraded connection is no longer active, the connection returned by the upgrade is used instead.<br>
+	 *
+	 * @return True if this connection was upgraded
 	 */
-	boolean isUpgraded() {
-		return this.upgraded;
-	}
-	
-	@Override
-	public @NonNull InputStream getInputStream() throws NetworkConnectionException {
-		this.ensureActive();
-		return this.streams.input();
-	}
-	
-	@Override
-	public @NonNull OutputStream getOutputStream() throws NetworkConnectionException {
-		this.ensureActive();
-		return this.streams.output();
-	}
-	
-	@Override
-	public void close() {
-		if (!this.socket.isClosed()) {
-			try {
-				this.socket.close();
-			} catch (IOException _) {}
-		}
+	public boolean isUpgraded() {
+		return this.isReleased();
 	}
 }

@@ -18,32 +18,20 @@
 
 package net.luis.utils.io.network.connection.udp;
 
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
-import net.luis.utils.io.network.connection.event.MessageEventHandler;
+import net.luis.utils.io.network.connection.ErrorHandler;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.Objects;
 
 /**
- * Builder class for constructing UDP server configuration.<br>
- * Provides a fluent API for setting individual configuration options.<br>
+ * Builder class for constructing a UDP server configuration.<br>
+ * Provides a fluent API for the peer and the receive loop options of a UDP server.<br>
  * <p>
- *     All options default to values matching {@link UdpServerConfig#DEFAULT}.
+ *     All options default to the values of {@link UdpServerConfig#DEFAULT}.
  * </p>
- * <p>
- *     Example usage:
- * </p>
- * <pre>{@code
- * UdpServerConfig config = UdpServerConfig.builder()
- *     .bufferSize(1024)
- *     .executorStrategy(ClientExecutorStrategy.fixedPool(10))
- *     .onMessage((server, datagram, data) -> {
- *         System.out.println("Received from " + datagram.endpoint());
- *     })
- *     .build();
- * }</pre>
  *
  * @see UdpServerConfig
  *
@@ -52,29 +40,17 @@ import java.util.Objects;
 public final class UdpServerConfigBuilder {
 	
 	/**
-	 * The size of the receive buffer in bytes.<br>
+	 * The builder of the peer settings.<br>
 	 */
-	private int bufferSize = 65535;
+	private final UdpPeerConfigBuilder peer = UdpPeerConfig.builder();
 	/**
-	 * Whether to allow receiving broadcast packets.<br>
+	 * The strategy that creates the executor the datagrams are handled on.<br>
 	 */
-	private boolean broadcast;
+	private ClientExecutorStrategy executorStrategy = UdpServerConfig.DEFAULT.executorStrategy();
 	/**
-	 * Whether to allow address reuse (SO_REUSEADDR).<br>
+	 * The handler for failures on the threads of the server.<br>
 	 */
-	private boolean reuseAddress;
-	/**
-	 * The executor strategy for handling concurrent datagram processing.<br>
-	 */
-	private ClientExecutorStrategy executorStrategy = ClientExecutorStrategy.virtualThreads();
-	/**
-	 * The handler called when a datagram is received.<br>
-	 */
-	private @Nullable MessageEventHandler<UdpServer, UdpDatagram> onMessage;
-	/**
-	 * The handler called when an error occurs.<br>
-	 */
-	private @Nullable ErrorEventHandler onError;
+	private @Nullable ErrorHandler onError = UdpServerConfig.DEFAULT.onError();
 	
 	/**
 	 * Constructs a new builder with default values.<br>
@@ -82,44 +58,66 @@ public final class UdpServerConfigBuilder {
 	UdpServerConfigBuilder() {}
 	
 	/**
-	 * Sets the size of the receive buffer in bytes.<br>
+	 * Sets the maximum time a receive of the server waits for a datagram.<br>
+	 * A timeout does not stop the server, the receive loop simply waits again.<br>
 	 *
-	 * @param bufferSize The buffer size (must be at least 1)
+	 * @param receiveTimeout The receive timeout, which must be positive
 	 * @return This builder for method chaining
+	 * @throws NullPointerException If the receive timeout is null
 	 */
-	public @NonNull UdpServerConfigBuilder bufferSize(int bufferSize) {
-		this.bufferSize = bufferSize;
+	public @NonNull UdpServerConfigBuilder receiveTimeout(@NonNull Duration receiveTimeout) {
+		this.peer.receiveTimeout(receiveTimeout);
 		return this;
 	}
 	
 	/**
-	 * Sets whether to allow receiving broadcast packets.<br>
+	 * Removes the receive timeout, so that a receive waits forever.<br>
+	 * @return This builder for method chaining
+	 */
+	public @NonNull UdpServerConfigBuilder noReceiveTimeout() {
+		this.peer.noReceiveTimeout();
+		return this;
+	}
+	
+	/**
+	 * Sets the maximum size of a datagram in bytes.<br>
 	 *
-	 * @param broadcast True to enable broadcast
+	 * @param maxDatagramSize The max datagram size, which must be at least 1
+	 * @return This builder for method chaining
+	 */
+	public @NonNull UdpServerConfigBuilder maxDatagramSize(int maxDatagramSize) {
+		this.peer.maxDatagramSize(maxDatagramSize);
+		return this;
+	}
+	
+	/**
+	 * Sets whether sending to broadcast addresses is allowed (SO_BROADCAST).<br>
+	 *
+	 * @param broadcast True to allow broadcasts
 	 * @return This builder for method chaining
 	 */
 	public @NonNull UdpServerConfigBuilder broadcast(boolean broadcast) {
-		this.broadcast = broadcast;
+		this.peer.broadcast(broadcast);
 		return this;
 	}
 	
 	/**
-	 * Sets whether to allow address reuse (SO_REUSEADDR).<br>
+	 * Sets whether the local address may be bound by several sockets (SO_REUSEADDR).<br>
 	 *
-	 * @param reuseAddress True to enable address reuse
+	 * @param reuseAddress True to allow address reuse
 	 * @return This builder for method chaining
 	 */
 	public @NonNull UdpServerConfigBuilder reuseAddress(boolean reuseAddress) {
-		this.reuseAddress = reuseAddress;
+		this.peer.reuseAddress(reuseAddress);
 		return this;
 	}
 	
 	/**
-	 * Sets the executor strategy for handling concurrent datagram processing.<br>
+	 * Sets the strategy that creates the executor the datagrams are handled on.<br>
 	 *
 	 * @param executorStrategy The executor strategy
 	 * @return This builder for method chaining
-	 * @throws NullPointerException If executor strategy is null
+	 * @throws NullPointerException If the executor strategy is null
 	 */
 	public @NonNull UdpServerConfigBuilder executorStrategy(@NonNull ClientExecutorStrategy executorStrategy) {
 		this.executorStrategy = Objects.requireNonNull(executorStrategy, "Executor strategy must not be null");
@@ -127,32 +125,23 @@ public final class UdpServerConfigBuilder {
 	}
 	
 	/**
-	 * Sets the message event handler called when a datagram is received.<br>
+	 * Sets the handler for failures on the threads of the server.<br>
 	 *
-	 * @param onMessage The message handler, or null to disable
+	 * @param onError The error handler, or null to use the uncaught exception handler
 	 * @return This builder for method chaining
 	 */
-	public @NonNull UdpServerConfigBuilder onMessage(@Nullable MessageEventHandler<UdpServer, UdpDatagram> onMessage) {
-		this.onMessage = onMessage;
-		return this;
-	}
-	
-	/**
-	 * Sets the error event handler.<br>
-	 *
-	 * @param onError The error handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull UdpServerConfigBuilder onError(@Nullable ErrorEventHandler onError) {
+	public @NonNull UdpServerConfigBuilder onError(@Nullable ErrorHandler onError) {
 		this.onError = onError;
 		return this;
 	}
 	
 	/**
 	 * Builds a new UDP server configuration with the configured values.<br>
+	 *
 	 * @return A new configuration instance
+	 * @throws IllegalArgumentException If the receive timeout is not positive or the max datagram size is less than 1
 	 */
 	public @NonNull UdpServerConfig build() {
-		return new UdpServerConfig(this.bufferSize, this.broadcast, this.reuseAddress, this.executorStrategy, this.onMessage, this.onError);
+		return new UdpServerConfig(this.peer.build(), this.executorStrategy, this.onError);
 	}
 }

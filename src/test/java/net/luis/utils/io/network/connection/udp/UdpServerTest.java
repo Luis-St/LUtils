@@ -16,24 +16,24 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 package net.luis.utils.io.network.connection.udp;
 
-import net.luis.utils.io.network.HostEndpoint;
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
 import net.luis.utils.io.network.address.ipv6.Ipv6Address;
-import net.luis.utils.io.network.connection.NetworkServer;
+import net.luis.utils.io.network.connection.NetworkClient;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
-import java.net.UnknownHostException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,299 +42,154 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 class UdpServerTest {
 	
 	private static final IpEndpoint EPHEMERAL = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
-	private static final IpEndpoint DESTINATION = new IpEndpoint(Ipv4Address.LOOPBACK, 9999);
-	private static final HostEndpoint UNRESOLVABLE = new HostEndpoint("no-such-host.invalid", 9999);
+	private static final DatagramHandler NO_OP = (server, datagram) -> {};
+	private static final DatagramHandler ECHO = (server, datagram) -> server.peer().send(datagram);
+	private static final UdpPeerConfig CLIENT = UdpPeerConfig.builder().receiveTimeout(Duration.ofSeconds(5)).build();
+	
+	private static UdpPeer client() throws NetworkConnectionException {
+		return UdpPeer.bindTo(EPHEMERAL, CLIENT);
+	}
+	
+	private static byte[] bytes(String value) {
+		return value.getBytes(StandardCharsets.UTF_8);
+	}
+	
+	private static String string(byte[] value) {
+		return new String(value, StandardCharsets.UTF_8);
+	}
 	
 	@Test
-	void constructWithBindEndpoint() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
+	void constructWithDefaultConfig() {
+		try (UdpServer server = new UdpServer(EPHEMERAL, NO_OP)) {
+			assertSame(UdpServerConfig.DEFAULT, server.config());
 			assertFalse(server.isRunning());
-			assertEquals(EPHEMERAL, server.boundEndpoint());
 		}
 	}
 	
 	@Test
-	void constructWithBindEndpointAndConfig() {
-		UdpServerConfig config = UdpServerConfig.builder().bufferSize(16).build();
+	void constructWithConfig() {
+		UdpServerConfig config = UdpServerConfig.builder().maxDatagramSize(100).build();
 		
-		try (UdpServer server = new UdpServer(EPHEMERAL, config)) {
+		try (UdpServer server = new UdpServer(EPHEMERAL, config, NO_OP)) {
+			assertSame(config, server.config());
 			assertFalse(server.isRunning());
-			assertEquals(EPHEMERAL, server.boundEndpoint());
 		}
 	}
 	
 	@Test
-	void constructWithNullBindEndpoint() {
-		assertThrows(NullPointerException.class, () -> new UdpServer(null, UdpServerConfig.DEFAULT));
-	}
-	
-	@Test
-	void constructWithNullConfig() {
+	void constructWithNullArguments() {
+		assertThrows(NullPointerException.class, () -> new UdpServer(null, NO_OP));
 		assertThrows(NullPointerException.class, () -> new UdpServer(EPHEMERAL, null));
+		assertThrows(NullPointerException.class, () -> new UdpServer(null, UdpServerConfig.DEFAULT, NO_OP));
+		assertThrows(NullPointerException.class, () -> new UdpServer(EPHEMERAL, null, NO_OP));
+		assertThrows(NullPointerException.class, () -> new UdpServer(EPHEMERAL, UdpServerConfig.DEFAULT, null));
 	}
 	
 	@Test
-	void constructWithNullBindEndpointSingleArgument() {
-		assertThrows(NullPointerException.class, () -> new UdpServer(null));
-	}
-	
-	@Test
-	void startOnWithNullBindEndpoint() {
-		assertThrows(NullPointerException.class, () -> UdpServer.startOn(null));
-	}
-	
-	@Test
-	void startOnWithNullBindEndpointAndConfig() {
-		assertThrows(NullPointerException.class, () -> UdpServer.startOn(null, UdpServerConfig.DEFAULT));
-	}
-	
-	@Test
-	void startOnWithNullConfig() {
+	void startOnWithNullArguments() {
+		assertThrows(NullPointerException.class, () -> UdpServer.startOn(null, NO_OP));
 		assertThrows(NullPointerException.class, () -> UdpServer.startOn(EPHEMERAL, null));
+		assertThrows(NullPointerException.class, () -> UdpServer.startOn(null, UdpServerConfig.DEFAULT, NO_OP));
+		assertThrows(NullPointerException.class, () -> UdpServer.startOn(EPHEMERAL, null, NO_OP));
+		assertThrows(NullPointerException.class, () -> UdpServer.startOn(EPHEMERAL, UdpServerConfig.DEFAULT, null));
 	}
 	
 	@Test
-	void sendWithNullDestination() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			server.start();
+	void startOnPortInUse() throws Exception {
+		try (UdpServer first = UdpServer.startOn(EPHEMERAL, NO_OP)) {
+			UdpServer second = new UdpServer(first.boundEndpoint(), NO_OP);
 			
-			assertThrows(NullPointerException.class, () -> server.send(null, new byte[1]));
+			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, second::start);
+			assertEquals(NetworkErrorType.ADDRESS_IN_USE, exception.errorType());
+			assertFalse(second.isRunning());
+			assertThrows(IllegalStateException.class, second::peer);
 		}
 	}
 	
 	@Test
-	void sendWithNullData() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			server.start();
-			
-			assertThrows(NullPointerException.class, () -> server.send(DESTINATION, null));
-		}
-	}
-	
-	@Test
-	void sendDatagramWithNullDatagram() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			server.start();
-			
-			assertThrows(NullPointerException.class, () -> server.send(null));
-		}
-	}
-	
-	@Test
-	void isRunningFalseBeforeStart() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			assertFalse(server.isRunning());
-		}
-	}
-	
-	@Test
-	void isRunningTrueAfterStart() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			server.start();
-			assertTrue(server.isRunning());
-		}
-	}
-	
-	@Test
-	void isRunningFalseAfterStop() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			server.start();
-			server.stop();
-			
-			assertFalse(server.isRunning());
-		}
-	}
-	
-	@Test
-	void boundEndpointReturnsConfiguredEndpointBeforeStart() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			assertEquals(EPHEMERAL, server.boundEndpoint());
-			assertEquals(0, server.boundEndpoint().port());
-		}
-	}
-	
-	@Test
-	void boundEndpointReturnsActualPortAfterStart() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			server.start();
-			
-			assertNotEquals(0, server.boundEndpoint().port());
-			assertEquals(Ipv4Address.LOOPBACK, server.boundEndpoint().address());
-		}
-	}
-	
-	@Test
-	void startTwiceIsNoOp() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			server.start();
-			IpEndpoint bound = server.boundEndpoint();
-			
-			assertDoesNotThrow(server::start);
-			assertTrue(server.isRunning());
-			assertEquals(bound, server.boundEndpoint());
-		}
-	}
-	
-	@Test
-	void startOnPortAlreadyInUseReportsAddressInUse() {
-		AtomicReference<NetworkErrorType> reported = new AtomicReference<>();
-		UdpServerConfig config = UdpServerConfig.builder().onError((conn, type, message, cause) -> reported.set(type)).build();
+	void peerBeforeStart() {
+		UdpServer server = new UdpServer(EPHEMERAL, NO_OP);
 		
-		try (UdpServer first = new UdpServer(EPHEMERAL)) {
-			first.start();
+		assertThrows(IllegalStateException.class, server::peer);
+	}
+	
+	@Test
+	void stopWithNullGracePeriod() throws Exception {
+		try (UdpServer server = new UdpServer(EPHEMERAL, NO_OP)) {
+			assertThrows(NullPointerException.class, () -> server.stop(null));
 			
-			try (UdpServer second = new UdpServer(first.boundEndpoint(), config)) {
-				assertDoesNotThrow(second::start);
-				assertFalse(second.isRunning());
-				assertEquals(NetworkErrorType.ADDRESS_IN_USE, reported.get());
-			}
-		}
-	}
-	
-	@Test
-	void stopBeforeStartIsNoOp() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			assertDoesNotThrow(server::stop);
-			assertFalse(server.isRunning());
-		}
-	}
-	
-	@Test
-	void stopTwiceIsNoOp() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
 			server.start();
-			
-			assertDoesNotThrow(server::stop);
-			assertDoesNotThrow(server::stop);
-			assertFalse(server.isRunning());
+			assertThrows(NullPointerException.class, () -> server.stop(null));
 		}
 	}
 	
 	@Test
-	void stopLeavesCustomExecutorRunning() {
-		ExecutorService custom = Executors.newSingleThreadExecutor();
-		UdpServerConfig config = UdpServerConfig.builder().executorStrategy(ClientExecutorStrategy.custom(custom)).build();
+	void stopWithNegativeGracePeriod() throws Exception {
+		try (UdpServer server = new UdpServer(EPHEMERAL, NO_OP)) {
+			assertThrows(IllegalArgumentException.class, () -> server.stop(Duration.ofMillis(-1)));
+			
+			server.start();
+			assertThrows(IllegalArgumentException.class, () -> server.stop(Duration.ofMillis(-1)));
+		}
+	}
+	
+	@Test
+	void isRunningLifecycle() throws Exception {
+		UdpServer server = new UdpServer(EPHEMERAL, NO_OP);
+		assertFalse(server.isRunning());
 		
-		try (UdpServer server = new UdpServer(EPHEMERAL, config)) {
-			server.start();
-			server.stop();
-			
-			assertFalse(custom.isShutdown());
-		} finally {
-			custom.shutdownNow();
-		}
-	}
-	
-	@Test
-	void sendWithoutStartThrowsSocketClosed() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> server.send(DESTINATION, new byte[1]));
-			assertEquals(NetworkErrorType.SOCKET_CLOSED, exception.errorType());
-		}
-	}
-	
-	@Test
-	void sendAfterStopThrowsSocketClosed() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			server.start();
-			server.stop();
-			
-			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> server.send(DESTINATION, new byte[1]));
-			assertEquals(NetworkErrorType.SOCKET_CLOSED, exception.errorType());
-		}
-	}
-	
-	@Test
-	void sendDataExceedingBufferSizeThrowsBeforeRunningCheck() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> server.send(DESTINATION, new byte[65536]));
-			assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
-			assertNotEquals(NetworkErrorType.SOCKET_CLOSED, exception.errorType());
-		}
-	}
-	
-	@Test
-	void sendDataEqualToBufferSizePassesSizeCheck() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> server.send(DESTINATION, new byte[65535]));
-			assertEquals(NetworkErrorType.SOCKET_CLOSED, exception.errorType());
-		}
-	}
-	
-	@Test
-	void sendDataExceedingConfiguredBufferSize() {
-		UdpServerConfig config = UdpServerConfig.builder().bufferSize(16).build();
-		
-		try (UdpServer server = new UdpServer(EPHEMERAL, config)) {
-			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> server.send(DESTINATION, new byte[17]));
-			assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
-		}
-	}
-	
-	@Test
-	void sendToUnresolvedHostThrowsHostUnreachable() {
-		AtomicInteger errorCount = new AtomicInteger(0);
-		UdpServerConfig config = UdpServerConfig.builder().onError((conn, type, message, cause) -> errorCount.incrementAndGet()).build();
-		
-		try (UdpServer server = new UdpServer(EPHEMERAL, config)) {
-			server.start();
-			
-			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> server.send(UNRESOLVABLE, new byte[1]));
-			assertEquals(NetworkErrorType.HOST_UNREACHABLE, exception.errorType());
-			assertInstanceOf(UnknownHostException.class, exception.getCause());
-			assertEquals(1, errorCount.get());
-		}
-	}
-	
-	@Test
-	void closeDelegatesToStop() {
-		UdpServer server = new UdpServer(EPHEMERAL);
 		server.start();
 		assertTrue(server.isRunning());
 		
-		server.close();
+		server.stop();
 		assertFalse(server.isRunning());
 	}
 	
 	@Test
-	void startOnReturnsRunningServer() {
-		try (UdpServer server = UdpServer.startOn(EPHEMERAL)) {
-			assertTrue(server.isRunning());
-			assertNotEquals(0, server.boundEndpoint().port());
-		}
-	}
-	
-	@Test
-	void startOnWithConfigReturnsRunningServer() {
-		UdpServerConfig config = UdpServerConfig.builder().bufferSize(1024).build();
+	void boundEndpointLifecycle() throws Exception {
+		UdpServer server = new UdpServer(EPHEMERAL, NO_OP);
+		assertEquals(0, server.boundEndpoint().port());
 		
-		try (UdpServer server = UdpServer.startOn(EPHEMERAL, config)) {
-			assertTrue(server.isRunning());
-			assertNotEquals(0, server.boundEndpoint().port());
-		}
-	}
-	
-	@Test
-	void closeBeforeStartIsNoOp() {
-		UdpServer server = new UdpServer(EPHEMERAL);
+		server.start();
+		assertTrue(server.boundEndpoint().port() > 0);
 		
-		assertDoesNotThrow(server::close);
-		assertFalse(server.isRunning());
+		server.stop();
+		assertEquals(0, server.boundEndpoint().port());
 	}
 	
 	@Test
-	void implementsNetworkServer() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			assertInstanceOf(NetworkServer.class, server);
+	void peerAfterStart() throws Exception {
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, NO_OP)) {
+			UdpPeer peer = server.peer();
+			
+			assertTrue(peer.isActive());
+			assertEquals(server.boundEndpoint(), peer.localEndpoint().orElseThrow());
 		}
 	}
 	
 	@Test
-	void startOnIpv6LoopbackEndpoint() {
-		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv6Address.LOOPBACK, 0))) {
+	void startOnReturnsRunningServer() throws Exception {
+		UdpServerConfig config = UdpServerConfig.builder().maxDatagramSize(100).build();
+		
+		try (UdpServer first = UdpServer.startOn(EPHEMERAL, NO_OP); UdpServer second = UdpServer.startOn(EPHEMERAL, config, NO_OP)) {
+			assertTrue(first.isRunning());
+			assertTrue(first.boundEndpoint().port() > 0);
+			assertSame(UdpServerConfig.DEFAULT, first.config());
+			assertTrue(second.isRunning());
+			assertTrue(second.boundEndpoint().port() > 0);
+			assertSame(config, second.config());
+			assertTrue(second.peer().isActive());
+			assertEquals(second.boundEndpoint(), second.peer().localEndpoint().orElseThrow());
+		}
+	}
+	
+	@Test
+	void startOnIpv6LoopbackEndpoint() throws Exception {
+		try (UdpServer server = new UdpServer(new IpEndpoint(Ipv6Address.LOOPBACK, 0), NO_OP)) {
 			server.start();
 			
 			assertTrue(server.isRunning());
@@ -343,64 +198,328 @@ class UdpServerTest {
 	}
 	
 	@Test
-	void sendDatagramWithoutStartThrowsSocketClosed() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			UdpDatagram datagram = new UdpDatagram(DESTINATION, new byte[1]);
+	void startTwiceIsNoOp() throws Exception {
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, NO_OP)) {
+			UdpPeer peer = server.peer();
 			
-			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> server.send(datagram));
-			assertEquals(NetworkErrorType.SOCKET_CLOSED, exception.errorType());
+			server.start();
+			
+			assertSame(peer, server.peer());
 		}
 	}
 	
 	@Test
-	void startStopRestartCycleConsistency() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			server.start();
+	void stopBeforeStartIsNoOp() {
+		UdpServer server = new UdpServer(EPHEMERAL, NO_OP);
+		
+		assertDoesNotThrow(() -> server.stop());
+		assertDoesNotThrow(() -> server.stop(Duration.ofSeconds(1)));
+		assertFalse(server.isRunning());
+	}
+	
+	@Test
+	void closeBeforeStartIsNoOp() {
+		UdpServer server = new UdpServer(EPHEMERAL, NO_OP);
+		
+		assertDoesNotThrow(server::close);
+		assertFalse(server.isRunning());
+	}
+	
+	@Test
+	void stopTwiceIsNoOp() throws Exception {
+		UdpServer server = UdpServer.startOn(EPHEMERAL, NO_OP);
+		
+		server.stop();
+		assertDoesNotThrow(() -> server.stop());
+		assertFalse(server.isRunning());
+	}
+	
+	@Test
+	void stopClosesPeer() throws Exception {
+		UdpServer server = UdpServer.startOn(EPHEMERAL, NO_OP);
+		
+		server.stop();
+		
+		assertFalse(server.peer().isActive());
+	}
+	
+	@Test
+	void handlerReceivesDatagram() throws Exception {
+		CompletableFuture<UdpServer> receivedServer = new CompletableFuture<>();
+		CompletableFuture<UdpDatagram> receivedDatagram = new CompletableFuture<>();
+		DatagramHandler handler = (server, datagram) -> {
+			receivedServer.complete(server);
+			receivedDatagram.complete(datagram);
+		};
+		
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, handler); UdpPeer client = client()) {
+			client.send(server.boundEndpoint(), bytes("hello"));
+			UdpDatagram datagram = receivedDatagram.get(5, TimeUnit.SECONDS);
+			
+			assertSame(server, receivedServer.get(5, TimeUnit.SECONDS));
+			assertEquals("hello", string(datagram.data()));
+			assertEquals(client.localEndpoint().orElseThrow(), datagram.endpoint());
+		}
+	}
+	
+	@Test
+	void handlerExceptionIsReported() throws Exception {
+		CompletableFuture<NetworkClient<?>> errorClient = new CompletableFuture<>();
+		CompletableFuture<Throwable> error = new CompletableFuture<>();
+		UdpServerConfig config = UdpServerConfig.builder().onError((client, throwable) -> {
+			errorClient.complete(client);
+			error.complete(throwable);
+		}).build();
+		IllegalStateException failure = new IllegalStateException("handler failed");
+		
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, config, (s, datagram) -> {
+			throw failure;
+		}); UdpPeer client = client()) {
+			client.send(server.boundEndpoint(), bytes("fail"));
+			
+			assertSame(failure, error.get(5, TimeUnit.SECONDS));
+			assertSame(server.peer(), errorClient.get(5, TimeUnit.SECONDS));
+		}
+	}
+	
+	@Test
+	void handlerExceptionWithoutErrorHandlerGoesToUncaughtHandler() throws Exception {
+		CompletableFuture<Throwable> uncaught = new CompletableFuture<>();
+		ExecutorService executor = Executors.newCachedThreadPool(runnable -> {
+			Thread thread = new Thread(runnable);
+			thread.setUncaughtExceptionHandler((t, e) -> uncaught.complete(e));
+			return thread;
+		});
+		UdpServerConfig config = UdpServerConfig.builder().executorStrategy(ClientExecutorStrategy.custom(executor)).build();
+		IllegalStateException failure = new IllegalStateException("handler failed");
+		
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, config, (s, datagram) -> {
+			throw failure;
+		}); UdpPeer client = client()) {
+			client.send(server.boundEndpoint(), bytes("fail"));
+			
+			assertSame(failure, uncaught.get(5, TimeUnit.SECONDS));
+		} finally {
+			executor.shutdownNow();
+		}
+	}
+	
+	@Test
+	void receiveTimeoutDoesNotStopServer() throws Exception {
+		AtomicInteger errors = new AtomicInteger();
+		CompletableFuture<String> received = new CompletableFuture<>();
+		UdpServerConfig config = UdpServerConfig.builder().receiveTimeout(Duration.ofMillis(50)).onError((client, throwable) -> errors.incrementAndGet()).build();
+		
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, config, (s, datagram) -> received.complete(string(datagram.data()))); UdpPeer client = client()) {
+			Thread.sleep(300);
+			client.send(server.boundEndpoint(), bytes("late"));
+			
+			assertEquals("late", received.get(5, TimeUnit.SECONDS));
 			assertTrue(server.isRunning());
+			assertEquals(0, errors.get());
+		}
+	}
+	
+	@Test
+	void gracefulStopWaitsForRunningHandler() throws Exception {
+		CountDownLatch arrived = new CountDownLatch(1);
+		DatagramHandler handler = (server, datagram) -> {
+			arrived.countDown();
+			Thread.sleep(200);
+			server.peer().send(datagram.endpoint(), bytes("reply"));
+		};
+		
+		UdpServer server = UdpServer.startOn(EPHEMERAL, handler);
+		try (UdpPeer client = client()) {
+			client.send(server.boundEndpoint(), bytes("request"));
+			assertTrue(arrived.await(5, TimeUnit.SECONDS));
+			
+			server.stop(Duration.ofSeconds(5));
+			
+			assertEquals("reply", string(client.receive().orElseThrow().data()));
+		}
+	}
+	
+	@Test
+	void immediateStopClosesPeerUnderRunningHandler() throws Exception {
+		CountDownLatch arrived = new CountDownLatch(1);
+		CompletableFuture<NetworkErrorType> failure = new CompletableFuture<>();
+		DatagramHandler handler = (server, datagram) -> {
+			arrived.countDown();
+			Thread.sleep(200);
+			try {
+				server.peer().send(datagram.endpoint(), bytes("reply"));
+				failure.complete(null);
+			} catch (NetworkConnectionException e) {
+				failure.complete(e.errorType());
+			}
+		};
+		
+		UdpServer server = UdpServer.startOn(EPHEMERAL, handler);
+		try (UdpPeer client = client()) {
+			client.send(server.boundEndpoint(), bytes("request"));
+			assertTrue(arrived.await(5, TimeUnit.SECONDS));
 			
 			server.stop();
-			assertFalse(server.isRunning());
 			
-			server.start();
-			assertTrue(server.isRunning());
-			assertNotEquals(0, server.boundEndpoint().port());
+			assertEquals(NetworkErrorType.SOCKET_CLOSED, failure.get(5, TimeUnit.SECONDS));
 		}
 	}
 	
 	@Test
-	void sendGuardPrecedenceOnStoppedServer() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			assertThrows(NullPointerException.class, () -> server.send(null, new byte[1]));
-			assertThrows(NullPointerException.class, () -> server.send(DESTINATION, null));
+	void datagramsAfterStopAreNotHandled() throws Exception {
+		AtomicInteger handled = new AtomicInteger();
+		
+		UdpServer server = UdpServer.startOn(EPHEMERAL, (s, datagram) -> handled.incrementAndGet());
+		IpEndpoint endpoint = server.boundEndpoint();
+		server.stop();
+		try (UdpPeer client = client()) {
+			client.send(endpoint, bytes("too late"));
+			Thread.sleep(200);
 			
-			NetworkConnectionException tooLarge = assertThrows(NetworkConnectionException.class, () -> server.send(DESTINATION, new byte[65536]));
-			assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, tooLarge.errorType());
-			
-			NetworkConnectionException closed = assertThrows(NetworkConnectionException.class, () -> server.send(DESTINATION, new byte[1]));
-			assertEquals(NetworkErrorType.SOCKET_CLOSED, closed.errorType());
+			assertEquals(0, handled.get());
 		}
 	}
 	
 	@Test
-	void sendDatagramDelegatesGuardsToEndpointOverload() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			UdpDatagram datagram = new UdpDatagram(DESTINATION, new byte[65536]);
-			
-			NetworkConnectionException exception = assertThrows(NetworkConnectionException.class, () -> server.send(datagram));
-			assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, exception.errorType());
-		}
-	}
-	
-	@Test
-	void boundEndpointConsistencyAcrossLifecycle() {
-		try (UdpServer server = new UdpServer(EPHEMERAL)) {
-			assertEquals(EPHEMERAL, server.boundEndpoint());
-			
-			server.start();
-			assertNotEquals(0, server.boundEndpoint().port());
-			
+	void stopShutsDownOwnedExecutor() throws Exception {
+		UdpServerConfig config = UdpServerConfig.builder().executorStrategy(ClientExecutorStrategy.fixedPool(2)).build();
+		
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, config, ECHO); UdpPeer client = client()) {
+			client.send(server.boundEndpoint(), bytes("first"));
+			assertEquals("first", string(client.receive().orElseThrow().data()));
 			server.stop();
-			assertThrows(NullPointerException.class, server::boundEndpoint);
+			
+			server.start();
+			client.send(server.boundEndpoint(), bytes("second"));
+			
+			assertEquals("second", string(client.receive().orElseThrow().data()));
+		}
+	}
+	
+	@Test
+	void stopLeavesCustomExecutorRunning() throws Exception {
+		ExecutorService executor = Executors.newCachedThreadPool();
+		UdpServerConfig config = UdpServerConfig.builder().executorStrategy(ClientExecutorStrategy.custom(executor)).build();
+		
+		try {
+			UdpServer server = UdpServer.startOn(EPHEMERAL, config, NO_OP);
+			server.stop();
+			
+			assertFalse(executor.isShutdown());
+		} finally {
+			executor.shutdownNow();
+		}
+	}
+	
+	@Test
+	void rejectedExecutionKeepsTrackerBalanced() throws Exception {
+		ExecutorService executor = Executors.newCachedThreadPool();
+		UdpServerConfig config = UdpServerConfig.builder().executorStrategy(ClientExecutorStrategy.custom(executor)).build();
+		AtomicInteger handled = new AtomicInteger();
+		
+		UdpServer server = UdpServer.startOn(EPHEMERAL, config, (s, datagram) -> handled.incrementAndGet());
+		executor.shutdown();
+		try (UdpPeer client = client()) {
+			client.send(server.boundEndpoint(), bytes("rejected"));
+			Thread.sleep(200);
+			
+			long start = System.nanoTime();
+			server.stop(Duration.ofSeconds(20));
+			long elapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
+			
+			assertEquals(0, handled.get());
+			assertTrue(elapsed < 10000, "Elapsed: " + elapsed + " ms");
+		}
+	}
+	
+	@Test
+	void closeStopsServer() throws Exception {
+		UdpServer server = UdpServer.startOn(EPHEMERAL, NO_OP);
+		
+		server.close();
+		
+		assertFalse(server.isRunning());
+		assertFalse(server.peer().isActive());
+	}
+	
+	@Test
+	void echoServer() throws Exception {
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, ECHO); UdpPeer client = client()) {
+			client.send(server.boundEndpoint(), bytes("echo"));
+			
+			assertEquals("echo", string(client.receive().orElseThrow().data()));
+		}
+	}
+	
+	@Test
+	void maxDatagramSizeAppliesToServerPeer() throws Exception {
+		UdpServerConfig config = UdpServerConfig.builder().maxDatagramSize(8).build();
+		CompletableFuture<Integer> length = new CompletableFuture<>();
+		
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, config, (s, datagram) -> length.complete(datagram.length())); UdpPeer client = client()) {
+			client.send(server.boundEndpoint(), new byte[20]);
+			
+			assertEquals(8, length.get(5, TimeUnit.SECONDS));
+		}
+	}
+	
+	@Test
+	void handlesDatagramsConcurrently() throws Exception {
+		CountDownLatch together = new CountDownLatch(2);
+		CountDownLatch completed = new CountDownLatch(2);
+		DatagramHandler handler = (server, datagram) -> {
+			together.countDown();
+			if (together.await(5, TimeUnit.SECONDS)) {
+				completed.countDown();
+			}
+		};
+		
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, handler); UdpPeer first = client(); UdpPeer second = client()) {
+			first.send(server.boundEndpoint(), bytes("first"));
+			second.send(server.boundEndpoint(), bytes("second"));
+			
+			assertTrue(completed.await(10, TimeUnit.SECONDS));
+		}
+	}
+	
+	@Test
+	void manyClientsEcho() throws Exception {
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, ECHO); ExecutorService executor = Executors.newFixedThreadPool(20)) {
+			List<Future<List<String>>> futures = new ArrayList<>();
+			for (int clientId = 0; clientId < 20; clientId++) {
+				int id = clientId;
+				futures.add(executor.submit(() -> {
+					List<String> echoes = new ArrayList<>();
+					try (UdpPeer client = client()) {
+						for (int i = 0; i < 5; i++) {
+							client.send(server.boundEndpoint(), bytes(id + "-" + i));
+							echoes.add(string(client.receive().orElseThrow().data()));
+						}
+					}
+					return echoes;
+				}));
+			}
+			
+			for (int clientId = 0; clientId < 20; clientId++) {
+				List<String> expected = List.of(clientId + "-0", clientId + "-1", clientId + "-2", clientId + "-3", clientId + "-4");
+				assertEquals(expected, futures.get(clientId).get(15, TimeUnit.SECONDS));
+			}
+		}
+	}
+	
+	@Test
+	void restartAfterStop() throws Exception {
+		try (UdpServer server = UdpServer.startOn(EPHEMERAL, ECHO); UdpPeer client = client()) {
+			UdpPeer oldPeer = server.peer();
+			server.stop();
+			
+			server.start();
+			client.send(server.boundEndpoint(), bytes("again"));
+			
+			assertNotSame(oldPeer, server.peer());
+			assertFalse(oldPeer.isActive());
+			assertEquals("again", string(client.receive().orElseThrow().data()));
 		}
 	}
 }

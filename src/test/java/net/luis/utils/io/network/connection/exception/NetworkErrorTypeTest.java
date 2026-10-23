@@ -31,7 +31,7 @@ class NetworkErrorTypeTest {
 	
 	@Test
 	void valuesCount() {
-		assertEquals(18, NetworkErrorType.values().length);
+		assertEquals(20, NetworkErrorType.values().length);
 	}
 	
 	@Test

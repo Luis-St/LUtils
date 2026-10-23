@@ -18,13 +18,14 @@
 
 package net.luis.utils.io.network.connection.ssl;
 
+import net.luis.utils.io.network.connection.Framing;
+import net.luis.utils.io.network.connection.tcp.TcpClientConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLContext;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,373 +40,225 @@ class SslClientConfigBuilderTest {
 	
 	@BeforeAll
 	static void setUp() throws Exception {
-		context = SSLContext.getDefault();
+		context = SslTestContext.clientContext();
 	}
 	
 	@Test
-	void builderDefaultValues() {
-		SslClientConfig config = SslClientConfig.builder().build();
+	void builderStartsWithDefaults() {
+		assertEquals(SslClientConfig.DEFAULT, SslClientConfig.builder().build());
+	}
+	
+	@Test
+	void connectTimeoutWithNull() {
+		assertThrows(NullPointerException.class, () -> SslClientConfig.builder().connectTimeout(null));
+	}
+	
+	@Test
+	void readTimeoutWithNull() {
+		assertThrows(NullPointerException.class, () -> SslClientConfig.builder().readTimeout(null));
+	}
+	
+	@Test
+	void framingWithNull() {
+		assertThrows(NullPointerException.class, () -> SslClientConfig.builder().framing(null));
+	}
+	
+	@Test
+	void enabledProtocolsWithNull() {
+		assertThrows(NullPointerException.class, () -> SslClientConfig.builder().enabledProtocols(null));
+	}
+	
+	@Test
+	void enabledCipherSuitesWithNull() {
+		assertThrows(NullPointerException.class, () -> SslClientConfig.builder().enabledCipherSuites(null));
+	}
+	
+	@Test
+	void buildWithInvalidMaxMessageSize() {
+		SslClientConfigBuilder builder = assertDoesNotThrow(() -> SslClientConfig.builder().maxMessageSize(0));
 		
-		assertEquals(Duration.ofSeconds(30), config.connectTimeout());
-		assertEquals(Duration.ZERO, config.readTimeout());
-		assertEquals(Duration.ZERO, config.writeTimeout());
-		assertEquals(8192, config.bufferSize());
-		assertTrue(config.framing());
-		assertTrue(config.tcpNoDelay());
-		assertTrue(config.keepAlive());
-		assertNull(config.sslContext());
-		assertTrue(config.enabledProtocols().isEmpty());
-		assertTrue(config.enabledCipherSuites().isEmpty());
-		assertTrue(config.verifyHostname());
-		assertNull(config.onConnect());
-		assertNull(config.onDisconnect());
-		assertNull(config.onError());
+		assertThrows(IllegalArgumentException.class, builder::build);
 	}
 	
 	@Test
-	void connectTimeoutWithValidDuration() {
-		SslClientConfig config = SslClientConfig.builder()
-			.connectTimeout(Duration.ofSeconds(10))
-			.build();
-		assertEquals(Duration.ofSeconds(10), config.connectTimeout());
-	}
-	
-	@Test
-	void connectTimeoutWithNullThrows() {
-		SslClientConfigBuilder builder = SslClientConfig.builder();
-		assertThrows(NullPointerException.class, () -> builder.connectTimeout(null));
-	}
-	
-	@Test
-	void readTimeoutWithValidDuration() {
-		SslClientConfig config = SslClientConfig.builder()
-			.readTimeout(Duration.ofSeconds(5))
-			.build();
-		assertEquals(Duration.ofSeconds(5), config.readTimeout());
-	}
-	
-	@Test
-	void readTimeoutWithNullThrows() {
-		SslClientConfigBuilder builder = SslClientConfig.builder();
-		assertThrows(NullPointerException.class, () -> builder.readTimeout(null));
-	}
-	
-	@Test
-	void writeTimeoutWithValidDuration() {
-		SslClientConfig config = SslClientConfig.builder()
-			.writeTimeout(Duration.ofSeconds(5))
-			.build();
-		assertEquals(Duration.ofSeconds(5), config.writeTimeout());
-	}
-	
-	@Test
-	void writeTimeoutWithNullThrows() {
-		SslClientConfigBuilder builder = SslClientConfig.builder();
-		assertThrows(NullPointerException.class, () -> builder.writeTimeout(null));
-	}
-	
-	@Test
-	void bufferSizeWithValidValue() {
-		SslClientConfig config = SslClientConfig.builder()
-			.bufferSize(4096)
-			.build();
-		assertEquals(4096, config.bufferSize());
-	}
-	
-	@Test
-	void framingTrue() {
-		SslClientConfig config = SslClientConfig.builder()
-			.framing(true)
-			.build();
-		assertTrue(config.framing());
-	}
-	
-	@Test
-	void framingFalse() {
-		SslClientConfig config = SslClientConfig.builder()
-			.framing(false)
-			.build();
-		assertFalse(config.framing());
-	}
-	
-	@Test
-	void framingDefaultsToEnabled() {
-		SslClientConfig config = SslClientConfig.builder().build();
-		assertTrue(config.framing());
-	}
-	
-	@Test
-	void framingReturnsSameBuilder() {
-		SslClientConfigBuilder builder = SslClientConfig.builder();
-		assertSame(builder, builder.framing(false));
-	}
-	
-	@Test
-	void framingSetMultipleTimes() {
-		SslClientConfig config = SslClientConfig.builder()
-			.framing(false)
-			.framing(true)
-			.framing(false)
-			.build();
-		assertFalse(config.framing());
-	}
-	
-	@Test
-	void framingSurvivesBuilderReuse() {
-		SslClientConfigBuilder builder = SslClientConfig.builder()
-			.framing(false);
+	void buildWithZeroConnectTimeout() {
+		SslClientConfigBuilder builder = assertDoesNotThrow(() -> SslClientConfig.builder().connectTimeout(Duration.ZERO));
 		
-		SslClientConfig first = builder.build();
-		assertFalse(first.framing());
-		
-		builder.framing(true);
-		SslClientConfig second = builder.build();
-		assertTrue(second.framing());
-		
-		assertFalse(first.framing());
+		assertThrows(IllegalArgumentException.class, builder::build);
 	}
 	
 	@Test
-	void framingCombinedWithOtherOptions() {
-		SslClientConfig config = SslClientConfig.builder()
-			.bufferSize(4096)
-			.framing(false)
-			.tcpNoDelay(true)
-			.keepAlive(false)
-			.verifyHostname(true)
-			.build();
-		
-		assertEquals(4096, config.bufferSize());
-		assertFalse(config.framing());
-		assertTrue(config.tcpNoDelay());
-		assertFalse(config.keepAlive());
-		assertTrue(config.verifyHostname());
-	}
-	
-	@Test
-	void tcpNoDelayFalse() {
-		SslClientConfig config = SslClientConfig.builder()
-			.tcpNoDelay(false)
-			.build();
-		assertFalse(config.tcpNoDelay());
-	}
-	
-	@Test
-	void keepAliveFalse() {
-		SslClientConfig config = SslClientConfig.builder()
-			.keepAlive(false)
-			.build();
-		assertFalse(config.keepAlive());
-	}
-	
-	@Test
-	void sslContextWithValue() {
-		SslClientConfig config = SslClientConfig.builder()
-			.sslContext(context)
-			.build();
-		assertSame(context, config.sslContext());
-	}
-	
-	@Test
-	void sslContextWithNull() {
-		SslClientConfig config = SslClientConfig.builder()
-			.sslContext(null)
-			.build();
-		assertNull(config.sslContext());
-	}
-	
-	@Test
-	void enabledProtocolsWithValue() {
-		SslClientConfig config = SslClientConfig.builder()
-			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2))
-			.build();
-		assertEquals(List.of(TlsProtocol.TLS_V1_3, TlsProtocol.TLS_V1_2), config.enabledProtocols());
-	}
-	
-	@Test
-	void enabledProtocolsWithNullThrows() {
-		SslClientConfigBuilder builder = SslClientConfig.builder();
-		assertThrows(NullPointerException.class, () -> builder.enabledProtocols(null));
-	}
-	
-	@Test
-	void buildWithNullProtocolElementThrows() {
-		List<TlsProtocol> protocols = new ArrayList<>();
-		protocols.add(null);
-		SslClientConfigBuilder builder = assertDoesNotThrow(() -> SslClientConfig.builder().enabledProtocols(protocols));
+	void buildWithNullProtocolElement() {
+		SslClientConfigBuilder builder = assertDoesNotThrow(() -> SslClientConfig.builder().enabledProtocols(Arrays.asList(TlsProtocol.TLS_V1_3, null)));
 		
 		assertThrows(NullPointerException.class, builder::build);
 	}
 	
 	@Test
-	void enabledCipherSuitesWithValue() {
-		SslClientConfig config = SslClientConfig.builder()
-			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
-			.build();
-		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
+	void noReadTimeoutClearsTimeout() {
+		SslClientConfig config = SslClientConfig.builder().readTimeout(Duration.ofSeconds(5)).noReadTimeout().build();
+		
+		assertNull(config.transport().readTimeout());
 	}
 	
 	@Test
-	void enabledCipherSuitesWithNullThrows() {
+	void sslContextWithNullUsesDefault() {
+		SslClientConfig config = SslClientConfig.builder().sslContext(context).sslContext(null).build();
+		
+		assertNull(config.tls().sslContext());
+	}
+	
+	@Test
+	void connectTimeoutSetsTransport() {
 		SslClientConfigBuilder builder = SslClientConfig.builder();
-		assertThrows(NullPointerException.class, () -> builder.enabledCipherSuites(null));
+		
+		assertSame(builder, builder.connectTimeout(Duration.ofSeconds(2)));
+		assertEquals(Duration.ofSeconds(2), builder.build().transport().connectTimeout());
 	}
 	
 	@Test
-	void verifyHostnameTrue() {
-		SslClientConfig config = SslClientConfig.builder()
-			.verifyHostname(true)
-			.build();
-		assertTrue(config.verifyHostname());
-	}
-	
-	@Test
-	void verifyHostnameFalse() {
-		SslClientConfig config = SslClientConfig.builder()
-			.verifyHostname(false)
-			.build();
-		assertFalse(config.verifyHostname());
-	}
-	
-	@Test
-	void onConnectWithHandler() {
-		SslClientConfig config = SslClientConfig.builder()
-			.onConnect((connection, local, remote, timestamp) -> {})
-			.build();
-		assertNotNull(config.onConnect());
-	}
-	
-	@Test
-	void onConnectWithNull() {
-		SslClientConfig config = SslClientConfig.builder()
-			.onConnect(null)
-			.build();
-		assertNull(config.onConnect());
-	}
-	
-	@Test
-	void onDisconnectWithHandler() {
-		SslClientConfig config = SslClientConfig.builder()
-			.onDisconnect((connection, local, remote, timestamp) -> {})
-			.build();
-		assertNotNull(config.onDisconnect());
-	}
-	
-	@Test
-	void onErrorWithHandler() {
-		SslClientConfig config = SslClientConfig.builder()
-			.onError((connection, type, msg, cause) -> {})
-			.build();
-		assertNotNull(config.onError());
-	}
-	
-	@Test
-	void methodChainingConsistency() {
+	void readTimeoutSetsTransport() {
 		SslClientConfigBuilder builder = SslClientConfig.builder();
-		assertSame(builder, builder.connectTimeout(Duration.ofSeconds(10)));
-		assertSame(builder, builder.readTimeout(Duration.ofSeconds(5)));
-		assertSame(builder, builder.writeTimeout(Duration.ofSeconds(5)));
-		assertSame(builder, builder.bufferSize(4096));
-		assertSame(builder, builder.framing(false));
-		assertSame(builder, builder.tcpNoDelay(true));
-		assertSame(builder, builder.keepAlive(true));
+		
+		assertSame(builder, builder.readTimeout(Duration.ofSeconds(3)));
+		assertEquals(Duration.ofSeconds(3), builder.build().transport().readTimeout());
+	}
+	
+	@Test
+	void maxMessageSizeSetsTransport() {
+		SslClientConfigBuilder builder = SslClientConfig.builder();
+		
+		assertSame(builder, builder.maxMessageSize(256));
+		assertEquals(256, builder.build().transport().maxMessageSize());
+	}
+	
+	@Test
+	void framingSetsTransport() {
+		SslClientConfigBuilder builder = SslClientConfig.builder();
+		
+		assertSame(builder, builder.framing(Framing.lines()));
+		assertEquals(Framing.lines(), builder.build().transport().framing());
+	}
+	
+	@Test
+	void tcpNoDelaySetsTransport() {
+		SslClientConfigBuilder builder = SslClientConfig.builder();
+		
+		assertSame(builder, builder.tcpNoDelay(false));
+		assertFalse(builder.build().transport().tcpNoDelay());
+	}
+	
+	@Test
+	void keepAliveSetsTransport() {
+		SslClientConfigBuilder builder = SslClientConfig.builder();
+		
+		assertSame(builder, builder.keepAlive(false));
+		assertFalse(builder.build().transport().keepAlive());
+	}
+	
+	@Test
+	void sslContextSetsTls() {
+		SslClientConfigBuilder builder = SslClientConfig.builder();
+		
 		assertSame(builder, builder.sslContext(context));
-		assertSame(builder, builder.enabledProtocols(List.of(TlsProtocol.TLS_V1_3)));
-		assertSame(builder, builder.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384")));
-		assertSame(builder, builder.verifyHostname(true));
-		assertSame(builder, builder.onConnect((connection, local, remote, timestamp) -> {}));
-		assertSame(builder, builder.onDisconnect((connection, local, remote, timestamp) -> {}));
-		assertSame(builder, builder.onError((connection, type, msg, cause) -> {}));
+		assertSame(context, builder.build().tls().sslContext());
 	}
 	
 	@Test
-	void builderSetsAllValues() {
+	void enabledProtocolsSetsTls() {
+		SslClientConfigBuilder builder = SslClientConfig.builder();
+		
+		assertSame(builder, builder.enabledProtocols(List.of(TlsProtocol.TLS_V1_2)));
+		assertEquals(List.of(TlsProtocol.TLS_V1_2), builder.build().tls().enabledProtocols());
+	}
+	
+	@Test
+	void enabledCipherSuitesSetsTls() {
+		SslClientConfigBuilder builder = SslClientConfig.builder();
+		
+		assertSame(builder, builder.enabledCipherSuites(List.of("TLS_AES_128_GCM_SHA256")));
+		assertEquals(List.of("TLS_AES_128_GCM_SHA256"), builder.build().tls().enabledCipherSuites());
+	}
+	
+	@Test
+	void verifyHostnameSetsTls() {
+		SslClientConfigBuilder builder = SslClientConfig.builder();
+		
+		assertSame(builder, builder.verifyHostname(false));
+		assertFalse(builder.build().tls().verifyHostname());
+	}
+	
+	@Test
+	void buildWithAllValues() {
 		SslClientConfig config = SslClientConfig.builder()
-			.connectTimeout(Duration.ofSeconds(15))
-			.readTimeout(Duration.ofSeconds(10))
-			.writeTimeout(Duration.ofSeconds(5))
-			.bufferSize(16384)
-			.framing(false)
+			.connectTimeout(Duration.ofSeconds(1))
+			.readTimeout(Duration.ofSeconds(2))
+			.maxMessageSize(100)
+			.framing(Framing.none())
 			.tcpNoDelay(false)
 			.keepAlive(false)
 			.sslContext(context)
 			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
 			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
 			.verifyHostname(false)
-			.onConnect((connection, local, remote, timestamp) -> {})
-			.onDisconnect((connection, local, remote, timestamp) -> {})
-			.onError((connection, type, msg, cause) -> {})
 			.build();
 		
-		assertEquals(Duration.ofSeconds(15), config.connectTimeout());
-		assertEquals(Duration.ofSeconds(10), config.readTimeout());
-		assertEquals(Duration.ofSeconds(5), config.writeTimeout());
-		assertEquals(16384, config.bufferSize());
-		assertFalse(config.framing());
-		assertFalse(config.tcpNoDelay());
-		assertFalse(config.keepAlive());
-		assertSame(context, config.sslContext());
-		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.enabledProtocols());
-		assertEquals(List.of("TLS_AES_256_GCM_SHA384"), config.enabledCipherSuites());
-		assertFalse(config.verifyHostname());
-		assertNotNull(config.onConnect());
-		assertNotNull(config.onDisconnect());
-		assertNotNull(config.onError());
+		TcpClientConfig transport = TcpClientConfig.builder()
+			.connectTimeout(Duration.ofSeconds(1))
+			.readTimeout(Duration.ofSeconds(2))
+			.maxMessageSize(100)
+			.framing(Framing.none())
+			.tcpNoDelay(false)
+			.keepAlive(false)
+			.build();
+		SslUpgradeConfig tls = SslUpgradeConfig.builder()
+			.sslContext(context)
+			.enabledProtocols(List.of(TlsProtocol.TLS_V1_3))
+			.enabledCipherSuites(List.of("TLS_AES_256_GCM_SHA384"))
+			.verifyHostname(false)
+			.build();
+		assertEquals(new SslClientConfig(transport, tls), config);
 	}
 	
 	@Test
 	void builderReuseAfterBuild() {
-		SslClientConfigBuilder builder = SslClientConfig.builder()
-			.connectTimeout(Duration.ofSeconds(10));
-		
+		SslClientConfigBuilder builder = SslClientConfig.builder().maxMessageSize(100);
 		SslClientConfig first = builder.build();
-		assertEquals(Duration.ofSeconds(10), first.connectTimeout());
 		
-		builder.connectTimeout(Duration.ofSeconds(20));
+		builder.maxMessageSize(200).verifyHostname(false);
 		SslClientConfig second = builder.build();
-		assertEquals(Duration.ofSeconds(20), second.connectTimeout());
 		
-		assertEquals(Duration.ofSeconds(10), first.connectTimeout());
+		assertEquals(100, first.transport().maxMessageSize());
+		assertTrue(first.tls().verifyHostname());
+		assertEquals(200, second.transport().maxMessageSize());
+		assertFalse(second.tls().verifyHostname());
 	}
 	
 	@Test
-	void builderMultipleBuilds() {
+	void methodChainingConsistency() {
 		SslClientConfigBuilder builder = SslClientConfig.builder();
 		
-		SslClientConfig config1 = builder.build();
-		SslClientConfig config2 = builder.build();
-		
-		assertEquals(config1, config2);
-		assertNotSame(config1, config2);
+		assertSame(builder, builder.connectTimeout(Duration.ofSeconds(1)));
+		assertSame(builder, builder.readTimeout(Duration.ofSeconds(1)));
+		assertSame(builder, builder.noReadTimeout());
+		assertSame(builder, builder.maxMessageSize(10));
+		assertSame(builder, builder.framing(Framing.lines()));
+		assertSame(builder, builder.tcpNoDelay(true));
+		assertSame(builder, builder.keepAlive(true));
+		assertSame(builder, builder.sslContext(null));
+		assertSame(builder, builder.enabledProtocols(List.of()));
+		assertSame(builder, builder.enabledCipherSuites(List.of()));
+		assertSame(builder, builder.verifyHostname(true));
 	}
 	
 	@Test
-	void builderOverwriteValues() {
-		SslClientConfig config = SslClientConfig.builder()
-			.connectTimeout(Duration.ofSeconds(10))
-			.connectTimeout(Duration.ofSeconds(20))
-			.build();
+	void builtListsAreImmutable() {
+		List<TlsProtocol> protocols = new ArrayList<>(List.of(TlsProtocol.TLS_V1_3));
+		SslClientConfig config = SslClientConfig.builder().enabledProtocols(protocols).build();
 		
-		assertEquals(Duration.ofSeconds(20), config.connectTimeout());
-	}
-	
-	@Test
-	void buildMatchesDefaultConstant() {
-		SslClientConfig fromBuilder = SslClientConfig.builder().build();
-		SslClientConfig defaultConfig = SslClientConfig.DEFAULT;
+		protocols.add(TlsProtocol.TLS_V1_2);
 		
-		assertEquals(defaultConfig.connectTimeout(), fromBuilder.connectTimeout());
-		assertEquals(defaultConfig.readTimeout(), fromBuilder.readTimeout());
-		assertEquals(defaultConfig.writeTimeout(), fromBuilder.writeTimeout());
-		assertEquals(defaultConfig.bufferSize(), fromBuilder.bufferSize());
-		assertEquals(defaultConfig.tcpNoDelay(), fromBuilder.tcpNoDelay());
-		assertEquals(defaultConfig.keepAlive(), fromBuilder.keepAlive());
-		assertEquals(defaultConfig.sslContext(), fromBuilder.sslContext());
-		assertEquals(defaultConfig.enabledProtocols(), fromBuilder.enabledProtocols());
-		assertEquals(defaultConfig.enabledCipherSuites(), fromBuilder.enabledCipherSuites());
-		assertEquals(defaultConfig.verifyHostname(), fromBuilder.verifyHostname());
-		assertEquals(defaultConfig.onConnect(), fromBuilder.onConnect());
-		assertEquals(defaultConfig.onDisconnect(), fromBuilder.onDisconnect());
-		assertEquals(defaultConfig.onError(), fromBuilder.onError());
+		assertThrows(UnsupportedOperationException.class, () -> config.tls().enabledProtocols().add(TlsProtocol.TLS_V1_1));
+		assertEquals(List.of(TlsProtocol.TLS_V1_3), config.tls().enabledProtocols());
 	}
 }

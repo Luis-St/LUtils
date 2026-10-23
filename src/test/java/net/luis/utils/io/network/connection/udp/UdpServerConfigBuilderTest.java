@@ -18,8 +18,11 @@
 
 package net.luis.utils.io.network.connection.udp;
 
+import net.luis.utils.io.network.connection.ErrorHandler;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,189 +34,136 @@ import static org.junit.jupiter.api.Assertions.*;
 class UdpServerConfigBuilderTest {
 	
 	@Test
-	void builderDefaultValues() {
-		UdpServerConfig config = UdpServerConfig.builder().build();
+	void builderStartsWithDefaults() {
+		assertEquals(UdpServerConfig.DEFAULT, UdpServerConfig.builder().build());
+	}
+	
+	@Test
+	void receiveTimeoutWithNull() {
+		assertThrows(NullPointerException.class, () -> UdpServerConfig.builder().receiveTimeout(null));
+	}
+	
+	@Test
+	void executorStrategyWithNull() {
+		assertThrows(NullPointerException.class, () -> UdpServerConfig.builder().executorStrategy(null));
+	}
+	
+	@Test
+	void buildWithInvalidMaxDatagramSize() {
+		UdpServerConfigBuilder builder = assertDoesNotThrow(() -> UdpServerConfig.builder().maxDatagramSize(0));
 		
-		assertEquals(65535, config.bufferSize());
-		assertFalse(config.broadcast());
-		assertFalse(config.reuseAddress());
-		assertNotNull(config.executorStrategy());
-		assertNull(config.onMessage());
+		assertThrows(IllegalArgumentException.class, builder::build);
+	}
+	
+	@Test
+	void buildWithZeroReceiveTimeout() {
+		UdpServerConfigBuilder builder = assertDoesNotThrow(() -> UdpServerConfig.builder().receiveTimeout(Duration.ZERO));
+		
+		assertThrows(IllegalArgumentException.class, builder::build);
+	}
+	
+	@Test
+	void noReceiveTimeoutClearsTimeout() {
+		UdpServerConfig config = UdpServerConfig.builder().receiveTimeout(Duration.ofSeconds(5)).noReceiveTimeout().build();
+		
+		assertNull(config.peer().receiveTimeout());
+	}
+	
+	@Test
+	void onErrorWithNullClearsHandler() {
+		UdpServerConfig config = UdpServerConfig.builder().onError((client, error) -> {}).onError(null).build();
+		
 		assertNull(config.onError());
 	}
 	
 	@Test
-	void bufferSizeWithValidValue() {
-		UdpServerConfig config = UdpServerConfig.builder()
-			.bufferSize(1024)
-			.build();
-		assertEquals(1024, config.bufferSize());
-	}
-	
-	@Test
-	void broadcastTrue() {
-		UdpServerConfig config = UdpServerConfig.builder()
-			.broadcast(true)
-			.build();
-		assertTrue(config.broadcast());
-	}
-	
-	@Test
-	void broadcastFalse() {
-		UdpServerConfig config = UdpServerConfig.builder()
-			.broadcast(false)
-			.build();
-		assertFalse(config.broadcast());
-	}
-	
-	@Test
-	void reuseAddressTrue() {
-		UdpServerConfig config = UdpServerConfig.builder()
-			.reuseAddress(true)
-			.build();
-		assertTrue(config.reuseAddress());
-	}
-	
-	@Test
-	void reuseAddressFalse() {
-		UdpServerConfig config = UdpServerConfig.builder()
-			.reuseAddress(false)
-			.build();
-		assertFalse(config.reuseAddress());
-	}
-	
-	@Test
-	void executorStrategyWithVirtualThreads() {
-		ClientExecutorStrategy strategy = ClientExecutorStrategy.virtualThreads();
-		UdpServerConfig config = UdpServerConfig.builder()
-			.executorStrategy(strategy)
-			.build();
-		assertSame(strategy, config.executorStrategy());
-	}
-	
-	@Test
-	void executorStrategyWithFixedPool() {
-		ClientExecutorStrategy strategy = ClientExecutorStrategy.fixedPool(10);
-		UdpServerConfig config = UdpServerConfig.builder()
-			.executorStrategy(strategy)
-			.build();
-		assertSame(strategy, config.executorStrategy());
-	}
-	
-	@Test
-	void executorStrategyWithNullThrows() {
+	void receiveTimeoutSetsPeer() {
 		UdpServerConfigBuilder builder = UdpServerConfig.builder();
-		assertThrows(NullPointerException.class, () -> builder.executorStrategy(null));
+		
+		assertSame(builder, builder.receiveTimeout(Duration.ofSeconds(3)));
+		assertEquals(Duration.ofSeconds(3), builder.build().peer().receiveTimeout());
 	}
 	
 	@Test
-	void onMessageWithHandler() {
-		UdpServerConfig config = UdpServerConfig.builder()
-			.onMessage((server, datagram, data) -> {})
-			.build();
-		assertNotNull(config.onMessage());
+	void maxDatagramSizeSetsPeer() {
+		UdpServerConfigBuilder builder = UdpServerConfig.builder();
+		
+		assertSame(builder, builder.maxDatagramSize(512));
+		assertEquals(512, builder.build().peer().maxDatagramSize());
 	}
 	
 	@Test
-	void onMessageWithNull() {
-		UdpServerConfig config = UdpServerConfig.builder()
-			.onMessage(null)
-			.build();
-		assertNull(config.onMessage());
+	void broadcastSetsPeer() {
+		UdpServerConfigBuilder builder = UdpServerConfig.builder();
+		
+		assertSame(builder, builder.broadcast(true));
+		assertTrue(builder.build().peer().broadcast());
 	}
 	
 	@Test
-	void onErrorWithHandler() {
-		UdpServerConfig config = UdpServerConfig.builder()
-			.onError((connection, type, msg, cause) -> {})
-			.build();
-		assertNotNull(config.onError());
+	void reuseAddressSetsPeer() {
+		UdpServerConfigBuilder builder = UdpServerConfig.builder();
+		
+		assertSame(builder, builder.reuseAddress(true));
+		assertTrue(builder.build().peer().reuseAddress());
 	}
 	
 	@Test
-	void onErrorWithNull() {
+	void executorStrategySetsValue() {
+		ClientExecutorStrategy strategy = ClientExecutorStrategy.fixedPool(2);
+		UdpServerConfigBuilder builder = UdpServerConfig.builder();
+		
+		assertSame(builder, builder.executorStrategy(strategy));
+		assertSame(strategy, builder.build().executorStrategy());
+	}
+	
+	@Test
+	void onErrorSetsValue() {
+		ErrorHandler handler = (client, error) -> {};
+		UdpServerConfigBuilder builder = UdpServerConfig.builder();
+		
+		assertSame(builder, builder.onError(handler));
+		assertSame(handler, builder.build().onError());
+	}
+	
+	@Test
+	void buildWithAllValues() {
+		ClientExecutorStrategy strategy = ClientExecutorStrategy.cachedPool();
+		ErrorHandler handler = (client, error) -> {};
 		UdpServerConfig config = UdpServerConfig.builder()
-			.onError(null)
+			.receiveTimeout(Duration.ofSeconds(1))
+			.maxDatagramSize(100)
+			.broadcast(true)
+			.reuseAddress(true)
+			.executorStrategy(strategy)
+			.onError(handler)
 			.build();
-		assertNull(config.onError());
+		
+		assertEquals(new UdpServerConfig(new UdpPeerConfig(Duration.ofSeconds(1), 100, true, true), strategy, handler), config);
+	}
+	
+	@Test
+	void builderReuseAfterBuild() {
+		UdpServerConfigBuilder builder = UdpServerConfig.builder().maxDatagramSize(100);
+		UdpServerConfig first = builder.build();
+		
+		builder.maxDatagramSize(200);
+		UdpServerConfig second = builder.build();
+		
+		assertEquals(100, first.peer().maxDatagramSize());
+		assertEquals(200, second.peer().maxDatagramSize());
 	}
 	
 	@Test
 	void methodChainingConsistency() {
 		UdpServerConfigBuilder builder = UdpServerConfig.builder();
-		assertSame(builder, builder.bufferSize(1024));
-		assertSame(builder, builder.broadcast(true));
-		assertSame(builder, builder.reuseAddress(true));
+		
+		assertSame(builder, builder.receiveTimeout(Duration.ofSeconds(1)));
+		assertSame(builder, builder.noReceiveTimeout());
+		assertSame(builder, builder.maxDatagramSize(10));
+		assertSame(builder, builder.broadcast(false));
+		assertSame(builder, builder.reuseAddress(false));
 		assertSame(builder, builder.executorStrategy(ClientExecutorStrategy.virtualThreads()));
-		assertSame(builder, builder.onMessage((server, datagram, data) -> {}));
-		assertSame(builder, builder.onError((connection, type, msg, cause) -> {}));
-	}
-	
-	@Test
-	void builderSetsAllValues() {
-		ClientExecutorStrategy strategy = ClientExecutorStrategy.fixedPool(5);
-		UdpServerConfig config = UdpServerConfig.builder()
-			.bufferSize(2048)
-			.broadcast(true)
-			.reuseAddress(true)
-			.executorStrategy(strategy)
-			.onMessage((server, datagram, data) -> {})
-			.onError((connection, type, msg, cause) -> {})
-			.build();
-		
-		assertEquals(2048, config.bufferSize());
-		assertTrue(config.broadcast());
-		assertTrue(config.reuseAddress());
-		assertSame(strategy, config.executorStrategy());
-		assertNotNull(config.onMessage());
-		assertNotNull(config.onError());
-	}
-	
-	@Test
-	void builderReuseAfterBuild() {
-		UdpServerConfigBuilder builder = UdpServerConfig.builder()
-			.bufferSize(1024);
-		
-		UdpServerConfig first = builder.build();
-		assertEquals(1024, first.bufferSize());
-		
-		builder.bufferSize(2048);
-		UdpServerConfig second = builder.build();
-		assertEquals(2048, second.bufferSize());
-		
-		assertEquals(1024, first.bufferSize());
-	}
-	
-	@Test
-	void builderMultipleBuilds() {
-		UdpServerConfigBuilder builder = UdpServerConfig.builder();
-		
-		UdpServerConfig config1 = builder.build();
-		UdpServerConfig config2 = builder.build();
-		
-		assertEquals(config1, config2);
-		assertNotSame(config1, config2);
-	}
-	
-	@Test
-	void builderOverwriteValues() {
-		UdpServerConfig config = UdpServerConfig.builder()
-			.bufferSize(1024)
-			.bufferSize(2048)
-			.build();
-		
-		assertEquals(2048, config.bufferSize());
-	}
-	
-	@Test
-	void buildMatchesDefaultConstant() {
-		UdpServerConfig fromBuilder = UdpServerConfig.builder().build();
-		UdpServerConfig defaultConfig = UdpServerConfig.DEFAULT;
-		
-		assertEquals(defaultConfig.bufferSize(), fromBuilder.bufferSize());
-		assertEquals(defaultConfig.broadcast(), fromBuilder.broadcast());
-		assertEquals(defaultConfig.reuseAddress(), fromBuilder.reuseAddress());
-		assertEquals(defaultConfig.onMessage(), fromBuilder.onMessage());
-		assertEquals(defaultConfig.onError(), fromBuilder.onError());
+		assertSame(builder, builder.onError(null));
 	}
 }

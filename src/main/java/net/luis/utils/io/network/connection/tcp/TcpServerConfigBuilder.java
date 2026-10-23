@@ -18,18 +18,20 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import net.luis.utils.io.network.connection.event.*;
+import net.luis.utils.io.network.connection.ErrorHandler;
+import net.luis.utils.io.network.connection.Framing;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Duration;
+import java.util.Objects;
 
 /**
- * Builder class for constructing TCP server configuration.<br>
+ * Builder class for constructing a stream server configuration.<br>
  * Provides a fluent API for setting individual configuration options.<br>
  * <p>
- *     All options default to values matching {@link TcpServerConfig#DEFAULT}.
+ *     All options default to the values of {@link TcpServerConfig#DEFAULT}.
  * </p>
  * <p>
  *     Example usage:
@@ -37,12 +39,8 @@ import java.time.Duration;
  * <pre>{@code
  * TcpServerConfig config = TcpServerConfig.builder()
  *     .backlog(100)
- *     .clientBufferSize(4096)
+ *     .maxMessageSize(4096)
  *     .executorStrategy(ClientExecutorStrategy.fixedPool(10))
- *     .onMessage((server, conn, data) -> {
- *         System.out.println("Received: " + new String(data));
- *         conn.send("OK".getBytes());
- *     })
  *     .build();
  * }</pre>
  *
@@ -55,52 +53,35 @@ public final class TcpServerConfigBuilder {
 	/**
 	 * The maximum number of pending connections in the queue.<br>
 	 */
-	private int backlog = 50;
+	private int backlog = TcpServerConfig.DEFAULT.backlog();
 	/**
-	 * The buffer size for each client connection in bytes.<br>
+	 * The maximum length of a message in bytes.<br>
 	 */
-	private int clientBufferSize = 8192;
+	private int maxMessageSize = TcpServerConfig.DEFAULT.maxMessageSize();
 	/**
-	 * Whether messages are framed with a length prefix on the wire.<br>
-	 * Enabled by default, so that every send is received as exactly one message.<br>
+	 * The framing that delimits messages on the stream.<br>
 	 */
-	private boolean framing = true;
+	private Framing framing = TcpServerConfig.DEFAULT.framing();
 	/**
-	 * The read timeout for client connections.<br>
+	 * The maximum time a receive on a connection waits for data, or null to wait forever.<br>
 	 */
-	private Duration clientReadTimeout = Duration.ZERO;
+	private @Nullable Duration clientReadTimeout = TcpServerConfig.DEFAULT.clientReadTimeout();
 	/**
-	 * Whether to disable Nagle's algorithm for client connections.<br>
+	 * Whether to disable Nagle's algorithm for the connections.<br>
 	 */
-	private boolean tcpNoDelay = true;
+	private boolean tcpNoDelay = TcpServerConfig.DEFAULT.tcpNoDelay();
 	/**
-	 * Whether to enable TCP keep-alive for client connections.<br>
+	 * Whether to enable TCP keep-alive for the connections.<br>
 	 */
-	private boolean keepAlive = true;
+	private boolean keepAlive = TcpServerConfig.DEFAULT.keepAlive();
 	/**
-	 * The executor strategy for handling concurrent client connections.<br>
+	 * The strategy that creates the executor the connections are served on.<br>
 	 */
-	private ClientExecutorStrategy executorStrategy = ClientExecutorStrategy.virtualThreads();
+	private ClientExecutorStrategy executorStrategy = TcpServerConfig.DEFAULT.executorStrategy();
 	/**
-	 * The handler called when a client connects.<br>
+	 * The handler for failures on the threads of the server.<br>
 	 */
-	private @Nullable ConnectEventHandler onClientConnect;
-	/**
-	 * The handler called when a client disconnects.<br>
-	 */
-	private @Nullable DisconnectEventHandler onClientDisconnect;
-	/**
-	 * The handler called when a message is received from a client.<br>
-	 */
-	private @Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage;
-	/**
-	 * The handler that takes over the whole connection instead of the built-in read loop.<br>
-	 */
-	private @Nullable ConnectionHandler<TcpServer, TcpConnection> onConnection;
-	/**
-	 * The handler called when an error occurs.<br>
-	 */
-	private @Nullable ErrorEventHandler onError;
+	private @Nullable ErrorHandler onError = TcpServerConfig.DEFAULT.onError();
 	
 	/**
 	 * Constructs a new builder with default values.<br>
@@ -110,7 +91,7 @@ public final class TcpServerConfigBuilder {
 	/**
 	 * Sets the maximum number of pending connections in the queue.<br>
 	 *
-	 * @param backlog The backlog size (must be at least 1)
+	 * @param backlog The backlog size, which must be at least 1
 	 * @return This builder for method chaining
 	 */
 	public @NonNull TcpServerConfigBuilder backlog(int backlog) {
@@ -119,50 +100,52 @@ public final class TcpServerConfigBuilder {
 	}
 	
 	/**
-	 * Sets whether messages are framed with a length prefix on the wire.<br>
-	 * <p>
-	 *     With framing enabled, each send is written as one length-prefixed frame and each receive returns exactly that message,
-	 *     regardless of how TCP fragments or coalesces the stream. This is the default and is required for message oriented protocols.
-	 * </p>
-	 * <p>
-	 *     Disabling it restores the raw byte stream, where a read returns whatever is currently available. This is only useful when
-	 *     talking to a peer that does not understand the frame header, or when the payload carries its own delimiters. Both peers
-	 *     have to agree, since a framed peer and an unframed peer cannot interoperate.
-	 * </p>
+	 * Sets the maximum length of a message in bytes.<br>
 	 *
-	 * @param framing Whether to frame messages with a length prefix
-	 * @return This builder
+	 * @param maxMessageSize The max message size, which must be at least 1
+	 * @return This builder for method chaining
 	 */
-	public @NonNull TcpServerConfigBuilder framing(boolean framing) {
-		this.framing = framing;
+	public @NonNull TcpServerConfigBuilder maxMessageSize(int maxMessageSize) {
+		this.maxMessageSize = maxMessageSize;
 		return this;
 	}
 	
 	/**
-	 * Sets the buffer size for each client connection in bytes.<br>
+	 * Sets the framing that delimits messages on the stream.<br>
+	 * Both peers have to use the same framing.<br>
 	 *
-	 * @param clientBufferSize The buffer size (must be at least 1)
+	 * @param framing The framing
 	 * @return This builder for method chaining
+	 * @throws NullPointerException If the framing is null
 	 */
-	public @NonNull TcpServerConfigBuilder clientBufferSize(int clientBufferSize) {
-		this.clientBufferSize = clientBufferSize;
+	public @NonNull TcpServerConfigBuilder framing(@NonNull Framing framing) {
+		this.framing = Objects.requireNonNull(framing, "Framing must not be null");
 		return this;
 	}
 	
 	/**
-	 * Sets the read timeout for client connections.<br>
-	 * Use {@link Duration#ZERO} for infinite timeout.<br>
+	 * Sets the maximum time a receive on a connection waits for data.<br>
 	 *
-	 * @param clientReadTimeout The read timeout
+	 * @param clientReadTimeout The read timeout, which must be positive
 	 * @return This builder for method chaining
+	 * @throws NullPointerException If the read timeout is null
 	 */
 	public @NonNull TcpServerConfigBuilder clientReadTimeout(@NonNull Duration clientReadTimeout) {
-		this.clientReadTimeout = clientReadTimeout;
+		this.clientReadTimeout = Objects.requireNonNull(clientReadTimeout, "Client read timeout must not be null");
 		return this;
 	}
 	
 	/**
-	 * Sets whether to disable Nagle's algorithm for client connections.<br>
+	 * Removes the read timeout of the connections, so that a receive waits forever.<br>
+	 * @return This builder for method chaining
+	 */
+	public @NonNull TcpServerConfigBuilder noClientReadTimeout() {
+		this.clientReadTimeout = null;
+		return this;
+	}
+	
+	/**
+	 * Sets whether to disable Nagle's algorithm for the connections.<br>
 	 *
 	 * @param tcpNoDelay True to disable Nagle's algorithm
 	 * @return This builder for method chaining
@@ -173,7 +156,7 @@ public final class TcpServerConfigBuilder {
 	}
 	
 	/**
-	 * Sets whether to enable TCP keep-alive for client connections.<br>
+	 * Sets whether to enable TCP keep-alive for the connections.<br>
 	 *
 	 * @param keepAlive True to enable keep-alive
 	 * @return This builder for method chaining
@@ -184,89 +167,35 @@ public final class TcpServerConfigBuilder {
 	}
 	
 	/**
-	 * Sets the executor strategy for handling concurrent client connections.<br>
+	 * Sets the strategy that creates the executor the connections are served on.<br>
 	 *
 	 * @param executorStrategy The executor strategy
 	 * @return This builder for method chaining
+	 * @throws NullPointerException If the executor strategy is null
 	 */
 	public @NonNull TcpServerConfigBuilder executorStrategy(@NonNull ClientExecutorStrategy executorStrategy) {
-		this.executorStrategy = executorStrategy;
+		this.executorStrategy = Objects.requireNonNull(executorStrategy, "Executor strategy must not be null");
 		return this;
 	}
 	
 	/**
-	 * Sets the handler called when a client connects.<br>
+	 * Sets the handler for failures on the threads of the server.<br>
 	 *
-	 * @param onClientConnect The connection handler, or null to disable
+	 * @param onError The error handler, or null to use the uncaught exception handler
 	 * @return This builder for method chaining
 	 */
-	public @NonNull TcpServerConfigBuilder onClientConnect(@Nullable ConnectEventHandler onClientConnect) {
-		this.onClientConnect = onClientConnect;
-		return this;
-	}
-	
-	/**
-	 * Sets the handler called when a client disconnects.<br>
-	 *
-	 * @param onClientDisconnect The disconnection handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull TcpServerConfigBuilder onClientDisconnect(@Nullable DisconnectEventHandler onClientDisconnect) {
-		this.onClientDisconnect = onClientDisconnect;
-		return this;
-	}
-	
-	/**
-	 * Sets the handler called when a message is received from a client.<br>
-	 *
-	 * @param onMessage The message handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull TcpServerConfigBuilder onMessage(@Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage) {
-		this.onMessage = onMessage;
-		return this;
-	}
-	
-	/**
-	 * Sets the handler that takes over the whole connection.<br>
-	 * <p>
-	 *     The handler is called once per client on the thread the server assigned to it and owns the connection until it returns.<br>
-	 *     While it runs, the server does not read from the connection, so the handler can read from {@link TcpConnection#getInputStream()}
-	 *     and write to {@link TcpConnection#getOutputStream()} exactly as its protocol requires.
-	 * </p>
-	 * <p>
-	 *     This replaces the built-in read loop, so it cannot be combined with {@link #onMessage(MessageEventHandler)}.<br>
-	 *     Setting both makes {@link #build()} fail.
-	 * </p>
-	 *
-	 * @param onConnection The connection handler, or null to use the built-in read loop
-	 * @return This builder for method chaining
-	 */
-	public @NonNull TcpServerConfigBuilder onConnection(@Nullable ConnectionHandler<TcpServer, TcpConnection> onConnection) {
-		this.onConnection = onConnection;
-		return this;
-	}
-	
-	/**
-	 * Sets the error event handler.<br>
-	 *
-	 * @param onError The error handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull TcpServerConfigBuilder onError(@Nullable ErrorEventHandler onError) {
+	public @NonNull TcpServerConfigBuilder onError(@Nullable ErrorHandler onError) {
 		this.onError = onError;
 		return this;
 	}
 	
 	/**
-	 * Builds a new TCP server configuration with the configured values.<br>
+	 * Builds a new stream server configuration with the configured values.<br>
 	 *
 	 * @return A new configuration instance
-	 * @throws IllegalArgumentException If both a message handler and a connection handler are set
+	 * @throws IllegalArgumentException If the backlog or the max message size is less than 1 or the client read timeout is not positive
 	 */
 	public @NonNull TcpServerConfig build() {
-		return new TcpServerConfig(
-			this.backlog, this.clientBufferSize, this.framing, this.clientReadTimeout, this.tcpNoDelay, this.keepAlive, this.executorStrategy, this.onClientConnect, this.onClientDisconnect, this.onMessage, this.onConnection, this.onError
-		);
+		return new TcpServerConfig(this.backlog, this.maxMessageSize, this.framing, this.clientReadTimeout, this.tcpNoDelay, this.keepAlive, this.executorStrategy, this.onError);
 	}
 }

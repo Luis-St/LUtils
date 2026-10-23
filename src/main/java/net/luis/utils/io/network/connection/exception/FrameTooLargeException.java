@@ -18,11 +18,13 @@
 
 package net.luis.utils.io.network.connection.exception;
 
+import net.luis.utils.io.network.connection.Framing;
+
 import java.io.IOException;
 import java.io.Serial;
 
 /**
- * Thrown by {@code NetworkUtils.readFrame} when a received frame declares a length that exceeds<br>
+ * Thrown by a {@link Framing} when a received message is longer than<br>
  * the maximum number of bytes the receiver is willing to accept.<br>
  *
  * @author Luis-St
