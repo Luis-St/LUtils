@@ -33,7 +33,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -70,11 +70,28 @@ public class StringReader implements AutoCloseable {
 	/**
 	 * The current index of the reader.<br>
 	 */
-	protected int index;
+	private int index;
 	/**
 	 * The marked index of the reader.<br>
 	 */
 	private int markedIndex = -1;
+	/**
+	 * The index to which the reader is reset if no index is marked.<br>
+	 * The start index is zero for a root reader and the index of the parent at creation for a sub reader.<br>
+	 */
+	private int startIndex;
+	/**
+	 * The reader this reader was created from, or null if this reader is a root reader.<br>
+	 */
+	private @Nullable StringReader parent;
+	/**
+	 * The currently active sub reader of this reader, or null if no sub reader is active.<br>
+	 */
+	private @Nullable StringReader child;
+	/**
+	 * Whether this reader is a sub reader which has been closed.<br>
+	 */
+	private boolean closed;
 	
 	/**
 	 * Constructs a new string reader with the given string and options.<br>
@@ -129,39 +146,112 @@ public class StringReader implements AutoCloseable {
 		return set;
 	}
 	
-	protected @Nullable StringReader parent;
-	protected @Nullable StringReader child;
-	
-	public <R extends StringReader> @NonNull R createSubReader(@NonNull Function<String, R> creator) {
-		Objects.requireNonNull(creator, "Creator must not be null");
-		if (this.child != null) {
-			throw new IllegalStateException("Cannot create a sub reader while another sub reader is already active");
+	/**
+	 * Validates the given terminator character.<br>
+	 *
+	 * @param terminator The terminator to validate
+	 * @throws IllegalArgumentException If the terminator is a backslash
+	 */
+	protected static void validateTerminator(char terminator) {
+		if (terminator == '\\') {
+			throw new IllegalArgumentException("Terminator must not be a backslash");
 		}
-		if (this.markedIndex != -1) {
-			throw new IllegalStateException("Cannot create a sub reader while this reader marked a position");
+	}
+	
+	/**
+	 * Validates the given terminator characters and returns them as a set without duplicates.<br>
+	 *
+	 * @param terminators The terminators to validate
+	 * @return The unique terminators
+	 * @throws NullPointerException If the terminator array is null
+	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
+	 */
+	protected static @NonNull Set<Character> validateTerminators(char @NonNull [] terminators) {
+		Objects.requireNonNull(terminators, "Terminators must not be null");
+		
+		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
+		if (uniqueTerminators.isEmpty()) {
+			throw new IllegalArgumentException("Terminators must not be empty");
+		}
+		if (uniqueTerminators.contains('\\')) {
+			throw new IllegalArgumentException("Terminators must not contain a backslash");
+		}
+		return uniqueTerminators;
+	}
+	
+	/**
+	 * Validates the given terminator string.<br>
+	 *
+	 * @param terminator The terminator string to validate
+	 * @throws NullPointerException If the terminator string is null
+	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
+	 */
+	protected static void validateTerminator(@NonNull String terminator) {
+		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		if (terminator.isEmpty()) {
+			throw new IllegalArgumentException("Terminator string must not be empty");
+		}
+		if (terminator.contains("\\")) {
+			throw new IllegalArgumentException("Terminator string must not contain a backslash");
+		}
+	}
+	
+	/**
+	 * Creates a sub reader which continues reading at the current index of this reader.<br>
+	 * The creator is called with the string and the options of this reader and must return a new reader created from them.<br>
+	 * <p>
+	 *     While the sub reader is active, all interactions with this reader are rejected.<br>
+	 *     Closing the sub reader transfers its index back to this reader and makes this reader usable again.<br>
+	 *     The sub reader can not be reset to an index before the index at which it was created.
+	 * </p>
+	 *
+	 * @param creator The function which creates the sub reader from the string and the options
+	 * @return The created sub reader
+	 * @param <R> The type of the sub reader
+	 * @throws NullPointerException If the creator is null or returns null
+	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
+	 * @throws IllegalArgumentException If the created reader is not a new reader of the same string and options
+	 */
+	public <R extends StringReader> @NonNull R createSubReader(@NonNull BiFunction<String, StringReadingOption[], R> creator) {
+		Objects.requireNonNull(creator, "Creator must not be null");
+		this.ensureUsable();
+		
+		R reader = Objects.requireNonNull(creator.apply(this.string, this.getOptions()), "Created sub reader must not be null");
+		StringReader subReader = reader;
+		if (subReader == this) {
+			throw new IllegalArgumentException("Sub reader must not be the reader it is created from");
+		}
+		if (!this.string.equals(subReader.string)) {
+			throw new IllegalArgumentException("Sub reader must be created from the same string as its parent reader");
+		}
+		if (!this.options.equals(subReader.options)) {
+			throw new IllegalArgumentException("Sub reader must be created with the same options as its parent reader, expected " + this.options + " but got " + subReader.options);
+		}
+		if (subReader.parent != null || subReader.child != null || subReader.closed) {
+			throw new IllegalArgumentException("Sub reader must be a new reader which is not linked to another reader");
 		}
 		
-		R reader = creator.apply(this.string);
-		reader.index = this.index;
-		reader.parent = this;
+		subReader.index = this.index;
+		subReader.startIndex = this.index;
+		subReader.parent = this;
 		this.child = reader;
 		return reader;
 	}
 	
+	/**
+	 * Ensures that this reader can be interacted with.<br>
+	 *
+	 * @throws IllegalStateException If this reader is a closed sub reader
+	 * @throws ConcurrentInteractionException If a child reader is active
+	 */
 	protected void ensureUsable() {
+		if (this.closed) {
+			throw new IllegalStateException("Interactions on a closed sub reader are not allowed");
+		}
 		if (this.child != null) {
 			throw new ConcurrentInteractionException("Interactions on the parent reader are not allowed while a child reader is active");
 		}
-	}
-	
-	@Override
-	public void close() {
-		if (this.parent == null) {
-			throw new IllegalStateException("Cannot close a reader which is not a child reader");
-		}
-		
-		this.parent.index = this.index;
-		this.parent.child = null;
 	}
 	
 	/**
@@ -198,6 +288,16 @@ public class StringReader implements AutoCloseable {
 	}
 	
 	/**
+	 * Returns the options of this reader as an array.<br>
+	 * The array can be used to create new readers which handle escaped characters and quoted parts like this reader.<br>
+	 *
+	 * @return A new array containing the options of this reader
+	 */
+	protected StringReadingOption @NonNull [] getOptions() {
+		return this.options.toArray(StringReadingOption[]::new);
+	}
+	
+	/**
 	 * Returns the string to read from.<br>
 	 * @return The string
 	 */
@@ -218,6 +318,7 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The next character
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IndexOutOfBoundsException If there are no more characters to read ({@link #canRead()} returns false)
 	 */
 	public char read() {
@@ -231,6 +332,7 @@ public class StringReader implements AutoCloseable {
 	 * @param amount The number of characters to read
 	 * @return The read characters as a string
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 * @throws IndexOutOfBoundsException If there are not enough characters to read ({@link #canRead(int)} returns false)
 	 */
@@ -256,6 +358,7 @@ public class StringReader implements AutoCloseable {
 	 * @param amount The number of characters to read
 	 * @return True if there is at least a given number of characters to read, otherwise false
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 */
 	public boolean canRead(int amount) {
@@ -272,6 +375,7 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return True if there are more characters to read, otherwise false
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public boolean canRead() {
 		this.ensureUsable();
@@ -286,6 +390,7 @@ public class StringReader implements AutoCloseable {
 	 * @return True if the number of characters to read matches the predicate, otherwise false
 	 * @throws NullPointerException If the predicate is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 */
 	public boolean canRead(int amount, @NonNull Predicate<Character> predicate) {
@@ -295,8 +400,11 @@ public class StringReader implements AutoCloseable {
 			throw new IllegalArgumentException("Amount must be greater than zero");
 		}
 		
+		if (!this.canRead(amount)) {
+			return false;
+		}
 		for (int i = 0; i < amount; i++) {
-			if (!this.canRead() || !predicate.test(this.string.charAt(this.index + i))) {
+			if (!predicate.test(this.string.charAt(this.index + i))) {
 				return false;
 			}
 		}
@@ -308,6 +416,7 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The current character
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public char peek() {
 		this.ensureUsable();
@@ -321,6 +430,7 @@ public class StringReader implements AutoCloseable {
 	 * @param amount The number of characters to peek
 	 * @return The peeked characters as a string
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 */
 	public @NonNull String peek(int amount) {
@@ -340,6 +450,7 @@ public class StringReader implements AutoCloseable {
 	 * Increments the index by one.<br>
 	 *
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public void skip() {
 		this.ensureUsable();
@@ -351,6 +462,7 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @param amount The number of characters to skip
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 */
 	public void skip(int amount) {
@@ -369,6 +481,7 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @param c The character to skip
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public void skip(char c) {
 		this.ensureUsable();
@@ -386,6 +499,7 @@ public class StringReader implements AutoCloseable {
 	 * @param predicate The predicate to match
 	 * @throws NullPointerException If the predicate is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public void skip(@NonNull Predicate<Character> predicate) {
 		Objects.requireNonNull(predicate, "Predicate must not be null");
@@ -401,6 +515,7 @@ public class StringReader implements AutoCloseable {
 	 * A whitespace is a character that returns true when calling {@link Character#isWhitespace(char)}.<br>
 	 *
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public void skipWhitespaces() {
 		this.ensureUsable();
@@ -413,6 +528,7 @@ public class StringReader implements AutoCloseable {
 	 * After calling {@link #reset()}, the marked index will be reset.<br>
 	 *
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public void mark() {
 		this.ensureUsable();
@@ -420,16 +536,18 @@ public class StringReader implements AutoCloseable {
 	}
 	
 	/**
-	 * Resets the index of the reader to zero or if set to the marked index.<br>
+	 * Resets the index of the reader to the marked index if set, otherwise to the start index.<br>
+	 * The start index is zero, or the index at which the reader was created if it is a sub reader.<br>
 	 * If the marked index is set, it will be reset after calling this method.<br>
 	 *
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public void reset() {
 		this.ensureUsable();
 		
 		if (this.markedIndex == -1) {
-			this.index = 0;
+			this.index = this.startIndex;
 		} else {
 			this.index = this.markedIndex;
 			this.markedIndex = -1;
@@ -443,6 +561,7 @@ public class StringReader implements AutoCloseable {
 	 * @param includeLineBreak Whether the line break should be included in the result or not
 	 * @return The line which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public @NonNull String readLine(boolean includeLineBreak) {
 		this.ensureUsable();
@@ -489,6 +608,7 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The remaining string
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public @NonNull String readRemaining() {
 		this.ensureUsable();
@@ -507,6 +627,7 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The string read until the default terminator
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @see #readUnquotedString(char)
 	 */
 	public @NonNull String readUnquotedString() {
@@ -521,6 +642,7 @@ public class StringReader implements AutoCloseable {
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 */
 	public @NonNull String readUnquotedString(char terminator) {
@@ -546,13 +668,16 @@ public class StringReader implements AutoCloseable {
 	 * The quotes are read but not included in the result.<br>
 	 * <p>
 	 *     Quotes ignored by the {@link StringReadingOption}s of this reader are not accepted as quotes.<br>
-	 *     If escaping is enabled, an escaped quote does not end the quoted string.
+	 *     If escaping is enabled, an escaped quote does not end the quoted string.<br>
+	 *     The escape characters are kept in the result.<br>
+	 *     Only the quote which opened the string closes it, the other quote is read as a normal character.
 	 * </p>
 	 *
 	 * @return The quoted string which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
-	 * @throws InvalidStringException If the next read character is not a (handled) single or double quote
+	 * @throws InvalidStringException If the next read character is not a (handled) single or double quote or the quoted string is not closed
 	 */
 	public @NonNull String readQuotedString() {
 		this.ensureUsable();
@@ -577,25 +702,26 @@ public class StringReader implements AutoCloseable {
 				builder.append(c);
 				escaped = true;
 			} else if (c == next) {
-				break;
+				return builder.toString();
 			} else {
 				builder.append(c);
 			}
 		}
-		return builder.toString();
+		throw new InvalidStringException("Expected a closing quote '" + next + "' but reached the end of the string: '" + next + builder + "'");
 	}
 	
 	/**
 	 * Reads a string.<br>
 	 * <p>
 	 *     If the next character is a (handled) single or double quote,<br>
-	 *     {@link #readQuotedString()} is called otherwise {@link #readUnquotedString()} is called.<br>
-	 *     If there are no more characters to read, an empty string is returned.
+	 *     {@link #readQuotedString()} is called otherwise {@link #readUnquotedString()} is called.
 	 * </p>
 	 *
 	 * @return The string which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the string is quoted and the quoted string is not closed
 	 * @see #readQuotedString()
 	 * @see #readUnquotedString()
 	 */
@@ -607,8 +733,7 @@ public class StringReader implements AutoCloseable {
 		
 		char next = this.peek();
 		if (this.isSingleQuote(next) || this.isDoubleQuote(next)) {
-			this.skip();
-			return this.readUntilSkip(next);
+			return this.readQuotedString();
 		}
 		return this.readUnquotedString();
 	}
@@ -631,13 +756,12 @@ public class StringReader implements AutoCloseable {
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 */
 	public @NonNull String readUntil(char terminator) {
 		this.ensureUsable();
-		if (terminator == '\\') {
-			throw new IllegalArgumentException("Terminator must not be a backslash");
-		}
+		validateTerminator(terminator);
 		
 		return this.readUntil(c -> c == terminator, false);
 	}
@@ -660,13 +784,12 @@ public class StringReader implements AutoCloseable {
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator is found, inclusive of the terminator
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 */
 	public @NonNull String readUntilInclusive(char terminator) {
 		this.ensureUsable();
-		if (terminator == '\\') {
-			throw new IllegalArgumentException("Terminator must not be a backslash");
-		}
+		validateTerminator(terminator);
 		
 		return this.readUntil(c -> c == terminator, true);
 	}
@@ -689,13 +812,12 @@ public class StringReader implements AutoCloseable {
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 */
 	public @NonNull String readUntilSkip(char terminator) {
 		this.ensureUsable();
-		if (terminator == '\\') {
-			throw new IllegalArgumentException("Terminator must not be a backslash");
-		}
+		validateTerminator(terminator);
 		
 		String str = this.readUntil(c -> c == terminator, false);
 		if (this.canRead()) {
@@ -723,20 +845,14 @@ public class StringReader implements AutoCloseable {
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator array is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
-	@SuppressWarnings("DuplicatedCode")
 	public @NonNull String readUntil(char @NonNull ... terminators) {
 		Objects.requireNonNull(terminators, "Terminators must not be null");
 		this.ensureUsable();
 		
-		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
-		if (uniqueTerminators.isEmpty()) {
-			throw new IllegalArgumentException("Terminators must not be empty");
-		}
-		if (uniqueTerminators.contains('\\')) {
-			throw new IllegalArgumentException("Terminators must not contain a backslash");
-		}
+		Set<Character> uniqueTerminators = validateTerminators(terminators);
 		return this.readUntil(uniqueTerminators::contains, false);
 	}
 	
@@ -759,20 +875,14 @@ public class StringReader implements AutoCloseable {
 	 * @return The string which was read until the terminator is found, inclusive of the terminator
 	 * @throws NullPointerException If the terminator array is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
-	@SuppressWarnings("DuplicatedCode")
 	public @NonNull String readUntilInclusive(char @NonNull ... terminators) {
 		Objects.requireNonNull(terminators, "Terminators must not be null");
 		this.ensureUsable();
 		
-		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
-		if (uniqueTerminators.isEmpty()) {
-			throw new IllegalArgumentException("Terminators must not be empty");
-		}
-		if (uniqueTerminators.contains('\\')) {
-			throw new IllegalArgumentException("Terminators must not contain a backslash");
-		}
+		Set<Character> uniqueTerminators = validateTerminators(terminators);
 		return this.readUntil(uniqueTerminators::contains, true);
 	}
 	
@@ -795,21 +905,14 @@ public class StringReader implements AutoCloseable {
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator array is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
-	@SuppressWarnings("DuplicatedCode")
 	public @NonNull String readUntilSkip(char @NonNull ... terminators) {
 		Objects.requireNonNull(terminators, "Terminators must not be null");
 		this.ensureUsable();
 		
-		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
-		if (uniqueTerminators.isEmpty()) {
-			throw new IllegalArgumentException("Terminators must not be empty");
-		}
-		if (uniqueTerminators.contains('\\')) {
-			throw new IllegalArgumentException("Terminators must not contain a backslash");
-		}
-		
+		Set<Character> uniqueTerminators = validateTerminators(terminators);
 		String str = this.readUntil(uniqueTerminators::contains, false);
 		if (this.canRead()) {
 			this.skip();
@@ -836,6 +939,7 @@ public class StringReader implements AutoCloseable {
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public @NonNull String readUntil(@NonNull Predicate<Character> predicate) {
 		return this.readUntil(predicate, false);
@@ -860,6 +964,7 @@ public class StringReader implements AutoCloseable {
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public @NonNull String readUntilInclusive(@NonNull Predicate<Character> predicate) {
 		return this.readUntil(predicate, true);
@@ -884,6 +989,7 @@ public class StringReader implements AutoCloseable {
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 */
 	public @NonNull String readUntilSkip(@NonNull Predicate<Character> predicate) {
 		String str = this.readUntil(predicate, false);
@@ -901,6 +1007,7 @@ public class StringReader implements AutoCloseable {
 	 * @return The string which was read until the predicate is true
 	 * @throws NullPointerException If the predicate is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @see #readUntil(char)
 	 * @see #readUntilInclusive(char)
 	 * @see #readUntilSkip(char)
@@ -962,19 +1069,14 @@ public class StringReader implements AutoCloseable {
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator string is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 */
 	public @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
 		this.ensureUsable();
-		if (terminator.isEmpty()) {
-			throw new IllegalArgumentException("Terminator string must not be empty");
-		}
-		if (terminator.length() == 1) {
-			return this.readUntil(terminator.charAt(0));
-		}
 		
-		return this.readUntil(terminator, caseSensitive, false);
+		return terminator.length() == 1 ? this.readUntil(terminator.charAt(0)) : this.readUntil(terminator, caseSensitive, false);
 	}
 	
 	/**
@@ -996,19 +1098,14 @@ public class StringReader implements AutoCloseable {
 	 * @return The string which was read until the terminator is found, inclusive of the terminator
 	 * @throws NullPointerException If the terminator string is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 */
 	public @NonNull String readUntilInclusive(@NonNull String terminator, boolean caseSensitive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
 		this.ensureUsable();
-		if (terminator.isEmpty()) {
-			throw new IllegalArgumentException("Terminators string must not be empty");
-		}
-		if (terminator.length() == 1) {
-			return this.readUntilInclusive(terminator.charAt(0));
-		}
 		
-		return this.readUntil(terminator, caseSensitive, true);
+		return terminator.length() == 1 ? this.readUntilInclusive(terminator.charAt(0)) : this.readUntil(terminator, caseSensitive, true);
 	}
 	
 	/**
@@ -1030,6 +1127,7 @@ public class StringReader implements AutoCloseable {
 	 * @return The string which was read until the terminator
 	 * @throws NullPointerException If the terminator string is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 */
 	public @NonNull String readUntilSkip(@NonNull String terminator, boolean caseSensitive) {
@@ -1053,6 +1151,7 @@ public class StringReader implements AutoCloseable {
 	 * @return The string which was read until the equals predicate is true
 	 * @throws NullPointerException If the terminator string is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 * @see #readUntil(String, boolean)
 	 * @see #readUntilInclusive(String, boolean)
@@ -1062,12 +1161,7 @@ public class StringReader implements AutoCloseable {
 	protected @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive, boolean inclusive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
 		this.ensureUsable();
-		if (terminator.isEmpty()) {
-			throw new IllegalArgumentException("Terminators string must not be empty");
-		}
-		if (terminator.contains("\\")) {
-			throw new IllegalArgumentException("Terminator string must not contain a backslash");
-		}
+		validateTerminator(terminator);
 		
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
@@ -1118,6 +1212,7 @@ public class StringReader implements AutoCloseable {
 	 * @return The expected string which was read
 	 * @throws NullPointerException  If the expected string is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws IllegalArgumentException If the expected string is empty
 	 * @throws InvalidStringException If the string read does not match the expected string
@@ -1177,6 +1272,7 @@ public class StringReader implements AutoCloseable {
 	 * @return The expected string which was read
 	 * @throws NullPointerException  If the list of expected strings is null
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws IllegalArgumentException If the list of expected strings is empty
 	 * @throws InvalidStringException If the string read does not match any of the expected strings
@@ -1250,6 +1346,7 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The boolean value which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a boolean
 	 */
@@ -1313,6 +1410,7 @@ public class StringReader implements AutoCloseable {
 	 * @param initialType The initial number type to read as
 	 * @return The number as a string which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws InvalidStringException If the read value is not a (valid) number
 	 */
 	private @Nullable ParsedNumber readNumberAsString(@Nullable NumberType initialType) {
@@ -1324,7 +1422,7 @@ public class StringReader implements AutoCloseable {
 		char next = this.peek();
 		if (this.isSingleQuote(next) || this.isDoubleQuote(next)) {
 			String number = this.readQuotedString();
-			return new StringReader(number, this.options.toArray(StringReadingOption[]::new)).readNumberAsString(initialType);
+			return new StringReader(number, this.getOptions()).readNumberAsString(initialType);
 		}
 		
 		char sign = '+';
@@ -1460,6 +1558,7 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The number value which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) number
 	 * @see #readNumberAsString(NumberType)
@@ -1483,30 +1582,13 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The byte value which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) byte
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public byte readByte() {
-		this.ensureUsable();
-		if (!this.canRead()) {
-			throw new StringIndexOutOfBoundsException("Expected a byte value but found nothing");
-		}
-		
-		ParsedNumber number = this.readNumberAsString(NumberType.BYTE);
-		if (number == null || number.value().isEmpty()) {
-			throw new InvalidStringException("Expected a byte value but found nothing");
-		}
-		
-		if (number.type() != NumberType.BYTE) {
-			throw new InvalidStringException("Expected a byte value but found: '" + number + "'");
-		}
-		
-		try {
-			return number.type().parseNumber(number.getSignedValue(), number.radix());
-		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Unable to parse byte value: '" + number + "'", e);
-		}
+		return this.readNumberOfType(NumberType.BYTE, "byte value");
 	}
 	
 	/**
@@ -1515,30 +1597,13 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The short value which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) short
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public short readShort() {
-		this.ensureUsable();
-		if (!this.canRead()) {
-			throw new StringIndexOutOfBoundsException("Expected a short value but found nothing");
-		}
-		
-		ParsedNumber number = this.readNumberAsString(NumberType.SHORT);
-		if (number == null || number.value().isEmpty()) {
-			throw new InvalidStringException("Expected a short value but found nothing");
-		}
-		
-		if (number.type() != NumberType.SHORT) {
-			throw new InvalidStringException("Expected a short value but found: '" + number + "'");
-		}
-		
-		try {
-			return number.type().parseNumber(number.getSignedValue(), number.radix());
-		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Unable to parse short value: '" + number + "'", e);
-		}
+		return this.readNumberOfType(NumberType.SHORT, "short value");
 	}
 	
 	/**
@@ -1547,29 +1612,13 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The integer value which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) integer
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public int readInt() {
-		this.ensureUsable();
-		if (!this.canRead()) {
-			throw new StringIndexOutOfBoundsException("Expected an integer value but found nothing");
-		}
-		
-		ParsedNumber number = this.readNumberAsString(NumberType.INTEGER);
-		if (number == null || number.value().isEmpty()) {
-			throw new InvalidStringException("Expected a integer value but found nothing");
-		}
-		
-		if (number.type() != NumberType.INTEGER) {
-			throw new InvalidStringException("Expected a integer value but found: '" + number + "'");
-		}
-		
-		try {
-			return number.type().parseNumber(number.getSignedValue(), number.radix());
-		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Unable to parse integer value: '" + number + "'", e);
-		}
+		return this.readNumberOfType(NumberType.INTEGER, "integer value");
 	}
 	
 	/**
@@ -1578,30 +1627,13 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The long value which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) long
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public long readLong() {
-		this.ensureUsable();
-		if (!this.canRead()) {
-			throw new StringIndexOutOfBoundsException("Expected a long value but found nothing");
-		}
-		
-		ParsedNumber number = this.readNumberAsString(NumberType.LONG);
-		if (number == null || number.value().isEmpty()) {
-			throw new InvalidStringException("Expected a long value but found nothing");
-		}
-		
-		if (number.type() != NumberType.LONG) {
-			throw new InvalidStringException("Expected a long value but found: '" + number + "'");
-		}
-		
-		try {
-			return number.type().parseNumber(number.getSignedValue(), number.radix());
-		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Unable to parse long value: '" + number + "'", e);
-		}
+		return this.readNumberOfType(NumberType.LONG, "long value");
 	}
 	
 	/**
@@ -1610,30 +1642,13 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The float value which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) float
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public float readFloat() {
-		this.ensureUsable();
-		if (!this.canRead()) {
-			throw new StringIndexOutOfBoundsException("Expected a float value but found nothing");
-		}
-		
-		ParsedNumber number = this.readNumberAsString(NumberType.FLOAT);
-		if (number == null || number.value().isEmpty()) {
-			throw new InvalidStringException("Expected a float value but found nothing");
-		}
-		
-		if (number.type() != NumberType.FLOAT) {
-			throw new InvalidStringException("Expected a float value but found: '" + number + "'");
-		}
-		
-		try {
-			return number.type().parseNumber(number.getSignedValue(), number.radix());
-		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Unable to parse float value: '" + number + "'", e);
-		}
+		return this.readNumberOfType(NumberType.FLOAT, "float value");
 	}
 	
 	/**
@@ -1642,30 +1657,13 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The double value which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) double
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public double readDouble() {
-		this.ensureUsable();
-		if (!this.canRead()) {
-			throw new StringIndexOutOfBoundsException("Expected a double value but found nothing");
-		}
-		
-		ParsedNumber number = this.readNumberAsString(NumberType.DOUBLE);
-		if (number == null || number.value().isEmpty()) {
-			throw new InvalidStringException("Expected a double value but found nothing");
-		}
-		
-		if (number.type() != NumberType.DOUBLE) {
-			throw new InvalidStringException("Expected a double value but found: '" + number + "'");
-		}
-		
-		try {
-			return number.type().parseNumber(number.getSignedValue(), number.radix());
-		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Unable to parse double value: '" + number + "'", e);
-		}
+		return this.readNumberOfType(NumberType.DOUBLE, "double value");
 	}
 	
 	/**
@@ -1673,30 +1671,13 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The big integer value which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) big integer
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public @NonNull BigInteger readBigInteger() {
-		this.ensureUsable();
-		if (!this.canRead()) {
-			throw new StringIndexOutOfBoundsException("Expected a big integer value but found nothing");
-		}
-		
-		ParsedNumber number = this.readNumberAsString(NumberType.BIG_INTEGER);
-		if (number == null || number.value().isEmpty()) {
-			throw new InvalidStringException("Expected a big integer value but found nothing");
-		}
-		
-		if (number.type() != NumberType.BIG_INTEGER) {
-			throw new InvalidStringException("Expected a big integer value but found: '" + number + "'");
-		}
-		
-		try {
-			return number.type().parseNumber(number.getSignedValue(), number.radix());
-		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Unable to parse big integer value: '" + number + "'", e);
-		}
+		return this.readNumberOfType(NumberType.BIG_INTEGER, "big integer value");
 	}
 	
 	/**
@@ -1704,29 +1685,51 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The big decimal value which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) big decimal
 	 * @see #readNumberAsString(NumberType)
 	 */
 	public @NonNull BigDecimal readBigDecimal() {
+		return this.readNumberOfType(NumberType.BIG_DECIMAL, "big decimal value");
+	}
+	
+	/**
+	 * Reads a number of the given type.<br>
+	 *
+	 * @param type The type of the number to read
+	 * @param name The name of the value used in error messages
+	 * @return The number value which was read
+	 * @param <T> The type of the number
+	 * @throws NullPointerException If the type or name is null
+	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a (valid) number of the given type
+	 * @see #readNumberAsString(NumberType)
+	 */
+	private <T extends Number> @NonNull T readNumberOfType(@NonNull NumberType type, @NonNull String name) {
+		Objects.requireNonNull(type, "Number type must not be null");
+		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureUsable();
+		String description = ("aeiou".indexOf(name.charAt(0)) >= 0 ? "an " : "a ") + name;
 		if (!this.canRead()) {
-			throw new StringIndexOutOfBoundsException("Expected a big decimal value but found nothing");
+			throw new StringIndexOutOfBoundsException("Expected " + description + " but found nothing");
 		}
 		
-		ParsedNumber number = this.readNumberAsString(NumberType.BIG_DECIMAL);
+		ParsedNumber number = this.readNumberAsString(type);
 		if (number == null || number.value().isEmpty()) {
-			throw new InvalidStringException("Expected a big decimal value but found nothing");
+			throw new InvalidStringException("Expected " + description + " but found nothing");
 		}
 		
-		if (number.type() != NumberType.BIG_DECIMAL) {
-			throw new InvalidStringException("Expected a big decimal value but found: '" + number + "'");
+		if (number.type() != type) {
+			throw new InvalidStringException("Expected " + description + " but found: '" + number + "'");
 		}
 		
 		try {
-			return number.type().parseNumber(number.getSignedValue(), number.radix());
+			return type.parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Unable to parse big decimal value: '" + number + "'", e);
+			throw new InvalidStringException("Unable to parse " + name + ": '" + number + "'", e);
 		}
 	}
 	
@@ -1767,6 +1770,7 @@ public class StringReader implements AutoCloseable {
 	 *
 	 * @return The object which was read
 	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @see #readQuotedString()
 	 * @see #readBoolean()
@@ -1838,19 +1842,45 @@ public class StringReader implements AutoCloseable {
 		return this.readUnquotedString();
 	}
 	
+	/**
+	 * Closes this reader.<br>
+	 * <p>
+	 *     If this reader is a sub reader, its index is transferred back to its parent reader and the parent reader becomes usable again.<br>
+	 *     A closed sub reader can no longer be used.<br>
+	 *     Closing a reader which is not a sub reader or which is already closed has no effect.
+	 * </p>
+	 *
+	 * @throws ConcurrentInteractionException If a child reader of this reader is active
+	 */
+	@Override
+	public void close() {
+		if (this.parent == null || this.closed) {
+			return;
+		}
+		if (this.child != null) {
+			throw new ConcurrentInteractionException("Cannot close a sub reader while its own child reader is active");
+		}
+		
+		this.parent.index = this.index;
+		this.parent.child = null;
+		this.closed = true;
+	}
+	
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
-		if (!(o instanceof StringReader that)) return false;
+		if (o == null || this.getClass() != o.getClass()) return false;
+		StringReader that = (StringReader) o;
 		
 		if (this.index != that.index) return false;
 		if (this.markedIndex != that.markedIndex) return false;
+		if (!this.options.equals(that.options)) return false;
 		return this.string.equals(that.string);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.string);
+		return Objects.hash(this.string, this.options);
 	}
 	//endregion
 	
