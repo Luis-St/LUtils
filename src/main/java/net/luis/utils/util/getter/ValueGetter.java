@@ -20,7 +20,7 @@ package net.luis.utils.util.getter;
 
 import net.luis.utils.exception.InvalidStringException;
 import net.luis.utils.function.throwable.ThrowableFunction;
-import net.luis.utils.io.reader.StringReader;
+import net.luis.utils.io.reader.ValueStringReader;
 import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
 
@@ -81,7 +81,7 @@ public interface ValueGetter {
 	default @NonNull Number getAsNumber() {
 		String value = this.getAsString();
 		try {
-			return new StringReader(value).readNumber();
+			return new ValueStringReader(value).readNumber();
 		} catch (InvalidStringException | StringIndexOutOfBoundsException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a number: " + e.getMessage(), e.getCause());
 		}
@@ -96,7 +96,7 @@ public interface ValueGetter {
 	default byte getAsByte() {
 		String value = this.getAsString();
 		try {
-			return new StringReader(value).readByte();
+			return new ValueStringReader(value).readByte();
 		} catch (InvalidStringException | StringIndexOutOfBoundsException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a byte: " + e.getMessage(), e.getCause());
 		}
@@ -111,7 +111,7 @@ public interface ValueGetter {
 	default short getAsShort() {
 		String value = this.getAsString();
 		try {
-			return new StringReader(value).readShort();
+			return new ValueStringReader(value).readShort();
 		} catch (InvalidStringException | StringIndexOutOfBoundsException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a short: " + e.getMessage(), e.getCause());
 		}
@@ -126,7 +126,7 @@ public interface ValueGetter {
 	default int getAsInteger() {
 		String value = this.getAsString();
 		try {
-			return new StringReader(value).readInt();
+			return new ValueStringReader(value).readInt();
 		} catch (InvalidStringException | StringIndexOutOfBoundsException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as an integer: " + e.getMessage(), e.getCause());
 		}
@@ -141,7 +141,7 @@ public interface ValueGetter {
 	default long getAsLong() {
 		String value = this.getAsString();
 		try {
-			return new StringReader(value).readLong();
+			return new ValueStringReader(value).readLong();
 		} catch (InvalidStringException | StringIndexOutOfBoundsException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a long: " + e.getMessage(), e.getCause());
 		}
@@ -156,7 +156,7 @@ public interface ValueGetter {
 	default float getAsFloat() {
 		String value = this.getAsString();
 		try {
-			return new StringReader(value).readFloat();
+			return new ValueStringReader(value).readFloat();
 		} catch (InvalidStringException | StringIndexOutOfBoundsException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a float: " + e.getMessage(), e.getCause());
 		}
@@ -171,7 +171,7 @@ public interface ValueGetter {
 	default double getAsDouble() {
 		String value = this.getAsString();
 		try {
-			return new StringReader(value).readDouble();
+			return new ValueStringReader(value).readDouble();
 		} catch (InvalidStringException | StringIndexOutOfBoundsException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a double: " + e.getMessage(), e.getCause());
 		}

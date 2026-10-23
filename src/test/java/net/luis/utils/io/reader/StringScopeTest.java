@@ -18,11 +18,7 @@
 
 package net.luis.utils.io.reader;
 
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.parallel.ResourceLock;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,126 +27,43 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
-@ResourceLock("net.luis.utils.io.reader.StringScope.SCOPE_REGISTRY")
-public class StringScopeTest {
+class StringScopeTest {
 	
-	private static Map<Character, Character> originalScopes;
-	
-	@BeforeAll
-	static void setup() {
-		originalScopes = new HashMap<>(StringScope.SCOPE_REGISTRY);
-	}
-	
-	@AfterAll
-	static void teardown() {
-		StringScope.SCOPE_REGISTRY.clear();
-		StringScope.SCOPE_REGISTRY.putAll(originalScopes);
+	@Test
+	void constructWithValidCharacters() {
+		StringScope parentheses = new StringScope('(', ')');
+		assertEquals('(', parentheses.open());
+		assertEquals(')', parentheses.close());
+		
+		StringScope letters = new StringScope('a', 'z');
+		assertEquals('a', letters.open());
+		assertEquals('z', letters.close());
 	}
 	
 	@Test
-	void constructorWithNullCharacters() {
-		assertThrows(IllegalArgumentException.class, () -> new StringScope('\0', '\''));
-		assertThrows(IllegalArgumentException.class, () -> new StringScope('\'', '\0'));
-		assertThrows(IllegalArgumentException.class, () -> new StringScope('\0', '\0'));
-	}
-	
-	@Test
-	void constructorWithSameCharacters() {
+	void constructWithSameCharacters() {
 		assertThrows(IllegalArgumentException.class, () -> new StringScope('"', '"'));
 		assertThrows(IllegalArgumentException.class, () -> new StringScope('a', 'a'));
-		assertThrows(IllegalArgumentException.class, () -> new StringScope('1', '1'));
 	}
 	
 	@Test
-	void constructorWithValidCharacters() {
-		assertDoesNotThrow(() -> new StringScope('(', ')'));
-		assertDoesNotThrow(() -> new StringScope('[', ']'));
-		assertDoesNotThrow(() -> new StringScope('{', '}'));
-		assertDoesNotThrow(() -> new StringScope('<', '>'));
+	void constructWithNullCharacter() {
+		assertThrows(IllegalArgumentException.class, () -> new StringScope('\0', ')'));
+		assertThrows(IllegalArgumentException.class, () -> new StringScope('(', '\0'));
 	}
 	
 	@Test
-	void constructorWithCustomCharacters() {
-		StringScope custom1 = assertDoesNotThrow(() -> new StringScope('a', 'z'));
-		assertEquals('a', custom1.open());
-		assertEquals('z', custom1.close());
-		
-		StringScope custom2 = assertDoesNotThrow(() -> new StringScope('1', '9'));
-		assertEquals('1', custom2.open());
-		assertEquals('9', custom2.close());
+	void constantScopes() {
+		assertEquals(new StringScope('(', ')'), StringScope.PARENTHESES);
+		assertEquals(new StringScope('{', '}'), StringScope.CURLY_BRACKETS);
+		assertEquals(new StringScope('[', ']'), StringScope.SQUARE_BRACKETS);
+		assertEquals(new StringScope('<', '>'), StringScope.ANGLE_BRACKETS);
 	}
 	
 	@Test
-	void constructorRegistersScope() {
-		char open = 'X';
-		char close = 'Y';
-		
-		assertFalse(StringScope.SCOPE_REGISTRY.containsKey(open));
-		
-		StringScope scope = new StringScope(open, close);
-		
-		assertTrue(StringScope.SCOPE_REGISTRY.containsKey(open));
-		assertEquals(close, StringScope.SCOPE_REGISTRY.get(open));
-	}
-	
-	@Test
-	void predefinedScopesAreRegistered() {
-		assertTrue(StringScope.SCOPE_REGISTRY.containsKey('('));
-		assertEquals(')', StringScope.SCOPE_REGISTRY.get('('));
-		
-		assertTrue(StringScope.SCOPE_REGISTRY.containsKey('{'));
-		assertEquals('}', StringScope.SCOPE_REGISTRY.get('{'));
-		
-		assertTrue(StringScope.SCOPE_REGISTRY.containsKey('['));
-		assertEquals(']', StringScope.SCOPE_REGISTRY.get('['));
-		
-		assertTrue(StringScope.SCOPE_REGISTRY.containsKey('<'));
-		assertEquals('>', StringScope.SCOPE_REGISTRY.get('<'));
-	}
-	
-	@Test
-	void predefinedScopesHaveCorrectValues() {
-		assertEquals('(', StringScope.PARENTHESES.open());
-		assertEquals(')', StringScope.PARENTHESES.close());
-		
-		assertEquals('{', StringScope.CURLY_BRACKETS.open());
-		assertEquals('}', StringScope.CURLY_BRACKETS.close());
-		
-		assertEquals('[', StringScope.SQUARE_BRACKETS.open());
-		assertEquals(']', StringScope.SQUARE_BRACKETS.close());
-		
-		assertEquals('<', StringScope.ANGLE_BRACKETS.open());
-		assertEquals('>', StringScope.ANGLE_BRACKETS.close());
-	}
-	
-	@Test
-	void scopeEquality() {
-		StringScope scope1 = new StringScope('A', 'B');
-		StringScope scope2 = new StringScope('A', 'B');
-		StringScope scope3 = new StringScope('C', 'D');
-		
-		assertEquals(scope1, scope2);
-		assertNotEquals(scope1, scope3);
-		assertNotEquals(scope2, scope3);
-	}
-	
-	@Test
-	void scopeHashCode() {
-		StringScope scope1 = new StringScope('E', 'F');
-		StringScope scope2 = new StringScope('E', 'F');
-		
-		if (scope1.equals(scope2)) {
-			assertEquals(scope1.hashCode(), scope2.hashCode());
-		}
-	}
-	
-	@Test
-	void scopeToString() {
-		StringScope scope = new StringScope('G', 'H');
-		String toString = scope.toString();
-		
-		assertNotNull(toString);
-		assertTrue(toString.contains("G"));
-		assertTrue(toString.contains("H"));
+	void equalScopes() {
+		StringScope scope = new StringScope('(', ')');
+		assertEquals(StringScope.PARENTHESES, scope);
+		assertEquals(StringScope.PARENTHESES.hashCode(), scope.hashCode());
 	}
 }

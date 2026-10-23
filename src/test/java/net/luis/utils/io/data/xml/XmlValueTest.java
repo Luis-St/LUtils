@@ -20,7 +20,6 @@ package net.luis.utils.io.data.xml;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.reader.StringReader;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -369,7 +368,7 @@ class XmlValueTest {
 	
 	@Test
 	void getAsWithParser() {
-		ThrowableFunction<String, List<Boolean>, Exception> parser = string -> new ScopedStringReader(string).readList(StringReader::readBoolean);
+		ThrowableFunction<String, List<Boolean>, Exception> parser = string -> new ScopedStringReader(string).readList(ScopedStringReader::readBoolean);
 		
 		assertThrows(NullPointerException.class, () -> new XmlValue("test", "[true, false]").getAs(null));
 		assertThrows(IllegalArgumentException.class, () -> new XmlValue("test", "true").getAs(parser));
@@ -380,7 +379,7 @@ class XmlValueTest {
 	
 	@Test
 	void getAsWithParserAndDefault() {
-		ThrowableFunction<String, List<Boolean>, Exception> parser = string -> new ScopedStringReader(string).readList(StringReader::readBoolean);
+		ThrowableFunction<String, List<Boolean>, Exception> parser = string -> new ScopedStringReader(string).readList(ScopedStringReader::readBoolean);
 		
 		assertThrows(NullPointerException.class, () -> new XmlValue("test", "true").getAs(parser, null));
 		assertThrows(NullPointerException.class, () -> new XmlValue("test", "[true, false]").getAs(parser, null));

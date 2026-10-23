@@ -18,16 +18,16 @@
 
 package net.luis.utils.io.reader;
 
+import net.luis.utils.exception.ConcurrentInteractionException;
 import net.luis.utils.exception.InvalidStringException;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import java.io.Reader;
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.io.*;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
-import static net.luis.utils.io.reader.StringReadingOption.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -37,837 +37,812 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class StringReaderTest {
 	
-	private static final double PRECISION = 0.0001;
-	
 	@Test
-	void constructor() {
-		assertThrows(NullPointerException.class, () -> new StringReader((String) null));
-		assertThrows(NullPointerException.class, () -> new StringReader((Reader) null));
-		assertThrows(NullPointerException.class, () -> new StringReader("test", (StringReadingOption[]) null));
-		assertThrows(NullPointerException.class, () -> new StringReader("test", (StringReadingOption) null));
-		assertThrows(NullPointerException.class, () -> new StringReader("test", IGNORE_ESCAPES, null));
-		assertThrows(NullPointerException.class, () -> new StringReader(new java.io.StringReader("test"), (StringReadingOption[]) null));
-		assertDoesNotThrow(() -> new StringReader("test", IGNORE_ESCAPES, IGNORE_SINGLE_QUOTES, IGNORE_DOUBLE_QUOTES));
-		assertDoesNotThrow(() -> new StringReader(new java.io.StringReader("test"), IGNORE_ESCAPES, IGNORE_ESCAPES));
-	}
-	
-	@Test
-	void getString() {
+	void constructWithString() {
 		StringReader reader = new StringReader("test");
-		assertNotNull(reader.getString());
 		assertEquals("test", reader.getString());
-	}
-	
-	@Test
-	void getIndex() {
-		StringReader reader = new StringReader("test");
 		assertEquals(0, reader.getIndex());
-		reader.read();
-		assertEquals(1, reader.getIndex());
+		assertEquals(4, reader.getEndIndex());
+		assertEquals('\\', reader.getEscapeCharacter());
 	}
 	
 	@Test
-	void read() {
-		StringReader reader = new StringReader("test");
-		assertEquals('t', reader.read());
-		assertEquals('e', reader.read());
-		assertEquals('s', reader.read());
-		assertEquals('t', reader.read());
-		assertThrows(IndexOutOfBoundsException.class, reader::read);
+	void constructWithStringAndEscapeCharacter() {
+		StringReader reader = new StringReader("test", '#');
+		assertEquals('#', reader.getEscapeCharacter());
+		assertTrue(reader.isEscapeCharacter('#'));
+	}
+	
+	@Test
+	void constructWithStringAndNullEscapeCharacter() {
+		StringReader reader = new StringReader("test", null);
+		assertNull(reader.getEscapeCharacter());
+		assertFalse(reader.isEscapeCharacter('\\'));
+	}
+	
+	@Test
+	void constructWithNullString() {
+		assertThrows(NullPointerException.class, () -> new StringReader((String) null));
+		assertThrows(NullPointerException.class, () -> new StringReader((String) null, '\\'));
+	}
+	
+	@Test
+	void constructWithReader() {
+		StringReader reader = new StringReader(new java.io.StringReader("content"));
+		assertEquals("content", reader.getString());
+		assertEquals('\\', reader.getEscapeCharacter());
+	}
+	
+	@Test
+	void constructWithReaderAndEscapeCharacter() {
+		StringReader reader = new StringReader(new java.io.StringReader("content"), '#');
+		assertEquals("content", reader.getString());
+		assertEquals('#', reader.getEscapeCharacter());
+	}
+	
+	@Test
+	void constructWithNullReader() {
+		assertThrows(NullPointerException.class, () -> new StringReader((Reader) null));
+		assertThrows(NullPointerException.class, () -> new StringReader((Reader) null, '\\'));
+	}
+	
+	@Test
+	void constructWithFailingReader() {
+		assertThrows(UncheckedIOException.class, () -> new StringReader(new FailingReader()));
+		assertThrows(UncheckedIOException.class, () -> new StringReader(new FailingReader(), '\\'));
+	}
+	
+	@Test
+	void createSubReaderWithNullCreator() {
+		StringReader reader = new StringReader("abc");
+		assertThrows(NullPointerException.class, () -> reader.createSubReader(null));
+		assertThrows(NullPointerException.class, () -> reader.createSubReader(1, null));
+	}
+	
+	@Test
+	void createSubReaderWithNegativeLength() {
+		StringReader reader = new StringReader("abc");
+		assertThrows(IllegalArgumentException.class, () -> reader.createSubReader(-1, StringReader::new));
+	}
+	
+	@Test
+	void createSubReaderWithLengthAboveRemaining() {
+		StringReader reader = new StringReader("abc");
+		reader.skip();
+		assertThrows(IllegalArgumentException.class, () -> reader.createSubReader(3, StringReader::new));
+		assertDoesNotThrow(() -> reader.createSubReader(2, StringReader::new));
+	}
+	
+	@Test
+	void createSubReaderWithCreatorReturningNull() {
+		StringReader reader = new StringReader("abc");
+		assertThrows(NullPointerException.class, () -> reader.createSubReader(string -> null));
+	}
+	
+	@Test
+	void createSubReaderWithCreatorReturningSelf() {
+		StringReader reader = new StringReader("abc");
+		assertThrows(IllegalArgumentException.class, () -> reader.createSubReader(string -> reader));
+	}
+	
+	@Test
+	void createSubReaderWithDifferentString() {
+		StringReader reader = new StringReader("abc");
+		assertThrows(IllegalArgumentException.class, () -> reader.createSubReader(string -> new StringReader("other")));
+	}
+	
+	@Test
+	void createSubReaderWithLinkedReader() {
+		StringReader reader = new StringReader("abc");
 		
-		reader.reset();
+		StringReader subReader = new StringReader("abc").createSubReader(StringReader::new);
+		assertThrows(IllegalArgumentException.class, () -> reader.createSubReader(string -> subReader));
 		
-		assertThrows(IllegalArgumentException.class, () -> reader.read(-1));
+		StringReader parentWithChild = new StringReader("abc");
+		parentWithChild.createSubReader(StringReader::new);
+		assertThrows(IllegalArgumentException.class, () -> reader.createSubReader(string -> parentWithChild));
+		
+		StringReader closedSubReader = new StringReader("abc").createSubReader(StringReader::new);
+		closedSubReader.close();
+		assertThrows(IllegalArgumentException.class, () -> reader.createSubReader(string -> closedSubReader));
+	}
+	
+	@Test
+	void interactWithClosedSubReader() {
+		StringReader subReader = new StringReader("abc").createSubReader(StringReader::new);
+		subReader.close();
+		assertThrows(IllegalStateException.class, subReader::read);
+		assertThrows(IllegalStateException.class, subReader::peek);
+		assertThrows(IllegalStateException.class, () -> subReader.skip());
+	}
+	
+	@Test
+	void interactWithParentOfActiveSubReader() {
+		StringReader reader = new StringReader("abc");
+		reader.createSubReader(StringReader::new);
+		assertThrows(ConcurrentInteractionException.class, reader::read);
+		assertThrows(ConcurrentInteractionException.class, () -> reader.canRead());
+		assertThrows(ConcurrentInteractionException.class, reader::readRemaining);
+	}
+	
+	@Test
+	void withLocationWithNullMessage() {
+		StringReader reader = new StringReader("abc");
+		assertThrows(NullPointerException.class, () -> reader.withLocation(null));
+	}
+	
+	@Test
+	void setIndexOutsideReadablePart() {
+		StringReader reader = new StringReader("abcdefgh");
+		reader.skip(2);
+		StringReader subReader = reader.createSubReader(3, StringReader::new);
+		assertThrows(IndexOutOfBoundsException.class, () -> subReader.setIndex(1));
+		assertThrows(IndexOutOfBoundsException.class, () -> subReader.setIndex(6));
+	}
+	
+	@Test
+	void readAtEnd() {
+		StringReader reader = new StringReader("");
+		assertThrows(StringIndexOutOfBoundsException.class, reader::read);
+		assertThrows(StringIndexOutOfBoundsException.class, reader::peek);
+	}
+	
+	@Test
+	void readAmountWithInvalidAmount() {
+		StringReader reader = new StringReader("abc");
 		assertThrows(IllegalArgumentException.class, () -> reader.read(0));
-		assertEquals("t", reader.read(1));
-		assertEquals("es", reader.read(2));
-		assertEquals("t", reader.read(1));
-		assertThrows(IndexOutOfBoundsException.class, () -> reader.read(1));
+		assertThrows(IllegalArgumentException.class, () -> reader.read(-1));
+		assertThrows(IndexOutOfBoundsException.class, () -> reader.read(5));
+		assertEquals(0, reader.getIndex());
 	}
 	
 	@Test
-	void canRead() {
-		StringReader reader = new StringReader("test");
-		assertEquals('t', reader.peek());
-		assertTrue(reader.canRead());
-		assertEquals('t', reader.read());
-		assertTrue(reader.canRead());
-		assertEquals('e', reader.read());
-		assertTrue(reader.canRead());
-		assertEquals('s', reader.read());
-		assertTrue(reader.canRead());
-		assertEquals('t', reader.read());
-		assertFalse(reader.canRead());
-		assertThrows(IndexOutOfBoundsException.class, reader::read);
-		
-		reader.reset();
-		
-		assertThrows(IllegalArgumentException.class, () -> reader.canRead(-1));
+	void canReadWithInvalidAmount() {
+		StringReader reader = new StringReader("abc");
 		assertThrows(IllegalArgumentException.class, () -> reader.canRead(0));
-		assertTrue(reader.canRead(1));
-		assertTrue(reader.canRead(2));
-		assertTrue(reader.canRead(3));
-		assertTrue(reader.canRead(4));
-		assertFalse(reader.canRead(5));
-		
-		reader.reset();
-		
-		assertThrows(NullPointerException.class, () -> reader.canRead(1, null));
-		assertThrows(IllegalArgumentException.class, () -> reader.canRead(-1, c -> true));
+		assertThrows(IllegalArgumentException.class, () -> reader.canRead(-1));
 		assertThrows(IllegalArgumentException.class, () -> reader.canRead(0, c -> true));
-		assertTrue(reader.canRead(2, c -> c == 't' || c == 'e'));
-		reader.skip(2);
-		assertTrue(reader.canRead(2, c -> c == 's' || c == 't'));
-		reader.skip(2);
-		assertFalse(reader.canRead());
+		assertThrows(IllegalArgumentException.class, () -> reader.canRead(-1, c -> true));
 	}
 	
 	@Test
-	void peek() {
-		StringReader reader = new StringReader("test");
-		assertEquals('t', reader.peek());
-		reader.read();
-		assertEquals('e', reader.peek());
-		reader.read();
-		assertEquals('s', reader.peek());
-		reader.read();
-		assertEquals('t', reader.peek());
-		
-		reader.reset();
-		
-		assertEquals("te", reader.peek(2));
-		reader.read(2);
-		assertEquals("st", reader.peek(4));
+	void canReadWithNullPredicate() {
+		StringReader reader = new StringReader("abc");
+		assertThrows(NullPointerException.class, () -> reader.canRead(1, null));
 	}
 	
 	@Test
-	void skip() {
-		StringReader reader = new StringReader("teet");
-		reader.skip();
-		assertEquals(1, reader.getIndex());
-		assertEquals('e', reader.peek());
-		reader.skip();
-		assertEquals(2, reader.getIndex());
-		assertEquals('e', reader.peek());
-		reader.skip();
-		assertEquals(3, reader.getIndex());
-		assertEquals('t', reader.peek());
-		reader.skip();
-		assertEquals(4, reader.getIndex());
-		assertDoesNotThrow(() -> reader.skip());
-		
-		reader.reset();
-		
-		reader.skip('t');
-		assertEquals(1, reader.getIndex());
-		assertEquals('e', reader.peek());
-		reader.skip('e');
-		assertEquals(3, reader.getIndex());
-		assertEquals('t', reader.peek());
-		assertDoesNotThrow(() -> reader.skip('t'));
-		
-		reader.reset();
-		
-		reader.skip(c -> c == 't');
-		assertEquals(1, reader.getIndex());
-		assertEquals('e', reader.peek());
-		reader.skip(c -> c == 'e');
-		assertEquals(3, reader.getIndex());
-		assertEquals('t', reader.peek());
-		assertDoesNotThrow(() -> reader.skip(c -> c == 't'));
-		
-		reader.reset();
-		
-		assertThrows(IllegalArgumentException.class, () -> reader.skip(-1));
+	void peekAmountWithInvalidAmount() {
+		StringReader reader = new StringReader("abc");
+		assertThrows(IllegalArgumentException.class, () -> reader.peek(0));
+		assertThrows(IllegalArgumentException.class, () -> reader.peek(-1));
+	}
+	
+	@Test
+	void skipAmountWithInvalidAmount() {
+		StringReader reader = new StringReader("abc");
 		assertThrows(IllegalArgumentException.class, () -> reader.skip(0));
-		reader.skip(2);
-		assertEquals(2, reader.getIndex());
-		assertEquals('e', reader.peek());
-		reader.skip(2);
-		assertEquals(4, reader.getIndex());
-		assertDoesNotThrow(() -> reader.skip(1));
+		assertThrows(IllegalArgumentException.class, () -> reader.skip(-1));
 	}
 	
 	@Test
-	void skipWhitespaces() {
-		StringReader reader = new StringReader("  \t\n\rt");
-		reader.skipWhitespaces();
-		assertEquals(5, reader.getIndex());
-		assertEquals('t', reader.peek());
+	void skipWithNullPredicate() {
+		StringReader reader = new StringReader("abc");
+		assertThrows(NullPointerException.class, () -> reader.skip(null));
 	}
 	
 	@Test
-	void mark() {
-		StringReader reader = new StringReader("test");
-		reader.skip(2);
-		assertEquals(2, reader.getIndex());
-		reader.mark();
-		reader.skip();
-		assertEquals(3, reader.getIndex());
-		reader.reset();
-		assertEquals(2, reader.getIndex());
-		reader.reset();
-		assertEquals(0, reader.getIndex());
+	void readUnquotedStringAtEnd() {
+		StringReader reader = new StringReader("");
+		StringIndexOutOfBoundsException exception = assertThrows(StringIndexOutOfBoundsException.class, () -> reader.readUnquotedString('x'));
+		assertTrue(exception.getMessage().endsWith("at index 0"));
 	}
 	
 	@Test
-	void reset() {
-		StringReader reader = new StringReader("test");
-		reader.read();
-		reader.read();
-		reader.reset();
-		assertEquals(0, reader.getIndex());
-	}
-	
-	@Test
-	void readLine() {
-		StringReader reader = new StringReader("This is the first line.\nThis is the second line.\rThis is the third line.\r\nThis is the fourth line.");
-		assertEquals("This is the first line.", reader.readLine(false));
-		assertEquals("This is the second line.", reader.readLine(false));
-		assertEquals("This is the third line.", reader.readLine(false));
-		assertEquals("This is the fourth line.", reader.readLine(false));
-		
-		reader.reset();
-		
-		assertEquals("This is the first line.\n", reader.readLine(true));
-		assertEquals("This is the second line.\r", reader.readLine(true));
-		assertEquals("This is the third line.\r\n", reader.readLine(true));
-		assertEquals("This is the fourth line.", reader.readLine(true));
-	}
-	
-	@Test
-	void readRemaining() {
-		StringReader reader = new StringReader("test");
-		assertEquals("test", reader.readRemaining());
-		assertFalse(reader.canRead());
-		reader.reset();
-		reader.read();
-		assertEquals("est", reader.readRemaining());
-		assertFalse(reader.canRead());
-	}
-	
-	@Test
-	void readUnquotedString() {
-		StringReader reader = new StringReader("this is a simple test string for the string reader");
-		assertEquals("this", reader.readUnquotedString());
-		assertEquals("is", reader.readUnquotedString());
-		assertEquals("a", reader.readUnquotedString());
-		
-		reader.reset();
-		
-		assertEquals("this", reader.readUnquotedString(' '));
-		assertEquals("is a simple ", reader.readUnquotedString('t'));
-	}
-	
-	@Test
-	void readQuotedString() {
-		StringReader reader = new StringReader("\"this is a simple\" test 'string' \"for the string reader\"");
-		assertEquals("this is a simple", reader.readQuotedString());
-		reader.skip();
-		assertEquals("test", reader.read(4));
-		assertThrows(InvalidStringException.class, reader::readQuotedString);
-		reader.skip();
-		assertEquals("string", reader.readQuotedString());
-		reader.skip();
-		assertEquals("for the string reader", reader.readQuotedString());
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readQuotedString);
-	}
-	
-	@Test
-	void readString() {
-		StringReader reader = new StringReader("this \"is a simple\" 'test string'");
-		assertEquals("this", reader.readString());
-		assertEquals("is a simple", reader.readString());
-		reader.skip();
-		assertEquals("test string", reader.readString());
-	}
-	
-	@Test
-	void readUntil() {
-		StringReader reader = new StringReader("this is a sImple \\test 'string for the' \"string\" \\reade\\r");
+	void readUntilWithEscapeCharacterTerminator() {
+		StringReader reader = new StringReader("a\\b");
 		assertThrows(IllegalArgumentException.class, () -> reader.readUntil('\\'));
-		assertEquals("", reader.readUntil('t'));
-		assertEquals('t', reader.read());
-		assertEquals("his is a sImple tes", reader.readUntil('t'));
-		reader.skip(2);
-		assertEquals("'string for the'", reader.readUntil(' '));
-		reader.skip();
-		assertEquals("\"string\"", reader.readUntil(' '));
-		reader.skip();
-		assertEquals("reader", reader.readUntil('r'));
-		assertEquals("", reader.readUntil(' '));
-		
-		reader.reset();
-		
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive('\\'));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilSkip('\\'));
+	}
+	
+	@Test
+	void readUntilWithInvalidTerminators() {
+		StringReader reader = new StringReader("a,b");
 		assertThrows(NullPointerException.class, () -> reader.readUntil((char[]) null));
-		assertThrows(IllegalArgumentException.class, reader::readUntil);
-		assertThrows(IllegalArgumentException.class, () -> reader.readUntil('\\'));
-		assertEquals("", reader.readUntil('t', 's'));
-		assertEquals('t', reader.read());
-		assertEquals("hi", reader.readUntil('t', 's'));
-		reader.skip(2);
-		assertEquals("is a sImpl", reader.readUntil('e', 't'));
-		reader.skip(2);
-		assertEquals("te", reader.readUntil('s', ' '));
-		reader.skip(3);
-		assertEquals("'string for the'", reader.readUntil('s', ' '));
-		reader.skip();
-		assertEquals("\"string\"", reader.readUntil(' ', 'x'));
-		reader.skip();
-		assertEquals("reader", reader.readUntil('r', '\0'));
-		assertEquals("", reader.readUntil(' ', ' '));
-		
-		reader.reset();
-		
-		assertThrows(NullPointerException.class, () -> reader.readUntil((Predicate<Character>) null));
-		assertEquals("", reader.readUntil(c -> c == 't'));
-		assertEquals('t', reader.read());
-		assertEquals('h', reader.peek());
-		reader.skip(4);
-		assertEquals("is ", reader.readUntil(c -> c == 'a'));
-		reader.skip(2);
-		assertEquals("sImple tes", reader.readUntil(c -> c == 't'));
-		reader.skip();
-		assertEquals(' ', reader.read());
-		assertEquals("'string for the'", reader.readUntil(c -> c == ' '));
-		reader.skip(10);
-		assertEquals("reader", reader.readUntil(c -> c == 'r'));
-		
-		reader.reset();
-		
-		assertThrows(NullPointerException.class, () -> reader.readUntil((String) null, false));
-		assertThrows(NullPointerException.class, () -> reader.readUntil((String) null, true));
-		assertEquals("", reader.readUntil("t", false));
-		assertEquals('t', reader.peek());
-		reader.skip(5);
-		assertEquals("is ", reader.readUntil("a", false));
-		reader.skip(2);
-		assertEquals("", reader.readUntil("sImple", true));
-		reader.skip(7);
-		assertEquals("tes", reader.readUntil("t ", false));
-		reader.skip(2);
-		assertEquals("'string for the'", reader.readUntil(" ", true));
-		reader.skip(10);
-		assertEquals("reader", reader.readUntil("r", false));
-	}
-	
-	@Test
-	void readUntilInclusive() {
-		StringReader reader = new StringReader("this is a sImple \\test 'string for the' \"string\" \\reade\\r");
-		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive('\\'));
-		assertEquals("t", reader.readUntilInclusive('t'));
-		assertEquals("his is a sImple test", reader.readUntilInclusive('t'));
-		reader.skip();
-		assertEquals("'string for the' ", reader.readUntilInclusive(' '));
-		assertEquals("\"string\" ", reader.readUntilInclusive(' '));
-		assertEquals("reader", reader.readUntilInclusive('r'));
-		assertEquals("", reader.readUntilInclusive(' '));
-		
-		reader.reset();
-		
 		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive((char[]) null));
-		assertThrows(IllegalArgumentException.class, reader::readUntilInclusive);
-		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive('\\'));
-		assertEquals("t", reader.readUntilInclusive('t', 's'));
-		assertEquals("his", reader.readUntilInclusive('t', 's'));
-		reader.skip();
-		assertEquals("is a sImple", reader.readUntilInclusive('e', 't'));
-		reader.skip();
-		assertEquals("tes", reader.readUntilInclusive('s', ' '));
-		reader.skip(2);
-		assertEquals("'string for the' ", reader.readUntilInclusive('s', ' '));
-		assertEquals("\"string\" ", reader.readUntilInclusive(' ', 'x'));
-		assertEquals("reader", reader.readUntilInclusive('r', '\0'));
-		assertEquals("", reader.readUntilInclusive(' ', ' '));
-		
-		reader.reset();
-		
-		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive((Predicate<Character>) null));
-		assertEquals("t", reader.readUntilInclusive(c -> c == 't'));
-		assertEquals('h', reader.peek());
-		reader.skip(4);
-		assertEquals("is a", reader.readUntilInclusive(c -> c == 'a'));
-		reader.skip();
-		assertEquals("sImple test", reader.readUntilInclusive(c -> c == 't'));
-		assertEquals(' ', reader.read());
-		assertEquals("'string for the' ", reader.readUntilInclusive(c -> c == ' '));
-		reader.skip(9);
-		assertEquals("reader", reader.readUntilInclusive(c -> c == 'r'));
-		
-		reader.reset();
-		
-		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive(null, false));
-		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive(null, true));
-		assertEquals("t", reader.readUntilInclusive("t", false));
-		assertEquals('h', reader.peek());
-		reader.skip(4);
-		assertEquals("is a", reader.readUntilInclusive("a", false));
-		reader.skip();
-		assertEquals("sImple", reader.readUntilInclusive("sImple", true));
-		reader.skip(7);
-		assertEquals("'string for the' ", reader.readUntilInclusive(" ", true));
-		reader.skip(9);
-		assertEquals("reader", reader.readUntilInclusive("r", false));
-	}
-	
-	@Test
-	void readUntilSkip() {
-		StringReader reader = new StringReader("this is a sImple \\test 'string for the' \"string\" \\reade\\r");
-		assertThrows(IllegalArgumentException.class, () -> reader.readUntilSkip('\\'));
-		assertEquals("", reader.readUntilSkip('t'));
-		assertEquals("his is a sImple tes", reader.readUntilSkip('t'));
-		reader.skip();
-		assertEquals("'string for the'", reader.readUntilSkip(' '));
-		assertEquals("\"string\"", reader.readUntilSkip(' '));
-		assertEquals("reader", reader.readUntilSkip('r'));
-		assertEquals("", reader.readUntilSkip(' '));
-		
-		reader.reset();
-		
 		assertThrows(NullPointerException.class, () -> reader.readUntilSkip((char[]) null));
-		assertThrows(IllegalArgumentException.class, reader::readUntilSkip);
-		assertThrows(IllegalArgumentException.class, () -> reader.readUntilSkip('\\'));
-		assertEquals("", reader.readUntilSkip('t', 's'));
-		assertEquals("hi", reader.readUntilSkip('t', 's'));
-		reader.skip();
-		assertEquals("is a sImpl", reader.readUntilSkip('e', 't'));
-		reader.skip();
-		assertEquals("te", reader.readUntilSkip('s', ' '));
-		reader.skip(2);
-		assertEquals("'string for the'", reader.readUntilSkip('s', ' '));
-		assertEquals("\"string\"", reader.readUntilSkip(' ', 'x'));
-		assertEquals("reader", reader.readUntilSkip('r', '\0'));
-		assertEquals("", reader.readUntilSkip(' ', ' '));
-		
-		reader.reset();
-		
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntil(new char[0]));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive(new char[0]));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilSkip(new char[0]));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntil(',', '\\'));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive(',', '\\'));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilSkip(',', '\\'));
+	}
+	
+	@Test
+	void readUntilWithNullPredicate() {
+		StringReader reader = new StringReader("abc");
+		assertThrows(NullPointerException.class, () -> reader.readUntil((Predicate<Character>) null));
+		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive((Predicate<Character>) null));
 		assertThrows(NullPointerException.class, () -> reader.readUntilSkip((Predicate<Character>) null));
-		assertEquals("", reader.readUntilSkip(c -> c == 't'));
-		assertEquals('h', reader.peek());
-		reader.skip(4);
-		assertEquals("is ", reader.readUntilSkip(c -> c == 'a'));
+	}
+	
+	@Test
+	void readUntilWithInvalidTerminatorString() {
+		StringReader reader = new StringReader("abc");
+		assertThrows(NullPointerException.class, () -> reader.readUntil((String) null, true));
+		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive(null, true));
+		assertThrows(NullPointerException.class, () -> reader.readUntilSkip(null, true));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntil("", true));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive("", true));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilSkip("", true));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntil("a\\b", true));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive("a\\b", true));
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilSkip("a\\b", true));
+	}
+	
+	@Test
+	void readExpectedWithInvalidArguments() {
+		assertThrows(NullPointerException.class, () -> new StringReader("a").readExpected((String) null, true));
+		assertThrows(StringIndexOutOfBoundsException.class, () -> new StringReader("").readExpected("a", true));
+		assertThrows(IllegalArgumentException.class, () -> new StringReader("a").readExpected("", true));
+	}
+	
+	@Test
+	void readExpectedWithNotEnoughCharacters() {
+		StringReader reader = new StringReader("ab");
+		assertThrows(InvalidStringException.class, () -> reader.readExpected("abc", true));
+		assertEquals(0, reader.getIndex());
+	}
+	
+	@Test
+	void readExpectedListWithInvalidArguments() {
+		assertThrows(NullPointerException.class, () -> new StringReader("a").readExpected((List<String>) null, true));
+		assertThrows(StringIndexOutOfBoundsException.class, () -> new StringReader("").readExpected(List.of("a"), true));
+		assertThrows(IllegalArgumentException.class, () -> new StringReader("a").readExpected(List.of(), true));
+	}
+	
+	@Test
+	void readExpectedListWithoutFittingCandidate() {
+		StringReader reader = new StringReader("ab");
+		assertThrows(InvalidStringException.class, () -> reader.readExpected(List.of("abc", "abcd"), true));
+		assertEquals(0, reader.getIndex());
+	}
+	
+	@Test
+	void closeSubReaderWithActiveChild() {
+		StringReader subReader = new StringReader("abc").createSubReader(StringReader::new);
+		subReader.createSubReader(StringReader::new);
+		assertThrows(ConcurrentInteractionException.class, subReader::close);
+	}
+	
+	@Test
+	void createSubReaderContinuesAtParentIndex() {
+		StringReader reader = new StringReader("hello world");
+		reader.skip(6);
+		
+		StringReader subReader = reader.createSubReader(5, StringReader::new);
+		assertEquals(6, subReader.getIndex());
+		assertEquals(11, subReader.getEndIndex());
+		assertEquals("world", subReader.readRemaining());
+	}
+	
+	@Test
+	void createSubReaderWithoutLength() {
+		StringReader reader = new StringReader("abc");
 		reader.skip();
-		assertEquals("sImple tes", reader.readUntilSkip(c -> c == 't'));
-		assertEquals(' ', reader.read());
-		assertEquals("'string for the'", reader.readUntilSkip(c -> c == ' '));
-		reader.skip(9);
-		assertEquals("reader", reader.readUntilSkip(c -> c == 'r'));
 		
-		reader.reset();
-		
-		assertThrows(NullPointerException.class, () -> reader.readUntilSkip((String) null, false));
-		assertThrows(NullPointerException.class, () -> reader.readUntilSkip((String) null, true));
-		assertEquals("", reader.readUntilSkip("t", false));
-		assertEquals('h', reader.peek());
-		reader.skip(4);
-		assertEquals("is ", reader.readUntilSkip("a", false));
-		reader.skip();
-		assertEquals("", reader.readUntilSkip("sImple", true));
-		reader.skip(7);
-		assertEquals("'string for the'", reader.readUntilSkip(" ", true));
-		reader.skip(9);
-		assertEquals("reader", reader.readUntilSkip("r", false));
+		StringReader subReader = reader.createSubReader(StringReader::new);
+		assertEquals(1, subReader.getIndex());
+		assertEquals(reader.getEndIndex(), subReader.getEndIndex());
 	}
 	
 	@Test
-	void readQuotedStringWithIgnoredEscapes() {
-		StringReader defaultReader = new StringReader("\"a\\\"b\" c");
-		assertEquals("a\\\"b", defaultReader.readQuotedString());
-		
-		StringReader reader = new StringReader("\"a\\\"b\" c", IGNORE_ESCAPES);
-		assertEquals("a\\", reader.readQuotedString());
-		assertEquals('b', reader.peek());
+	void createSubReaderWithZeroLength() {
+		StringReader reader = new StringReader("abc");
+		StringReader subReader = reader.createSubReader(0, StringReader::new);
+		assertFalse(subReader.canRead());
+		assertEquals("", subReader.readRemaining());
 	}
 	
 	@Test
-	void readQuotedStringWithIgnoredQuotes() {
-		StringReader singleReader = new StringReader("'single' \"double\"", IGNORE_SINGLE_QUOTES);
-		assertThrows(InvalidStringException.class, singleReader::readQuotedString);
-		singleReader.skip(9);
-		assertEquals("double", singleReader.readQuotedString());
-		
-		StringReader doubleReader = new StringReader("\"double\" 'single'", IGNORE_DOUBLE_QUOTES);
-		assertThrows(InvalidStringException.class, doubleReader::readQuotedString);
-		doubleReader.skip(9);
-		assertEquals("single", doubleReader.readQuotedString());
+	void createSubReaderOfOtherReaderType() {
+		StringReader reader = new StringReader("'a' b");
+		QuotedStringReader subReader = reader.createSubReader(string -> new QuotedStringReader(string, null, StringQuoting.NONE));
+		assertInstanceOf(QuotedStringReader.class, subReader);
+		assertEquals(StringQuoting.NONE, subReader.getQuoting());
+		assertNull(subReader.getEscapeCharacter());
 	}
 	
 	@Test
-	void readStringWithIgnoredQuotes() {
-		StringReader doubleReader = new StringReader("\"is a\" test", IGNORE_DOUBLE_QUOTES);
-		assertEquals("\"is", doubleReader.readString());
-		assertEquals("a\"", doubleReader.readString());
-		assertEquals("test", doubleReader.readString());
-		
-		StringReader singleReader = new StringReader("'is a' \"test string\"", IGNORE_SINGLE_QUOTES);
-		assertEquals("'is", singleReader.readString());
-		assertEquals("a'", singleReader.readString());
-		assertEquals("test string", singleReader.readString());
+	void isEscapeCharacterBranches() {
+		assertFalse(new StringReader("", null).isEscapeCharacter('\\'));
+		assertTrue(new StringReader("").isEscapeCharacter('\\'));
+		assertFalse(new StringReader("").isEscapeCharacter('a'));
 	}
 	
 	@Test
-	void readNumberWithIgnoredQuotes() {
-		assertEquals(10, new StringReader("\"10\"").readInt());
-		assertEquals(10, new StringReader("'10'", IGNORE_DOUBLE_QUOTES).readInt());
-		assertEquals(10, new StringReader("\"10\"", IGNORE_SINGLE_QUOTES).readInt());
-		assertThrows(InvalidStringException.class, () -> new StringReader("\"10\"", IGNORE_DOUBLE_QUOTES).readInt());
-		assertThrows(InvalidStringException.class, () -> new StringReader("'10'", IGNORE_SINGLE_QUOTES).readInt());
+	void createTrackerIsNeverNested() {
+		StringReader.NestingTracker tracker = new StringReader("").createTracker();
+		assertFalse(tracker.isNested());
+		tracker.accept('"');
+		assertFalse(tracker.isNested());
+		assertDoesNotThrow(tracker::finish);
 	}
 	
 	@Test
-	void readObjectWithIgnoredQuotes() {
-		StringReader singleReader = new StringReader("'c' \"text\"", IGNORE_SINGLE_QUOTES);
-		assertEquals("'c'", assertInstanceOf(String.class, singleReader.readObject()));
-		assertEquals("text", assertInstanceOf(String.class, singleReader.readObject()));
-		
-		StringReader doubleReader = new StringReader("\"text\" 'c'", IGNORE_DOUBLE_QUOTES);
-		assertEquals("\"text\"", assertInstanceOf(String.class, doubleReader.readObject()));
-		assertEquals('c', assertInstanceOf(Character.class, doubleReader.readObject()));
-	}
-	
-	@Test
-	void readObjectWithIgnoredEscapes() {
-		StringReader defaultReader = new StringReader("'a\\'b' x");
-		assertEquals("a\\'b", assertInstanceOf(String.class, defaultReader.readObject()));
-		
-		StringReader reader = new StringReader("'a\\'b' x", IGNORE_ESCAPES);
-		assertEquals("a\\", assertInstanceOf(String.class, reader.readObject()));
-		assertEquals('b', reader.peek());
-	}
-	
-	@Test
-	void readUntilWithIgnoredEscapes() {
-		StringReader defaultReader = new StringReader("a\\,b,c");
-		assertEquals("a,b", defaultReader.readUntilSkip(','));
-		assertEquals("c", defaultReader.readRemaining());
-		
-		StringReader reader = new StringReader("a\\,b,c", IGNORE_ESCAPES);
-		assertEquals("a\\", reader.readUntilSkip(','));
-		assertEquals("b", reader.readUntilSkip(','));
-		assertEquals("c", reader.readRemaining());
-	}
-	
-	@Test
-	void readUntilWithIgnoredSingleQuotes() {
-		StringReader defaultReader = new StringReader("it's a test, 'quoted, part', end");
-		assertEquals("it's a test, 'quoted", defaultReader.readUntilSkip(','));
-		
-		StringReader reader = new StringReader("it's a test, 'quoted, part', end", IGNORE_SINGLE_QUOTES);
-		assertEquals("it's a test", reader.readUntilSkip(','));
-		assertEquals(" 'quoted", reader.readUntilSkip(','));
-		assertEquals(" part'", reader.readUntilSkip(','));
-		assertEquals(" end", reader.readRemaining());
-	}
-	
-	@Test
-	void readUntilWithIgnoredDoubleQuotes() {
-		StringReader defaultReader = new StringReader("say \"a, b\", done");
-		assertEquals("say \"a, b\"", defaultReader.readUntilSkip(','));
-		
-		StringReader reader = new StringReader("say \"a, b\", done", IGNORE_DOUBLE_QUOTES);
-		assertEquals("say \"a", reader.readUntilSkip(','));
-		assertEquals(" b\"", reader.readUntilSkip(','));
-		assertEquals(" done", reader.readRemaining());
-	}
-	
-	@Test
-	void readUntilWithIgnoredQuotesKeepsOtherQuotes() {
-		StringReader reader = new StringReader("\"a, b\" it's, c", IGNORE_SINGLE_QUOTES);
-		assertEquals("\"a, b\" it's", reader.readUntilSkip(','));
-		assertEquals(" c", reader.readRemaining());
-	}
-	
-	@Test
-	void readUntilInclusiveWithIgnoredQuotes() {
-		StringReader defaultReader = new StringReader("'a;b';c");
-		assertEquals("'a;b';", defaultReader.readUntilInclusive(';'));
-		
-		StringReader reader = new StringReader("'a;b';c", IGNORE_SINGLE_QUOTES);
-		assertEquals("'a;", reader.readUntilInclusive(';'));
-		assertEquals("b';", reader.readUntilInclusive(';'));
-		assertEquals("c", reader.readRemaining());
-	}
-	
-	@Test
-	void readUntilStringWithIgnoredEscapes() {
-		StringReader defaultReader = new StringReader("a\\b end");
-		assertEquals("ab ", defaultReader.readUntil("end", true));
-		
-		StringReader reader = new StringReader("a\\b end", IGNORE_ESCAPES);
-		assertEquals("a\\b ", reader.readUntil("end", true));
-		assertEquals("end", reader.readRemaining());
-	}
-	
-	@Test
-	void readUntilStringWithIgnoredQuotes() {
-		StringReader defaultReader = new StringReader("x 'y end' end");
-		assertEquals("x 'y end' ", defaultReader.readUntil("end", true));
-		
-		StringReader reader = new StringReader("x 'y end' end", IGNORE_SINGLE_QUOTES);
-		assertEquals("x 'y ", reader.readUntil("end", true));
-		assertEquals("end' end", reader.readRemaining());
-		
-		StringReader doubleReader = new StringReader("x \"y end\" end", IGNORE_DOUBLE_QUOTES);
-		assertEquals("x \"y end", doubleReader.readUntilInclusive("end", true));
-	}
-	
-	@Test
-	void readExpected() {
-		StringReader reader = new StringReader("this is a simPle tEsT string for the sTrinG reader");
-		assertThrows(InvalidStringException.class, () -> reader.readExpected("test", false));
-		assertEquals('h', reader.peek());
-		reader.skip(4);
-		assertEquals("is", reader.readExpected("is", true));
+	void describeLocationContainsIndex() {
+		StringReader reader = new StringReader("abcdef");
 		reader.skip(3);
-		assertEquals("simPle", reader.readExpected("simple", false));
-		reader.skip();
-		assertThrows(InvalidStringException.class, () -> reader.readExpected("test", true));
-		assertEquals('E', reader.peek());
-		reader.skip(4);
+		assertEquals("index 3", reader.describeLocation());
+		assertEquals("message at index 3", reader.withLocation("message"));
+	}
+	
+	@Test
+	void setIndexAtBoundaries() {
+		StringReader reader = new StringReader("abc");
+		reader.setIndex(3);
+		assertEquals(3, reader.getIndex());
+		reader.setIndex(0);
+		assertEquals(0, reader.getIndex());
+	}
+	
+	@Test
+	void remainingAfterOvershoot() {
+		StringReader reader = new StringReader("abc");
+		reader.skip(5);
+		assertEquals(5, reader.getIndex());
+		assertEquals(0, reader.remaining());
+		assertFalse(reader.canRead());
+	}
+	
+	@Test
+	void readStopsAtSubReaderEnd() {
+		StringReader reader = new StringReader("abcd");
+		StringReader subReader = reader.createSubReader(2, StringReader::new);
+		assertEquals('a', subReader.read());
+		assertEquals('b', subReader.read());
+		assertThrows(StringIndexOutOfBoundsException.class, subReader::read);
+	}
+	
+	@Test
+	void canReadAmountBranches() {
+		StringReader reader = new StringReader("abc");
+		assertTrue(reader.canRead(3));
+		assertFalse(reader.canRead(4));
+		assertTrue(reader.canRead());
+	}
+	
+	@Test
+	void canReadWithPredicateBranches() {
+		StringReader reader = new StringReader("a1");
+		assertFalse(reader.canRead(3, Character::isLetter));
+		assertFalse(reader.canRead(2, Character::isLetter));
+		assertTrue(reader.canRead(1, Character::isLetter));
+	}
+	
+	@Test
+	void peekAmountAboveRemaining() {
+		StringReader reader = new StringReader("abc");
+		assertEquals("abc", reader.peek(10));
+		assertEquals(0, reader.getIndex());
+	}
+	
+	@Test
+	void skipCharacterBranches() {
+		StringReader repeated = new StringReader("aab");
+		repeated.skip('a');
+		assertEquals(2, repeated.getIndex());
 		
-		assertEquals("string", reader.readExpected(List.of("number", "boolean", "string"), false));
-		reader.skip();
-		assertThrows(InvalidStringException.class, () -> reader.readExpected(List.of("number", "boolean", "string"), false));
-		assertEquals('f', reader.peek());
-		reader.skip(8);
-		assertEquals("sTrinG", reader.readExpected(List.of("nUmbeR", "bOoleaN", "sTrinG"), false));
-		reader.skip();
-		assertThrows(InvalidStringException.class, () -> reader.readExpected(List.of("number", "boolean", "string"), true));
-		assertEquals('r', reader.peek());
-		assertEquals("reader", reader.readExpected(List.of("reader", "writer"), true));
-	}
-	
-	@Test
-	void readBoolean() {
-		StringReader reader = new StringReader("test true false");
-		assertThrows(InvalidStringException.class, reader::readBoolean);
-		assertEquals('e', reader.read());
-		reader.skip(3);
-		assertTrue(reader.readBoolean());
-		reader.skip();
-		assertFalse(reader.readBoolean());
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readBoolean);
-	}
-	
-	@Test
-	void readNumber() {
-		StringReader reader = new StringReader("test 1 3b 2.0 '3.5f' 0x10 0b11 \"1.23e-2\" 0x1.23P4");
-		assertThrows(InvalidStringException.class, reader::readNumber);
-		assertEquals('t', reader.read());
-		reader.skip(4);
-		assertEquals(1, assertInstanceOf(Long.class, reader.readNumber()));
-		reader.skip();
-		assertEquals((byte) 3, assertInstanceOf(Byte.class, reader.readNumber()));
-		reader.skip();
-		assertEquals(2.0, assertInstanceOf(Double.class, reader.readNumber()), PRECISION);
-		reader.skip();
-		assertEquals(3.5, assertInstanceOf(Float.class, reader.readNumber()), PRECISION);
-		reader.skip();
-		assertEquals(16, assertInstanceOf(Long.class, reader.readNumber()));
-		reader.skip();
-		assertEquals(3, assertInstanceOf(Long.class, reader.readNumber()));
-		reader.skip();
-		assertEquals(0.0123, assertInstanceOf(Double.class, reader.readNumber()), PRECISION);
-		reader.skip();
-		assertEquals(18.1875, assertInstanceOf(Double.class, reader.readNumber()), PRECISION);
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readNumber);
-	}
-	
-	@Test
-	void readByte() {
-		StringReader reader = new StringReader("test 127 -128b '100' 0x7F 0b01011");
-		assertThrows(InvalidStringException.class, reader::readByte);
-		assertEquals('t', reader.read());
-		reader.skip(4);
-		assertEquals(127, reader.readByte());
-		reader.skip();
-		assertEquals(-128, reader.readByte());
-		reader.skip();
-		assertEquals(100, reader.readByte());
-		reader.skip();
-		assertEquals(127, reader.readByte());
-		reader.skip();
-		assertEquals(11, reader.readByte());
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readByte);
-	}
-	
-	@Test
-	void readShort() {
-		StringReader reader = new StringReader("test -15078 9875s '22' 0x7FFF 0b111101");
-		assertThrows(InvalidStringException.class, reader::readShort);
-		assertEquals('t', reader.read());
-		reader.skip(4);
-		assertEquals(-15078, reader.readShort());
-		reader.skip();
-		assertEquals(9875, reader.readShort());
-		reader.skip();
-		assertEquals(22, reader.readShort());
-		reader.skip();
-		assertEquals(32767, reader.readShort());
-		reader.skip();
-		assertEquals(61, reader.readShort());
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readShort);
-	}
-	
-	@Test
-	void readInt() {
-		StringReader reader = new StringReader("test 1 2i '5' 0xFAF 0b101");
-		assertThrows(InvalidStringException.class, reader::readInt);
-		assertEquals('t', reader.read());
-		reader.skip(4);
-		assertEquals(1, reader.readInt());
-		reader.skip();
-		assertEquals(2, reader.readInt());
-		reader.skip();
-		assertEquals(5, reader.readInt());
-		reader.skip();
-		assertEquals(4015, reader.readInt());
-		reader.skip();
-		assertEquals(5, reader.readInt());
-		reader.skip();
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readInt);
-	}
-	
-	@Test
-	void readLong() {
-		StringReader reader = new StringReader("test 1_000 2l '5l' 0xA5 0b110001");
-		assertThrows(InvalidStringException.class, reader::readLong);
-		assertEquals('t', reader.read());
-		reader.skip(4);
-		assertEquals(1000, reader.readLong());
-		reader.skip();
-		assertEquals(2, reader.readLong());
-		reader.skip();
-		assertEquals(5, reader.readLong());
-		reader.skip();
-		assertEquals(165, reader.readLong());
-		reader.skip();
-		assertEquals(49, reader.readLong());
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readLong);
-	}
-	
-	@Test
-	void readFloat() {
-		StringReader reader = new StringReader("test -10.46 0.256 '5.0f' 1.23E-2f 0x1.23p-4");
-		assertThrows(InvalidStringException.class, reader::readFloat);
-		assertEquals('t', reader.read());
-		reader.skip(4);
-		assertEquals(-10.46, reader.readFloat(), PRECISION);
-		reader.skip();
-		assertEquals(0.256, reader.readFloat(), PRECISION);
-		reader.skip();
-		assertEquals(5.0, reader.readFloat(), PRECISION);
-		reader.skip();
-		assertEquals(0.0123, reader.readFloat(), PRECISION);
-		reader.skip();
-		assertEquals(0.071044921875, reader.readFloat(), PRECISION);
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readFloat);
-	}
-	
-	@Test
-	void readDouble() {
-		StringReader reader = new StringReader("test 1.0 0.2 '0.5d' 1.23E+2 0x1.23p-4");
-		assertThrows(InvalidStringException.class, reader::readDouble);
-		assertEquals('t', reader.read());
-		reader.skip(4);
-		assertEquals(1.0, reader.readDouble(), PRECISION);
-		reader.skip();
-		assertEquals(0.2, reader.readDouble(), PRECISION);
-		reader.skip();
-		assertEquals(0.5, reader.readDouble(), PRECISION);
-		reader.skip();
-		assertEquals(123.0, reader.readDouble(), PRECISION);
-		reader.skip();
-		assertEquals(0.071044921875, reader.readDouble(), PRECISION);
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readDouble);
-	}
-	
-	@Test
-	void readBigInteger() {
-		StringReader reader = new StringReader("test 1 500 '10_000_000_000_000_000' 0xFFF_FFF_FFF_FFF_FFF_FFF -10");
-		assertThrows(InvalidStringException.class, reader::readBigInteger);
-		assertEquals('t', reader.read());
-		reader.skip(4);
-		assertEquals(BigInteger.ONE, reader.readBigInteger());
-		reader.skip();
-		assertEquals(BigInteger.valueOf(500), reader.readBigInteger());
-		reader.skip();
-		assertEquals(new BigInteger("10_000_000_000_000_000".replace("_", "")), reader.readBigInteger());
-		reader.skip();
-		assertEquals(new BigInteger("FFF_FFF_FFF_FFF_FFF_FFF".replace("_", ""), 16), reader.readBigInteger());
-		reader.skip();
-		assertEquals(BigInteger.valueOf(-10), reader.readBigInteger());
-		reader.skip();
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readBigInteger);
-	}
-	
-	@Test
-	void readBigDecimal() {
-		StringReader reader = new StringReader("test 1.0 0.54321 '1.9e5000' 0x1.FFp+4 -5.");
-		assertThrows(InvalidStringException.class, reader::readBigDecimal);
-		assertEquals('t', reader.read());
-		reader.skip(4);
-		assertEquals(new BigDecimal("1.0"), reader.readBigDecimal());
-		reader.skip();
-		assertEquals(new BigDecimal("0.54321"), reader.readBigDecimal());
-		reader.skip();
-		assertEquals(new BigDecimal("1.9e5000"), reader.readBigDecimal());
-		reader.skip();
-		assertEquals(new BigDecimal("31.9375"), reader.readBigDecimal());
-		reader.skip();
-		assertEquals(new BigDecimal("-5"), reader.readBigDecimal());
-		reader.skip();
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readBigDecimal);
-	}
-	
-	@Test
-	void readObject() {
-		StringReader reader = new StringReader("\"hello world\" 'c' 'ab' true FALSE trueish 10 3b 2.5 1.5f 0x10 99999999999999999999 1.0e400 123abc word");
-		assertEquals("hello world", assertInstanceOf(String.class, reader.readObject()));
-		reader.skip();
-		assertEquals('c', assertInstanceOf(Character.class, reader.readObject()));
-		reader.skip();
-		assertEquals("ab", assertInstanceOf(String.class, reader.readObject()));
-		reader.skip();
-		assertTrue(assertInstanceOf(Boolean.class, reader.readObject()));
-		reader.skip();
-		assertFalse(assertInstanceOf(Boolean.class, reader.readObject()));
-		reader.skip();
-		assertEquals("trueish", assertInstanceOf(String.class, reader.readObject()));
-		assertEquals(10, assertInstanceOf(Long.class, reader.readObject()));
-		reader.skip();
-		assertEquals((byte) 3, assertInstanceOf(Byte.class, reader.readObject()));
-		reader.skip();
-		assertEquals(2.5, assertInstanceOf(Double.class, reader.readObject()), PRECISION);
-		reader.skip();
-		assertEquals(1.5, assertInstanceOf(Float.class, reader.readObject()), PRECISION);
-		reader.skip();
-		assertEquals(16, assertInstanceOf(Long.class, reader.readObject()));
-		reader.skip();
-		assertEquals(new BigInteger("99999999999999999999"), assertInstanceOf(BigInteger.class, reader.readObject()));
-		reader.skip();
-		assertEquals(0, new BigDecimal("1.0e400").compareTo(assertInstanceOf(BigDecimal.class, reader.readObject())));
-		reader.skip();
-		assertEquals("123abc", assertInstanceOf(String.class, reader.readObject()));
-		assertEquals("word", assertInstanceOf(String.class, reader.readObject()));
-		assertThrows(StringIndexOutOfBoundsException.class, reader::readObject);
+		StringReader other = new StringReader("b");
+		other.skip('a');
+		assertEquals(0, other.getIndex());
 		
+		StringReader onlyMatching = new StringReader("aaa");
+		onlyMatching.skip('a');
+		assertEquals(3, onlyMatching.getIndex());
+	}
+	
+	@Test
+	void skipPredicateBranches() {
+		StringReader digits = new StringReader("12ab");
+		digits.skip(Character::isDigit);
+		assertEquals(2, digits.getIndex());
+		
+		StringReader letters = new StringReader("ab12");
+		letters.skip(Character::isDigit);
+		assertEquals(0, letters.getIndex());
+	}
+	
+	@Test
+	void resetWithoutMark() {
+		StringReader reader = new StringReader("abc");
+		reader.skip(2);
 		reader.reset();
-		
-		reader.skip(14);
+		assertEquals(0, reader.getIndex());
+	}
+	
+	@Test
+	void resetWithMark() {
+		StringReader reader = new StringReader("abc");
+		reader.skip();
 		reader.mark();
-		assertEquals('c', assertInstanceOf(Character.class, reader.readObject()));
+		reader.skip();
 		reader.reset();
-		assertEquals(14, reader.getIndex());
+		assertEquals(1, reader.getIndex());
+		reader.reset();
+		assertEquals(0, reader.getIndex());
 	}
 	
 	@Test
-	void hashCodeForEqualReaders() {
-		StringReader reader1 = new StringReader("test");
-		StringReader reader2 = new StringReader("test");
+	void resetSubReaderToStartIndex() {
+		StringReader reader = new StringReader("abcdef");
+		reader.skip(2);
+		StringReader subReader = reader.createSubReader(StringReader::new);
+		subReader.skip(2);
+		subReader.reset();
+		assertEquals(2, subReader.getIndex());
+	}
+	
+	@Test
+	void readLineWithoutCharacters() {
+		assertEquals("", new StringReader("").readLine(true));
+		assertEquals("", new StringReader("").readLine(false));
+	}
+	
+	@Test
+	void readLineWithLineFeed() {
+		StringReader included = new StringReader("a\nb");
+		assertEquals("a\n", included.readLine(true));
+		assertEquals("b", included.readRemaining());
 		
-		if (reader1.equals(reader2)) {
-			assertEquals(reader1.hashCode(), reader2.hashCode());
+		StringReader excluded = new StringReader("a\nb");
+		assertEquals("a", excluded.readLine(false));
+		assertEquals('b', excluded.peek());
+	}
+	
+	@Test
+	void readLineWithCarriageReturn() {
+		StringReader included = new StringReader("a\rb");
+		assertEquals("a\r", included.readLine(true));
+		assertEquals("b", included.readRemaining());
+		
+		StringReader atEnd = new StringReader("a\r");
+		assertEquals("a", atEnd.readLine(false));
+		assertFalse(atEnd.canRead());
+	}
+	
+	@Test
+	void readLineWithCarriageReturnLineFeed() {
+		StringReader included = new StringReader("a\r\nb");
+		assertEquals("a\r\n", included.readLine(true));
+		assertEquals('b', included.peek());
+		
+		StringReader excluded = new StringReader("a\r\nb");
+		assertEquals("a", excluded.readLine(false));
+		assertEquals('b', excluded.peek());
+	}
+	
+	@Test
+	void readLineWithoutLineBreak() {
+		StringReader reader = new StringReader("abc");
+		assertEquals("abc", reader.readLine(true));
+		assertFalse(reader.canRead());
+	}
+	
+	@Test
+	void readRemainingBranches() {
+		assertEquals("", new StringReader("").readRemaining());
+		
+		StringReader reader = new StringReader("abcd");
+		reader.skip(2);
+		assertEquals("cd", reader.readRemaining());
+		assertEquals(4, reader.getIndex());
+	}
+	
+	@Test
+	void readRemainingOfSubReader() {
+		StringReader reader = new StringReader("abcdef");
+		reader.skip();
+		StringReader subReader = reader.createSubReader(3, StringReader::new);
+		assertEquals("bcd", subReader.readRemaining());
+		assertEquals(4, subReader.getIndex());
+	}
+	
+	@Test
+	void readUnquotedStringBranches() {
+		StringReader reader = new StringReader("ab cd");
+		assertEquals("ab", reader.readUnquotedString());
+		assertEquals("cd", reader.readUnquotedString());
+		
+		StringReader custom = new StringReader("abxcd");
+		assertEquals("ab", custom.readUnquotedString('x'));
+		assertEquals('c', custom.peek());
+	}
+	
+	@Test
+	void readUnquotedStringIgnoresEscapes() {
+		StringReader reader = new StringReader("a\\ b");
+		assertEquals("a\\", reader.readUnquotedString());
+		assertEquals("b", reader.readRemaining());
+	}
+	
+	@Test
+	void validateTerminatorsRemovesDuplicates() {
+		StringReader reader = new StringReader("");
+		assertEquals(Set.of('a', 'b'), reader.validateTerminators(new char[] { 'a', 'b', 'a' }));
+	}
+	
+	@Test
+	void validateTerminatorWithEscapingDisabled() {
+		StringReader reader = new StringReader("ab\\cd", null);
+		assertEquals("ab", reader.readUntil('\\'));
+		assertDoesNotThrow(() -> reader.validateTerminator("a\\b"));
+	}
+	
+	@Test
+	void readUntilCharacterBranches() {
+		StringReader atStart = new StringReader(",a");
+		assertEquals("", atStart.readUntil(','));
+		assertEquals(0, atStart.getIndex());
+		
+		StringReader inMiddle = new StringReader("ab,c");
+		assertEquals("ab", inMiddle.readUntil(','));
+		assertEquals(',', inMiddle.peek());
+		
+		assertEquals("abc", new StringReader("abc").readUntil(','));
+	}
+	
+	@Test
+	void readUntilInclusiveCharacter() {
+		StringReader reader = new StringReader("ab,c");
+		assertEquals("ab,", reader.readUntilInclusive(','));
+		assertEquals('c', reader.peek());
+	}
+	
+	@Test
+	void readUntilSkipCharacterBranches() {
+		StringReader found = new StringReader("ab,c");
+		assertEquals("ab", found.readUntilSkip(','));
+		assertEquals('c', found.peek());
+		
+		StringReader missing = new StringReader("abc");
+		assertEquals("abc", missing.readUntilSkip(','));
+		assertEquals(3, missing.getIndex());
+	}
+	
+	@Test
+	void readUntilWithEscapedTerminator() {
+		StringReader reader = new StringReader("a\\,b,c");
+		assertEquals("a,b", reader.readUntil(','));
+		assertEquals(',', reader.peek());
+	}
+	
+	@Test
+	void readUntilIgnoresQuotes() {
+		StringReader reader = new StringReader("'a,b',c");
+		assertEquals("'a", reader.readUntil(','));
+	}
+	
+	@Test
+	void readUntilMultipleTerminators() {
+		assertEquals("ab", new StringReader("ab;c,d").readUntil(',', ';'));
+		assertEquals("ab;", new StringReader("ab;c,d").readUntilInclusive(',', ';'));
+		
+		StringReader reader = new StringReader("ab;c,d");
+		assertEquals("ab", reader.readUntilSkip(',', ';'));
+		assertEquals('c', reader.peek());
+	}
+	
+	@Test
+	void readUntilPredicateVariants() {
+		StringReader reader = new StringReader("ab1c");
+		assertEquals("ab", reader.readUntil(Character::isDigit));
+		assertEquals('1', reader.peek());
+		
+		assertEquals("ab1", new StringReader("ab1c").readUntilInclusive(Character::isDigit));
+		
+		StringReader skipping = new StringReader("ab1c");
+		assertEquals("ab", skipping.readUntilSkip(Character::isDigit));
+		assertEquals('c', skipping.peek());
+	}
+	
+	@Test
+	void readUntilStringCaseSensitive() {
+		StringReader matching = new StringReader("a END b");
+		assertEquals("a ", matching.readUntil("END", true));
+		assertEquals('E', matching.peek());
+		
+		assertEquals("a end b", new StringReader("a end b").readUntil("END", true));
+	}
+	
+	@Test
+	void readUntilStringCaseInsensitive() {
+		StringReader reader = new StringReader("a end b");
+		assertEquals("a ", reader.readUntil("END", false));
+		assertEquals('e', reader.peek());
+	}
+	
+	@Test
+	void readUntilStringInclusiveAndSkip() {
+		StringReader inclusive = new StringReader("a END b");
+		assertEquals("a END", inclusive.readUntilInclusive("END", true));
+		assertEquals(' ', inclusive.peek());
+		
+		StringReader skipping = new StringReader("a END b");
+		assertEquals("a ", skipping.readUntilSkip("END", true));
+		assertEquals(5, skipping.getIndex());
+		
+		StringReader missing = new StringReader("abc");
+		assertEquals("abc", missing.readUntilSkip("END", true));
+		assertEquals(3, missing.getIndex());
+	}
+	
+	@Test
+	void readUntilStringWithEscapedTerminator() {
+		StringReader reader = new StringReader("a\\abc");
+		assertEquals("aabc", reader.readUntil("ab", true));
+		assertFalse(reader.canRead());
+	}
+	
+	@Test
+	void readExpectedCaseSensitive() {
+		StringReader matching = new StringReader("abcd");
+		assertEquals("abc", matching.readExpected("abc", true));
+		assertEquals('d', matching.peek());
+		
+		StringReader mismatching = new StringReader("abxd");
+		assertThrows(InvalidStringException.class, () -> mismatching.readExpected("abc", true));
+		assertEquals(2, mismatching.getIndex());
+	}
+	
+	@Test
+	void readExpectedCaseInsensitive() {
+		StringReader reader = new StringReader("ABC");
+		assertEquals("ABC", reader.readExpected("abc", false));
+		assertThrows(InvalidStringException.class, () -> new StringReader("ABC").readExpected("abc", true));
+	}
+	
+	@Test
+	void readExpectedListFirstCompleteCandidate() {
+		StringReader reader = new StringReader("abcd");
+		assertEquals("ab", reader.readExpected(List.of("abc", "ab"), true));
+		assertEquals(2, reader.getIndex());
+	}
+	
+	@Test
+	void readExpectedListWithoutMatch() {
+		StringReader reader = new StringReader("abx");
+		InvalidStringException exception = assertThrows(InvalidStringException.class, () -> reader.readExpected(List.of("abc", "abd"), true));
+		assertTrue(exception.getMessage().contains("'ab'"));
+		assertEquals(2, reader.getIndex());
+	}
+	
+	@Test
+	void readExpectedListCaseInsensitive() {
+		StringReader reader = new StringReader("TRUE");
+		assertEquals("TRUE", reader.readExpected(List.of("true", "false"), false));
+		assertFalse(reader.canRead());
+	}
+	
+	@Test
+	void closeRootReader() {
+		StringReader reader = new StringReader("abc");
+		assertDoesNotThrow(reader::close);
+		assertEquals('a', reader.read());
+	}
+	
+	@Test
+	void closeSubReaderTwice() {
+		StringReader reader = new StringReader("abcd");
+		StringReader subReader = reader.createSubReader(StringReader::new);
+		subReader.skip();
+		subReader.close();
+		reader.skip();
+		subReader.close();
+		assertEquals(2, reader.getIndex());
+	}
+	
+	@Test
+	void closeTransfersIndexToParent() {
+		StringReader reader = new StringReader("abcd");
+		StringReader subReader = reader.createSubReader(StringReader::new);
+		subReader.skip(3);
+		subReader.close();
+		assertEquals(3, reader.getIndex());
+		assertEquals('d', reader.read());
+	}
+	
+	@Test
+	void readAmount() {
+		StringReader reader = new StringReader("abc");
+		assertEquals("ab", reader.read(2));
+		assertEquals(2, reader.getIndex());
+	}
+	
+	@Test
+	void peekDoesNotMove() {
+		StringReader reader = new StringReader("abc");
+		assertEquals('a', reader.peek());
+		assertEquals("ab", reader.peek(2));
+		assertEquals(0, reader.getIndex());
+	}
+	
+	@Test
+	void skipWhitespacesSkipsAllKinds() {
+		StringReader reader = new StringReader(" \t\n\r x");
+		reader.skipWhitespaces();
+		assertEquals('x', reader.peek());
+	}
+	
+	@Test
+	void equalReaders() {
+		StringReader first = new StringReader("abc");
+		StringReader second = new StringReader("abc");
+		assertEquals(first, second);
+		assertEquals(first.hashCode(), second.hashCode());
+	}
+	
+	@Test
+	void unequalReaders() {
+		StringReader reader = new StringReader("abc");
+		
+		StringReader otherIndex = new StringReader("abc");
+		otherIndex.skip();
+		StringReader otherMark = new StringReader("abc");
+		otherMark.mark();
+		StringReader otherEnd = new StringReader("abc").createSubReader(2, StringReader::new);
+		
+		assertNotEquals(reader, otherIndex);
+		assertNotEquals(reader, otherMark);
+		assertNotEquals(reader, otherEnd);
+		assertNotEquals(reader, new StringReader("abc", null));
+		assertNotEquals(reader, new StringReader("abd"));
+		assertNotEquals(reader, new PositionedStringReader("abc"));
+		assertNotEquals(null, reader);
+	}
+	
+	@Test
+	void nestedSubReaders() {
+		StringReader reader = new StringReader("abcdef");
+		StringReader first = reader.createSubReader(StringReader::new);
+		first.skip();
+		StringReader second = first.createSubReader(StringReader::new);
+		second.skip(2);
+		
+		second.close();
+		assertEquals(3, first.getIndex());
+		first.close();
+		assertEquals(3, reader.getIndex());
+	}
+	
+	@Test
+	void sequentialReading() {
+		StringReader reader = new StringReader("key = value\nnext line");
+		assertEquals("key", reader.readUntilSkip(' '));
+		reader.skipWhitespaces();
+		assertEquals("=", reader.readExpected("=", true));
+		reader.skipWhitespaces();
+		assertEquals("value", reader.readLine(false));
+		assertEquals("next line", reader.readLine(false));
+	}
+	
+	@Test
+	void readUntilStringOverMultipleMatches() {
+		StringReader reader = new StringReader("aaab");
+		assertEquals("aa", reader.readUntil("ab", true));
+		assertEquals("ab", reader.readRemaining());
+	}
+	
+	private static final class FailingReader extends Reader {
+		
+		@Override
+		public int read(char @NonNull [] buffer, int offset, int length) throws IOException {
+			throw new IOException("Failed to read");
 		}
+		
+		@Override
+		public void close() {}
 	}
 }

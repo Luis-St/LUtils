@@ -20,7 +20,7 @@ package net.luis.utils.util.getter;
 
 import net.luis.utils.exception.InvalidStringException;
 import net.luis.utils.function.throwable.ThrowableFunction;
-import net.luis.utils.io.reader.StringReader;
+import net.luis.utils.io.reader.ValueStringReader;
 import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
 
@@ -88,7 +88,7 @@ public interface IndexedValueGetter {
 	default @NonNull Number getAsNumber(int index) {
 		String value = this.getAsString(index);
 		try {
-			return new StringReader(value).readNumber();
+			return new ValueStringReader(value).readNumber();
 		} catch (InvalidStringException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a number: " + e.getMessage(), e.getCause());
 		}
@@ -105,7 +105,7 @@ public interface IndexedValueGetter {
 	default byte getAsByte(int index) {
 		String value = this.getAsString(index);
 		try {
-			return new StringReader(value).readByte();
+			return new ValueStringReader(value).readByte();
 		} catch (InvalidStringException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a byte: " + e.getMessage(), e.getCause());
 		}
@@ -122,7 +122,7 @@ public interface IndexedValueGetter {
 	default short getAsShort(int index) {
 		String value = this.getAsString(index);
 		try {
-			return new StringReader(value).readShort();
+			return new ValueStringReader(value).readShort();
 		} catch (InvalidStringException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a short: " + e.getMessage(), e.getCause());
 		}
@@ -139,7 +139,7 @@ public interface IndexedValueGetter {
 	default int getAsInteger(int index) {
 		String value = this.getAsString(index);
 		try {
-			return new StringReader(value).readInt();
+			return new ValueStringReader(value).readInt();
 		} catch (InvalidStringException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as an integer: " + e.getMessage(), e.getCause());
 		}
@@ -156,7 +156,7 @@ public interface IndexedValueGetter {
 	default long getAsLong(int index) {
 		String value = this.getAsString(index);
 		try {
-			return new StringReader(value).readLong();
+			return new ValueStringReader(value).readLong();
 		} catch (InvalidStringException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a long: " + e.getMessage(), e.getCause());
 		}
@@ -173,7 +173,7 @@ public interface IndexedValueGetter {
 	default float getAsFloat(int index) {
 		String value = this.getAsString(index);
 		try {
-			return new StringReader(value).readFloat();
+			return new ValueStringReader(value).readFloat();
 		} catch (InvalidStringException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a float: " + e.getMessage(), e.getCause());
 		}
@@ -190,7 +190,7 @@ public interface IndexedValueGetter {
 	default double getAsDouble(int index) {
 		String value = this.getAsString(index);
 		try {
-			return new StringReader(value).readDouble();
+			return new ValueStringReader(value).readDouble();
 		} catch (InvalidStringException e) {
 			throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a double: " + e.getMessage(), e.getCause());
 		}

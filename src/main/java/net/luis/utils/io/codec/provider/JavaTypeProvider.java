@@ -23,7 +23,7 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AtomicDouble;
 import net.luis.utils.exception.InvalidStringException;
 import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.reader.StringReader;
+import net.luis.utils.io.reader.ValueStringReader;
 import net.luis.utils.math.NumberType;
 import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.UnknownNullability;
@@ -592,7 +592,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	/**
 	 * Parses the given string as a number.<br>
 	 * Leading and trailing whitespaces are ignored.<br>
-	 * The number type is determined by {@link StringReader#readNumber()}, so a type suffix is respected.<br>
+	 * The number type is determined by {@link ValueStringReader#readNumber()}, so a type suffix is respected.<br>
 	 * The number must consume the whole string, trailing characters like in {@code "42abc"} are rejected.<br>
 	 *
 	 * @param str The string to parse
@@ -611,7 +611,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 			throw exceptionConstructor.apply("Value '" + str + "' is not a number, expected a number but found nothing");
 		}
 		
-		StringReader reader = new StringReader(stripped);
+		ValueStringReader reader = new ValueStringReader(stripped);
 		Number number;
 		try {
 			number = reader.readNumber();
